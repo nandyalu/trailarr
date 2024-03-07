@@ -1,0 +1,18 @@
+{
+    "explorer.fileNesting.enabled": true,
+    "editor.stickyScroll.enabled": true,
+    "notebook.stickyScroll.mode": "indented",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+    },
+    "flake8.args": [
+        "--ignore=W293,E203, E704",
+        "--max-line-length=100",
+    ],
+    "python.testing.pytestArgs": [
+        "backend"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+}
