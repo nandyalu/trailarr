@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  indexarr2:
+    image: indexarr2
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 7889:7889

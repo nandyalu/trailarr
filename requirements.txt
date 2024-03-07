@@ -1,0 +1,12 @@
+# Backend
+fastapi
+pyarr
+sqlmodel
+uvicorn[standard]
+gunicorn
+# Frontend
+
+
+# Testing
+pytest
+pytest-cov
