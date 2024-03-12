@@ -7,7 +7,7 @@
         "editor.formatOnSave": true,
     },
     "flake8.args": [
-        "--ignore=W293,E203, E704",
+        "--ignore=W293,E203,E704",
         "--max-line-length=100",
     ],
     "python.testing.pytestArgs": [

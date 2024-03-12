@@ -1,4 +1,5 @@
 # Backend
+aiohttp
 fastapi
 pyarr
 sqlmodel
@@ -9,4 +10,6 @@ gunicorn
 
 # Testing
 pytest
+pytest-asyncio
 pytest-cov
+aioresponses

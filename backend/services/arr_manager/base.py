@@ -1,19 +1,10 @@
 from typing import Any
 from backend.exceptions import InvalidResponseError
-from backend.services.arr_manager.request_manager import RequestManager
+from backend.services.arr_manager.request_manager import AsyncRequestManager
 
 
-class BaseArrManager(RequestManager):
-    """Base class for requests to Arr API
-
-    Args:
-        url (str): Host URL to Arr API
-        api_key (str): API Key for Arr API
-        version (str, optional): Version of the API. Defaults to "".
-
-    Returns:
-        None
-    """
+class AsyncBaseArrManager(AsyncRequestManager):
+    """Base class for async requests to Arr API"""
 
     def __init__(self, url: str, api_key: str, version: str = ""):
         """
@@ -28,7 +19,7 @@ class BaseArrManager(RequestManager):
         self.version = version
         super().__init__(url, api_key)
 
-    def api_version(self) -> str:
+    async def api_version(self) -> str:
         """Get the version of the Arr API
 
         Args:
@@ -42,7 +33,7 @@ class BaseArrManager(RequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If the API response is invalid
         """
-        response = self._request("GET", "/api")
+        response = await self._request("GET", "/api")
         if isinstance(response, dict):
             version: str = ""
             version = str(response.get("current", ""))
@@ -51,7 +42,7 @@ class BaseArrManager(RequestManager):
             return response
         return ""
 
-    def _get_system_status(self, app_name: str) -> str:
+    async def _get_system_status(self, app_name: str) -> str:
         """Get the system status of the Arr API
 
         Args:
@@ -65,16 +56,16 @@ class BaseArrManager(RequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If API response is invalid
         """
-        status: str | dict[str, Any] = self._request(
+        status: str | dict[str, Any] = await self._request(
             "GET", f"/api/{self.version}/system/status"
         )
         if isinstance(status, dict):
-            result_appName = status.get("appName")
+            result_app_name = status.get("appName")
             version = status.get("version")
-            if result_appName and version:
-                result_appName = str.lower(result_appName)
+            if result_app_name and version:
+                result_app_name = str.lower(result_app_name)
                 version = str(version)
-                if result_appName == app_name.lower():
+                if result_app_name == app_name.lower():
                     return f"{app_name} Connection Successful! Version: {status.get('version')}"
             raise InvalidResponseError(
                 f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
@@ -84,7 +75,7 @@ class BaseArrManager(RequestManager):
             raise InvalidResponseError(status)
         raise InvalidResponseError("Unknown Error")
 
-    def ping(self) -> str | dict[str, str]:
+    async def ping(self) -> str | dict[str, str]:
         """Ping the Arr API
 
         Args:
@@ -98,4 +89,4 @@ class BaseArrManager(RequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If the API response is invalid
         """
-        return self._request("GET", "/ping")
+        return await self._request("GET", "/ping")

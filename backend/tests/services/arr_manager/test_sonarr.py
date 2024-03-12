@@ -1,40 +1,44 @@
-from unittest import TestCase
-from unittest.mock import patch
+import pytest
+from backend.exceptions import InvalidResponseError
 from backend.services.arr_manager.sonarr import SonarrManager
+from backend.tests import conftest
 
 
-class TestSonarrManager(TestCase):
+class TestSonarrManager:
 
-    @patch.object(SonarrManager, "_get_system_status")
-    def test_get_system_status_success(self, mock_get_system_status):
+    URL = conftest.TEST_AIOHTTP_URL
+    API_KEY = conftest.TEST_AIOHTTP_APIKEY
+    sonarr_manager = SonarrManager(URL, API_KEY)
+
+    @pytest.mark.asyncio
+    async def test_get_system_status_success(self, debug_aiohttp):
         # Arrange
-        mock_get_system_status.return_value = (
-            "Sonarr Connection Successful! Version: 1.0.0"
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload={"appName": "Sonarr", "version": "3.0.0"},
         )
-        sonarr_manager = SonarrManager("url", "api_key")
 
         # Act
-        result = sonarr_manager.get_system_status()
+        result = await self.sonarr_manager.get_system_status()
 
         # Assert
-        mock_get_system_status.assert_called_once_with(sonarr_manager.APPNAME)
-        self.assertEqual(result, "Sonarr Connection Successful! Version: 1.0.0")
+        assert result == "Sonarr Connection Successful! Version: 3.0.0"
 
-    @patch.object(SonarrManager, "_get_system_status")
-    def test_get_system_status_exception(self, mock_get_system_status):
+    @pytest.mark.asyncio
+    async def test_get_system_status_exception(self, debug_aiohttp):
         # Arrange
-        mock_get_system_status.side_effect = Exception(
-            "Invalid Host (url) or API Key (api_key), not a Sonarr instance."
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload={"appName": "WrongApp", "version": "3.0.0"},
         )
-        sonarr_manager = SonarrManager("url", "api_key")
 
         # Act
-        with self.assertRaises(Exception) as e:
-            sonarr_manager.get_system_status()
+        with pytest.raises(InvalidResponseError) as e:
+            await self.sonarr_manager.get_system_status()
 
         # Assert
-        mock_get_system_status.assert_called_once_with(sonarr_manager.APPNAME)
-        self.assertEqual(
-            str(e.exception),
-            "Invalid Host (url) or API Key (api_key), not a Sonarr instance.",
-        )
+        _error = f"Invalid Host ({self.URL}) or API Key ({self.API_KEY}), not a Sonarr instance."
+        assert str(e.value) == _error
+        assert e.type == InvalidResponseError
