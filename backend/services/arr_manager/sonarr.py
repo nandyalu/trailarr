@@ -1,14 +1,14 @@
-from backend.services.arr_manager.base import BaseArrManager
+from backend.services.arr_manager.base import AsyncBaseArrManager
 
 
-class SonarrManager(BaseArrManager):
+class SonarrManager(AsyncBaseArrManager):
     APPNAME = "Sonarr"
 
     def __init__(self, url: str, api_key: str):
         self.version = "v3"
         super().__init__(url, api_key, self.version)
 
-    def get_system_status(self) -> str:
+    async def get_system_status(self) -> str:
         """Get the system status of the Sonarr API
 
         Args:
@@ -22,6 +22,6 @@ class SonarrManager(BaseArrManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If API response is invalid
         """
-        return self._get_system_status(self.APPNAME)
+        return await self._get_system_status(self.APPNAME)
 
     # Define Radarr specific API methods here

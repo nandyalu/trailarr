@@ -1,9 +1,4 @@
-from contextlib import contextmanager
-from functools import wraps
-from importlib import reload
 import pytest
-from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
 
 # from backend.database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
 import backend.database.crud.connection as connectionCRUD
@@ -44,41 +39,41 @@ CONN_ID_1 = 1
 # Default Connection id for failed read/update/delete
 CONN_ID_2 = 2
 
-# Setup the in-memory SQLite database for testing
-DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
-    poolclass=StaticPool,
-)
-SQLModel.metadata.create_all(engine)
+# # Setup the in-memory SQLite database for testing
+# DATABASE_URL = "sqlite:///:memory:"
+# engine = create_engine(
+#     DATABASE_URL,
+#     connect_args={
+#         "check_same_thread": False,
+#     },
+#     poolclass=StaticPool,
+# )
+# SQLModel.metadata.create_all(engine)
 
 
-@contextmanager
-def get_session():
-    with Session(engine) as session:
-        try:
-            yield session
-        finally:
-            session.close()
+# @contextmanager
+# def get_session():
+#     with Session(engine) as session:
+#         try:
+#             yield session
+#         finally:
+#             session.close()
 
 
-def mock_manage_session(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Check if a '_session' keyword argument was provided
-        if kwargs.get("_session") is None:
-            # If not, create a new session and add it to kwargs
-            with get_session() as _session:
-                kwargs["_session"] = _session
-                return func(*args, **kwargs)
-        else:
-            # If a session was provided, just call the function
-            return func(*args, **kwargs)
+# def mock_manage_session(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         # Check if a '_session' keyword argument was provided
+#         if kwargs.get("_session") is None:
+#             # If not, create a new session and add it to kwargs
+#             with get_session() as _session:
+#                 kwargs["_session"] = _session
+#                 return func(*args, **kwargs)
+#         else:
+#             # If a session was provided, just call the function
+#             return func(*args, **kwargs)
 
-    return wrapper
+#     return wrapper
 
 
 class TestConnectionDatabaseHandler:
@@ -87,13 +82,13 @@ class TestConnectionDatabaseHandler:
     @pytest.fixture(autouse=True)
     def session_fixture(self, monkeypatch):
         # Monkeypatch the manage_session decorator
-        monkeypatch.setattr(
-            "backend.database.utils.engine.manage_session",
-            mock_manage_session,
-        )
-        # Reload the connectionCRUD module to apply the monkeypatch to decorator
-        reload(connectionCRUD)
-        self.db_handler = connectionCRUD.ConnectionDatabaseHandler()
+        # monkeypatch.setattr(
+        #     "backend.database.utils.engine.manage_session",
+        #     mock_manage_session,
+        # )
+        # # Reload the connectionCRUD module to apply the monkeypatch to decorator
+        # reload(connectionCRUD)
+        # self.db_handler = connectionCRUD.ConnectionDatabaseHandler()
 
         def mock_result_success(connection: ConnectionBase):
             return "Success message"
@@ -129,12 +124,11 @@ class TestConnectionDatabaseHandler:
 
     def test_read_connection(self):
         # Call the create_connection method and assert the return value
-        with get_session() as session:
-            self.db_handler.create(connection, _session=session)
-            # self.test_create_connection()
+        self.db_handler.create(connection)
+        # self.test_create_connection()
 
-            # Call the read_connection method and assert the return values match
-            result = self.db_handler.read(CONN_ID_1, _session=session)
+        # Call the read_connection method and assert the return values match
+        result = self.db_handler.read(CONN_ID_1)
         assert result.id == CONN_ID_1
         assert result.name == connection.name
         assert result.type == connection.type

@@ -1,40 +1,43 @@
-from unittest import TestCase
-from unittest.mock import patch
+import pytest
+from backend.exceptions import InvalidResponseError
 from backend.services.arr_manager.radarr import RadarrManager
+from backend.tests import conftest
 
 
-class TestRadarrManager(TestCase):
+class TestRadarrManager:
+    URL = conftest.TEST_AIOHTTP_URL
+    API_KEY = conftest.TEST_AIOHTTP_APIKEY
+    radarr_manager = RadarrManager(URL, API_KEY)
 
-    @patch.object(RadarrManager, "_get_system_status")
-    def test_get_system_status_success(self, mock_get_system_status):
+    @pytest.mark.asyncio
+    async def test_get_system_status_success(self, debug_aiohttp):
         # Arrange
-        mock_get_system_status.return_value = (
-            "Radarr Connection Successful! Version: 1.0.0"
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload={"appName": "Radarr", "version": "3.0.0"},
         )
-        radarr_manager = RadarrManager("url", "api_key")
 
         # Act
-        result = radarr_manager.get_system_status()
+        result = await self.radarr_manager.get_system_status()
 
         # Assert
-        mock_get_system_status.assert_called_once_with(radarr_manager.APPNAME)
-        self.assertEqual(result, "Radarr Connection Successful! Version: 1.0.0")
+        assert result == "Radarr Connection Successful! Version: 3.0.0"
 
-    @patch.object(RadarrManager, "_get_system_status")
-    def test_get_system_status_exception(self, mock_get_system_status):
+    @pytest.mark.asyncio
+    async def test_get_system_status_exception(self, debug_aiohttp):
         # Arrange
-        mock_get_system_status.side_effect = Exception(
-            "Invalid Host (url) or API Key (api_key), not a Radarr instance."
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload={"appName": "WrongApp", "version": "3.0.0"},
         )
-        radarr_manager = RadarrManager("url", "api_key")
 
         # Act
-        with self.assertRaises(Exception) as e:
-            radarr_manager.get_system_status()
+        with pytest.raises(InvalidResponseError) as e:
+            await self.radarr_manager.get_system_status()
 
         # Assert
-        mock_get_system_status.assert_called_once_with(radarr_manager.APPNAME)
-        self.assertEqual(
-            str(e.exception),
-            "Invalid Host (url) or API Key (api_key), not a Radarr instance.",
-        )
+        _error = f"Invalid Host ({self.URL}) or API Key ({self.API_KEY}), not a Radarr instance."
+        assert str(e.value) == _error
+        assert e.type == InvalidResponseError

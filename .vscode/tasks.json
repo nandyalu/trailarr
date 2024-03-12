@@ -6,7 +6,7 @@
 			"label": "docker-build",
 			"platform": "python",
 			"dockerBuild": {
-				"tag": "indexarr2:latest",
+				"tag": "trailarr2:latest",
 				"dockerfile": "${workspaceFolder}/Dockerfile",
 				"context": "${workspaceFolder}",
 				"pull": true
@@ -28,6 +28,19 @@
 				],
 				"module": "uvicorn"
 			}
-		}
+		},
+		{
+            "label": "Generate PyTest HTML Report",
+            "type": "shell",
+            "command": "source /media/all/Media/scripts/trailarr2/.venv/bin/activate && pytest --cov=. --cov-report=html",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
 	]
 }

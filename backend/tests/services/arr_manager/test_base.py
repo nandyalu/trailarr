@@ -1,208 +1,147 @@
-from unittest import TestCase
-from unittest.mock import patch
+import pytest
 from backend.exceptions import InvalidResponseError
-from backend.services.arr_manager.base import BaseArrManager
+from backend.services.arr_manager.base import AsyncBaseArrManager
+from backend.tests import conftest
 
 
-class TestBaseArrManager(TestCase):
+class TestAsyncBaseArrManager:
+    URL = conftest.TEST_AIOHTTP_URL
+    API_KEY = conftest.TEST_AIOHTTP_APIKEY
+    arr_manager = AsyncBaseArrManager(URL, API_KEY, "v3")
 
-    @patch.object(BaseArrManager, "_request")
-    def test_api_version_success(self, mock_request):
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "payload, expected_result",
+        [
+            ({"current": "v3"}, "v3"),
+            ("v3", "v3"),
+            ({}, ""),
+            (None, ""),
+            ({"abc": "abc"}, ""),
+        ],
+    )
+    async def test_api_version_success(self, debug_aiohttp, payload, expected_result):
         # Arrange
-        mock_request.return_value = {"current": "v3"}
-        arr_manager = BaseArrManager("url", "api_key")
+        debug_aiohttp.get(f"{self.URL}/api", status=200, payload=payload)
 
         # Act
-        result = arr_manager.api_version()
+        actual_result = await self.arr_manager.api_version()
 
         # Assert
-        self.assertEqual(result, "v3")
+        assert actual_result == expected_result
 
-    @patch.object(BaseArrManager, "_request")
-    def test_api_version_empty_response(self, mock_request):
+    @pytest.mark.asyncio
+    async def test_get_system_status_success(self, debug_aiohttp):
         # Arrange
-        mock_request.return_value = {}
-        arr_manager = BaseArrManager("url", "api_key")
-
-        # Act
-        result = arr_manager.api_version()
-
-        # Assert
-        self.assertEqual(result, "")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_api_version_non_dict_response(self, mock_request):
-        # Arrange
-        mock_request.return_value = "v3"
-        arr_manager = BaseArrManager("url", "api_key")
-
-        # Act
-        result = arr_manager.api_version()
-
-        # Assert
-        self.assertEqual(result, "v3")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_api_version_no_current_response(self, mock_request):
-        # Arrange
-        mock_request.return_value = {"abc": "abc"}
-        arr_manager = BaseArrManager("url", "api_key")
-        # mock_request.side_effect = Exception()
-
-        # Act
-        result = arr_manager.api_version()
-
-        # Assert
-        self.assertEqual(result, "")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_api_version_no_response(self, mock_request):
-        # Arrange
-        mock_request.return_value = None
-        arr_manager = BaseArrManager("url", "api_key")
-        # mock_request.side_effect = Exception()
-
-        # Act
-        result = arr_manager.api_version()
-
-        # Assert
-        self.assertEqual(result, "")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_success(self, mock_request):
-        # Arrange
-        mock_request.return_value = {"appName": "TestApp", "version": "1.0.0"}
-        arr_manager = BaseArrManager("url", "api_key")
-
-        # Act
-        result = arr_manager._get_system_status("TestApp")
-
-        # Assert
-        self.assertEqual(result, "TestApp Connection Successful! Version: 1.0.0")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_invalid_app_name(self, mock_request):
-        # Arrange
-        mock_request.return_value = {"appName": "WrongApp", "version": "1.0.0"}
-        arr_manager = BaseArrManager("url", "api_key")
-
-        # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
-
-        # Assert
-        self.assertEqual(
-            str(e.exception),
-            "Invalid Host (url) or API Key (api_key), not a TestApp instance.",
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload={"appName": "Radarr", "version": "3.0.0"},
         )
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_empty_app_name(self, mock_request):
-        # Arrange
-        mock_request.return_value = {"appName": "", "version": "1.0.0"}
-        arr_manager = BaseArrManager("url", "api_key")
-
         # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
+        result = await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        self.assertEqual(
-            str(e.exception),
-            "Invalid Host (url) or API Key (api_key), not a TestApp instance.",
+        assert result == "Radarr Connection Successful! Version: 3.0.0"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"appName": "WrongApp", "version": "3.0.0"},
+            {"appName": "", "version": "1.0.0"},
+            {"appName": "Radarr", "version": ""},
+            {"appName": "testApp", "version": ""},
+        ],
+    )
+    async def test_get_system_status_invalid_appname(self, debug_aiohttp, payload):
+        # Arrange
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload=payload,
         )
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_empty_version(self, mock_request):
-        # Arrange
-        mock_request.return_value = {"appName": "testApp", "version": ""}
-        arr_manager = BaseArrManager("url", "api_key")
-
         # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
+        with pytest.raises(Exception) as e:
+            await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        self.assertEqual(
-            str(e.exception),
-            "Invalid Host (url) or API Key (api_key), not a TestApp instance.",
+        _error = f"Invalid Host ({self.URL}) or API Key ({self.API_KEY}), not a Radarr instance."
+        assert str(e.value) == _error
+        assert e.type == InvalidResponseError
+
+    @pytest.mark.asyncio
+    async def test_get_system_status_str_response(self, debug_aiohttp):
+        # Arrange
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload="Version: v3",
         )
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_str_response(self, mock_request):
-        # Arrange
-        mock_request.return_value = "Version: v3"
-        arr_manager = BaseArrManager("url", "api_key")
-
         # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
+        with pytest.raises(Exception) as e:
+            await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        self.assertEqual(
-            str(e.exception),
-            "Version: v3",
+        assert str(e.value) == "Version: v3"
+        assert e.type == InvalidResponseError
+
+    @pytest.mark.asyncio
+    async def test_get_system_status_error_status(self, debug_aiohttp):
+        # Arrange
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            exception=ValueError("Error message"),
         )
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_error_status(self, mock_request):
-        # Arrange
-        mock_request.side_effect = ValueError("Some Error message")
-        arr_manager = BaseArrManager("url", "api_key")
-
         # Act
-        with self.assertRaises(ValueError) as e:
-            arr_manager._get_system_status("TestApp")
+        with pytest.raises(Exception) as e:
+            await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        self.assertEqual(str(e.exception), "Some Error message")
+        assert e.type == ConnectionError
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_unknown_error(self, mock_request):
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("payload", [None, 123])
+    async def test_get_system_status_unknown_error(self, debug_aiohttp, payload):
         # Arrange
-        mock_request.return_value = 123  # not a dict or a string
-        arr_manager = BaseArrManager("url", "api_key")
+        debug_aiohttp.get(
+            f"{self.URL}/api/v3/system/status",
+            status=200,
+            payload=payload,
+        )
 
         # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
+        with pytest.raises(Exception) as e:
+            await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        self.assertEqual(str(e.exception), "Unknown Error")
+        assert str(e.value) == "Unknown Error"
+        assert e.type == InvalidResponseError
 
-    @patch.object(BaseArrManager, "_request")
-    def test_get_system_status_no_response(self, mock_request):
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("payload", ["Pong", 123, {"ping": "Pong"}])
+    async def test_ping_success(self, debug_aiohttp, payload):
         # Arrange
-        mock_request.return_value = None
-        arr_manager = BaseArrManager("url", "api_key")
+        debug_aiohttp.get(f"{self.URL}/ping", status=200, payload=payload)
 
         # Act
-        with self.assertRaises(InvalidResponseError) as e:
-            arr_manager._get_system_status("TestApp")
+        result = await self.arr_manager.ping()
 
         # Assert
-        self.assertEqual(str(e.exception), "Unknown Error")
+        assert result == payload
 
-    @patch.object(BaseArrManager, "_request")
-    def test_ping_success(self, mock_request):
+    @pytest.mark.asyncio
+    async def test_ping_error(self, debug_aiohttp):
         # Arrange
-        mock_request.return_value = "Pong"
-        arr_manager = BaseArrManager("url", "api_key")
+        debug_aiohttp.get(f"{self.URL}/ping", exception=Exception("Error message"))
 
         # Act
-        result = arr_manager.ping()
+        with pytest.raises(Exception) as e:
+            await self.arr_manager.ping()
 
         # Assert
-        self.assertEqual(result, "Pong")
-
-    @patch.object(BaseArrManager, "_request")
-    def test_ping_error(self, mock_request):
-        # Arrange
-        mock_request.side_effect = Exception("Error message")
-        arr_manager = BaseArrManager("url", "api_key")
-
-        # Act & Assert
-        with self.assertRaises(Exception) as e:
-            arr_manager.ping()
-
-        self.assertEqual(str(e.exception), "Error message")
+        assert e.type == ConnectionError

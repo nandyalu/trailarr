@@ -4,11 +4,11 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-def get_current_time():  # pragma: no cover
+def get_current_time():
     return datetime.now()
 
 
-def get_current_year():  # pragma: no cover
+def get_current_year():
     return datetime.now().year
 
 

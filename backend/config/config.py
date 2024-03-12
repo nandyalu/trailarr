@@ -18,6 +18,7 @@ class _Config:
     _DEFAULT_FILE_FORMAT = "mkv"
     _DEFAULT_QUALITY = "high"
     _DEFAULT_RESOLUTION = "1080p"
+    _DEFAULT_DB_URL = "sqlite:///trailarr.db"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "mp3", "flac", "vorbis", "opus"]
     _VALID_VIDEO_FORMATS = ["x264", "x265", "vp8", "vp9", "av1"]
@@ -25,6 +26,7 @@ class _Config:
     _VALID_QUALITIES = ["low", "medium", "high"]
     _VALID_RESOLUTIONS = ["240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
 
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() in ["true", "1"]
     DARK_MODE_ENABLED: bool = os.getenv(
         "DARK_MODE_ENABLED",
         "True",
@@ -42,6 +44,8 @@ class _Config:
         "TRAILER_FOLDER_SERIES", "False"
     ).lower() in ["true", "1"]
     TRAILER_LANGUAGE = os.getenv("TRAILER_LANGUAGE", "English")
+
+    DATABASE_URL: str = os.getenv("DATABASE_URL", _DEFAULT_DB_URL)
 
     def __init__(self):
         # Setting default values for properties
