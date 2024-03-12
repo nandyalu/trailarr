@@ -32,7 +32,7 @@
 		{
             "label": "Generate PyTest HTML Report",
             "type": "shell",
-            "command": "source /media/all/Media/scripts/trailarr2/.venv/bin/activate && pytest --cov=. --cov-report=html",
+            "command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
             "group": {
                 "kind": "test",
                 "isDefault": false
