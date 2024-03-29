@@ -1,3 +1,5 @@
+from datetime import datetime
+import logging
 import re
 from typing import Optional
 from typing import Sequence
@@ -5,7 +7,7 @@ from sqlmodel import Session, col, desc, select, or_
 from backend.database.crud.connection import ConnectionDatabaseHandler
 from backend.database.models.movie import Movie, MovieCreate, MovieRead, MovieUpdate
 from backend.database.utils.engine import manage_session
-from backend.exceptions import ItemExistsError, ItemNotFoundError
+from backend.exceptions import ItemNotFoundError
 
 
 class MovieDatabaseHandler:
@@ -14,77 +16,40 @@ class MovieDatabaseHandler:
     NO_MOVIE_MESSAGE = "Movie not found. Movie id: {} does not exist!"
     NO_CONN_MESSAGE = "Connection not found. Connection id: {} does not exist!"
 
-    # ! TODO: Remove later as this shouldn't be used in production
-    @manage_session
-    def create(
-        self,
-        movie: MovieCreate,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> bool:
-        """Create a new movie in the database.
-
+    def _create_or_update(
+        self, movie: MovieCreate, _session: Session
+    ) -> tuple[Movie, bool, bool]:
+        """-->>This is a private method<<-- \n
+        Create or update a movie in the database. \n
+        If a movie already exists, it will be updated, otherwise it will be created.\n
         Args:
-            movie (MovieCreate): The movie to create.
-            _session (optional): A session to use for the database connection. \
-                Defaults to None, in which case a new session is created.
-
+            movie (MovieCreate): The movie to create or update.
+            _session (Session): A session to use for the database connection.\n
         Returns:
-            bool: True if movie creation is successful.
-
-        Raises:
-            ItemNotFoundError: If the connection with provided connection_id does not exist.
-            ValidationError: If the movie is invalid.
+            tuple[Movie, bool, bool]: Movie object and flags indicating created and updated.\n
+            Example::\n
+                (<Movie obj>, True)
         """
+        # Radarr id will be unique for every movie in the same connection
+        # So, we can use it to check if the movie already exists in the database
+        # If it does, we will update it, otherwise we will create it
         db_movie = self._read_if_exists(
             movie.connection_id, movie.radarr_id, _session=_session
         )
         if db_movie:
-            raise ItemExistsError(
-                f"Movie with radarr id: {movie.radarr_id} for connection id: {movie.connection_id} "
-                "already exists!"
-            )
-        db_movie = Movie.model_validate(movie)
-        self._check_connection_exists(db_movie.connection_id, _session=_session)
-        _session.add(db_movie)
-        _session.commit()
-        return True
-
-    @manage_session
-    def create_bulk(
-        self,
-        movies: list[MovieCreate],
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> bool:
-        """Create multiple movies in the database at once.
-
-        Args:
-            movies (list[MovieCreate]): The list of movies to create.
-            _session (optional): A session to use for the database connection. \
-                Defaults to None, in which case a new session is created.
-
-        Returns:
-            bool: True if all movies are created successfully.
-
-        Raises:
-            ItemNotFoundError: If any of the connections with provided connection_id's are invalid.
-            ValidationError: If any of the movies are invalid.
-        """
-        self._check_connection_exists_bulk(movies, _session=_session)
-        for movie in movies:
-            db_movie = self._read_if_exists(
-                movie.connection_id, movie.radarr_id, _session=_session
-            )
-            if db_movie:
-                raise ItemExistsError(
-                    f"Movie with radarr id: {movie.radarr_id} for connection id: "
-                    f"{movie.connection_id} already exists!"
-                )
+            # Exists, update it
+            movie_update_data = movie.model_dump(exclude_unset=True)
+            db_movie.sqlmodel_update(movie_update_data)
+            if _session.is_modified(db_movie):
+                db_movie.updated_at = datetime.now()
+                return db_movie, False, True
+            # Already in session, no need to add it again
+            return db_movie, False, False
+        else:
+            # Doesn't exist, create it
             db_movie = Movie.model_validate(movie)
             _session.add(db_movie)
-        _session.commit()
-        return True
+            return db_movie, True, False
 
     @manage_session
     def create_or_update_bulk(
@@ -92,41 +57,40 @@ class MovieDatabaseHandler:
         movies: list[MovieCreate],
         *,
         _session: Session = None,  # type: ignore
-    ) -> bool:
-        """Create or update multiple movies in the database at once.
-
-        If a movie already exists, it will be updated, otherwise it will be created.
-
+    ) -> list[tuple[MovieRead, bool]]:
+        """Create or update multiple movies in the database at once. \n
+        If a movie already exists, it will be updated, otherwise it will be created.\n
         Args:
             movies (list[MovieCreate]): The list of movies to create or update.
             _session (optional): A session to use for the database connection. \
-                Defaults to None, in which case a new session is created.
-
+                Defaults to None, in which case a new session is created. \n
         Returns:
-            bool: True if all movies are created or updated successfully.
-
+            list[tuple[MovieRead, bool]]: List of tuples with MovieRead object and created flag \n
+            Example:: \n
+                [(<MovieRead obj 1>, True), (<MovieRead obj 2>, False), ...] \n
         Raises:
             ItemNotFoundError: If any of the connections with provided connection_id's are invalid.
             ValidationError: If any of the movies are invalid.
         """
         self._check_connection_exists_bulk(movies, _session=_session)
+        db_movies: list[tuple[Movie, bool]] = []
+        new_count: int = 0
+        updated_count: int = 0
         for movie in movies:
-            # Radarr id will be unique for every movie in the same connection
-            # So, we can use it to check if the movie already exists in the database
-            # If it does, we will update it, otherwise we will create it
-            db_movie = self._read_if_exists(
-                movie.connection_id, movie.radarr_id, _session=_session
+            db_movie, _created, _updated = self._create_or_update(
+                movie, _session=_session
             )
-            if not db_movie:
-                # Doesn't exist, create it
-                db_movie = Movie.model_validate(movie)
-            else:
-                # Exists, update it
-                movie_update_data = movie.model_dump(exclude_unset=True)
-                db_movie.sqlmodel_update(movie_update_data)
-            _session.add(db_movie)
+            if _created:
+                new_count += 1
+            if _updated:
+                updated_count += 1
+            db_movies.append((db_movie, _created))
         _session.commit()
-        return True
+        logging.info(f"Movies created: {new_count}, Movies updated: {updated_count}")
+        return [
+            (MovieRead.model_validate(db_movie), _created)
+            for db_movie, _created in db_movies
+        ]
 
     @manage_session
     def _read_if_exists(
@@ -136,14 +100,13 @@ class MovieDatabaseHandler:
         *,
         _session: Session = None,  # type: ignore
     ) -> Optional[Movie]:
-        """Check if a movie exists in the database for any given connection and radarr ids.
-
+        """-->>This is a private method<<-- \n
+        Check if a movie exists in the database for any given connection and radarr ids.\n
         Args:
             connection_id (int): The id of the connection to check.
             radarr_id (int): The radarr id of the movie to check.
             _session (optional): A session to use for the database connection. \
-                Defaults to None, in which case a new session is created.
-
+                Defaults to None, in which case a new session is created.\n
         Returns:
             Optional[Movie]: The movie object if it exists, None otherwise.
         """
@@ -156,13 +119,14 @@ class MovieDatabaseHandler:
         return db_movie
 
     @manage_session
-    def _read(
+    def _get_db_item(
         self,
         movie_id: int,
         *,
         _session: Session = None,  # type: ignore
     ) -> Movie:
-        """Read a movie from the database. This is a private method.
+        """-->>This is a private method<<-- \n
+        Get a movie from the database.
 
         Args:
             movie_id (int): The id of the movie to read.
@@ -177,7 +141,7 @@ class MovieDatabaseHandler:
         """
         db_movie = _session.get(Movie, movie_id)
         if not db_movie:
-            raise ItemNotFoundError(self.NO_MOVIE_MESSAGE.format(movie_id))
+            raise ItemNotFoundError("Movie", movie_id)
         return db_movie
 
     @manage_session
@@ -200,7 +164,7 @@ class MovieDatabaseHandler:
         Raises:
             ItemNotFoundError: If a movie with provided id does not exist.
         """
-        db_movie = self._read(movie_id, _session=_session)
+        db_movie = self._get_db_item(movie_id, _session=_session)
         # Convert the database model (Movie) to read-only model (MovieRead) to return
         movie = MovieRead.model_validate(db_movie)
         return movie
@@ -352,7 +316,7 @@ class MovieDatabaseHandler:
             ItemNotFoundError: If a movie with provided id does not exist.
         """
         # Get the movie from the database
-        db_movie = self._read(movie_id, _session=_session)
+        db_movie = self._get_db_item(movie_id, _session=_session)
         # Update the movie details from input
         movie_update_data = movie.model_dump(exclude_unset=True)
         db_movie.sqlmodel_update(movie_update_data)
@@ -385,7 +349,7 @@ class MovieDatabaseHandler:
         Raises:
             ItemNotFoundError: If a movie with provided id does not exist.
         """
-        movie_db = self._read(movie_id, _session=_session)
+        movie_db = self._get_db_item(movie_id, _session=_session)
         _session.delete(movie_db)
         _session.commit()
         return True
@@ -397,7 +361,8 @@ class MovieDatabaseHandler:
         *,
         _session: Session = None,  # type: ignore
     ) -> bool:
-        """Delete multiple existing movies from the database at once.
+        """Delete multiple existing movies from the database at once. \n
+        If a movie with provided id does not exist, it will be skipped.
 
         Args:
             movie_ids (list[int]): The list of movie id's to delete.
@@ -408,11 +373,14 @@ class MovieDatabaseHandler:
             bool: True if all movie deletions are successful.
 
         Raises:
-            ItemNotFoundError: If any of the movies with provided id's do not exist.
+            None
         """
         for movie_id in movie_ids:
-            movie_db = self._read(movie_id, _session=_session)
-            _session.delete(movie_db)
+            try:
+                movie_db = self._get_db_item(movie_id, _session=_session)
+                _session.delete(movie_db)
+            except ItemNotFoundError:
+                continue
         _session.commit()
         return True
 
@@ -439,7 +407,7 @@ class MovieDatabaseHandler:
         if not ConnectionDatabaseHandler().check_if_exists(
             connection_id, _session=_session
         ):
-            raise ItemNotFoundError(self.NO_CONN_MESSAGE.format(connection_id))
+            raise ItemNotFoundError("Connection", connection_id)
 
     @manage_session
     def _check_connection_exists_bulk(
@@ -466,7 +434,7 @@ class MovieDatabaseHandler:
             if not ConnectionDatabaseHandler().check_if_exists(
                 connection_id, _session=_session
             ):
-                raise ItemNotFoundError(self.NO_CONN_MESSAGE.format(connection_id))
+                raise ItemNotFoundError("Connection", connection_id)
 
     def _convert_to_read_list(self, movies: Sequence[Movie]) -> list[MovieRead]:
         """Convert a list of Movie to a list of MovieRead."""

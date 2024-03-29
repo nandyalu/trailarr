@@ -15,7 +15,7 @@ class ArrType(Enum):
 
 
 class MonitorType(Enum):
-    MONITOR_ALL = "all"
+    # MONITOR_ALL = "all"
     MONITOR_MISSING = "missing"
     MONITOR_NEW = "new"
     MONITOR_SYNC = "sync"
@@ -32,7 +32,7 @@ class ConnectionBase(SQLModel):
     """
 
     name: str
-    type: ArrType
+    arr_type: ArrType
     url: str
     api_key: str
     monitor: MonitorType

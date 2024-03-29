@@ -1,14 +1,17 @@
 from sqlmodel import Session
 from backend.database.models.connection import (
+    ArrType,
     Connection,
+    ConnectionBase,
     ConnectionCreate,
     ConnectionRead,
     ConnectionUpdate,
 )
 
 from backend.database.utils.engine import manage_session
-from backend.database.validation.connection import validate_connection
 from backend.exceptions import ItemNotFoundError
+from backend.services.arr_manager.radarr import RadarrManager
+from backend.services.arr_manager.sonarr import SonarrManager
 
 
 class ConnectionDatabaseHandler:
@@ -20,7 +23,7 @@ class ConnectionDatabaseHandler:
     NO_CONN_MESSAGE = "Connection not found. Connection id: {} does not exist!"
 
     @manage_session
-    def create(
+    async def create(
         self,
         connection: ConnectionCreate,
         *,
@@ -43,7 +46,7 @@ class ConnectionDatabaseHandler:
             ValidationError: If the connection is invalid
         """
         # Validate the connection details, will raise an error if invalid
-        status = validate_connection(connection)
+        status = await validate_connection(connection)
 
         # Use the session to add the connection to the database
         db_connection = Connection.model_validate(connection)
@@ -74,13 +77,13 @@ class ConnectionDatabaseHandler:
         return bool(connection)
 
     @manage_session
-    def _read(
+    def _get_db_item(
         self,
         connection_id: int,
         *,
         _session: Session = None,  # type: ignore
     ) -> Connection:
-        """Read a connection from the database. This is a private method.
+        """Get a connection from the database. This is a private method.
 
         Args:
             connection_id (int): The id of the connection to read
@@ -95,7 +98,7 @@ class ConnectionDatabaseHandler:
         """
         connection = _session.get(Connection, connection_id)
         if not connection:
-            raise ItemNotFoundError(self.NO_CONN_MESSAGE.format(connection_id))
+            raise ItemNotFoundError("Connection", connection_id)
         return connection
 
     @manage_session
@@ -119,13 +122,13 @@ class ConnectionDatabaseHandler:
             ItemNotFoundError: If a connection with provided id does not exist
         """
 
-        connection = self._read(connection_id, _session=_session)
+        connection = self._get_db_item(connection_id, _session=_session)
         # Convert the connection to a ConnectionRead object
         connection_read = ConnectionRead.model_validate(connection)
         return connection_read
 
     @manage_session
-    def update(
+    async def update(
         self,
         connection_id: int,
         connection_update: ConnectionUpdate,
@@ -151,14 +154,14 @@ class ConnectionDatabaseHandler:
         """
 
         # Get the connection from the database
-        db_connection = self._read(connection_id, _session=_session)
+        db_connection = self._get_db_item(connection_id, _session=_session)
 
         # Update the connection details from input
         connection_update_data = connection_update.model_dump(exclude_unset=True)
         db_connection.sqlmodel_update(connection_update_data)
 
         # Validate the connection details
-        validate_connection(db_connection)
+        await validate_connection(db_connection)
 
         # Commit the changes to the database
         _session.add(db_connection)
@@ -186,10 +189,37 @@ class ConnectionDatabaseHandler:
             ItemNotFoundError: If a connection with provided id does not exist
         """
 
-        connection = self._read(connection_id, _session=_session)
+        connection = self._get_db_item(connection_id, _session=_session)
         _session.delete(connection)
         _session.commit()
         return self.DELETE_SUCCESS_MESSAGE
+
+
+async def validate_connection(connection: ConnectionBase) -> str:
+    """Validate the connection details and test the connection to the server
+    Args:
+        connection (ConnectionBase): The connection to validate
+    Returns:
+        str: The status message of the connection with version if valid.
+    Raises:
+        ConnectionError: If the connection is refused / response is not 200
+        ConnectionTimeoutError: If the connection times out
+        InvalidResponseError: If API response is invalid
+        ItemNotFoundError: If a connection object is not provided as input
+    """
+    if not connection:
+        raise ItemNotFoundError("Connection", 0)
+
+    # Test connectivity to server
+    status_message = ""
+    if connection.arr_type == ArrType.RADARR:
+        arr_connection = RadarrManager(connection.url, connection.api_key)
+        status_message = await arr_connection.get_system_status()
+    if connection.arr_type == ArrType.SONARR:
+        arr_connection = SonarrManager(connection.url, connection.api_key)
+        status_message = await arr_connection.get_system_status()
+
+    return status_message
 
 
 # For SQLModel bulk operations

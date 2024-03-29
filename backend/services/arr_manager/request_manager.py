@@ -24,7 +24,7 @@ class AsyncRequestManager:
         path: str,
         params: dict | None = None,
         data: list[dict] | dict | None = None,
-    ) -> str | dict[str, Any]:
+    ) -> str | dict[str, Any] | list[dict[str, Any]]:
         """Send a request of HTTP method type to the Arr API
 
         Args:
@@ -34,7 +34,8 @@ class AsyncRequestManager:
             data (list[dict] | dict | None): Data to send with the request
 
         Returns:
-            str | dict[str, Any]: Response from the API in string or dictionary format
+            str | dict[str, Any] | list[dict[str, Any]]: Response from the API in string or \n
+              dictionary format or a list of dictionaries
 
         Raises:
             ConnectionError: If the connection is refused / response is not 200
@@ -67,14 +68,14 @@ class AsyncRequestManager:
 
     async def _process_response(
         self, response: aiohttp.ClientResponse
-    ) -> str | dict[str, Any]:
+    ) -> str | dict[str, Any] | list[dict[str, Any]]:
         """Process the response from the API
 
         Args:
             response (aiohttp.ClientResponse): Response from the API
 
         Returns:
-            str | dict[str, Any]: Processed response from the API
+            str | dict[str, Any] | list[dict[str, Any]]: Processed response from the API
 
         Raises:
             ConnectionError: If the response is not 200

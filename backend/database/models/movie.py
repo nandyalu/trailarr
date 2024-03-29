@@ -33,7 +33,7 @@ class MovieBase(SQLModel):
     youtube_trailer_id: Optional[str] = None
     folder_path: Optional[str] = None
     imdb_id: Optional[str] = Field(default=None, index=True)
-    tmdb_id: Optional[str] = Field(default=None, index=True)
+    tmdb_id: str = Field(index=True)
     poster_url: Optional[str] = None
     fanart_url: Optional[str] = None
     poster_path: Optional[str] = None
@@ -41,6 +41,14 @@ class MovieBase(SQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     radarr_monitored: bool = Field(default=False)
+
+    @property
+    def arr_id(self):
+        return self.radarr_id
+
+    @property
+    def txdb_id(self):
+        return self.tmdb_id
 
 
 class Movie(MovieBase, table=True):

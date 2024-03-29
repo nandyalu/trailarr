@@ -1,15 +1,17 @@
 # Backend
-aiohttp
-fastapi
-pyarr
-sqlmodel
-uvicorn[standard]
-gunicorn
+aiohttp==3.9.3
+aiofiles==23.2.1
+alembic==1.13.1
+fastapi==0.110.0
+pyarr #remove
+sqlmodel==0.0.16
+uvicorn[standard]==0.29.0
+gunicorn==21.2.0
 # Frontend
 
 
 # Testing
-pytest
-pytest-asyncio
-pytest-cov
-aioresponses
+pytest==8.1.1
+pytest-asyncio==0.23.6
+pytest-cov==4.1.0
+aioresponses==0.7.6
