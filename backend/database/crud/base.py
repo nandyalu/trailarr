@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 import re
 from typing import Optional, Sequence
 from sqlmodel import Session, col, desc, or_, select
@@ -19,6 +18,7 @@ from backend.database.models.series import (
 )
 from backend.database.utils.engine import manage_session
 from backend.exceptions import ItemNotFoundError
+from backend.logger import logger
 
 
 class DatabaseHandler[
@@ -27,13 +27,26 @@ class DatabaseHandler[
     MediaRead: MovieRead | SeriesRead,
     MediaUpdate: MovieUpdate | SeriesUpdate,
 ]:
+    """
+    A class for handling database operations for media.\n
+    TypeVars:
+        Media: Either Movie or Series
+        MediaCreate: Either MovieCreate or SeriesCreate
+        MediaRead: Either MovieRead or SeriesRead
+        MediaUpdate: Either MovieUpdate or SeriesUpdate
+    """
+
     __db_model: type[Media]
     __read_model: type[MediaRead]
 
-    def __init__(
-        self, session: Session, db_model: type[Media], read_model: type[MediaRead]
-    ):
-        self.session = session
+    def __init__(self, db_model: type[Media], read_model: type[MediaRead]):
+        """
+        Initialize a new instance of DatabaseHandler.\n
+        Args:
+            db_model (type[Media]): The model class for the media, either Movie or Series.
+            read_model (type[MediaRead]): The read model class for the media, \
+                either MovieRead or SeriesRead.
+        """
         self.__db_model = db_model
         self.__read_model = read_model
 
@@ -105,7 +118,7 @@ class DatabaseHandler[
                 updated_count += 1
             db_media_list.append((db_media, created))
         _session.commit()
-        logging.info(
+        logger.info(
             f"{self.__db_model.__name__}: {new_count} Created, {updated_count} Updated."
         )
         return [
@@ -170,7 +183,7 @@ class DatabaseHandler[
         try:
             self._check_connection_exists(connection_id, session=_session)
         except ItemNotFoundError:
-            logging.debug(
+            logger.debug(
                 f"Connection with id {connection_id} doesn't exist in the database."
                 " Returning empty list."
             )
@@ -335,7 +348,7 @@ class DatabaseHandler[
                 media_db = self._get_db_item(media_id, _session)
                 _session.delete(media_db)
             except ItemNotFoundError:
-                logging.debug(
+                logger.debug(
                     f"{self.__db_model.__name__} with id {media_id} doesn't exist in the database. "
                     "Skipping!"
                 )
@@ -400,8 +413,9 @@ class DatabaseHandler[
 
     def _extract_tmdb_id(self, query: str) -> Optional[str]:
         """-->>This is a private method<<-- \n
-        Extract a tmdb id from a string."""
-        matches = re.findall(r"\b\d{6}\b", query)
+        Extract a txdb id from a string.\n
+        Series 5 digits -> tvdb id, Movie 6 digits -> tmdb id."""
+        matches = re.findall(r"\b\d{5,6}\b", query)
         last_match = matches[-1] if matches else None
         return last_match
 

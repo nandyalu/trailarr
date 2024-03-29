@@ -1,29 +1,11 @@
-import atexit
-import json
-import logging
-import logging.config
-import pathlib
 from fastapi import FastAPI
 
-
-logger = logging.getLogger("trailarr")  # __name__ is a common choice
-
-
-def setup_logging():
-    config_file = pathlib.Path("configs/backend_logger.json")
-    with open(config_file) as f_in:
-        config = json.load(f_in)
-
-    logging.config.dictConfig(config)
-    queue_handler = logging.getHandlerByName("queue_handler")
-    if queue_handler is not None:
-        queue_handler.listener.start()  # type: ignore
-        atexit.register(queue_handler.listener.stop)  # type: ignore
+from backend.logger import logger
 
 
 # TODO: Move these to main() function later and setup docker to run main.py
-# Setup the logging
-setup_logging()
+# No need to setup the logger and it's config, importing the logger from logger.py will do setup.
+
 # Initialize the database - No need to do this if we are using alembic
 # logger.debug("Initializing the database")
 # init_db()

@@ -125,9 +125,11 @@ class RadarrConnectionManager(ArrConnectionManager):
         """Gets new data from Radarr API and saves it to the database."""
         parsed_movies = await self._parse_data()
         movies_res = MovieDatabaseHandler().create_or_update_bulk(parsed_movies)
+        update_list: list[tuple[int, MovieUpdate]] = []
         for movie_read, _created in movies_res:
             movie_update = await self._set_monitoring(movie_read, is_new=_created)
-            MovieDatabaseHandler().update(movie_read.id, movie_update)
+            update_list.append((movie_read.id, movie_update))
+        MovieDatabaseHandler().update_bulk(update_list)
 
 
 class SonarrConnectionManager(ArrConnectionManager):
