@@ -2,6 +2,15 @@ import os
 
 from dotenv import load_dotenv
 
+RESOLUTION_DICT = {
+    "SD": 360,
+    "FSD": 480,
+    "HD": 720,
+    "FHD": 1080,
+    "QHD": 1440,
+    "UHD": 2160,
+}
+
 
 class _Config:
     """Class to hold configuration settings for the application. \n
@@ -77,15 +86,12 @@ class _Config:
 
     @trailer_resolution.setter
     def trailer_resolution(self, value: str):
-        value = value.lower()
-        self._trailer_resolution = value
-        if value not in self._VALID_RESOLUTIONS:
-            # Resolve the closest resolution
-            _resolution = self.resolve_closest_resolution(value)
-            if _resolution:
-                self._trailer_resolution = _resolution
-            else:
-                self._trailer_resolution = self._DEFAULT_RESOLUTION
+        # Try to resolve the closest resolution
+        _resolution = self.resolve_closest_resolution(value)
+        if _resolution:
+            self._trailer_resolution = _resolution
+        else:
+            self._trailer_resolution = self._DEFAULT_RESOLUTION
 
     @property
     def trailer_quality(self):
@@ -153,30 +159,25 @@ class _Config:
         Returns:
             - str | None: Closest resolution as a string or None if invalid value
         """
+        if not isinstance(value, str):
+            raise TypeError(f"Expected str, got {type(value).__name__}")
+
         resolution = value.lower()
-        if resolution[-1] != "p":
-            if resolution.isdigit():
-                resolution = int(resolution)
-            else:
-                res_str = {
-                    "SD": 360,
-                    "FSD": 480,
-                    "HD": 720,
-                    "FHD": 1080,
-                    "QHD": 1440,
-                    "UHD": 2160,
-                }
-                if resolution.upper() in res_str:
-                    resolution = res_str[resolution.upper()]
-                    return f"{resolution}p"
-                return None
+        if resolution in self._VALID_RESOLUTIONS:
+            return resolution
+
+        resolution = resolution.rstrip("p")
+
+        if resolution.isdigit():
+            resolution = int(resolution)
+            valid_resolutions = [int(res[:-1]) for res in self._VALID_RESOLUTIONS]
+            closest_resolution = min(
+                valid_resolutions, key=lambda res: abs(res - resolution)
+            )
+            return f"{closest_resolution}p"
         else:
-            resolution = int(resolution[:-1])
-        valid_resolutions = [int(res[:-1]) for res in self._VALID_RESOLUTIONS]
-        closest_resolution = min(
-            valid_resolutions, key=lambda res: abs(res - resolution)
-        )
-        return f"{closest_resolution}p"
+            resolution = RESOLUTION_DICT.get(resolution.upper())
+            return f"{resolution}p" if resolution else None
 
 
 # Load environment variables, do not override system environment variables

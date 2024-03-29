@@ -11,7 +11,7 @@
         "--max-line-length=100",
     ],
     "python.testing.pytestArgs": [
-        "backend"
+        "."
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

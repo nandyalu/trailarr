@@ -2,6 +2,8 @@
 .venv/
 *.pyc
 trailarr/static/
+backend/database/models/testdb.py
+testdatabase.db
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files

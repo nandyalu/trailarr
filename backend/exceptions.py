@@ -19,4 +19,8 @@ class ItemExistsError(Exception):
 class ItemNotFoundError(Exception):
     """Raised when an Item is not found in the database"""
 
+    def __init__(self, model_name: str, id: int) -> None:
+        message = f"{model_name} with id {id} not found"
+        super().__init__(message)
+
     pass

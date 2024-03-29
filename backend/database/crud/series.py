@@ -120,13 +120,13 @@ class SeriesDatabaseHandler:
         return True
 
     @manage_session
-    def _read(
+    def _get_db_item(
         self,
         series_id: int,
         *,
         _session: Session = None,  # type: ignore
     ) -> Series:
-        """Read a series from the database. This is a private method.
+        """Get a series from the database. This is a private method.
 
         Args:
             series_id (int): The id of the series to read.
@@ -141,7 +141,7 @@ class SeriesDatabaseHandler:
         """
         db_series = _session.get(Series, series_id)
         if not db_series:
-            raise ItemNotFoundError(self.NO_SERIES_MESSAGE.format(series_id))
+            raise ItemNotFoundError("Series", series_id)
         return db_series
 
     @manage_session
@@ -164,7 +164,7 @@ class SeriesDatabaseHandler:
         Raises:
             ItemNotFoundError: If a series with provided id does not exist.
         """
-        db_series = self._read(series_id, _session=_session)
+        db_series = self._get_db_item(series_id, _session=_session)
         # Convert the database model (Series) to read-only model (SeriesRead) to return
         series = SeriesRead.model_validate(db_series)
         return series
@@ -317,7 +317,7 @@ class SeriesDatabaseHandler:
             ItemNotFoundError: If a series with provided id does not exist.
         """
         # Get the series from the database
-        db_series = self._read(series_id, _session=_session)
+        db_series = self._get_db_item(series_id, _session=_session)
 
         # Update the series details from input
         series_update_data = series.model_dump(exclude_unset=True)
@@ -351,7 +351,7 @@ class SeriesDatabaseHandler:
         Raises:
             ItemNotFoundError: If a series with provided id does not exist.
         """
-        db_series = self._read(series_id, _session=_session)
+        db_series = self._get_db_item(series_id, _session=_session)
         _session.delete(db_series)
         _session.commit()
         return True
@@ -377,7 +377,7 @@ class SeriesDatabaseHandler:
             ItemNotFoundError: If any of the series with provided id's do not exist.
         """
         for series_id in series_ids:
-            db_series = self._read(series_id, _session=_session)
+            db_series = self._get_db_item(series_id, _session=_session)
             _session.delete(db_series)
         _session.commit()
         return True
@@ -405,7 +405,7 @@ class SeriesDatabaseHandler:
         if not ConnectionDatabaseHandler().check_if_exists(
             connection_id, _session=_session
         ):
-            raise ItemNotFoundError(self.NO_CONN_MESSAGE.format(connection_id))
+            raise ItemNotFoundError("Connection", connection_id)
 
     @manage_session
     def _check_connection_exists_bulk(
@@ -432,7 +432,7 @@ class SeriesDatabaseHandler:
             if not ConnectionDatabaseHandler().check_if_exists(
                 connection_id, _session=_session
             ):
-                raise ItemNotFoundError(self.NO_CONN_MESSAGE.format(connection_id))
+                raise ItemNotFoundError("Connection", connection_id)
 
     def _convert_to_read_list(self, series_list: Sequence[Series]) -> list[SeriesRead]:
         """Convert a list of Series to a list of SeriesRead."""

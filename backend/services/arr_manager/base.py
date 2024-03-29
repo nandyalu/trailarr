@@ -9,10 +9,12 @@ class AsyncBaseArrManager(AsyncRequestManager):
     def __init__(self, url: str, api_key: str, version: str = ""):
         """
         Constructor for connection to Arr API
+
         Args:
             url (str): Host URL to Arr API
             api_key (str): API Key for Arr API
             version (str, optional): Version of the API. Defaults to "".
+
         Returns:
             None
         """
@@ -56,33 +58,35 @@ class AsyncBaseArrManager(AsyncRequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If API response is invalid
         """
-        status: str | dict[str, Any] = await self._request(
+        status: str | dict[str, Any] | list[dict[str, Any]] = await self._request(
             "GET", f"/api/{self.version}/system/status"
         )
-        if isinstance(status, dict):
-            result_app_name = status.get("appName")
-            version = status.get("version")
-            if result_app_name and version:
-                result_app_name = str.lower(result_app_name)
-                version = str(version)
-                if result_app_name == app_name.lower():
-                    return f"{app_name} Connection Successful! Version: {status.get('version')}"
-            raise InvalidResponseError(
-                f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
-                f"not a {app_name} instance."
-            )
         if isinstance(status, str):
             raise InvalidResponseError(status)
-        raise InvalidResponseError("Unknown Error")
+        if not isinstance(status, dict):
+            raise InvalidResponseError("Unknown Error")
 
-    async def ping(self) -> str | dict[str, str]:
+        # Now status is a dict, check if the app_name and version is in the response
+        result_app_name = status.get("appName")
+        version = status.get("version")
+        if result_app_name and version:
+            result_app_name = str.lower(result_app_name)
+            version = str(version)
+            if result_app_name == app_name.lower():
+                return f"{app_name} Connection Successful! Version: {status.get('version')}"
+        raise InvalidResponseError(
+            f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
+            f"not a {app_name} instance."
+        )
+
+    async def ping(self) -> str | dict[str, str] | list[dict[str, Any]]:
         """Ping the Arr API
 
         Args:
             None
 
         Returns:
-            str | dict[str, str]: The response from the Arr API
+            str | dict[str, str] | list[dict[str, Any]]: The response from the Arr API
 
         Raises:
             ConnectionError: If the connection is refused / response is not 200

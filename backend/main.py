@@ -5,7 +5,6 @@ import logging.config
 import pathlib
 from fastapi import FastAPI
 
-from backend.database.utils.init_db import init_db
 
 logger = logging.getLogger("trailarr")  # __name__ is a common choice
 
@@ -25,9 +24,9 @@ def setup_logging():
 # TODO: Move these to main() function later and setup docker to run main.py
 # Setup the logging
 setup_logging()
-# Initialize the database
-logger.debug("Initializing the database")
-init_db()
+# Initialize the database - No need to do this if we are using alembic
+# logger.debug("Initializing the database")
+# init_db()
 # Create the FastAPI application
 logger.debug("Creating the FastAPI application")
 trailarr_api = FastAPI()

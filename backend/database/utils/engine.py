@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from functools import wraps
 from typing import Any, Generator
 from sqlalchemy import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
+from sqlmodel import Session, create_engine
 
 from backend.config.config import config
 
@@ -18,7 +18,7 @@ if config.DEBUG:
         },
         poolclass=StaticPool,
     )
-    SQLModel.metadata.create_all(engine)
+    # SQLModel.metadata.create_all(engine)
 else:
     # TODO: Change the echo to False when in production
     engine = create_engine(sqlite_url, echo=True)  # pragma: no cover

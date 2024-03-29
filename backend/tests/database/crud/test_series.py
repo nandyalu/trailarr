@@ -1,9 +1,5 @@
-from contextlib import contextmanager
-from functools import wraps
-from importlib import reload
+import asyncio
 import pytest
-from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
 
 import backend.database.crud.connection as connectionCRUD
 import backend.database.crud.series as seriesCRUD
@@ -18,74 +14,33 @@ from backend.database.models.series import (
 # Copied from backend/database/crud/series.py
 NO_SERIES_MESSAGE = "Series not found. Series id: {} does not exist!"
 
-# Setup the in-memory SQLite database for testing
-DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
-    poolclass=StaticPool,
-)
-SQLModel.metadata.create_all(engine)
-
-
-@contextmanager
-def get_session():
-    with Session(engine) as session:
-        try:
-            yield session
-        finally:
-            session.close()
-
-
-def mock_manage_session(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Check if a '_session' keyword argument was provided
-        if kwargs.get("_session") is None:
-            # If not, create a new session and add it to kwargs
-            with get_session() as _session:
-                kwargs["_session"] = _session
-                return func(*args, **kwargs)
-        else:
-            # If a session was provided, just call the function
-            return func(*args, **kwargs)
-
-    return wrapper
-
 
 class TestSeriesDatabaseHandler:
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):
-        # Monkeypatch the manage_session decorator
-        monkeypatch.setattr(
-            "backend.database.utils.engine.manage_session",
-            mock_manage_session,
-        )
-        # Reload the connectionCRUD module to apply the monkeypatch to decorator
-        reload(connectionCRUD)
-        reload(seriesCRUD)
         self.series_handler = seriesCRUD.SeriesDatabaseHandler()
         self.conn_handler = connectionCRUD.ConnectionDatabaseHandler()
+
+        async def mock_result_success(connection: ConnectionCreate):
+            return "Success message"
 
         # Mock the validate_connection function to return a success message
         monkeypatch.setattr(
             "backend.database.crud.connection.validate_connection",
-            lambda _: "Success message",
+            mock_result_success,
         )
 
         # Default connection object to use in tests
         connection = ConnectionCreate(
             name="Connection Name",
-            type=ArrType.SONARR,
+            arr_type=ArrType.SONARR,
             url="http://example.com",
             api_key="API_KEY",
             monitor=MonitorType.MONITOR_NEW,
         )
         # Call the create_connection method to use in tests
-        self.conn_handler.create(connection)
+        asyncio.run(self.conn_handler.create(connection))
 
     def test_create_success(self):
         # Create a series to update later
@@ -365,7 +320,7 @@ class TestSeriesDatabaseHandler:
         )
         assert self.series_handler.create_or_update_bulk([series1]) is True
         series_update1 = SeriesUpdate(
-            connection_id=20, sonarr_monitored=True, monitor=True
+            connection_id=20002, sonarr_monitored=True, monitor=True
         )
         # Call the update_series method and assert the return value
         with pytest.raises(Exception) as exc_info:

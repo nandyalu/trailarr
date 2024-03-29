@@ -2,6 +2,7 @@ import pytest
 
 # from backend.database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
 import backend.database.crud.connection as connectionCRUD
+from backend.database.crud.connection import validate_connection
 from backend.database.models.connection import (
     ArrType,
     ConnectionBase,
@@ -9,7 +10,9 @@ from backend.database.models.connection import (
     ConnectionUpdate,
     MonitorType,
 )
-from backend.exceptions import InvalidResponseError
+from backend.exceptions import InvalidResponseError, ItemNotFoundError
+from backend.services.arr_manager.radarr import RadarrManager
+from backend.services.arr_manager.sonarr import SonarrManager
 
 
 # Copied from backend/database/crud/connection.py
@@ -24,7 +27,7 @@ VALIDATE_FAIL_MESSAGE = "Some Value is invalid!"
 # Default connection object to use in tests
 connection = ConnectionCreate(
     name="Connection Name",
-    type=ArrType.RADARR,
+    arr_type=ArrType.RADARR,
     url="http://example.com",
     api_key="API_KEY",
     monitor=MonitorType.MONITOR_NEW,
@@ -39,59 +42,15 @@ CONN_ID_1 = 1
 # Default Connection id for failed read/update/delete
 CONN_ID_2 = 2
 
-# # Setup the in-memory SQLite database for testing
-# DATABASE_URL = "sqlite:///:memory:"
-# engine = create_engine(
-#     DATABASE_URL,
-#     connect_args={
-#         "check_same_thread": False,
-#     },
-#     poolclass=StaticPool,
-# )
-# SQLModel.metadata.create_all(engine)
-
-
-# @contextmanager
-# def get_session():
-#     with Session(engine) as session:
-#         try:
-#             yield session
-#         finally:
-#             session.close()
-
-
-# def mock_manage_session(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         # Check if a '_session' keyword argument was provided
-#         if kwargs.get("_session") is None:
-#             # If not, create a new session and add it to kwargs
-#             with get_session() as _session:
-#                 kwargs["_session"] = _session
-#                 return func(*args, **kwargs)
-#         else:
-#             # If a session was provided, just call the function
-#             return func(*args, **kwargs)
-
-#     return wrapper
-
 
 class TestConnectionDatabaseHandler:
     db_handler = connectionCRUD.ConnectionDatabaseHandler()
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):
-        # Monkeypatch the manage_session decorator
-        # monkeypatch.setattr(
-        #     "backend.database.utils.engine.manage_session",
-        #     mock_manage_session,
-        # )
-        # # Reload the connectionCRUD module to apply the monkeypatch to decorator
-        # reload(connectionCRUD)
-        # self.db_handler = connectionCRUD.ConnectionDatabaseHandler()
 
-        def mock_result_success(connection: ConnectionBase):
-            return "Success message"
+        async def mock_result_success(connection: ConnectionBase):
+            return VALIDATE_SUCCESS_MSG
 
         # Mock the validate_connection function to return a success message
         monkeypatch.setattr(
@@ -99,13 +58,15 @@ class TestConnectionDatabaseHandler:
             mock_result_success,
         )
 
-    def test_create_connection(self):
+    @pytest.mark.asyncio
+    async def test_create_connection(self):
 
         # Call the create_connection method and assert the return value
-        result = self.db_handler.create(connection)
+        result = await self.db_handler.create(connection)
         assert result == CREATE_SUCCESS_MSG.format(VALIDATE_SUCCESS_MSG)
 
-    def test_create_connection_fail(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_create_connection_fail(self, monkeypatch):
         def mock_result_fail(connection: ConnectionBase):
             raise InvalidResponseError(VALIDATE_FAIL_MESSAGE)
 
@@ -117,21 +78,22 @@ class TestConnectionDatabaseHandler:
         )
         # Call the create_connection method and assert the return value
         with pytest.raises(Exception) as exc_info:
-            self.db_handler.create(connection)
+            await self.db_handler.create(connection)
 
         assert str(exc_info.value) == VALIDATE_FAIL_MESSAGE
         assert exc_info.type.__name__ == "InvalidResponseError"
 
-    def test_read_connection(self):
+    @pytest.mark.asyncio
+    async def test_read_connection(self):
         # Call the create_connection method and assert the return value
-        self.db_handler.create(connection)
+        await self.db_handler.create(connection)
         # self.test_create_connection()
 
         # Call the read_connection method and assert the return values match
         result = self.db_handler.read(CONN_ID_1)
         assert result.id == CONN_ID_1
         assert result.name == connection.name
-        assert result.type == connection.type
+        assert result.arr_type == connection.arr_type
         assert result.url == connection.url
         assert result.api_key == connection.api_key
         assert result.monitor == connection.monitor
@@ -144,9 +106,10 @@ class TestConnectionDatabaseHandler:
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(1_000)
         assert exc_info.type.__name__ == "ItemNotFoundError"
 
-    def test_read_connection_exists(self):
+    @pytest.mark.asyncio
+    async def test_read_connection_exists(self):
         # Call the create_connection method and assert the return value
-        self.test_create_connection()
+        await self.test_create_connection()
 
         # Call the check_if_exists method and assert the return value
         result = self.db_handler.check_if_exists(CONN_ID_1)
@@ -157,53 +120,141 @@ class TestConnectionDatabaseHandler:
         result = self.db_handler.check_if_exists(1_000)
         assert result is False
 
-    def test_update_connection(self):
+    @pytest.mark.asyncio
+    async def test_update_connection(self):
         # Call the create_connection method and assert the return value
-        self.test_create_connection()
+        await self.test_create_connection()
 
         # Call the update_connection method and assert the return value
-        update_result = self.db_handler.update(CONN_ID_1, connection_update)
+        update_result = await self.db_handler.update(CONN_ID_1, connection_update)
         assert update_result == UPDATE_SUCCESS_MESSAGE
 
         # Call the read_connection method and assert the return values match
         read_result = self.db_handler.read(CONN_ID_1)
         assert read_result.id == CONN_ID_1
         assert read_result.name == connection.name
-        assert read_result.type == connection.type
+        assert read_result.arr_type == connection.arr_type
         assert read_result.url == connection.url
         assert read_result.api_key == connection.api_key
         assert read_result.monitor == connection_update.monitor
 
-    def test_update_connection_fail(self):
+    @pytest.mark.asyncio
+    async def test_update_connection_fail(self):
         # Call the create_connection method and assert the return value
-        self.test_create_connection()
+        await self.test_create_connection()
 
         # Call the update_connection method and assert the return value
         with pytest.raises(Exception) as exc_info:
-            self.db_handler.update(1_000, connection_update)
+            await self.db_handler.update(1_000, connection_update)
 
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(1_000)
         assert exc_info.type.__name__ == "ItemNotFoundError"
 
-    def test_delete_connection(self):
+    @pytest.mark.asyncio
+    async def test_delete_connection(self):
         # Call the create_connection method and assert the return value
-        self.test_create_connection()
+        await self.test_create_connection()
+        await self.test_create_connection()
+        await self.test_create_connection()
+        # Note: We are creating multiple connections and deleting the second one
+        # to test the delete method so that it does not affect the other tests
+        # that rely on the first connection being present (movie / series CRUD tests)
 
         # Call the delete_connection method and assert the return value
-        delete_result = self.db_handler.delete(CONN_ID_1)
+        delete_result = self.db_handler.delete(CONN_ID_2)
         assert delete_result == DELETE_SUCCESS_MESSAGE
 
         # Call the read_connection method and assert an ItemNotFoundError is raised
         with pytest.raises(Exception) as exc_info:
-            self.db_handler.read(CONN_ID_1)
+            self.db_handler.read(CONN_ID_2)
 
-        assert str(exc_info.value) == NO_CONN_MESSAGE.format(CONN_ID_1)
+        assert str(exc_info.value) == NO_CONN_MESSAGE.format(CONN_ID_2)
         assert exc_info.type.__name__ == "ItemNotFoundError"
 
     def test_delete_connection_fail(self):
         # Call the delete_connection method and assert an ItemNotFoundError is raised
         with pytest.raises(Exception) as exc_info:
-            self.db_handler.delete(CONN_ID_1)
+            self.db_handler.delete(1000)
 
-        assert str(exc_info.value) == NO_CONN_MESSAGE.format(CONN_ID_1)
+        assert str(exc_info.value) == NO_CONN_MESSAGE.format(1000)
         assert exc_info.type.__name__ == "ItemNotFoundError"
+
+
+class TestConnectionValidation:
+
+    @pytest.mark.asyncio
+    async def test_validate_connection_no_connection(self):
+        # Call the validate_connection function with no connection
+        with pytest.raises(ItemNotFoundError) as exceptions:
+            await validate_connection(None)  # type: ignore
+
+        # Assert that the correct error message is raised
+        assert str(exceptions.value) == "No connection provided!"
+
+    @pytest.mark.asyncio
+    async def test_validate_connection_valid_connection(self, monkeypatch):
+        # Create a connection object
+        connection = ConnectionBase(
+            name="Connection Name",
+            arr_type=ArrType.RADARR,
+            url="http://example.com",
+            api_key="API_KEY",
+            monitor=MonitorType.MONITOR_NEW,
+        )
+
+        # Mock the get_system_status function to return a success message
+        async def mock_result_success(self):
+            return "Success message"
+
+        monkeypatch.setattr(RadarrManager, "get_system_status", mock_result_success)
+        # Call validate_connection function with the mock connection and assert return value
+        result = await validate_connection(connection)
+        assert result == "Success message"
+
+    @pytest.mark.asyncio
+    async def test_validate_connection_invalid_connection_radarr(self, monkeypatch):
+        # Create a connection object
+        connection = ConnectionBase(
+            name="Connection Name",
+            arr_type=ArrType.RADARR,
+            url="http://example.com",
+            api_key="API_KEY",
+            monitor=MonitorType.MONITOR_NEW,
+        )
+
+        # Mock the get_system_status function to raise an Exception
+        async def mock_result_invalid(self):
+            raise InvalidResponseError("Error message")
+
+        monkeypatch.setattr(RadarrManager, "get_system_status", mock_result_invalid)
+
+        # Call the validate_connection function with the mock connection
+        with pytest.raises(InvalidResponseError) as exceptions:
+            await validate_connection(connection)
+
+        # Assert that the correct error message is raised
+        assert str(exceptions.value) == "Error message"
+
+    @pytest.mark.asyncio
+    async def test_validate_connection_invalid_connection_sonarr(self, monkeypatch):
+        # Create a connection object
+        connection = ConnectionBase(
+            name="Connection Name",
+            arr_type=ArrType.SONARR,
+            url="http://example.com",
+            api_key="API_KEY",
+            monitor=MonitorType.MONITOR_NEW,
+        )
+
+        # Mock the get_system_status function to raise an Exception
+        async def mock_result_invalid(self):
+            raise InvalidResponseError("Error message")
+
+        monkeypatch.setattr(SonarrManager, "get_system_status", mock_result_invalid)
+
+        # Call the validate_connection function with the mock connection
+        with pytest.raises(InvalidResponseError) as exceptions:
+            await validate_connection(connection)
+
+        # Assert that the correct error message is raised
+        assert str(exceptions.value) == "Error message"

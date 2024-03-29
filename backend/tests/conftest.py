@@ -6,6 +6,9 @@ import pytest
 
 def pytest_configure():
     os.environ["DEBUG"] = "True"
+    from backend.database.utils.init_db import init_db
+
+    init_db()
 
 
 @pytest.fixture(autouse=True)

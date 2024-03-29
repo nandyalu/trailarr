@@ -29,7 +29,7 @@ class SeriesBase(SQLModel):
     language: str = Field(default="en", index=True)
     overview: Optional[str] = None
     runtime: int = 0
-    website: Optional[str] = None
+    # website: Optional[str] = None
     youtube_trailer_id: Optional[str] = None
     folder_path: Optional[str] = None
     imdb_id: Optional[str] = Field(default=None, index=True)
@@ -41,6 +41,14 @@ class SeriesBase(SQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     sonarr_monitored: bool = Field(default=False)
+
+    @property
+    def arr_id(self):
+        return self.sonarr_id
+
+    @property
+    def txdb_id(self):
+        return self.tvdb_id
 
 
 class Series(SeriesBase, table=True):

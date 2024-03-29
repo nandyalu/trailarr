@@ -1,9 +1,5 @@
-from contextlib import contextmanager
-from functools import wraps
-from importlib import reload
+import asyncio
 import pytest
-from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
 import backend.database.crud.connection as connectionCRUD
 import backend.database.crud.movie as movieCRUD
 from backend.database.models.connection import ArrType, ConnectionCreate, MonitorType
@@ -13,8 +9,6 @@ from backend.database.models.movie import (
     MovieUpdate,
     # MovieRead,
 )
-
-# from backend.exceptions import InvalidResponseError
 
 # Copied from backend/database/crud/movie.py
 NO_MOVIE_MESSAGE = "Movie not found. Movie id: {} does not exist!"
@@ -26,19 +20,8 @@ movie = MovieCreate(
     radarr_id=1,
     title="Movie Title",
     year=2021,
-    # runtime=120,
-    # website="http://example.com",
-    # youtube_trailer_id="youtube_id",
-    # folder_path="/path/to/folder",
     imdb_id="tt12345678",
     tmdb_id="123456",
-    # poster_url="http://example.com/poster",
-    # fanart_url="http://example.com/fanart",
-    # poster_path="/path/to/poster",
-    # fanart_path="/path/to/fanart",
-    # trailer_exists=True,
-    # monitor=True,
-    # radarr_monitored=True,
 )
 
 # Default movie update object to use in tests
@@ -54,75 +37,31 @@ MOVIE_ID_1 = 1
 MOVIE_ID_2 = 2
 
 
-# Setup the in-memory SQLite database for testing
-DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
-    poolclass=StaticPool,
-)
-SQLModel.metadata.create_all(engine)
-
-
-@contextmanager
-def get_session():
-    with Session(engine) as session:
-        try:
-            yield session
-        finally:
-            session.close()
-
-
-def mock_manage_session(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Check if a '_session' keyword argument was provided
-        if kwargs.get("_session") is None:
-            # If not, create a new session and add it to kwargs
-            with get_session() as _session:
-                kwargs["_session"] = _session
-                return func(*args, **kwargs)
-        else:
-            # If a session was provided, just call the function
-            return func(*args, **kwargs)
-
-    return wrapper
-
-
 class TestMovieDatabaseHandler:
     movie_handler = movieCRUD.MovieDatabaseHandler()
     conn_handler = connectionCRUD.ConnectionDatabaseHandler()
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):
-        # Monkeypatch the manage_session decorator
-        monkeypatch.setattr(
-            "backend.database.utils.engine.manage_session",
-            mock_manage_session,
-        )
-        # Reload the connectionCRUD module to apply the monkeypatch to decorator
-        reload(connectionCRUD)
-        reload(movieCRUD)
-        self.movie_handler = movieCRUD.MovieDatabaseHandler()
-        self.conn_handler = connectionCRUD.ConnectionDatabaseHandler()
+
+        async def mock_result_success(connection: ConnectionCreate):
+            return "Success message"
 
         # Mock the validate_connection function to return a success message
         monkeypatch.setattr(
             "backend.database.crud.connection.validate_connection",
-            lambda _: "Success message",
+            mock_result_success,
         )
         # Call the create_connection method to use in tests
         # Default connection object to use in tests
         connection = ConnectionCreate(
             name="Connection Name",
-            type=ArrType.RADARR,
+            arr_type=ArrType.RADARR,
             url="http://example.com",
             api_key="API_KEY",
             monitor=MonitorType.MONITOR_NEW,
         )
-        self.conn_handler.create(connection)
+        asyncio.run(self.conn_handler.create(connection))
 
     def test_create_success(self):
         # Call the create method and assert the return value
