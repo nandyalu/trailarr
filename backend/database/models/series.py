@@ -50,6 +50,11 @@ class SeriesBase(SQLModel):
     def txdb_id(self):
         return self.tvdb_id
 
+    @txdb_id.setter
+    def txdb_id(self, value: str):
+        self.tmdb_id = value
+        return
+
 
 class Series(SeriesBase, table=True):
     """Series model for the database. This is the main model for the application.
