@@ -50,6 +50,11 @@ class MovieBase(SQLModel):
     def txdb_id(self):
         return self.tmdb_id
 
+    @txdb_id.setter
+    def txdb_id(self, value: str):
+        self.tmdb_id = value
+        return
+
 
 class Movie(MovieBase, table=True):
     """Movie model for the database. This is the main model for the application.

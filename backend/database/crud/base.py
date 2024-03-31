@@ -87,14 +87,14 @@ class DatabaseHandler[
     @manage_session
     def create_or_update_bulk(
         self,
-        media_creates: list[MediaCreate],
+        media_create_list: list[MediaCreate],
         *,
         _session: Session = None,  # type: ignore
     ) -> list[tuple[MediaRead, bool]]:
         """Create or update multiple media objects in the database at once. \n
         If media already exists, it will be updated, otherwise it will be created.\n
         Args:
-            media_creates (list[MediaCreate]): List of media objects to create or update.\n
+            media_create_list (list[MediaCreate]): List of media objects to create or update.\n
             _session (Session) [Optional]: A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
@@ -105,11 +105,11 @@ class DatabaseHandler[
             ItemNotFoundError: If any of the connections with provided connection_id's are invalid.
             ValidationError: If any of the media items are invalid.
         """
-        self._check_connection_exists_bulk(media_creates, session=_session)
+        self._check_connection_exists_bulk(media_create_list, session=_session)
         db_media_list: list[tuple[Media, bool]] = []
         new_count: int = 0
         updated_count: int = 0
-        for media_create in media_creates:
+        for media_create in media_create_list:
             db_media, created, updated = self._create_or_update(media_create, _session)
             db_media_list.append((db_media, created))
             if created:
@@ -258,16 +258,16 @@ class DatabaseHandler[
         media_id: int,
         media_update: MediaUpdate,
         *,
-        _session: Session = None,  # type: ignore
         _commit: bool = True,
+        _session: Session = None,  # type: ignore
     ) -> None:
         """Update an existing media item in the database by id.\n
         Args:
             media_id (int): The id of the media to update.
             media_update (MediaUpdate): The media data to update.
+            _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`.
             _session (Session) [Optional]: A session to use for the database connection. \
-                Default is None, in which case a new session will be created.
-            _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`. \n
+                Default is None, in which case a new session will be created. \n
         Returns:
             None
         Raises:
@@ -301,6 +301,62 @@ class DatabaseHandler[
         """
         for media_id, media_update in media_updates:
             self.update(media_id, media_update, _session=_session, _commit=False)
+        _session.commit()
+        return
+
+    @manage_session
+    def update_media_status(
+        self,
+        media_id: int,
+        monitor: bool,
+        trailer_exists: bool,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the monitoring status of a media item in the database by id.\n
+        Args:
+            media_id (int): The id of the media to update.
+            monitor (bool): The monitoring status to update.
+            trailer_exists (bool): The trailer_exists status to update.
+            _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`.
+            _session (Session) [Optional]: A session to use for the database connection. \
+                Default is None, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        db_media.monitor = monitor
+        db_media.trailer_exists = trailer_exists
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return
+
+    @manage_session
+    def update_media_status_bulk(
+        self,
+        media_status_list: list[tuple[int, bool, bool]],
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the monitoring status of multiple media items in the database at once.\n
+        Args:
+            media_status_list (list[tuple[int, bool, bool]]): List of tuples with media id, \
+                monitor status, and trailer_exists status.
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If any of the media items with provided id's don't exist.
+        """
+        for media_id, monitor, trailer_exists in media_status_list:
+            self.update_media_status(
+                media_id, monitor, trailer_exists, _session=_session, _commit=False
+            )
         _session.commit()
         return
 
