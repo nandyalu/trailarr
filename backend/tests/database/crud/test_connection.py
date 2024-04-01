@@ -1,9 +1,9 @@
 import pytest
 
 # from backend.database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
-import backend.database.crud.connection as connectionCRUD
-from backend.database.crud.connection import validate_connection
-from backend.database.models.connection import (
+import backend.core.base.database.manager.connection as connectionCRUD
+from backend.core.base.database.manager.connection import validate_connection
+from backend.core.base.database.models import (
     ArrType,
     ConnectionBase,
     ConnectionCreate,
@@ -11,8 +11,8 @@ from backend.database.models.connection import (
     MonitorType,
 )
 from backend.exceptions import InvalidResponseError, ItemNotFoundError
-from backend.services.arr_manager.radarr import RadarrManager
-from backend.services.arr_manager.sonarr import SonarrManager
+from backend.core.radarr.api_manager import RadarrManager
+from backend.core.sonarr.api_manager import SonarrManager
 
 
 # Copied from backend/database/crud/connection.py
@@ -34,7 +34,7 @@ connection = ConnectionCreate(
 )
 
 # Default connection update object to use in tests
-connection_update = ConnectionUpdate(monitor=MonitorType.MONITOR_ALL)
+connection_update = ConnectionUpdate(monitor=MonitorType.MONITOR_SYNC)
 
 # Default Connection id for create
 CONN_ID_1 = 1

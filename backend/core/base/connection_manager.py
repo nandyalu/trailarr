@@ -1,7 +1,8 @@
-from abc import ABC
-from typing import Any, Callable, Optional, Protocol
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Callable, Protocol
 from backend.core.files_handler import FilesHandler
-from backend.database.models.connection import ConnectionRead, MonitorType
+from backend.core.base.database.models import ConnectionRead, MonitorType
 
 
 class ArrManagerProtocol(Protocol):
@@ -23,42 +24,28 @@ class ArrManagerProtocol(Protocol):
 class MediaReadProtocol(Protocol):
     """Abstract class for reading media data."""
 
+    @property
+    def id(self) -> int: ...
+    @property
+    def created(self) -> bool: ...
+    @property
+    def folder_path(self) -> str | None: ...
+
+
+@dataclass(eq=False, frozen=True, repr=False, slots=True)
+class MediaUpdateDC:
     id: int
-    folder_path: Optional[str]
+    monitor: bool
+    trailer_exists: bool
 
 
-class ArrDatabaseHandlerProtocol[_MediaCreate, _MediaRead](Protocol):
-    """Abstract class for handling database operations."""
-
-    def create_or_update_bulk(
-        self, media_create_list: list[_MediaCreate]
-    ) -> list[tuple[_MediaRead, bool]]:
-        """Create or update the data in the database. \n
-        Args:
-            media_create_list (list[Any]): The data to create or update in the database. \n
-        Returns:
-            list[tuple[_MediaRead, bool]]: List of tuples containing the _MediaRead objects \
-                and a flag indicating if the data was created.
-        """
-        raise NotImplementedError("Subclasses must implement this method")
-
-    def update_media_status_bulk(self, media_status_list: list[tuple[int, bool, bool]]):
-        """Update the media status in the database. \n
-        Args:
-            media_status_list (list[tuple[int, bool, bool]]): List of tuples containing the \
-                media id, monitor status, and trailer status.
-        """
-        raise NotImplementedError("Subclasses must implement this method")
-
-
-class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
+class BaseConnectionManager[_MediaCreate](ABC):
     """Connection manager for working with the Arr applications.
     Abstract class that provides the base functionality for working with the Arr applications.
     """
 
     arr_manager: ArrManagerProtocol
     connection_id: int
-    db_handler: ArrDatabaseHandlerProtocol[_MediaCreate, _MediaRead]
     inline_trailer: bool
     monitor: MonitorType
     parse_media: Callable[[int, dict[str, Any]], _MediaCreate]
@@ -69,7 +56,6 @@ class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
         arr_manager: ArrManagerProtocol,
         parse_media: Callable[[int, dict[str, Any]], _MediaCreate],
         inline_trailer: bool,
-        db_handler: ArrDatabaseHandlerProtocol[_MediaCreate, _MediaRead],
     ):
         """Initialize the ArrConnectionManager. \n
         Args:
@@ -79,7 +65,6 @@ class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
         self.arr_manager = arr_manager
         self.parse_media = parse_media
         self.inline_trailer = inline_trailer
-        self.db_handler = db_handler
 
     async def get_system_status(self):
         """Get the system status from the Arr application. \n
@@ -91,7 +76,7 @@ class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
         except Exception:
             return None
 
-    async def _get_data(self) -> list[dict[str, Any]]:
+    async def get_media_data(self) -> list[dict[str, Any]]:
         """Get the data from the Arr application. \n
         Returns:
             - list[dict[str, Any]]: The data from the Arr application.
@@ -105,7 +90,7 @@ class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
         """Parse media received from the Arr API to objects that can be added to database.\n
         Returns:
             list[_MediaCreate]: list of parsed media objects."""
-        media_data = await self._get_data()
+        media_data = await self.get_media_data()
         return [
             self.parse_media(self.connection_id, each_media_data)
             for each_media_data in media_data
@@ -144,21 +129,46 @@ class ArrConnectionManager[_MediaCreate, _MediaRead: MediaReadProtocol](ABC):
             return True
         return False
 
+    @abstractmethod
+    def create_or_update_bulk(
+        self, media_data: list[_MediaCreate]
+    ) -> list[MediaReadProtocol]:
+        """Create or update media in the database and return \
+            objects that satisfy MediaReadProtocol.\n
+        Args:
+            media_data (list[_MediaCreate]): The media data to create or update.\n
+        Returns:
+            list[MediaReadProtocol]: The media objects that satisfy MediaReadProtocol."""
+        raise NotImplementedError("Subclasses must implement this method")
+
+    @abstractmethod
+    def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
+        """Update the media status in the database. \n
+        Args:
+            media_update_list (list[MediaUpdateDC]): List of media update data."""
+        raise NotImplementedError("Subclasses must implement this method")
+
     async def refresh(self):
         """Gets new data from Arr API and saves it to the database."""
         # Get the parsed data from the Arr API
         parsed_media = await self._parse_data()
         # Create or update the media in the database
-        media_res = self.db_handler.create_or_update_bulk(parsed_media)
+        media_res = self.create_or_update_bulk(parsed_media)
         # Check if media has trailer and should be monitored
-        update_list: list[tuple[int, bool, bool]] = []
-        for media_read, _created in media_res:
+        update_list: list[MediaUpdateDC] = []
+        for media_read in media_res:
             if media_read.folder_path is None:
                 trailer_exists = False
             else:
                 trailer_exists = await self._check_trailer(media_read.folder_path)
-            monitor_media = self._check_monitoring(_created, trailer_exists)
-            update_list.append((media_read.id, monitor_media, trailer_exists))
+            monitor_media = self._check_monitoring(media_read.created, trailer_exists)
+            update_list.append(
+                MediaUpdateDC(
+                    id=media_read.id,
+                    monitor=monitor_media,
+                    trailer_exists=trailer_exists,
+                )
+            )
         # Update the database with trailer and monitoring status
-        self.db_handler.update_media_status_bulk(update_list)
+        self.update_media_status_bulk(update_list)
         return

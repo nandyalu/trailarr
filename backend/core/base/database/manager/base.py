@@ -1,24 +1,34 @@
+from abc import ABC, abstractmethod
 from datetime import datetime
 import re
-from typing import Optional, Sequence
+from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
 
-from backend.database.crud.connection import ConnectionDatabaseHandler
-from backend.database.models.movie import (
+from backend.core.base.database.manager.connection import ConnectionDatabaseHandler
+from backend.core.radarr.models import (
     Movie,
     MovieCreate,
     MovieRead,
     MovieUpdate,
 )
-from backend.database.models.series import (
+from backend.core.sonarr.models import (
     Series,
     SeriesCreate,
     SeriesRead,
     SeriesUpdate,
 )
-from backend.database.utils.engine import manage_session
+from backend.core.base.database.utils.engine import manage_session
 from backend.exceptions import ItemNotFoundError
 from backend.logger import logger
+
+
+class MediaUpdateProtocol(Protocol):
+    @property
+    def id(self) -> int: ...
+    @property
+    def monitor(self) -> bool: ...
+    @property
+    def trailer_exists(self) -> bool: ...
 
 
 class DatabaseHandler[
@@ -26,14 +36,14 @@ class DatabaseHandler[
     MediaCreate: MovieCreate | SeriesCreate,
     MediaRead: MovieRead | SeriesRead,
     MediaUpdate: MovieUpdate | SeriesUpdate,
-]:
+](ABC):
     """
     A class for handling database operations for media.\n
     TypeVars:
-        Media: Either Movie or Series
-        MediaCreate: Either MovieCreate or SeriesCreate
-        MediaRead: Either MovieRead or SeriesRead
-        MediaUpdate: Either MovieUpdate or SeriesUpdate
+        Media: Database model class
+        MediaCreate: Create model class
+        MediaRead: Read model class
+        MediaUpdate: Update model class
     """
 
     __db_model: type[Media]
@@ -307,18 +317,14 @@ class DatabaseHandler[
     @manage_session
     def update_media_status(
         self,
-        media_id: int,
-        monitor: bool,
-        trailer_exists: bool,
+        media_update: MediaUpdateProtocol,
         *,
         _commit: bool = True,
         _session: Session = None,  # type: ignore
     ) -> None:
         """Update the monitoring status of a media item in the database by id.\n
         Args:
-            media_id (int): The id of the media to update.
-            monitor (bool): The monitoring status to update.
-            trailer_exists (bool): The trailer_exists status to update.
+            media_update (MediaUpdateProtocol): The media update object satisfying the protocol.
             _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`.
             _session (Session) [Optional]: A session to use for the database connection. \
                 Default is None, in which case a new session will be created.
@@ -327,9 +333,9 @@ class DatabaseHandler[
         Raises:
             ItemNotFoundError: If the media item with provided id doesn't exist.
         """
-        db_media = self._get_db_item(media_id, _session)
-        db_media.monitor = monitor
-        db_media.trailer_exists = trailer_exists
+        db_media = self._get_db_item(media_update.id, _session)
+        db_media.monitor = media_update.monitor
+        db_media.trailer_exists = media_update.trailer_exists
         _session.add(db_media)
         if _commit:
             _session.commit()
@@ -338,14 +344,13 @@ class DatabaseHandler[
     @manage_session
     def update_media_status_bulk(
         self,
-        media_status_list: list[tuple[int, bool, bool]],
+        media_update_list: Sequence[MediaUpdateProtocol],
         *,
         _session: Session = None,  # type: ignore
     ) -> None:
         """Update the monitoring status of multiple media items in the database at once.\n
         Args:
-            media_status_list (list[tuple[int, bool, bool]]): List of tuples with media id, \
-                monitor status, and trailer_exists status.
+            media_update_list (Sequence[MediaUpdateProtocol]): Sequence of media update objects.\n
             _session (Session) [Optional]: A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.
         Returns:
@@ -353,10 +358,8 @@ class DatabaseHandler[
         Raises:
             ItemNotFoundError: If any of the media items with provided id's don't exist.
         """
-        for media_id, monitor, trailer_exists in media_status_list:
-            self.update_media_status(
-                media_id, monitor, trailer_exists, _session=_session, _commit=False
-            )
+        for media_update in media_update_list:
+            self.update_media_status(media_update, _session=_session, _commit=False)
         _session.commit()
         return
 
@@ -467,7 +470,7 @@ class DatabaseHandler[
         last_match = matches[-1] if matches else None
         return last_match
 
-    def _extract_tmdb_id(self, query: str) -> Optional[str]:
+    def _extract_txdb_id(self, query: str) -> Optional[str]:
         """-->>This is a private method<<-- \n
         Extract a txdb id from a string.\n
         Series 5 digits -> tvdb id, Movie 6 digits -> tmdb id."""
@@ -475,20 +478,37 @@ class DatabaseHandler[
         last_match = matches[-1] if matches else None
         return last_match
 
+    @abstractmethod
+    def _get_txdb_statement(self, txdb_id: str):
+        """-->>This is a private method<<-- \n
+        Get a statement for the database query with txdb id.\n"""
+        pass
+
+    def _get_imdb_statement(self, imdb_id: str):
+        """-->>This is a private method<<-- \n
+        Get a statement for the database query with imdb id.\n"""
+        statement = select(self.__db_model).where(self.__db_model.imdb_id == imdb_id)
+        return statement
+
+    def _get_year_statement(self, year: str):
+        """-->>This is a private method<<-- \n
+        Get a statement for the database query with year.\n"""
+        statement = select(self.__db_model).where(self.__db_model.year == year)
+        return statement
+
     def _get_search_statement(self, query: str, limit: int = 50, offset: int = 0):
         """-->>This is a private method<<-- \n
         Get a search statement for the database query.\n"""
         if not query:
             return None
         imdb_id = self._extract_imdb_id(query)
-        statement = select(self.__db_model)
         if imdb_id:
-            statement = statement.where(self.__db_model.imdb_id == imdb_id)
-            return statement
-        tmdb_id = self._extract_tmdb_id(query)
-        if tmdb_id:
-            statement = statement.where(self.__db_model.tmdb_id == tmdb_id)
-            return statement
+            return self._get_imdb_statement(imdb_id)
+        txdb_id = self._extract_txdb_id(query)
+        if txdb_id:
+            return self._get_txdb_statement(txdb_id)
+
+        statement = select(self.__db_model)
         year = self._extract_four_digit_number(query)
         if year and int(year) > 1900 and int(year) < 2100:
             query = query.replace(year, "").strip().replace("  ", " ")
@@ -522,6 +542,12 @@ class DatabaseHandler[
             raise ItemNotFoundError(self.__db_model.__name__, media_id)
         return db_media
 
+    @abstractmethod
+    def _get_read_by_id_statement(self, connection_id: int, media_id: int):
+        """-->>This is a private method<<-- \n
+        Get a statement for the database query with media id.\n"""
+        raise NotImplementedError("Subclass must implement this method.")
+
     def _read_if_exists(
         self,
         connection_id: int,
@@ -537,10 +563,6 @@ class DatabaseHandler[
         Returns:
             Media | None: The media object if it exists, otherwise None.
         """
-        statement = (
-            select(self.__db_model)
-            .where(self.__db_model.connection_id == connection_id)
-            .where(self.__db_model.arr_id == arr_id)
-        )
+        statement = self._get_read_by_id_statement(connection_id, arr_id)
         db_media = session.exec(statement).one_or_none()
         return db_media
