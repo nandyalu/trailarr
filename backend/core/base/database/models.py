@@ -69,7 +69,7 @@ class ConnectionUpdate(ConnectionBase):
     """Connection model for updating a connection. This is used in the API while updating."""
 
     name: Optional[str] = None
-    type: Optional[ArrType] = None
+    arr_type: Optional[ArrType] = None
     url: Optional[str] = None
     api_key: Optional[str] = None
     monitor: Optional[MonitorType] = None

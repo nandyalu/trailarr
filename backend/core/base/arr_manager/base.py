@@ -1,6 +1,6 @@
 from typing import Any
 from backend.exceptions import InvalidResponseError
-from backend.services.arr_manager.request_manager import AsyncRequestManager
+from backend.core.base.arr_manager.request_manager import AsyncRequestManager
 
 
 class AsyncBaseArrManager(AsyncRequestManager):

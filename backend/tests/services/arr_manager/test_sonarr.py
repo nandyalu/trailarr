@@ -1,6 +1,6 @@
 import pytest
 from backend.exceptions import InvalidResponseError
-from backend.services.arr_manager.sonarr import SonarrManager
+from backend.core.sonarr.api_manager import SonarrManager
 from backend.tests import conftest
 
 
