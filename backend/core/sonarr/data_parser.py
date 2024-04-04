@@ -17,9 +17,9 @@ def parse_series(connection_id: int, series_data: dict[str, Any]) -> SeriesCreat
     _tvdb_id = series_data.get("tvdbId", "")
     new_series = SeriesCreate(
         connection_id=connection_id,
-        sonarr_id=_sonarr_id,
+        arr_id=_sonarr_id,
         title=_title,
-        tvdb_id=_tvdb_id,
+        txdb_id=_tvdb_id,
     )
 
     _year = series_data.get("year", "")

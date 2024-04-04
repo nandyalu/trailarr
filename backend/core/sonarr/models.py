@@ -1,62 +1,14 @@
-from datetime import datetime
-from typing import Optional
+from sqlmodel import Field
 
-from sqlmodel import Field, SQLModel
-
-
-def get_current_time():
-    return datetime.now()
-
-
-def get_current_year():
-    return datetime.now().year
+from backend.core.base.database.models.media import (
+    MediaCreate,
+    MediaDB,
+    MediaRead,
+    MediaUpdate,
+)
 
 
-class SeriesBase(SQLModel):
-    """Base class for the Series model.
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
-    Use Series, SeriesCreate, SeriesRead, or SeriesUpdate.
-    """
-
-    connection_id: int = Field(foreign_key="connection.id", index=True)
-    sonarr_id: int = Field()
-    title: str = Field(index=True)
-    year: int = Field(default_factory=get_current_year, index=True)
-    language: str = Field(default="en", index=True)
-    overview: Optional[str] = None
-    runtime: int = 0
-    # website: Optional[str] = None
-    youtube_trailer_id: Optional[str] = None
-    folder_path: Optional[str] = None
-    imdb_id: Optional[str] = Field(default=None, index=True)
-    tvdb_id: str = Field(index=True)
-    poster_url: Optional[str] = None
-    fanart_url: Optional[str] = None
-    poster_path: Optional[str] = None
-    fanart_path: Optional[str] = None
-    trailer_exists: bool = Field(default=False)
-    monitor: bool = Field(default=False)
-    sonarr_monitored: bool = Field(default=False)
-
-    @property
-    def arr_id(self):
-        return self.sonarr_id
-
-    @property
-    def txdb_id(self):
-        return self.tvdb_id
-
-    @txdb_id.setter
-    def txdb_id(self, value: str):
-        self.tmdb_id = value
-        return
-
-
-class Series(SeriesBase, table=True):
+class Series(MediaDB, table=True):
     """Series model for the database. This is the main model for the application.
 
     Note:
@@ -66,15 +18,14 @@ class Series(SeriesBase, table=True):
     Use SeriesCreate, SeriesRead, or SeriesUpdate instead.
     """
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     connection_id: int = Field(foreign_key="connection.id", index=True)
+    arr_id: int = Field(alias="sonarr_id", index=True)
+    txdb_id: str = Field(alias="tvdb_id", index=True)
+    arr_monitored: bool = Field(alias="sonarr_monitored", default=False)
 
-    added_at: datetime = Field(default_factory=get_current_time)
-    updated_at: datetime = Field(default_factory=get_current_time)
-    downloaded_at: Optional[datetime] = Field(default=None)
 
-
-class SeriesCreate(SeriesBase):
+class SeriesCreate(MediaCreate):
     """Series model for creating a new series. This is used in the API while creating.
 
     Defaults:
@@ -86,35 +37,27 @@ class SeriesCreate(SeriesBase):
     - sonarr_monitored: False
     """
 
-    pass
+    arr_id: int = Field(alias="sonarr_id")
+    txdb_id: str = Field(alias="tvdb_id")
+    arr_monitored: bool = Field(alias="sonarr_monitored", default=False)
 
 
-class SeriesRead(SeriesBase):
+class SeriesRead(MediaRead):
     """Series model for reading a series. This is used in the API to return data."""
 
     id: int
-    added_at: datetime
-    updated_at: datetime
-    downloaded_at: Optional[datetime]
+    arr_id: int = Field(alias="sonarr_id")
+    txdb_id: str = Field(alias="tvdb_id")
+    arr_monitored: bool = Field(alias="sonarr_monitored", default=False)
 
 
-class SeriesUpdate(SeriesBase):
+class SeriesUpdate(MediaUpdate):
     """Series model for updating a series. This is used in the API while updating.
 
     Defaults:
     - updated_at: current time [if any field is updated]
     """
 
-    connection_id: Optional[int] = None
-    sonarr_id: Optional[int] = None
-
-    title: Optional[str] = None
-    year: Optional[int] = None
-    language: Optional[str] = None
-    runtime: Optional[int] = None
-    tvdb_id: Optional[str] = None
-    trailer_exists: Optional[bool] = None
-    monitor: Optional[bool] = None
-    sonarr_monitored: Optional[bool] = None
-    downloaded_at: Optional[datetime] = None
-    updated_at: datetime = Field(default_factory=get_current_time)
+    arr_id: int = Field(alias="sonarr_id")
+    txdb_id: str = Field(alias="tvdb_id")
+    arr_monitored: bool = Field(alias="sonarr_monitored", default=False)

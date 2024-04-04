@@ -18,10 +18,10 @@ if config.DEBUG:
         },
         poolclass=StaticPool,
     )
-    # SQLModel.metadata.create_all(engine)
 else:
-    # TODO: Change the echo to False when in production
-    engine = create_engine(sqlite_url, echo=True)  # pragma: no cover
+    engine = create_engine(sqlite_url, echo=False)  # pragma: no cover
+# * Not needed, Alembic will create the database tables
+# SQLModel.metadata.create_all(engine)
 
 
 @contextmanager

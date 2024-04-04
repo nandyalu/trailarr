@@ -1,43 +1,51 @@
 from typing import Any
+
+from pydantic import AliasPath, BaseModel, Field
+
 from backend.core.radarr.models import MovieCreate
 
 
-def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MovieCreate:
-    """Parse the movie data from Radarr to a MovieCreate object.
+class RadarrDataParser(BaseModel):
+    """Class to parse the data from Radarr."""
 
+    connection_id: int = Field(default=0)
+    radarr_id: int = Field(validation_alias="id")
+    title: str = Field()
+    year: int = Field()
+    language: str = Field(validation_alias=AliasPath("originalLanguage", "name"))
+    overview: str | None = Field(default=None)
+    runtime: int = Field(default=0)
+    youtube_trailer_id: str | None = Field(validation_alias="youTubeTrailerId")
+    folder_path: str | None = Field(validation_alias="folderPath")
+    imdb_id: str | None = Field(validation_alias="imdbId")
+    tmdb_id: str = Field(validation_alias="tmdbId")
+    poster_url: str | None = None
+    fanart_url: str | None = None
+    radarr_monitored: bool = Field(default=False, validation_alias="monitored")
+
+
+def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MovieCreate:
+    """Parse the movie data from Radarr to a MovieCreate object.\n
     Args:
         connection_id (int): The connection id.
-        movie_data (dict[str, Any]): The movie data from Radarr.
-
+        movie_data (dict[str, Any]): The movie data from Radarr.\n
     Returns:
         MovieCreate: The movie data as a MovieCreate object."""
-    _radarr_id = movie_data.get("id", "")
-    _title = movie_data.get("title", "")
-    _tmdb_id = movie_data.get("tmdbId", "")
-    new_movie = MovieCreate(
-        connection_id=connection_id,
-        radarr_id=_radarr_id,
-        title=_title,
-        tmdb_id=_tmdb_id,
-    )
-
-    _year = movie_data.get("year", "")
-    if _year:
-        new_movie.year = int(_year)
-    _language = movie_data.get("originalLanguage", {}).get("name", "")
-    if _language:
-        new_movie.language = _language
-    new_movie.overview = movie_data.get("overview", "")
-    new_movie.runtime = int(movie_data.get("runtime", 0))
-    new_movie.website = movie_data.get("website", "")
-    new_movie.youtube_trailer_id = movie_data.get("youTubeTrailerId", "")
-    new_movie.folder_path = movie_data.get("path", "")
-    new_movie.imdb_id = movie_data.get("imdbId", "")
+    movie_parsed = RadarrDataParser(**movie_data)
+    movie_parsed.connection_id = connection_id
+    new_movie = MovieCreate.model_validate(movie_parsed.model_dump())
     for image in movie_data["images"]:
+        # Check if the image is a poster or fanart
         if image["coverType"] == "poster":
-            new_movie.poster_url = image["remoteUrl"]
+            # Set first poster as the poster_url, if not already set
+            if not new_movie.poster_url:
+                new_movie.poster_url = str(image.get("remoteUrl", "")).strip()
         elif image["coverType"] == "fanart":
-            new_movie.fanart_url = image["remoteUrl"]
-    new_movie.radarr_monitored = movie_data.get("monitored", False)
+            # Set first fanart as the fanart_url, if not already set
+            if not new_movie.fanart_url:
+                new_movie.fanart_url = str(image.get("remoteUrl", "")).strip()
+        # Break if both poster and fanart are set
+        if new_movie.poster_url and new_movie.fanart_url:
+            break
 
     return new_movie

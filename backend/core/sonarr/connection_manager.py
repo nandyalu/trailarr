@@ -1,20 +1,13 @@
-from dataclasses import dataclass
 from backend.core.base.connection_manager import (
     BaseConnectionManager,
     MediaUpdateDC,
 )
+from backend.core.base.database.models.helpers import MediaReadDC
 from backend.core.sonarr.data_parser import parse_series
 from backend.core.sonarr.database_manager import SeriesDatabaseHandler
-from backend.core.base.database.models import ConnectionRead
+from backend.core.base.database.models.connection import ConnectionRead
 from backend.core.sonarr.models import SeriesCreate
 from backend.core.sonarr.api_manager import SonarrManager
-
-
-@dataclass(eq=False, frozen=True, repr=False, slots=True)
-class SeriesReadDC:
-    id: int
-    created: bool
-    folder_path: str | None
 
 
 class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
@@ -37,7 +30,7 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
 
     def create_or_update_bulk(
         self, media_data: list[SeriesCreate]
-    ) -> list[SeriesReadDC]:
+    ) -> list[MediaReadDC]:
         """Create or update series in the database and return SeriesRead objects.\n
         Args:
             media_data (list[SeriesCreate]): The series data to create or update.\n
@@ -45,10 +38,11 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
             list[SeriesRead]: A list of SeriesRead objects."""
         series_read_list = SeriesDatabaseHandler().create_or_update_bulk(media_data)
         return [
-            SeriesReadDC(
+            MediaReadDC(
                 id=series_read.id,
                 created=created,
                 folder_path=series_read.folder_path,
+                arr_monitored=series_read.sonarr_monitored,
             )
             for series_read, created in series_read_list
         ]

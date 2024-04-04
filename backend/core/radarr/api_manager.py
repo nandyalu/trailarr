@@ -37,7 +37,7 @@ class RadarrManager(AsyncBaseArrManager):
         return await self._get_system_status(self.APPNAME)
 
     # Define Radarr specific API methods here
-    async def get_movies(self) -> list[dict[str, Any]]:
+    async def get_all_movies(self) -> list[dict[str, Any]]:
         """Get a movie from the Arr API
 
         Args:
@@ -76,5 +76,5 @@ class RadarrManager(AsyncBaseArrManager):
         raise InvalidResponseError("Invalid response from Radarr API")
 
     # Define Alias methods here!
-    get_all_media = get_movies
+    get_all_media = get_all_movies
     get_media = get_movie

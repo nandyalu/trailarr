@@ -2,7 +2,7 @@ import asyncio
 import pytest
 import backend.core.base.database.manager.connection as connectionCRUD
 import backend.core.radarr.database_manager as movieCRUD
-from backend.core.base.database.models import (
+from backend.core.base.database.models.connection import (
     ArrType,
     ConnectionCreate,
     MonitorType,
@@ -21,17 +21,17 @@ NO_MOVIE_MESSAGE = "Movie not found. Movie id: {} does not exist!"
 # Default movie object to use in tests
 movie = MovieCreate(
     connection_id=1,
-    radarr_id=1,
+    arr_id=1,
     title="Movie Title",
     year=2021,
     imdb_id="tt12345678",
-    tmdb_id="123456",
+    txdb_id="123456",
 )
 
 # Default movie update object to use in tests
 movie_update = MovieUpdate(
     monitor=True,
-    radarr_monitored=True,
+    arr_monitored=True,
 )
 
 # Default movie id for create
@@ -74,7 +74,7 @@ class TestMovieDatabaseHandler:
     def test_create_failed(self):
         # Set the radarr_id to None to cause a validation error
         movie2 = movie.model_copy()
-        movie2.radarr_id = None  # type: ignore
+        movie2.arr_id = None  # type: ignore
         # Call the create method and assert the return value
         with pytest.raises(Exception) as exc_info:
             self.movie_handler.create(movie2)
@@ -82,7 +82,7 @@ class TestMovieDatabaseHandler:
 
     def test_create_failed_radarr_id_not_unique(self):
         # Create a movie
-        movie2 = MovieCreate(connection_id=1, radarr_id=2, title="Movie Title 3")
+        movie2 = MovieCreate(connection_id=1, arr_id=2, title="Movie Title 3")
         self.movie_handler.create(movie2)
 
         # Call the create method for same movie and assert the exception
@@ -101,38 +101,38 @@ class TestMovieDatabaseHandler:
 
     def test_create_bulk_success(self):
         # Call the create method and assert the return value
-        movie2 = MovieCreate(connection_id=1, radarr_id=200, title="Movie Title 200")
-        movie3 = MovieCreate(connection_id=1, radarr_id=201, title="Movie Title 201")
+        movie2 = MovieCreate(connection_id=1, arr_id=200, title="Movie Title 200")
+        movie3 = MovieCreate(connection_id=1, arr_id=201, title="Movie Title 201")
         assert self.movie_handler.create_bulk([movie2, movie3]) is True
 
     def test_create_bulk_failed(self):
         # Call the create method and assert the return value
         # Set the radarr_id to None to cause a validation error
         movie2 = movie.model_copy()
-        movie2.radarr_id = None  # type: ignore
+        movie2.arr_id = None  # type: ignore
         with pytest.raises(Exception) as exc_info:
             self.movie_handler.create_bulk([movie2])
         assert exc_info.type.__name__ == "ValidationError"
 
     def test_create_bulk_failed_exists(self):
         # Create a movie to test the exists error
-        movie2 = MovieCreate(connection_id=1, radarr_id=210, title="Movie Title 200")
-        movie3 = MovieCreate(connection_id=1, radarr_id=211, title="Movie Title 201")
+        movie2 = MovieCreate(connection_id=1, arr_id=210, title="Movie Title 200")
+        movie3 = MovieCreate(connection_id=1, arr_id=211, title="Movie Title 201")
         assert self.movie_handler.create_bulk([movie2, movie3]) is True
         # Call the create method with same ids and assert the exception
-        movie4 = MovieCreate(connection_id=1, radarr_id=211, title="Movie Title 201")
+        movie4 = MovieCreate(connection_id=1, arr_id=211, title="Movie Title 201")
         with pytest.raises(Exception) as exc_info:
             self.movie_handler.create_bulk([movie4])
         assert exc_info.type.__name__ == "ItemExistsError"
 
     def test_create_or_update_bulk_success(self):
         # Create a movie to update later
-        movie2 = MovieCreate(connection_id=1, radarr_id=202, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=202, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
         movie2.title = "Movie Title 202"
 
         # Create another MovieCreate object to add
-        movie3 = MovieCreate(connection_id=1, radarr_id=20, title="Movie Title 2")
+        movie3 = MovieCreate(connection_id=1, arr_id=20, title="Movie Title 2")
         # Call the create method and assert the return value
 
         assert self.movie_handler.create_or_update_bulk([movie2, movie3]) is True
@@ -155,11 +155,11 @@ class TestMovieDatabaseHandler:
         movie_read = self.movie_handler.read(MOVIE_ID_1)
         assert movie_read is not None
         assert movie_read.connection_id == movie.connection_id
-        assert movie_read.radarr_id == movie.radarr_id
+        assert movie_read.arr_id == movie.arr_id
         assert movie_read.title == movie.title
         assert movie_read.year == movie.year
         assert movie_read.imdb_id == movie.imdb_id
-        assert movie_read.tmdb_id == movie.tmdb_id
+        assert movie_read.txdb_id == movie.txdb_id
         assert movie_read.monitor is False
 
     def test_read_failed(self):
@@ -171,7 +171,7 @@ class TestMovieDatabaseHandler:
 
     def test_read_all_success(self):
         # Create a movie to read
-        movie2 = MovieCreate(connection_id=1, radarr_id=203, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=203, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
 
         # Call the read_all_movies method and assert the return value
@@ -180,7 +180,7 @@ class TestMovieDatabaseHandler:
 
     def test_read_all_by_connection_success(self):
         # Create a movie to read
-        movie2 = MovieCreate(connection_id=1, radarr_id=204, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=204, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
 
         # Call the read_all_movies method and assert the return value
@@ -189,7 +189,7 @@ class TestMovieDatabaseHandler:
 
     def test_read_recent_success(self):
         # Create a movie to read
-        movie2 = MovieCreate(connection_id=1, radarr_id=205, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=205, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
 
         # Call the read_recent_movies method and assert the return value
@@ -198,7 +198,7 @@ class TestMovieDatabaseHandler:
 
     def test_search_success(self):
         # Create a movie to read
-        movie2 = MovieCreate(connection_id=1, radarr_id=206, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=206, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
 
         # Call the search_movies method and assert the return value
@@ -209,60 +209,60 @@ class TestMovieDatabaseHandler:
         # Create a movie to read
         movie2 = MovieCreate(
             connection_id=1,
-            radarr_id=207,
+            arr_id=207,
             title="Movie Title 200",
             imdb_id="tt12345689",
-            tmdb_id="123457",
+            txdb_id="123457",
             year=2022,
         )
         assert self.movie_handler.create(movie2) is True
 
         # Call the search_movies method and assert the return value
         movie_read = self.movie_handler.search(
-            f"{movie2.title} {movie2.imdb_id} {movie2.tmdb_id} {movie2.year}"
+            f"{movie2.title} {movie2.imdb_id} {movie2.txdb_id} {movie2.year}"
         )
         assert len(movie_read) == 1
         assert movie_read[0].connection_id == movie2.connection_id
-        assert movie_read[0].radarr_id == movie2.radarr_id
+        assert movie_read[0].arr_id == movie2.arr_id
         assert movie_read[0].title == movie2.title
         assert movie_read[0].year == movie2.year
         assert movie_read[0].imdb_id == movie2.imdb_id
-        assert movie_read[0].tmdb_id == movie2.tmdb_id
+        assert movie_read[0].txdb_id == movie2.txdb_id
         assert movie_read[0].monitor is False
 
     def test_search_tmdb_id_success(self):
         # Create a movie to read
         movie2 = MovieCreate(
             connection_id=1,
-            radarr_id=208,
+            arr_id=208,
             title="Movie Title 200",
             imdb_id="tt12345690",
-            tmdb_id="123458",
+            txdb_id="123458",
             year=2022,
         )
         assert self.movie_handler.create(movie2) is True
 
         # Call the search_movies method and assert the return value
         movie_read = self.movie_handler.search(
-            f"{movie2.title} {movie2.tmdb_id} {movie2.year}"
+            f"{movie2.title} {movie2.txdb_id} {movie2.year}"
         )
         assert len(movie_read) == 1
         assert movie_read[0].connection_id == movie2.connection_id
-        assert movie_read[0].radarr_id == movie2.radarr_id
+        assert movie_read[0].arr_id == movie2.arr_id
         assert movie_read[0].title == movie2.title
         assert movie_read[0].year == movie2.year
         assert movie_read[0].imdb_id == movie2.imdb_id
-        assert movie_read[0].tmdb_id == movie2.tmdb_id
+        assert movie_read[0].txdb_id == movie2.txdb_id
         assert movie_read[0].monitor is False
 
     def test_search_year_success(self):
         # Create a movie to read
         movie2 = MovieCreate(
             connection_id=1,
-            radarr_id=209,
+            arr_id=209,
             title="Movie Title 200",
             imdb_id="tt12345691",
-            tmdb_id="123459",
+            txdb_id="123459",
             year=2022,
         )
         assert self.movie_handler.create(movie2) is True
@@ -279,7 +279,7 @@ class TestMovieDatabaseHandler:
 
     def test_search_fail_no_results(self):
         # Create a movie to read
-        movie2 = MovieCreate(connection_id=1, radarr_id=220, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=220, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
 
         # Call the search_movies method and assert the return value
@@ -297,13 +297,13 @@ class TestMovieDatabaseHandler:
         movie_read = self.movie_handler.read(MOVIE_ID_1)
         assert movie_read is not None
         assert movie_read.connection_id == movie.connection_id
-        assert movie_read.radarr_id == movie.radarr_id
+        assert movie_read.arr_id == movie.arr_id
         assert movie_read.title == movie.title
         assert movie_read.year == movie.year
         assert movie_read.imdb_id == movie.imdb_id
-        assert movie_read.tmdb_id == movie.tmdb_id
+        assert movie_read.txdb_id == movie.txdb_id
         assert movie_read.monitor is True
-        assert movie_read.radarr_monitored is True
+        assert movie_read.arr_monitored is True
 
     def test_update_failed(self):
         # Call the update_movie method and assert the return value
@@ -334,9 +334,9 @@ class TestMovieDatabaseHandler:
 
     def test_delete_bulk_success(self):
         # Create some movies to delete
-        movie2 = MovieCreate(connection_id=1, radarr_id=221, title="Movie Title 200")
+        movie2 = MovieCreate(connection_id=1, arr_id=221, title="Movie Title 200")
         assert self.movie_handler.create(movie2) is True
-        movie3 = MovieCreate(connection_id=1, radarr_id=222, title="Movie Title 200")
+        movie3 = MovieCreate(connection_id=1, arr_id=222, title="Movie Title 200")
         assert self.movie_handler.create(movie3) is True
 
         # Call the delete_all_movies method and assert the return value

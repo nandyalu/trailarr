@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from functools import cache
 from typing import Any, Callable, Protocol
+from backend.core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from backend.core.files_handler import FilesHandler
-from backend.core.base.database.models import ConnectionRead, MonitorType
+from backend.core.base.database.models.connection import ConnectionRead, MonitorType
 
 
 class ArrManagerProtocol(Protocol):
@@ -19,24 +20,6 @@ class ArrManagerProtocol(Protocol):
         Returns:
             list[dict[str, Any]]: The media from the Arr application."""
         raise NotImplementedError("Subclasses must implement this method")
-
-
-class MediaReadProtocol(Protocol):
-    """Abstract class for reading media data."""
-
-    @property
-    def id(self) -> int: ...
-    @property
-    def created(self) -> bool: ...
-    @property
-    def folder_path(self) -> str | None: ...
-
-
-@dataclass(eq=False, frozen=True, repr=False, slots=True)
-class MediaUpdateDC:
-    id: int
-    monitor: bool
-    trailer_exists: bool
 
 
 class BaseConnectionManager[_MediaCreate](ABC):
@@ -108,11 +91,15 @@ class BaseConnectionManager[_MediaCreate](ABC):
         )
         return trailer_exists
 
-    def _check_monitoring(self, is_new: bool, trailer_exists: bool) -> bool:
+    @cache
+    def _check_monitoring(
+        self, is_new: bool, trailer_exists: bool, arr_monitored: bool
+    ) -> bool:
         """Check if the media should be monitored based on the monitor type.\n
         Args:
             is_new (bool): Flag indicating media is newly created in database.
-            trailer_exists (bool): Flag indicating if a trailer exists on disk.\n
+            trailer_exists (bool): Flag indicating if a trailer exists on disk.
+            arr_monitored (bool): Flag indicating if media is monitored in Arr application.\n
         Returns:
             bool: True if the media should be monitored, False otherwise."""
         # If Trailer already exists, no need to monitor
@@ -126,13 +113,13 @@ class BaseConnectionManager[_MediaCreate](ABC):
             return is_new
         # Sync monitor based on arr monitor status
         if self.monitor == MonitorType.MONITOR_SYNC:
-            return True
+            return arr_monitored
         return False
 
     @abstractmethod
     def create_or_update_bulk(
         self, media_data: list[_MediaCreate]
-    ) -> list[MediaReadProtocol]:
+    ) -> list[MediaReadDC]:
         """Create or update media in the database and return \
             objects that satisfy MediaReadProtocol.\n
         Args:
@@ -161,7 +148,11 @@ class BaseConnectionManager[_MediaCreate](ABC):
                 trailer_exists = False
             else:
                 trailer_exists = await self._check_trailer(media_read.folder_path)
-            monitor_media = self._check_monitoring(media_read.created, trailer_exists)
+            monitor_media = self._check_monitoring(
+                media_read.created,
+                trailer_exists,
+                media_read.arr_monitored,
+            )
             update_list.append(
                 MediaUpdateDC(
                     id=media_read.id,

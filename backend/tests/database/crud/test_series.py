@@ -3,7 +3,7 @@ import pytest
 
 import backend.core.base.database.manager.connection as connectionCRUD
 import backend.core.sonarr.database_manager as seriesCRUD
-from backend.core.base.database.models import (
+from backend.core.base.database.models.connection import (
     ArrType,
     ConnectionCreate,
     MonitorType,
@@ -49,20 +49,20 @@ class TestSeriesDatabaseHandler:
     def test_create_success(self):
         # Create a series to update later
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         assert self.series_handler.create_or_update_bulk([series]) is True
 
     def test_create_or_update_bulk_success(self):
         # Create/update a series
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1 Upd", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1 Upd", txdb_id="12345"
         )
         assert self.series_handler.create_or_update_bulk([series]) is True
 
         # Create another SeriesCreate object to add
         series2 = SeriesCreate(
-            connection_id=1, sonarr_id=2, title="Series Title 2", tvdb_id="12346"
+            connection_id=1, arr_id=2, title="Series Title 2", txdb_id="12346"
         )
         # Call the create method and assert the return value
         assert self.series_handler.create_or_update_bulk([series, series2]) is True
@@ -70,7 +70,7 @@ class TestSeriesDatabaseHandler:
     def test_create_or_update_bulk_failed(self):
         # Create/update a series
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         assert self.series_handler.create_or_update_bulk([series]) is True
 
@@ -86,9 +86,9 @@ class TestSeriesDatabaseHandler:
     def test_create_or_update_bulk_failed2(self):
         # Create a series with sonarr_id = None to raise an error
         series3 = SeriesCreate(
-            connection_id=1, sonarr_id=3, title="Series Title 3", tvdb_id="12347"
+            connection_id=1, arr_id=3, title="Series Title 3", txdb_id="12347"
         )
-        series3.sonarr_id = None  # type: ignore
+        series3.arr_id = None  # type: ignore
 
         with pytest.raises(Exception) as exc_info:
             self.series_handler.create_or_update_bulk([series3])
@@ -97,7 +97,7 @@ class TestSeriesDatabaseHandler:
     def test_read_success(self):
         # Create a series to read
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         assert self.series_handler.create_or_update_bulk([series]) is True
 
@@ -105,11 +105,11 @@ class TestSeriesDatabaseHandler:
         series_read = self.series_handler.read(1)
         assert series_read is not None
         assert series_read.connection_id == series.connection_id
-        assert series_read.sonarr_id == series.sonarr_id
+        assert series_read.arr_id == series.arr_id
         assert series_read.title == series.title
         assert series_read.year == series.year
         assert series_read.imdb_id == series.imdb_id
-        assert series_read.tvdb_id == series.tvdb_id
+        assert series_read.txdb_id == series.txdb_id
         assert series_read.monitor is False
 
     def test_read_failed(self):
@@ -122,10 +122,10 @@ class TestSeriesDatabaseHandler:
     def test_read_all_success(self):
         # Create a series to read
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         series2 = SeriesCreate(
-            connection_id=1, sonarr_id=2, title="Series Title 2", tvdb_id="12346"
+            connection_id=1, arr_id=2, title="Series Title 2", txdb_id="12346"
         )
         assert self.series_handler.create_or_update_bulk([series, series2]) is True
 
@@ -136,10 +136,10 @@ class TestSeriesDatabaseHandler:
     def test_read_all_by_connection_success(self):
         # Create a series to read
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         series2 = SeriesCreate(
-            connection_id=1, sonarr_id=2, title="Series Title 2", tvdb_id="12346"
+            connection_id=1, arr_id=2, title="Series Title 2", txdb_id="12346"
         )
         assert self.series_handler.create_or_update_bulk([series, series2]) is True
 
@@ -151,10 +151,10 @@ class TestSeriesDatabaseHandler:
     def test_read_recent_success(self):
         # Create a series to read
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         series2 = SeriesCreate(
-            connection_id=1, sonarr_id=2, title="Series Title 2", tvdb_id="12346"
+            connection_id=1, arr_id=2, title="Series Title 2", txdb_id="12346"
         )
         assert self.series_handler.create_or_update_bulk([series, series2]) is True
 
@@ -165,10 +165,10 @@ class TestSeriesDatabaseHandler:
     def test_search_success(self):
         # Create a series to read
         series = SeriesCreate(
-            connection_id=1, sonarr_id=1, title="Series Title 1", tvdb_id="12345"
+            connection_id=1, arr_id=1, title="Series Title 1", txdb_id="12345"
         )
         series2 = SeriesCreate(
-            connection_id=1, sonarr_id=2, title="Series Title 2", tvdb_id="12346"
+            connection_id=1, arr_id=2, title="Series Title 2", txdb_id="12346"
         )
         assert self.series_handler.create_or_update_bulk([series, series2]) is True
 
@@ -176,90 +176,90 @@ class TestSeriesDatabaseHandler:
         series_read = self.series_handler.search(series.title)
         assert len(series_read) == 1
         assert series_read[0].connection_id == series.connection_id
-        assert series_read[0].sonarr_id == series.sonarr_id
+        assert series_read[0].arr_id == series.arr_id
         assert series_read[0].title == series.title
         assert series_read[0].year == series.year
         assert series_read[0].imdb_id == series.imdb_id
-        assert series_read[0].tvdb_id == series.tvdb_id
+        assert series_read[0].txdb_id == series.txdb_id
         assert series_read[0].monitor is False
 
     def test_search_imdb_id_success(self):
         # Create a series to read
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
         )
         series2 = SeriesCreate(
             connection_id=1,
-            sonarr_id=2,
+            arr_id=2,
             title="Series Title 2",
-            tvdb_id="12346",
+            txdb_id="12346",
             imdb_id="tt1234568",
         )
         assert self.series_handler.create_or_update_bulk([series1, series2]) is True
 
         # Call the search_series method and assert the return value
         series_read = self.series_handler.search(
-            f"{series1.title} {series1.imdb_id} {series1.tvdb_id} {series1.year}"
+            f"{series1.title} {series1.imdb_id} {series1.txdb_id} {series1.year}"
         )
         assert len(series_read) == 1
         assert series_read[0].connection_id == series1.connection_id
-        assert series_read[0].sonarr_id == series1.sonarr_id
+        assert series_read[0].arr_id == series1.arr_id
         assert series_read[0].title == series1.title
         assert series_read[0].year == series1.year
         assert series_read[0].imdb_id == series1.imdb_id
-        assert series_read[0].tvdb_id == series1.tvdb_id
+        assert series_read[0].txdb_id == series1.txdb_id
         assert series_read[0].monitor is False
 
     def test_search_tvdb_id_success(self):
         # Create a series to read
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
         )
         series2 = SeriesCreate(
             connection_id=1,
-            sonarr_id=2,
+            arr_id=2,
             title="Series Title 2",
-            tvdb_id="12346",
+            txdb_id="12346",
             imdb_id="tt1234568",
         )
         assert self.series_handler.create_or_update_bulk([series1, series2]) is True
 
         # Call the search_series method and assert the return value
         series_read = self.series_handler.search(
-            f"{series1.title} {series1.tvdb_id} {series1.year}"
+            f"{series1.title} {series1.txdb_id} {series1.year}"
         )
         assert len(series_read) == 1
         assert series_read[0].connection_id == series1.connection_id
-        assert series_read[0].sonarr_id == series1.sonarr_id
+        assert series_read[0].arr_id == series1.arr_id
         assert series_read[0].title == series1.title
         assert series_read[0].year == series1.year
         assert series_read[0].imdb_id == series1.imdb_id
-        assert series_read[0].tvdb_id == series1.tvdb_id
+        assert series_read[0].txdb_id == series1.txdb_id
         assert series_read[0].monitor is False
 
     def test_search_year_success(self):
         # Create a series to read
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
             year=2021,
         )
         series2 = SeriesCreate(
             connection_id=1,
-            sonarr_id=2,
+            arr_id=2,
             title="Series Title 2",
-            tvdb_id="12346",
+            txdb_id="12346",
             imdb_id="tt1234568",
             year=2022,
         )
@@ -287,9 +287,9 @@ class TestSeriesDatabaseHandler:
         # Create a series to update
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
             year=2021,
         )
@@ -316,9 +316,9 @@ class TestSeriesDatabaseHandler:
     def test_update_failed_no_connection(self):
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
             year=2021,
         )
@@ -355,9 +355,9 @@ class TestSeriesDatabaseHandler:
         # Create a series to delete
         series1 = SeriesCreate(
             connection_id=1,
-            sonarr_id=1,
+            arr_id=1,
             title="Series Title 1",
-            tvdb_id="12345",
+            txdb_id="12345",
             imdb_id="tt1234567",
             year=2021,
         )
