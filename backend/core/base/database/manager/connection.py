@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from backend.core.base.database.models import (
+from backend.core.base.database.models.connection import (
     ArrType,
     Connection,
     ConnectionBase,
@@ -189,11 +189,3 @@ async def validate_connection(connection: ConnectionBase) -> str:
         status_message = await arr_connection.get_system_status()
 
     return status_message
-
-
-# For SQLModel bulk operations
-#   link: https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow # noqa
-#   Use session.add_all(Model, [dict1, dict2, dict3, ...]) to insert multiple NEW rows.
-#   bulk_insert_mappings is no longer needed as of SQLALchemy 2.0
-#       as it is now built into the session.add_all() method
-#   Use session.bulk_update_mappings(Model, [dict1, dict2, dict3, ...]) to update multiple EXISTING rows. # noqa

@@ -3,7 +3,7 @@ import pytest
 # from backend.database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
 import backend.core.base.database.manager.connection as connectionCRUD
 from backend.core.base.database.manager.connection import validate_connection
-from backend.core.base.database.models import (
+from backend.core.base.database.models.connection import (
     ArrType,
     ConnectionBase,
     ConnectionCreate,

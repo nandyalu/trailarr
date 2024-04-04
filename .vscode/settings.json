@@ -15,4 +15,5 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "todo-tree.tree.showBadges": true,
 }

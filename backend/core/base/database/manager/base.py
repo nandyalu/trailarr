@@ -1,21 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime
 import re
 from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
 
 from backend.core.base.database.manager.connection import ConnectionDatabaseHandler
-from backend.core.radarr.models import (
-    Movie,
-    MovieCreate,
-    MovieRead,
-    MovieUpdate,
-)
-from backend.core.sonarr.models import (
-    Series,
-    SeriesCreate,
-    SeriesRead,
-    SeriesUpdate,
+from backend.core.base.database.models.media import (
+    MediaDB,
+    MediaCreate,
+    MediaRead,
+    MediaUpdate,
 )
 from backend.core.base.database.utils.engine import manage_session
 from backend.exceptions import ItemNotFoundError
@@ -32,10 +26,10 @@ class MediaUpdateProtocol(Protocol):
 
 
 class DatabaseHandler[
-    Media: Movie | Series,
-    MediaCreate: MovieCreate | SeriesCreate,
-    MediaRead: MovieRead | SeriesRead,
-    MediaUpdate: MovieUpdate | SeriesUpdate,
+    _Media: MediaDB,
+    _MediaCreate: MediaCreate,
+    _MediaRead: MediaRead,
+    _MediaUpdate: MediaUpdate,
 ](ABC):
     """
     A class for handling database operations for media.\n
@@ -46,10 +40,10 @@ class DatabaseHandler[
         MediaUpdate: Update model class
     """
 
-    __db_model: type[Media]
-    __read_model: type[MediaRead]
+    __db_model: type[MediaDB]
+    __read_model: type[_MediaRead]
 
-    def __init__(self, db_model: type[Media], read_model: type[MediaRead]):
+    def __init__(self, db_model: type[MediaDB], read_model: type[_MediaRead]):
         """
         Initialize a new instance of DatabaseHandler.\n
         Args:
@@ -61,8 +55,8 @@ class DatabaseHandler[
         self.__read_model = read_model
 
     def _create_or_update(
-        self, media_create: MediaCreate, session: Session
-    ) -> tuple[Media, bool, bool]:
+        self, media_create: _MediaCreate, session: Session
+    ) -> tuple[_Media, bool, bool]:
         """-->>This is a private method<<-- \n
         Create or update a media in the database. \n
         If media already exists, it will be updated, otherwise it will be created.\n
@@ -97,10 +91,10 @@ class DatabaseHandler[
     @manage_session
     def create_or_update_bulk(
         self,
-        media_create_list: list[MediaCreate],
+        media_create_list: list[_MediaCreate],
         *,
         _session: Session = None,  # type: ignore
-    ) -> list[tuple[MediaRead, bool]]:
+    ) -> list[tuple[_MediaRead, bool]]:
         """Create or update multiple media objects in the database at once. \n
         If media already exists, it will be updated, otherwise it will be created.\n
         Args:
@@ -116,7 +110,7 @@ class DatabaseHandler[
             ValidationError: If any of the media items are invalid.
         """
         self._check_connection_exists_bulk(media_create_list, session=_session)
-        db_media_list: list[tuple[Media, bool]] = []
+        db_media_list: list[tuple[_Media, bool]] = []
         new_count: int = 0
         updated_count: int = 0
         for media_create in media_create_list:
@@ -142,7 +136,7 @@ class DatabaseHandler[
         id: int,
         *,
         _session: Session = None,  # type: ignore
-    ) -> MediaRead:
+    ) -> _MediaRead:
         """Get a media object from the database by id.\n
         Args:
             id (int): The id of the media object to get.
@@ -163,7 +157,7 @@ class DatabaseHandler[
         self,
         *,
         _session: Session = None,  # type: ignore
-    ) -> list[MediaRead]:
+    ) -> list[_MediaRead]:
         """Get all media objects from the database.\n
         Args:
             _session (Session) [Optional]: A session to use for the database connection.\n
@@ -181,7 +175,7 @@ class DatabaseHandler[
         connection_id: int,
         *,
         _session: Session = None,  # type: ignore
-    ) -> list[MediaRead]:
+    ) -> list[_MediaRead]:
         """Get all media objects from the database for a given connection.\n
         Args:
             connection_id (int): The id of the connection to get media items for.
@@ -211,7 +205,7 @@ class DatabaseHandler[
         offset: int = 0,
         *,
         _session: Session = None,  # type: ignore
-    ) -> list[MediaRead]:
+    ) -> list[_MediaRead]:
         """Get the most recent media objects from the database.\n
         Args:
             limit (int) [Optional]: The number of recent media items to get. Max 100
@@ -239,7 +233,7 @@ class DatabaseHandler[
         *,
         offset: int = 0,
         _session: Session = None,  # type: ignore
-    ) -> list[MediaRead]:
+    ) -> list[_MediaRead]:
         """Search for media objects in the database by `title`, `overview`, \
             `imdb id`, or `txdb id` [tmdb for `Movie`, tvdb for `Series`].\n
         If an exact match is found for `imdb id` or `txdb id`, it will return only that item.\n
@@ -266,7 +260,7 @@ class DatabaseHandler[
     def update(
         self,
         media_id: int,
-        media_update: MediaUpdate,
+        media_update: _MediaUpdate,
         *,
         _commit: bool = True,
         _session: Session = None,  # type: ignore
@@ -294,7 +288,7 @@ class DatabaseHandler[
     @manage_session
     def update_bulk(
         self,
-        media_updates: list[tuple[int, MediaUpdate]],
+        media_updates: list[tuple[int, _MediaUpdate]],
         *,
         _session: Session = None,  # type: ignore
     ) -> None:
@@ -430,7 +424,7 @@ class DatabaseHandler[
         return
 
     def _check_connection_exists_bulk(
-        self, media_items: list[MediaCreate], session: Session
+        self, media_items: list[_MediaCreate], session: Session
     ) -> None:
         """-->>This is a private method<<-- \n
         Check if a connection exists in the database for multiple media items.\n
@@ -445,12 +439,14 @@ class DatabaseHandler[
             self._check_connection_exists(connection_id, session=session)
         return
 
-    def _convert_to_read_list(self, db_media_list: Sequence[Media]) -> list[MediaRead]:
+    def _convert_to_read_list(
+        self, db_media_list: Sequence[_Media]
+    ) -> list[_MediaRead]:
         """-->>This is a private method<<-- \n
         Convert a list of Media objects to a list of MediaRead objects.\n"""
         if not db_media_list or len(db_media_list) == 0:
             return []
-        media_read_list: list[MediaRead] = []
+        media_read_list: list[_MediaRead] = []
         for db_media in db_media_list:
             media_read = self.__read_model.model_validate(db_media)
             media_read_list.append(media_read)
@@ -478,11 +474,11 @@ class DatabaseHandler[
         last_match = matches[-1] if matches else None
         return last_match
 
-    @abstractmethod
     def _get_txdb_statement(self, txdb_id: str):
         """-->>This is a private method<<-- \n
         Get a statement for the database query with txdb id.\n"""
-        pass
+        statement = select(self.__db_model).where(self.__db_model.txdb_id == txdb_id)
+        return statement
 
     def _get_imdb_statement(self, imdb_id: str):
         """-->>This is a private method<<-- \n
@@ -512,7 +508,7 @@ class DatabaseHandler[
         year = self._extract_four_digit_number(query)
         if year and int(year) > 1900 and int(year) < 2100:
             query = query.replace(year, "").strip().replace("  ", " ")
-            statement = statement.where(self.__db_model.year == year)
+            statement = self._get_year_statement(year)
         statement = (
             statement.where(
                 or_(
@@ -526,7 +522,7 @@ class DatabaseHandler[
         )
         return statement
 
-    def _get_db_item(self, media_id: int, session: Session) -> Media:
+    def _get_db_item(self, media_id: int, session: Session) -> _Media:
         """-->>This is a private method<<-- \n
         Get a media item from the database by id.\n
         Args:
@@ -542,18 +538,12 @@ class DatabaseHandler[
             raise ItemNotFoundError(self.__db_model.__name__, media_id)
         return db_media
 
-    @abstractmethod
-    def _get_read_by_id_statement(self, connection_id: int, media_id: int):
-        """-->>This is a private method<<-- \n
-        Get a statement for the database query with media id.\n"""
-        raise NotImplementedError("Subclass must implement this method.")
-
     def _read_if_exists(
         self,
         connection_id: int,
         arr_id: int,
         session: Session,
-    ) -> Media | None:
+    ) -> _Media | None:
         """-->>This is a private method<<-- \n
         Check if a media item exists in the database for any given connection and arr ids.\n
         Args:
@@ -563,6 +553,10 @@ class DatabaseHandler[
         Returns:
             Media | None: The media object if it exists, otherwise None.
         """
-        statement = self._get_read_by_id_statement(connection_id, arr_id)
+        statement = (
+            select(self.__db_model)
+            .where(self.__db_model.connection_id == connection_id)
+            .where(self.__db_model.arr_id == arr_id)
+        )
         db_media = session.exec(statement).one_or_none()
         return db_media

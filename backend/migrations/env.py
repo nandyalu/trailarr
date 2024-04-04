@@ -6,11 +6,12 @@ from sqlmodel import SQLModel
 
 from alembic import context
 
-from backend.core.base.database.utils.init_db import (  # noqa: F401
-    Connection,
-    Movie,
-    Series,
-)
+import backend.core.base.database.utils.init_db  # noqa: F401
+
+#     Connection,
+#     Movie,
+#     Series,
+# )
 from backend.config.config import config as app_config
 
 # this is the Alembic Config object, which provides
