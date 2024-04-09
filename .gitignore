@@ -4,6 +4,8 @@
 trailarr/static/
 backend/database/models/testdb.py
 testdatabase.db
+trailarr.db
+logs/trailarr.log
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files
