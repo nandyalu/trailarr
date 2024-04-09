@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlmodel import Session, select
 from backend.core.base.database.models.connection import (
     ArrType,
     Connection,
@@ -62,6 +62,23 @@ class ConnectionDatabaseHandler:
         """
         connection = _session.get(Connection, connection_id)
         return bool(connection)
+
+    @manage_session
+    def read_all(
+        self,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[ConnectionRead]:
+        """Read all connections from the database \n
+        Args:
+            _session (optional): A session to use for the database connection. \
+                Defaults to None, in which case a new session is created. \n
+        Returns:
+            list[ConnectionRead]: A list of read-only connection objects
+        """
+        statement = select(Connection)
+        connections = _session.exec(statement).all()
+        return [ConnectionRead.model_validate(connection) for connection in connections]
 
     @manage_session
     def _get_db_item(

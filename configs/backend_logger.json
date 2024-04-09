@@ -6,11 +6,17 @@
       "format": "%(levelname)s: %(message)s"
     },
     "detailed": {
-      "format": "[%(levelname)s|%(module)s|L%(lineno)d] %(asctime)s: %(message)s",
+      "format": "%(asctime)s [%(levelname)s|%(module)s|L%(lineno)03d]: %(message)s",
       "datefmt": "%Y-%m-%dT%H:%M:%S%z"
     }
   },
   "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "INFO",
+      "formatter": "detailed",
+      "stream": "ext://sys.stdout"
+    },
     "stderr": {
       "class": "logging.StreamHandler",
       "level": "WARNING",
@@ -19,26 +25,18 @@
     },
     "file": {
       "class": "logging.handlers.RotatingFileHandler",
-      "level": "DEBUG",
+      "level": "INFO",
       "formatter": "detailed",
       "filename": "logs/trailarr.log",
       "maxBytes": 10000000,
       "backupCount": 10
-    },
-    "queue_handler": {
-      "class": "logging.handlers.QueueHandler",
-      "handlers": [
-        "stderr",
-        "file"
-      ],
-      "respect_handler_level": true
     }
   },
   "loggers": {
     "root": {
-      "level": "DEBUG",
+      "level": "INFO",
       "handlers": [
-        "queue_handler"
+        "console", "stderr", "file"
       ]
     }
   }

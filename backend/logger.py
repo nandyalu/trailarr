@@ -2,28 +2,53 @@ import atexit
 import json
 import logging
 import logging.config
+import multiprocessing
 import pathlib
+import threading
 
 _is_logging_setup = False
+queue = None
+
+
+def handle_logs(q: multiprocessing.Queue):
+    while True:
+        record = q.get()
+        # if record is None:
+        #     break
+        logger = logging.getLogger(record.name)
+        logger.handle(record)
+
+
+def stop_logging(queue: multiprocessing.Queue):
+    # queue.put_nowait(None) # Did not work, raising an exception
+    queue.close()
 
 
 def config_logging():
     """Setup the logging configuration using the config file.
     This will setup the root logger configuration and start the queue handler listener.
     """
+    queue = multiprocessing.Queue(-1)
     config_file = pathlib.Path("configs/backend_logger.json")
     with open(config_file) as f_in:
         config = json.load(f_in)
 
     logging.config.dictConfig(config)
-    queue_handler = logging.getHandlerByName("queue_handler")
-    if queue_handler is not None:
-        queue_handler.listener.start()  # type: ignore
-        atexit.register(queue_handler.listener.stop)  # type: ignore
+    logger_thread = threading.Thread(target=handle_logs, args=(queue,))
+    logger_thread.daemon = True
+    logger_thread.start()
+    atexit.register(stop_logging, queue)
 
 
 def get_logger():
     return logging.getLogger("trailarr")  # __name__ is a common choice
+
+
+def get_queue():
+    global queue
+    if queue is None:
+        queue = multiprocessing.Queue(-1)
+    return queue
 
 
 if not _is_logging_setup:
