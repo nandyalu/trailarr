@@ -1,12 +1,15 @@
 import asyncio
 from datetime import datetime
 import inspect
+import logging
 import multiprocessing
 import time
 import threading
 from typing import Callable, NoReturn
 
-from backend.app_logger import logger
+# from backend.app_logger import logger
+# logging = logging.getLogger(__name__)
+# Honestly, at this point I don't know why logging is working even when done inside sub-processes!
 
 
 class TaskRunner:
@@ -91,12 +94,12 @@ class TaskRunner:
         # Start the task in a new thread with a minimum 3 second delay
         delay = max(3, delay)
         time.sleep(delay)
-        logger.info(f"TaskRunner: '{task.__name__}' started running in background")
+        logging.info(f"TaskRunner: '{task.__name__}' started running in background")
         _start = datetime.now()
 
         # If the provided task is an async task, run in an event loop
         if inspect.iscoroutinefunction(task):
-            logger.info(
+            logging.info(
                 f"TaskRunner: '{task.__name__}' is an async task, will run in an event loop!"
             )
             task_process = multiprocessing.Process(target=run_async)
@@ -109,7 +112,7 @@ class TaskRunner:
         if timeout == 9:
             # No timeout, Wait for the task to finish
             task_process.join()
-            logger.info(
+            logging.info(
                 f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
             )
             return
@@ -122,18 +125,18 @@ class TaskRunner:
             time.sleep(10)  # ?Change to 1 to make timeout even precise!
         # If task is finished, return
         if not task_process.is_alive():
-            logger.info(
+            logging.info(
                 f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
             )
             return
         # If timeout is reached, terminate the task
         if task_process.is_alive():
-            logger.warning(
+            logging.warning(
                 f"TaskRunner: '{task.__name__}' Timeout reached, "
                 "Task is still running, terminating it now!"
             )
             task_process.terminate()
-            logger.info(
+            logging.info(
                 f"TaskRunner: '{task.__name__}' run terminated after {datetime.now() - _start}"
             )
         return
@@ -185,7 +188,9 @@ class TaskRunner:
             time.sleep(delay)
         while True:
             self._run_task_in_process(task, task_args, delay, timeout)
-            logger.info(f"TaskRunner: '{task.__name__}' Next run in {interval} seconds")
+            logging.info(
+                f"TaskRunner: '{task.__name__}' Next run in {interval} seconds"
+            )
             time.sleep(interval)
 
     def schedule_task(
@@ -215,11 +220,11 @@ class TaskRunner:
         Returns:
             None"""
         if tag in self._tasks:
-            logger.error(
+            logging.error(
                 f"TaskRunner: Task with tag {tag} already exists, {task.__name__} not scheduled!"
             )
             return
-        logger.info(
+        logging.info(
             f"TaskRunner: '{task.__name__}' scheduled to run every {interval} seconds"
         )
         process = multiprocessing.Process(
@@ -238,14 +243,16 @@ class TaskRunner:
         Returns:
             bool: A flag indicating if task was cancelled!\n"""
         if tag not in self._tasks:
-            logger.info(f"TaskRunner: Task with tag: '{tag}' not found! Cannot cancel!")
+            logging.info(
+                f"TaskRunner: Task with tag: '{tag}' not found! Cannot cancel!"
+            )
             return False
-        logger.info(f"TaskRunner: '{tag}' Cancelling task with tag")
+        logging.info(f"TaskRunner: '{tag}' Cancelling task with tag")
         process = self._tasks[tag]
-        logger.debug(f"TaskRunner: '{tag}' Task: sending SIGTERM to terminate it!")
+        logging.debug(f"TaskRunner: '{tag}' Task: sending SIGTERM to terminate it!")
         process.terminate()
         if process.is_alive():
-            logger.debug(
+            logging.debug(
                 f"TaskRunner: '{tag}' Task is still running, will check again in a few seconds"
             )
         count = 6
@@ -254,15 +261,15 @@ class TaskRunner:
             count -= 1
 
         if process.is_alive():
-            logger.debug(
+            logging.debug(
                 f"TaskRunner: '{tag}' Task is still running, sending SIGKILL to kill it!"
             )
             process.kill()
         if process.is_alive():
-            logger.error(
+            logging.error(
                 f"TaskRunner: '{tag}' Task is still running, unable to cancel it!"
             )
             return False
-        logger.info(f"TaskRunner: '{tag}' Task cancelled successfully!")
+        logging.info(f"TaskRunner: '{tag}' Task cancelled successfully!")
         del self._tasks[tag]
         return True
