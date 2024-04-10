@@ -1,14 +1,15 @@
-from backend.core.base.database.manager.connection import ConnectionDatabaseHandler
+from backend.core.base.database.manager.connection import ConnectionDatabaseManager
 from backend.core.base.database.models.connection import ArrType
 from backend.core.radarr.connection_manager import RadarrConnectionManager
 from backend.core.sonarr.connection_manager import SonarrConnectionManager
-from backend.logger import logger
+from backend.app_logger import logger
+from backend.core.tasks.image_refresh import refresh_images
 
 
 async def api_refresh():
     logger.info("Refreshing data from APIs")
     # Get all connections from database
-    connnections = ConnectionDatabaseHandler().read_all()
+    connnections = ConnectionDatabaseManager().read_all()
     if len(connnections) == 0:
         logger.warning("No connections found in the database")
         return
@@ -27,4 +28,6 @@ async def api_refresh():
             continue
         await connection_db_manager.refresh()
         logger.info(f"Data refreshed for connection: {connection.name}")
+    # Refresh images after API refresh to download/update images for new media
+    await refresh_images(recent_only=True)
     logger.info("API Refresh completed!")

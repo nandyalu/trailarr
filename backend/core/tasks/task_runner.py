@@ -6,7 +6,7 @@ import time
 import threading
 from typing import Callable, NoReturn
 
-from backend.logger import logger
+from backend.app_logger import logger
 
 
 class TaskRunner:

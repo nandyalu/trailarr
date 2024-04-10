@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.logger import logger
+from backend.app_logger import logger
 
 
 # TODO: Move these to main() function later and setup docker to run main.py

@@ -7,7 +7,6 @@ import pathlib
 import threading
 
 _is_logging_setup = False
-queue = None
 
 
 def handle_logs(q: multiprocessing.Queue):
@@ -42,13 +41,6 @@ def config_logging():
 
 def get_logger():
     return logging.getLogger("trailarr")  # __name__ is a common choice
-
-
-def get_queue():
-    global queue
-    if queue is None:
-        queue = multiprocessing.Queue(-1)
-    return queue
 
 
 if not _is_logging_setup:

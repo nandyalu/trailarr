@@ -42,8 +42,8 @@ MOVIE_ID_2 = 2
 
 
 class TestMovieDatabaseHandler:
-    movie_handler = movieCRUD.MovieDatabaseHandler()
-    conn_handler = connectionCRUD.ConnectionDatabaseHandler()
+    movie_handler = movieCRUD.MovieDatabaseManager()
+    conn_handler = connectionCRUD.ConnectionDatabaseManager()
 
     @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):

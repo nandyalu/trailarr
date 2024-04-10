@@ -4,7 +4,7 @@ from backend.core.base.connection_manager import (
 )
 from backend.core.base.database.models.helpers import MediaReadDC
 from backend.core.radarr.data_parser import parse_movie
-from backend.core.radarr.database_manager import MovieDatabaseHandler
+from backend.core.radarr.database_manager import MovieDatabaseManager
 from backend.core.base.database.models.connection import ConnectionRead
 from backend.core.radarr.models import MovieCreate
 from backend.core.radarr.api_manager import RadarrManager
@@ -34,7 +34,7 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
             media_data (list[MovieCreate]): The movie data to create or update.\n
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
-        movie_read_list = MovieDatabaseHandler().create_or_update_bulk(media_data)
+        movie_read_list = MovieDatabaseManager().create_or_update_bulk(media_data)
         return [
             MediaReadDC(
                 movie_read.id,
@@ -50,5 +50,5 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
         Args:
             media_status_list (list[tuple[int, bool, bool]]): List of tuples containing the \
                 media id, monitor status, and trailer status."""
-        MovieDatabaseHandler().update_media_status_bulk(media_update_list)
+        MovieDatabaseManager().update_media_status_bulk(media_update_list)
         return

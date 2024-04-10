@@ -44,7 +44,7 @@ CONN_ID_2 = 2
 
 
 class TestConnectionDatabaseHandler:
-    db_handler = connectionCRUD.ConnectionDatabaseHandler()
+    db_handler = connectionCRUD.ConnectionDatabaseManager()
 
     @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):

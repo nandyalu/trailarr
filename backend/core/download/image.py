@@ -6,6 +6,7 @@ import aiohttp
 import aiofiles.os
 from PIL import Image
 
+from backend.app_logger import logger
 from backend.core.base.database.models.helpers import MediaImage
 
 
@@ -52,6 +53,7 @@ async def delete_image(image_path: str):
 async def download_needed(is_movie: bool, media: MediaImage) -> bool:
     """Check if a poster or fanart needs to be downloaded. \n
     If image URL updated, deletes old image and sets new path. \n
+    This modifies the `media` object's `image_path` if needed. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         media (MediaImage): Media image object."""
@@ -64,6 +66,10 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
     if media.image_path:
         # Check if the existing path matches with new path
         if media.image_path != file_path:
+            logger.debug(
+                f"Image updated for media id: {media.id}, "
+                f"deleting old image! Path: '{media.image_path}'"
+            )
             await delete_image(media.image_path)
     # Update the image path
     media.image_path = file_path
@@ -95,6 +101,9 @@ async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> 
         retries (int) [Optional]: Number of retries in case of failure. Default is 3."""
     if not await download_needed(is_movie, media):
         return False
+    # download_needed() checks if image_url is None and returns False,
+    # and sets image_path if empty/updated.
+    # We are checking them here to make sure nothing went wrong, also for type checking.
     if media.image_url is None or media.image_path is None:
         return False
 
@@ -105,6 +114,10 @@ async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> 
         image = await download_image(media.image_url)
         image.thumbnail(image_dimensions)
         image.save(media.image_path, format="JPEG", optimize=True)
+        logger.debug(
+            f"Image downloaded for media id: {media.id}, "
+            f"URL: '{media.image_url}', path: '{media.image_path}'"
+        )
     except Exception:
         if retries > 0:
             return await process_image(is_movie, media, retries - 1)
@@ -113,23 +126,28 @@ async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> 
     return True
 
 
-async def download_images(
-    is_movie: bool, media_list: list[MediaImage]
-) -> list[MediaImage]:
-    """Download images from URLs and save them to disk. \n
+async def refresh_media_images(is_movie: bool, media_list: list[MediaImage]) -> None:
+    """Refresh images in the disk. \n
+    New images will be downloaded if:
+    - The image URL is updated.
+    - The image doesn't exist in the disk.
+    - The existing image path doesn't match with md5 hash of URL. \n
+    If an image with the same URL already exists, image path will be set to existing image. \n
+    Note: \n
+        The `media_list` objects will be modified in place. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         media_list (list[MediaImage]): List of media image objects. \n
     Returns:
-        list[MediaImage]: List of media image objects with updated image paths.
+        None
     """
 
     sem = asyncio.Semaphore(5)  # Limit to 5 concurrent downloads
 
-    async def download(item):
+    async def download(media_image: MediaImage):
         async with sem:  # Wait for a free slot in the semaphore
-            return await process_image(is_movie, item)
+            return await process_image(is_movie, media_image)
 
     # Start all downloads and wait for them to complete
     await asyncio.gather(*(download(media) for media in media_list))
-    return media_list
+    return
