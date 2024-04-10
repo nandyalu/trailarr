@@ -23,8 +23,8 @@ class TestSeriesDatabaseHandler:
 
     @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):
-        self.series_handler = seriesCRUD.SeriesDatabaseHandler()
-        self.conn_handler = connectionCRUD.ConnectionDatabaseHandler()
+        self.series_handler = seriesCRUD.SeriesDatabaseManager()
+        self.conn_handler = connectionCRUD.ConnectionDatabaseManager()
 
         async def mock_result_success(connection: ConnectionCreate):
             return "Success message"

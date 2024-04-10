@@ -4,7 +4,7 @@ import re
 from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
 
-from backend.core.base.database.manager.connection import ConnectionDatabaseHandler
+from backend.core.base.database.manager.connection import ConnectionDatabaseManager
 from backend.core.base.database.models.media import (
     MediaDB,
     MediaCreate,
@@ -13,7 +13,7 @@ from backend.core.base.database.models.media import (
 )
 from backend.core.base.database.utils.engine import manage_session
 from backend.exceptions import ItemNotFoundError
-from backend.logger import logger
+from backend.app_logger import logger
 
 
 class MediaUpdateProtocol(Protocol):
@@ -25,7 +25,7 @@ class MediaUpdateProtocol(Protocol):
     def trailer_exists(self) -> bool: ...
 
 
-class DatabaseHandler[
+class DatabaseManager[
     _Media: MediaDB,
     _MediaCreate: MediaCreate,
     _MediaRead: MediaRead,
@@ -260,7 +260,7 @@ class DatabaseHandler[
     def update(
         self,
         media_id: int,
-        media_update: _MediaUpdate,
+        media_update: MediaUpdate,
         *,
         _commit: bool = True,
         _session: Session = None,  # type: ignore
@@ -288,7 +288,7 @@ class DatabaseHandler[
     @manage_session
     def update_bulk(
         self,
-        media_updates: list[tuple[int, _MediaUpdate]],
+        media_updates: list[tuple[int, MediaUpdate]],
         *,
         _session: Session = None,  # type: ignore
     ) -> None:
@@ -417,7 +417,7 @@ class DatabaseHandler[
         Raises:
             ItemNotFoundError: If the connection with provided connection_id is invalid.
         """
-        if not ConnectionDatabaseHandler().check_if_exists(
+        if not ConnectionDatabaseManager().check_if_exists(
             connection_id, _session=session
         ):
             raise ItemNotFoundError("Connection", connection_id)

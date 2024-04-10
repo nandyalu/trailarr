@@ -1,4 +1,4 @@
-from backend.core.base.database.manager.base import DatabaseHandler
+from backend.core.base.database.manager.base import DatabaseManager
 from backend.core.sonarr.models import (
     Series,
     SeriesCreate,
@@ -7,8 +7,8 @@ from backend.core.sonarr.models import (
 )
 
 
-class SeriesDatabaseHandler(
-    DatabaseHandler[Series, SeriesCreate, SeriesRead, SeriesUpdate]
+class SeriesDatabaseManager(
+    DatabaseManager[Series, SeriesCreate, SeriesRead, SeriesUpdate]
 ):
     """CRUD operations for series database table."""
 

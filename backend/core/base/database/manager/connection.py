@@ -14,7 +14,7 @@ from backend.core.radarr.api_manager import RadarrManager
 from backend.core.sonarr.api_manager import SonarrManager
 
 
-class ConnectionDatabaseHandler:
+class ConnectionDatabaseManager:
     """CRUD operations for the Connection database table"""
 
     @manage_session

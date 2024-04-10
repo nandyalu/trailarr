@@ -4,7 +4,7 @@ from backend.core.base.connection_manager import (
 )
 from backend.core.base.database.models.helpers import MediaReadDC
 from backend.core.sonarr.data_parser import parse_series
-from backend.core.sonarr.database_manager import SeriesDatabaseHandler
+from backend.core.sonarr.database_manager import SeriesDatabaseManager
 from backend.core.base.database.models.connection import ConnectionRead
 from backend.core.sonarr.models import SeriesCreate
 from backend.core.sonarr.api_manager import SonarrManager
@@ -36,7 +36,7 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
             media_data (list[SeriesCreate]): The series data to create or update.\n
         Returns:
             list[SeriesRead]: A list of SeriesRead objects."""
-        series_read_list = SeriesDatabaseHandler().create_or_update_bulk(media_data)
+        series_read_list = SeriesDatabaseManager().create_or_update_bulk(media_data)
         return [
             MediaReadDC(
                 id=series_read.id,
@@ -51,5 +51,5 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
         """Update the media status in the database. \n
         Args:
             media_update_list (list[MediaUpdateDC]): List of MediaUpdateDC objects."""
-        SeriesDatabaseHandler().update_media_status_bulk(media_update_list)
+        SeriesDatabaseManager().update_media_status_bulk(media_update_list)
         return
