@@ -2,7 +2,6 @@ import logging
 from backend.config.config import config
 from backend.core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
 from backend.core.download.trailer import download_trailers
-from backend.core.files_handler import FilesHandler
 from backend.core.radarr.database_manager import MovieDatabaseManager
 from backend.core.sonarr.database_manager import SeriesDatabaseManager
 
@@ -24,16 +23,20 @@ def _download_missing_media_trailers(is_movie: bool):
     # Create MediaTrailer objects for each movie/series
     for db_media in db_media_list:
         if not db_media.monitor:
-            # logging.debug(f"Skipping {db_media.title}, monitoring disabled")
+            logging.debug(
+                f"Skipping {db_media.title} (id:{db_media.id}), monitoring disabled"
+            )
             continue
         if db_media.folder_path is None:
-            logging.debug(f"Skipping {db_media.title}, folder path not found")
+            logging.debug(
+                f"Skipping {db_media.title} (id:{db_media.id}), folder path not found"
+            )
             continue
         if db_media.trailer_exists:
-            _exists = FilesHandler.check_trailer_exists(db_media.folder_path, True)
-            if _exists:
-                logging.debug(f"Trailer exists for {db_media.title}")
-                continue
+            logging.debug(
+                f"Skipping {db_media.title} (id:{db_media.id}), trailer exists"
+            )
+            continue
         media_trailer = MediaTrailer(
             id=db_media.id,
             title=db_media.title,
