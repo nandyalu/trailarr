@@ -1,5 +1,6 @@
 from backend.app_logger import logger
 from backend.core.tasks.api_refresh import api_refresh
+from backend.core.tasks.download_trailers import download_missing_trailers
 from backend.core.tasks.image_refresh import refresh_images
 from backend.core.tasks.task_runner import TaskRunner
 
@@ -15,6 +16,10 @@ def schedule_all_tasks():
     # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now
     runner.schedule_task(
         "refresh_images", 21600, refresh_images, task_args=(False,), delay=600
+    )
+    # Schedule trailer download task to run every hour, start in 15 minutes from now
+    runner.schedule_task(
+        "download_trailers", 3600, download_missing_trailers, delay=900
     )
     logger.info("All tasks scheduled!")
 

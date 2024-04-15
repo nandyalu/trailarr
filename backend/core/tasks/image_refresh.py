@@ -66,9 +66,9 @@ async def refresh_and_save_media_images(is_movie: bool, recent_only: bool = Fals
         else:
             media_update.fanart_path = media_image.image_path
         media_update_dict[media_image.id] = media_update
-    movie_update_tuples = [
+    media_update_tuples = [
         (id, update_obj) for id, update_obj in media_update_dict.items()
     ]
     # Save changes to database
-    db_manager.update_bulk(movie_update_tuples)
+    db_manager.update_bulk(media_update_tuples)
     return
