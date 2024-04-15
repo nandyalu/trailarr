@@ -153,7 +153,7 @@ class FilesHandler:
         Checks for a file with '-trailer.' in it's name or for a 'trailers' folder\n
         Only checks for video files with extensions '.mp4', '.mkv', '.avi'\n
         Args:
-            path (str): The path to the folder to check for a movie trailer.\n
+            path (str): The path to the folder to check for a trailer.\n
             check_inline_file (bool): If True, check for a trailer file in the given folder and \
             as a seperate file. If False (default), only checks for a 'trailers' folder \
             for a trailer file.\n

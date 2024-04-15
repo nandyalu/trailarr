@@ -8,7 +8,7 @@ from backend.config.config import config
 
 sqlite_file_name = "database.db"
 sqlite_url = config.DATABASE_URL
-if config.DEBUG:
+if config.debug:
     # Use an in-memory SQLite database for testing
     sqlite_url = "sqlite:///:memory:"
     engine = create_engine(

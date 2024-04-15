@@ -1,11 +1,22 @@
 # Extract youtube video id from url
+import logging
+import os
 import re
-import time
+from threading import Semaphore
 
 from yt_dlp import YoutubeDL
 
+from backend.config.config import config
+from backend.core.base.database.models.helpers import MediaTrailer
+from backend.core.download.video import download_video
 
-def _get_youtube_id(url: str):
+
+def _get_youtube_id(url: str) -> str | None:
+    """Extract youtube video id from url. \n
+    Args:
+        url (str): URL of the youtube video. \n
+    Returns:
+        str | None: Youtube video id / None if invalid URL."""
     regex = re.compile(
         r"^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*"
     )
@@ -16,14 +27,25 @@ def _get_youtube_id(url: str):
         return None
 
 
-def _search_yt_for_trailer(movie_title: str, movie_year: str | None = None):
+def _search_yt_for_trailer(
+    movie_title: str, is_movie=True, movie_year: int | None = None
+):
+    """Search for trailer on youtube. \n
+    Args:
+        movie_title (str): Title of the movie or show.
+        is_movie (bool): Whether the media type is movie or show.
+        movie_year (str): Year of the movie or show. \n
+    Returns:
+        str | None: Youtube video id / None if not found."""
     # Set options
     options = {
         "format": "best",
     }
     # Construct search query with keywords
-    keywords = [f"{movie_title}", "trailer", f"{movie_year}"]
-    search_query = "ytsearch:" + " ".join(keywords)
+    search_query = f"ytsearch: {movie_title} trailer"
+    if movie_year:
+        search_query += f" ({movie_year})"
+    search_query += " movie" if is_movie else " series"
 
     # Search for video
     with YoutubeDL(options) as ydl:
@@ -39,75 +61,84 @@ def _search_yt_for_trailer(movie_title: str, movie_year: str | None = None):
         return str(result["id"])
 
 
-def progress_hook(d):
-    if d["status"] == "downloading":
-        print(f"'abcdefg': Downloading {d['_percent_str']} of {d['_total_bytes_str']}")
-    if d["status"] == "error":
-        print(f"'abcdefg': Error downloading {d['filename']}")
-    if d["status"] == "finished":  # Guaranteed to call
-        print("'abcdefg': Done downloading, now converting ...")
+def download_trailer(media: MediaTrailer, trailer_folder: bool, is_movie: bool) -> bool:
+    """Download trailer for a media object. \n
+    Args:
+        media (MediaTrailer): Media object.
+        trailer_folder (bool): Whether to move the trailer to a separate folder.
+        is_movie (bool): Whether the media type is movie or show. \n
+    Returns:
+        bool: True if trailer is downloaded successfully, False otherwise."""
+    if media.yt_id:
+        video_id = media.yt_id
+    else:
+        # Search for trailer on youtube
+        video_id = _search_yt_for_trailer(media.title, is_movie, media.year)
+    if not video_id:
+        return False
+    # Download the trailer
+    trailer_url = f"https://www.youtube.com/watch?v={video_id}"
+    logging.info(f"Downloading trailer for {media.title} from {trailer_url}")
+    output_file = download_video(trailer_url, f"temp/{media.id}-trailer.mkv")
+    if not output_file:
+        return False
+    logging.info(f"Trailer downloaded for {media.title}, Moving to folder...")
+    # Move the trailer to the specified folder
+    if trailer_folder:
+        trailer_path = os.path.join(media.folder_path, "Trailers")
+    else:
+        trailer_path = media.folder_path
+    if not os.path.exists(trailer_path):
+        os.makedirs(trailer_path)
+    return move_trailer_to_folder(output_file, trailer_path)
 
 
-def postprocessor_hook(d):
-    pprocessor = d["postprocessor"]
-    if d["status"] == "started":  # Guaranteed to call
-        print(f"{time.ctime()}: '{pprocessor}': Converting downloaded file...")
-    if d["status"] == "processing":
-        print(f"{time.ctime()}: '{pprocessor}': Conversion in progress...")
-    if d["status"] == "finished":  # Guaranteed to call
-        print(f"{time.ctime()}: '{pprocessor}': Done converting!")
+def move_trailer_to_folder(src_path: str, dst_folder_path: str) -> bool:
+    # Move the trailer file to the specified folder
+    if not os.path.exists(src_path):
+        logging.info(f"Trailer file not found at: {src_path}")
+        return False
+    if not os.path.exists(dst_folder_path):
+        logging.info(f"Creating folder: {dst_folder_path}")
+        os.makedirs(dst_folder_path)
+    os.rename(src_path, dst_folder_path)
+    return True
 
 
-# ?TODO: Figure out how to get the filename from yt-dlp after download
+def download_trailers(
+    media_list: list[MediaTrailer], is_movie: bool
+) -> list[MediaTrailer]:
+    """Download trailers for a list of media objects. \n
+    Args:
+        media_list (list[MediaTrailer]): List of media objects.
+        is_movie (bool): Whether the media type is movie or show. \n
+    Returns:
+        list[MediaTrailer]: List of media objects for which trailers are downloaded."""
+    logging.info(
+        f"Downloading trailers for {len(media_list)} {'movies' if is_movie else 'series'}"
+    )
+    trailer_folder = False
+    if is_movie:
+        if config.trailer_folder_movie:
+            trailer_folder = True
+    else:
+        if config.trailer_folder_series:
+            trailer_folder = True
+    sem = Semaphore(2)
+    download_list = []
+    for media in media_list:
+        sem.acquire()
+        if download_trailer(media, trailer_folder, is_movie):
+            download_list.append(media)
+        sem.release()
+    logging.info(
+        f"Downloaded trailers for {len(download_list)} {'movies' if is_movie else 'series'}"
+    )
+    return download_list
 
 
-def download_video(url: str, file_path: str | None = None):
-    # Download the video from the given URL to the given path
-    if not file_path:
-        file_path = "%(title)s.%(ext)s"
-    ydl_opts = {
-        "format": "bestvideo[height<=?1080]+bestaudio",
-        "outtmpl": file_path,
-        "compat_opts": {"no-keep-subs"},
-        "noplaylist": True,
-        "progress_hooks": [progress_hook],
-        "postprocessor_hooks": [postprocessor_hook],
-        "restrictfilenames": True,
-        "merge_output_format": "mkv",
-        "ffmpeg_location": "/usr/bin/ffmpeg",
-        "postprocessors": [
-            {"format": "srt", "key": "FFmpegSubtitlesConvertor", "when": "before_dl"},
-            {"already_have_subtitle": False, "key": "FFmpegEmbedSubtitle"},
-            {"add_metadata": True, "key": "FFmpegMetadata"},
-            {"key": "FFmpegCopyStream"},
-        ],
-        "subtitleslangs": ["en"],
-        "writeautomaticsub": True,
-        "writesubtitles": True,
-        "postprocessor_args": {
-            "copystream": [
-                "-c:v",
-                "libx264",
-                "-preset",
-                "veryfast",
-                "-crf",
-                "22",
-                "-c:a",
-                "ac3",
-                "-b:a",
-                "128k",
-                # Below options are for fast straming, but might increase filesize
-                "-movflags",
-                "+faststart",
-                "-tune",
-                "zerolatency",
-            ],
-        },
-    }
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-
-
-if __name__ == "__main__":
-    trailer_url = "https://www.youtube.com/watch?v=6ZfuNTqbHE8"
-    download_video(trailer_url)
+# if __name__ == "__main__":
+#     config_logging()
+#     trailer_url = "https://www.youtube.com/watch?v=6ZfuNTqbHE8"
+#     # download_video(trailer_url)
+#     print(_get_ytdl_options())
