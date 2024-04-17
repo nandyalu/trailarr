@@ -153,6 +153,7 @@ class _Config:
 
     @monitor_interval.setter
     def monitor_interval(self, value: int):
+        value = max(10, value)  # Minimum interval is 10 minutes
         self._monitor_interval = value
         self._save_to_env("MONITOR_INTERVAL", self._monitor_interval)
 
