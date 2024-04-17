@@ -13,9 +13,10 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y ffmpeg
 
 # Install pip requirements
-COPY requirements.txt .
+COPY ./backend/requirements.txt .
 RUN python -m pip install --no-cache-dir --upgrade -r requirements.txt
 
+# TODO: Update below to use /backend folder for fastapi
 # Refer to https://fastapi.tiangolo.com/deployment/docker/ for RESTAPI deployment
 WORKDIR /code
 COPY ./backend /code/backend

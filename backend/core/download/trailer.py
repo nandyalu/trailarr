@@ -79,7 +79,7 @@ def download_trailer(media: MediaTrailer, trailer_folder: bool, is_movie: bool) 
     # Download the trailer
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logging.info(f"Downloading trailer for {media.title} from {trailer_url}")
-    output_file = download_video(trailer_url, f"temp/{media.id}-trailer.mkv")
+    output_file = download_video(trailer_url, f"temp/{media.id}-trailer.%(ext)s")
     if not output_file:
         return False
     logging.info(f"Trailer downloaded for {media.title}, Moving to folder...")
