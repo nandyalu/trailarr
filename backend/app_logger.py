@@ -28,9 +28,13 @@ def config_logging():
     This will setup the root logger configuration and start the queue handler listener.
     """
     queue = multiprocessing.Queue(-1)
-    config_file = pathlib.Path("configs/backend_logger.json")
-    with open(config_file) as f_in:
-        config = json.load(f_in)
+    parent_path = pathlib.Path(__file__).parent
+    config_file = pathlib.Path(parent_path, "config", "logger_config.json")
+    if config_file.exists():
+        with open(config_file) as f_in:
+            config = json.load(f_in)
+    else:
+        logging.debug(f"Logger config file not found: {config_file}")
 
     logging.config.dictConfig(config)
     logger_thread = threading.Thread(target=handle_logs, args=(queue,))
