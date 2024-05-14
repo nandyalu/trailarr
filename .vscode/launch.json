@@ -34,16 +34,19 @@
         },
         {
             "name": "ng serve",
-            "type": "chrome",
+            "type": "msedge",
             "request": "launch",
             "preLaunchTask": "npm: start",
-            "url": "http://localhost:4200/"
+            "cwd": "${workspaceFolder}/frontend", // Added this line
+            "url": "http://localhost:4200/",
+            "webRoot": "${workspaceFolder}/frontend/"
         },
         {
             "name": "ng test",
             "type": "chrome",
             "request": "launch",
             "preLaunchTask": "npm: test",
+            "cwd": "${workspaceFolder}/frontend", // Added this line
             "url": "http://localhost:9876/debug.html"
         }
     ]

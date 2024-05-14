@@ -1,7 +1,7 @@
 import pytest
-from backend.exceptions import InvalidResponseError
-from backend.core.base.arr_manager.base import AsyncBaseArrManager
-from backend.tests import conftest
+from exceptions import InvalidResponseError
+from core.base.arr_manager.base import AsyncBaseArrManager
+from tests import conftest
 
 
 class TestAsyncBaseArrManager:

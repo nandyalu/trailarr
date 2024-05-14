@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from backend.core.base.database.models.media import (
+from core.base.database.models.media import (
     MediaCreate,
     MediaDB,
     MediaRead,
@@ -58,6 +58,6 @@ class SeriesUpdate(MediaUpdate):
     - updated_at: current time [if any field is updated]
     """
 
-    arr_id: int = Field(alias="sonarr_id")
-    txdb_id: str = Field(alias="tvdb_id")
+    arr_id: int = Field(alias="sonarr_id", default=None)
+    txdb_id: str = Field(alias="tvdb_id", default=None)
     arr_monitored: bool = Field(alias="sonarr_monitored", default=False)

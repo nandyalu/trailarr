@@ -36,7 +36,7 @@ class _Config:
     _DEFAULT_FILE_FORMAT = "mkv"
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
-    _DEFAULT_DB_URL = "sqlite:///trailarr.db"
+    _DEFAULT_DB_URL = "sqlite:////data/trailarr.db"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "mp3", "flac", "vorbis", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]

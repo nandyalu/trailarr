@@ -1,0 +1,81 @@
+# Stage 1: Python dependencies
+FROM python:3.12-slim AS python-deps
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+# Install pip requirements
+COPY ./backend/requirements.txt .
+RUN python -m pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Stage 2: Node dependencies
+FROM node:20.12.2 AS node-deps
+
+# Install specific version of npm
+RUN npm install -g npm@10.7.0
+
+# Install specific version of Angular CLI
+RUN npm install -g @angular/cli@17.3.6
+
+# Copy your frontend
+COPY ./frontend /app/frontend
+WORKDIR /app/frontend
+
+# Install npm dependencies
+RUN npm install
+
+# Stage 3: Final stage
+FROM python:3.12-slim
+
+# Install ffmpeg
+RUN apt update && apt install -y ffmpeg
+
+# Copy Python dependencies
+COPY --from=python-deps /usr/local /usr/local
+
+# Copy Node.js and Angular CLI from node-deps stage
+COPY --from=node-deps /usr/local /usr/local
+
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+RUN adduser -u 5678 --disabled-password --gecos "" appuser 
+
+# Copy Node dependencies
+COPY --chown=appuser:appuser ./frontend /app/frontend
+
+
+# Expose the required port
+EXPOSE 7889 4200
+
+# Create data folder for storing database and other config files
+RUN mkdir -p /data/logs && chown -R appuser:appuser /data && chmod -R 755 /data
+
+# Set the working directory in the container and copy the files
+WORKDIR /app
+COPY --chown=appuser:appuser ./backend /app/backend
+# COPY --chown=appuser:appuser ./frontend /app/frontend
+
+# Create logs folder
+# RUN mkdir /backend/logs
+
+# Change ownership of the backend folder to the appuser
+# RUN chmod -R 755 /app
+
+# Copy start.sh script
+COPY start.sh /app/start.sh
+RUN chown appuser:appuser /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Switch to the appuser (non-root user) to run the application
+USER appuser
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Run Migrations to create/update the database
+ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
+
+# Run startup script
+CMD ["/bin/sh", "/app/start.sh"]

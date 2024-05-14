@@ -2,8 +2,9 @@
 aiohttp==3.9.3
 aiofiles==23.2.1
 alembic==1.13.1
+async-lru==2.0.4
 fastapi==0.110.0
-pyarr #remove
+pillow==10.3.0
 sqlmodel==0.0.16
 uvicorn[standard]==0.29.0
 gunicorn==21.2.0

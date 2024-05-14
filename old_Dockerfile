@@ -1,0 +1,61 @@
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:3.12-slim
+
+EXPOSE 7889
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+# Install ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
+# Install pip requirements
+COPY ./backend/requirements.txt .
+RUN python -m pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Refer to https://fastapi.tiangolo.com/deployment/docker/ for RESTAPI deployment
+
+# Create data folder for storing database and other config files
+RUN mkdirs /data/logs
+
+# Set the working directory in the container and copy the files
+WORKDIR /app
+COPY ./backend /app/backend
+COPY ./frontend /app/frontend
+
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser 
+
+# Create logs folder
+RUN mkdir /backend/logs
+
+# Change ownership of the backend folder to the appuser
+RUN chown -R appuser:appuser /backend /data
+RUN chmod -R 770 /backend /data
+
+# Switch to the appuser (non-root user) to run the application
+USER appuser
+
+# Run Migrations to create/update the database
+ENV PYTHONPATH "${PYTHONPATH}:/backend"
+# ENV ALEMBIC_CONFIG='/backend/alembic.ini'
+
+# Copy start.sh script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Run startup script
+CMD ["/bin/sh", "/start.sh"]
+
+# RUN alembic upgrade head && echo "Alembic upgrade successful!"
+# RUN ls -l /data/trailarr.db
+
+# RUN chmod -R 770 /data
+
+# # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+# CMD ["gunicorn", "--bind", "0.0.0.0:7889", "-k", "uvicorn.workers.UvicornWorker", "main:trailarr_api"]
+# TODO: Update the CMD to also include the frontend

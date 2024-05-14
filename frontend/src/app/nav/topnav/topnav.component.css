@@ -1,0 +1,137 @@
+.navbar {
+  padding: 1rem 0 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+
+}
+
+.navlogo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-on-surface);
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
+  width: 210px;
+}
+
+.navlogotext {
+  margin-left: 0.5rem;
+}
+
+.navsearch {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  flex-grow: 1;
+  padding: 5px; /* Add some padding to the form */
+}
+
+.input-text {
+  display: flex; /* Make the icon container a flex container */
+  align-items: center; /* Align items vertically in the center */
+  padding: 0.35rem 0.75rem;
+  border: 0.5px solid #ccc; /* Add a border to the input */
+}
+
+.navsearch input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 0.5px solid var(--color-outline);
+  border-radius: 5px;
+  margin: 0;
+  font-size: 1rem;
+  background-color: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
+}
+
+.input:focus {
+  color: rgb(0, 255, 255);
+  background-color: #212121;
+  outline-color: rgb(0, 255, 255);
+  box-shadow: -3px -3px 15px rgb(0, 255, 255);
+  transition: .1s;
+  transition-property: box-shadow;
+}
+
+@media (max-width: 900px) {
+  .navlogo {
+    width: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .navlogotext {
+    display: none;
+  }
+}
+
+/* Switch2 */
+/* The switch - the box around the slider */
+.switch2 {
+  margin: 0 1rem;
+  display: block;
+  --width-of-switch: 3.5em;
+  --height-of-switch: 2em;
+  /* size of sliding icon -- sun and moon */
+  --size-of-icon: 1.4em;
+  /* it is like a inline-padding of switch */
+  --slider-offset: 0.3em;
+  position: relative;
+  width: var(--width-of-switch);
+  height: var(--height-of-switch);
+}
+
+/* Hide default HTML checkbox */
+.switch2 input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider2 {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  transition: 0.5s;
+  border-radius: 30px;
+}
+
+.slider2:before {
+  position: absolute;
+  content: "";
+  height: var(--size-of-icon,1.4em);
+  width: var(--size-of-icon,1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset,0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg,#775651,#904b40 70%);
+  ;
+ transition: .5s;
+}
+
+input:checked + .slider2 {
+  background-color: #140c0b;
+}
+
+input:checked + .slider2:before {
+  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+  background: #140c0b;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow: inset -3px -2px 5px -2px #e7bdb6, inset -10px -4px 0 0 #ffb4a8;
+}

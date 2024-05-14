@@ -7,7 +7,7 @@ import time
 import threading
 from typing import Callable, NoReturn
 
-# from backend.app_logger import logger
+# from app_logger import logger
 # logging = logging.getLogger(__name__)
 # Honestly, at this point I don't know why logging is working even when done inside sub-processes!
 

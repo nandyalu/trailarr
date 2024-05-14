@@ -1,0 +1,79 @@
+<div class="form-container" [class.dialogbg]="showDialog">
+    <h2>Add Connection:</h2>
+    <hr/>
+    <form [formGroup]="addConnectionForm">
+        <div class="input-group">
+            <label for="name">Server Name</label>
+            <input id="name" type="text" formControlName="name" placeholder="Server Name" autocomplete="off" autocapitalize="words" tabindex="1"
+            oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)"
+            [class.invalid]="name.invalid && name.touched">
+            <p *ngIf="name.invalid && name.touched" class="invalid-text">Server Name is required! Minimum 3 characters</p>
+        </div>
+
+        <div class="d-row">
+
+            <div class="option-container">
+                <label>Arr Type: </label>
+                <div id="arrtype" class="options-bar">
+                    <div *ngFor="let option of arrOptions" class="option" tabindex="2"
+                    [class.selected]="option === addConnectionForm.value.arrType" 
+                    (click)="setArrType(option)"
+                    (keydown.enter)="setArrType(option)"
+                    (keydown.space)="setArrType(option)">
+                        {{option | uppercase }}
+                    </div>
+                </div>
+            </div>
+        
+            <div class="option-container">
+                <label>Monitor Type: </label>
+                <div id="monitorType" class="options-bar">
+                    <div *ngFor="let option of monitorOptions" class="option" tabindex="3"
+                    [class.selected]="option === addConnectionForm.value.monitorType" 
+                    (click)="setMonitorType(option)"
+                    (keydown.enter)="setMonitorType(option)"
+                    (keydown.space)="setMonitorType(option)">
+                        {{option | uppercase }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="url">Server URL</label>
+            <input id="url" type="url" formControlName="url" placeholder="Server URL Ex: http://192.168.0.15:6969" tabindex="4" autocomplete="off">
+            <p *ngIf="url.invalid && url.touched" class="invalid-text">Server URL is invalid!</p>
+        </div>
+        
+        <div class="input-group">
+            <label for="api_key">API Key</label>
+            <input id="apiKey" type="text" formControlName="apiKey" placeholder="APIKEY" tabindex="5" autocomplete="off">
+            <p *ngIf="apiKey.invalid && apiKey.touched" class="invalid-text">APIKey is invalid!</p>
+        </div>
+        <div class="d-row">
+
+            <button class="animated-button secondary" id="cancel" tabindex="6" (click)="onCancel()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                </svg>
+                <span class="text">Cancel</span>
+            </button>
+            
+            <button class="animated-button primary" id="submit" type="submit" tabindex="7" [disabled]="!addConnectionForm.valid" (click)="onSubmit()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/>
+                </svg>
+                <span class="text">submit</span>
+            </button>
+        </div>
+        <p *ngIf="addConnResult">{{ addConnResult }}</p>
+    </form>
+</div>
+<div class="dialog" *ngIf="showDialog && addConnectionForm.touched" (click)="onCancelDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+        <h2>Unsaved Changes</h2>
+        <p>Canges will be lost. Are you sure you want to cancel?</p>
+        <button class="secondary" (click)="onConfirmCancel()" tabindex="2">Yes</button>
+        <button class="primary" (click)="onCancelDialog()" tabindex="1">No</button>
+    </div>
+</div>

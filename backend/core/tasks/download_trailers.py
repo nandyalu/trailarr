@@ -1,9 +1,9 @@
 import logging
-from backend.config.config import config
-from backend.core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
-from backend.core.download.trailer import download_trailers
-from backend.core.radarr.database_manager import MovieDatabaseManager
-from backend.core.sonarr.database_manager import SeriesDatabaseManager
+from config.config import config
+from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
+from core.download.trailer import download_trailers
+from core.radarr.database_manager import MovieDatabaseManager
+from core.sonarr.database_manager import SeriesDatabaseManager
 
 
 def _download_missing_media_trailers(is_movie: bool):

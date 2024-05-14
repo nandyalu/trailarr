@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch
-from backend.core.base.database.utils.init_db import init_db
+from core.base.database.utils.init_db import init_db
 
 
 class TestInitDB(TestCase):

@@ -28,6 +28,7 @@ class MediaReadDC:
     created: bool
     folder_path: str | None
     arr_monitored: bool
+    monitor: bool
 
 
 @dataclass(eq=False, frozen=True, repr=False, slots=True)

@@ -2,7 +2,7 @@ from typing import Any
 from urllib.parse import urlparse, urlunparse
 import aiohttp
 
-from backend.exceptions import ConnectionTimeoutError, InvalidResponseError
+from exceptions import ConnectionTimeoutError, InvalidResponseError
 
 
 class AsyncRequestManager:

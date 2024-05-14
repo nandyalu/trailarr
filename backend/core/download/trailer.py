@@ -6,9 +6,9 @@ from threading import Semaphore
 
 from yt_dlp import YoutubeDL
 
-from backend.config.config import config
-from backend.core.base.database.models.helpers import MediaTrailer
-from backend.core.download.video import download_video
+from config.config import config
+from core.base.database.models.helpers import MediaTrailer
+from core.download.video import download_video
 
 
 def _get_youtube_id(url: str) -> str | None:

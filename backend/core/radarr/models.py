@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from backend.core.base.database.models.media import (
+from core.base.database.models.media import (
     MediaCreate,
     MediaDB,
     MediaRead,
@@ -40,7 +40,6 @@ class MovieCreate(MediaCreate):
     arr_id: int = Field(alias="radarr_id")
     txdb_id: str = Field(alias="tmdb_id")
     arr_monitored: bool = Field(alias="radarr_monitored", default=False)
-    pass
 
 
 class MovieRead(MediaRead):
@@ -58,6 +57,6 @@ class MovieUpdate(MediaUpdate):
     - updated_at: current time [if any field is updated]
     """
 
-    arr_id: int | None = Field(alias="radarr_id")
-    txdb_id: str | None = Field(alias="tmdb_id")
-    arr_monitored: bool | None = Field(alias="radarr_monitored")
+    arr_id: int | None = Field(alias="radarr_id", default=None)
+    txdb_id: str | None = Field(alias="tmdb_id", default=None)
+    arr_monitored: bool | None = Field(alias="radarr_monitored", default=None)

@@ -1,13 +1,13 @@
 import asyncio
 import pytest
-import backend.core.base.database.manager.connection as connectionCRUD
-import backend.core.radarr.database_manager as movieCRUD
-from backend.core.base.database.models.connection import (
+import core.base.database.manager.connection as connectionCRUD
+import core.radarr.database_manager as movieCRUD
+from core.base.database.models.connection import (
     ArrType,
     ConnectionCreate,
     MonitorType,
 )
-from backend.core.radarr.models import (
+from core.radarr.models import (
     # MovieBase,
     MovieCreate,
     MovieUpdate,

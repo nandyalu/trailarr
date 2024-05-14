@@ -4,16 +4,16 @@ import re
 from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
 
-from backend.core.base.database.manager.connection import ConnectionDatabaseManager
-from backend.core.base.database.models.media import (
+from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.models.media import (
     MediaDB,
     MediaCreate,
     MediaRead,
     MediaUpdate,
 )
-from backend.core.base.database.utils.engine import manage_session
-from backend.exceptions import ItemNotFoundError
-from backend.app_logger import logger
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from app_logger import logger
 
 
 class MediaUpdateProtocol(Protocol):
