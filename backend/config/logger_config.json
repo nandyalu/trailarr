@@ -27,7 +27,7 @@
       "class": "logging.handlers.RotatingFileHandler",
       "level": "INFO",
       "formatter": "detailed",
-      "filename": "logs/trailarr.log",
+      "filename": "/data/logs/trailarr.log",
       "maxBytes": 10000000,
       "backupCount": 10
     }

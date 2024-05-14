@@ -1,22 +1,22 @@
 import asyncio
-from functools import cache
 import hashlib
 from io import BytesIO
 import aiohttp
 import aiofiles.os
 from PIL import Image
+from async_lru import alru_cache
 
-from backend.app_logger import logger
-from backend.core.base.database.models.helpers import MediaImage
+from app_logger import logger
+from core.base.database.models.helpers import MediaImage
 
 
 POSTER = (300, 450)
 FANART = (1280, 720)
-STATIC_PATH_MOVIES = "/static/images/movies/"
-STATIC_PATH_SHOWS = "/static/images/shows/"
+STATIC_PATH_MOVIES = "/data/web/images/movies/"
+STATIC_PATH_SHOWS = "/data/web/images/shows/"
 
 
-@cache
+@alru_cache
 async def get_base_path(is_movie: bool, is_poster: bool) -> str:
     """Get the base path for saving images. \n
     Args:
@@ -28,6 +28,7 @@ async def get_base_path(is_movie: bool, is_poster: bool) -> str:
     try:
         await aiofiles.os.makedirs(base_path, exist_ok=True)
     except Exception:
+        logger.error(f"Unable to create images folder: '{base_path}'")
         pass
     return base_path
 

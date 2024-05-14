@@ -1,0 +1,76 @@
+/* File: settings.component.css */
+.settings-container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+
+.settingsnav {
+  grid-row: 1;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  /* align-items: start; */
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.settingsnav > * {
+  flex: 1;
+}
+
+.settings-content {
+  height: auto;
+  overflow-y: auto;
+  grid-row: 2;
+  padding: 0.5rem;
+}
+
+.setnav-btn {
+  margin: 0;
+  padding: 0.8rem;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  font-weight: 400;
+  transition: 0.3s;
+  cursor: pointer;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.setnav-btn.active {
+  background-color: var(--color-secondary-container); 
+  opacity: 1;
+  font-weight: 600;
+  color: var(--color-on-secondary-container);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.setnav-btn:not(.active):hover {
+  background-color: var(--color-secondary-container); 
+  opacity: 0.6;
+  font-weight: 500;
+  color: var(--color-on-secondary-container);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+@media (max-width: 765px) {
+    .settings-container {
+        grid-template-rows: 1fr auto;
+    }
+
+    .settingsnav {
+      grid-row: 2;
+      justify-content:space-around;
+    }
+
+    .settings-content {
+      grid-row: 1;
+    }
+}

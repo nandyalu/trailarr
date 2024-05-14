@@ -1,14 +1,14 @@
 import asyncio
 import pytest
 
-import backend.core.base.database.manager.connection as connectionCRUD
-import backend.core.sonarr.database_manager as seriesCRUD
-from backend.core.base.database.models.connection import (
+import core.base.database.manager.connection as connectionCRUD
+import core.sonarr.database_manager as seriesCRUD
+from core.base.database.models.connection import (
     ArrType,
     ConnectionCreate,
     MonitorType,
 )
-from backend.core.sonarr.models import (
+from core.sonarr.models import (
     # SeriesBase,
     SeriesCreate,
     SeriesUpdate,

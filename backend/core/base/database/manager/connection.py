@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from backend.core.base.database.models.connection import (
+from core.base.database.models.connection import (
     ArrType,
     Connection,
     ConnectionBase,
@@ -8,10 +8,10 @@ from backend.core.base.database.models.connection import (
     ConnectionUpdate,
 )
 
-from backend.core.base.database.utils.engine import manage_session
-from backend.exceptions import ItemNotFoundError
-from backend.core.radarr.api_manager import RadarrManager
-from backend.core.sonarr.api_manager import SonarrManager
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from core.radarr.api_manager import RadarrManager
+from core.sonarr.api_manager import SonarrManager
 
 
 class ConnectionDatabaseManager:

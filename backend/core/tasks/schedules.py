@@ -1,8 +1,8 @@
-from backend.app_logger import logger
-from backend.core.tasks.api_refresh import api_refresh
-from backend.core.tasks.download_trailers import download_missing_trailers
-from backend.core.tasks.image_refresh import refresh_images
-from backend.core.tasks.task_runner import TaskRunner
+from app_logger import logger
+from core.tasks.api_refresh import api_refresh
+from core.tasks.download_trailers import download_missing_trailers
+from core.tasks.image_refresh import refresh_images
+from core.tasks.task_runner import TaskRunner
 
 
 # TODO: Import all scheduled tasks here and run them in the background.

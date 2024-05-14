@@ -1,13 +1,13 @@
-from backend.core.base.connection_manager import (
+from core.base.connection_manager import (
     BaseConnectionManager,
     MediaUpdateDC,
 )
-from backend.core.base.database.models.helpers import MediaReadDC
-from backend.core.radarr.data_parser import parse_movie
-from backend.core.radarr.database_manager import MovieDatabaseManager
-from backend.core.base.database.models.connection import ConnectionRead
-from backend.core.radarr.models import MovieCreate
-from backend.core.radarr.api_manager import RadarrManager
+from core.base.database.models.helpers import MediaReadDC
+from core.radarr.data_parser import parse_movie
+from core.radarr.database_manager import MovieDatabaseManager
+from core.base.database.models.connection import ConnectionRead
+from core.radarr.models import MovieCreate
+from core.radarr.api_manager import RadarrManager
 
 
 class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
@@ -41,6 +41,7 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
                 created,
                 movie_read.folder_path,
                 movie_read.arr_monitored,
+                movie_read.monitor,
             )
             for movie_read, created in movie_read_list
         ]

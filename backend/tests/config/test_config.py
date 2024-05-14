@@ -1,7 +1,7 @@
 # FILEPATH: /media/all/Media/scripts/indexarr2/backend/tests/config/test_config.py
 
 
-from backend.config.config import config
+from config.config import config
 
 
 class TestConfig:

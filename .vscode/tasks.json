@@ -44,38 +44,46 @@
             "problemMatcher": []
         },
 		{
+			"label": "npm: start",
 			"type": "npm",
 			"script": "start",
+			"path": "frontend/",
 			"isBackground": true,
 			"problemMatcher": {
 				"owner": "typescript",
 				"pattern": "$tsc",
 				"background": {
-				"activeOnStart": true,
-				"beginsPattern": {
-					"regexp": "(.*?)"
-				},
-				"endsPattern": {
-					"regexp": "bundle generation complete"
-				}
+					"activeOnStart": true,
+					"beginsPattern": {
+						"regexp": "(.*?)"
+					},
+					"endsPattern": {
+						"regexp": "bundle generation complete | Compiled |Failed to compile"
+					}
 				}
 			}
 		},
 		{
+			"label": "npm: test",
 			"type": "npm",
 			"script": "test",
+			"path": "frontend/",
 			"isBackground": true,
 			"problemMatcher": {
 				"owner": "typescript",
 				"pattern": "$tsc",
+				"fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
 				"background": {
-				"activeOnStart": true,
-				"beginsPattern": {
-					"regexp": "(.*?)"
-				},
-				"endsPattern": {
-					"regexp": "bundle generation complete"
-				}
+					"activeOnStart": true,
+					"beginsPattern": {
+						"regexp": "(.*?)"
+					},
+					"endsPattern": {
+						"regexp": "bundle generation complete | Compiled |Failed to compile"
+					}
 				}
 			}
 		}

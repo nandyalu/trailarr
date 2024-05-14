@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from functools import cache
 from typing import Any, Callable, Protocol
-from backend.core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
-from backend.core.files_handler import FilesHandler
-from backend.core.base.database.models.connection import ConnectionRead, MonitorType
+
+from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
+from core.files_handler import FilesHandler
+from core.base.database.models.connection import ConnectionRead, MonitorType
 
 
 class ArrManagerProtocol(Protocol):
@@ -148,11 +149,16 @@ class BaseConnectionManager[_MediaCreate](ABC):
                 trailer_exists = False
             else:
                 trailer_exists = await self._check_trailer(media_read.folder_path)
-            monitor_media = self._check_monitoring(
-                media_read.created,
-                trailer_exists,
-                media_read.arr_monitored,
-            )
+            # Check if monitor is already enabled
+            if media_read.monitor:
+                monitor_media = True
+            else:
+                # Else, check if monitor needs to be enabled now
+                monitor_media = self._check_monitoring(
+                    media_read.created,
+                    trailer_exists,
+                    media_read.arr_monitored,
+                )
             update_list.append(
                 MediaUpdateDC(
                     id=media_read.id,

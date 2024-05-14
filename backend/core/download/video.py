@@ -4,7 +4,7 @@ from typing import Any
 
 from yt_dlp import YoutubeDL
 
-from backend.config.config import config
+from config.config import config
 
 # For some reason, supplying a logger to YoutubeDL is not working with app_logger
 # So, we are instead logging progress using progress hooks.
@@ -90,9 +90,8 @@ def _get_ytdl_options() -> dict[str, Any]:
     output_options: list[str] = []
 
     # Set video specific options
-    ydl_options["format"] = (
-        f"bestvideo[height<=?{config.trailer_resolution}]+bestaudio",
-    )
+    _format = f"bestvideo[height<=?{config.trailer_resolution}]+bestaudio"
+    ydl_options["format"] = _format
     if config.trailer_embed_metadata:
         postprocessors.append({"key": "FFmpegMetadata", "add_metadata": True})
     video_format = _VIDEO_CODECS[config.trailer_video_format]

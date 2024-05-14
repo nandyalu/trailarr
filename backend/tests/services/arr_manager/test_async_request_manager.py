@@ -1,9 +1,9 @@
 from unittest.mock import AsyncMock, Mock
 from aiohttp import ClientConnectionError, ServerTimeoutError
 import pytest
-from backend.exceptions import ConnectionTimeoutError, InvalidResponseError
-from backend.core.base.arr_manager.request_manager import AsyncRequestManager
-import backend.tests.conftest as conftest
+from exceptions import ConnectionTimeoutError, InvalidResponseError
+from core.base.arr_manager.request_manager import AsyncRequestManager
+import tests.conftest as conftest
 
 
 class TestAsyncRequestManager:

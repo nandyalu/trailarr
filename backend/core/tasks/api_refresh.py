@@ -1,9 +1,9 @@
-from backend.core.base.database.manager.connection import ConnectionDatabaseManager
-from backend.core.base.database.models.connection import ArrType
-from backend.core.radarr.connection_manager import RadarrConnectionManager
-from backend.core.sonarr.connection_manager import SonarrConnectionManager
-from backend.app_logger import logger
-from backend.core.tasks.image_refresh import refresh_images
+from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.models.connection import ArrType
+from core.radarr.connection_manager import RadarrConnectionManager
+from core.sonarr.connection_manager import SonarrConnectionManager
+from app_logger import logger
+from core.tasks.image_refresh import refresh_images
 
 
 async def api_refresh():

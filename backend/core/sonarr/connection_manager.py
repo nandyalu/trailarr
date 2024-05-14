@@ -1,13 +1,13 @@
-from backend.core.base.connection_manager import (
+from core.base.connection_manager import (
     BaseConnectionManager,
     MediaUpdateDC,
 )
-from backend.core.base.database.models.helpers import MediaReadDC
-from backend.core.sonarr.data_parser import parse_series
-from backend.core.sonarr.database_manager import SeriesDatabaseManager
-from backend.core.base.database.models.connection import ConnectionRead
-from backend.core.sonarr.models import SeriesCreate
-from backend.core.sonarr.api_manager import SonarrManager
+from core.base.database.models.helpers import MediaReadDC
+from core.sonarr.data_parser import parse_series
+from core.sonarr.database_manager import SeriesDatabaseManager
+from core.base.database.models.connection import ConnectionRead
+from core.sonarr.models import SeriesCreate
+from core.sonarr.api_manager import SonarrManager
 
 
 class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
@@ -42,7 +42,8 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
                 id=series_read.id,
                 created=created,
                 folder_path=series_read.folder_path,
-                arr_monitored=series_read.sonarr_monitored,
+                arr_monitored=series_read.arr_monitored,
+                monitor=series_read.monitor,
             )
             for series_read, created in series_read_list
         ]
