@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from backend.api.v1.models import ErrorResponse
+from api.v1.models import ErrorResponse
 from core.radarr.database_manager import MovieDatabaseManager
 from core.radarr.models import MovieRead
 

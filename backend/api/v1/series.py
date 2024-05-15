@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
-from backend.api.v1.models import ErrorResponse
-from backend.core.sonarr.database_manager import SeriesDatabaseManager
-from backend.core.sonarr.models import SeriesRead
+from api.v1.models import ErrorResponse
+from core.sonarr.database_manager import SeriesDatabaseManager
+from core.sonarr.models import SeriesRead
 
 
 series_router = APIRouter(prefix="/series", tags=["Series"])

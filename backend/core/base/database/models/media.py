@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, ForeignKey
 
 
 def get_current_time():
@@ -20,7 +20,9 @@ class MediaBase(SQLModel):
     Use Movie or Series models instead.
     """
 
-    connection_id: int = Field(foreign_key="connection.id", index=True)
+    connection_id: int = Field(
+        foreign_key=ForeignKey("connection.id", on_delete="CASCADE"), index=True
+    )
     arr_id: int = Field(index=True)
     title: str = Field(index=True)
     year: int = Field(default_factory=get_current_year, index=True)

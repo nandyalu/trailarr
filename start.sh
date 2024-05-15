@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Set TimeZone based on env variable
+echo "Setting TimeZone to $TZ"
+echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+
 # Create data folder for storing database and other config files
 mkdir -p /data/logs && chmod -R 755 /data
 

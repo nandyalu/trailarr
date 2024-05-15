@@ -1,7 +1,7 @@
 import { NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Movie } from '../models/movie';
+import { Media } from '../models/media';
 import { MovieService } from '../services/movie.service';
 
 @Component({
@@ -14,14 +14,14 @@ import { MovieService } from '../services/movie.service';
 export class MoviesComponent {
   
   title = 'Movies';
-  movies: Movie[] = [];
+  movies: Media[] = [];
   isLoading = true;
 
   constructor(private movieService: MovieService) { }
   
   ngOnInit(): void {
     this.isLoading = true;
-    this.movieService.getMovies().subscribe((movies: Movie[]) => {
+    this.movieService.getMovies().subscribe((movies: Media[]) => {
       this.movies = movies;
       this.isLoading = false;
     });

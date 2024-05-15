@@ -233,7 +233,7 @@ class TaskRunner:
         )
         process.start()
         self._tasks[tag] = process
-
+ 
     def cancel_task(self, tag: str) -> bool:
         """Cancel a scheduled task using the `tag`. \n
         Terminates the task process. \n

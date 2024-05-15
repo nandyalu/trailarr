@@ -45,7 +45,6 @@ class SeriesCreate(MediaCreate):
 class SeriesRead(MediaRead):
     """Series model for reading a series. This is used in the API to return data."""
 
-    id: int
     arr_id: int = Field(alias="sonarr_id")
     txdb_id: str = Field(alias="tvdb_id")
     arr_monitored: bool = Field(alias="sonarr_monitored", default=False)

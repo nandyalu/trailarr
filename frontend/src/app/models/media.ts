@@ -1,4 +1,4 @@
-export interface Movie {
+export interface Media {
     connection_id: number;
     arr_id: number;
     title: string;

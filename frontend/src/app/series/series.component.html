@@ -8,7 +8,7 @@
   </div>
   <ng-template #seriesLoaded>
     <div class="series-row">
-      <div *ngFor="let series1 of series" class="series-card">
+      <div *ngFor="let series1 of all_series" class="series-card">
         <img src="{{ series1.poster_path}}" class="card-img-top" alt="{{series1.title}}">
         <h5 class="card-title">{{series1.id}}: {{series1.title}}</h5>
         <svg *ngIf="series1.monitor" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon">

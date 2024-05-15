@@ -35,7 +35,14 @@ COPY ./backend/requirements.txt .
 RUN python -m pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update && apt-get install -y curl xz-utils
+
+# Download and extract the appropriate FFmpeg build
+RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
+    && mkdir /tmp/ffmpeg \
+    && tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1 \
+    && mv /tmp/ffmpeg/bin/* /usr/local/bin/ \
+    && rm -rf /tmp/ffmpeg.tar.xz /tmp/ffmpeg
 
 # Stage 3 - Final image
 FROM python:3.12-slim
@@ -43,6 +50,10 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV TZ='America/New_York'
+
+# Install tzdata
+RUN apt-get update && apt-get install -y tzdata
 
 # Create a directory for the app
 RUN mkdir /app
@@ -59,7 +70,7 @@ COPY --from=build /app/frontend/dist/frontend/browser /app/frontend
 # Copy the backend
 COPY ./backend /app/backend
 
-# Copy the installed Python dependencies
+# Copy the installed Python dependencies and ffmpeg
 COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path

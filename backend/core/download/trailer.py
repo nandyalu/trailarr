@@ -28,7 +28,10 @@ def _get_youtube_id(url: str) -> str | None:
 
 
 def _search_yt_for_trailer(
-    movie_title: str, is_movie=True, movie_year: int | None = None
+    movie_title: str,
+    is_movie=True,
+    movie_year: int | None = None,
+    exclude: list[str] | None = None,
 ):
     """Search for trailer on youtube. \n
     Args:
@@ -57,11 +60,21 @@ def _search_yt_for_trailer(
     if "entries" not in search_results:
         return None
     # Return the first search result video id
+    if not exclude:
+        exclude = []
     for result in search_results["entries"]:
+        if result["id"] in exclude:
+            continue
         return str(result["id"])
 
 
-def download_trailer(media: MediaTrailer, trailer_folder: bool, is_movie: bool) -> bool:
+def download_trailer(
+    media: MediaTrailer,
+    trailer_folder: bool,
+    is_movie: bool,
+    retry_count: int = 2,
+    exclude: list[str] | None = None,
+) -> bool:
     """Download trailer for a media object. \n
     Args:
         media (MediaTrailer): Media object.
@@ -69,11 +82,13 @@ def download_trailer(media: MediaTrailer, trailer_folder: bool, is_movie: bool) 
         is_movie (bool): Whether the media type is movie or show. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
+    if not exclude:
+        exclude = []
     if media.yt_id:
         video_id = media.yt_id
     else:
         # Search for trailer on youtube
-        video_id = _search_yt_for_trailer(media.title, is_movie, media.year)
+        video_id = _search_yt_for_trailer(media.title, is_movie, media.year, exclude)
     if not video_id:
         return False
     # Download the trailer
@@ -81,6 +96,17 @@ def download_trailer(media: MediaTrailer, trailer_folder: bool, is_movie: bool) 
     logging.info(f"Downloading trailer for {media.title} from {trailer_url}")
     output_file = download_video(trailer_url, f"temp/{media.id}-trailer.%(ext)s")
     if not output_file:
+        if retry_count > 0:
+            logging.info(
+                f"Trailer download failed for {media.title} from {trailer_url}, "
+                f"trying again... [{3 - retry_count}/3]"
+            )
+            media.yt_id = None
+            exclude.append(video_id)
+            return download_trailer(
+                media, trailer_folder, is_movie, retry_count - 1, exclude
+            )
+
         return False
     logging.info(f"Trailer downloaded for {media.title}, Moving to folder...")
     # Move the trailer to the specified folder

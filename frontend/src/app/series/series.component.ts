@@ -1,8 +1,8 @@
 import { NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Movie } from '../models/movie';
-import { MovieService } from '../services/movie.service';
+import { Media } from '../models/media';
+import { SeriesService } from '../services/series.service';
 
 @Component({
   selector: 'app-series',
@@ -13,15 +13,15 @@ import { MovieService } from '../services/movie.service';
 })
 export class SeriesComponent {
   title = 'Series';
-  series: Movie[] = [];
+  all_series: Media[] = [];
   isLoading = true;
 
-  constructor(private movieService: MovieService) { }
+  constructor(private seriesService: SeriesService) { }
   
   ngOnInit(): void {
     this.isLoading = true;
-    this.movieService.getMovies().subscribe((movies: Movie[]) => {
-      this.series = movies;
+    this.seriesService.getSeries().subscribe((series: Media[]) => {
+      this.all_series = series;
       this.isLoading = false;
     });
   }
