@@ -147,6 +147,9 @@ def download_video(url: str, file_path: str | None = None) -> str:
         file_path = "temp/%(title)s.%(ext)s"
     ydl_opts = _get_ytdl_options()
     ydl_opts["outtmpl"] = file_path
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    try:
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+    except Exception:
+        logging.exception(f"Failed to download video from {url}")
     return str(data["filepath"])

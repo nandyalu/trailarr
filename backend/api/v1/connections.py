@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from backend.api.v1.models import ErrorResponse
+from api.v1.models import ErrorResponse
 from core.base.database.manager.connection import ConnectionDatabaseManager
 from core.base.database.models.connection import (
     ConnectionCreate,

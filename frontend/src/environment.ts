@@ -5,6 +5,7 @@ export const environment = {
     connections: 'connections/',
     movies: 'movies/',
     series: 'series/',
+    logs: 'logs/',
     settings: 'settings/',
     search: 'search/'
 };

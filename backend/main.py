@@ -1,16 +1,24 @@
 import os
+import time
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app_logger import logger
 from api.v1.routes import api_v1_router
-from backend.core.tasks.schedules import schedule_all_tasks
+from core.tasks.schedules import schedule_all_tasks
 
 # from web.routes import web_router
 
 # TODO: Move these to main() function later and setup docker to run main.py
 # No need to setup the logger and it's config, importing the logger from logger.py will do setup.
+
+# Get the timezone from the environment variable
+timezone = os.getenv("TZ", "UTC")
+
+# Set the timezone
+os.environ["TZ"] = timezone
+time.tzset()
 
 # Initialize the database - No need to do this if we are using alembic
 # logger.debug("Initializing the database")

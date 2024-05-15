@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, map } from "rxjs";
 import { environment } from "../../environment";
-import { Movie } from "../models/movie";
+import { Media } from "../models/media";
 
 @Injectable({
     providedIn: 'root'
@@ -13,8 +13,8 @@ export class MovieService {
 
     constructor(private http: HttpClient) { }
 
-    getMovies(): Observable<Movie[]> {
-        return this.http.get<Movie[]>(this.moviesUrl).pipe(
+    getMovies(): Observable<Media[]> {
+        return this.http.get<Media[]>(this.moviesUrl).pipe(
             map((movies: any[]) => movies.map(movie => ({
                 ...movie,
                 added_at: new Date(movie.added_at),
