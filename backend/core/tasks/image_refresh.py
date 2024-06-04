@@ -10,10 +10,10 @@ async def refresh_images(recent_only: bool = False):
     """Refresh images in the system, and update paths in database as needed.
     This task should be run periodically to ensure that images are up-to-date."""
     logger.info("Refreshing images in the system")
-    logger.info("Refreshing movie images")
+    logger.debug("Refreshing movie images")
     await refresh_and_save_media_images(is_movie=True, recent_only=recent_only)
-    logger.info("Movie Images refresh complete!")
-    logger.info("Refreshing series images")
+    logger.debug("Movie Images refresh complete!")
+    logger.debug("Refreshing series images")
     await refresh_and_save_media_images(is_movie=False, recent_only=recent_only)
     logger.info("Series Images refresh complete!")
 

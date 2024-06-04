@@ -1,0 +1,354 @@
+.media-details-container {
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline);
+  border-radius: 10px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.center {
+  margin: auto;
+}
+
+.media-details-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.media-fanart-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.4;
+  border-radius: 10px;
+}
+
+.media-poster {
+  z-index: 2;
+  display: flex;
+  width: 100%;
+}
+
+.media-poster img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: auto;
+}
+
+.media-details-col {
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.media-details-row {
+  display: flex;
+  flex-direction: row;
+  margin: 0.3rem;
+  gap: 0.75rem;
+}
+
+.media-details-row .title-text {
+  font-size: 2.5rem;
+  display: inline-block;
+  overflow: hidden;
+  max-width: 70%;
+}
+
+.icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.4s;
+  cursor: pointer;
+}
+
+.icon-link svg {
+  width: 40px;
+  fill: var(--color-primary);
+}
+
+.nav-icons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+.icon-link svg .success{
+  fill: var(--color-success);
+}
+
+.xdb-icon {
+  width: 60px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.extras {
+  flex-wrap: wrap;
+}
+
+.labeled-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.labeled-text .label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-bottom: 0.1rem;
+}
+
+.labeled-input {
+  display: flex;
+  flex-wrap: nowrap !important;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid var(--color-outline);
+  border-radius: 6px;
+}
+
+.labeled-input span {
+  display: block;
+  align-items: center;
+  padding: .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--color-surface-container-high);
+  border-right: 1px solid var(--color-outline);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.labeled-input input {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 100px;
+	display: block;
+  padding: .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-on-surface);
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: var(--color-surface-container);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.media-files-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem;
+}
+
+.media-files-container .media-files {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--color-outline);
+  border-radius: 4px;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  overflow-y: auto;
+}
+
+.media-files-container .files-title {
+  margin: 0;
+  margin-block: 0;
+}
+
+/* table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto;
+  overflow-y: auto;
+  text-wrap: nowrap;
+}
+
+th, td {
+  border-collapse: collapse;
+  padding: 0.5rem;
+}
+
+th .header-name {
+  min-width: 50%;
+}
+
+th .header-size {
+  min-width: 10%;
+}
+
+th .header-date {
+  min-width: 20%;
+}
+
+tr:nth-child(even) {
+  background-color: var(--color-surface-container-lowest);
+}
+
+tr {
+  border-bottom: 1px solid var(--color-outline);
+} */
+
+.files-accordion {
+  width: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  border-left: 1px solid var(--color-outline);
+  position: relative;
+}
+
+.files-header {
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: auto 6fr 1fr 2fr;
+  gap: 0.5rem;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+  border-top: 1px solid var(--color-outline);
+  position: relative;
+  font-size: 0.75rem;
+}
+
+.files-header::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: -1rem;
+  width: 1rem;
+  height: 1px;
+  background-color: var(--color-outline);
+}
+
+.files-accordion .parent {
+  cursor: pointer;
+}
+
+.files-accordion .child {
+  grid-row: 2;
+  padding: 0 0 0 1rem;
+  position: relative;
+}
+
+.child .files-accordion:last-child {
+  border-bottom: 1px solid var(--color-outline);
+  margin-bottom: 1rem;
+}
+
+.files-header .files-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.files-header .files-name {
+  font-size: 1rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.files-header svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: var(--color-on-surface);
+}
+
+@media (max-width: 765px) {
+  .media-details-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    padding-top: 2rem;
+    gap: 1rem;
+  }
+
+  .media-poster img {
+    width: auto;
+    height: 30vh;
+    margin: 0 auto;
+  }
+
+  .media-details-col {
+    align-items: center;
+    margin: 1rem;
+    margin-top: 0;
+  }
+
+  .media-details-row {
+    display: flex;
+    flex-direction: row;
+    margin: 0.3rem;
+    gap: 0.75rem;
+  }
+
+  .media-details-row .title-text {
+    max-width: 90%;
+  }
+
+  .files-header {
+    grid-template-columns: auto auto auto;
+    grid-template-rows: 1fr auto;
+    
+  }
+
+  .files-header .files-icon {
+    grid-row: 1 / span 2;
+    grid-column: 1;
+    justify-self: center;
+  }
+
+  .files-header .files-name {
+    grid-row: 1;
+    grid-column: 2 / span 2;
+    justify-self: start;
+  }
+
+  .files-header .files-size {
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: start;
+    margin-left: 0.25rem;
+  }
+
+  .files-header .files-modified {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: end;
+  }
+}

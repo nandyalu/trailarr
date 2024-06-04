@@ -31,18 +31,27 @@
 			}
 		},
 		{
-            "label": "Generate PyTest HTML Report",
-            "type": "shell",
-            "command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": []
-        },
+			"type": "shell",
+			"label": "docker-build-run",
+			"dependsOn": [
+				"docker-build"
+			],
+			"command": "python ./restart_stack.py",
+			"problemMatcher": []
+		},
+		{
+			"label": "Generate PyTest HTML Report",
+			"type": "shell",
+			"command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
 		{
 			"label": "npm: start",
 			"type": "npm",
@@ -73,9 +82,9 @@
 				"owner": "typescript",
 				"pattern": "$tsc",
 				"fileLocation": [
-                    "relative",
-                    "${workspaceFolder}"
-                ],
+					"relative",
+					"${workspaceFolder}"
+				],
 				"background": {
 					"activeOnStart": true,
 					"beginsPattern": {
@@ -86,6 +95,25 @@
 					}
 				}
 			}
+		},
+		{
+			"label": "npm: build - frontend",
+			"type": "npm",
+			"script": "build",
+			"path": "frontend",
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "ng build"
+		},
+		{
+			"label": "fastapi: run",
+			"type": "shell",
+			"dependsOn": [
+				"npm: build - frontend"
+			],
+			"isBackground": true,
+			"command": "gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api",
+			"problemMatcher": []
 		}
 	]
 }

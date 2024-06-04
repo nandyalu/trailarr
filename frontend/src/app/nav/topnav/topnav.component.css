@@ -5,7 +5,6 @@
   align-items: center;
   flex-direction: row;
   width: 100%;
-
 }
 
 .navlogo {
@@ -33,17 +32,16 @@
   justify-content: center;
   width: auto;
   flex-grow: 1;
-  padding: 5px; /* Add some padding to the form */
+  padding: 5px;
+  position: relative;
 }
 
-.input-text {
-  display: flex; /* Make the icon container a flex container */
-  align-items: center; /* Align items vertically in the center */
-  padding: 0.35rem 0.75rem;
-  border: 0.5px solid #ccc; /* Add a border to the input */
+.navsearch-form {
+  width: 100%;
 }
 
-.navsearch input {
+.navsearch-form input {
+  width: 100%;
   flex-grow: 1;
   padding: 0.5rem;
   border: 0.5px solid var(--color-outline);
@@ -54,13 +52,54 @@
   color: var(--color-on-surface);
 }
 
-.input:focus {
+/* navsearch-form input:focus { For custom focus color
   color: rgb(0, 255, 255);
   background-color: #212121;
   outline-color: rgb(0, 255, 255);
   box-shadow: -3px -3px 15px rgb(0, 255, 255);
   transition: .1s;
   transition-property: box-shadow;
+} */
+
+.navsearch-results {
+  position: absolute;
+  top: 100%;
+  left: 2%;
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-highest);
+  border: 0.5px solid var(--color-outline);
+  border-radius: 5px;
+  padding: 0.5rem;
+  visibility: hidden;
+  opacity: 0;
+  display: none;
+  z-index: 10;
+}
+
+.active {
+  visibility: visible;
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 40vh;
+  max-width: 60vw;
+  overflow-y: auto;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.navsearch-results .title {
+  min-width: 300px;
+  width: auto;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navsearch-results .title:hover, 
+.navsearch-results .title:focus, 
+.navsearch-results .selected {
+  background-color: var(--color-surface-variant);
 }
 
 @media (max-width: 900px) {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environment';
-import { Media } from '../models/media';
+import { FolderInfo, Media, mapFolderInfo, mapMedia } from '../models/media';
 
 @Injectable({
   providedIn: 'root'
@@ -13,14 +13,34 @@ export class SeriesService {
 
   constructor(private http: HttpClient) { }
 
-  getSeries(): Observable<Media[]> {
+  getRecentMedia(): Observable<Media[]> {
     return this.http.get<Media[]>(this.seriesUrl).pipe(
-      map((series: any[]) => series.map(serie => ({
-        ...serie,
-        added_at: new Date(serie.added_at),
-        updated_at: new Date(serie.updated_at),
-        created_at: new Date(serie.created_at)
-      })))
+      map(series_list => series_list.map(series => mapMedia(series, false)))
     );
   }
+
+  getMediaById(id: number): Observable<Media> {
+    return this.http.get<Media>(`${this.seriesUrl}${id}`).pipe(
+      map(series => mapMedia(series, false))
+    );
+  }
+
+  downloadMediaTrailer(id: number, yt_id: string): Observable<any> {
+    return this.http.post(`${this.seriesUrl}${id}/download?yt_id=${yt_id}`, {});
+  }
+
+  monitorMedia(id: number, monitor: boolean): Observable<any> {
+    return this.http.post(`${this.seriesUrl}${id}/monitor?monitor=${monitor}`, {});
+  }
+
+  deleteMediaTrailer(id: number): Observable<any> {
+    return this.http.delete(`${this.seriesUrl}${id}/trailer`);
+  }
+
+  getMediaFiles(id: number): Observable<FolderInfo> {
+    return this.http.get<FolderInfo>(`${this.seriesUrl}${id}/files`).pipe(
+      map(folder => mapFolderInfo(folder))
+    );
+  }
+
 }

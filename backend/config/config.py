@@ -63,7 +63,7 @@ class _Config:
         ).lower() in ["true", "1"]
         self.trailer_folder_series = os.getenv(
             "TRAILER_FOLDER_SERIES",
-            "False",
+            "True",
         ).lower() in ["true", "1"]
         self.trailer_resolution = os.getenv(
             "TRAILER_RESOLUTION", self._DEFAULT_RESOLUTION
@@ -172,7 +172,7 @@ class _Config:
     @property
     def trailer_folder_series(self):
         """Trailer folder for series. \n
-        Default is False. \n
+        Default is True. \n
         Valid values are True/False."""
         return self._trailer_folder_series
 

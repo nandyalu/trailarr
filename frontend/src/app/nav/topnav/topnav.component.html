@@ -1,13 +1,21 @@
-<nav class="navbar">
+<div class="navbar">
   <a class="navlogo" routerLink="home">
     <img src="favicon.ico" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
     <span class="h5 navlogotext">TRAILARR</span>
   </a>
-  <form id="searchForm" class="navsearch" (submit)="onSearch()">
-    <input type="text" [(ngModel)]="searchQuery" name="query" class="input" placeholder="Search for media..." aria-label="search"/>
-  </form>
+  <div class="navsearch">
+    <form id="searchForm" class="navsearch-form">
+      <input type="text" [formControl]="searchForm" name="query" placeholder="Search for media..." aria-label="search"/>
+    </form>
+    <div class="navsearch-results" [class.active]="searchResults.length > 0">
+      <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
+      <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId" [routerLink]="[result.is_movie ? 'movies' : 'series', result.id]" (click)="searchResults = []">
+        <span>{{ result.title }}</span>
+      </div>
+    </div>
+  </div>
   <label class="switch2 sm-none">
     <input type="checkbox" [(ngModel)]="isDarkModeEnabled" (ngModelChange)="onThemeChange($event)">
     <span class="slider2"></span>
   </label>
-</nav>
+</div>
