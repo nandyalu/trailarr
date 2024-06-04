@@ -1,0 +1,64 @@
+ .tasks-container {
+   height: 100%;
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+   /* gap: 2rem; */
+ }
+
+ .text-heading {
+   margin-top: 1rem;
+   text-align: left;
+   font-size: 2rem;
+ }
+
+ .center {
+   margin: auto;
+ }
+
+ .table-container {
+   width: 100%;
+   overflow-x: auto;
+   -webkit-overflow-scrolling: touch;
+   /* Smooth scrolling for touch devices */
+   margin-top: 1rem;
+   margin-bottom: 2.5rem;
+ }
+
+ .tasks-table {
+   width: 100%;
+   max-width: 100%;
+   white-space: nowrap;
+   border-collapse: collapse;
+ }
+
+ .tasks-table .table-row {
+   border-bottom: 1px solid var(--color-outline);
+   white-space: nowrap;
+   text-align: left;
+ }
+
+ .tasks-table th,
+ .tasks-table td {
+   padding: 1rem 0.5rem;
+ }
+
+ .tasks-table .header {
+   /* Header row */
+   font-weight: bold;
+   border-bottom: 2px solid var(--color-outline);
+ }
+
+ .tasks-table .name {
+   width: 100%;
+ }
+
+ .table-row svg {
+   width: 1rem;
+   fill: var(--color-primary)
+ }
+
+ .table-row:hover:not(:first-child) {
+   background-color: var(--color-tertiary-container);
+ }

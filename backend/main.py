@@ -14,7 +14,7 @@ from core.tasks.schedules import schedule_all_tasks
 # No need to setup the logger and it's config, importing the logger from logger.py will do setup.
 
 # Get the timezone from the environment variable
-timezone = os.getenv("TZ", "UTC")
+timezone = os.getenv("TZ", "ETC")
 
 # Set the timezone
 os.environ["TZ"] = timezone
@@ -99,7 +99,7 @@ async def serve_frontend(rest_of_path: str = ""):
             return HTMLResponse(content=open(f"{static_dir}/index.html").read())
 
 
-static_dir = os.path.abspath("/app/frontend")
+static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
 if not os.path.exists(static_dir):
     logger.info("Creating static directory")
     os.makedirs(static_dir)

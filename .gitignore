@@ -6,6 +6,10 @@ backend/database/models/testdb.py
 testdatabase.db
 trailarr.db
 logs/trailarr.log
+queue_info.json
+queue_info.json.lock
+task_info.json
+task_info.json.lock
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files

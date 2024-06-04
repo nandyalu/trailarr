@@ -1,8 +1,11 @@
 /* File: app.component.css */
 .mainbody {
   margin: 0;
-  height: 100vh;
+  /* TODO fix scroll to hide menus on mobile browsers */
+  /* height: 100vh; */
+  height: 100dvh;
   overflow: hidden;
+  scroll-behavior: smooth;
   display: grid;
   grid-template-rows: auto 1fr;
   grid-template-columns: auto 1fr;
@@ -47,9 +50,6 @@
   .mainbody {
     grid-template-rows: auto 1fr auto;
     grid-template-columns: 1fr;
-    /* To adjust space based on browser menus */
-    height: calc(100vh - constant(safe-area-inset-top) - constant(safe-area-inset-bottom)); /* IOS */
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); /* Android */
   }
 
   .sidebar {

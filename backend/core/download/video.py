@@ -12,15 +12,19 @@ from config.config import config
 
 def _progress_hook(d):
     if d["status"] == "downloading":
-        logging.info(
-            f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
-        )
+        if d["_percent_str"] in ["25.0%", "50.0%", "75.0%", "100.0%"]:
+            logging.debug(
+                f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
+            )
+        # logging.debug(
+        #     f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
+        # )
     if d["status"] == "error":
         logging.info(f"'Trailers': Error downloading {d['filename']}")
     if d["status"] == "finished":  # Guaranteed to call
         timetook = timedelta(seconds=d["elapsed"])
         data["filepath"] = d["filename"]
-        logging.info(
+        logging.debug(
             f"'Trailers': Download completed in {timetook}! Size: {d['_total_bytes_str']} "
             f'Filepath: "{d["filename"]}"'
         )
@@ -35,19 +39,19 @@ def _postprocessor_hook(d):
             "endtime": None,
             "filepath": "",
         }
-        logging.info(f"'Trailers': [{pprocessor}] Converting downloaded file...")
+        logging.debug(f"'Trailers': [{pprocessor}] Converting downloaded file...")
     if d["status"] == "processing":
-        logging.info(f"'Trailers': [{pprocessor}] Conversion in progress...")
+        logging.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
     if d["status"] == "finished":  # Guaranteed to call
         data[pprocessor]["status"] = "finished"
         data[pprocessor]["endtime"] = datetime.now()
         timetook = data[pprocessor]["endtime"] - data[pprocessor]["starttime"]
-        logging.info(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
+        logging.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
         if "filepath" in d["info_dict"]:
             filepath = d["info_dict"]["filepath"]
             data[pprocessor]["filepath"] = filepath
             data["filepath"] = filepath
-            logging.info(f"'Trailers': [{pprocessor}] Filepath: \"{filepath}\"")
+            logging.debug(f"'Trailers': [{pprocessor}] Filepath: \"{filepath}\"")
 
 
 data: dict[str, Any] = {}
@@ -76,12 +80,20 @@ def _get_ytdl_options() -> dict[str, Any]:
     # Set generic options for youtube-dl
     ydl_options = {
         "compat_opts": {"no-keep-subs"},
-        "ffmpeg_location": "/usr/bin/ffmpeg",  # ?figure out how to get this from os
+        "ffmpeg_location": "/usr/local/bin/ffmpeg",  # ?figure out how to get this from os
         "noplaylist": True,
+        # "verbose": True,
+        "extract_flat": "discard_in_playlist",
+        "fragment_retries": 10,
+        # Fix issue with youtube-dl not being able to download some videos
+        # See https://github.com/yt-dlp/yt-dlp/issues/9554
+        "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
         "progress_hooks": [_progress_hook],
         "postprocessor_hooks": [_postprocessor_hook],
         "restrictfilenames": True,
         "noprogress": True,
+        "no_warnings": True,
+        "quiet": True,
         "merge_output_format": config.trailer_file_format,
         "postprocessors": [],
         "postprocessor_args": {},
@@ -144,7 +156,7 @@ def download_video(url: str, file_path: str | None = None) -> str:
     global data
     data = {}
     if not file_path:
-        file_path = "temp/%(title)s.%(ext)s"
+        file_path = "/tmp/%(title)s.%(ext)s"
     ydl_opts = _get_ytdl_options()
     ydl_opts["outtmpl"] = file_path
     try:

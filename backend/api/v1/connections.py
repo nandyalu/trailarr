@@ -7,6 +7,7 @@ from core.base.database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
+from core.tasks.api_refresh import api_refresh_by_id
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -102,6 +103,20 @@ async def delete_connection(connection_id: int) -> str:
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return "Connection Deleted Successfully!"
+
+
+@connections_router.get(
+    "/{connection_id}/refresh",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Connection Not Found",
+        }
+    },
+)
+async def refresh_connection(connection_id: int) -> str:
+    return api_refresh_by_id(connection_id)
 
 
 # @connections_router.post("/")

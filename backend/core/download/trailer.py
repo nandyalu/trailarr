@@ -1,7 +1,9 @@
 # Extract youtube video id from url
+import datetime
 import logging
 import os
 import re
+import shutil
 from threading import Semaphore
 
 from yt_dlp import YoutubeDL
@@ -40,22 +42,35 @@ def _search_yt_for_trailer(
         movie_year (str): Year of the movie or show. \n
     Returns:
         str | None: Youtube video id / None if not found."""
+    logging.debug(f"Searching youtube for trailer for '{movie_title}'...")
     # Set options
     options = {
-        "format": "best",
+        "format": "bestvideo[height<=?1080]+bestaudio",
+        "noplaylist": True,
+        "extract_flat": "discard_in_playlist",
+        "fragment_retries": 10,
+        # Fix issue with youtube-dl not being able to download some videos
+        # See https://github.com/yt-dlp/yt-dlp/issues/9554
+        "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
+        "noprogress": True,
+        "no_warnings": True,
+        "quiet": True,
     }
     # Construct search query with keywords
-    search_query = f"ytsearch: {movie_title} trailer"
+    search_query = f"ytsearch: {movie_title}"
     if movie_year:
         search_query += f" ({movie_year})"
     search_query += " movie" if is_movie else " series"
+    search_query += " trailer"
 
     # Search for video
     with YoutubeDL(options) as ydl:
         search_results = ydl.extract_info(search_query, download=False, process=True)
 
     # If results are invalid, return None
-    if not search_results or isinstance(search_results, dict):
+    if not search_results:
+        return None
+    if not isinstance(search_results, dict):
         return None
     if "entries" not in search_results:
         return None
@@ -65,6 +80,7 @@ def _search_yt_for_trailer(
     for result in search_results["entries"]:
         if result["id"] in exclude:
             continue
+        logging.debug(f"Found trailer for {movie_title}: {result['id']}")
         return str(result["id"])
 
 
@@ -85,6 +101,8 @@ def download_trailer(
     if not exclude:
         exclude = []
     if media.yt_id:
+        if media.yt_id.startswith("http"):
+            media.yt_id = _get_youtube_id(media.yt_id)
         video_id = media.yt_id
     else:
         # Search for trailer on youtube
@@ -93,11 +111,11 @@ def download_trailer(
         return False
     # Download the trailer
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
-    logging.info(f"Downloading trailer for {media.title} from {trailer_url}")
-    output_file = download_video(trailer_url, f"temp/{media.id}-trailer.%(ext)s")
+    logging.debug(f"Downloading trailer for {media.title} from {trailer_url}")
+    output_file = download_video(trailer_url, f"/tmp/{media.id}-trailer.%(ext)s")
     if not output_file:
         if retry_count > 0:
-            logging.info(
+            logging.debug(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
                 f"trying again... [{3 - retry_count}/3]"
             )
@@ -108,7 +126,8 @@ def download_trailer(
             )
 
         return False
-    logging.info(f"Trailer downloaded for {media.title}, Moving to folder...")
+    logging.debug(f"Trailer downloaded for {media.title}, Moving to folder...")
+    media.yt_id = video_id
     # Move the trailer to the specified folder
     if trailer_folder:
         trailer_path = os.path.join(media.folder_path, "Trailers")
@@ -116,18 +135,21 @@ def download_trailer(
         trailer_path = media.folder_path
     if not os.path.exists(trailer_path):
         os.makedirs(trailer_path)
-    return move_trailer_to_folder(output_file, trailer_path)
+    return move_trailer_to_folder(output_file, trailer_path, media.title)
 
 
-def move_trailer_to_folder(src_path: str, dst_folder_path: str) -> bool:
+def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) -> bool:
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
-        logging.info(f"Trailer file not found at: {src_path}")
+        logging.debug(f"Trailer file not found at: {src_path}")
         return False
     if not os.path.exists(dst_folder_path):
-        logging.info(f"Creating folder: {dst_folder_path}")
+        logging.debug(f"Creating folder: {dst_folder_path}")
         os.makedirs(dst_folder_path)
-    os.rename(src_path, dst_folder_path)
+    filename = os.path.basename(src_path)
+    filename = f"{new_title} - Trailer-trailer{os.path.splitext(filename)[1]}"
+    dst_file_path = os.path.join(dst_folder_path, filename)
+    shutil.move(src_path, dst_file_path)
     return True
 
 
@@ -154,8 +176,15 @@ def download_trailers(
     download_list = []
     for media in media_list:
         sem.acquire()
+        logging.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
         if download_trailer(media, trailer_folder, is_movie):
+            media.downloaded_at = datetime.datetime.now()
             download_list.append(media)
+            logging.info(
+                f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+            )
+        else:
+            logging.info(f"Trailer download failed for '[{media.id}]{media.title}'")
         sem.release()
     logging.info(
         f"Downloaded trailers for {len(download_list)} {'movies' if is_movie else 'series'}"

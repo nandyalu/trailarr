@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LogsComponent } from './logs/logs.component';
-import { MoviesComponent } from './movies/movies.component';
-import { SeriesComponent } from './series/series.component';
+import { MediaDetailsComponent } from './media/media-details/media-details.component';
+import { MediaComponent } from './media/media.component';
 import { AboutComponent } from './settings/about/about.component';
 import { AddConnectionComponent } from './settings/connections/add-connection/add-connection.component';
 import { ConnectionsComponent } from './settings/connections/connections.component';
@@ -25,11 +25,19 @@ export const routes: Routes = [
     },
     {
         path: 'movies',
-        component: MoviesComponent
+        component: MediaComponent
+    },
+    {
+        path: 'movies/:id',
+        component: MediaDetailsComponent
     },
     {
         path: 'series',
-        component: SeriesComponent
+        component: MediaComponent
+    },
+    {
+        path: 'series/:id',
+        component: MediaDetailsComponent
     },
     {
         path: 'tasks',

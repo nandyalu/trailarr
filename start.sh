@@ -1,8 +1,13 @@
 #!/bin/sh
 
 # Set TimeZone based on env variable
-echo "Setting TimeZone to $TZ"
-echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+# Print date time before 
+echo "Current date time: $(date)"
+echo "Setting TimeZone to ${TZ}"
+echo $TZ > /etc/timezone && \
+    ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+echo "Current date time after tzdate: $(date)"
 
 # Create data folder for storing database and other config files
 mkdir -p /data/logs && chmod -R 755 /data
@@ -11,10 +16,6 @@ mkdir -p /data/logs && chmod -R 755 /data
 echo "Running Alembic migrations"
 cd /app/backend
 alembic upgrade head && echo "Alembic migrations ran successfully"
-
-# Start Angular application
-# echo "Starting Angular application"
-# cd /app/frontend && nohup ng serve &
 
 # Start FastAPI application
 echo "Starting FastAPI application"
