@@ -20,7 +20,7 @@ class _Config:
     **DO NOT USE THIS CLASS DIRECTLY. USE `config` OBJECT INSTEAD!** \n
     \n
     **Environment variables set in the system will take precedence. \
-        Changing class values doesn't any effect if relevant env variable is set!** \n
+        Changing class values doesn't have any effect if relevant env variable is set!** \n
     """
 
     _instance = None
@@ -147,7 +147,7 @@ class _Config:
     @property
     def monitor_interval(self):
         """Monitor interval for the application. \n
-        Default is 60 seconds. \n
+        Default is 60 minutes. \n
         Valid values are integers."""
         return self._monitor_interval
 

@@ -129,7 +129,6 @@ class DatabaseManager[
                 new_count += 1
             if updated:
                 updated_count += 1
-            db_media_list.append((db_media, created))
         _session.commit()
         logger.info(
             f"{self.__db_model.__name__}: {new_count} Created, {updated_count} Updated."
