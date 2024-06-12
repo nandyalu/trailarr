@@ -108,18 +108,6 @@ else:
     trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
 
 
-@trailarr_api.get("/hello")
-def read_root():
-    return {"Hello": "World"}
-
-
-@trailarr_api.get("/items/{item_id}")
-async def read_item(item_id: int, q: str | None = None):
-    # Call some function to get the data
-    # data = await some_function(item_id, q)
-    return {"item_id": item_id, "q": q}
-
-
 # Schedule all tasks
 logger.info("Scheduling tasks")
 schedule_all_tasks()

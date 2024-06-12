@@ -6,7 +6,7 @@ from sqlmodel import Session, create_engine
 
 from config.config import config
 
-sqlite_file_name = "database.db"
+# sqlite_file_name = "database.db"
 sqlite_url = config.database_url
 if config.debug:
     # Use an in-memory SQLite database for testing
