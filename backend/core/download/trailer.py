@@ -138,18 +138,37 @@ def download_trailer(
     return move_trailer_to_folder(output_file, trailer_path, media.title)
 
 
+def get_folder_permissions(path: str) -> int:
+    # Get the permissions of the directory (if exists)
+    # otherwise get it's parent directory permissions (that exists, recursively)
+    while not os.path.exists(path):
+        path = os.path.dirname(path)
+    parent_dir = os.path.dirname(path)
+    return os.stat(parent_dir).st_mode
+
+
 def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) -> bool:
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
         logging.debug(f"Trailer file not found at: {src_path}")
         return False
+
+    # Get destination permissions
+    dst_permissions = get_folder_permissions(dst_folder_path)
+
+    # Check if destination exists, else create it
     if not os.path.exists(dst_folder_path):
         logging.debug(f"Creating folder: {dst_folder_path}")
-        os.makedirs(dst_folder_path)
+        os.makedirs(dst_folder_path, mode=dst_permissions)
+
+    # Construct the new filename and move the file
     filename = os.path.basename(src_path)
     filename = f"{new_title} - Trailer-trailer{os.path.splitext(filename)[1]}"
     dst_file_path = os.path.join(dst_folder_path, filename)
     shutil.move(src_path, dst_file_path)
+
+    # Set the moved file's permissions to match the destination folder's permissions
+    os.chmod(dst_file_path, dst_permissions)
     return True
 
 
