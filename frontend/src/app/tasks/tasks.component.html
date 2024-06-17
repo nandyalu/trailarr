@@ -1,0 +1,69 @@
+<div class="tasks-container">
+  <div class="text-heading">Scheduled</div>
+  <hr>
+  <div *ngIf="isLoading1; else schedulesLoaded" class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
+  <ng-template #schedulesLoaded>
+    <div class="table-container">
+      <table class="tasks-table">
+        <tr class="table-row header">
+          <th class="name">Name</th>
+          <th>Interval</th>
+          <th>Last Run</th>
+          <th>Last Run Status</th>
+          <th>Last Run Duration</th>
+          <th>Next Run</th>
+          <th></th>
+        </tr>
+        <!-- <p>{{ scheduledTasks }}</p> -->
+        <tr *ngFor="let task of scheduledTasks" class="table-row">
+          <td class="name">{{ task.id }}: {{ task.name }}</td>
+          <td>{{ task.interval }}</td>
+          <td>{{ task.last_run_start ? (task.last_run_start | timeago) : 'Not run yet' }}</td>
+          <td>{{ task.last_run_status }}</td>
+          <td>{{ task.last_run_duration }}</td>
+          <td>{{ task.next_run ? (task.next_run | timeago) : 'Not scheduled' }}</td>
+          <td title="Run task now" (click)="runTask(task.id)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+              d="M382-306.67 653.33-480 382-653.33v346.66ZM480-80q-82.33 0-155.33-31.5-73-31.5-127.34-85.83Q143-251.67 111.5-324.67T80-480q0-83 31.5-156t85.83-127q54.34-54 127.34-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82.33-31.5 155.33-31.5 73-85.5 127.34Q709-143 636-111.5T480-80Z" />
+            </svg>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </ng-template>
+  <div class="text-heading">Queue</div>
+  <hr>
+  <div *ngIf="isLoading1; else queueLoaded" class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
+  <ng-template #queueLoaded>
+    <div class="table-container">
+      <table class="tasks-table">
+        <tr class="table-row header">
+          <th class="name">Name</th>
+          <th>Queued</th>
+          <th>Started</th>
+          <th>Duration</th>
+          <th>End</th>
+        </tr>
+        <!-- <p>{{ queuedTasks }}</p> -->
+        <tr *ngFor="let task of queuedTasks" class="table-row">
+          <td class="name">{{ task.id }}: {{ task.name }}</td>
+          <td>{{ task.queued ? (task.queued | timeago) : '-' }}</td>
+          <td>{{ task.start ? (task.start | timeago) : 'Pending' }}</td>
+          <td>{{ task.duration }}</td>
+          <td>{{ task.end ? (task.end | timeago) : 'Running' }}</td>
+        </tr>
+      </table>
+    </div>
+  </ng-template>
+</div>

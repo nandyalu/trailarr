@@ -6,7 +6,7 @@ import pytest
 
 def pytest_configure():
     os.environ["DEBUG"] = "True"
-    from backend.core.base.database.utils.init_db import init_db
+    from core.base.database.utils.init_db import init_db
 
     init_db()
 

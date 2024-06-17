@@ -1,5 +1,5 @@
-from backend.core.base.database.manager.base import DatabaseManager
-from backend.core.sonarr.models import (
+from core.base.database.manager.base import DatabaseManager
+from core.sonarr.models import (
     Series,
     SeriesCreate,
     SeriesRead,

@@ -1,9 +1,11 @@
+from datetime import datetime
 import logging
-from backend.config.config import config
-from backend.core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
-from backend.core.download.trailer import download_trailers
-from backend.core.radarr.database_manager import MovieDatabaseManager
-from backend.core.sonarr.database_manager import SeriesDatabaseManager
+from config.config import config
+from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
+from core.download.trailer import download_trailers
+from core.radarr.database_manager import MovieDatabaseManager
+from core.sonarr.database_manager import SeriesDatabaseManager
+from core.tasks.task_runner import TaskRunner
 
 
 def _download_missing_media_trailers(is_movie: bool):
@@ -59,6 +61,7 @@ def _download_missing_media_trailers(is_movie: bool):
                 id=media.id,
                 monitor=False,
                 trailer_exists=True,
+                downloaded_at=media.downloaded_at,
             )
         )
     # Update the trailer statuses in database
@@ -72,3 +75,72 @@ def download_missing_trailers():
     _download_missing_media_trailers(is_movie=False)
     logging.info("Trailers download complete")
     return
+
+
+def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
+    download_media = download_trailers([mediaT], is_movie)
+    if not download_media:
+        logging.info("No trailers downloaded")
+        return
+    logging.debug("Updating trailer status in database")
+    media_update_list = []
+    for media in download_media:
+        if media.downloaded_at is None:
+            media.downloaded_at = datetime.now()
+        media_update_list.append(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=False,
+                trailer_exists=True,
+                yt_id=media.yt_id,
+                downloaded_at=media.downloaded_at,
+            )
+        )
+    if is_movie:
+        db_manager = MovieDatabaseManager()
+    else:
+        db_manager = SeriesDatabaseManager()
+    # Update the trailer statuses in database
+    db_manager.update_media_status_bulk(media_update_list)
+
+
+def download_trailer_by_id(media_id: int, is_movie: bool, yt_id: str = "") -> str:
+    """Download trailer for a movie or series by ID."""
+    logging.info(
+        f"Downloading trailer for {'movie' if is_movie else 'series'} ID: {media_id}"
+    )
+    if is_movie:
+        db_manager = MovieDatabaseManager()
+    else:
+        db_manager = SeriesDatabaseManager()
+    try:
+        media = db_manager.read(media_id)
+    except Exception as e:
+        msg = f"Failed to get {'movie' if is_movie else 'series'} with ID: {media_id}"
+        logging.error(msg)
+        logging.exception(e)
+        return msg
+    if not media.folder_path:
+        msg = f"{'Movie' if is_movie else 'Series'} '{media.title}' has no folder path"
+        logging.error(msg)
+        return msg
+    if yt_id:
+        media.youtube_trailer_id = yt_id
+    media_trailer = MediaTrailer(
+        id=media.id,
+        title=media.title,
+        year=media.year,
+        folder_path=media.folder_path,
+        yt_id=media.youtube_trailer_id,
+    )
+    runner = TaskRunner()
+    runner.run_task(
+        _download_trailer_by_id, task_args=(media_trailer, is_movie), delay=3
+    )
+    msg = "Trailer download started in background for "
+    msg += f"{'movie' if is_movie else 'series'}: '{media.title}' (ID: {media_id})"
+    if yt_id:
+        msg += f" from [{yt_id}]"
+
+    logging.info(msg)
+    return msg

@@ -1,19 +1,19 @@
-from backend.core.base.database.models.helpers import MediaImage
-from backend.core.base.database.models.media import MediaUpdate
-from backend.core.download.image import refresh_media_images
-from backend.core.radarr.database_manager import MovieDatabaseManager
-from backend.core.sonarr.database_manager import SeriesDatabaseManager
-from backend.app_logger import logger
+from core.base.database.models.helpers import MediaImage
+from core.base.database.models.media import MediaUpdate
+from core.download.image import refresh_media_images
+from core.radarr.database_manager import MovieDatabaseManager
+from core.sonarr.database_manager import SeriesDatabaseManager
+from app_logger import logger
 
 
 async def refresh_images(recent_only: bool = False):
     """Refresh images in the system, and update paths in database as needed.
     This task should be run periodically to ensure that images are up-to-date."""
     logger.info("Refreshing images in the system")
-    logger.info("Refreshing movie images")
+    logger.debug("Refreshing movie images")
     await refresh_and_save_media_images(is_movie=True, recent_only=recent_only)
-    logger.info("Movie Images refresh complete!")
-    logger.info("Refreshing series images")
+    logger.debug("Movie Images refresh complete!")
+    logger.debug("Refreshing series images")
     await refresh_and_save_media_images(is_movie=False, recent_only=recent_only)
     logger.info("Series Images refresh complete!")
 
@@ -58,9 +58,9 @@ async def refresh_and_save_media_images(is_movie: bool, recent_only: bool = Fals
     media_update_dict: dict[int, MediaUpdate] = {}
     for media_image in media_image_list:
         if media_image.id in media_update_dict:
-            media_update = MediaUpdate()
-        else:
             media_update = media_update_dict[media_image.id]
+        else:
+            media_update = MediaUpdate()
         if media_image.is_poster:
             media_update.poster_path = media_image.image_path
         else:

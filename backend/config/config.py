@@ -20,7 +20,7 @@ class _Config:
     **DO NOT USE THIS CLASS DIRECTLY. USE `config` OBJECT INSTEAD!** \n
     \n
     **Environment variables set in the system will take precedence. \
-        Changing class values doesn't any effect if relevant env variable is set!** \n
+        Changing class values doesn't have any effect if relevant env variable is set!** \n
     """
 
     _instance = None
@@ -36,7 +36,7 @@ class _Config:
     _DEFAULT_FILE_FORMAT = "mkv"
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
-    _DEFAULT_DB_URL = "sqlite:///trailarr.db"
+    _DEFAULT_DB_URL = "sqlite:////data/trailarr.db"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "mp3", "flac", "vorbis", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
@@ -63,7 +63,7 @@ class _Config:
         ).lower() in ["true", "1"]
         self.trailer_folder_series = os.getenv(
             "TRAILER_FOLDER_SERIES",
-            "False",
+            "True",
         ).lower() in ["true", "1"]
         self.trailer_resolution = os.getenv(
             "TRAILER_RESOLUTION", self._DEFAULT_RESOLUTION
@@ -147,7 +147,7 @@ class _Config:
     @property
     def monitor_interval(self):
         """Monitor interval for the application. \n
-        Default is 60 seconds. \n
+        Default is 60 minutes. \n
         Valid values are integers."""
         return self._monitor_interval
 
@@ -172,7 +172,7 @@ class _Config:
     @property
     def trailer_folder_series(self):
         """Trailer folder for series. \n
-        Default is False. \n
+        Default is True. \n
         Valid values are True/False."""
         return self._trailer_folder_series
 

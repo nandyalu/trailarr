@@ -1,7 +1,7 @@
 import pytest
-from backend.exceptions import InvalidResponseError
-from backend.core.radarr.api_manager import RadarrManager
-from backend.tests import conftest
+from exceptions import InvalidResponseError
+from core.radarr.api_manager import RadarrManager
+from tests import conftest
 
 
 class TestRadarrManager:

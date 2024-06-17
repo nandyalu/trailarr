@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "Python 3",
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+	"runArgs": [
+		"-p=7888:7888"
+	],
+
+	// Mount appdata folder for persistent storage
+	"mounts": [
+		"source=/var/appdata/trailarr2,target=/data,type=bind,consistency=cached",
+		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
+	],
+	// Mount project folder at /app so that source code is available in container.
+	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+	"workspaceFolder": "/app",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Angular.ng-template",
+				"ms-python.autopep8",
+				"ms-azuretools.vscode-docker",
+				"GitHub.copilot",
+				"ms-python.black-formatter",
+				"ms-python.flake8",
+				"Gruntfuggly.todo-tree",
+				"MohammadBaqer.better-folding"
+			]
+		}
+	},
+	
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "startup.sh",
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root"
+}

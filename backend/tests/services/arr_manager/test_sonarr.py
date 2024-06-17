@@ -1,7 +1,7 @@
 import pytest
-from backend.exceptions import InvalidResponseError
-from backend.core.sonarr.api_manager import SonarrManager
-from backend.tests import conftest
+from exceptions import InvalidResponseError
+from core.sonarr.api_manager import SonarrManager
+from tests import conftest
 
 
 class TestSonarrManager:

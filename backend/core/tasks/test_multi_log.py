@@ -16,8 +16,8 @@ import asyncio
 import logging
 import time
 
-from backend.app_logger import config_logging
-from backend.core.tasks.task_runner import TaskRunner
+from app_logger import config_logging
+from core.tasks.task_runner import TaskRunner
 
 
 def reg_task1():

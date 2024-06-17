@@ -1,18 +1,18 @@
 import pytest
 
-# from backend.database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
-import backend.core.base.database.manager.connection as connectionCRUD
-from backend.core.base.database.manager.connection import validate_connection
-from backend.core.base.database.models.connection import (
+# from database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
+import core.base.database.manager.connection as connectionCRUD
+from core.base.database.manager.connection import validate_connection
+from core.base.database.models.connection import (
     ArrType,
     ConnectionBase,
     ConnectionCreate,
     ConnectionUpdate,
     MonitorType,
 )
-from backend.exceptions import InvalidResponseError, ItemNotFoundError
-from backend.core.radarr.api_manager import RadarrManager
-from backend.core.sonarr.api_manager import SonarrManager
+from exceptions import InvalidResponseError, ItemNotFoundError
+from core.radarr.api_manager import RadarrManager
+from core.sonarr.api_manager import SonarrManager
 
 
 # Copied from backend/database/crud/connection.py

@@ -1,4 +1,4 @@
 [run]
 branch = True
 source = .
-omit = */__pycache__/*, */__init__.py, backend/tests/*, frontend/tests/*, backend/database/models/testdb.py, check_things.py,
+omit = */__pycache__/*, */__init__.py, backend/tests/*, frontend/tests/*,

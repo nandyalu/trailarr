@@ -1,8 +1,8 @@
-from backend.app_logger import logger
-from backend.core.tasks.api_refresh import api_refresh
-from backend.core.tasks.download_trailers import download_missing_trailers
-from backend.core.tasks.image_refresh import refresh_images
-from backend.core.tasks.task_runner import TaskRunner
+from app_logger import logger
+from core.tasks.api_refresh import api_refresh
+from core.tasks.download_trailers import download_missing_trailers
+from core.tasks.image_refresh import refresh_images
+from core.tasks.task_runner import TaskRunner
 
 
 # TODO: Import all scheduled tasks here and run them in the background.
@@ -11,6 +11,8 @@ from backend.core.tasks.task_runner import TaskRunner
 def schedule_all_tasks():
     logger.info("Scheduling all background tasks!")
     runner = TaskRunner()
+    # Remove any existing task files
+    runner.cleanup_tasks()
     # Schedule API Refresh to run every hour
     runner.schedule_task("api_refresh", 3600, api_refresh, timeout=600)
     # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now

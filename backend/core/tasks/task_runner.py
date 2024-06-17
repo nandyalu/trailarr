@@ -1,13 +1,15 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import inspect
+import json
 import logging
 import multiprocessing
+import os
 import time
 import threading
 from typing import Callable, NoReturn
 
-# from backend.app_logger import logger
+# from app_logger import logger
 # logging = logging.getLogger(__name__)
 # Honestly, at this point I don't know why logging is working even when done inside sub-processes!
 
@@ -32,6 +34,8 @@ class TaskRunner:
 
     def __init__(self):
         self._tasks: dict[str, multiprocessing.Process] = {}
+        self._task_list: dict[str, dict] = self._read_info_from_file()
+        self._queue_list: dict[str, dict] = self._read_info_from_file(is_task=False)
 
     def __new__(cls) -> "TaskRunner":
         if cls._instance is None:
@@ -91,11 +95,45 @@ class TaskRunner:
             new_loop.close()
             return
 
+        def save_queue_info(terminated=False):
+            """Save Queue info to file."""
+            _end_time = datetime.now()
+            # Save Queue details to file
+            self._read_info_from_file(is_task=False)
+            if terminated:
+                self._queue_list[f"{current_pid}"]["status"] = "Terminated"
+            else:
+                self._queue_list[f"{current_pid}"]["status"] = "Completed"
+            self._queue_list[f"{current_pid}"]["end"] = f"{_end_time}"
+            _duration = _end_time - _start
+            self._queue_list[f"{current_pid}"]["duration"] = f"{_duration}"
+            self._write_info_to_file(is_task=False)
+            return
+
+        # Save Queue details to file
+        current_pid = multiprocessing.current_process().pid
+        if not current_pid:
+            logging.info("TaskRunner: Unable to get current Mprocess ID!")
+            current_pid = os.getpid()
+        self._read_info_from_file(is_task=False)
+        self._queue_list[f"{current_pid}"] = {
+            "name": task.__name__.replace("_", " ").strip().title(),
+            "status": "Queued",
+            "queued": f"{datetime.now()}",
+            "start": None,
+            "end": None,
+            "duration": 0,
+        }
+        self._write_info_to_file(is_task=False)
         # Start the task in a new thread with a minimum 3 second delay
         delay = max(3, delay)
         time.sleep(delay)
         logging.info(f"TaskRunner: '{task.__name__}' started running in background")
         _start = datetime.now()
+        self._read_info_from_file(is_task=False)
+        self._queue_list[f"{current_pid}"]["status"] = "Running"
+        self._queue_list[f"{current_pid}"]["start"] = f"{_start}"
+        self._write_info_to_file(is_task=False)
 
         # If the provided task is an async task, run in an event loop
         if inspect.iscoroutinefunction(task):
@@ -115,6 +153,7 @@ class TaskRunner:
             logging.info(
                 f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
             )
+            save_queue_info()
             return
 
         # Timeout specified, create a thread to terminate the task after timeout
@@ -122,12 +161,13 @@ class TaskRunner:
         timeout_thread.start()
         # Wait until the task or timeout to finish
         while task_process.is_alive() and timeout_thread.is_alive():
-            time.sleep(10)  # ?Change to 1 to make timeout even precise!
+            time.sleep(1)  # ?Change to 1 to make timeout even precise!
         # If task is finished, return
         if not task_process.is_alive():
             logging.info(
                 f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
             )
+            save_queue_info()
             return
         # If timeout is reached, terminate the task
         if task_process.is_alive():
@@ -139,6 +179,7 @@ class TaskRunner:
             logging.info(
                 f"TaskRunner: '{task.__name__}' run terminated after {datetime.now() - _start}"
             )
+            save_queue_info(terminated=True)
         return
 
     def run_task(
@@ -184,13 +225,43 @@ class TaskRunner:
                 to terminate the task. Task will run until finished if not specified. \n
         Returns:
             NoReturn"""
-        if delay > 0:
+        current_pid = multiprocessing.current_process().pid
+        if not current_pid:
+            logging.info("TaskRunner: Unable to get current Mprocess ID!")
+            current_pid = os.getpid()
+        self._read_info_from_file()
+        self._task_list[f"{current_pid}"] = {
+            "name": task.__name__.replace("_", " ").strip().title(),
+            "interval": interval,
+            "last_run_status": "Not Run Yet",
+            "last_run_start": None,
+            "last_run_duration": 0,
+            "next_run": f"{datetime.now() + timedelta(seconds=delay)}",
+        }
+        self._write_info_to_file()
+        if delay > 3:
             time.sleep(delay)
         while True:
-            self._run_task_in_process(task, task_args, delay, timeout)
+            _start_time = datetime.now()
+            _next_run = _start_time + timedelta(seconds=interval)
+            _next_run = f"{_next_run}"
+            self._read_info_from_file()
+            self._task_list[f"{current_pid}"]["last_run_start"] = f"{_start_time}"
+            self._task_list[f"{current_pid}"]["last_run_status"] = "Running"
+            self._task_list[f"{current_pid}"]["next_run"] = _next_run
+            self._write_info_to_file()
+            self._run_task_in_process(task, task_args, delay=0, timeout=timeout)
+            _duration = datetime.now() - _start_time
             logging.info(
                 f"TaskRunner: '{task.__name__}' Next run in {interval} seconds"
             )
+            self._read_info_from_file()
+            _next_run = datetime.now() + timedelta(seconds=interval)
+            _next_run = f"{_next_run}"
+            self._task_list[f"{current_pid}"]["last_run_status"] = "Completed"
+            self._task_list[f"{current_pid}"]["last_run_duration"] = f"{_duration}"
+            self._task_list[f"{current_pid}"]["next_run"] = _next_run
+            self._write_info_to_file()
             time.sleep(interval)
 
     def schedule_task(
@@ -273,3 +344,76 @@ class TaskRunner:
         logging.info(f"TaskRunner: '{tag}' Task cancelled successfully!")
         del self._tasks[tag]
         return True
+
+    def _write_info_to_file(self, is_task=True) -> None:
+        """Writes task information to a JSON file."""
+        if is_task:
+            _file = "task_info.json"
+            _list = self._task_list
+        else:
+            _file = "queue_info.json"
+            _list = self._queue_list
+            # Keep only last 10 items
+            if len(_list) > 10:
+                _list = dict(list(_list.items())[-10:])
+        # Wait until the lock file is removed
+        while os.path.exists(f"{_file}.lock"):
+            time.sleep(1)
+        # Create a lock file to prevent multiple reads/writes
+        with open(f"{_file}.lock", "w") as f:
+            f.write("lock")
+        with open(_file, "w") as f:
+            json.dump(_list, f, indent=4)
+        # Remove the lock file
+        if os.path.exists(f"{_file}.lock"):
+            os.remove(f"{_file}.lock")
+            if os.path.exists(f"{_file}.lock"):
+                logging.info("TaskRunner: Unable to remove lock file!")
+
+    def _read_info_from_file(self, is_task=True) -> dict:
+        """Reads task information from a JSON file (or empty dict if not found)."""
+        if is_task:
+            _file = "task_info.json"
+        else:
+            _file = "queue_info.json"
+        try:
+            # Wait until the lock file is removed
+            while os.path.exists(f"{_file}.lock"):
+                time.sleep(1)
+            # Create a lock file to prevent multiple reads/writes
+            with open(f"{_file}.lock", "w") as f:
+                f.write("lock")
+            with open(_file, "r") as f:
+                res = json.load(f)
+                if is_task:
+                    self._task_list = res
+                else:
+                    self._queue_list = res
+            # Remove the lock file
+            if os.path.exists(f"{_file}.lock"):
+                os.remove(f"{_file}.lock")
+                if os.path.exists(f"{_file}.lock"):
+                    logging.info("TaskRunner: Unable to remove lock file!")
+            return res
+        except FileNotFoundError:
+            os.remove(f"{_file}.lock")
+            return {}
+        except Exception:
+            os.remove(f"{_file}.lock")
+            return {}
+
+    def cleanup_tasks(self) -> None:
+        """Cleanup tasks and queues."""
+        files = [
+            "task_info.json",
+            "queue_info.json",
+            "task_info.json.lock",
+            "queue_info.json.lock",
+        ]
+        for file in files:
+            if os.path.exists(file):
+                os.remove(file)
+        self._tasks = {}
+        self._task_list = {}
+        self._queue_list = {}
+        return

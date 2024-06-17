@@ -31,7 +31,7 @@ def config_logging():
     parent_path = pathlib.Path(__file__).parent
     config_file = pathlib.Path(parent_path, "config", "logger_config.json")
     if config_file.exists():
-        with open(config_file) as f_in:
+        with open(config_file) as f_in: 
             config = json.load(f_in)
     else:
         logging.debug(f"Logger config file not found: {config_file}")

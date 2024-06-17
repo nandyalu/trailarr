@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from backend.core.base.database.models.media import (
+from core.base.database.models.media import (
     MediaCreate,
     MediaDB,
     MediaRead,
@@ -45,7 +45,6 @@ class SeriesCreate(MediaCreate):
 class SeriesRead(MediaRead):
     """Series model for reading a series. This is used in the API to return data."""
 
-    id: int
     arr_id: int = Field(alias="sonarr_id")
     txdb_id: str = Field(alias="tvdb_id")
     arr_monitored: bool = Field(alias="sonarr_monitored", default=False)
@@ -58,6 +57,6 @@ class SeriesUpdate(MediaUpdate):
     - updated_at: current time [if any field is updated]
     """
 
-    arr_id: int = Field(alias="sonarr_id")
-    txdb_id: str = Field(alias="tvdb_id")
+    arr_id: int = Field(alias="sonarr_id", default=None)
+    txdb_id: str = Field(alias="tvdb_id", default=None)
     arr_monitored: bool = Field(alias="sonarr_monitored", default=False)

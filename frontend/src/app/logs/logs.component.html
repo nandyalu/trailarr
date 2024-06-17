@@ -1,0 +1,16 @@
+<div class="logs-container">
+    <h1 class="text-center">{{title}}</h1>
+    <div *ngIf="isLoading; else logsLoaded" class="loading-wave center">
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+    </div>
+    <ng-template #logsLoaded>
+        <div class="logs-table">
+            <div *ngFor="let log of all_logs" class="logs-row">
+                <p>{{ log }}</p>
+            </div>
+        </div>
+    </ng-template>
+</div>

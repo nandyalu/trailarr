@@ -2,18 +2,18 @@ from abc import ABC
 from datetime import datetime
 import re
 from typing import Optional, Protocol, Sequence
-from sqlmodel import Session, col, desc, or_, select
+from sqlmodel import Session, col, desc, select
 
-from backend.core.base.database.manager.connection import ConnectionDatabaseManager
-from backend.core.base.database.models.media import (
+from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.models.media import (
     MediaDB,
     MediaCreate,
     MediaRead,
     MediaUpdate,
 )
-from backend.core.base.database.utils.engine import manage_session
-from backend.exceptions import ItemNotFoundError
-from backend.app_logger import logger
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from app_logger import logger
 
 
 class MediaUpdateProtocol(Protocol):
@@ -23,6 +23,10 @@ class MediaUpdateProtocol(Protocol):
     def monitor(self) -> bool: ...
     @property
     def trailer_exists(self) -> bool: ...
+    @property
+    def yt_id(self) -> str | None: ...
+    @property
+    def downloaded_at(self) -> datetime | None: ...
 
 
 class DatabaseManager[
@@ -74,7 +78,12 @@ class DatabaseManager[
         )
         if db_media:
             # Exists, update it
-            media_update_data = media_create.model_dump(exclude_unset=True)
+            media_update_data = media_create.model_dump(
+                exclude_unset=True,
+                exclude_defaults=True,
+                exclude_none=True,
+                exclude={"youtube_trailer_id", "downloaded_at"},
+            )
             db_media.sqlmodel_update(media_update_data)
             _updated = False
             if session.is_modified(db_media):
@@ -120,7 +129,6 @@ class DatabaseManager[
                 new_count += 1
             if updated:
                 updated_count += 1
-            db_media_list.append((db_media, created))
         _session.commit()
         logger.info(
             f"{self.__db_model.__name__}: {new_count} Created, {updated_count} Updated."
@@ -254,6 +262,7 @@ class DatabaseManager[
         if statement is None:
             return []
         db_media_list = _session.exec(statement).all()
+        # logger.info(f"Found {len(db_media_list)} media items.")
         return self._convert_to_read_list(db_media_list)
 
     @manage_session
@@ -278,7 +287,12 @@ class DatabaseManager[
             ItemNotFoundError: If the media item with provided id doesn't exist.
         """
         db_media = self._get_db_item(media_id, _session)
-        media_update_data = media_update.model_dump(exclude_unset=True)
+        media_update_data = media_update.model_dump(
+            exclude_unset=True,
+            exclude_defaults=True,
+            exclude_none=True,
+            exclude={"youtube_trailer_id", "downloaded_at"},
+        )
         db_media.sqlmodel_update(media_update_data)
         _session.add(db_media)
         if _commit:
@@ -330,6 +344,10 @@ class DatabaseManager[
         db_media = self._get_db_item(media_update.id, _session)
         db_media.monitor = media_update.monitor
         db_media.trailer_exists = media_update.trailer_exists
+        if media_update.downloaded_at:
+            db_media.downloaded_at = media_update.downloaded_at
+        if media_update.yt_id:
+            db_media.youtube_trailer_id = media_update.yt_id
         _session.add(db_media)
         if _commit:
             _session.commit()
@@ -495,31 +513,39 @@ class DatabaseManager[
     def _get_search_statement(self, query: str, limit: int = 50, offset: int = 0):
         """-->>This is a private method<<-- \n
         Get a search statement for the database query.\n"""
+        # logger.info(f"Searching for: {query}")
         if not query:
+            # logger.info("Empty query. Returning empty list.")
             return None
         imdb_id = self._extract_imdb_id(query)
         if imdb_id:
+            # logger.info(f"Found imdb id: {imdb_id}")
             return self._get_imdb_statement(imdb_id)
         txdb_id = self._extract_txdb_id(query)
         if txdb_id:
+            # logger.info(f"Found txdb id: {txdb_id}")
             return self._get_txdb_statement(txdb_id)
-
+        # logger.info("No imdb or txdb id found. Building statement...")
         statement = select(self.__db_model)
         year = self._extract_four_digit_number(query)
         if year and int(year) > 1900 and int(year) < 2100:
             query = query.replace(year, "").strip().replace("  ", " ")
             statement = self._get_year_statement(year)
+            # logger.info(f"Found year: {year}")
+
         statement = (
             statement.where(
-                or_(
-                    col(self.__db_model.title).ilike(query),
-                    col(self.__db_model.overview).ilike(query),
-                )
+                col(self.__db_model.title).ilike(f"%{query}%"),
+                # or_(
+                #     col(self.__db_model.title).ilike(f"%{query}%"),
+                #     col(self.__db_model.overview).ilike(f"%{query}%"),
+                # )
             )
             .offset(offset)
             .limit(limit)
             .order_by(desc(self.__db_model.added_at))
         )
+        # logger.info(f"Final statement: {statement}")
         return statement
 
     def _get_db_item(self, media_id: int, session: Session) -> _Media:

@@ -1,5 +1,5 @@
-from backend.core.base.database.manager.base import DatabaseManager
-from backend.core.radarr.models import Movie, MovieCreate, MovieRead, MovieUpdate
+from core.base.database.manager.base import DatabaseManager
+from core.radarr.models import Movie, MovieCreate, MovieRead, MovieUpdate
 
 
 class MovieDatabaseManager(DatabaseManager[Movie, MovieCreate, MovieRead, MovieUpdate]):

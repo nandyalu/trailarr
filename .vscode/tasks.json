@@ -1,4 +1,5 @@
 {
+	// For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
 	"version": "2.0.0",
 	"tasks": [
 		{
@@ -30,17 +31,89 @@
 			}
 		},
 		{
-            "label": "Generate PyTest HTML Report",
-            "type": "shell",
-            "command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": []
-        }
+			"type": "shell",
+			"label": "docker-build-run",
+			"dependsOn": [
+				"docker-build"
+			],
+			"command": "python ./restart_stack.py",
+			"problemMatcher": []
+		},
+		{
+			"label": "Generate PyTest HTML Report",
+			"type": "shell",
+			"command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "npm: start",
+			"type": "npm",
+			"script": "start",
+			"path": "frontend/",
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "typescript",
+				"pattern": "$tsc",
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": {
+						"regexp": "(.*?)"
+					},
+					"endsPattern": {
+						"regexp": "bundle generation complete | Compiled |Failed to compile"
+					}
+				}
+			}
+		},
+		{
+			"label": "npm: test",
+			"type": "npm",
+			"script": "test",
+			"path": "frontend/",
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "typescript",
+				"pattern": "$tsc",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": {
+						"regexp": "(.*?)"
+					},
+					"endsPattern": {
+						"regexp": "bundle generation complete | Compiled |Failed to compile"
+					}
+				}
+			}
+		},
+		{
+			"label": "npm: build - frontend",
+			"type": "npm",
+			"script": "build",
+			"path": "frontend",
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "ng build"
+		},
+		{
+			"label": "fastapi: run",
+			"type": "shell",
+			"dependsOn": [
+				"npm: build - frontend"
+			],
+			"isBackground": true,
+			"command": "gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api",
+			"problemMatcher": []
+		}
 	]
 }
