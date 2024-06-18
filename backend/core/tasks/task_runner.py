@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import inspect
 import json
 import logging
@@ -97,7 +97,7 @@ class TaskRunner:
 
         def save_queue_info(terminated=False):
             """Save Queue info to file."""
-            _end_time = datetime.now()
+            _end_time = datetime.now(timezone.utc)
             # Save Queue details to file
             self._read_info_from_file(is_task=False)
             if terminated:
@@ -119,7 +119,7 @@ class TaskRunner:
         self._queue_list[f"{current_pid}"] = {
             "name": task.__name__.replace("_", " ").strip().title(),
             "status": "Queued",
-            "queued": f"{datetime.now()}",
+            "queued": f"{datetime.now(timezone.utc)}",
             "start": None,
             "end": None,
             "duration": 0,
@@ -129,7 +129,7 @@ class TaskRunner:
         delay = max(3, delay)
         time.sleep(delay)
         logging.info(f"TaskRunner: '{task.__name__}' started running in background")
-        _start = datetime.now()
+        _start = datetime.now(timezone.utc)
         self._read_info_from_file(is_task=False)
         self._queue_list[f"{current_pid}"]["status"] = "Running"
         self._queue_list[f"{current_pid}"]["start"] = f"{_start}"
@@ -150,9 +150,8 @@ class TaskRunner:
         if timeout == 9:
             # No timeout, Wait for the task to finish
             task_process.join()
-            logging.info(
-                f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
-            )
+            _time_took = datetime.now(timezone.utc) - _start
+            logging.info(f"TaskRunner: '{task.__name__}' run finished in {_time_took}")
             save_queue_info()
             return
 
@@ -164,9 +163,8 @@ class TaskRunner:
             time.sleep(1)  # ?Change to 1 to make timeout even precise!
         # If task is finished, return
         if not task_process.is_alive():
-            logging.info(
-                f"TaskRunner: '{task.__name__}' run finished in {datetime.now() - _start}"
-            )
+            _time_took = datetime.now(timezone.utc) - _start
+            logging.info(f"TaskRunner: '{task.__name__}' run finished in {_time_took}")
             save_queue_info()
             return
         # If timeout is reached, terminate the task
@@ -176,8 +174,9 @@ class TaskRunner:
                 "Task is still running, terminating it now!"
             )
             task_process.terminate()
+            _time_took = datetime.now(timezone.utc) - _start
             logging.info(
-                f"TaskRunner: '{task.__name__}' run terminated after {datetime.now() - _start}"
+                f"TaskRunner: '{task.__name__}' run terminated after {_time_took}"
             )
             save_queue_info(terminated=True)
         return
@@ -236,13 +235,13 @@ class TaskRunner:
             "last_run_status": "Not Run Yet",
             "last_run_start": None,
             "last_run_duration": 0,
-            "next_run": f"{datetime.now() + timedelta(seconds=delay)}",
+            "next_run": f"{datetime.now(timezone.utc) + timedelta(seconds=delay)}",
         }
         self._write_info_to_file()
         if delay > 3:
             time.sleep(delay)
         while True:
-            _start_time = datetime.now()
+            _start_time = datetime.now(timezone.utc)
             _next_run = _start_time + timedelta(seconds=interval)
             _next_run = f"{_next_run}"
             self._read_info_from_file()
@@ -251,12 +250,12 @@ class TaskRunner:
             self._task_list[f"{current_pid}"]["next_run"] = _next_run
             self._write_info_to_file()
             self._run_task_in_process(task, task_args, delay=0, timeout=timeout)
-            _duration = datetime.now() - _start_time
+            _duration = datetime.now(timezone.utc) - _start_time
             logging.info(
                 f"TaskRunner: '{task.__name__}' Next run in {interval} seconds"
             )
             self._read_info_from_file()
-            _next_run = datetime.now() + timedelta(seconds=interval)
+            _next_run = datetime.now(timezone.utc) + timedelta(seconds=interval)
             _next_run = f"{_next_run}"
             self._task_list[f"{current_pid}"]["last_run_status"] = "Completed"
             self._task_list[f"{current_pid}"]["last_run_duration"] = f"{_duration}"

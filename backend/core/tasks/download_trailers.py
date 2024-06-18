@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from config.config import config
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
@@ -87,7 +87,7 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
     media_update_list = []
     for media in download_media:
         if media.downloaded_at is None:
-            media.downloaded_at = datetime.now()
+            media.downloaded_at = datetime.now(timezone.utc)
         media_update_list.append(
             MediaUpdateDC(
                 id=media.id,

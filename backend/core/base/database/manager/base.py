@@ -1,5 +1,5 @@
 from abc import ABC
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, select
@@ -87,7 +87,7 @@ class DatabaseManager[
             db_media.sqlmodel_update(media_update_data)
             _updated = False
             if session.is_modified(db_media):
-                db_media.updated_at = datetime.now()
+                db_media.updated_at = datetime.now(timezone.utc)
                 _updated = True
             session.add(db_media)
             return db_media, False, _updated

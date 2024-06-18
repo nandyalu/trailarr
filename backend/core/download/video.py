@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import Any
 
@@ -34,7 +34,7 @@ def _postprocessor_hook(d):
     pprocessor = d["postprocessor"]
     if d["status"] == "started":  # Guaranteed to call
         data[pprocessor] = {
-            "starttime": datetime.now(),
+            "starttime": datetime.now(timezone.utc),
             "status": "started",
             "endtime": None,
             "filepath": "",
@@ -44,7 +44,7 @@ def _postprocessor_hook(d):
         logging.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
     if d["status"] == "finished":  # Guaranteed to call
         data[pprocessor]["status"] = "finished"
-        data[pprocessor]["endtime"] = datetime.now()
+        data[pprocessor]["endtime"] = datetime.now(timezone.utc)
         timetook = data[pprocessor]["endtime"] - data[pprocessor]["starttime"]
         logging.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
         if "filepath" in d["info_dict"]:
