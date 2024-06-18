@@ -1,5 +1,5 @@
 # Extract youtube video id from url
-import datetime
+from datetime import datetime, timezone
 import logging
 import os
 import re
@@ -197,7 +197,7 @@ def download_trailers(
         sem.acquire()
         logging.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
         if download_trailer(media, trailer_folder, is_movie):
-            media.downloaded_at = datetime.datetime.now()
+            media.downloaded_at = datetime.now(timezone.utc)
             download_list.append(media)
             logging.info(
                 f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"

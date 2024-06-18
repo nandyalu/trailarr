@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -6,7 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 def get_current_time():
-    return datetime.now()
+    return datetime.now(timezone.utc)
 
 
 class ArrType(Enum):
