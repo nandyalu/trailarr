@@ -62,6 +62,7 @@ def _download_missing_media_trailers(is_movie: bool):
                 monitor=False,
                 trailer_exists=True,
                 downloaded_at=media.downloaded_at,
+                yt_id=media.yt_id,
             )
         )
     # Update the trailer statuses in database
