@@ -1,6 +1,7 @@
 import os
 import time
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -44,10 +45,19 @@ trailarr_api = FastAPI(
 )
 
 origins = [
-    "http://localhost",
-    "http://localhost:4200",  # Angular app
-    "http://10.0.10.131:7889",  # FastAPI app
+    # "http://localhost",
+    # "http://localhost:4200",  # Angular app
+    # "http://10.0.10.131:7889",  # FastAPI app
+    "*"  # TODO: Change this before deploying, Allow all origins for testing
 ]
+
+trailarr_api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register API routes
 trailarr_api.include_router(api_v1_router, prefix="/api/v1")
