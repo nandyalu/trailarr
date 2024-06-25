@@ -31,7 +31,7 @@ def config_logging():
     parent_path = pathlib.Path(__file__).parent
     config_file = pathlib.Path(parent_path, "config", "logger_config.json")
     if config_file.exists():
-        with open(config_file) as f_in: 
+        with open(config_file) as f_in:
             config = json.load(f_in)
     else:
         logging.debug(f"Logger config file not found: {config_file}")
@@ -45,6 +45,21 @@ def config_logging():
 
 def get_logger():
     return logging.getLogger("trailarr")  # __name__ is a common choice
+
+
+class ModuleLogger(logging.LoggerAdapter):
+    """A custom logger adapter to add a prefix to log messages."""
+
+    def __init__(self, log_prefix: str):
+        """Use this logger to add a prefix to log messages. \n
+        Args:
+            log_prefix (str): The prefix to add to log messages."""
+        self.log_prefix = log_prefix
+        logger = logging.getLogger(__name__)
+        super(ModuleLogger, self).__init__(logger, {})
+
+    def process(self, msg, kwargs):
+        return "%s: %s" % (self.log_prefix, msg), kwargs
 
 
 if not _is_logging_setup:

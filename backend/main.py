@@ -5,10 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app_logger import logger
+from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from core.tasks.schedules import schedule_all_tasks
 
+logging = ModuleLogger("Main")
 # from web.routes import web_router
 
 # TODO: Move these to main() function later and setup docker to run main.py
@@ -18,6 +19,7 @@ from core.tasks.schedules import schedule_all_tasks
 timezone = os.getenv("TZ", "ETC")
 
 # Set the timezone
+logging.info(f"Setting up timezone for the application as '{timezone}'")
 os.environ["TZ"] = timezone
 time.tzset()
 
@@ -25,7 +27,7 @@ time.tzset()
 # logger.debug("Initializing the database")
 # init_db()
 # Create the FastAPI application
-logger.info("Creating the FastAPI application")
+logging.info("Creating the FastAPI application")
 trailarr_api = FastAPI(
     title="Trailarr API",
     description="API for Trailarr",
@@ -68,13 +70,13 @@ trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 # Mount images folders - Load these before mountic frontend
 images_dir = os.path.abspath("/data/web/images")
 if not os.path.exists(images_dir):
-    logger.info("Creating images directory")
+    logging.info("Creating images directory")
     os.makedirs(images_dir)
     trailarr_api.mount(
         "/data/web/images", StaticFiles(directory=images_dir), name="images"
     )
 else:
-    logger.info(f"Static directory exists at '{images_dir}'")
+    logging.info(f"Static directory exists at '{images_dir}'")
     trailarr_api.mount(
         "/data/web/images", StaticFiles(directory=images_dir), name="images"
     )
@@ -111,13 +113,13 @@ async def serve_frontend(rest_of_path: str = ""):
 
 static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
 if not os.path.exists(static_dir):
-    logger.info("Creating static directory")
+    logging.info("Creating static directory")
     os.makedirs(static_dir)
 else:
-    logger.info(f"Static directory exists at '{static_dir}'")
+    logging.info(f"Static directory exists at '{static_dir}'")
     trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
 
 
 # Schedule all tasks
-logger.info("Scheduling tasks")
+logging.info("Scheduling tasks")
 schedule_all_tasks()
