@@ -26,7 +26,7 @@ class SonarrDataParser(BaseModel):
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
 
-    @field_validator("txdb_id")
+    @field_validator("txdb_id", mode="before")
     @classmethod
     def parse_txdb_id(cls, v):
         return str(v)
