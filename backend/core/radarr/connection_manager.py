@@ -46,6 +46,13 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
             for movie_read, created in movie_read_list
         ]
 
+    def remove_deleted_media(self, media_ids: list[int]) -> None:
+        """Remove the media from the database that are not present in the Radarr application. \n
+        Args:
+            media_ids (list[int]): List of media ids to remove."""
+        MovieDatabaseManager().delete_except(self.connection_id, media_ids)
+        return
+
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
         """Update the media status in the database. \n
         Args:
