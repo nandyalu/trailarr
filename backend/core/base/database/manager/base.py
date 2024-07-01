@@ -74,7 +74,7 @@ class DatabaseManager[
                 (<Media obj>, True)
         """
         db_media = self._read_if_exists(
-            media_create.connection_id, media_create.arr_id, session
+            media_create.connection_id, media_create.txdb_id, session
         )
         if db_media:
             # Exists, update it
@@ -426,6 +426,36 @@ class DatabaseManager[
         _session.commit()
         return
 
+    @manage_session
+    def delete_except(
+        self,
+        connection_id: int,
+        media_ids: list[int],
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Delete all media items from the database except the ones provided.\n
+        Args:
+            connection_id (int): The id of the connection to delete media items for.
+            media_ids (list[int]): List of media id's to keep.
+            _session (Session) [Optional]: A session to use for the database connection.\
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If any of the media items with provided id's don't exist.
+        """
+        statement = (
+            select(self.__db_model)
+            .where(self.__db_model.connection_id == connection_id)
+            .where(~self.__db_model.id.in_(media_ids))
+        )
+        db_media_list = _session.exec(statement).all()
+        for db_media in db_media_list:
+            _session.delete(db_media)
+        _session.commit()
+        return
+
     def _check_connection_exists(self, connection_id: int, session: Session) -> None:
         """-->>This is a private method<<-- \n
         Check if a connection exists in the database.\n
@@ -567,14 +597,14 @@ class DatabaseManager[
     def _read_if_exists(
         self,
         connection_id: int,
-        arr_id: int,
+        txdb_id: str,
         session: Session,
     ) -> _Media | None:
         """-->>This is a private method<<-- \n
         Check if a media item exists in the database for any given connection and arr ids.\n
         Args:
             connection_id (int): The id of the connection to check.
-            arr_id (int): The arr id of the media item to check.
+            txdb_id (str): The txdb id of the media item to check.
             session (Session): A session to use for the database connection.\n
         Returns:
             Media | None: The media object if it exists, otherwise None.
@@ -582,7 +612,7 @@ class DatabaseManager[
         statement = (
             select(self.__db_model)
             .where(self.__db_model.connection_id == connection_id)
-            .where(self.__db_model.arr_id == arr_id)
+            .where(self.__db_model.txdb_id == txdb_id)
         )
         db_media = session.exec(statement).one_or_none()
         return db_media
