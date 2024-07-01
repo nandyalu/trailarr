@@ -614,5 +614,5 @@ class DatabaseManager[
             .where(self.__db_model.connection_id == connection_id)
             .where(self.__db_model.txdb_id == txdb_id)
         )
-        db_media = session.exec(statement).one_or_none()
+        db_media = session.exec(statement).first()
         return db_media
