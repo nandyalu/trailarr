@@ -48,6 +48,13 @@ class SonarrConnectionManager(BaseConnectionManager[SeriesCreate]):
             for series_read, created in series_read_list
         ]
 
+    def remove_deleted_media(self, media_ids: list[int]) -> None:
+        """Remove the media from the database that are not present in the Sonarr application. \n
+        Args:
+            media_ids (list[int]): List of media ids to remove."""
+        SeriesDatabaseManager().delete_except(self.connection_id, media_ids)
+        return
+
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
         """Update the media status in the database. \n
         Args:
