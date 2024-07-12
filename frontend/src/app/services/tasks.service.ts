@@ -70,9 +70,9 @@ export class TasksService {
           id,
           ...queue,
           duration: this.formatDuration(queue.duration),
-          queued: this.convertDate(queue.queued),
-          start: this.convertDate(queue.start),
-          end: this.convertDate(queue.end)
+          finished: this.convertDate(queue.queued),
+          started: this.convertDate(queue.start),
+          // end: this.convertDate(queue.end)
         }));
       })
     );
