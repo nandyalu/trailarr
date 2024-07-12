@@ -21,7 +21,8 @@
         </tr>
         <!-- <p>{{ scheduledTasks }}</p> -->
         <tr *ngFor="let task of scheduledTasks" class="table-row">
-          <td class="name">{{ task.id }}: {{ task.name }}</td>
+          <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
+          <td class="name">{{ task.name }}</td>
           <td>{{ task.interval }}</td>
           <td>{{ task.last_run_start ? (task.last_run_start | timeago) : 'Not run yet' }}</td>
           <td>{{ task.last_run_status }}</td>
@@ -57,7 +58,8 @@
         </tr>
         <!-- <p>{{ queuedTasks }}</p> -->
         <tr *ngFor="let task of queuedTasks" class="table-row">
-          <td class="name">{{ task.id }}: {{ task.name }}</td>
+          <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
+          <td class="name">{{ task.name }}</td>
           <td>{{ task.status }}</td>
           <td>{{ task.started ? (task.started | timeago) : 'Pending' }}</td>
           <td>{{ task.finished ? (task.finished | timeago) : '-' }}</td>
