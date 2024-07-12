@@ -34,16 +34,27 @@ export class TasksService {
     return date ? new Date(date) : null;
   }
 
-  formatDuration(duration: string): string {
-    // Check if the duration contains milliseconds
-    if (!duration) {
+  // formatDuration(duration: string): string {
+  //   // Check if the duration contains milliseconds
+  //   if (!duration) {
+  //     return '0:00:00';
+  //   }
+  //   if (duration.includes('.')) {
+  //     // Remove the milliseconds
+  //     duration = duration.split('.')[0];
+  //   }
+  //   return duration
+  // }
+
+  formatDuration(duration: number): string {
+    // Convert duration in seconds to HH:MM:SS format
+    if (duration < 0) {
       return '0:00:00';
     }
-    if (duration.includes('.')) {
-      // Remove the milliseconds
-      duration = duration.split('.')[0];
-    }
-    return duration
+    let hours = Math.floor(duration / 3600);
+    let minutes = Math.floor((duration % 3600) / 60);
+    let seconds = duration % 60;
+    return `${hours}:${minutes}:${seconds}`;
   }
 
   private schedulesUrl = this.tasksUrl + 'schedules';
@@ -70,8 +81,8 @@ export class TasksService {
           id,
           ...queue,
           duration: this.formatDuration(queue.duration),
-          finished: this.convertDate(queue.queued),
-          started: this.convertDate(queue.start),
+          finished: this.convertDate(queue.finished),
+          started: this.convertDate(queue.started),
           // end: this.convertDate(queue.end)
         }));
       })
