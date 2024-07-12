@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from functools import wraps
 from typing import Any, Generator
 from sqlalchemy import StaticPool
-from sqlmodel import Session, create_engine
+from sqlmodel import SQLModel, Session, create_engine
 
 from config.config import config
 
@@ -18,6 +18,7 @@ if config.debug:
         },
         poolclass=StaticPool,
     )
+    SQLModel.metadata.create_all(engine)
 else:
     engine = create_engine(sqlite_url, echo=False)  # pragma: no cover
 # * Not needed, Alembic will create the database tables

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 import time
 from fastapi import FastAPI
@@ -7,13 +8,14 @@ from fastapi.staticfiles import StaticFiles
 
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
+from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 
 logging = ModuleLogger("Main")
 # from web.routes import web_router
 
 # TODO: Move these to main() function later and setup docker to run main.py
-# No need to setup the logger and it's config, importing the logger from logger.py will do setup.
+# No need to setup the logger and it's config, importing the logger from app_logger.py will do setup
 
 # Get the timezone from the environment variable
 timezone = os.getenv("TZ", "ETC")
@@ -23,16 +25,37 @@ logging.info(f"Setting up timezone for the application as '{timezone}'")
 os.environ["TZ"] = timezone
 time.tzset()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Before startup
+    # Schedule all tasks
+    logging.info("Scheduling tasks")
+    schedule_all_tasks()
+    scheduler.start()
+
+    # Yield to let the app run
+    yield
+
+    # Before shutdown
+    scheduler.shutdown()
+
+
+# Get APP_NAME and APP_VERSION from environment variables
+APP_NAME = os.getenv("APP_NAME", "Indexarr")
+APP_VERSION = os.getenv("APP_VERSION", "0.0.1")
+
 # Initialize the database - No need to do this if we are using alembic
 # logger.debug("Initializing the database")
 # init_db()
 # Create the FastAPI application
 logging.info("Creating the FastAPI application")
 trailarr_api = FastAPI(
-    title="Trailarr API",
-    description="API for Trailarr",
-    summary="Trailarr API",
-    version="0.0.1",
+    lifespan=lifespan,
+    title=f"{APP_NAME} API",
+    description=f"API for {APP_NAME} application.",
+    summary=f"{APP_NAME} API available commands.",
+    version=APP_VERSION,
     openapi_url="/api/v1/openapi.json",
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
@@ -118,8 +141,3 @@ if not os.path.exists(static_dir):
 else:
     logging.info(f"Static directory exists at '{static_dir}'")
     trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
-
-
-# Schedule all tasks
-logging.info("Scheduling tasks")
-schedule_all_tasks()
