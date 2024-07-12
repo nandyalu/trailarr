@@ -50,18 +50,18 @@
       <table class="tasks-table">
         <tr class="table-row header">
           <th class="name">Name</th>
-          <th>Queued</th>
+          <th>Status</th>
           <th>Started</th>
+          <th>Finished</th>
           <th>Duration</th>
-          <th>End</th>
         </tr>
         <!-- <p>{{ queuedTasks }}</p> -->
         <tr *ngFor="let task of queuedTasks" class="table-row">
           <td class="name">{{ task.id }}: {{ task.name }}</td>
-          <td>{{ task.queued ? (task.queued | timeago) : '-' }}</td>
-          <td>{{ task.start ? (task.start | timeago) : 'Pending' }}</td>
+          <td>{{ task.status }}</td>
+          <td>{{ task.started ? (task.started | timeago) : 'Pending' }}</td>
+          <td>{{ task.finished ? (task.finished | timeago) : '-' }}</td>
           <td>{{ task.duration }}</td>
-          <td>{{ task.end ? (task.end | timeago) : 'Running' }}</td>
         </tr>
       </table>
     </div>
