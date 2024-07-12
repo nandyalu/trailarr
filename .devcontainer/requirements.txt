@@ -3,6 +3,7 @@
 aiohttp==3.9.3
 aiofiles==23.2.1
 alembic==1.13.1
+apscheduler==3.10.4
 async-lru==2.0.4
 fastapi==0.110.0
 pillow==10.3.0
