@@ -1,7 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
-from time import sleep
-from app_logger import ModuleLogger, logger
+from app_logger import ModuleLogger
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.download_trailers import download_missing_trailers
@@ -9,12 +8,11 @@ from core.tasks.image_refresh import refresh_images
 
 # from core.tasks.task_runner import TaskRunner
 
-logging = ModuleLogger("BackgroundTasks")
+logger = ModuleLogger("BackgroundTasks")
 
 
 def run_async(task) -> None:
     """Run the async task in a separate event loop."""
-    sleep(10)
     new_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(new_loop)
     new_loop.run_until_complete(task())
@@ -50,7 +48,7 @@ def refresh_api_data_job():
         next_run_time=datetime.now() + timedelta(seconds=30),
         max_instances=1,
     )
-    logging.info("API Refresh job scheduled!")
+    logger.info("API Refresh job scheduled!")
     return
 
 
@@ -69,7 +67,7 @@ def image_refresh_job():
         next_run_time=datetime.now() + timedelta(seconds=600),
         max_instances=1,
     )
-    logging.info("Image refresh job scheduled!")
+    logger.info("Image refresh job scheduled!")
     return
 
 
@@ -88,7 +86,7 @@ def download_missing_trailers_job():
         next_run_time=datetime.now() + timedelta(seconds=900),
         max_instances=1,
     )
-    logging.info("Download Missing Trailers job scheduled!")
+    logger.info("Download Missing Trailers job scheduled!")
     return
 
 
@@ -109,13 +107,4 @@ def schedule_all_tasks():
     download_missing_trailers_job()
 
     logger.info("All tasks scheduled!")
-
-
-if __name__ == "__main__":
-    schedule_all_tasks()
-    scheduler.start()
-    # print(get_all_jobs())
-    while True:
-        sleep(10)
-        # print(get_all_jobs())
-        print("Running")
+    return

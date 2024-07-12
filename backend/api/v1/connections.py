@@ -7,7 +7,7 @@ from core.base.database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.tasks.api_refresh import api_refresh_by_id
+from core.tasks.api_refresh import api_refresh_by_id_job
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -116,24 +116,4 @@ async def delete_connection(connection_id: int) -> str:
     },
 )
 async def refresh_connection(connection_id: int) -> str:
-    return api_refresh_by_id(connection_id)
-
-
-# @connections_router.post("/")
-# async def create_connection(
-#     connection_name: str,
-#     arr_type: ArrType,
-#     arr_url: str,
-#     arr_api_key: str,
-#     monitor: MonitorType,
-# ) -> str:
-#     connection = ConnectionCreate(
-#         name=connection_name,
-#         arr_type=arr_type,
-#         url=arr_url,
-#         api_key=arr_api_key,
-#         monitor=monitor,
-#     )
-#     db_handler = ConnectionDatabaseManager()
-#     connection1 = await db_handler.create(connection)
-#     return connection1
+    return api_refresh_by_id_job(connection_id)

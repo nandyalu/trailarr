@@ -3,7 +3,9 @@ from core.base.database.models.media import MediaUpdate
 from core.download.image import refresh_media_images
 from core.radarr.database_manager import MovieDatabaseManager
 from core.sonarr.database_manager import SeriesDatabaseManager
-from app_logger import logger
+from app_logger import ModuleLogger
+
+logger = ModuleLogger("ImageRefreshTasks")
 
 
 async def refresh_images(recent_only: bool = False):
