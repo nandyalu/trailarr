@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-  indexarr2:
-    image: indexarr2
+  trailarr2:
+    image: trailarr2
     build:
       context: .
       dockerfile: ./Dockerfile
