@@ -71,8 +71,6 @@ trailarr_api = FastAPI(
 
 origins = [
     # "http://localhost",
-    # "http://localhost:4200",  # Angular app
-    # "http://10.0.10.131:7889",  # FastAPI app
     "*"  # TODO: Change this before deploying, Allow all origins for testing
 ]
 
@@ -87,8 +85,7 @@ trailarr_api.add_middleware(
 # Register API routes
 trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 
-# Register Web routes
-# trailarr_api.include_router(web_router)
+# Register other routes here (if any)
 
 # Mount images folders - Load these before mountic frontend
 images_dir = os.path.abspath("/data/web/images")
@@ -105,19 +102,8 @@ else:
     )
 
 
-# Mount static files
+# Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
-# @trailarr_api.get("/", include_in_schema=False)
-# @trailarr_api.get("/home", include_in_schema=False)
-# @trailarr_api.get("/movies", include_in_schema=False)
-# @trailarr_api.get("/series", include_in_schema=False)
-# @trailarr_api.get("/tasks", include_in_schema=False)
-# @trailarr_api.get("/logs", include_in_schema=False)
-# @trailarr_api.get("/settings", include_in_schema=False)
-# async def root():
-#     return RedirectResponse(url="/index.html")
-
-
 @trailarr_api.get("/{rest_of_path:path}", include_in_schema=False)
 async def serve_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
