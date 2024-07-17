@@ -48,10 +48,6 @@ class _Config:
         # Setting default values for properties
         self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
-        self.dark_mode_enabled = os.getenv(
-            "DARK_MODE_ENABLED",
-            "True",
-        ).lower() in ["true", "1"]
         self.monitor_enabled = os.getenv(
             "MONITOR_ENABLED",
             "True",
@@ -109,21 +105,9 @@ class _Config:
         self._save_to_env("DEBUG", self._debug)
 
     @property
-    def dark_mode_enabled(self):
-        """Dark mode for the application. \n
-        Default is True. \n
-        Valid values are True/False."""
-        return self._dark_mode_enabled
-
-    @dark_mode_enabled.setter
-    def dark_mode_enabled(self, value: bool):
-        self._dark_mode_enabled = value
-        self._save_to_env("DARK_MODE_ENABLED", self._dark_mode_enabled)
-
-    @property
     def database_url(self):
         """Database URL for the application. \n
-        Default is 'sqlite:///trailarr.db'. \n
+        Default is 'sqlite:////data/trailarr.db'. \n
         Valid values are any database URL."""
         return self._database_url
 
@@ -206,9 +190,9 @@ class _Config:
         self._save_to_env("TRAILER_SUBTITLES_LANGUAGE", self._trailer_language)
 
     @property
-    def trailer_resolution(self):
+    def trailer_resolution(self) -> int:
         """Resolution for trailers. \n
-        Default is '1080p'. \n
+        Default is 1080. \n
         Valid input values are '240', '360', '480', '720', '1080', '1440', '2160',
         'SD', 'FSD', 'HD', 'FHD', 'QHD', 'UHD'.
         Always stored as a number. Ex: '1080'.

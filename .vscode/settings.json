@@ -13,6 +13,7 @@
     "python.testing.pytestArgs": [
         "."
     ],
+    "python.testing.cwd": "${workspaceFolder}/backend",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "todo-tree.tree.showBadges": true,
