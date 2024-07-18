@@ -10,10 +10,10 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "main:app",
+                "backend.main:trailarr_api",
                 "--reload",
                 "--port=7889"
-            ],
+            ], 
             "jinja": true,
             "justMyCode": true
         },

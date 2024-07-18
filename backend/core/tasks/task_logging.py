@@ -6,7 +6,7 @@ from apscheduler import events
 from apscheduler.schedulers.base import BaseScheduler
 from apscheduler.job import Job
 from sqlalchemy import StaticPool
-from sqlmodel import Field, SQLModel, Session, create_engine, select
+from sqlmodel import Field, SQLModel, Session, col, create_engine, select
 
 
 def get_current_time():
@@ -21,6 +21,7 @@ class TaskInfo(SQLModel):
     last_run_start: datetime | None = Field(default=None)
     last_run_status: str = Field(default="Not Run Yet")
     next_run: datetime | None = Field(default=None)
+    scheduled: bool = Field(default=True)
 
 
 class TaskInfoDB(TaskInfo, table=True):
@@ -202,6 +203,10 @@ def cleanup_queue() -> None:
             _seconds_ago = int(_seconds_ago.total_seconds())
             if _seconds_ago > 3630:  # 1 hour with 30 seconds grace period
                 session.delete(_queue)
+                # Also delete the task if it exists and not scheduled task
+                _task = _get_task(_queue.queue_id)
+                if _task and not _task.scheduled:
+                    session.delete(_task)
     return None
 
 
@@ -235,7 +240,8 @@ def get_all_tasks() -> list[TaskInfo]:
         sequence: List of all tasks scheduled in the scheduler.
     """
     with _get_session() as session:
-        _jobs_list = session.exec(select(TaskInfoDB)).all()
+        statement = select(TaskInfoDB).where(col(TaskInfoDB.scheduled).is_(True))
+        _jobs_list = session.exec(statement).all()
     return _to_read_task_list(_jobs_list)
 
 
@@ -291,7 +297,9 @@ def task_added_event(event: events.JobEvent) -> None:
     if "interval_length" in _job.trigger.__dir__():
         _task.interval = int(_job.trigger.interval_length)
         _task.next_run = _job.next_run_time
-        update_task(_task)
+    else:
+        _task.scheduled = False
+    update_task(_task)
     return
 
 
@@ -303,17 +311,13 @@ def task_started_event(event: events.JobEvent) -> None:
     # Get task from database if it exists
     task = _get_task(_task_id)
     if task:
-        # Scheduled task, update the task in database
+        # Update the task in database
         task.last_run_start = _now
         task.last_run_duration = 0
         task.last_run_status = "Running"
         task.next_run = _get_task_next_run(_task_id)
         update_task(task)
         _task_name = task.name
-    else:
-        # Not a scheduled task, get task name from the scheduler
-        # TODO: Check why task name is not working
-        _task_name = _get_scheduler_task_name(_task_id)
 
     # Create a queue entry for the task and save it
     queue = QueueInfo(
