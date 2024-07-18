@@ -48,12 +48,12 @@ export class TasksService {
 
   formatDuration(duration: number): string {
     // Convert duration in seconds to HH:MM:SS format
-    if (duration < 0) {
+    if (duration < 1) {
       return '0:00:00';
     }
     let hours = Math.floor(duration / 3600);
-    let minutes = Math.floor((duration % 3600) / 60);
-    let seconds = duration % 60;
+    let minutes = Math.floor((duration % 3600) / 60).toString().padStart(2, '0');
+    let seconds = (duration % 60).toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   }
 

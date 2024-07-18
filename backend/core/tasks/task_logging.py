@@ -176,6 +176,7 @@ def update_queue(queue: QueueInfo) -> None:
     # Update the task info with new values
     _queue_db.duration = queue.duration
     _queue_db.finished = queue.finished
+    _queue_db.started = queue.started
     _queue_db.status = queue.status
 
     # Save to the database
@@ -185,7 +186,26 @@ def update_queue(queue: QueueInfo) -> None:
     return None
 
 
-def _to_read_list(db_task_list: Sequence[TaskInfoDB]) -> list[TaskInfo]:
+def cleanup_queue() -> None:
+    """Cleanup the finished queue items from the in-memory database \
+        that started more than an hour ago. \n
+    Returns:
+        None \n
+    """
+    _now = get_current_time()
+    with _get_session() as session:
+        _queue_list = session.exec(select(QueueInfoDB)).all()
+        for _queue in _queue_list:
+            if _queue.status == "Running":
+                continue
+            _seconds_ago = _queue.started - _now
+            _seconds_ago = int(_seconds_ago.total_seconds())
+            if _seconds_ago > 3630:  # 1 hour with 30 seconds grace period
+                session.delete(_queue)
+    return None
+
+
+def _to_read_task_list(db_task_list: Sequence[TaskInfoDB]) -> list[TaskInfo]:
     """-->>This is a private method<<-- \n
     Convert a list of TaskInfoDB objects to a list of TaskInfo objects.\n"""
     if not db_task_list or len(db_task_list) == 0:
@@ -209,14 +229,14 @@ def _to_read_queue_list(db_queue_list: Sequence[QueueInfoDB]) -> list[QueueInfo]
     return queue_read_list
 
 
-def get_all_jobs() -> list[TaskInfo]:
-    """Returns all jobs scheduled in the scheduler. \n
+def get_all_tasks() -> list[TaskInfo]:
+    """Returns all tasks scheduled in the scheduler. \n
     Returns:
-        sequence: List of all jobs scheduled in the scheduler.
+        sequence: List of all tasks scheduled in the scheduler.
     """
     with _get_session() as session:
         _jobs_list = session.exec(select(TaskInfoDB)).all()
-    return _to_read_list(_jobs_list)
+    return _to_read_task_list(_jobs_list)
 
 
 def get_all_queue() -> list[QueueInfo]:
@@ -229,11 +249,38 @@ def get_all_queue() -> list[QueueInfo]:
     return _to_read_queue_list(_queue_list)
 
 
-def task_added_event(event: events.JobEvent) -> None:
-    """Event handler for task added event."""
+def _get_scheduler_task(task_id: str) -> Job | None:
+    """Get a task from the in-memory database. \n
+    Args:
+        task_id (str): Task ID to get. \n
+    Returns:
+        TaskInfoDB: Task with the given ID. \n
+    """
     from core.tasks import scheduler
 
-    _job: Job | None = scheduler.get_job(event.job_id)
+    _job: Job | None = scheduler.get_job(task_id)
+    return _job
+
+
+def _get_task_next_run(task_id: str) -> datetime | None:
+    """Get the next run time for a scheduler task."""
+    _job: Job | None = _get_scheduler_task(task_id)
+    if _job:
+        return _job.next_run_time
+    return None
+
+
+def _get_scheduler_task_name(task_id: str) -> str:
+    """Get the name of the scheduler task."""
+    _job: Job | None = _get_scheduler_task(task_id)
+    if _job:
+        return _job.name
+    return "Queued Task"
+
+
+def task_added_event(event: events.JobEvent) -> None:
+    """Event handler for task added event."""
+    _job: Job | None = _get_scheduler_task(event.job_id)
     if not _job:
         return
     _task = TaskInfo(
@@ -242,98 +289,89 @@ def task_added_event(event: events.JobEvent) -> None:
     )
     # Save tasks only if they have an interval (recurring)
     if "interval_length" in _job.trigger.__dir__():
-        _interval = int(_job.trigger.interval_length)
-        _task.interval = _interval
-        _next_run = _job.next_run_time
-        _task.next_run = _next_run
+        _task.interval = int(_job.trigger.interval_length)
+        _task.next_run = _job.next_run_time
         update_task(_task)
     return
 
 
-def _get_task_next_run(task_id: str) -> datetime | None:
-    """Get the next run time for a task."""
-    from core.tasks import scheduler
-
-    _job: Job | None = scheduler.get_job(task_id)
-    if _job:
-        return _job.next_run_time
-    return None
-
-
 def task_started_event(event: events.JobEvent) -> None:
     """Event handler for task started event."""
-    # Update task with started time and clear last run duration
-    task = _get_task(event.job_id)
-    if not task:
-        return
-    task.last_run_start = get_current_time()
-    task.last_run_duration = 0
-    task.last_run_status = "Running"
-    task.next_run = _get_task_next_run(event.job_id)
-    update_task(task)
+    _now = get_current_time()
+    _task_id = event.job_id
+    _task_name = ""
+    # Get task from database if it exists
+    task = _get_task(_task_id)
+    if task:
+        # Scheduled task, update the task in database
+        task.last_run_start = _now
+        task.last_run_duration = 0
+        task.last_run_status = "Running"
+        task.next_run = _get_task_next_run(_task_id)
+        update_task(task)
+        _task_name = task.name
+    else:
+        # Not a scheduled task, get task name from the scheduler
+        # TODO: Check why task name is not working
+        _task_name = _get_scheduler_task_name(_task_id)
 
-    # Add a queue entry for the task
+    # Create a queue entry for the task and save it
     queue = QueueInfo(
-        name=task.name,
-        queue_id=f"{task.task_id}",
-        started=task.last_run_start,
+        name=_task_name,
+        queue_id=f"{_task_id}",
+        started=_now,
         status="Running",
     )
-    save_queue(queue)
+    update_queue(queue)
+    cleanup_queue()  # Cleanup the finished queue items
     return
 
 
-def task_finished_event(event: events.JobEvent) -> None:
-    """Event handler for task finished event."""
-    # Update task with finished time and duration
-    task = _get_task(event.job_id)
-    if not task:
-        return
+def task_finished_event(event: events.JobEvent, status: str = "Finished") -> None:
+    """Event handler for task Finished/Error events."""
+    _now = get_current_time()
+    _task_id = event.job_id
+    _task_name = ""
     _duration = 0
-    if task.last_run_start:
-        _duration = get_current_time() - task.last_run_start
-        _duration = int(_duration.total_seconds())
+    # Get task from database if it exists
+    task = _get_task(_task_id)
+    if task:
+        # Scheduled task, update the task in database with finished time and duration
+        if task.last_run_start:
+            _duration = _now - task.last_run_start
+            _duration = int(_duration.total_seconds())
         task.last_run_duration = _duration
-    task.last_run_status = "Finished"
-    task.next_run = _get_task_next_run(event.job_id)
-    update_task(task)
+        task.last_run_status = status
+        task.next_run = _get_task_next_run(_task_id)
+        update_task(task)
+        _task_name = task.name
 
-    # Update queue entry for the task
-    queue = QueueInfo(
-        name=task.name,
-        queue_id=f"{task.task_id}",
-        duration=_duration,
-        finished=get_current_time(),
-        status="Finished",
-    )
+    # Get queue entry for database if it exists
+    queue = _get_queue(_task_id)
+    if not queue:
+        # Queue not in database, create one
+        if not _task_name:
+            # Not a scheduled task, get task name from the scheduler
+            _task_name = _get_scheduler_task_name(_task_id)
+        queue = QueueInfo(
+            name=_task_name,
+            queue_id=f"{_task_id}",
+        )
+    if not _duration:
+        # Calculate duration if not already calculated
+        if queue.started:
+            _duration = _now - queue.started
+            _duration = int(_duration.total_seconds())
+    queue.duration = _duration
+    queue.finished = _now
+    queue.status = status
     update_queue(queue)
     return
 
 
 def task_error_event(event: events.JobEvent) -> None:
     """Event handler for task error event."""
-    # Update task with finished time and duration
-    task = _get_task(event.job_id)
-    if not task:
-        return
-    _duration = 0
-    if task.last_run_start:
-        _duration = get_current_time() - task.last_run_start
-        _duration = int(_duration.total_seconds())
-        task.last_run_duration = _duration
-    task.last_run_status = "Error"
-    task.next_run = _get_task_next_run(event.job_id)
-    update_task(task)
-
-    # Update queue entry for the task
-    queue = QueueInfo(
-        name=task.name,
-        queue_id=f"{task.task_id}",
-        duration=_duration,
-        finished=get_current_time(),
-        status="Error",
-    )
-    update_queue(queue)
+    task_finished_event(event, status="Error")
     return
 
 
@@ -346,3 +384,5 @@ def add_all_event_listeners(scheduler: BaseScheduler):
     scheduler.add_listener(task_started_event, events.EVENT_JOB_SUBMITTED)
     # Scheduled task finished event
     scheduler.add_listener(task_finished_event, events.EVENT_JOB_EXECUTED)
+    # Scheduler task error event
+    scheduler.add_listener(task_error_event, events.EVENT_JOB_ERROR)

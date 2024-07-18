@@ -20,6 +20,7 @@
  .table-container {
    width: 100%;
    overflow-x: auto;
+   min-height: 25%;
    -webkit-overflow-scrolling: touch;
    /* Smooth scrolling for touch devices */
    margin-top: 1rem;
