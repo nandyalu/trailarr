@@ -10,7 +10,7 @@ tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 @tasks_router.get("/schedules")
 async def get_scheduled_tasks() -> list[task_logging.TaskInfo]:
-    return task_logging.get_all_jobs()
+    return task_logging.get_all_tasks()
 
 
 @tasks_router.get("/queue")
