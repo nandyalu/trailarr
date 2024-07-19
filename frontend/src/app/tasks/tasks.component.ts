@@ -1,7 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { TimeagoIntl, TimeagoModule } from 'ngx-timeago';
-import { Subscription, interval, startWith, switchMap } from 'rxjs';
+import { TimeagoModule } from 'ngx-timeago';
 import { QueuedTask, ScheduledTask } from '../models/tasks';
 import { TasksService } from '../services/tasks.service';
 
@@ -9,7 +8,7 @@ import { TasksService } from '../services/tasks.service';
   selector: 'app-tasks',
   standalone: true,
   imports: [NgIf, NgFor, TimeagoModule],
-  providers: [TimeagoIntl],
+  providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.css'
 })
@@ -20,55 +19,73 @@ export class TasksComponent implements OnInit, OnDestroy {
   isLoading2 = true;
 
   constructor(private tasksService: TasksService) { }
-  // constructor(private tasksService: TasksService, intl: TimeagoIntl) {
-  //   // Set the locale to use for timeago
-  //   intl.strings = englishStrings;
-  //   intl.changes.next();
-  //  }
 
-  private scheduledTasksSubscription: Subscription | undefined;
-  private queuedTasksSubscription: Subscription | undefined;
+  private timeoutRef: any;
 
   ngOnInit(): void {
-    this.scheduledTasksSubscription = interval(10000).pipe(
-      startWith(0), // So that it doesn't wait for 3 seconds before the first request
-      switchMap(() => this.tasksService.getScheduledTasks())
-    ).subscribe((tasks: ScheduledTask[]) => {
+    // On first fetch, get next event start time and set interval to fetch at that time
+    // If a task is running, fetch every 10 seconds
+    this.refreshTaskData();
+  }
+  
+  getSecondsToNextScheduledEvent(sTasks: ScheduledTask[], qTasks: QueuedTask[]): number {
+    // Get the time to the next event
+    let secondsToNextEvent = 60; // Default to 60 seconds
+
+    // If an QueuedTask is running, set the time to 10 seconds
+    for (let qTask of qTasks) {
+      if (qTask.status === 'Running') {
+        // console.log('Task is running, wil refresh data in 10 seconds');
+        return 10;
+      }
+    }
+    
+    // If no QueuedTask is running, get the time to the next event
+    for (let sTask of sTasks) {
+      let now = new Date().getTime();
+      let nextRun = sTask.next_run.getTime();
+      let secondsTillNextRun = Math.floor((nextRun - now) / 1000) + 2;
+      secondsTillNextRun = Math.max(secondsTillNextRun, 3); // Ensure that the time is at least 5 second
+      if (secondsTillNextRun === 3) {
+        // console.log('Task next run soon, will refresh data in 3 seconds');
+        return 3;
+      }
+      secondsToNextEvent = Math.min(secondsToNextEvent, secondsTillNextRun); // Get the minimum time to the next event
+    }
+    // console.log('No task is running, will refresh data in', secondsToNextEvent, 'seconds');
+    return secondsToNextEvent;
+  }
+
+  refreshTaskData() {
+    // Refresh the data
+    // console.log('Refreshing task data');
+    this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
       this.scheduledTasks = tasks;
       this.isLoading1 = false;
     });
-
-    this.queuedTasksSubscription = interval(10000).pipe(
-      startWith(0), // So that it doesn't wait for 3 seconds before the first request
-      switchMap(() => this.tasksService.getQueuedTasks())
-    ).subscribe((tasks: QueuedTask[]) => {
+    this.tasksService.getQueuedTasks().subscribe((tasks: QueuedTask[]) => {
       this.queuedTasks = tasks;
       this.isLoading2 = false;
     });
+    
+    // Get the time to the next event
+    let secondsToNextEvent = this.getSecondsToNextScheduledEvent(this.scheduledTasks, this.queuedTasks);
+
+    // Refresh the data at the time of the next event
+    // console.log('Refreshing data in', secondsToNextEvent, 'seconds');
+    this.timeoutRef = setTimeout(() => {
+      this.refreshTaskData();
+    }, secondsToNextEvent * 1000);
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe from the interval
-    this.scheduledTasksSubscription?.unsubscribe();
-    this.queuedTasksSubscription?.unsubscribe();
+    // Unsubscribe from the refresh interval
+    clearTimeout(this.timeoutRef);
   }
 
   runTask(id: number) {
     console.log('Running task with id:', id);
     // TODO: Implement the runTask method
   }
-
-  // ngOnInit(): void {
-  //   this.isLoading1 = true;
-  //   this.isLoading2 = true;
-  //   this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
-  //     this.scheduledTasks = tasks;
-  //     this.isLoading1 = false;
-  //   });
-  //   this.tasksService.getQueuedTasks().subscribe((tasks: QueuedTask[]) => {
-  //     this.queuedTasks = tasks;
-  //     this.isLoading2 = false;
-  //   });
-  // }
 
 }
