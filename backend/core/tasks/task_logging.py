@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Generator, Sequence
 
 from apscheduler import events
@@ -10,7 +10,7 @@ from sqlmodel import Field, SQLModel, Session, col, create_engine, select
 
 
 def get_current_time():
-    return datetime.now()
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class TaskInfo(SQLModel):
@@ -268,11 +268,17 @@ def _get_scheduler_task(task_id: str) -> Job | None:
     return _job
 
 
+def _convert_local_to_utc(dt: datetime) -> datetime:
+    """Convert a local datetime to UTC datetime."""
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def _get_task_next_run(task_id: str) -> datetime | None:
     """Get the next run time for a scheduler task."""
     _job: Job | None = _get_scheduler_task(task_id)
-    if _job:
-        return _job.next_run_time
+    if _job and _job.next_run_time:
+        # Convert the next run time to UTC datetime and return
+        return _convert_local_to_utc(_job.next_run_time)
     return None
 
 
@@ -296,7 +302,7 @@ def task_added_event(event: events.JobEvent) -> None:
     # Save tasks only if they have an interval (recurring)
     if "interval_length" in _job.trigger.__dir__():
         _task.interval = int(_job.trigger.interval_length)
-        _task.next_run = _job.next_run_time
+        _task.next_run = _convert_local_to_utc(_job.next_run_time)
     else:
         _task.scheduled = False
     update_task(_task)

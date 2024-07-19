@@ -31,7 +31,7 @@ export class TasksService {
   }
 
   convertDate(date: string): Date | null {
-    return date ? new Date(date) : null;
+    return date ? new Date(date + 'Z') : null;
   }
 
   // formatDuration(duration: string): string {
@@ -49,9 +49,9 @@ export class TasksService {
   formatDuration(duration: number): string {
     // Convert duration in seconds to HH:MM:SS format
     if (duration < 1) {
-      return '0:00:00';
+      return '00:00:00';
     }
-    let hours = Math.floor(duration / 3600);
+    let hours = Math.floor(duration / 3600).toString().padStart(2, '0');
     let minutes = Math.floor((duration % 3600) / 60).toString().padStart(2, '0');
     let seconds = (duration % 60).toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;

@@ -5,7 +5,7 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from core.tasks.task_logging import add_all_event_listeners
 
 # Get the timezone from the environment variable
-timezone = os.getenv("TZ", "ETC")
+timezone = os.getenv("TZ", "UTC")
 
 # Initialize a MemeoryJobStore for the scheduler
 jobstores = {"default": MemoryJobStore()}
