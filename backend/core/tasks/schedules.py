@@ -108,3 +108,20 @@ def schedule_all_tasks():
 
     logger.info("All tasks scheduled!")
     return
+
+
+def run_task_now(task_id: str) -> str:
+    """Run a scheduled task immediately. \n
+    Args:
+        task_id (str): The id of the task to run. \n
+    Returns:
+        str: Message indicating the task was triggered."""
+    if not task_id:
+        return "Unable to trigger task, 'task_id' not provided!"
+    _task = scheduler.get_job(task_id)
+    if not _task:
+        return "Unable to trigger task, Task with 'task_id' not found!"
+    _name = _task.name
+    _next_run_time = datetime.now() + timedelta(seconds=3)  # Run in 3 seconds
+    scheduler.modify_job(job_id=task_id, next_run_time=_next_run_time)
+    return f"'{_name}' Task triggered successfully!"

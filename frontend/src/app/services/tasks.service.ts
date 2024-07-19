@@ -88,5 +88,9 @@ export class TasksService {
       })
     );
   }
+
+  runScheduledTask(id: string): Observable<any> {
+    return this.http.get(this.tasksUrl + 'run/' + id);
+  }
   
 }

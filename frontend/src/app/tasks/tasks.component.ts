@@ -30,7 +30,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   
   getSecondsToNextScheduledEvent(sTasks: ScheduledTask[], qTasks: QueuedTask[]): number {
     // Get the time to the next event
-    let secondsToNextEvent = 60; // Default to 60 seconds
+    let secondsToNextEvent = 30; // Default to 30 seconds
 
     // If an QueuedTask is running, set the time to 10 seconds
     for (let qTask of qTasks) {
@@ -83,9 +83,11 @@ export class TasksComponent implements OnInit, OnDestroy {
     clearTimeout(this.timeoutRef);
   }
 
-  runTask(id: number) {
-    console.log('Running task with id:', id);
-    // TODO: Implement the runTask method
+  runTask(task_id: string) {
+    console.log('Running task with id:', task_id);
+    this.tasksService.runScheduledTask(task_id).subscribe((res: string) => {
+      console.log(res);
+    });
   }
 
 }
