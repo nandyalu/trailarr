@@ -50,10 +50,16 @@ def _download_missing_media_trailers(is_movie: bool):
         )
         media_trailer_list.append(media_trailer)
 
+    if not media_trailer_list:
+        logger.info(
+            f"No missing {'movie' if is_movie else 'series'} trailers to download"
+        )
+        return
+
     # Download missing trailers
     downloaded_media = download_trailers(media_trailer_list, is_movie)
     if not downloaded_media:
-        logger.info("No trailers downloaded")
+        logger.info(f"No {'movie' if is_movie else 'series'} trailers downloaded")
         return
     logger.debug("Updating trailer status in database")
     media_update_list = []
@@ -69,6 +75,7 @@ def _download_missing_media_trailers(is_movie: bool):
         )
     # Update the trailer statuses in database
     db_manager.update_media_status_bulk(media_update_list)
+    return
 
 
 def download_missing_trailers():
@@ -76,7 +83,7 @@ def download_missing_trailers():
     logger.info("Downloading missing trailers")
     _download_missing_media_trailers(is_movie=True)
     _download_missing_media_trailers(is_movie=False)
-    logger.info("Trailers download complete")
+    # logger.info("Trailers download complete")
     return
 
 
