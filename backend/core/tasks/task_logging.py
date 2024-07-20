@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Generator, Sequence
 
+from api.v1 import websockets
 from apscheduler import events
 from apscheduler.schedulers.base import BaseScheduler
 from apscheduler.job import Job
@@ -334,6 +335,7 @@ def task_started_event(event: events.JobEvent) -> None:
     )
     update_queue(queue)
     cleanup_queue()  # Cleanup the finished queue items
+    websockets.broadcast(f"'{_task_name}' Task Started", type="Info")
     return
 
 
@@ -376,6 +378,10 @@ def task_finished_event(event: events.JobEvent, status: str = "Finished") -> Non
     queue.finished = _now
     queue.status = status
     update_queue(queue)
+    if status == "Finished":
+        websockets.broadcast(f"'{_task_name}' Task Finished", type="Success")
+    else:
+        websockets.broadcast(f"'{_task_name}' Task Error", type="Error")
     return
 
 

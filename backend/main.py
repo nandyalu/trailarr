@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
 import os
 import time
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
+from api.v1.websockets import ws_manager
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 
@@ -42,7 +43,7 @@ async def lifespan(app: FastAPI):
 
 
 # Get APP_NAME and APP_VERSION from environment variables
-APP_NAME = os.getenv("APP_NAME", "Indexarr")
+APP_NAME = os.getenv("APP_NAME", "Trailarr")
 APP_VERSION = os.getenv("APP_VERSION", "0.0.1")
 
 # Initialize the database - No need to do this if we are using alembic
@@ -84,6 +85,23 @@ trailarr_api.add_middleware(
 
 # Register API routes
 trailarr_api.include_router(api_v1_router, prefix="/api/v1")
+
+
+# Websockets
+@trailarr_api.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    await ws_manager.connect(websocket)
+    logging.info(f"Client #{client_id} connected!")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await ws_manager.send_personal_message(f"You wrote: {data}", websocket)
+            await ws_manager.broadcast(f"Client #{client_id} says: {data}")
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+        logging.info(f"Client #{client_id} disconnected!")
+        # await ws_manager.broadcast(f"Client #{client_id} disconnected!")
+
 
 # Register other routes here (if any)
 

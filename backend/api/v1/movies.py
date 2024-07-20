@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
+from api.v1 import websockets
 from api.v1.models import ErrorResponse
 from core.files_handler import FilesHandler, FolderInfo
 from core.radarr.database_manager import MovieDatabaseManager
@@ -97,7 +98,9 @@ async def monitor_movie(movie_id: int, monitor: bool = True) -> str:
     try:
         movie = db_handler.read(movie_id)
         if movie.trailer_exists and monitor:
-            return f"Movie '{movie.title}' [{movie.id}] already has a trailer!"
+            msg = f"Movie '{movie.title}' [{movie.id}] already has a trailer!"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         movie_update = MovieUpdate(monitor=monitor)
         db_handler.update(movie_id, movie_update)
         if monitor:
@@ -105,8 +108,10 @@ async def monitor_movie(movie_id: int, monitor: bool = True) -> str:
         else:
             msg = f"Movie '{movie.title}' [{movie.id}] is no longer monitored"
         logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
+        await websockets.ws_manager.broadcast("Error changing Monitor status!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
@@ -126,19 +131,27 @@ async def delete_movie_trailer(movie_id: int) -> str:
     try:
         movie = db_handler.read(movie_id)
         if not movie.trailer_exists:
-            return f"Movie '{movie.title}' [{movie.id}] has no trailer to delete"
+            msg = f"Movie '{movie.title}' [{movie.id}] has no trailer to delete"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         if not movie.folder_path:
-            return f"Movie '{movie.title}' [{movie.id}] has no folder path"
+            msg = f"Movie '{movie.title}' [{movie.id}] has no folder path"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         files_handler = FilesHandler()
         res = await files_handler.delete_trailer(movie.folder_path)
         if not res:
-            return f"Failed to delete trailer for movie '{movie.title}' [{movie.id}]"
+            msg = f"Failed to delete trailer for movie '{movie.title}' [{movie.id}]"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         movie_update = MovieUpdate(trailer_exists=False)
         db_handler.update(movie_id, movie_update)
         msg = f"Trailer for movie '{movie.title}' [{movie.id}] has been deleted."
         logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
+        await websockets.ws_manager.broadcast("Error deleting trailer!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
