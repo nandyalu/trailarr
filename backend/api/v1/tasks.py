@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from api.v1.websockets import ws_manager
 from core.tasks import task_logging
 from core.tasks import schedules
 
@@ -23,5 +22,4 @@ async def get_task_queue() -> list[task_logging.QueueInfo]:
 @tasks_router.get("/run/{task_id}")
 async def run_task_now(task_id: str) -> str:
     msg = schedules.run_task_now(task_id)
-    await ws_manager.broadcast(msg)
     return msg
