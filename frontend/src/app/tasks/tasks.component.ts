@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TimeagoModule } from 'ngx-timeago';
 import { QueuedTask, ScheduledTask } from '../models/tasks';
 import { TasksService } from '../services/tasks.service';
+import { WebsocketService } from '../services/websocket.service';
 
 @Component({
   selector: 'app-tasks',
@@ -18,7 +19,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   isLoading1 = true;
   isLoading2 = true;
 
-  constructor(private tasksService: TasksService) { }
+  constructor(private tasksService: TasksService, private websocketService: WebsocketService) { }
 
   private timeoutRef: any;
 
@@ -26,6 +27,17 @@ export class TasksComponent implements OnInit, OnDestroy {
     // On first fetch, get next event start time and set interval to fetch at that time
     // If a task is running, fetch every 10 seconds
     this.refreshTaskData();
+
+    const handleWebSocketEvent = () => {
+      this.refreshTaskData();
+    };
+
+    // Subscribe to the WebSocket events with the simplified handler
+    this.websocketService.connect().subscribe({
+      next: handleWebSocketEvent,
+      error: handleWebSocketEvent,
+      complete: handleWebSocketEvent
+    });
   }
   
   getSecondsToNextScheduledEvent(sTasks: ScheduledTask[], qTasks: QueuedTask[]): number {
@@ -57,6 +69,9 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   refreshTaskData() {
+    // Clear any existing timeout
+    clearTimeout(this.timeoutRef);
+
     // Refresh the data
     // console.log('Refreshing task data');
     this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
