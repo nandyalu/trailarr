@@ -69,6 +69,7 @@
         <p *ngIf="addConnResult">{{ addConnResult }}</p>
     </form>
 </div>
+<!-- TODO: Update the dialog to add animation and fix background -->
 <div class="dialog" *ngIf="showDialog && addConnectionForm.touched" (click)="onCancelDialog()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Unsaved Changes</h2>

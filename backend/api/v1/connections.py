@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
+from api.v1 import websockets
 from core.base.database.manager.connection import ConnectionDatabaseManager
 from core.base.database.models.connection import (
     ConnectionCreate,
@@ -38,7 +39,9 @@ async def create_connection(connection: ConnectionCreate) -> str:
     try:
         result = await db_handler.create(connection)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to add Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Created Successfully!", "Success")
     return f"Connection Created Successfully! {result}"
 
 
@@ -79,7 +82,9 @@ async def update_connection(connection_id: int, connection: ConnectionUpdate) ->
     try:
         await db_handler.update(connection_id, connection)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to update Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Updated Successfully!", "Success")
     return "Connection Updated Successfully!"
 
 
@@ -101,7 +106,9 @@ async def delete_connection(connection_id: int) -> str:
     try:
         db_handler.delete(connection_id)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to delete Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Deleted Successfully!", "Success")
     return "Connection Deleted Successfully!"
 
 
