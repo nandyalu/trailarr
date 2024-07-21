@@ -7,6 +7,7 @@ from api.v1.models import ErrorResponse
 from core.files_handler import FilesHandler, FolderInfo
 from core.radarr.database_manager import MovieDatabaseManager
 from core.radarr.models import MovieRead, MovieUpdate
+from core.sonarr.models import SeriesRead
 from core.tasks.download_trailers import download_trailer_by_id
 
 
@@ -18,6 +19,38 @@ async def get_recent_movies(limit: int = 30, offset: int = 0) -> list[MovieRead]
     db_handler = MovieDatabaseManager()
     movies = db_handler.read_recent(limit, offset)
     return movies
+
+
+class MediaRes(MovieRead):
+    is_movie: bool = False
+
+    def __init__(self, media: MovieRead | SeriesRead):
+        super().__init__(**media.model_dump())
+        self.is_movie = isinstance(media, MovieRead)
+
+
+@movies_router.get("/downloaded")
+async def get_recently_download(limit: int = 30, offset: int = 0) -> list[MediaRes]:
+
+    def convert_media(media: list):
+        return [MediaRes(x) for x in media]
+
+    def filter_media(media: list):
+        return [x for x in convert_media(media) if x.downloaded_at is not None]
+
+    from core.sonarr.database_manager import SeriesDatabaseManager
+
+    db_handler = MovieDatabaseManager()
+    movies = db_handler.read_recently_downloaded(limit, offset)
+
+    db_handler2 = SeriesDatabaseManager()
+    series = db_handler2.read_recently_downloaded(limit, offset)
+
+    media = filter_media(movies) + filter_media(series)
+    media.sort(key=lambda x: x.downloaded_at, reverse=True)  # type: ignore
+
+    # Return only the required number of items
+    return media[:limit]
 
 
 @movies_router.get(
