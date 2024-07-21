@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from app_logger import ModuleLogger
-from config.config import config
+from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
 from core.download.trailer import download_trailers
 from core.radarr.database_manager import MovieDatabaseManager
@@ -11,7 +11,7 @@ logger = ModuleLogger("TrailerDownloadTasks")
 
 
 def _download_missing_media_trailers(is_movie: bool):
-    if not config.monitor_enabled:
+    if not app_settings.monitor_enabled:
         logger.warning("Monitoring is disabled, skipping download trailers")
         return
     if is_movie:

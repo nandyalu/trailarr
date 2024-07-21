@@ -8,7 +8,7 @@ from threading import Semaphore
 
 from yt_dlp import YoutubeDL
 
-from config.config import config
+from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer
 from core.download.video import download_video
 
@@ -217,10 +217,10 @@ def download_trailers(
     )
     trailer_folder = False
     if is_movie:
-        if config.trailer_folder_movie:
+        if app_settings.trailer_folder_movie:
             trailer_folder = True
     else:
-        if config.trailer_folder_series:
+        if app_settings.trailer_folder_series:
             trailer_folder = True
     sem = Semaphore(2)
     download_list = []

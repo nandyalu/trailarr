@@ -7,7 +7,7 @@ from sqlmodel import SQLModel
 from alembic import context
 
 import core.base.database.utils.init_db  # noqa: F401
-from config.config import config as app_config
+from config.settings import app_settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,7 +28,7 @@ target_metadata = SQLModel.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", app_config.database_url)
+config.set_main_option("sqlalchemy.url", app_settings.database_url)
 
 
 def run_migrations_offline() -> None:
