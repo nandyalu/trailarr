@@ -1,5 +1,5 @@
 <!-- File: show-connections.component.html -->
-<div class="sett-conn-container" [class.dialogbg]="showDialog">
+<div class="sett-conn-container">
     <div *ngIf="isLoading; else connectionsLoaded" class="loading-wave center">
         <div class="loading-bar"></div>
         <div class="loading-bar"></div>
@@ -29,7 +29,7 @@
                     <img *ngIf="connection.arr_type == 'radarr'" src="assets/radarr_128.png"/>
                 </a>
                 <div class="buttons">
-                    <button class="animated-button secondary" (click)="showDialog = true; selectedId = connection.id">
+                    <button class="animated-button secondary" (click)="selectedId = connection.id; showDeleteDialog()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                             <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                         </svg>
@@ -49,12 +49,12 @@
         </ng-template>
     </ng-template>
 </div>
-<div class="dialog" *ngIf="showDialog" (click)="showDialog = false">
+<dialog #deleteConnectionDialog (click)="closeDeleteDialog()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Delete Connection</h2>
-        <p>This will Delete the connection and no longer monitor it's Media</p>
+        <p>This will Delete the connection and no longer monitor its Media</p>
         <p>Delete the connection?</p>
         <button class="danger" (click)="onConfirmDelete()" tabindex="2">Delete</button>
-        <button class="secondary" (click)="showDialog = false" tabindex="1">Cancel</button>
+        <button class="secondary" (click)="closeDeleteDialog()" tabindex="1">Cancel</button>
     </div>
-</div>
+</dialog>

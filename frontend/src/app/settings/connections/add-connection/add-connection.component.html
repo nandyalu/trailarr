@@ -1,4 +1,4 @@
-<div class="form-container" [class.dialogbg]="showDialog">
+<div class="form-container">
     <h2>Add Connection:</h2>
     <hr/>
     <form [formGroup]="addConnectionForm">
@@ -69,12 +69,11 @@
         <p *ngIf="addConnResult">{{ addConnResult }}</p>
     </form>
 </div>
-<!-- TODO: Update the dialog to add animation and fix background -->
-<div class="dialog" *ngIf="showDialog && addConnectionForm.touched" (click)="onCancelDialog()">
+<dialog #cancelDialog *ngIf="addConnectionForm.touched" (click)="closeCancelDialog()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Unsaved Changes</h2>
         <p>Canges will be lost. Are you sure you want to cancel?</p>
         <button class="secondary" (click)="onConfirmCancel()" tabindex="2">Yes</button>
-        <button class="primary" (click)="onCancelDialog()" tabindex="1">No</button>
+        <button class="primary" (click)="closeCancelDialog()" tabindex="1">No</button>
     </div>
-</div>
+</dialog>

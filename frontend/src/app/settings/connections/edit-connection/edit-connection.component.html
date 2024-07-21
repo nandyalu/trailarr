@@ -1,4 +1,4 @@
-<div class="form-container" [class.dialogbg]="showDialog">
+<div class="form-container">
     <h2>Edit Connection:</h2>
     <hr/>
     <form [formGroup]="editConnectionForm">
@@ -69,11 +69,11 @@
         <p *ngIf="addConnResult">{{ addConnResult }}</p>
     </form>
 </div>
-<div class="dialog" *ngIf="showDialog && editConnectionForm.touched" (click)="onCancelDialog()">
+<dialog #cancelDialog *ngIf="editConnectionForm.touched" (click)="closeCancelDialog()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Unsaved Changes</h2>
         <p>Canges will be lost. Are you sure you want to cancel?</p>
         <button class="secondary" (click)="onConfirmCancel()" tabindex="2">Yes</button>
-        <button class="primary" (click)="onCancelDialog()" tabindex="1">No</button>
+        <button class="primary" (click)="closeCancelDialog()" tabindex="1">No</button>
     </div>
-</div>
+</dialog>

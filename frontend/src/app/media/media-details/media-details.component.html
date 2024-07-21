@@ -103,13 +103,14 @@
               <span class="text-md sm-none">https://www.youtube.com/watch?v=</span>
               <span class="text-md sm-show">Youtube ID/URL:</span>
               <input type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL">
+              <p *ngIf="trailer_url != media.youtube_trailer_id" class="text-sm">Click Download to download trailer from updated link!</p>
             </div>
           </div>
         </div>
         <div class="media-details-row">
           <button *ngIf="media.youtube_trailer_id" (click)="openTrailer()" class="primary" title="Watch Trailer on Youtube">Watch</button>
           <button (click)="downloadTrailer()" class="primary" title="Download Trailer">Download</button>
-          <button *ngIf="media.trailer_exists" (click)="deleteTrailer()" class="danger" title="Delete Trailer">Delete</button>
+          <button *ngIf="media.trailer_exists" (click)="showDeleteDialog()" class="danger" title="Delete Trailer">Delete</button> 
         </div>
       </div>
     </div>
@@ -179,3 +180,13 @@
       </div>
     </div>
 </ng-template>
+
+<dialog #deleteDialog (click)="closeDeleteDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Delete Trailer</h2>
+    <p>This will Delete the trailer file on disk for this Media</p>
+    <p>Are you sure?</p>
+    <button class="danger" (click)="onConfirmDelete()" tabindex="2">Delete</button>
+    <button class="secondary" (click)="closeDeleteDialog()" tabindex="1">Cancel</button>
+  </div>
+</dialog>

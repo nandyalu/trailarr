@@ -1,5 +1,5 @@
 import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConnectionCreate } from '../../../models/connection';
 import { SettingsService } from '../../settings.service';
@@ -33,25 +33,39 @@ export class AddConnectionComponent {
   setMonitorType(selectedMonitorType: string) {
     this.addConnectionForm.patchValue({ monitorType: selectedMonitorType });
   }
-  showDialog = false;
+
+  // Reference to the dialog element
+  @ViewChild('cancelDialog') cancelDialog!: ElementRef<HTMLDialogElement>;
+
+  showCancelDialog(): void {
+    // Open the confirmation dialog
+    this.cancelDialog.nativeElement.showModal(); // Open the dialog
+  }
+
+  closeCancelDialog(): void {
+    // Close the confirmation dialog
+    this.cancelDialog.nativeElement.close(); // Close the dialog
+  }
+  
   onCancel() {
+    // Check if form is dirty before showing the dialog, if not go back
     if (this.addConnectionForm.dirty) {
-      this.showDialog = true;
+      this.showCancelDialog();
     }
     else {
       this._location.back();
     }
   }
+
   onConfirmCancel() {
-    this.showDialog = false;
+    // Close the dialog and go back
+    this.showCancelDialog();
     this._location.back();
-  }
-  onCancelDialog() {
-    this.showDialog = false;
   }
 
   addConnResult: string = '';
   onSubmit() {
+    // Check if form is invalid, else submit the form
     if (this.addConnectionForm.invalid) {
       return;
     }

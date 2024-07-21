@@ -1,5 +1,5 @@
 import { DatePipe, Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Connection } from '../../../models/connection';
 import { SettingsService } from '../../settings.service';
@@ -31,10 +31,22 @@ export class ShowConnectionsComponent {
     });
   }
 
-  showDialog = false;
+  // Reference to the dialog element
+  @ViewChild('deleteConnectionDialog') deleteConnectionDialog!: ElementRef<HTMLDialogElement>;
+
+  showDeleteDialog(): void {
+    this.deleteConnectionDialog.nativeElement.showModal(); // Open the dialog
+  }
+
+  closeDeleteDialog(): void {
+    this.deleteConnectionDialog.nativeElement.close(); // Close the dialog
+  }
+
+  // showDialog = false;
   selectedId = 0;
   onConfirmDelete() {
-    this.showDialog = false;
+    // this.showDialog = false;
+    this.closeDeleteDialog();
     this.settingsService.deleteConnection(this.selectedId).subscribe((res: string) => {
       this.resultType = 'error';
       if (res.toLowerCase().includes('success')) {

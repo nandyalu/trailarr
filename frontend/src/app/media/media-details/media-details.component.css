@@ -170,7 +170,7 @@
   gap: 1rem;
   margin: 1rem;
 }
-
+ 
 .media-files-container .media-files {
   width: 100%;
   display: block;
@@ -287,6 +287,21 @@ tr {
   width: 1.5rem;
   height: 1.5rem;
   fill: var(--color-on-surface);
+}
+
+.dialog-content {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
+  text-align: center;
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
+.dialog-content button {
+  margin: 10px;
 }
 
 @media (max-width: 765px) {

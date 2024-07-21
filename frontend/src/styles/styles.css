@@ -37,6 +37,7 @@
 
 body {
   margin: 0;
+  height: 100dvh;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
@@ -161,15 +162,7 @@ body {
   --color-surface-container-highest: rgb(221 228 227);
 }
 
-
-.solar {
-  --text-primary: #576e75;
-  --text-secondary: #35535c;
-  --bg-primary: #fdf6e3;
-  --bg-secondary: #f5e5b8;
-}
-
-/* Global Styles */
+/* GLOBAL ELEMENT STYLES */
 
 /* Horizontal Line */
 hr {
@@ -396,5 +389,47 @@ button.danger {
     top: 125%;
     left: 0%;
     right: unset;
+  }
+}
+
+/* Dialog with Animations */
+dialog {
+  display: none;
+  padding: 0;
+  opacity: 0;
+  translate: 0 25vh;
+  transition-property: overlay display opacity;
+  transition-duration: 1s;
+  transition-behavior: allow-discrete;
+}
+
+dialog[open] {
+  display: block;
+  opacity: 1;
+  translate: 0 0;
+
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @starting-style {
+    opacity: 0;
+    translate: 0 -25vh;
+  }
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, var(--color-secondary), var(--color-primary));
+  transition-property: display opacity overlay;
+  transition-duration: 1s;
+  transition-behavior: allow-discrete;
+  opacity: 0;
+}
+
+dialog[open]::backdrop {
+  opacity: .75;
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@starting-style {
+  dialog[open]::backdrop {
+    opacity: 0;
   }
 }
