@@ -235,6 +235,34 @@ class DatabaseManager[
         return self._convert_to_read_list(db_media_list)
 
     @manage_session
+    def read_recently_downloaded(
+        self,
+        limit: int = 100,
+        offset: int = 0,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[_MediaRead]:
+        """Get the most recently downloaded media objects from the database.\n
+        Args:
+            limit (int) [Optional]: The number of recent media items to get. Max 100
+            offset (int) [Optional]: The offset to start from. Default is 0.
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[MediaRead]: List of MediaRead objects.
+        """
+        offset = max(0, offset)
+        limit = max(1, min(limit, 100))
+        statement = (
+            select(self.__db_model)
+            .order_by(desc(self.__db_model.downloaded_at))
+            .offset(offset)
+            .limit(limit)
+        )
+        db_media_list = _session.exec(statement).all()
+        return self._convert_to_read_list(db_media_list)
+
+    @manage_session
     def search(
         self,
         query: str,
