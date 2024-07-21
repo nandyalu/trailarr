@@ -9,7 +9,7 @@
     </form>
     <div class="navsearch-results" [class.active]="searchResults.length > 0">
       <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
-      <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId" [routerLink]="[result.is_movie ? 'movies' : 'series', result.id]" (click)="searchResults = []">
+      <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId" [routerLink]="[result.is_movie ? '/movies' : '/series', result.id]" (click)="searchResults = []">
         <span>{{ result.title }}</span>
       </div>
     </div>
