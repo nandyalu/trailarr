@@ -4,8 +4,7 @@
   /* TODO fix scroll to hide menus on mobile browsers */
   /* height: 100vh; */
   height: 100dvh;
-  overflow: hidden;
-  scroll-behavior: smooth;
+  overflow: auto;
   display: grid;
   grid-template-rows: auto 1fr;
   grid-template-columns: auto 1fr;
@@ -99,6 +98,12 @@
   .main-content {
     grid-row: 2;
     grid-column: 1;
+    padding: 0.5rem;
+  }
+
+  .toast-container {
+    max-width: 80%;
+    right: 1rem;
     padding: 0.5rem;
   }
 }

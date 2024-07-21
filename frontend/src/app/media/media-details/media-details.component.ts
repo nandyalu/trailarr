@@ -1,11 +1,12 @@
 import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { DurationConvertPipe } from '../../helpers/duration-pipe';
 import { FolderInfo, Media } from '../../models/media';
 import { MovieService } from '../../services/movie.service';
 import { SeriesService } from '../../services/series.service';
+import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-media-details',
@@ -27,7 +28,8 @@ export class MediaDetailsComponent {
   constructor(
     private movieService: MovieService,
     private seriesService: SeriesService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private websocketService: WebsocketService
   ) { }
 
   async copyToClipboard(textToCopy: string) {
@@ -39,13 +41,13 @@ export class MediaDetailsComponent {
       tempInput.select();
       document.execCommand("copy");
       document.body.removeChild(tempInput);
-      alert("Copied to clipboard!");
+      this.websocketService.showToast("Copied to clipboard!");
     } else {
       try {
         await navigator.clipboard.writeText(textToCopy);
-        alert("Copied to clipboard!");
+        this.websocketService.showToast("Copied to clipboard!");
       } catch (err) {
-        alert("Error copying text to clipboard.");
+        this.websocketService.showToast("Error copying text to clipboard.", "Error");
         console.error('Failed to copy: ', err);
       }
     }
@@ -63,32 +65,59 @@ export class MediaDetailsComponent {
         this.mediaService = this.seriesService;
       }
       this.mediaId = params['id'];
-      this.mediaService.getMediaById(this.mediaId).subscribe((media_res: Media) => {
-        this.media = media_res;
-        this.trailer_url = media_res.youtube_trailer_id
-        this.isLoading = false;
-        if (media_res.trailer_exists) {
-          this.status = 'Downloaded';
-        } else {
-          this.status = media_res.monitor ? 'Monitored' : 'Missing';
-        }
-      });
-      this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo) => {
-        this.mediaFiles = files;
-        this.filesLoading = false;
-      });
+      this.getMediaData();
+    });
+
+    // Subscribe to the WebSocket events and refresh data
+    // Calling this.getMediaData() directly in subscription fails, so we use a handler
+    const handleWebSocketEvent = () => {
+      this.getMediaData();
+    };
+
+    // Subscribe to the WebSocket events with the simplified handler
+    this.websocketService.connect().subscribe({
+      next: handleWebSocketEvent,
+      error: handleWebSocketEvent,
+      complete: handleWebSocketEvent
+    });
+    // Subscribe to websocket events to refresh data
+
+  }
+
+  getMediaData() {
+    // Get Media Data
+    this.mediaService.getMediaById(this.mediaId).subscribe((media_res: Media) => {
+      this.media = media_res;
+      this.trailer_url = media_res.youtube_trailer_id
+      this.isLoading = false;
+      if (media_res.trailer_exists) {
+        this.status = 'Downloaded';
+      } else {
+        this.status = media_res.monitor ? 'Monitored' : 'Missing';
+      }
+    });
+    // Get Media Files
+    this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo) => {
+      this.mediaFiles = files;
+      this.filesLoading = false;
     });
   }
 
   downloadTrailer() {
-    console.log('Downloading trailer');
+    const old_id = this.media?.youtube_trailer_id?.toLowerCase() || '';
+    const new_id = this.trailer_url.toLowerCase();
+    if (new_id.includes(old_id) && !this.media?.trailer_exists) {
+      // Trailer id is the same, no need to download
+      return;
+    }
+    // console.log('Downloading trailer');
     this.mediaService.downloadMediaTrailer(this.mediaId, this.trailer_url).subscribe((res: string) => {
       console.log(res);
     });
   }
 
   monitorSeries() {
-    console.log('Toggling Media Monitoring');
+    // console.log('Toggling Media Monitoring');
     const monitor = !this.media?.monitor;
     this.mediaService.monitorMedia(this.mediaId, monitor).subscribe((res: string) => {
       console.log(res);
@@ -103,8 +132,20 @@ export class MediaDetailsComponent {
     window.open(`https://www.youtube.com/watch?v=${this.media.youtube_trailer_id}`, '_blank');
   }
 
-  deleteTrailer() {
-    console.log('Deleting trailer');
+  // Reference to the dialog element
+  @ViewChild('deleteDialog') deleteDialog!: ElementRef<HTMLDialogElement>;
+
+  showDeleteDialog(): void {
+    this.deleteDialog.nativeElement.showModal(); // Open the dialog
+  }
+
+  closeDeleteDialog(): void {
+    this.deleteDialog.nativeElement.close(); // Close the dialog
+  }
+
+  onConfirmDelete() {
+    // console.log('Deleting trailer');
+    this.closeDeleteDialog();
     this.mediaService.deleteMediaTrailer(this.mediaId).subscribe((res: string) => {
       console.log(res);
       this.media!.trailer_exists = false;
