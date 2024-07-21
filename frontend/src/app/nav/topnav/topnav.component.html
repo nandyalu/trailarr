@@ -5,7 +5,7 @@
   </a>
   <div class="navsearch">
     <form id="searchForm" class="navsearch-form">
-      <input type="text" [formControl]="searchForm" name="query" placeholder="Search for media..." aria-label="search"/>
+      <input type="text" autocomplete="off" [formControl]="searchForm" name="query" placeholder="Search for media..." aria-label="search"/>
     </form>
     <div class="navsearch-results" [class.active]="searchResults.length > 0">
       <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
