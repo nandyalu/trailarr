@@ -18,8 +18,8 @@ class MonitorType(Enum):
     # MONITOR_ALL = "all"
     MONITOR_MISSING = "missing"
     MONITOR_NEW = "new"
+    MONITOR_NONE = "none"
     MONITOR_SYNC = "sync"
-    # TODO: Add None Option
 
 
 class ConnectionBase(SQLModel):

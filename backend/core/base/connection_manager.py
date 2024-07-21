@@ -106,6 +106,9 @@ class BaseConnectionManager[_MediaCreate](ABC):
         # If Trailer already exists, no need to monitor
         if trailer_exists:
             return False
+        # Disable monitoring if monitor is set to none
+        if self.monitor == MonitorType.MONITOR_NONE:
+            return False
         # Monitor trailers if set to monitor missing
         if self.monitor == MonitorType.MONITOR_MISSING:
             return True
