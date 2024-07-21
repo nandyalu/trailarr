@@ -3,7 +3,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Connection, ConnectionUpdate } from '../../../models/connection';
-import { SettingsService } from '../../settings.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-edit-connection',

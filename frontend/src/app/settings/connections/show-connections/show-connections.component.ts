@@ -2,7 +2,7 @@ import { DatePipe, Location, NgFor, NgIf, UpperCasePipe } from '@angular/common'
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Connection } from '../../../models/connection';
-import { SettingsService } from '../../settings.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-show-connections',
