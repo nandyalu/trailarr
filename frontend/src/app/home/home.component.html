@@ -7,7 +7,7 @@
     </div>
     <ng-template #mediaLoaded>
         <div class="media-row">
-            <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.is_movie? '/movie': '/series', media.id]">
+            <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.is_movie? '/movies': '/series', media.id]">
                 <img src="{{media.poster_path}}" class="card-img-top" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
                 <svg *ngIf="media.monitor" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"
