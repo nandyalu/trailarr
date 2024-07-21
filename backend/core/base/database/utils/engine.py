@@ -4,11 +4,11 @@ from typing import Any, Generator
 from sqlalchemy import StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
-from config.config import config
+from config.settings import app_settings
 
 # sqlite_file_name = "database.db"
-sqlite_url = config.database_url
-if config.debug:
+sqlite_url = app_settings.database_url
+if app_settings.debug:
     # Use an in-memory SQLite database for testing
     sqlite_url = "sqlite:///:memory:"
     engine = create_engine(

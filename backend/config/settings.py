@@ -17,7 +17,7 @@ class _Config:
     Reads environment variables to set properties. \n
     Default values are used if environment variables are not provided/invalid. \n
     \n
-    **DO NOT USE THIS CLASS DIRECTLY. USE `config` OBJECT INSTEAD!** \n
+    **DO NOT USE THIS CLASS DIRECTLY. USE `app_settings` OBJECT INSTEAD!** \n
     \n
     **Environment variables set in the system will take precedence. \
         Changing class values doesn't have any effect if relevant env variable is set!** \n
@@ -91,6 +91,25 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "False",
         ).lower() in ["true", "1"]
+
+    def as_dict(self):
+        return {
+            "debug": self.debug,
+            "database_url": self.database_url,
+            "monitor_enabled": self.monitor_enabled,
+            "monitor_interval": self.monitor_interval,
+            "trailer_folder_movie": self.trailer_folder_movie,
+            "trailer_folder_series": self.trailer_folder_series,
+            "trailer_resolution": self.trailer_resolution,
+            "trailer_audio_format": self.trailer_audio_format,
+            "trailer_video_format": self.trailer_video_format,
+            "trailer_subtitles_enabled": self.trailer_subtitles_enabled,
+            "trailer_subtitles_format": self.trailer_subtitles_format,
+            "trailer_subtitles_language": self.trailer_subtitles_language,
+            "trailer_file_format": self.trailer_file_format,
+            "trailer_embed_metadata": self.trailer_embed_metadata,
+            "trailer_web_optimized": self.trailer_web_optimized,
+        }
 
     @property
     def debug(self):
@@ -335,4 +354,4 @@ class _Config:
 # Load environment variables, do not override system environment variables
 load_dotenv(override=False)
 # Create Config object to be used in the application
-config = _Config()
+app_settings = _Config()
