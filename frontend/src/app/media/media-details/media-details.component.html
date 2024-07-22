@@ -8,8 +8,8 @@
   <ng-template #mediaLoaded>
     <div *ngIf="media" class="media-details-card">
       <div class="media-fanart-overlay" style="background-image: url({{media.fanart_path}});"></div>
-      <div class="media-poster" title="{{media.title}} Poster">
-        <img src="{{media.poster_path}}" alt="{{media.title}}">
+      <div class="media-poster" [class.sm-none]="!media.poster_path" title="{{media.title}} Poster">
+        <img src="{{media.poster_path || 'assets/poster-lg.png'}}" alt="{{media.title}}">
       </div>
       <div class="media-details-col">
         <div class="media-details-row">
