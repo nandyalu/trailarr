@@ -72,7 +72,9 @@
           <span>
             <div class="labeled-text" [title]="media.folder_path">
               <label class="label">Path</label>
-              <span class="text-sm copy" (click)="copyToClipboard(media.folder_path)">{{media.folder_path}}</span>
+              <span class="text-sm copy" (click)="copyToClipboard(media.folder_path)">
+                <code>{{media.folder_path}}</code>
+              </span>
             </div>
           </span>
           <span>
