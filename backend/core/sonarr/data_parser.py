@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import AliasPath, BaseModel, Field, validator
+from pydantic import AliasPath, BaseModel, Field, field_validator
 
 from core.sonarr.models import SeriesCreate
 
@@ -26,7 +26,8 @@ class SonarrDataParser(BaseModel):
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
 
-    @validator("txdb_id", pre=True)
+    @field_validator("txdb_id", mode="before")
+    @classmethod
     def parse_txdb_id(cls, v):
         return str(v)
 

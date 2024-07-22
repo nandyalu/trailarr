@@ -1,9 +1,9 @@
 import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Connection, ConnectionUpdate } from '../../../models/connection';
-import { SettingsService } from '../../settings.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-edit-connection',
@@ -36,7 +36,7 @@ export class EditConnectionComponent {
   }
 
   arrOptions = ['radarr', 'sonarr'];
-  monitorOptions = ['missing', 'new', 'sync'];
+  monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
   url = new FormControl('', [Validators.required, Validators.pattern('https?://.*:\\d{2,}')]);
   apiKey = new FormControl('', [Validators.required, Validators.minLength(32), Validators.maxLength(50)]);
@@ -54,31 +54,39 @@ export class EditConnectionComponent {
   setMonitorType(selectedMonitorType: string) {
     this.editConnectionForm.patchValue({ monitorType: selectedMonitorType });
   }
-  showDialog = false;
+  
+  // Reference to the dialog element
+  @ViewChild('cancelDialog') cancelDialog!: ElementRef<HTMLDialogElement>;
+
+  showCancelDialog(): void {
+    // Open the confirmation dialog
+    this.cancelDialog.nativeElement.showModal(); // Open the dialog
+  }
+
+  closeCancelDialog(): void {
+    // Close the confirmation dialog
+    this.cancelDialog.nativeElement.close(); // Close the dialog
+  }
+
   onCancel() {
+    // Check if form is dirty before showing the dialog, if not go back
     if (this.editConnectionForm.dirty) {
-      this.showDialog = true;
+      this.showCancelDialog();
     }
     else {
       this._location.back();
     }
   }
+  
   onConfirmCancel() {
-    this.showDialog = false;
+    // Close the dialog and go back
+    this.showCancelDialog();
     this._location.back();
-  }
-  onCancelDialog() {
-    this.showDialog = false;
   }
 
   addConnResult: string = '';
   onSubmit() {
-    console.log('ID: ', this.connectionId);
-    console.log('Name: ', this.editConnectionForm.value.name);
-    console.log('Selected Arr:', this.editConnectionForm.value.arrType);
-    console.log('Selected Monitor:', this.editConnectionForm.value.monitorType);
-    console.log('URL: ', this.editConnectionForm.value.url);
-    console.log('API Key: ', this.editConnectionForm.value.apiKey);
+    // Check if form is invalid, else submit the form
     if (this.editConnectionForm.invalid) {
       return;
     }

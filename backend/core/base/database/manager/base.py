@@ -1,5 +1,5 @@
 from abc import ABC
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 from typing import Optional, Protocol, Sequence
 from sqlmodel import Session, col, desc, select
@@ -74,7 +74,7 @@ class DatabaseManager[
                 (<Media obj>, True)
         """
         db_media = self._read_if_exists(
-            media_create.connection_id, media_create.arr_id, session
+            media_create.connection_id, media_create.txdb_id, session
         )
         if db_media:
             # Exists, update it
@@ -87,7 +87,7 @@ class DatabaseManager[
             db_media.sqlmodel_update(media_update_data)
             _updated = False
             if session.is_modified(db_media):
-                db_media.updated_at = datetime.now()
+                db_media.updated_at = datetime.now(timezone.utc)
                 _updated = True
             session.add(db_media)
             return db_media, False, _updated
@@ -228,6 +228,34 @@ class DatabaseManager[
         statement = (
             select(self.__db_model)
             .order_by(desc(self.__db_model.added_at))
+            .offset(offset)
+            .limit(limit)
+        )
+        db_media_list = _session.exec(statement).all()
+        return self._convert_to_read_list(db_media_list)
+
+    @manage_session
+    def read_recently_downloaded(
+        self,
+        limit: int = 100,
+        offset: int = 0,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[_MediaRead]:
+        """Get the most recently downloaded media objects from the database.\n
+        Args:
+            limit (int) [Optional]: The number of recent media items to get. Max 100
+            offset (int) [Optional]: The offset to start from. Default is 0.
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[MediaRead]: List of MediaRead objects.
+        """
+        offset = max(0, offset)
+        limit = max(1, min(limit, 100))
+        statement = (
+            select(self.__db_model)
+            .order_by(desc(self.__db_model.downloaded_at))
             .offset(offset)
             .limit(limit)
         )
@@ -426,6 +454,36 @@ class DatabaseManager[
         _session.commit()
         return
 
+    @manage_session
+    def delete_except(
+        self,
+        connection_id: int,
+        media_ids: list[int],
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Delete all media items from the database except the ones provided.\n
+        Args:
+            connection_id (int): The id of the connection to delete media items for.
+            media_ids (list[int]): List of media id's to keep.
+            _session (Session) [Optional]: A session to use for the database connection.\
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If any of the media items with provided id's don't exist.
+        """
+        statement = (
+            select(self.__db_model)
+            .where(self.__db_model.connection_id == connection_id)
+            .where(~self.__db_model.id.in_(media_ids))
+        )
+        db_media_list = _session.exec(statement).all()
+        for db_media in db_media_list:
+            _session.delete(db_media)
+        _session.commit()
+        return
+
     def _check_connection_exists(self, connection_id: int, session: Session) -> None:
         """-->>This is a private method<<-- \n
         Check if a connection exists in the database.\n
@@ -567,14 +625,14 @@ class DatabaseManager[
     def _read_if_exists(
         self,
         connection_id: int,
-        arr_id: int,
+        txdb_id: str,
         session: Session,
     ) -> _Media | None:
         """-->>This is a private method<<-- \n
         Check if a media item exists in the database for any given connection and arr ids.\n
         Args:
             connection_id (int): The id of the connection to check.
-            arr_id (int): The arr id of the media item to check.
+            txdb_id (str): The txdb id of the media item to check.
             session (Session): A session to use for the database connection.\n
         Returns:
             Media | None: The media object if it exists, otherwise None.
@@ -582,7 +640,7 @@ class DatabaseManager[
         statement = (
             select(self.__db_model)
             .where(self.__db_model.connection_id == connection_id)
-            .where(self.__db_model.arr_id == arr_id)
+            .where(self.__db_model.txdb_id == txdb_id)
         )
-        db_media = session.exec(statement).one_or_none()
+        db_media = session.exec(statement).first()
         return db_media

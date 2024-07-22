@@ -106,6 +106,9 @@ class BaseConnectionManager[_MediaCreate](ABC):
         # If Trailer already exists, no need to monitor
         if trailer_exists:
             return False
+        # Disable monitoring if monitor is set to none
+        if self.monitor == MonitorType.MONITOR_NONE:
+            return False
         # Monitor trailers if set to monitor missing
         if self.monitor == MonitorType.MONITOR_MISSING:
             return True
@@ -130,6 +133,13 @@ class BaseConnectionManager[_MediaCreate](ABC):
         raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
+    def remove_deleted_media(self, media_ids: list[int]) -> None:
+        """Remove the media from the database that are not present in the Arr application. \n
+        Args:
+            media_ids (list[int]): List of media ids to remove."""
+        raise NotImplementedError("Subclasses must implement this method")
+
+    @abstractmethod
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
         """Update the media status in the database. \n
         Args:
@@ -142,6 +152,9 @@ class BaseConnectionManager[_MediaCreate](ABC):
         parsed_media = await self._parse_data()
         # Create or update the media in the database
         media_res = self.create_or_update_bulk(parsed_media)
+        # Delete any media that is not present in the Arr application
+        media_ids = [media.id for media in media_res]
+        self.remove_deleted_media(media_ids)
         # Check if media has trailer and should be monitored
         update_list: list[MediaUpdateDC] = []
         for media_read in media_res:

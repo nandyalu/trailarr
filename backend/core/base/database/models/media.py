@@ -1,13 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Field, SQLModel, ForeignKey
 
 
 def get_current_time():
-    return datetime.now()
+    return datetime.now(timezone.utc)
 
 
 def get_current_year():
-    return datetime.now().year
+    return datetime.now(timezone.utc).year
 
 
 class MediaBase(SQLModel):

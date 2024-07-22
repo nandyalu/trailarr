@@ -31,12 +31,3 @@ async def get_logs(page: int = 1, limit: int = 100) -> list[str]:
     return list(logs)
     # logs_filtered = logs[(page - 1) * limit : page * limit]
     # return logs_filtered
-
-
-# 2024-05-09T15:58:56+0000 [INFO|task_runner|L227]:
-# TaskRunner: 'api_refresh' scheduled to run every 3600 seconds
-# 2024-05-09T15:58:56+0000 [INFO|task_runner|L227]:
-# TaskRunner: 'refresh_images' scheduled to run every 21600 seconds
-# 2024-05-09T15:58:56+0000 [INFO|task_runner|L227]:
-# TaskRunner: 'download_missing_trailers' scheduled to run every 3600 seconds
-# 2024-05-09T15:58:56+0000 [INFO|schedules|L024]: All tasks scheduled!

@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import Any
 
 from yt_dlp import YoutubeDL
 
-from config.config import config
+from config.settings import app_settings
 
 # For some reason, supplying a logger to YoutubeDL is not working with app_logger
 # So, we are instead logging progress using progress hooks.
@@ -34,7 +34,7 @@ def _postprocessor_hook(d):
     pprocessor = d["postprocessor"]
     if d["status"] == "started":  # Guaranteed to call
         data[pprocessor] = {
-            "starttime": datetime.now(),
+            "starttime": datetime.now(timezone.utc),
             "status": "started",
             "endtime": None,
             "filepath": "",
@@ -44,7 +44,7 @@ def _postprocessor_hook(d):
         logging.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
     if d["status"] == "finished":  # Guaranteed to call
         data[pprocessor]["status"] = "finished"
-        data[pprocessor]["endtime"] = datetime.now()
+        data[pprocessor]["endtime"] = datetime.now(timezone.utc)
         timetook = data[pprocessor]["endtime"] - data[pprocessor]["starttime"]
         logging.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
         if "filepath" in d["info_dict"]:
@@ -94,7 +94,7 @@ def _get_ytdl_options() -> dict[str, Any]:
         "noprogress": True,
         "no_warnings": True,
         "quiet": True,
-        "merge_output_format": config.trailer_file_format,
+        "merge_output_format": app_settings.trailer_file_format,
         "postprocessors": [],
         "postprocessor_args": {},
     }
@@ -102,11 +102,11 @@ def _get_ytdl_options() -> dict[str, Any]:
     output_options: list[str] = []
 
     # Set video specific options
-    _format = f"bestvideo[height<=?{config.trailer_resolution}]+bestaudio"
+    _format = f"bestvideo[height<=?{app_settings.trailer_resolution}]+bestaudio"
     ydl_options["format"] = _format
-    if config.trailer_embed_metadata:
+    if app_settings.trailer_embed_metadata:
         postprocessors.append({"key": "FFmpegMetadata", "add_metadata": True})
-    video_format = _VIDEO_CODECS[config.trailer_video_format]
+    video_format = _VIDEO_CODECS[app_settings.trailer_video_format]
     output_options.append("-c:v")
     output_options.append(video_format)
     output_options.append("-preset")
@@ -115,21 +115,21 @@ def _get_ytdl_options() -> dict[str, Any]:
     output_options.append("22")
 
     # Set audio specific options
-    audio_format = _AUDIO_CODECS[config.trailer_audio_format]
+    audio_format = _AUDIO_CODECS[app_settings.trailer_audio_format]
     output_options.append("-c:a")
     output_options.append(audio_format)
     output_options.append("-b:a")
     output_options.append("128k")
 
     # Set subtitle specific options
-    if config.trailer_subtitles_enabled:
+    if app_settings.trailer_subtitles_enabled:
         ydl_options["writeautomaticsub"] = True
         ydl_options["writesubtitles"] = True
-        ydl_options["subtitleslangs"] = [config.trailer_subtitles_language]
+        ydl_options["subtitleslangs"] = [app_settings.trailer_subtitles_language]
         postprocessors.append(
             {
                 "key": "FFmpegSubtitlesConvertor",
-                "format": config.trailer_subtitles_format,
+                "format": app_settings.trailer_subtitles_format,
                 "when": "before_dl",
             }
         )
@@ -138,7 +138,7 @@ def _get_ytdl_options() -> dict[str, Any]:
         )
 
     # Set remaining options
-    if config.trailer_web_optimized:
+    if app_settings.trailer_web_optimized:
         # Below options are for fast straming, but might increase filesize
         output_options.append("-movflags")
         output_options.append("+faststart")

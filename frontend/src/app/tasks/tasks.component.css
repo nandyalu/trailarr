@@ -20,10 +20,15 @@
  .table-container {
    width: 100%;
    overflow-x: auto;
+   min-height: 25%;
    -webkit-overflow-scrolling: touch;
    /* Smooth scrolling for touch devices */
-   margin-top: 1rem;
-   margin-bottom: 2.5rem;
+   margin-top: 0.5rem;
+   margin-bottom: 2rem;
+ }
+
+ .last-table {
+   margin-bottom: 0;
  }
 
  .tasks-table {
@@ -55,6 +60,7 @@
  }
 
  .table-row svg {
+   margin: 0 0.5rem;
    width: 1rem;
    fill: var(--color-primary)
  }

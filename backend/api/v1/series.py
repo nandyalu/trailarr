@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
+from api.v1 import websockets
 from api.v1.models import ErrorResponse
 from core.files_handler import FilesHandler, FolderInfo
 from core.sonarr.database_manager import SeriesDatabaseManager
@@ -97,7 +98,9 @@ async def monitor_series(series_id: int, monitor: bool = True) -> str:
     try:
         series = db_handler.read(series_id)
         if series.trailer_exists and monitor:
-            return f"Series '{series.title}' [{series.id}] already has a trailer!"
+            msg = f"Series '{series.title}' [{series.id}] already has a trailer!"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         series_update = SeriesUpdate(monitor=monitor)
         db_handler.update(series_id, series_update)
         if monitor:
@@ -105,8 +108,12 @@ async def monitor_series(series_id: int, monitor: bool = True) -> str:
         else:
             msg = f"Series '{series.title}' [{series.id}] is no longer monitored"
         logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
+        await websockets.ws_manager.broadcast(
+            "Failed to update monitor status!", "Error"
+        )
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
@@ -126,19 +133,27 @@ async def delete_series_trailer(series_id: int) -> str:
     try:
         series = db_handler.read(series_id)
         if not series.trailer_exists:
-            return f"Series '{series.title}' [{series.id}] has no trailer to delete!"
+            msg = f"Series '{series.title}' [{series.id}] has no trailer to delete!"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         if not series.folder_path:
-            return f"Series '{series.title}' [{series.id}] has no folder path!"
+            msg = f"Series '{series.title}' [{series.id}] has no folder path!"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         files_handler = FilesHandler()
         res = await files_handler.delete_trailer(series.folder_path)
         if not res:
-            return f"Failed to delete trailer for series '{series.title}' [{series.id}]"
+            msg = f"Failed to delete trailer for series '{series.title}' [{series.id}]"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            return msg
         series_update = SeriesUpdate(trailer_exists=False)
         db_handler.update(series_id, series_update)
         msg = f"Trailer for series '{series.title}' [{series.id}] has been deleted."
         logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to delete trailer!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 

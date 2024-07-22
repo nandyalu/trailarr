@@ -31,19 +31,30 @@ export class TasksService {
   }
 
   convertDate(date: string): Date | null {
-    return date ? new Date(date) : null;
+    return date ? new Date(date + 'Z') : null;
   }
 
-  formatDuration(duration: string): string {
-    // Check if the duration contains milliseconds
-    if (!duration) {
-      return '0:00:00';
+  // formatDuration(duration: string): string {
+  //   // Check if the duration contains milliseconds
+  //   if (!duration) {
+  //     return '0:00:00';
+  //   }
+  //   if (duration.includes('.')) {
+  //     // Remove the milliseconds
+  //     duration = duration.split('.')[0];
+  //   }
+  //   return duration
+  // }
+
+  formatDuration(duration: number): string {
+    // Convert duration in seconds to HH:MM:SS format
+    if (duration < 1) {
+      return '00:00:00';
     }
-    if (duration.includes('.')) {
-      // Remove the milliseconds
-      duration = duration.split('.')[0];
-    }
-    return duration
+    let hours = Math.floor(duration / 3600).toString().padStart(2, '0');
+    let minutes = Math.floor((duration % 3600) / 60).toString().padStart(2, '0');
+    let seconds = (duration % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
   }
 
   private schedulesUrl = this.tasksUrl + 'schedules';
@@ -70,12 +81,16 @@ export class TasksService {
           id,
           ...queue,
           duration: this.formatDuration(queue.duration),
-          queued: this.convertDate(queue.queued),
-          start: this.convertDate(queue.start),
-          end: this.convertDate(queue.end)
+          finished: this.convertDate(queue.finished),
+          started: this.convertDate(queue.started),
+          // end: this.convertDate(queue.end)
         }));
       })
     );
+  }
+
+  runScheduledTask(id: string): Observable<any> {
+    return this.http.get(this.tasksUrl + 'run/' + id);
   }
   
 }

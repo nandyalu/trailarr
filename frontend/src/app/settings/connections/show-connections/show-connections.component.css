@@ -79,32 +79,15 @@
   justify-content: space-between;
 }
 
-.dialogbg {
-  filter: blur(2px);
-  -webkit-filter: blur(2px);
-}
-
-.dialog {
-  position: absolute;
-  top: 0%;
-  left: 0%;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  z-index: 11;
-}
-
 .dialog-content {
-  background-color: var(--color-surface-container-highest);
-  padding: 20px;
-  border: 1px solid var(--color-outline);
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
   text-align: center;
-  backdrop-filter: blur(4px);
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
 }
 
 .dialog-content button {

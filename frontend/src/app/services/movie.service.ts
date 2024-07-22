@@ -19,6 +19,12 @@ export class MovieService {
         );
     }
 
+    getRecentlyDownloaded(): Observable<Media[]> {
+        return this.http.get<Media[]>(`${this.moviesUrl}downloaded`).pipe(
+            map((movie_list: any[]) => movie_list.map(movie => mapMedia(movie, movie.is_movie)))
+        );
+    }
+
     getMediaById(id: number): Observable<Media> {
         return this.http.get<Media>(`${this.moviesUrl}${id}`).pipe(
             map(movie => mapMedia(movie, true))

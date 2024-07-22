@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 
 from dotenv import load_dotenv, set_key
@@ -17,7 +18,7 @@ class _Config:
     Reads environment variables to set properties. \n
     Default values are used if environment variables are not provided/invalid. \n
     \n
-    **DO NOT USE THIS CLASS DIRECTLY. USE `config` OBJECT INSTEAD!** \n
+    **DO NOT USE THIS CLASS DIRECTLY. USE `app_settings` OBJECT INSTEAD!** \n
     \n
     **Environment variables set in the system will take precedence. \
         Changing class values doesn't have any effect if relevant env variable is set!** \n
@@ -38,20 +39,22 @@ class _Config:
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = "sqlite:////data/trailarr.db"
 
-    _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "mp3", "flac", "vorbis", "opus"]
+    _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
     _VALID_SUBTITLES_FORMATS = ["srt", "vtt", "pgs"]
     _VALID_FILE_FORMATS = ["mp4", "mkv", "webm"]
     _VALID_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
 
     def __init__(self):
+        # Some generic attributes for server
+        self.version = os.getenv("APP_VERSION", "0.0.1")
+        _now = datetime.now(timezone.utc)
+        self.server_start_time = os.getenv("SERVER_START_TIME", f"{_now}")
+        self.timezone = os.getenv("TZ", "UTC")
+
         # Setting default values for properties
         self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
-        self.dark_mode_enabled = os.getenv(
-            "DARK_MODE_ENABLED",
-            "True",
-        ).lower() in ["true", "1"]
         self.monitor_enabled = os.getenv(
             "MONITOR_ENABLED",
             "True",
@@ -96,6 +99,27 @@ class _Config:
             "False",
         ).lower() in ["true", "1"]
 
+    def as_dict(self):
+        return {
+            "version": self.version,
+            "server_start_time": self.server_start_time,
+            "timezone": self.timezone,
+            "debug": self.debug,
+            "monitor_enabled": self.monitor_enabled,
+            "monitor_interval": self.monitor_interval,
+            "trailer_folder_movie": self.trailer_folder_movie,
+            "trailer_folder_series": self.trailer_folder_series,
+            "trailer_resolution": self.trailer_resolution,
+            "trailer_audio_format": self.trailer_audio_format,
+            "trailer_video_format": self.trailer_video_format,
+            "trailer_subtitles_enabled": self.trailer_subtitles_enabled,
+            "trailer_subtitles_format": self.trailer_subtitles_format,
+            "trailer_subtitles_language": self.trailer_subtitles_language,
+            "trailer_file_format": self.trailer_file_format,
+            "trailer_embed_metadata": self.trailer_embed_metadata,
+            "trailer_web_optimized": self.trailer_web_optimized,
+        }
+
     @property
     def debug(self):
         """Debug mode for the application. \n
@@ -109,21 +133,9 @@ class _Config:
         self._save_to_env("DEBUG", self._debug)
 
     @property
-    def dark_mode_enabled(self):
-        """Dark mode for the application. \n
-        Default is True. \n
-        Valid values are True/False."""
-        return self._dark_mode_enabled
-
-    @dark_mode_enabled.setter
-    def dark_mode_enabled(self, value: bool):
-        self._dark_mode_enabled = value
-        self._save_to_env("DARK_MODE_ENABLED", self._dark_mode_enabled)
-
-    @property
     def database_url(self):
         """Database URL for the application. \n
-        Default is 'sqlite:///trailarr.db'. \n
+        Default is 'sqlite:////data/trailarr.db'. \n
         Valid values are any database URL."""
         return self._database_url
 
@@ -147,7 +159,7 @@ class _Config:
     @property
     def monitor_interval(self):
         """Monitor interval for the application. \n
-        Default is 60 minutes. \n
+        Default is 60 minutes. Minimum is 10 \n
         Valid values are integers."""
         return self._monitor_interval
 
@@ -206,9 +218,9 @@ class _Config:
         self._save_to_env("TRAILER_SUBTITLES_LANGUAGE", self._trailer_language)
 
     @property
-    def trailer_resolution(self):
+    def trailer_resolution(self) -> int:
         """Resolution for trailers. \n
-        Default is '1080p'. \n
+        Default is 1080. \n
         Valid input values are '240', '360', '480', '720', '1080', '1440', '2160',
         'SD', 'FSD', 'HD', 'FHD', 'QHD', 'UHD'.
         Always stored as a number. Ex: '1080'.
@@ -351,4 +363,4 @@ class _Config:
 # Load environment variables, do not override system environment variables
 load_dotenv(override=False)
 # Create Config object to be used in the application
-config = _Config()
+app_settings = _Config()

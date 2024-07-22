@@ -1,13 +1,14 @@
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
+from api.v1 import websockets
 from core.base.database.manager.connection import ConnectionDatabaseManager
 from core.base.database.models.connection import (
     ConnectionCreate,
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.tasks.api_refresh import api_refresh_by_id
+from core.tasks.api_refresh import api_refresh_by_id_job
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -38,7 +39,9 @@ async def create_connection(connection: ConnectionCreate) -> str:
     try:
         result = await db_handler.create(connection)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to add Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Created Successfully!", "Success")
     return f"Connection Created Successfully! {result}"
 
 
@@ -79,7 +82,9 @@ async def update_connection(connection_id: int, connection: ConnectionUpdate) ->
     try:
         await db_handler.update(connection_id, connection)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to update Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Updated Successfully!", "Success")
     return "Connection Updated Successfully!"
 
 
@@ -101,7 +106,9 @@ async def delete_connection(connection_id: int) -> str:
     try:
         db_handler.delete(connection_id)
     except Exception as e:
+        await websockets.ws_manager.broadcast("Failed to delete Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    await websockets.ws_manager.broadcast("Connection Deleted Successfully!", "Success")
     return "Connection Deleted Successfully!"
 
 
@@ -116,24 +123,4 @@ async def delete_connection(connection_id: int) -> str:
     },
 )
 async def refresh_connection(connection_id: int) -> str:
-    return api_refresh_by_id(connection_id)
-
-
-# @connections_router.post("/")
-# async def create_connection(
-#     connection_name: str,
-#     arr_type: ArrType,
-#     arr_url: str,
-#     arr_api_key: str,
-#     monitor: MonitorType,
-# ) -> str:
-#     connection = ConnectionCreate(
-#         name=connection_name,
-#         arr_type=arr_type,
-#         url=arr_url,
-#         api_key=arr_api_key,
-#         monitor=monitor,
-#     )
-#     db_handler = ConnectionDatabaseManager()
-#     connection1 = await db_handler.create(connection)
-#     return connection1
+    return api_refresh_by_id_job(connection_id)

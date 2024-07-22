@@ -32,7 +32,7 @@ export class TopnavComponent {
         distinctUntilChanged()
       )
       .subscribe((value) => {
-        console.log('Search query: %s', value);
+        // console.log('Search query: %s', value);
         this.onSearch(value);
       });
   }
@@ -101,17 +101,17 @@ export class TopnavComponent {
     if (theme) {
       let darkTheme = theme === 'dark';
       this.setTheme(darkTheme);
-      console.log('LocalStorage: %s mode enabled', theme);
+      // console.log('LocalStorage: %s mode enabled', theme);
     } else {
       // Check if the user prefers dark mode
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         // The user has indicated that they prefer a dark color scheme
         this.setTheme(true);
-        console.log('Media: Dark mode enabled');
+        // console.log('Media: Dark mode enabled');
       } else {
         // The user has indicated that they prefer a light color scheme
         this.setTheme(false);
-        console.log('Media: Light mode enabled');
+        // console.log('Media: Light mode enabled');
       }
     }
   }
@@ -135,7 +135,7 @@ export class TopnavComponent {
     this.renderer.removeClass(document.body, oldTheme);
     this.renderer.addClass(document.body, theme);
     localStorage.setItem('theme', theme);
-    console.log('Theme set to %s', theme);
+    // console.log('Theme set to %s', theme);
     return;
   }
   
@@ -149,18 +149,10 @@ export class TopnavComponent {
       return;
     }
     this.searchQuery = query;
-    console.log('Search query: %s', this.searchQuery);
-    let startTime = new Date();
-    console.log('Start Time: %o', startTime.toLocaleDateString());
+    // console.log('Search query: %s', this.searchQuery);
     this.searchService.searchMedia(this.searchQuery).subscribe((media_list: SearchMedia[]) => {
-      console.log('Search results: %o', media_list);
+      // console.log('Search results: %o', media_list);
       this.searchResults = media_list;
     });
-    let endTime = new Date();
-    console.log('End Time: %o', endTime.toLocaleDateString());
-    let timetook = endTime.getMilliseconds() - startTime.getMilliseconds();
-    console.log('Search completed in %o seconds', timetook);
-    // this.searchQuery = '';
-    // throw new Error('Method not implemented.');
   }
 }

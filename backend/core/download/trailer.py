@@ -1,5 +1,5 @@
 # Extract youtube video id from url
-import datetime
+from datetime import datetime, timezone
 import logging
 import os
 import re
@@ -8,7 +8,7 @@ from threading import Semaphore
 
 from yt_dlp import YoutubeDL
 
-from config.config import config
+from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer
 from core.download.video import download_video
 
@@ -147,6 +147,39 @@ def get_folder_permissions(path: str) -> int:
     return os.stat(parent_dir).st_mode
 
 
+def get_trailer_path(
+    src_path: str, dst_folder_path: str, new_title: str, increment_index: int = 1
+) -> str:
+    """Get the destination path for the trailer file. \n
+    Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
+    If it exists, increments the index and checks again. \n
+    Recursively increments the index until a non-existing filename is found. \n
+    Example filenames: \n
+    - <new_title> - Trailer-trailer.mp4 \n
+    - <new_title> - Trailer 2-trailer.mp4 \n
+    - <new_title> - Trailer 3-trailer.mp4 \n
+    Args:
+        src_path (str): Source path of the trailer file.
+        dst_folder_path (str): Destination folder path.
+        new_title (str): New title of the media.
+        increment_index (int): Index to increment the trailer number. \n
+    Returns:
+        str: Destination path for the trailer file."""
+    filename = os.path.basename(src_path)
+    _ext = os.path.splitext(filename)[1]
+    if increment_index > 1:
+        filename = f"{new_title} - Trailer {increment_index}-trailer{_ext}"
+    else:
+        filename = f"{new_title} - Trailer-trailer{_ext}"
+    dst_file_path = os.path.join(dst_folder_path, filename)
+    # If file exists in destination, increment the index, else return path
+    if os.path.exists(dst_file_path):
+        return get_trailer_path(
+            src_path, dst_folder_path, new_title, increment_index + 1
+        )
+    return dst_file_path
+
+
 def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) -> bool:
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
@@ -162,9 +195,7 @@ def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) 
         os.makedirs(dst_folder_path, mode=dst_permissions)
 
     # Construct the new filename and move the file
-    filename = os.path.basename(src_path)
-    filename = f"{new_title} - Trailer-trailer{os.path.splitext(filename)[1]}"
-    dst_file_path = os.path.join(dst_folder_path, filename)
+    dst_file_path = get_trailer_path(src_path, dst_folder_path, new_title)
     shutil.move(src_path, dst_file_path)
 
     # Set the moved file's permissions to match the destination folder's permissions
@@ -186,10 +217,10 @@ def download_trailers(
     )
     trailer_folder = False
     if is_movie:
-        if config.trailer_folder_movie:
+        if app_settings.trailer_folder_movie:
             trailer_folder = True
     else:
-        if config.trailer_folder_series:
+        if app_settings.trailer_folder_series:
             trailer_folder = True
     sem = Semaphore(2)
     download_list = []
@@ -197,7 +228,7 @@ def download_trailers(
         sem.acquire()
         logging.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
         if download_trailer(media, trailer_folder, is_movie):
-            media.downloaded_at = datetime.datetime.now()
+            media.downloaded_at = datetime.now(timezone.utc)
             download_list.append(media)
             logging.info(
                 f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
