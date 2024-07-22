@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 
 from dotenv import load_dotenv, set_key
@@ -38,13 +39,19 @@ class _Config:
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = "sqlite:////data/trailarr.db"
 
-    _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "mp3", "flac", "vorbis", "opus"]
+    _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
     _VALID_SUBTITLES_FORMATS = ["srt", "vtt", "pgs"]
     _VALID_FILE_FORMATS = ["mp4", "mkv", "webm"]
     _VALID_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
 
     def __init__(self):
+        # Some generic attributes for server
+        self.version = os.getenv("APP_VERSION", "0.0.1")
+        _now = datetime.now(timezone.utc)
+        self.server_start_time = os.getenv("SERVER_START_TIME", f"{_now}")
+        self.timezone = os.getenv("TZ", "UTC")
+
         # Setting default values for properties
         self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
@@ -94,8 +101,10 @@ class _Config:
 
     def as_dict(self):
         return {
+            "version": self.version,
+            "server_start_time": self.server_start_time,
+            "timezone": self.timezone,
             "debug": self.debug,
-            "database_url": self.database_url,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
             "trailer_folder_movie": self.trailer_folder_movie,
@@ -150,7 +159,7 @@ class _Config:
     @property
     def monitor_interval(self):
         """Monitor interval for the application. \n
-        Default is 60 minutes. \n
+        Default is 60 minutes. Minimum is 10 \n
         Valid values are integers."""
         return self._monitor_interval
 

@@ -8,7 +8,6 @@ import { AddConnectionComponent } from './settings/connections/add-connection/ad
 import { ConnectionsComponent } from './settings/connections/connections.component';
 import { EditConnectionComponent } from './settings/connections/edit-connection/edit-connection.component';
 import { ShowConnectionsComponent } from './settings/connections/show-connections/show-connections.component';
-import { GeneralComponent } from './settings/general/general.component';
 import { SettingsComponent } from './settings/settings.component';
 import { TrailerComponent } from './settings/trailer/trailer.component';
 import { TasksComponent } from './tasks/tasks.component';
@@ -51,15 +50,13 @@ export const routes: Routes = [
         path: 'settings',
         component: SettingsComponent, 
         children: [
-            { path: '', redirectTo: 'general', pathMatch: 'full' },
-            { path: 'general', component: GeneralComponent },
+            { path: '', redirectTo: 'trailer', pathMatch: 'full' },
             {
                 path: 'connections',
                 component: ConnectionsComponent,
                 children: [
                     { path: '', component: ShowConnectionsComponent },
                     { path: 'add', component: AddConnectionComponent },
-                    // { path: 'show', redirectTo: '', pathMatch: 'full' },
                     { path: 'edit/:id', component: EditConnectionComponent }
                 ]
             },

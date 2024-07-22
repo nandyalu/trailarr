@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 
 from app_logger import ModuleLogger
+from config.settings import app_settings
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.download_trailers import download_missing_trailers
@@ -43,7 +44,7 @@ def refresh_api_data_job():
     scheduler.add_job(
         func=_refresh_api_data,
         trigger="interval",
-        hours=1,
+        minutes=app_settings.monitor_interval,
         id="hourly_refresh_api_data_job",
         name="Arr Data Refresh",
         next_run_time=datetime.now() + timedelta(seconds=30),
@@ -81,7 +82,7 @@ def download_missing_trailers_job():
     scheduler.add_job(
         func=download_missing_trailers,
         trigger="interval",
-        hours=1,
+        minutes=app_settings.monitor_interval,
         id="download_missing_trailers_job",
         name="Download Missing Trailers",
         next_run_time=datetime.now() + timedelta(seconds=900),

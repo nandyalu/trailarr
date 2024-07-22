@@ -1,1 +1,245 @@
-<p>trailer works!</p>
+<div class="trailer-container">
+    <div class="message-container">
+        <div *ngFor="let message of updateResults"
+            class="update-message" [class.error]="message.toLowerCase().includes('error')">
+            {{message}}
+        </div>
+    </div>
+    <div *ngIf="settings?.debug" class="update-message error">
+        <strong>Warning:</strong> Debug mode is enabled, disable it if not needed!
+    </div>
+    <section class="section">
+        <h1>General</h1>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Debug Mode</label>
+                <small>Set app into Debug mode, this will generate too much log data!</small>
+                <small>Use this only when requested!!!</small>
+            </div>
+            <div id="debug" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="1"
+                    [class.selected]="option === settings?.debug"
+                    (click)="updateSetting('debug', option)"
+                    (keydown.enter)="updateSetting('debug', option)"
+                    (keydown.space)="updateSetting('debug', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Monitor Trailers</label>
+                <small>Monitor media from Radarr/Sonarr to download trailers.</small>
+            </div>
+            <div id="monitor_enabled" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="2"
+                    [class.selected]="option === settings?.monitor_enabled"
+                    (click)="updateSetting('monitor_enabled', option)"
+                    (keydown.enter)="updateSetting('monitor_enabled', option)"
+                    (keydown.space)="updateSetting('monitor_enabled', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div *ngIf="settings?.monitor_enabled" class="trailer-content">
+            <div class="content-label">
+                <label>Monitor Interval</label>
+                <small>Frequency (in minutes) to get new media data from Radarr/Sonarr.</small>
+                <small>Default is 60. Minuimum is 10.</small>
+            </div>
+            <div class="text-input">
+                <input id="monitor_interval" type="number" [(ngModel)]="monitorInterval" maxlength="6"
+                    placeholder="Monitor Interval" autocomplete="off" tabindex="3">
+                <button *ngIf="settings?.monitor_interval != monitorInterval" class="primary icononly-button"
+                    id="update_monitor_interval" tabindex="4" (click)="updateSetting('monitor_interval', monitorInterval)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+    <section *ngIf="settings?.monitor_enabled" class="section">
+        <h1>Files</h1>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Folder Movie</label>
+                <small>Save trailer file in a 'Trailers' folder inside Movie folder.</small>
+            </div>
+            <div id="trailer_folder_movie" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="5"
+                    [class.selected]="option === settings?.trailer_folder_movie"
+                    (click)="updateSetting('trailer_folder_movie', option)"
+                    (keydown.enter)="updateSetting('trailer_folder_movie', option)"
+                    (keydown.space)="updateSetting('trailer_folder_movie', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Folder Series</label>
+                <small>Save trailer file in a 'Trailers' folder inside Series folder.</small>
+            </div>
+            <div id="trailer_folder_series" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="6"
+                    [class.selected]="option === settings?.trailer_folder_series" 
+                    (click)="updateSetting('trailer_folder_series', option)"
+                    (keydown.enter)="updateSetting('trailer_folder_series', option)" 
+                    (keydown.space)="updateSetting('trailer_folder_series', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+    </section>
+    <section *ngIf="settings?.monitor_enabled" class="section">
+        <h1>Trailer</h1>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Resolution</label>
+                <small>Resolution of the trailer video file.</small>
+                <small>Valid values: 240, 360, 480, 720, 1080, 1440, 2160</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_resolution" type="number" [(ngModel)]="resolution"
+                    maxlength="4" placeholder="Trailer Resolution" autocomplete="off" tabindex="7">
+                <button *ngIf="settings?.trailer_resolution != resolution" 
+                    class="primary icononly-button" id="update_trailer_resolution" tabindex="8" 
+                    (click)="updateSetting('trailer_resolution', resolution)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer File Format</label>
+                <small>Final file format(extension) of the trailer file.</small>
+            </div>
+            <div id="trailer_file_format" class="options-bar">
+                <div *ngFor="let option of fileFormats" class="option" tabindex="9"
+                    [class.selected]="option === settings?.trailer_file_format"
+                    (click)="updateSetting('trailer_file_format', option)"
+                    (keydown.enter)="updateSetting('trailer_file_format', option)"
+                    (keydown.space)="updateSetting('trailer_file_format', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Video Format</label>
+                <small>Final video format(codec) of the trailer file.</small>
+            </div>
+            <div id="trailer_video_format" class="options-bar">
+                <div *ngFor="let option of videoFormats" class="option" tabindex="10"
+                    [class.selected]="option === settings?.trailer_video_format"
+                    (click)="updateSetting('trailer_video_format', option)"
+                    (keydown.enter)="updateSetting('trailer_video_format', option)"
+                    (keydown.space)="updateSetting('trailer_video_format', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Audio Format</label>
+                <small>Final audio format(codec) of the trailer file.</small>
+            </div>
+            <div id="trailer_audio_format" class="options-bar">
+                <div *ngFor="let option of audioFormats" class="option" tabindex="11"
+                    [class.selected]="option === settings?.trailer_audio_format"
+                    (click)="updateSetting('trailer_audio_format', option)"
+                    (keydown.enter)="updateSetting('trailer_audio_format', option)"
+                    (keydown.space)="updateSetting('trailer_audio_format', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Subtitles Enabled</label>
+                <small>Download subtitles and added them to trailer file, if available.</small>
+            </div>
+            <div id="trailer_subtitles_enabled" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="12"
+                    [class.selected]="option === settings?.trailer_subtitles_enabled"
+                    (click)="updateSetting('trailer_subtitles_enabled', option)"
+                    (keydown.enter)="updateSetting('trailer_subtitles_enabled', option)"
+                    (keydown.space)="updateSetting('trailer_subtitles_enabled', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Subtitles Format</label>
+                <small>Final subtitles format in the trailer file.</small>
+            </div>
+            <div id="trailer_subtitles_format" class="options-bar">
+                <div *ngFor="let option of subtitleFormats" class="option" tabindex="13"
+                    [class.selected]="option === settings?.trailer_subtitles_format"
+                    (click)="updateSetting('trailer_subtitles_format', option)"
+                    (keydown.enter)="updateSetting('trailer_subtitles_format', option)"
+                    (keydown.space)="updateSetting('trailer_subtitles_format', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Subtitles Language</label>
+                <small>Subtitles language of the trailer file. 2-letter ISO language code.</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_subtitles_language" type="text" [(ngModel)]="subtitleLanguage"
+                    maxlength="2" placeholder="Trailer Subtitles Language" autocomplete="off" tabindex="14">
+                <button *ngIf="subtitleLanguage != settings?.trailer_subtitles_language" 
+                    class="primary icononly-button" id="update_trailer_subtitles_language" tabindex="15"
+                    (click)="updateSetting('trailer_subtitles_language', subtitleLanguage)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+    <section *ngIf="settings?.monitor_enabled" class="section">
+        <h1>Other Options</h1>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Embed Metadata</label>
+                <small>Embed info from youtube video into the trailer file.</small>
+            </div>
+            <div id="trailer_embed_metadata" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="16"
+                    [class.selected]="option === settings?.trailer_embed_metadata"
+                    (click)="updateSetting('trailer_embed_metadata', option)"
+                    (keydown.enter)="updateSetting('trailer_embed_metadata', option)"
+                    (keydown.space)="updateSetting('trailer_embed_metadata', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label>Trailer Web Optimized</label>
+                <small>Enabling this will convert the video to a web optimized video, useful for streaming video over network, might slightly increase file size.</small>
+            </div>
+            <div id="trailer_web_optimized" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="17"
+                    [class.selected]="option === settings?.trailer_web_optimized"
+                    (click)="updateSetting('trailer_web_optimized', option)"
+                    (keydown.enter)="updateSetting('trailer_web_optimized', option)"
+                    (keydown.space)="updateSetting('trailer_web_optimized', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

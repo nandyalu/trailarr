@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../environment';
 import { Connection, ConnectionCreate, ConnectionUpdate } from '../models/connection';
+import { ServerStats, Settings } from '../models/settings';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,34 @@ export class SettingsService {
 
   constructor(private http: HttpClient) { }
 
-  getSettings(): Observable<any> {
+  getSettings(): Observable<Settings> {
     return this.http.get<any>(this.settingsUrl);
+  }
+
+  getServerStats(): Observable<ServerStats> {
+    var serverStatsUrl = this.settingsUrl + 'stats';
+    return this.http.get<any>(serverStatsUrl);
+  }
+
+  updateSetting(key: string, value: any): Observable<string> {
+    const updateSettingUrl = this.settingsUrl + 'update';
+    const update_obj = {
+      key: key,
+      value: value
+    }
+    return this.http.put<string>(updateSettingUrl, update_obj).pipe(
+      catchError((error: any) => {
+        let errorMessage = '';
+        if (error.error instanceof ErrorEvent) {
+          // client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // server-side error
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        return of(errorMessage);
+       })
+    );
   }
 
   private connectionsUrl = environment.apiUrl + environment.connections;
