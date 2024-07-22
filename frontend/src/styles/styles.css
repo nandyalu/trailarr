@@ -226,6 +226,24 @@ button.danger {
   color: var(--color-danger-text);
 }
 
+.icononly-button {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+button > svg {
+  height: 1.5rem;
+  width: 1.5rem;
+  fill: var(--color-on-primary);
+}
+
 /* Animated Button with SVG Icon */
 .animated-button {
   display: flex;
