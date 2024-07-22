@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import datetime
 import os
 import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -25,6 +26,10 @@ timezone = os.getenv("TZ", "ETC")
 logging.info(f"Setting up timezone for the application as '{timezone}'")
 os.environ["TZ"] = timezone
 time.tzset()
+
+# Set Server Start Time
+_now = datetime.datetime.now(datetime.timezone.utc)
+os.environ["SERVER_START_TIME"] = f"{_now}"
 
 
 @asynccontextmanager
