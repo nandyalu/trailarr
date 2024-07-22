@@ -2,6 +2,7 @@ import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { DurationConvertPipe } from '../../helpers/duration-pipe';
 import { FolderInfo, Media } from '../../models/media';
 import { MovieService } from '../../services/movie.service';
@@ -23,7 +24,8 @@ export class MediaDetailsComponent {
   filesLoading = true;
   trailer_url: string = '';
   status = 'Missing';
-  mediaService: MovieService | SeriesService = this.seriesService;
+  private mediaService: MovieService | SeriesService = this.seriesService;
+  private webSocketSubscription?: Subscription;
 
   constructor(
     private movieService: MovieService,
@@ -75,13 +77,18 @@ export class MediaDetailsComponent {
     };
 
     // Subscribe to the WebSocket events with the simplified handler
-    this.websocketService.connect().subscribe({
+    this.webSocketSubscription = this.websocketService.connect().subscribe({
       next: handleWebSocketEvent,
       error: handleWebSocketEvent,
       complete: handleWebSocketEvent
     });
     // Subscribe to websocket events to refresh data
 
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe from the websocket events
+    this.webSocketSubscription?.unsubscribe();
   }
 
   getMediaData() {

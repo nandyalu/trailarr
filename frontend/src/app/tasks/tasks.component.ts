@@ -1,6 +1,7 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TimeagoModule } from 'ngx-timeago';
+import { Subscription } from 'rxjs';
 import { QueuedTask, ScheduledTask } from '../models/tasks';
 import { TasksService } from '../services/tasks.service';
 import { WebsocketService } from '../services/websocket.service';
@@ -22,6 +23,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   constructor(private tasksService: TasksService, private websocketService: WebsocketService) { }
 
   private timeoutRef: any;
+  private webSocketSubscription?: Subscription;
 
   ngOnInit(): void {
     // On first fetch, get next event start time and set interval to fetch at that time
@@ -33,7 +35,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     };
 
     // Subscribe to the WebSocket events with the simplified handler
-    this.websocketService.connect().subscribe({
+    this.webSocketSubscription = this.websocketService.connect().subscribe({
       next: handleWebSocketEvent,
       error: handleWebSocketEvent,
       complete: handleWebSocketEvent
@@ -96,6 +98,8 @@ export class TasksComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unsubscribe from the refresh interval
     clearTimeout(this.timeoutRef);
+    // Unsubscribe from the WebSocket events
+    this.webSocketSubscription?.unsubscribe();
   }
 
   runTask(task_id: string) {
