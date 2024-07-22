@@ -18,12 +18,13 @@ export class AppComponent {
   title = 'Trailarr';
   messages: MessageData[] = [];
   private toastSubscription?: Subscription;
+  private websocketSubscription?: Subscription;
 
   constructor(private websocketService: WebsocketService) { }
 
   ngOnInit() {
     // Subscribe to the WebSocket events and display the messages
-    this.websocketService.connect().subscribe({
+    this.websocketSubscription = this.websocketService.connect().subscribe({
       next: (data: MessageData) => {
         this.messages.unshift(data);
         setTimeout(() => {
@@ -52,7 +53,8 @@ export class AppComponent {
   ngOnDestroy() {
     // Close the websocket connection
     this.websocketService.close();
-    // Unsubscribe from the toast messages
+    // Unsubscribe from the websocket and toast messages
+    this.websocketSubscription?.unsubscribe();
     this.toastSubscription?.unsubscribe();
   }
 }

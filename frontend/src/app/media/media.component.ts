@@ -17,7 +17,7 @@ export class MediaComponent {
   title = 'Media';
   media_list: Media[] = [];
   isLoading = true;
-  mediaService: MovieService | SeriesService = this.seriesService;
+  private mediaService: MovieService | SeriesService = this.seriesService;
 
   constructor(
     private movieService: MovieService,
