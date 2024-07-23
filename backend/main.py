@@ -124,6 +124,15 @@ else:
         "/data/web/images", StaticFiles(directory=images_dir), name="images"
     )
 
+# Check if the static directory exists, if not create it
+static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
+if not os.path.exists(static_dir):
+    logging.info("Creating static directory")
+    os.makedirs(static_dir)
+else:
+    logging.info(f"Static directory exists at '{static_dir}'")
+    trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
+
 
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
@@ -141,12 +150,3 @@ async def serve_frontend(rest_of_path: str = ""):
         else:
             # If the path corresponds to a directory, return the index.html file in the directory
             return HTMLResponse(content=open(f"{static_dir}/index.html").read())
-
-
-static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
-if not os.path.exists(static_dir):
-    logging.info("Creating static directory")
-    os.makedirs(static_dir)
-else:
-    logging.info(f"Static directory exists at '{static_dir}'")
-    trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
