@@ -13,8 +13,6 @@
 
 Trailarr is a Docker application to download and manage trailers for your media library. It integrates with your existing services, such as [Plex](https://www.plex.tv/), [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/)!
 
-Movies and TV shows from your Radarr and Sonarr applications. The application uses `yt-dlp` to search and download trailers from Youtube.
-
 ## Features
 
 - Manages multiple Radarr and Sonarr instances to find media
