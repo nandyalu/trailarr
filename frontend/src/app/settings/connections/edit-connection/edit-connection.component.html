@@ -3,8 +3,8 @@
     <hr/>
     <form [formGroup]="editConnectionForm">
         <div class="input-group">
-            <label for="name">Server Name</label>
-            <input id="name" type="text" formControlName="name" placeholder="Server Name" autocomplete="off" autocapitalize="words" tabindex="1"
+            <label for="name">Connection Name</label>
+            <input id="name" type="text" formControlName="name" placeholder="Connection Name" autocomplete="off" autocapitalize="words" tabindex="1"
             oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)"
             [class.invalid]="name.invalid && name.touched">
             <p *ngIf="name.invalid && name.touched" class="invalid-text">Server Name is required! Minimum 3 characters</p>
