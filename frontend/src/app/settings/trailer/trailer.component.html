@@ -1,4 +1,5 @@
 <div class="trailer-container">
+    <!-- TODO: Make the message-container sticky on top -->
     <div class="message-container">
         <div *ngFor="let message of updateResults"
             class="update-message" [class.error]="message.toLowerCase().includes('error')">
