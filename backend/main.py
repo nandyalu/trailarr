@@ -63,8 +63,8 @@ trailarr_api = FastAPI(
     summary=f"{APP_NAME} API available commands.",
     version=APP_VERSION,
     openapi_url="/api/v1/openapi.json",
-    docs_url="/api/v1/docs",
-    redoc_url="/api/v1/redoc",
+    docs_url=None,
+    redoc_url=None,
     terms_of_service="https://github.com/UNCode101/trailarr2",
     contact={
         "url": "https://github.com/UNCode101/trailarr2",
@@ -119,19 +119,10 @@ if not os.path.exists(images_dir):
         "/data/web/images", StaticFiles(directory=images_dir), name="images"
     )
 else:
-    logging.info(f"Static directory exists at '{images_dir}'")
+    logging.info("Mounting images directory for frontend!")
     trailarr_api.mount(
         "/data/web/images", StaticFiles(directory=images_dir), name="images"
     )
-
-# Check if the static directory exists, if not create it
-static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
-if not os.path.exists(static_dir):
-    logging.info("Creating static directory")
-    os.makedirs(static_dir)
-else:
-    logging.info(f"Static directory exists at '{static_dir}'")
-    trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
 
 
 # Mount static frontend files to serve frontend
@@ -150,3 +141,13 @@ async def serve_frontend(rest_of_path: str = ""):
         else:
             # If the path corresponds to a directory, return the index.html file in the directory
             return HTMLResponse(content=open(f"{static_dir}/index.html").read())
+
+
+# Check if the frontend directory exists, if not create it
+static_dir = os.path.abspath("/app/frontend/dist/frontend/browser")
+if not os.path.exists(static_dir):
+    logging.info("Creating static directory")
+    os.makedirs(static_dir)
+else:
+    logging.info("Mounting frontend directory for frontend files!")
+    trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")

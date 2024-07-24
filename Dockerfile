@@ -72,6 +72,9 @@ COPY --from=build /app/frontend/dist/frontend/browser /app/frontend/dist/fronten
 # Copy the backend
 COPY ./backend /app/backend
 
+# Copy the assets folder
+COPY ./assets /app/assets
+
 # Copy the installed Python dependencies and ffmpeg
 COPY --from=python-deps /usr/local/ /usr/local/
 

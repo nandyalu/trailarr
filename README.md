@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo-full-512.png" width=50%>
+  <img src="assets/images/trailarr-full-512.png" width=50%>
 </p>
 
 # Trailarr

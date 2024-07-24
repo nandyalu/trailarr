@@ -11,6 +11,7 @@ echo "Current date time after tzdate: $(date)"
 
 # Create data folder for storing database and other config files
 mkdir -p /data/logs && chmod -R 755 /data
+chmod -R 755 /app/assets
 
 # Run Alembic migrations
 echo "Running Alembic migrations"
