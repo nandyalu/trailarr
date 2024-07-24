@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
-![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)
+[![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/UNCode101/trailarr)
 
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/UNCode101/trailarr)
@@ -33,7 +33,7 @@ Trailarr is a Docker application to download and manage trailers for your media 
 
 ### Docker Compose
 
-To run the application, you need to have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed on your system.
+To run the application, you need to have [Docker](https://docs.docker.com/get-docker/) installed on your system.
 
 ```docker
 version: '3.2'
@@ -64,7 +64,7 @@ Run the following command to start the application:
 docker-compose up -d
 ```
 
-Open your browser and navigate to `http://localhost:7889` to access the application.
+Open your browser and navigate to [http://localhost:7889](http://localhost:7889) to access the application.
 
 #### Updating
 
@@ -96,7 +96,7 @@ docker run -d \
 - Change `<SONARR_ROOT_FOLDERS>` to the folder where Sonarr stores TV shows.
 - Repeat the volume mapping for each Radarr and Sonarr instance you want to monitor.
 
-Open your browser and navigate to `http://localhost:7889` to access the application.
+Open your browser and navigate to [http://localhost:7889](http://localhost:7889) to access the application.
 
 #### Updating
 
@@ -117,10 +117,31 @@ Finally, run the updated container using the same `docker run` command used duri
 docker run -d ...
 ```
 
+### Setup
 
-### Documentation
+1. Navigate to the application in your browser at [http://localhost:7889](http://localhost:7889).
+2. Go to `Settings` > `Trailer` and adjust any settings as needed. 
+3. Go to `Settings` > `Connections` and add your Radarr and Sonarr instances.
+    - Click the `Add Connection` button.
+    - Set the `Connection Name` to a name of your choice.
+    - Set the `Type` to either `Radarr` or `Sonarr`.
+    - Add the `URL` for your Radarr or Sonarr instance. 
+        - For example, `http://192.168.0.15:6969`
+    - Add the `API Key` from your Radarr or Sonarr instance.
+        - Get `API Key` by opening Radarr/Sonarr in your browser, going to Settings > General, then copy the API key.
+    - Set the `Monitor Type` to your preference. Here's what each of them does:
+        - `Missing` will download trailers for movies/series without a trailer.
+        - `New` will only download trailers for movies/series that gets added after the change.
+        - `Sync` will download trailers for movie/series is monitored in Radarr/Sonarr.
+        - `None` will not download any trailers.
 
-Coming soon...
+        Note 1: You can set different monitor types for each Radarr/Sonarr instance.
+
+        Note 2: If you have a huge library and don't want to download trailers for all of them, set the monitor type to `None` when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to `New` to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for. 
+    - Click the `Save` button to save the connection.
+4. Repeat step 3 for each Radarr and Sonarr instance you want to monitor.
+5. That's it! The application will now start downloading trailers for your media library.
+
 
 ### Support
 

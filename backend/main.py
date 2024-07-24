@@ -65,13 +65,13 @@ trailarr_api = FastAPI(
     openapi_url="/api/v1/openapi.json",
     docs_url=None,
     redoc_url=None,
-    terms_of_service="https://github.com/UNCode101/trailarr2",
+    terms_of_service="https://github.com/UNCode101/trailarr",
     contact={
-        "url": "https://github.com/UNCode101/trailarr2",
+        "url": "https://github.com/UNCode101/trailarr",
     },
     license_info={
         "name": "GNU GPL 3.0",
-        "url": "https://github.com/UNCode101/trailarr2/blob/main/LICENSE",
+        "url": "https://github.com/UNCode101/trailarr/blob/main/LICENSE",
     },
 )
 
