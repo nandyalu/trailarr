@@ -50,7 +50,7 @@ COPY ./assets /app/assets
 COPY ./backend /app/backend
 
 # Copy the frontend built files
-COPY ./frontend/dist/browser /app/frontend
+COPY ./frontend-build/browser /app/frontend-build
 
 # Copy the installed Python dependencies and ffmpeg
 COPY --from=python-deps /usr/local/ /usr/local/
