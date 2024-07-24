@@ -170,7 +170,7 @@ cython_debug/
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
-frontend/dist
+!frontend/dist/
 frontend/tmp
 frontend/out-tsc
 frontend/bazel-out

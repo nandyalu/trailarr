@@ -5,6 +5,9 @@
 		{
 			"type": "docker-build",
 			"label": "docker-build",
+			"dependsOn": [
+				"frontend - build",
+			],
 			"platform": "python",
 			"dockerBuild": {
 				"tag": "trailarr2:latest",
@@ -97,7 +100,7 @@
 			}
 		},
 		{
-			"label": "npm: build - frontend",
+			"label": "frontend - build",
 			"type": "npm",
 			"script": "build",
 			"path": "frontend",
@@ -109,7 +112,7 @@
 			"label": "fastapi: run",
 			"type": "shell",
 			"dependsOn": [
-				"npm: build - frontend"
+				"frontend - build"
 			],
 			"isBackground": true,
 			"command": "gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api",
