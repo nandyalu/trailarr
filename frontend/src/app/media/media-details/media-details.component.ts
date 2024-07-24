@@ -113,7 +113,7 @@ export class MediaDetailsComponent {
   downloadTrailer() {
     const old_id = this.media?.youtube_trailer_id?.toLowerCase() || '';
     const new_id = this.trailer_url.toLowerCase();
-    if (new_id.includes(old_id) && !this.media?.trailer_exists) {
+    if (new_id.includes(old_id) && this.media?.trailer_exists) {
       // Trailer id is the same, no need to download
       return;
     }
