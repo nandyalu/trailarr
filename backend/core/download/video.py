@@ -1,30 +1,29 @@
 from datetime import datetime, timedelta, timezone
-import logging
 from typing import Any
 
 from yt_dlp import YoutubeDL
 
+from app_logger import ModuleLogger
 from config.settings import app_settings
 
 # For some reason, supplying a logger to YoutubeDL is not working with app_logger
 # So, we are instead logging progress using progress hooks.
 
+logger = ModuleLogger("TrailersDownloader")
+
 
 def _progress_hook(d):
     if d["status"] == "downloading":
         if d["_percent_str"] in ["25.0%", "50.0%", "75.0%", "100.0%"]:
-            logging.debug(
+            logger.debug(
                 f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
             )
-        # logging.debug(
-        #     f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
-        # )
     if d["status"] == "error":
-        logging.info(f"'Trailers': Error downloading {d['filename']}")
+        logger.info(f"'Trailers': Error downloading {d['filename']}")
     if d["status"] == "finished":  # Guaranteed to call
         timetook = timedelta(seconds=d["elapsed"])
         data["filepath"] = d["filename"]
-        logging.debug(
+        logger.debug(
             f"'Trailers': Download completed in {timetook}! Size: {d['_total_bytes_str']} "
             f'Filepath: "{d["filename"]}"'
         )
@@ -39,19 +38,19 @@ def _postprocessor_hook(d):
             "endtime": None,
             "filepath": "",
         }
-        logging.debug(f"'Trailers': [{pprocessor}] Converting downloaded file...")
+        logger.debug(f"'Trailers': [{pprocessor}] Converting downloaded file...")
     if d["status"] == "processing":
-        logging.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
+        logger.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
     if d["status"] == "finished":  # Guaranteed to call
         data[pprocessor]["status"] = "finished"
         data[pprocessor]["endtime"] = datetime.now(timezone.utc)
         timetook = data[pprocessor]["endtime"] - data[pprocessor]["starttime"]
-        logging.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
+        logger.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
         if "filepath" in d["info_dict"]:
             filepath = d["info_dict"]["filepath"]
             data[pprocessor]["filepath"] = filepath
             data["filepath"] = filepath
-            logging.debug(f"'Trailers': [{pprocessor}] Filepath: \"{filepath}\"")
+            logger.debug(f"'Trailers': [{pprocessor}] Filepath: \"{filepath}\"")
 
 
 data: dict[str, Any] = {}
@@ -163,5 +162,5 @@ def download_video(url: str, file_path: str | None = None) -> str:
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
     except Exception:
-        logging.exception(f"Failed to download video from {url}")
+        logger.exception(f"Failed to download video from {url}")
     return str(data["filepath"])
