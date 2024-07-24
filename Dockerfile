@@ -57,6 +57,9 @@ RUN apt update && apt install -y tzdata && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
+# Install gosu for user switching
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
 # Create a directory for the app
 RUN mkdir /app
 
@@ -66,6 +69,7 @@ RUN mkdir /app
 # Set the working directory
 WORKDIR /app
 
+# TODO: Remove frontend build stage and copy build files to container /app/frontend folder
 # Copy the frontend build from the previous stage
 COPY --from=build /app/frontend/dist/frontend/browser /app/frontend/dist/frontend/browser
 
@@ -81,14 +85,26 @@ COPY --from=python-deps /usr/local/ /usr/local/
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
 
+# Set permissions for /data directory
+VOLUME ["/data"]
+
+# Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Copy startup script and make it executable
+COPY start_new.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Expose the port the app runs on
 EXPOSE 7889
 
-# Copy start.sh script
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Set permissions for appuser on /app directory
+RUN chown -R appuser:appuser /app && chmod -R 750 /app
 
-# Run startup script
-# CMD ["gunicorn", "--bind", "0.0.0.0:7889", "-k", "uvicorn.workers.UvicornWorker", "backend.main:trailarr_api"]
-CMD ["/bin/sh", "/app/start.sh"]
-# CMD ["tail", "-f", "/dev/null"]
+# Run entrypoint script to create directories, set permissions and timezone \
+# and start the application as appuser
+ENTRYPOINT /app/entrypoint.sh

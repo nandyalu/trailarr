@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv, set_key
 
+ENV_PATH = "/data/.env"
 RESOLUTION_DICT = {
     "SD": 360,
     "FSD": 480,
@@ -96,7 +97,7 @@ class _Config:
         ).lower() in ["true", "1"]
         self.trailer_web_optimized = os.getenv(
             "TRAILER_WEB_OPTIMIZED",
-            "False",
+            "True",
         ).lower() in ["true", "1"]
 
     def as_dict(self):
@@ -304,7 +305,7 @@ class _Config:
     @property
     def trailer_web_optimized(self):
         """Web optimized for trailers. \n
-        Default is False. \n
+        Default is True. \n
         Valid values are True/False."""
         return self._trailer_web_optimized
 
@@ -316,7 +317,7 @@ class _Config:
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
         os.environ[key.upper()] = str(value)
-        set_key(".env", key.upper(), str(value))
+        set_key(ENV_PATH, key.upper(), str(value))
 
     def resolve_closest_resolution(self, value: str | int) -> int:
         """Resolve the closest resolution for the given value. \n
@@ -361,6 +362,6 @@ class _Config:
 
 
 # Load environment variables, do not override system environment variables
-load_dotenv(override=False)
+load_dotenv(dotenv_path=ENV_PATH, override=False)
 # Create Config object to be used in the application
 app_settings = _Config()
