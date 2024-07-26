@@ -10,13 +10,11 @@ def get_current_year():
     return datetime.now(timezone.utc).year
 
 
+# TODO: Change Movie and Series models to Media model
 class MediaBase(SQLModel):
-    """Base class for the Media model. Extend this class for Movie and Series models.
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
+    """Base class for the Media model. Extend this class for Movie and Series models. \n
+    Note: \n
+        **DO NOT USE THIS CLASS DIRECTLY.** \n
     Use Movie or Series models instead.
     """
 

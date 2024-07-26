@@ -13,7 +13,7 @@ from core.tasks.schedules import schedule_all_tasks
 
 logging = ModuleLogger("Main")
 # from web.routes import web_router
-
+# TODO! Remove sensitive information from historic commits
 # TODO: Move these to main() function later and setup docker to run main.py
 # No need to setup the logger and it's config, importing the logger from app_logger.py will do setup
 

@@ -4,6 +4,7 @@ from aioresponses import aioresponses
 import pytest
 
 
+# TODO! Update all tests to current codebase
 def pytest_configure():
     os.environ["DEBUG"] = "True"
     from core.base.database.utils.init_db import init_db
