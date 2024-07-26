@@ -80,7 +80,7 @@ class DatabaseManager[
             # Exists, update it
             media_update_data = media_create.model_dump(
                 exclude_unset=True,
-                exclude_defaults=True,
+                # exclude_defaults=True,
                 exclude_none=True,
                 exclude={"youtube_trailer_id", "downloaded_at"},
             )
