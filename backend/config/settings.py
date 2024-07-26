@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import os
+import secrets
 
 from dotenv import load_dotenv, set_key
 
@@ -53,7 +54,8 @@ class _Config:
         self.server_start_time = os.getenv("SERVER_START_TIME", f"{_now}")
         self.timezone = os.getenv("TZ", "UTC")
 
-        # Setting default values for properties
+        # Read properties from ENV variables or set default values if not present
+        self.api_key = os.getenv("API_KEY", "")
         self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
         self.monitor_enabled = os.getenv(
@@ -105,6 +107,7 @@ class _Config:
             "version": self.version,
             "server_start_time": self.server_start_time,
             "timezone": self.timezone,
+            "api_key": self.api_key,
             "debug": self.debug,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
@@ -120,6 +123,27 @@ class _Config:
             "trailer_embed_metadata": self.trailer_embed_metadata,
             "trailer_web_optimized": self.trailer_web_optimized,
         }
+
+    @property
+    def api_key(self):
+        """API Key for the application. \n
+        Default is empty. \n
+        Valid values are any string."""
+        return self._api_key
+
+    def __generate_api_key(self) -> str:
+        """Generate a new API Key of 32 characters and return it."""
+        _key = secrets.token_hex(16)
+        if len(_key) != 32:  # Ensure the key is 32 characters long
+            return self.__generate_api_key()
+        return _key
+
+    @api_key.setter
+    def api_key(self, value: str):
+        if not value or len(value) < 32:
+            value = self.__generate_api_key()  # Generate a new key
+        self._api_key = value
+        self._save_to_env("API_KEY", self._api_key)
 
     @property
     def debug(self):
