@@ -135,9 +135,9 @@ docker run -d ...
         - `Sync` will download trailers for movie/series is monitored in Radarr/Sonarr.
         - `None` will not download any trailers.
 
-        Note 1: You can set different monitor types for each Radarr/Sonarr instance.
+        >Note 1: _You can set different monitor types for each Radarr/Sonarr instance._
 
-        Note 2: If you have a huge library and don't want to download trailers for all of them, set the monitor type to `None` when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to `New` to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for. 
+        >Note 2: _If you have a huge library and don't want to download trailers for all of them, set the monitor type to `None` when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to `New` to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for._
     - Click the `Save` button to save the connection.
 4. Repeat step 3 for each Radarr and Sonarr instance you want to monitor.
 5. That's it! The application will now start downloading trailers for your media library.
