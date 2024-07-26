@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
-import datetime
 import os
-import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
@@ -18,18 +16,6 @@ logging = ModuleLogger("Main")
 
 # TODO: Move these to main() function later and setup docker to run main.py
 # No need to setup the logger and it's config, importing the logger from app_logger.py will do setup
-
-# Get the timezone from the environment variable
-timezone = os.getenv("TZ", "ETC")
-
-# Set the timezone
-logging.info(f"Setting up timezone for the application as '{timezone}'")
-os.environ["TZ"] = timezone
-time.tzset()
-
-# Set Server Start Time
-_now = datetime.datetime.now(datetime.timezone.utc)
-os.environ["SERVER_START_TIME"] = f"{_now}"
 
 
 @asynccontextmanager

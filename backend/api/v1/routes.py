@@ -1,11 +1,14 @@
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.openapi.docs import (
     get_redoc_html,
     get_swagger_ui_html,
 )
 from fastapi.responses import FileResponse, HTMLResponse
+
+from api.v1.authentication import authenticate_user, validate_api_key
 from api.v1.connections import connections_router
+from api.v1.models import User
 from api.v1.movies import movies_router
 from api.v1.search import search_router
 from api.v1.series import series_router
@@ -18,14 +21,41 @@ from app_logger import ModuleLogger
 logging = ModuleLogger("API Routes")
 
 logging.info("Creating API v1 Routes")
+
+# Create an authenticated router and add all API routes that need authenentication to it
+authenticated_router = APIRouter(
+    dependencies=[Depends(validate_api_key)],
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "API key is missing",
+        }
+    },
+)
+authenticated_router.include_router(connections_router)
+authenticated_router.include_router(movies_router)
+authenticated_router.include_router(search_router)
+authenticated_router.include_router(series_router)
+authenticated_router.include_router(settings_router)
+authenticated_router.include_router(logs_router)
+authenticated_router.include_router(tasks_router)
+
+# Now create API router and add the authenticated router to it
 api_v1_router = APIRouter()
-api_v1_router.include_router(connections_router)
-api_v1_router.include_router(movies_router)
-api_v1_router.include_router(search_router)
-api_v1_router.include_router(series_router)
-api_v1_router.include_router(settings_router)
-api_v1_router.include_router(logs_router)
-api_v1_router.include_router(tasks_router)
+api_v1_router.include_router(authenticated_router)
+
+
+# Defina route that will be used for authentication from frontend
+@api_v1_router.post("/login", include_in_schema=False)
+async def user_login(user: User) -> str:
+    user_api_key = authenticate_user(user.username, user.password)
+    # user_api_key = authenticate_user(form_data.username, form_data.password)
+    if not user_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return user_api_key
 
 
 # Mount Custom API Documentation
@@ -41,9 +71,7 @@ if not os.path.exists(static_dir):
     logging.info(
         "API Documentation folder does not exist! API Documentation will not be available."
     )
-    # os.makedirs(static_dir)
 else:
-    # logging.info(f"API Documentation sStatic directory exists at '{static_dir}'")
     logging.info("Mounting API Documentation static directory")
 
     @api_v1_router.get("/static/{file_path:path}", include_in_schema=False)

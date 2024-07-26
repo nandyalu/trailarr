@@ -40,3 +40,8 @@ class Settings(BaseModel):
 class UpdateSetting(BaseModel):
     key: str
     value: int | str | bool
+
+
+class User(BaseModel):
+    username: str
+    password: str

@@ -127,8 +127,10 @@ class _Config:
     @property
     def api_key(self):
         """API Key for the application. \n
-        Default is empty. \n
-        Valid values are any string."""
+        Reads the value from environment variable 'API_KEY' if present. \n
+        If not present, generates a new API Key and returns it. \n
+        Setting it to empty string will also generate a new API Key. \n
+        Valid values would be any string of length 32."""
         return self._api_key
 
     def __generate_api_key(self) -> str:
