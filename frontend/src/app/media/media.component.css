@@ -45,11 +45,7 @@
   width: 24px;
 }
 
-.media-card .monitored-icon {
-  fill: var(--color-info);
-  left: 5px;
-}
-
+.media-card .monitored-icon ,
 .media-card .downloaded-icon {
   fill: var(--color-info);
   right: 5px;

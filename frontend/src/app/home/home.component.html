@@ -8,28 +8,34 @@
     <ng-template #mediaLoaded>
         <div class="media-row">
             <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.is_movie? '/movies': '/series', media.id]">
-                <img src="{{media.poster_path}}" class="card-img-top" alt="{{media.title}}">
+                <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
-                <svg *ngIf="media.monitor" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"
-                    class="monitored-icon">
-                    <path
-                        d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon"
-                    [class.success]="media.trailer_exists" aria-label="Trailer Exists">
-                    <path
-                        d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z" />
-                </svg>
+                <ng-container *ngIf="media.monitor; else trailerExistsIcon">
+                    <!-- Monitored Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
+                        <path
+                            d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
+                    </svg>
+                </ng-container>
+                <ng-template #trailerExistsIcon>
+                    <!-- Trailer Exists Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon"
+                        [class.success]="media.trailer_exists" aria-label="Trailer Exists">
+                        <path
+                            d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z" />
+                    </svg>
+                </ng-template>
                 <ng-container *ngIf="media.is_movie; else seriesIcon">
                     <!-- Movie Icon -->
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="movie-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="movie-icon">
                         <path
                             d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z" />
                     </svg>
                 </ng-container>
                 <ng-template #seriesIcon>
                     <!-- Series Icon -->
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="series-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="series-icon">
                         <path
                             d="M320-120v-80H160q-33 0-56.5-23.5T80-280v-480q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v480q0 33-23.5 56.5T800-200H640v80H320ZM160-280h640v-480H160v480Zm0 0v-480 480Z" />
                     </svg>
