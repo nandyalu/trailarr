@@ -18,7 +18,7 @@ export class TrailerComponent {
   resolution = 1080;
   subtitleLanguage = 'en';
   trueFalseOptions = [true, false];
-  fileFormats = ["mp4", "mkv", "webm"];
+  fileFormats = ["mkv", "mp4", "webm"];
   audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]
   videoFormats = ["h264", "h265", "vp8", "vp9", "av1"]
   subtitleFormats = ["srt", "vtt", "pgs"]

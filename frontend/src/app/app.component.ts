@@ -1,6 +1,6 @@
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SidenavComponent } from './nav/sidenav/sidenav.component';
@@ -71,7 +71,8 @@ export class AppComponent {
 
   closeAllSubscriptions() {
     console.log('Session Idle, closing all subscriptions!');
-    // TODO: May be display a dialog saying session was idle so closed it
+    // Show Session timed out dialog
+    this.showDialog();
     // and show a button to reload the page
     // Close the websocket connection
     this.websocketService.close();
@@ -85,5 +86,16 @@ export class AppComponent {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
+  }
+
+  // Reference to the dialog element
+  @ViewChild('sessionEndedDialog') sessionEndedDialog!: ElementRef<HTMLDialogElement>;
+
+  showDialog(): void {
+    this.sessionEndedDialog.nativeElement.showModal();
+  }
+
+  reloadPage(): void {
+    window.location.reload();
   }
 }

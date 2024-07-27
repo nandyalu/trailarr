@@ -424,7 +424,11 @@ dialog {
 dialog[open] {
   display: block;
   opacity: 1;
-  translate: 0 0;
+  translate: 0 0; 
+  padding: 1rem;
+  text-align: center;
+  background-color: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
 
   /* stylelint-disable-next-line at-rule-no-unknown */
   @starting-style {
@@ -434,7 +438,7 @@ dialog[open] {
 }
 
 dialog::backdrop {
-  background-image: linear-gradient(0deg, var(--color-secondary), var(--color-primary));
+  background-image: linear-gradient(0deg, var(--color-surface-variant), var(--color-background));
   transition-property: display opacity overlay;
   transition-duration: 1s;
   transition-behavior: allow-discrete;

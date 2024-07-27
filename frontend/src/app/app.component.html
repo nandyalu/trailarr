@@ -18,3 +18,20 @@
     </div>
   </div>
 </div>
+
+<dialog #sessionEndedDialog>
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Session Timed Out!</h2>
+    <p>You we gone for a while, we closed your session!</p>
+    <!-- <p>Click on 'Refresh' button below to refresh the page</p> -->
+    <div class="loading-container">
+      <div class="loading-container-inner">
+        <div class="dash first"></div>
+        <div class="dash seconde"></div>
+        <div class="dash third"></div>
+        <div class="dash fourth"></div>
+      </div>
+    </div>
+    <button class="secondary" (click)="reloadPage()" tabindex="1">Refresh</button>
+  </div>
+</dialog>
