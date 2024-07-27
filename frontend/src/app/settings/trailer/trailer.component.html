@@ -229,11 +229,26 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
+                <label>Trailer Remove SponsorBlocks</label>
+                <small>Remove Sponsor Blocks like intro, outro blocks from youtube video if available.</small>
+            </div>
+            <div id="trailer_remove_sponsorblocks" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="17"
+                    [class.selected]="option === settings?.trailer_remove_sponsorblocks"
+                    (click)="updateSetting('trailer_remove_sponsorblocks', option)"
+                    (keydown.enter)="updateSetting('trailer_remove_sponsorblocks', option)"
+                    (keydown.space)="updateSetting('trailer_remove_sponsorblocks', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
                 <label>Trailer Web Optimized</label>
                 <small>Enabling this will convert the video to a web optimized video, useful for streaming video over network, might slightly increase file size.</small>
             </div>
             <div id="trailer_web_optimized" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="17"
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="18"
                     [class.selected]="option === settings?.trailer_web_optimized"
                     (click)="updateSetting('trailer_web_optimized', option)"
                     (keydown.enter)="updateSetting('trailer_web_optimized', option)"

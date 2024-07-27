@@ -16,6 +16,7 @@ export interface Settings {
     trailer_subtitles_language: string
     trailer_file_format: string
     trailer_embed_metadata: boolean
+    trailer_remove_sponsorblocks: boolean
     trailer_web_optimized: boolean
 }
 

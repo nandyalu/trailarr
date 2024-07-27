@@ -97,6 +97,10 @@ class _Config:
             "TRAILER_EMBED_METADATA",
             "True",
         ).lower() in ["true", "1"]
+        self.trailer_remove_sponsorblocks = os.getenv(
+            "TRAILER_REMOVE_SPONSORBLOCKS",
+            "True",
+        ).lower() in ["true", "1"]
         self.trailer_web_optimized = os.getenv(
             "TRAILER_WEB_OPTIMIZED",
             "True",
@@ -121,6 +125,7 @@ class _Config:
             "trailer_subtitles_language": self.trailer_subtitles_language,
             "trailer_file_format": self.trailer_file_format,
             "trailer_embed_metadata": self.trailer_embed_metadata,
+            "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
             "trailer_web_optimized": self.trailer_web_optimized,
         }
 
@@ -327,6 +332,20 @@ class _Config:
     def trailer_embed_metadata(self, value: bool):
         self._trailer_embed_metadata = value
         self._save_to_env("TRAILER_EMBED_METADATA", self._trailer_embed_metadata)
+
+    @property
+    def trailer_remove_sponsorblocks(self):
+        """Remove sponsorblocks from the trailers. \n
+        Default is True. \n
+        Valid values are True/False."""
+        return self._trailer_remove_sponsorblocks
+
+    @trailer_remove_sponsorblocks.setter
+    def trailer_remove_sponsorblocks(self, value: bool):
+        self._trailer_remove_sponsorblocks = value
+        self._save_to_env(
+            "TRAILER_REMOVE_SPONSORBLOCKS", self._trailer_remove_sponsorblocks
+        )
 
     @property
     def trailer_web_optimized(self):

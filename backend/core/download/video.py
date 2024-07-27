@@ -136,6 +136,27 @@ def _get_ytdl_options() -> dict[str, Any]:
             {"key": "FFmpegEmbedSubtitle", "already_have_subtitle": False},
         )
 
+    # Set options to remove sponsorblock segments from the video
+    if app_settings.trailer_remove_sponsorblocks:
+        postprocessors.append(
+            {
+                "api": "https://sponsor.ajay.app",
+                "categories": {"intro", "outro"},
+                "key": "SponsorBlock",
+                "when": "after_filter",
+            }
+        )
+        postprocessors.append(
+            {
+                "force_keyframes": False,
+                "key": "ModifyChapters",
+                "remove_chapters_patterns": [],
+                "remove_ranges": [],
+                "remove_sponsor_segments": {"outro", "intro"},
+                "sponsorblock_chapter_title": "[SponsorBlock]: %(category_names)l",
+            }
+        )
+
     # Set remaining options
     if app_settings.trailer_web_optimized:
         # Below options are for fast straming, but might increase filesize

@@ -26,6 +26,7 @@ Trailarr is a Docker application to download and manage trailers for your media 
 - Searches youtube for a trailer if not set in Radarr/Sonarr.
 - Option to download desired youtube video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats.
+- Option to remove SponsorBlocks from videos (if any data is available).
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 
