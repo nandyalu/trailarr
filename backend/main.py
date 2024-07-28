@@ -1,13 +1,15 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from api.v1.authentication import validate_api_key
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
+from config.settings import app_settings
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 
@@ -61,14 +63,9 @@ trailarr_api = FastAPI(
     },
 )
 
-origins = [
-    # "http://localhost",
-    "*"  # TODO: Change this before deploying, Allow all origins for testing
-]
-
 trailarr_api.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -79,7 +76,10 @@ trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 
 
 # Websockets
-@trailarr_api.websocket("/ws/{client_id}")
+@trailarr_api.websocket(
+    "/ws/{client_id}",
+    dependencies=[Depends(validate_api_key)],
+)
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await ws_manager.connect(websocket)
     logging.info(f"Client #{client_id} connected!")
@@ -126,7 +126,13 @@ async def serve_frontend(rest_of_path: str = ""):
             return FileResponse(file_path)
         else:
             # If the path corresponds to a directory, return the index.html file in the directory
-            return HTMLResponse(content=open(f"{static_dir}/index.html").read())
+            # headers = {"X-API-KEY": app_settings.api_key}
+            headers = {
+                "Set-Cookie": f"trailarr_api_key={app_settings.api_key}; SameSite=Strict; Path=/"
+            }
+            return HTMLResponse(
+                content=open(f"{static_dir}/index.html").read(), headers=headers
+            )
 
 
 # Check if the frontend directory exists, if not create it

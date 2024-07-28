@@ -8,7 +8,4 @@ export const environment = {
     settings: 'settings/',
     search: 'search/',
     tasks: 'tasks/',
-    login: 'login',
-    username: 'admin',
-    password: 'trailarr',
 };

@@ -32,11 +32,17 @@ export class MovieService {
     }
 
     downloadMediaTrailer(id: number, yt_id: string): Observable<any> {
-        return this.http.post(`${this.moviesUrl}${id}/download?yt_id=${yt_id}`, {});
+        return this.http.post(
+            `${this.moviesUrl}${id}/download`,
+            { params: { yt_id: yt_id } }
+        );
     }
 
     monitorMedia(id: number, monitor: boolean): Observable<any> {
-        return this.http.post(`${this.moviesUrl}${id}/monitor?monitor=${monitor}`, {});
+        return this.http.post(
+            `${this.moviesUrl}${id}/monitor`,
+            {params: { monitor: monitor } }
+        );
     }
 
     deleteMediaTrailer(id: number): Observable<any> {

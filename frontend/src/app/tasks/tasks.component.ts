@@ -34,11 +34,18 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.refreshTaskData();
     };
 
+    const handleCloseEvent = () => {
+      // Unsubscribe from the refresh interval
+      clearTimeout(this.timeoutRef);
+      // Unsubscribe from the WebSocket events
+      this.webSocketSubscription?.unsubscribe();
+    }
+
     // Subscribe to the WebSocket events with the simplified handler
     this.webSocketSubscription = this.websocketService.connect().subscribe({
       next: handleWebSocketEvent,
-      error: handleWebSocketEvent,
-      complete: handleWebSocketEvent
+      error: handleCloseEvent,
+      complete: handleCloseEvent
     });
   }
   

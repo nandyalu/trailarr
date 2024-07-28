@@ -186,38 +186,6 @@
   margin-block: 0;
 }
 
-/* table {
-  width: 100%;
-  border-collapse: collapse;
-  overflow-x: auto;
-  overflow-y: auto;
-  text-wrap: nowrap;
-}
-
-th, td {
-  border-collapse: collapse;
-  padding: 0.5rem;
-}
-
-th .header-name {
-  min-width: 50%;
-}
-
-th .header-size {
-  min-width: 10%;
-}
-
-th .header-date {
-  min-width: 20%;
-}
-
-tr:nth-child(even) {
-  background-color: var(--color-surface-container-lowest);
-}
-
-tr {
-  border-bottom: 1px solid var(--color-outline);
-} */
 
 .files-accordion {
   width: 100%;

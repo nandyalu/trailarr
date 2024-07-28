@@ -19,9 +19,8 @@ export class AppComponent {
   private toastSubscription?: Subscription;
   private websocketSubscription?: Subscription;
 
-  private idleTime: number = 0;
   private timeoutId: any;
-  private readonly IDLE_LIMIT: number = 2 * 60 * 1000; // 2 minutes in milliseconds
+  private readonly IDLE_LIMIT: number = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 
   constructor(private websocketService: WebsocketService) { }
@@ -63,7 +62,6 @@ export class AppComponent {
   resetIdleTimer(): void {
     // Activity detected, reset the idle timer
     clearTimeout(this.timeoutId);
-    this.idleTime = 0;
     this.timeoutId = setTimeout(() => {
       this.closeAllSubscriptions();
     }, this.IDLE_LIMIT);
@@ -79,6 +77,8 @@ export class AppComponent {
     // Unsubscribe from the websocket and toast messages
     this.websocketSubscription?.unsubscribe();
     this.toastSubscription?.unsubscribe();
+    // Clear api_key from cookies
+    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   }
 
   ngOnDestroy() {
