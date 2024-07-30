@@ -3,6 +3,8 @@
 *.pyc
 trailarr.db
 !frontend-build/
+git-filter-repo
+restart_stack.py
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files
@@ -217,4 +219,3 @@ frontend/typings
 # System files
 .DS_Store
 Thumbs.db
-
