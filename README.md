@@ -22,9 +22,9 @@ Trailarr is a Docker application to download and manage trailers for your media 
 - Checks if a trailer already exists for movie/series. Download it if set to monitor.
 - Downloads trailer and organizes it in the media folder.
 - Follows plex naming conventions.
-- Downloads trailers for youtube trailer urls set in Radarr/Sonarr.
-- Searches youtube for a trailer if not set in Radarr/Sonarr.
-- Option to download desired youtube video as trailer for any movie/series.
+- Downloads trailers for trailer id's set in Radarr/Sonarr.
+- Searches for a trailer if not set in Radarr/Sonarr.
+- Option to download desired video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats.
 - Option to remove SponsorBlocks from videos (if any data is available).
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
@@ -165,3 +165,13 @@ Coming soon...
 ### License
 
 This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 license](https://github.com/UNCode101/trailarr?tab=GPL-3.0-1-ov-file) for more details.
+
+### Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
