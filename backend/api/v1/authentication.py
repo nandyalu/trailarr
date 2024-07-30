@@ -14,6 +14,20 @@ def verify_api_key(api_key: str) -> bool:
     return api_key == app_settings.api_key
 
 
+# Websockets does not support query parameters, so we need to validate the API key from the cookie
+# Since websockets are only used for the frontend, we can use the cookie to validate the API key
+# Dependency to validate the API key provided in the cookie
+def validate_api_key_cookie(
+    trailarr_api_key: Annotated[str | None, Cookie()] = None,
+) -> bool:
+    # Check if the API key is provide and valid
+    if trailarr_api_key and verify_api_key(trailarr_api_key):
+        return True
+    # Raise an exception if the API key is missing
+    raise HTTPException(status_code=401, detail="API key is missing")
+
+
+# Dependency to validate the API key provided in the query/header/cookie
 def validate_api_key(
     query_api_key: str | None = Depends(query_schema),
     header_api_key: str | None = Depends(header_scheme),

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from api.v1.authentication import validate_api_key
+from api.v1.authentication import validate_api_key_cookie
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
@@ -78,7 +78,7 @@ trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 # Websockets
 @trailarr_api.websocket(
     "/ws/{client_id}",
-    dependencies=[Depends(validate_api_key)],
+    dependencies=[Depends(validate_api_key_cookie)],
 )
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await ws_manager.connect(websocket)
