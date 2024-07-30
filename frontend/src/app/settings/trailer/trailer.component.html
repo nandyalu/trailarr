@@ -1,11 +1,10 @@
-<div class="trailer-container">
-    <!-- TODO: Make the message-container sticky on top -->
-    <div class="message-container">
-        <div *ngFor="let message of updateResults"
-            class="update-message" [class.error]="message.toLowerCase().includes('error')">
-            {{message}}
-        </div>
+<div class="message-container">
+    <div *ngFor="let message of updateResults"
+        class="update-message" [class.error]="message.toLowerCase().includes('error')">
+        {{message}}
     </div>
+</div>
+<div class="trailer-container">
     <div *ngIf="settings?.debug" class="update-message error">
         <strong>Warning:</strong> Debug mode is enabled, disable it if not needed!
     </div>

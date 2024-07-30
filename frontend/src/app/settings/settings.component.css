@@ -28,6 +28,7 @@
   overflow-y: auto;
   grid-row: 2;
   padding: 0.5rem;
+  position: relative;
 }
 
 .setnav-btn {
