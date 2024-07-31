@@ -25,11 +25,11 @@ RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/relea
 FROM python:3.12-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV TZ="America/New_York"
-ENV APP_NAME="Trailarr"
-ENV APP_VERSION="0.0.3-beta"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TZ="America/New_York" \
+    APP_NAME="Trailarr" \
+    APP_VERSION="0.0.3-beta"
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
@@ -56,7 +56,7 @@ COPY ./frontend-build/browser /app/frontend-build
 COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path
-ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
+ENV PYTHONPATH="${PYTHONPATH}:/app/backend"
 
 # Create a volume for data directory
 VOLUME ["/data"]
