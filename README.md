@@ -8,10 +8,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/UNCode101/trailarr)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
 
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/UNCode101/trailarr)
-[![Docker Build](https://github.com/UNCode101/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/UNCode101/trailarr/actions/workflows/docker-build.yml)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr)
+[![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml)
 
 Trailarr is a Docker application to download and manage trailers for your media library. It integrates with your existing services, such as [Plex](https://www.plex.tv/), [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/)!
 
@@ -40,7 +40,7 @@ To run the application, you need to have [Docker](https://docs.docker.com/get-do
 version: '3.2'
 services:
     trailarr:
-        image: trailarr:latest
+        image: nandyalu/trailarr:latest
         container_name: trailarr
         environment:
             - TZ=America/New_York
@@ -71,7 +71,7 @@ Open your browser and navigate to [http://localhost:7889](http://localhost:7889)
 
 To update the application, run the following commands:
 ```bash
-docker-compose pull trailarr
+docker-compose pull nandyalu/trailarr
 docker-compose up -d
 ```
 
@@ -88,7 +88,7 @@ docker run -d \
     -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDERS> \
     -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDERS> \
     --restart unless-stopped \
-    trailarr:latest
+    nandyalu/trailarr:latest
 ```
 
 - Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
@@ -105,7 +105,7 @@ To update the application, run the following commands:
 
 Pull latest image:
 ```bash
-docker pull trailarr
+docker pull nandyalu/trailarr
 ```
 
 Stop and remove the existing container:
@@ -146,7 +146,7 @@ docker run -d ...
 
 ### Support
 
-If you need help, please craete an issue on the [GitHub repository](https://github.com/UNCode101/issues)
+If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues)
 
 ### Issues
 
@@ -164,7 +164,7 @@ Coming soon...
 
 ### License
 
-This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 license](https://github.com/UNCode101/trailarr?tab=GPL-3.0-1-ov-file) for more details.
+This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file) for more details.
 
 ### Disclaimer
 

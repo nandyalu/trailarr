@@ -3,7 +3,7 @@
 First off, thank you for considering contributing to [Your Project Name]. It's people like you that make [Your Project Name] such a great tool.
 
 ## Getting Started
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/UNCode101/trailarr)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr)
 
 - Fork the repository on GitHub.
 - Clone the project to your own machine.
@@ -19,7 +19,7 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [Code of Conduct](https://github.com/UNCode101/trailarr?tab=coc-ov-file). By participating, you are expected to uphold this code.
+This project and everyone participating in it is governed by the [Code of Conduct](https://github.com/nandyalu/trailarr?tab=coc-ov-file). By participating, you are expected to uphold this code.
 
 ## Issue Process
 
@@ -56,4 +56,4 @@ The commit message:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its [GPL-3.0 license](https://github.com/UNCode101/trailarr?tab=GPL-3.0-1-ov-file).
+By contributing, you agree that your contributions will be licensed under its [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file).
