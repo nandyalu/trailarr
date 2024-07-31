@@ -29,7 +29,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV TZ="America/New_York"
 ENV APP_NAME="Trailarr"
-ENV APP_VERSION="0.0.2-beta"
+ENV APP_VERSION="0.0.3-beta"
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
