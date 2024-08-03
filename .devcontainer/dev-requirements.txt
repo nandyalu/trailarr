@@ -1,16 +1,14 @@
 # DevContainer requirements
 # Backend
-aiohttp==3.9.3
-aiofiles==23.2.1
-alembic==1.13.1
+aiohttp==3.10.0
+aiofiles==24.1.0 # Update in main requirements.txt if working
+alembic==1.13.2
 apscheduler==3.10.4
 async-lru==2.0.4
-fastapi==0.110.1
-pillow==10.3.0
-sqlmodel==0.0.16
-uvicorn[standard]==0.29.0
-gunicorn==21.2.0
-yt_dlp==2024.4.9
+fastapi[standard]==0.112.0
+pillow==10.4.0
+sqlmodel==0.0.21
+yt_dlp==2024.8.1
 
 # Testing
 aioresponses==0.7.6

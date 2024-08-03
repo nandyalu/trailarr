@@ -3,8 +3,23 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			// Build the docker image without frontend changes
 			"type": "docker-build",
-			"label": "docker-build",
+			"label": "Docker build without Frontend",
+			"detail": "Build the docker image without frontend changes",
+			"platform": "python",
+			"dockerBuild": {
+				"tag": "trailarr2:latest",
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true
+			}
+		},
+		{
+			// Build the docker image with frontend changes
+			"type": "docker-build",
+			"label": "Docker build with Frontend",
+			"detail": "Build the docker image with frontend changes",
 			"dependsOn": [
 				"frontend - build",
 			],
@@ -17,35 +32,33 @@
 			}
 		},
 		{
-			"type": "docker-run",
-			"label": "docker-run: debug",
-			"dependsOn": [
-				"docker-build"
-			],
-			"python": {
-				"args": [
-					"main:app",
-					"--host",
-					"0.0.0.0",
-					"--port",
-					"7889"
-				],
-				"module": "uvicorn"
-			}
-		},
-		{
+			// Build & Run the docker image without frontend changes
 			"type": "shell",
-			"label": "docker-build-run",
+			"label": "Docker build run without Frontend",
+			"detail": "Run the docker image without frontend changes",
 			"dependsOn": [
-				"docker-build"
+				"Docker build without Frontend"
 			],
 			"command": "python ./restart_stack.py",
 			"problemMatcher": []
 		},
 		{
-			"label": "Generate PyTest HTML Report",
+			// Build & Run the docker image with frontend changes
 			"type": "shell",
-			"command": "source ${workspaceFolder}/.venv/bin/activate && pytest --cov=. --cov-report=html",
+			"label": "Docker build run with Frontend",
+			"detail": "Run the docker image with frontend changes",
+			"dependsOn": [
+				"Docker build with Frontend"
+			],
+			"command": "python ./restart_stack.py",
+			"problemMatcher": []
+		},
+		{
+			// Generate PyTest HTML Report by running the tests
+			"label": "Generate PyTest HTML Report",
+			"detail": "Generate PyTest HTML Report by running the tests",
+			"type": "shell",
+			"command": "cd backend && pytest --cov=. --cov-report=html",
 			"group": {
 				"kind": "test",
 				"isDefault": false
@@ -100,13 +113,14 @@
 			}
 		},
 		{
+			// Build the frontend using Angular CLI
 			"label": "frontend - build",
+			"detail": "Build the frontend using Angular CLI",
 			"type": "npm",
 			"script": "build",
 			"path": "frontend",
 			"group": "build",
-			"problemMatcher": [],
-			"detail": "ng build"
+			"problemMatcher": []
 		},
 		{
 			"label": "fastapi: run",
@@ -115,7 +129,7 @@
 				"frontend - build"
 			],
 			"isBackground": true,
-			"command": "gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api",
+			"command": "uvicorn backend.main:trailarr_api --host 0.0.0.0 --port 7888",
 			"problemMatcher": []
 		}
 	]
