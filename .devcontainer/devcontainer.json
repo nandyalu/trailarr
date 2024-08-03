@@ -12,7 +12,7 @@
 
 	// Mount appdata folder for persistent storage
 	"mounts": [
-		"source=/var/appdata/trailarr2,target=/data,type=bind,consistency=cached",
+		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
 	],
 	// Mount project folder at /app so that source code is available in container.
