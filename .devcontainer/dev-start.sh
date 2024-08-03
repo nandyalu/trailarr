@@ -25,3 +25,4 @@ cd ../frontend && npm install
 # cd /app
 # exec gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api
 
+echo "Dev container started successfully!"

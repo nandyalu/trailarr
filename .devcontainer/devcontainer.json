@@ -16,17 +16,33 @@
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
 	],
 
+	// Set workspace folder to /app so that the project is in the right place
+	"workspaceMount": "source=${containerWorkspaceFolder},target=/app,type=bind,consistency=cached",
+	"workspaceFolder": "/app",
+
+
+	"containerEnv": {
+		"PYTHONPATH": "${containerWorkspaceFolder}/backend"
+	},
+
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"Angular.ng-template",
-				"ms-python.autopep8",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.debugpy",
 				"ms-azuretools.vscode-docker",
 				"GitHub.copilot",
 				"ms-python.black-formatter",
 				"ms-python.flake8",
 				"Gruntfuggly.todo-tree",
-				"MohammadBaqer.better-folding"
+				"MohammadBaqer.better-folding",
+				"aaron-bond.better-comments",
+				"usernamehw.errorlens",
+				"KevinRose.vsc-python-indent",
+				"qwtel.sqlite-viewer",
+				"oderwat.indent-rainbow"
 			]
 		}
 	},
