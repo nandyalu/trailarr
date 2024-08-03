@@ -62,8 +62,8 @@ else:
     @api_v1_router.get("/static/{file_path:path}", include_in_schema=False)
     async def serve_static(file_path: str):
         # logging.info(f"Requested file: {file_path}")
-        file_path = os.path.join(static_dir, file_path)
-        if os.path.isfile(file_path):
+        file_path = os.path.normpath(os.path.join(static_dir, file_path))
+        if file_path.startswith(static_dir) and os.path.isfile(file_path):
             # logging.info(f"Returning file: {file_path}")
             return FileResponse(file_path)
         # logging.info(f"File not found: {file_path}")

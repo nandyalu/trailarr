@@ -120,7 +120,10 @@ async def serve_frontend(rest_of_path: str = ""):
         return HTMLResponse(status_code=404)
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
-        file_path = os.path.join(static_dir, rest_of_path)
+        file_path = os.path.normpath(os.path.join(static_dir, rest_of_path))
+        # Check if the path is within the static directory
+        if not file_path.startswith(static_dir):
+            return HTMLResponse(status_code=404)
         if os.path.isfile(file_path):
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
