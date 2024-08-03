@@ -1,12 +1,16 @@
 <p align="center">
-  <img src="assets/images/trailarr-full-512.png" width=50%>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/trailarr-full-512.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/images/trailarr-light-full-512.png">
+    <img alt="Trailarr logo with name" src="assets/images/trailarr-full-512.png" width=50%>
+  </picture>
 </p>
 
 # Trailarr
 
 [![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.112.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
 
