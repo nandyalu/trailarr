@@ -17,8 +17,8 @@
 	],
 
 	// Set workspace folder to /app so that the project is in the right place
-	"workspaceMount": "source=${containerWorkspaceFolder},target=/app,type=bind,consistency=cached",
-	"workspaceFolder": "/app",
+	// "workspaceMount": "source=${containerWorkspaceFolder},target=/app,type=bind,consistency=cached",
+	// "workspaceFolder": "/app",
 
 
 	"containerEnv": {

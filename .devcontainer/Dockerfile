@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # Install the xz-utils package
-RUN apt-get update && apt-get install -y curl xz-utils tzdata
+RUN apt-get update && apt-get install -y curl xz-utils tzdata git
 
 # Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&\
@@ -11,6 +11,10 @@ RUN npm install -g npm@10.8.1
 
 # Install specific version of Angular CLI
 RUN npm install -g @angular/cli@17.3.6
+
+# Clone the repository into /app folder
+WORKDIR /app
+RUN git clone https://github.com/nandyalu/trailarr.git /app
 
 # Install Python Packages
 COPY dev-requirements.txt .
