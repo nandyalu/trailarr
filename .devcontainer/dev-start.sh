@@ -9,12 +9,12 @@ mkdir -p /data/logs && chmod -R 755 /data
 
 # Run Alembic migrations
 echo "Running Alembic migrations"
-cd /app/backend
+cd backend
 alembic upgrade head && echo "Alembic migrations ran successfully"
 
 # Install Angular dependencies
 echo "Installing Angular dependencies"
-cd /app/frontend && npm install
+cd ../frontend && npm install
 
 # Start Angular application
 # echo "Building Angular application"

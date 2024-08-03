@@ -15,9 +15,6 @@
 		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
 	],
-	// Mount project folder at /app so that source code is available in container.
-	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
-	"workspaceFolder": "/app",
 
 	"customizations": {
 		"vscode": {
