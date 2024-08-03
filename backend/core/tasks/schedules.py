@@ -124,6 +124,6 @@ def run_task_now(task_id: str) -> str:
     if not _task:
         return "Unable to trigger task, Task with 'task_id' not found!"
     _name = _task.name
-    _next_run_time = datetime.now() + timedelta(seconds=3)  # Run in 3 seconds
+    _next_run_time = datetime.now() + timedelta(seconds=1)  # Start in 1 second
     scheduler.modify_job(job_id=task_id, next_run_time=_next_run_time)
     return f"'{_name}' Task triggered successfully!"

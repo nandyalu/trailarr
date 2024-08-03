@@ -149,7 +149,7 @@ def download_trailer_by_id(media_id: int, is_movie: bool, yt_id: str = "") -> st
         func=_download_trailer_by_id,
         args=(media_trailer, is_movie),
         trigger="date",
-        run_date=datetime.now() + timedelta(seconds=3),
+        run_date=datetime.now() + timedelta(seconds=1),
         id=f"download_trailer_by_id_{media_id}_{is_movie}",
         name=f"Download Trailer for {media.title}",
         max_instances=1,

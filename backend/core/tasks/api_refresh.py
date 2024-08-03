@@ -18,11 +18,11 @@ async def api_refresh() -> None:
     if len(connnections) == 0:
         logger.warning("No connections found in the database")
         return
-    
+
     # Refresh data from API for each connection
     for connection in connnections:
         await api_refresh_by_id(connection, image_refresh=False)
-    
+
     # Refresh images after API refresh to download/update images for new media
     await refresh_images(recent_only=True)
     logger.info("API Refresh completed!")
@@ -40,11 +40,11 @@ async def api_refresh_by_id(connection: ConnectionRead, image_refresh=True) -> N
             f"Invalid connection type: {connection.arr_type} for connection: {connection}"
         )
         return
-    
+
     # Refresh data from API
     await connection_db_manager.refresh()
     logger.info(f"Data refreshed for connection: {connection.name}")
-    
+
     # Refresh images after API refresh to download/update images for new media
     if image_refresh:
         await refresh_images(recent_only=True)
@@ -69,15 +69,15 @@ def api_refresh_by_id_job(connection_id: int):
         msg = f"Failed to get connection with ID: {connection_id}"
         logger.error(f"{msg}. Error: {e}")
         return msg
-    
+
     # Refresh data from API for the connection
     msg = f"Refreshing data from API for connection: {connection.name}"
     logger.info(msg)
     scheduler.add_job(
         func=run_async,
         args=(connection,),
-        trigger='date',
-        run_date=datetime.now() + timedelta(seconds=3),
+        trigger="date",
+        run_date=datetime.now() + timedelta(seconds=1),
         id=f"refresh_api_data_by_connection_{connection_id}",
         name=f"Arr Data Refresh for {connection.name}",
         max_instances=1,

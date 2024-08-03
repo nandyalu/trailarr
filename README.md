@@ -122,7 +122,7 @@ Finally, run the updated container using the same `docker run` command used duri
 docker run -d ...
 ```
 
-### Setup
+## Setup
 
 1. Navigate to the application in your browser at [http://localhost:7889](http://localhost:7889).
 2. Go to `Settings` > `Trailer` and adjust any settings as needed. 
@@ -148,11 +148,11 @@ docker run -d ...
 5. That's it! The application will now start downloading trailers for your media library.
 
 
-### Support
+## Support
 
 If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues)
 
-### Issues
+## Issues
 
 Issues are very valuable to this project.
 
@@ -162,15 +162,15 @@ Issues are very valuable to this project.
 
 Thank you for creating them.
 
-### Contributing
+## Contributing
 
 Coming soon...
 
-### License
+## License
 
 This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file) for more details.
 
-### Disclaimer
+## Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
