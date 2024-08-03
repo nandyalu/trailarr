@@ -12,4 +12,4 @@ alembic upgrade head && echo "Database migrations ran successfully!"
 # Start FastAPI application
 echo "Starting Trailarr application"
 cd /app
-exec gunicorn --bind 0.0.0.0:7889 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api
+exec uvicorn backend.main:trailarr_api --host 0.0.0.0 --port 7889

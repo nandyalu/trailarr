@@ -1,11 +1,10 @@
 # Stage 1 - Python dependencies
 FROM python:3.12-slim AS python-deps
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
+# PYTHONDONTWRITEBYTECODE=1 -> Keeps Python from generating .pyc files in the container
+# PYTHONUNBUFFERED=1 -> Turns off buffering for easier container logging
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 # Install pip requirements
 COPY ./backend/requirements.txt .
