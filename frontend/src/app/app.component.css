@@ -120,6 +120,10 @@
   }
 }
 
+.dialog-content {
+  padding: 1rem;
+}
+
 /* Loading Animation */
 .loading-container {
   position: relative;

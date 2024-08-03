@@ -425,7 +425,6 @@ dialog[open] {
   display: block;
   opacity: 1;
   translate: 0 0; 
-  padding: 1rem;
   text-align: center;
   background-color: var(--color-surface-container-highest);
   color: var(--color-on-surface);
