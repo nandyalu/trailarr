@@ -35,8 +35,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_VERSION="0.0.4-beta"
 
 # Set the working directory
-RUN mkdir /app
-WORKDIR /app
+# RUN mkdir /app
+# WORKDIR /app
 
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
