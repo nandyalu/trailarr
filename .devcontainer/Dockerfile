@@ -12,10 +12,6 @@ RUN npm install -g npm@10.8.1
 # Install specific version of Angular CLI
 RUN npm install -g @angular/cli@17.3.6
 
-# Clone the repository into /app folder
-# WORKDIR /app
-# RUN git clone https://github.com/nandyalu/trailarr.git /app
-
 # Install Python Packages
 COPY dev-requirements.txt .
 RUN python -m pip install --no-cache-dir --upgrade -r dev-requirements.txt
@@ -33,10 +29,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
     APP_VERSION="0.0.4-beta"
-
-# Set the working directory
-# RUN mkdir /app
-# WORKDIR /app
 
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
