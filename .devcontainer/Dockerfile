@@ -13,8 +13,8 @@ RUN npm install -g npm@10.8.1
 RUN npm install -g @angular/cli@17.3.6
 
 # Clone the repository into /app folder
-WORKDIR /app
-RUN git clone https://github.com/nandyalu/trailarr.git /app
+# WORKDIR /app
+# RUN git clone https://github.com/nandyalu/trailarr.git /app
 
 # Install Python Packages
 COPY dev-requirements.txt .

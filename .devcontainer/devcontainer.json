@@ -14,11 +14,12 @@
 	"mounts": [
 		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
+		// "source=${devcontainerId},target=/app,type=volume"
 	],
 
 	// Set workspace folder to /app so that the project is in the right place
-	// "workspaceMount": "source=${containerWorkspaceFolder},target=/app,type=bind,consistency=cached",
-	// "workspaceFolder": "/app",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
+	"workspaceFolder": "/app",
 
 
 	"containerEnv": {
