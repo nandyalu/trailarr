@@ -2,9 +2,12 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import Any, Callable, Protocol
 
+from app_logger import ModuleLogger
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
+
+logger = ModuleLogger("ConnectionManager")
 
 
 class ArrManagerProtocol(Protocol):
@@ -68,6 +71,7 @@ class BaseConnectionManager[_MediaCreate](ABC):
         try:
             return await self.arr_manager.get_all_media()
         except Exception:
+            logger.error("Failed to get media data from Arr application.")
             return []
 
     async def _parse_data(self) -> list[_MediaCreate]:
@@ -150,6 +154,9 @@ class BaseConnectionManager[_MediaCreate](ABC):
         """Gets new data from Arr API and saves it to the database."""
         # Get the parsed data from the Arr API
         parsed_media = await self._parse_data()
+        if len(parsed_media) == 0:
+            logger.warning("No media found in the Arr application")
+            return
         # Create or update the media in the database
         media_res = self.create_or_update_bulk(parsed_media)
         # Delete any media that is not present in the Arr application
