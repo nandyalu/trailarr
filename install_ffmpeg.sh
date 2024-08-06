@@ -16,7 +16,7 @@ install_ffmpeg_debian() {
         # If the architecture is not supported, install ffmpeg using apt
         echo "Unsupported architecture: $ARCH, Install ffmpeg manually"
         apt install ffmpeg
-        mv /usr/bin/ffmpeg /usr/local/bin/
+        mv /usr/bin/ff* /usr/local/bin/
         exit 0
     fi
 
