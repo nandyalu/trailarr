@@ -125,9 +125,9 @@
 		{
 			"label": "fastapi: run",
 			"type": "shell",
-			"dependsOn": [
-				"frontend - build"
-			],
+			// "dependsOn": [
+			// 	"frontend - build"
+			// ],
 			"isBackground": true,
 			"command": "uvicorn backend.main:trailarr_api --host 0.0.0.0 --port 7888",
 			"problemMatcher": []

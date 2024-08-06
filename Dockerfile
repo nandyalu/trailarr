@@ -23,7 +23,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.0.4-beta"
+    APP_VERSION="0.0.5-beta"
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
@@ -44,7 +44,7 @@ COPY ./assets /app/assets
 COPY ./backend /app/backend
 
 # Copy the frontend built files
-COPY ./frontend-build/browser /app/frontend-build
+COPY ./frontend-build /app/frontend-build
 
 # Copy the installed Python dependencies and ffmpeg
 COPY --from=python-deps /usr/local/ /usr/local/
