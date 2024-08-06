@@ -79,7 +79,7 @@ def _get_ytdl_options() -> dict[str, Any]:
     # Set generic options for youtube-dl
     ydl_options = {
         "compat_opts": {"no-keep-subs"},
-        "ffmpeg_location": "/usr/local/bin/ffmpeg",  # ?figure out how to get this from os
+        "ffmpeg_location": "/usr/local/bin/ffmpeg",
         "noplaylist": True,
         # "verbose": True,
         "extract_flat": "discard_in_playlist",
@@ -184,4 +184,5 @@ def download_video(url: str, file_path: str | None = None) -> str:
             ydl.download([url])
     except Exception:
         logger.exception(f"Failed to download video from {url}")
+        return ""
     return str(data["filepath"])
