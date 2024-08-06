@@ -55,9 +55,6 @@ ENV PYTHONPATH="${PYTHONPATH}:/app/backend"
 # Create a volume for data directory
 VOLUME ["/data"]
 
-# Create a non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
 # Copy the entrypoint script and make it executable
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
@@ -70,7 +67,7 @@ RUN chmod +x /app/start.sh
 EXPOSE 7889
 
 # Set permissions for appuser on /app directory
-RUN chown -R appuser:appuser /app && chmod -R 750 /app
+RUN chmod -R 750 /app
 
 # Run entrypoint script to create directories, set permissions and timezone \
 # and start the application as appuser
