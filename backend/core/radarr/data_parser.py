@@ -12,10 +12,14 @@ class RadarrDataParser(BaseModel):
     arr_id: int = Field(validation_alias="id")
     title: str = Field()
     year: int = Field()
-    language: str = Field(validation_alias=AliasPath("originalLanguage", "name"))
+    language: str = Field(
+        validation_alias=AliasPath("originalLanguage", "name"), default="en"
+    )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
-    youtube_trailer_id: str | None = Field(validation_alias="youTubeTrailerId")
+    youtube_trailer_id: str | None = Field(
+        validation_alias="youTubeTrailerId", default=None
+    )
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tmdbId")
