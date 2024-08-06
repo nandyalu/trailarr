@@ -6,7 +6,7 @@ import pytest
 
 # TODO! Update all tests to current codebase
 def pytest_configure():
-    os.environ["DEBUG"] = "True"
+    os.environ["TESTING"] = "True"
     from core.base.database.utils.init_db import init_db
 
     init_db()
@@ -14,7 +14,7 @@ def pytest_configure():
 
 @pytest.fixture(autouse=True)
 def debug_database():
-    os.environ["DEBUG"] = "True"
+    os.environ["TESTING"] = "True"
 
 
 TEST_AIOHTTP_APIKEY = "API_KEY"

@@ -57,6 +57,7 @@ class _Config:
         # Read properties from ENV variables or set default values if not present
         self.api_key = os.getenv("API_KEY", "")
         self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
+        self.testing = os.getenv("TESTING", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
         self.monitor_enabled = os.getenv(
             "MONITOR_ENABLED",
@@ -163,6 +164,18 @@ class _Config:
     def debug(self, value: bool):
         self._debug = value
         self._save_to_env("DEBUG", self._debug)
+
+    @property
+    def testing(self):
+        """Testing mode for the application. \n
+        Default is False. \n
+        Valid values are True/False."""
+        return self._testing
+
+    @testing.setter
+    def testing(self, value: bool):
+        self._testing = value
+        self._save_to_env("TESTING", self._testing)
 
     @property
     def database_url(self):

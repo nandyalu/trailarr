@@ -8,7 +8,7 @@ from config.settings import app_settings
 
 # sqlite_file_name = "database.db"
 sqlite_url = app_settings.database_url
-if app_settings.debug:
+if app_settings.testing:
     # Use an in-memory SQLite database for testing
     sqlite_url = "sqlite:///:memory:"
     engine = create_engine(
