@@ -10,15 +10,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY ./backend/requirements.txt .
 RUN python -m pip install --disable-pip-version-check --no-cache-dir --upgrade -r requirements.txt
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y curl xz-utils
-
-# Download and extract the appropriate ffmpeg build
-RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
-    && mkdir /tmp/ffmpeg \
-    && tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1 \
-    && mv /tmp/ffmpeg/bin/* /usr/local/bin/ \
-    && rm -rf /tmp/ffmpeg.tar.xz /tmp/ffmpeg
+# Install ffmpeg using install_ffmpeg.sh script
+COPY install_ffmpeg.sh /tmp/install_ffmpeg.sh
+RUN chmod +x /tmp/install_ffmpeg.sh && \
+    /tmp/install_ffmpeg.sh
 
 # Stage 2 - Final image
 FROM python:3.12-slim
