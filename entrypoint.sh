@@ -22,6 +22,7 @@ PGID=${PGID:-1000}
 APPUSER=${APPUSER:-appuser}
 
 # Create the appuser group and user
+echo "Creating user and group '$APPUSER' with UID '$PUID' and GID '$PGID'"
 if ! getent group "$APPUSER" > /dev/null 2>&1; then
     groupadd -g "$PGID" "$APPUSER"
 fi
@@ -30,16 +31,14 @@ if ! id -u "$APPUSER" > /dev/null 2>&1; then
     useradd -u "$PUID" -g "$APPUSER" -m "$APPUSER"
 fi
 
-# Set permissions for appuser on /app directory
+# Set permissions for appuser on /app and /data directories
+echo "Changing the owner of app and data directories to '$APPUSER'"
 chmod -R 750 /app
 chown -R "$APPUSER":"$APPUSER" /app
-
-# Change the owner of /data to the non-root user
-echo "Changing the owner of data directory to the appuser"
 chown -R "$APPUSER":"$APPUSER" /data
 
 # Switch to the non-root user and execute the command
-echo "Switching to appuser and starting the application"
+echo "Switching to user '$APPUSER' and starting the application"
 exec gosu "$APPUSER" bash -c /app/start.sh
 
 # DO NOT ADD ANY OTHER COMMANDS HERE! THEY WON'T BE EXECUTED!
