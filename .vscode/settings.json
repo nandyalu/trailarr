@@ -18,4 +18,7 @@
     "python.testing.pytestEnabled": true,
     "todo-tree.tree.showBadges": true,
     "python.analysis.autoImportCompletions": true,
+    "task.allowAutomaticTasks": "off",
+    "task.autoDetect": "off",
+    "typescript.tsc.autoDetect": "off",
 }

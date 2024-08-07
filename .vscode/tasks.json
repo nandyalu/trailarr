@@ -3,39 +3,50 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			// Build the docker image without frontend changes
-			"type": "docker-build",
+			"type": "shell",
 			"label": "Docker build without Frontend",
 			"detail": "Build the docker image without frontend changes",
-			"platform": "python",
-			"dockerBuild": {
-				"tag": "trailarr2:latest",
-				"dockerfile": "${workspaceFolder}/Dockerfile",
-				"context": "${workspaceFolder}",
-				"pull": true
-			}
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"command": "docker image build --pull --file ./Dockerfile --tag 'trailarr2:latest' .",
+			"group": "build",
+			"icon": {
+				"id": "library",
+				"color": "terminal.ansiGreen"
+			},
 		},
 		{
-			// Build the docker image with frontend changes
 			"type": "docker-build",
 			"label": "Docker build with Frontend",
 			"detail": "Build the docker image with frontend changes",
+			"icon": {
+				"id": "library",
+				"color": "terminal.ansiBlue"
+			},
+			"dependsOrder": "sequence",
 			"dependsOn": [
-				"frontend - build",
+				"Frontend build",
 			],
 			"platform": "python",
+			"group": "build",
 			"dockerBuild": {
 				"tag": "trailarr2:latest",
 				"dockerfile": "${workspaceFolder}/Dockerfile",
 				"context": "${workspaceFolder}",
 				"pull": true
-			}
+			},
+			"runOptions": {}
 		},
 		{
-			// Build & Run the docker image without frontend changes
 			"type": "shell",
 			"label": "Docker build run without Frontend",
 			"detail": "Run the docker image without frontend changes",
+			"icon": {
+				"id": "open-preview",
+				"color": "terminal.ansiBlue"
+			},
+			"dependsOrder": "sequence",
 			"dependsOn": [
 				"Docker build without Frontend"
 			],
@@ -43,10 +54,13 @@
 			"problemMatcher": []
 		},
 		{
-			// Build & Run the docker image with frontend changes
 			"type": "shell",
 			"label": "Docker build run with Frontend",
 			"detail": "Run the docker image with frontend changes",
+			"icon": {
+				"id": "open-preview",
+				"color": "terminal.ansiGreen"
+			},
 			"dependsOn": [
 				"Docker build with Frontend"
 			],
@@ -54,9 +68,12 @@
 			"problemMatcher": []
 		},
 		{
-			// Generate PyTest HTML Report by running the tests
 			"label": "Generate PyTest HTML Report",
 			"detail": "Generate PyTest HTML Report by running the tests",
+			"icon": {
+				"id": "beaker",
+				"color": "terminal.ansiYellow"
+			},
 			"type": "shell",
 			"command": "cd backend && pytest --cov=. --cov-report=html",
 			"group": {
@@ -113,9 +130,12 @@
 			}
 		},
 		{
-			// Build the frontend using Angular CLI
-			"label": "frontend - build",
+			"label": "Frontend build",
 			"detail": "Build the frontend using Angular CLI",
+			"icon": {
+				"id": "preview",
+				"color": "terminal.ansiMagenta"
+			},
 			"type": "npm",
 			"script": "build",
 			"path": "frontend",
@@ -123,11 +143,13 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "fastapi: run",
+			"label": "Fastapi run",
+			"detail": "Run the FastAPI server",
+			"icon": {
+				"id": "vm-running",
+				"color": "terminal.ansiCyan"
+			},
 			"type": "shell",
-			// "dependsOn": [
-			// 	"frontend - build"
-			// ],
 			"isBackground": true,
 			"command": "uvicorn backend.main:trailarr_api --host 0.0.0.0 --port 7888",
 			"problemMatcher": []
