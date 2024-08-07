@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from yt_dlp import YoutubeDL
+from yt_dlp.utils import YoutubeDLError
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -92,6 +93,8 @@ def _get_ytdl_options() -> dict[str, Any]:
         "restrictfilenames": True,
         "noprogress": True,
         "no_warnings": True,
+        "ignore_no_formats_error": True,
+        "ignoreerrors": True,
         "quiet": True,
         "merge_output_format": app_settings.trailer_file_format,
         "postprocessors": [],
@@ -182,7 +185,9 @@ def download_video(url: str, file_path: str | None = None) -> str:
     try:
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-    except Exception:
-        logger.exception(f"Failed to download video from {url}")
-        return ""
-    return str(data["filepath"])
+        if data and "filepath" in data:
+            return str(data["filepath"])
+    except (YoutubeDLError, Exception):
+        pass
+    logger.exception(f"Failed to download video from {url}")
+    return ""
