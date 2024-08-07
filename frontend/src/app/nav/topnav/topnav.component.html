@@ -1,6 +1,7 @@
 <div class="navbar">
   <a class="navlogo" routerLink="home">
-    <img src="/assets/logo-full-512.png" alt="Trailarr Logo" height="40" class="sm-none">
+    <img *ngIf="isDarkModeEnabled" src="/assets/trailarr-full-512.png" alt="Trailarr Logo" height="40" class="sm-none">
+    <img *ngIf="!isDarkModeEnabled" src="/assets/trailarr-full-light-512.png" alt="Trailarr Logo" height="40" class="sm-none">
     <img src="favicon.ico" alt="Trailarr Logo" width="30" height="30" class="sm-show">
     <!-- <span class="h5 navlogotext">TRAILARR</span>  -->
   </a>
@@ -11,12 +12,13 @@
     <div class="navsearch-results" [class.active]="searchResults.length > 0">
       <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
       <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId" [routerLink]="[result.is_movie ? '/movies' : '/series', result.id]" (click)="searchResults = []">
-        <span>{{ result.title }}</span>
+        <img src="{{result.poster_path || 'assets/poster-lg.png'}}" alt="{{result.title}}" class="search-poster">
+        <span class="search-title">{{ result.title + " (" + result.year + ")"}}</span> 
       </div>
     </div>
   </div>
   <label class="switch2 sm-none">
-    <input type="checkbox" [(ngModel)]="isDarkModeEnabled" (ngModelChange)="onThemeChange($event)">
+    <input id="theme-switch" type="checkbox" [(ngModel)]="isDarkModeEnabled" (ngModelChange)="onThemeChange($event)">
     <span class="slider2"></span>
   </label>
 </div>

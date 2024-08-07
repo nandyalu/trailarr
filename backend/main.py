@@ -139,7 +139,7 @@ async def serve_frontend(rest_of_path: str = ""):
 
 
 # Check if the frontend directory exists, if not create it
-static_dir = os.path.abspath("/app/frontend-build")
+static_dir = os.path.abspath("/app/frontend-build/browser")
 if not os.path.exists(static_dir):
     logging.info("Creating static directory")
     os.makedirs(static_dir)

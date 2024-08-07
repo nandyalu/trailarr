@@ -15,6 +15,7 @@ class SearchMedia(BaseModel):
     imdb_id: str
     txdb_id: str
     is_movie: bool
+    poster_path: str | None
 
 
 class Settings(BaseModel):

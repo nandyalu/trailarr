@@ -46,6 +46,14 @@ export class TopnavComponent {
     }
   }
 
+  @HostListener('document:mousemove', ['$event'])
+  disableSelection(event: Event) {
+    if (this.searchResults.length > 0) {
+      this.selectedId = -1;
+      this.selectedIndex = -1;
+    }
+  }
+
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === 'f') {

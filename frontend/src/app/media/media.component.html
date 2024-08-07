@@ -1,5 +1,5 @@
 <div class="media-container">
-    <h1 class="text-center">{{title}}</h1>
+    <!-- <h1 class="text-center">{{title}}</h1> -->
     <div *ngIf="isLoading; else mediaLoaded" class="loading-wave center">
         <div class="loading-bar"></div>
         <div class="loading-bar"></div>
@@ -7,6 +7,11 @@
         <div class="loading-bar"></div>
     </div>
     <ng-template #mediaLoaded>
+        <div *ngIf="media_list.length === 0" class="center">
+            <div class="all-empty-card" [routerLink]="['/settings', 'connections', 'add']">
+                Click me!
+            </div>
+        </div>
         <div class="media-row">
             <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">

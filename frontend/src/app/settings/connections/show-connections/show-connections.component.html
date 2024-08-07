@@ -45,7 +45,12 @@
             </div>
         </div>
         <ng-template #noConnections>
-            <p>I'm all alone here!. Click the "ADD" button to add some Radarr/Sonarr instances to let the magic happen!</p>
+            <div class="center">
+                <div class="all-empty-card center" [routerLink]="['/settings', 'connections', 'add']">
+                    Add New!
+                </div>
+                <p class="text-primary">I'm all alone here!. Click the "ADD" button to add some Radarr/Sonarr instances to let the magic happen!</p>
+            </div>
         </ng-template>
     </ng-template>
 </div>

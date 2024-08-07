@@ -44,6 +44,7 @@ export interface SearchMedia {
     imdb_id: string;
     txdb_id: string;
     is_movie: boolean;
+    poster_path: string | null;
 }
 
 export interface FolderInfo {

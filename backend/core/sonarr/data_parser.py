@@ -12,7 +12,9 @@ class SonarrDataParser(BaseModel):
     arr_id: int = Field(validation_alias="id")
     title: str = Field()
     year: int = Field()
-    language: str = Field(validation_alias=AliasPath("originalLanguage", "name"))
+    language: str = Field(
+        validation_alias=AliasPath("originalLanguage", "name"), default="en"
+    )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
     # Sonarr does not have youtbetrailerid

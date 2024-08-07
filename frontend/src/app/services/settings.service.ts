@@ -39,7 +39,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-       })
+      })
     );
   }
 
@@ -75,7 +75,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-       })
+      })
     );
   }
 
@@ -92,7 +92,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-       })
+      })
     );
   }
 
@@ -109,7 +109,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-       })
+      })
     );
   }
 }
