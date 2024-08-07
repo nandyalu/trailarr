@@ -104,9 +104,9 @@
             <div class="labeled-input">
               <span class="text-md sm-none">https://www.youtube.com/watch?v=</span>
               <span class="text-md sm-show">Youtube ID/URL:</span>
-              <input type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL">
-              <p *ngIf="trailer_url != media.youtube_trailer_id" class="text-sm">Click Download to download trailer from updated link!</p>
+              <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL">
             </div>
+            <p *ngIf="trailer_url != media.youtube_trailer_id" class="text-sm info-text">Click Download to download trailer from updated link!</p>
           </div>
         </div>
         <div class="media-details-row">

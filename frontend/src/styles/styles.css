@@ -184,6 +184,10 @@ hr {
   font-size: 1rem;
 }
 
+.text-primary {
+  color: var(--color-primary);
+}
+
 /* SVG Icons */
 .icon {
   margin: auto;
@@ -453,4 +457,35 @@ dialog[open]::backdrop {
   dialog[open]::backdrop {
     opacity: 0;
   }
+}
+
+/* ALL EMPTY CARD */
+/* From Uiverse.io by SteveBloX */
+.all-empty-card {
+  box-sizing: border-box;
+  width: 12rem;
+  height: 16rem;
+  background: var(--color-surface-container-highest);
+  color: var(--color-primary);
+  border: 1px solid var(--color-surface-bright);
+  box-shadow: 12px 17px 51px var(--color-inverse-primary);
+  backdrop-filter: blur(6px);
+  border-radius: 17px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.5s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-weight: bolder;
+}
+
+.all-empty-card:hover {
+  border: 1px solid var(--color-on-primary-container);
+  transform: scale(1.05);
+}
+
+.all-empty-card:active {
+  transform: scale(0.95) rotateZ(1.7deg);
 }

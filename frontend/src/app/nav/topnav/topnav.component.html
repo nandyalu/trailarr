@@ -1,6 +1,7 @@
 <div class="navbar">
   <a class="navlogo" routerLink="home">
-    <img src="/assets/logo-full-512.png" alt="Trailarr Logo" height="40" class="sm-none">
+    <img *ngIf="isDarkModeEnabled" src="/assets/trailarr-full-512.png" alt="Trailarr Logo" height="40" class="sm-none">
+    <img *ngIf="!isDarkModeEnabled" src="/assets/trailarr-full-light-512.png" alt="Trailarr Logo" height="40" class="sm-none">
     <img src="favicon.ico" alt="Trailarr Logo" width="30" height="30" class="sm-show">
     <!-- <span class="h5 navlogotext">TRAILARR</span>  -->
   </a>
@@ -17,7 +18,7 @@
     </div>
   </div>
   <label class="switch2 sm-none">
-    <input type="checkbox" [(ngModel)]="isDarkModeEnabled" (ngModelChange)="onThemeChange($event)">
+    <input id="theme-switch" type="checkbox" [(ngModel)]="isDarkModeEnabled" (ngModelChange)="onThemeChange($event)">
     <span class="slider2"></span>
   </label>
 </div>

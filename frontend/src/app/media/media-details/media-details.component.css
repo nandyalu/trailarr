@@ -164,6 +164,15 @@
   border-bottom-right-radius: 6px;
 }
 
+.info-text {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-info);
+  color: var(--color-info-text);
+  text-align: center;
+}
+
 .media-files-container {
   display: flex;
   flex-direction: column;

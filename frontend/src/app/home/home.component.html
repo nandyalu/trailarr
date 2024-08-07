@@ -6,6 +6,11 @@
         <div class="loading-bar"></div>
     </div>
     <ng-template #mediaLoaded>
+        <div *ngIf="media_list.length === 0" class="center">
+            <div class="all-empty-card" [routerLink]="['/settings', 'connection']">
+                Click me!
+            </div>
+        </div>
         <div class="media-row">
             <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.is_movie? '/movies': '/series', media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
