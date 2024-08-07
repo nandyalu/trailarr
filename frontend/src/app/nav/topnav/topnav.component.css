@@ -84,11 +84,14 @@
   max-height: 40vh;
   max-width: 60vw;
   overflow-y: auto;
-  gap: 1rem;
   padding: 0.5rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  transition: 0.25s;
 }
 
 .navsearch-results .title {
+  display: flex;
   min-width: 300px;
   width: auto;
   padding: 0.5rem;
@@ -96,10 +99,25 @@
   cursor: pointer;
 }
 
+.search-poster {
+  width: 3rem;
+}
+
+.search-title {
+  margin: auto 0.5rem;
+  text-align: left;
+}
+
 .navsearch-results .title:hover, 
 .navsearch-results .title:focus, 
 .navsearch-results .selected {
   background-color: var(--color-surface-variant);
+  outline: none;
+}
+
+.navsearch-results .title:focus, 
+.navsearch-results .selected {
+  scroll-snap-align: center;
 }
 
 @media (max-width: 900px) {
