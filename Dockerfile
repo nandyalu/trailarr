@@ -18,12 +18,15 @@ RUN chmod +x /tmp/install_ffmpeg.sh && \
 # Stage 2 - Final image
 FROM python:3.12-slim
 
+# ARG APP_VERSION, will be set during build by github actions
+ARG APP_VERSION
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.0.5-beta"
+    APP_VERSION=${APP_VERSION:-0.0.6b}
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
@@ -50,7 +53,7 @@ COPY ./frontend-build /app/frontend-build
 COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path
-ENV PYTHONPATH="${PYTHONPATH}:/app/backend"
+ENV PYTHONPATH="${PYTHONPATH:-}:/app/backend"
 
 # Create a volume for data directory
 VOLUME ["/data"]
@@ -71,4 +74,4 @@ RUN chmod -R 750 /app
 
 # Run entrypoint script to create directories, set permissions and timezone \
 # and start the application as appuser
-ENTRYPOINT /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]

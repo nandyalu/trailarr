@@ -11,8 +11,14 @@ jobs:
   build:
     name: Docker Build
     runs-on: ubuntu-latest
+    env:
+      VER: ${{ github.sha }}[:6]-test
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag trailarr:$(date +%s)
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+        # Build the Docker image
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag trailarr:${{env.VER}} --build-arg APP_VERSION=${{ env.VER }}
