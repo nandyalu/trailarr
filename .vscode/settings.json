@@ -21,7 +21,4 @@
     "task.allowAutomaticTasks": "off",
     "task.autoDetect": "off",
     "typescript.tsc.autoDetect": "off",
-    "git.enableCommitSigning": true,
-    "git-graph.repository.sign.commits": true,
-    "git-graph.repository.sign.tags": true,
 }
