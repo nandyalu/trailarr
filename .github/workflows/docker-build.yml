@@ -12,7 +12,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     env:
-      VER: ${{ github.sha }}[:6]-test
+      VER: ${{ github.sha }}-test
 
     steps:
       # Checkout the repository
