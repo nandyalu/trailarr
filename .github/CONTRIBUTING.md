@@ -1,21 +1,35 @@
 # Contributing to Trailarr
 
-First off, thank you for considering contributing to [Your Project Name]. It's people like you that make [Your Project Name] such a great tool.
+First off, thank you for considering contributing to Trailarr. It's people like you that make Trailarr such a great tool.
 
 ## Getting Started
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr)
 
 - Fork the repository on GitHub.
 - Clone the project to your own machine.
-- Open the project in Visual Studio Code or by clicking on badge above.
-- VS Code will automatically detect the devcontainer configuration. Click on "Reopen in Container". This will start the build of the Docker container and place you inside it.
+- Open the project in Visual Studio Code.
+- Open `.devcontainer > devcontainer.json` and change the `mounts` to your desired folders.
+```json
+"mounts": [
+		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
+		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
+	],
+```
+> Note: Below steps are optional, if you don't want to test any changes that would require connecting to `Radarr` and/or `Sonarr`, you can simply remove the `mounts` section from the `devcontainer.json` file.
+> 1. `source` is the path on your host machine.
+> 2. `target` is the path inside the devcontainer.
+> 3. Change the `mount` for `/data` to a folder where you want to store the data. Do not use the same folder as your production data.
+> 4. Change the `mount` for `/media` to the your media folder mapping as set in `Radarr` and/or `Sonarr`.
+
+
+- VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. This will start the build of the Docker container and place you inside it.
 - Make your changes inside the devcontainer. The devcontainer is a fully configured development environment with all the tools you need.
 - Commit changes to your own branch.
 - Push your work back up to your fork.
 - Submit a Pull Request so that we can review your changes.
 
 
-NOTE: Be sure to merge the latest from "upstream" before making a pull request!
+> NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 ## Code of Conduct
 

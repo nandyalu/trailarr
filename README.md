@@ -36,6 +36,39 @@ Trailarr is a Docker application to download and manage trailers for your media 
 
 ## Installation
 
+### Environment Variables & Volume Mapping
+
+Environment variables are optional.
+- `TZ` - Set the timezone for the application. Default is `America/New_York`.
+- `PUID` - Set the user ID for the application. Default is `1000`.
+- `PGID` - Set the group ID for the application. Default is `1000`.
+
+Volume mapping is required.
+- Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
+- Change `<LOCAL_MEDIA_FOLDER>` to the folder where your media is stored.
+- Change `<RADARR_ROOT_FOLDERS>` to the folder where Radarr stores movies.
+- Change `<SONARR_ROOT_FOLDERS>` to the folder where Sonarr stores TV shows.
+- Repeat the volume mapping for each Radarr and Sonarr instance you want to monitor.
+
+For example, if you want to store the application data in `/var/appdata/trailarr`, local folder `/mnt/disk1/media/movies` is mapped in Radarr as `/media/movies`, and local folder `/mnt/disk1/media/tv` is mapped in Sonarr as `/media/tv`, the volume mapping would look like this:
+```yaml
+    volumes:
+        - /var/appdata/trailarr:/data
+        - /mnt/disk1/media/movies:/media/movies
+        - /mnt/disk1/media/tv:/media/tv \
+```
+
+Or you could simply map local folder `/mnt/disk1/media` to `/media` in Trailarr:
+```yaml
+    volumes:
+        - /var/appdata/trailarr:/data
+        - /mnt/disk1/media:/media
+```
+
+> Note: 
+> 1._Make sure the folder paths are correct and the application has read/write access to the folders._
+> 2._If you have both Radarr and Sonarr with different root folders mapped to the same folder inside their containers, you would have to use multiple instances of Trailarr to work!_
+
 ### Docker Compose
 
 To run the application, you need to have [Docker](https://docs.docker.com/get-docker/) installed on your system.
@@ -48,6 +81,8 @@ services:
         container_name: trailarr
         environment:
             - TZ=America/New_York
+            - PUID=1000
+            - PGID=1000
         ports:
             - 7889:7889
         volumes:
@@ -56,12 +91,6 @@ services:
             - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDERS>
         restart: on-failure
 ```
-
-- Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
-- Change `<LOCAL_MEDIA_FOLDER>` to the folder where your media is stored.
-- Change `<RADARR_ROOT_FOLDERS>` to the folder where Radarr stores movies.
-- Change `<SONARR_ROOT_FOLDERS>` to the folder where Sonarr stores TV shows.
-- Repeat the volume mapping for each Radarr and Sonarr instance you want to monitor.
 
 
 Run the following command to start the application:
@@ -87,6 +116,8 @@ To run the application using the Docker CLI, run the following command:
 docker run -d \
     --name=trailarr \
     -e TZ=America/New_York \
+    -e PUID=1000 \
+    -e PGID=1000 \
     -p 7889:7889 \
     -v <LOCAL_APPDATA_FOLDER>:/data \
     -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDERS> \
@@ -94,12 +125,6 @@ docker run -d \
     --restart unless-stopped \
     nandyalu/trailarr:latest
 ```
-
-- Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
-- Change `<LOCAL_MEDIA_FOLDER>` to the folder where your media is stored.
-- Change `<RADARR_ROOT_FOLDERS>` to the folder where Radarr stores movies.
-- Change `<SONARR_ROOT_FOLDERS>` to the folder where Sonarr stores TV shows.
-- Repeat the volume mapping for each Radarr and Sonarr instance you want to monitor.
 
 Open your browser and navigate to [http://localhost:7889](http://localhost:7889) to access the application.
 
