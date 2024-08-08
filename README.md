@@ -8,14 +8,18 @@
 
 # Trailarr
 
-[![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.112.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
-[![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/)
+[![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/) 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.112.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
+[![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
 
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr)
-[![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Container&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr) 
+[![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml) 
+[![Docker Pulls](https://badgen.net/docker/pulls/nandyalu/trailarr?icon=docker&label=pulls)](https://hub.docker.com/r/nandyalu/trailarr/) 
+![GitHub Issues](https://img.shields.io/github/issues/nandyalu/trailarr?logo=github&link=https%3A%2F%2Fgithub.com%2Fnandyalu%2Ftrailarr%2Fissues) 
+![GitHub last commit](https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github&link=https%3A%2F%2Fgithub.com%2Fnandyalu%2Ftrailarr%2Fissues)
+
 
 Trailarr is a Docker application to download and manage trailers for your media library. It integrates with your existing services, such as [Plex](https://www.plex.tv/), [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/)!
 
@@ -46,8 +50,8 @@ Environment variables are optional.
 Volume mapping is required.
 - Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
 - Change `<LOCAL_MEDIA_FOLDER>` to the folder where your media is stored.
-- Change `<RADARR_ROOT_FOLDERS>` to the folder where Radarr stores movies.
-- Change `<SONARR_ROOT_FOLDERS>` to the folder where Sonarr stores TV shows.
+- Change `<RADARR_ROOT_FOLDER>` to the folder where Radarr stores movies.
+- Change `<SONARR_ROOT_FOLDER>` to the folder where Sonarr stores TV shows.
 - Repeat the volume mapping for each Radarr and Sonarr instance you want to monitor.
 
 For example, if you want to store the application data in `/var/appdata/trailarr`, local folder `/mnt/disk1/media/movies` is mapped in Radarr as `/media/movies`, and local folder `/mnt/disk1/media/tv` is mapped in Sonarr as `/media/tv`, the volume mapping would look like this:
@@ -87,8 +91,8 @@ services:
             - 7889:7889
         volumes:
             - <LOCAL_APPDATA_FOLDER>:/data
-            - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDERS>
-            - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDERS>
+            - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
+            - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
         restart: on-failure
 ```
 
@@ -120,8 +124,8 @@ docker run -d \
     -e PGID=1000 \
     -p 7889:7889 \
     -v <LOCAL_APPDATA_FOLDER>:/data \
-    -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDERS> \
-    -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDERS> \
+    -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
+    -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
     --restart unless-stopped \
     nandyalu/trailarr:latest
 ```
