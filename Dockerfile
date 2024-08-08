@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install pip requirements
 COPY ./backend/requirements.txt .
-RUN python -m pip install --disable-pip-version-check --no-cache-dir --upgrade -r requirements.txt
+RUN python -m pip install --disable-pip-version-check --upgrade -r requirements.txt
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY install_ffmpeg.sh /tmp/install_ffmpeg.sh

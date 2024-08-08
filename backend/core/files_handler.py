@@ -139,6 +139,29 @@ class FilesHandler:
         )
 
     @staticmethod
+    def check_media_exists(path: str) -> bool:
+        """Check if a media file exists in the specified folder.\n
+        Media files are checked based on the following criteria:
+        - File size is greater than 100 MB
+        - File extension is one of: mp4, mkv, avi, webm\n
+        Args:
+            path (str): Folder path to check for a media file.\n
+        Returns:
+            bool: True if a media file exists in the folder, False otherwise."""
+        for entry in os.scandir(path):
+            if entry.is_dir():
+                if FilesHandler.check_media_exists(entry.path):
+                    return True
+            if not entry.is_file():
+                continue
+            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                continue
+            if entry.stat().st_size < 100 * 1024 * 1024:  # 100 MB
+                continue
+            return True
+        return False
+
+    @staticmethod
     async def _check_trailer_as_folder(path: str) -> bool:
         """Check if a trailer exists in the 'trailers' folder.\n
         Args:
@@ -155,7 +178,7 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith((".mp4", ".mkv", ".avi")):
+                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
                     return True
         return False
 
@@ -169,7 +192,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi")):
+            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
                 continue
             if "-trailer." not in entry.name:
                 continue

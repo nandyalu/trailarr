@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, timezone
+
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
 from core.download.trailer import download_trailers
+from core.files_handler import FilesHandler
 from core.radarr.database_manager import MovieDatabaseManager
 from core.sonarr.database_manager import SeriesDatabaseManager
 from core.tasks import scheduler
@@ -18,13 +20,13 @@ def _download_missing_media_trailers(is_movie: bool):
         db_manager = MovieDatabaseManager()
     else:
         db_manager = SeriesDatabaseManager()
+    media_type = "movies" if is_movie else "series"
     # Get all media from the database
     db_media_list = db_manager.read_all()
     media_trailer_list = []
-    logger.debug(
-        f"Checking trailers for {len(db_media_list)} {'movies' if is_movie else 'series'}"
-    )
+    logger.debug(f"Checking trailers for {len(db_media_list)} monitored {media_type}")
     # Create MediaTrailer objects for each movie/series
+    skip_count = 0
     for db_media in db_media_list:
         if not db_media.monitor:
             logger.debug(
@@ -41,6 +43,13 @@ def _download_missing_media_trailers(is_movie: bool):
                 f"Skipping {db_media.title} (id:{db_media.id}), trailer exists"
             )
             continue
+        if app_settings.wait_for_media:
+            if not FilesHandler.check_media_exists(db_media.folder_path):
+                skip_count += 1
+                logger.debug(
+                    f"Skipping {db_media.title} (id:{db_media.id}), media file(s) not found"
+                )
+                continue
         media_trailer = MediaTrailer(
             id=db_media.id,
             title=db_media.title,
@@ -49,17 +58,17 @@ def _download_missing_media_trailers(is_movie: bool):
             yt_id=db_media.youtube_trailer_id,
         )
         media_trailer_list.append(media_trailer)
+    if skip_count:
+        logger.info(f"Skipping trailer download for {skip_count} {media_type}")
 
     if not media_trailer_list:
-        logger.info(
-            f"No missing {'movie' if is_movie else 'series'} trailers to download"
-        )
+        logger.info(f"No missing {media_type} trailers to download")
         return
 
     # Download missing trailers
     downloaded_media = download_trailers(media_trailer_list, is_movie)
     if not downloaded_media:
-        logger.info(f"No {'movie' if is_movie else 'series'} trailers downloaded")
+        logger.info(f"No {media_type} trailers downloaded")
         return
     logger.debug("Updating trailer status in database")
     media_update_list = []

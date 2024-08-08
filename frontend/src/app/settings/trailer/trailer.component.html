@@ -13,7 +13,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Debug Mode</label>
+                <label for="debug">Debug Mode</label>
                 <small>Set app into Debug mode, this will generate too much log data!</small>
                 <small>Use this only when requested!!!</small>
             </div>
@@ -29,7 +29,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Monitor Trailers</label>
+                <label for="monitor_enabled">Monitor Trailers</label>
                 <small>Monitor media from Radarr/Sonarr to download trailers.</small>
             </div>
             <div id="monitor_enabled" class="options-bar">
@@ -44,7 +44,7 @@
         </div>
         <div *ngIf="settings?.monitor_enabled" class="trailer-content">
             <div class="content-label">
-                <label>Monitor Interval</label>
+                <label for="monitor_interval">Monitor Interval</label>
                 <small>Frequency (in minutes) to get new media data from Radarr/Sonarr.</small>
                 <small>Default is 60. Minuimum is 10.</small>
             </div>
@@ -65,7 +65,22 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Folder Movie</label>
+                <label for="wait_for_media">Wait for Media</label>
+                <small>Wait for media to be imported into Radarr/Sonarr before downloading trailers.</small>
+            </div>
+            <div id="wait_for_media" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="5"
+                    [class.selected]="option === settings?.wait_for_media"
+                    (click)="updateSetting('wait_for_media', option)"
+                    (keydown.enter)="updateSetting('wait_for_media', option)"
+                    (keydown.space)="updateSetting('wait_for_media', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_folder_movie">Trailer Folder Movie</label>
                 <small>Save trailer file in a 'Trailers' folder inside Movie folder.</small>
             </div>
             <div id="trailer_folder_movie" class="options-bar">
@@ -80,7 +95,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Folder Series</label>
+                <label for="trailer_folder_series">Trailer Folder Series</label>
                 <small>Save trailer file in a 'Trailers' folder inside Series folder.</small>
             </div>
             <div id="trailer_folder_series" class="options-bar">
@@ -99,7 +114,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Resolution</label>
+                <label for="trailer_resolution">Trailer Resolution</label>
                 <small>Resolution of the trailer video file.</small>
                 <small>Valid values: 240, 360, 480, 720, 1080, 1440, 2160</small>
             </div>
@@ -117,7 +132,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer File Format</label>
+                <label for="trailer_file_format">Trailer File Format</label>
                 <small>Final file format(extension) of the trailer file.</small>
             </div>
             <div id="trailer_file_format" class="options-bar">
@@ -132,7 +147,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Video Format</label>
+                <label for="trailer_video_format">Trailer Video Format</label>
                 <small>Final video format(codec) of the trailer file.</small>
             </div>
             <div id="trailer_video_format" class="options-bar">
@@ -147,7 +162,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Audio Format</label>
+                <label for="trailer_audio_format">Trailer Audio Format</label>
                 <small>Final audio format(codec) of the trailer file.</small>
             </div>
             <div id="trailer_audio_format" class="options-bar">
@@ -162,7 +177,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Subtitles Enabled</label>
+                <label for="trailer_subtitles_enabled">Trailer Subtitles Enabled</label>
                 <small>Download subtitles and added them to trailer file, if available.</small>
             </div>
             <div id="trailer_subtitles_enabled" class="options-bar">
@@ -177,7 +192,7 @@
         </div>
         <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
             <div class="content-label">
-                <label>Trailer Subtitles Format</label>
+                <label for="trailer_subtitles_format">Trailer Subtitles Format</label>
                 <small>Final subtitles format in the trailer file.</small>
             </div>
             <div id="trailer_subtitles_format" class="options-bar">
@@ -192,7 +207,7 @@
         </div>
         <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
             <div class="content-label">
-                <label>Trailer Subtitles Language</label>
+                <label for="trailer_subtitles_language">Trailer Subtitles Language</label>
                 <small>Subtitles language of the trailer file. 2-letter ISO language code.</small>
             </div>
             <div class="text-input">
@@ -213,7 +228,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Embed Metadata</label>
+                <label for="trailer_embed_metadata">Trailer Embed Metadata</label>
                 <small>Embed info from youtube video into the trailer file.</small>
             </div>
             <div id="trailer_embed_metadata" class="options-bar">
@@ -228,7 +243,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Remove SponsorBlocks</label>
+                <label for="trailer_remove_sponsorblocks">Trailer Remove SponsorBlocks</label>
                 <small>Remove Sponsor Blocks like intro, outro blocks from youtube video if available.</small>
             </div>
             <div id="trailer_remove_sponsorblocks" class="options-bar">
@@ -243,7 +258,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label>Trailer Web Optimized</label>
+                <label for="trailer_web_optimized">Trailer Web Optimized</label>
                 <small>Enabling this will convert the video to a web optimized video, useful for streaming video over network, might slightly increase file size.</small>
             </div>
             <div id="trailer_web_optimized" class="options-bar">

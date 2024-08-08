@@ -64,6 +64,10 @@ class _Config:
             "True",
         ).lower() in ["true", "1"]
         self.monitor_interval = int(os.getenv("MONITOR_INTERVAL", 60))
+        self.wait_for_media = os.getenv(
+            "WAIT_FOR_MEDIA",
+            "False",
+        ).lower() in ["true", "1"]
         self.trailer_folder_movie = os.getenv(
             "TRAILER_FOLDER_MOVIE",
             "False",
@@ -109,25 +113,26 @@ class _Config:
 
     def as_dict(self):
         return {
-            "version": self.version,
-            "server_start_time": self.server_start_time,
-            "timezone": self.timezone,
             "api_key": self.api_key,
             "debug": self.debug,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
+            "timezone": self.timezone,
+            "trailer_audio_format": self.trailer_audio_format,
+            "trailer_embed_metadata": self.trailer_embed_metadata,
+            "trailer_file_format": self.trailer_file_format,
             "trailer_folder_movie": self.trailer_folder_movie,
             "trailer_folder_series": self.trailer_folder_series,
+            "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
             "trailer_resolution": self.trailer_resolution,
-            "trailer_audio_format": self.trailer_audio_format,
-            "trailer_video_format": self.trailer_video_format,
             "trailer_subtitles_enabled": self.trailer_subtitles_enabled,
             "trailer_subtitles_format": self.trailer_subtitles_format,
             "trailer_subtitles_language": self.trailer_subtitles_language,
-            "trailer_file_format": self.trailer_file_format,
-            "trailer_embed_metadata": self.trailer_embed_metadata,
-            "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
+            "trailer_video_format": self.trailer_video_format,
             "trailer_web_optimized": self.trailer_web_optimized,
+            "server_start_time": self.server_start_time,
+            "version": self.version,
+            "wait_for_media": self.wait_for_media,
         }
 
     @property
@@ -213,6 +218,18 @@ class _Config:
         value = max(10, value)  # Minimum interval is 10 minutes
         self._monitor_interval = value
         self._save_to_env("MONITOR_INTERVAL", self._monitor_interval)
+
+    @property
+    def wait_for_media(self):
+        """Wait for media to be available. \n
+        Default is False. \n
+        Valid values are True/False."""
+        return self._wait_for_media
+
+    @wait_for_media.setter
+    def wait_for_media(self, value: bool):
+        self._wait_for_media = value
+        self._save_to_env("WAIT_FOR_MEDIA", self._wait_for_media)
 
     @property
     def trailer_folder_movie(self):
