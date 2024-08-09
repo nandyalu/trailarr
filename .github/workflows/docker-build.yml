@@ -3,8 +3,19 @@ name: Docker Build
 on:
   push:
     branches: [ "main" ]
+    # Ignore changes to assets, .devcontainer, .github, or .vscode files
+    paths-ignore:
+      - '**/assets/**'
+      - '**/.vscode/**'
+      - '**/.github/**'
+      - '**/.devcontainer/**'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '**/assets/**'
+      - '**/.vscode/**'
+      - '**/.github/**'
+      - '**/.devcontainer/**'
 
 jobs:
 
