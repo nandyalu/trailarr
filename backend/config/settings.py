@@ -206,6 +206,13 @@ class _Config:
 
     @database_url.setter
     def database_url(self, value: str):
+        if not value:
+            value = self._DEFAULT_DB_URL
+        # If APP_DATA_DIR has updated, and database_url is default, update it to new path
+        # If ENV DATABASE_URL is modified by user, don't update it
+        _untouched_db_url = "sqlite:////data/trailarr.db"
+        if value == _untouched_db_url:
+            value = self._DEFAULT_DB_URL
         self._database_url = value
         self._save_to_env("DATABASE_URL", self._database_url)
 
