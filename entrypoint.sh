@@ -3,16 +3,21 @@
 # THIS SCRIPT WILL BE RUN AS THE ROOT USER IN THE CONTAINER BEFORE APP STARTS
 
 # Print 'TRAILARR' as ASCII Art 
-# Generated using https://patorjk.com/software/taag/#p=display&h=0&v=0&c=echo&f=ANSI%20Regular&t=TRAILARR
-echo " ---------------------------------------------------------------- ";
-echo "|                                                                |";
-echo "|  ████████ ██████   █████  ██ ██       █████  ██████  ██████    |";
-echo "|     ██    ██   ██ ██   ██ ██ ██      ██   ██ ██   ██ ██   ██   |";
-echo "|     ██    ██████  ███████ ██ ██      ███████ ██████  ██████    |";
-echo "|     ██    ██   ██ ██   ██ ██ ██      ██   ██ ██   ██ ██   ██   |";
-echo "|     ██    ██   ██ ██   ██ ██ ███████ ██   ██ ██   ██ ██   ██   |";
-echo "|                                                                |";
-echo " ---------------------------------------------------------------- ";
+# Generated using https://www.asciiart.eu/text-to-ascii-art
+# Font: Banner3, Horizontal Layout: Wide, Vertical Layout: Wide, Width: 80
+# Border: PlusBox v2, V. Padding: 1, H. Padding: 3
+# Whitespace break: enabled, Trim Whitespace: enabled, Replace Whitespace: disabled
+echo "+==============================================================================+";
+echo "|                                                                              |";
+echo "|   ######## ########     ###    #### ##          ###    ########  ########    |";
+echo "|      ##    ##     ##   ## ##    ##  ##         ## ##   ##     ## ##     ##   |";
+echo "|      ##    ##     ##  ##   ##   ##  ##        ##   ##  ##     ## ##     ##   |";
+echo "|      ##    ########  ##     ##  ##  ##       ##     ## ########  ########    |";
+echo "|      ##    ##   ##   #########  ##  ##       ######### ##   ##   ##   ##     |";
+echo "|      ##    ##    ##  ##     ##  ##  ##       ##     ## ##    ##  ##    ##    |";
+echo "|      ##    ##     ## ##     ## #### ######## ##     ## ##     ## ##     ##   |";
+echo "|                                                                              |";
+echo "+==============================================================================+";
 echo "Starting Trailarr container with the following configuration:"
 echo "APP_DATA_DIR: ${APP_DATA_DIR}"
 echo "PUID: ${PUID}"
