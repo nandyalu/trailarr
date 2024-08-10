@@ -20,6 +20,7 @@ class SearchMedia(BaseModel):
 
 class Settings(BaseModel):
     api_key: str
+    app_data_dir: str
     version: str
     server_start_time: str
     timezone: str

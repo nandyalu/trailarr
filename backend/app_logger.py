@@ -63,6 +63,9 @@ def config_logging():
     if config_file.exists():
         with open(config_file) as f_in:
             config = json.load(f_in)
+        config["handlers"]["file"][
+            "filename"
+        ] = f"{app_settings.app_data_dir}/logs/trailarr.log"
     else:
         logging.debug(f"Logger config file not found: {config_file}")
 

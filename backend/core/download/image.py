@@ -7,13 +7,14 @@ from PIL import Image
 from async_lru import alru_cache
 
 from app_logger import logger
+from config.settings import app_settings
 from core.base.database.models.helpers import MediaImage
 
 
 POSTER = (300, 450)
 FANART = (1280, 720)
-STATIC_PATH_MOVIES = "/data/web/images/movies/"
-STATIC_PATH_SHOWS = "/data/web/images/shows/"
+STATIC_PATH_MOVIES = f"{app_settings.app_data_dir}/web/images/movies/"
+STATIC_PATH_SHOWS = f"{app_settings.app_data_dir}/web/images/shows/"
 
 
 @alru_cache
