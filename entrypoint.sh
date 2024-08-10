@@ -2,6 +2,24 @@
 
 # THIS SCRIPT WILL BE RUN AS THE ROOT USER IN THE CONTAINER BEFORE APP STARTS
 
+# Print 'TRAILARR' as ASCII Art 
+# Generated using https://patorjk.com/software/taag/#p=display&h=0&v=0&c=echo&f=ANSI%20Regular&t=TRAILARR
+echo " ---------------------------------------------------------------- ";
+echo "|                                                                |";
+echo "|  ████████ ██████   █████  ██ ██       █████  ██████  ██████    |";
+echo "|     ██    ██   ██ ██   ██ ██ ██      ██   ██ ██   ██ ██   ██   |";
+echo "|     ██    ██████  ███████ ██ ██      ███████ ██████  ██████    |";
+echo "|     ██    ██   ██ ██   ██ ██ ██      ██   ██ ██   ██ ██   ██   |";
+echo "|     ██    ██   ██ ██   ██ ██ ███████ ██   ██ ██   ██ ██   ██   |";
+echo "|                                                                |";
+echo " ---------------------------------------------------------------- ";
+echo "Starting Trailarr container with the following configuration:"
+echo "APP_DATA_DIR: ${APP_DATA_DIR}"
+echo "PUID: ${PUID}"
+echo "PGID: ${PGID}"
+echo "TZ: ${TZ}"
+echo "-----------------------------------------------------------------";
+
 # Set TimeZone based on env variable
 # Print date time before 
 echo "Current date time: $(date)"
