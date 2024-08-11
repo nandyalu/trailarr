@@ -27,7 +27,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
     APP_PORT=7889 \
-    APP_DATA_DIR="/data"
+    APP_DATA_DIR="/data" \
+    PUID=1000 \
+    PGID=1000
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
