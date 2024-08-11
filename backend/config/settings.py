@@ -4,7 +4,8 @@ import secrets
 
 from dotenv import load_dotenv, set_key
 
-ENV_PATH = "/data/.env"
+APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/data"))
+ENV_PATH = f"{APP_DATA_DIR}/.env"
 RESOLUTION_DICT = {
     "SD": 360,
     "FSD": 480,
@@ -39,7 +40,7 @@ class _Config:
     _DEFAULT_FILE_FORMAT = "mkv"
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
-    _DEFAULT_DB_URL = "sqlite:////data/trailarr.db"
+    _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
@@ -53,6 +54,7 @@ class _Config:
         _now = datetime.now(timezone.utc)
         self.server_start_time = os.getenv("SERVER_START_TIME", f"{_now}")
         self.timezone = os.getenv("TZ", "UTC")
+        self.app_data_dir = APP_DATA_DIR
 
         # Read properties from ENV variables or set default values if not present
         self.api_key = os.getenv("API_KEY", "")
@@ -114,6 +116,7 @@ class _Config:
     def as_dict(self):
         return {
             "api_key": self.api_key,
+            "app_data_dir": APP_DATA_DIR,
             "debug": self.debug,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
@@ -159,6 +162,18 @@ class _Config:
         self._save_to_env("API_KEY", self._api_key)
 
     @property
+    def app_data_dir(self):
+        """Application data directory. \n
+        Default is '/data'. \n
+        Can be changed to any directory path with docker ENV variable. \n
+        **Cannot be changed here!**"""
+        return APP_DATA_DIR
+
+    @app_data_dir.setter
+    def app_data_dir(self, value: str):
+        pass
+
+    @property
     def debug(self):
         """Debug mode for the application. \n
         Default is False. \n
@@ -191,6 +206,13 @@ class _Config:
 
     @database_url.setter
     def database_url(self, value: str):
+        if not value:
+            value = self._DEFAULT_DB_URL
+        # If APP_DATA_DIR has updated, and database_url is default, update it to new path
+        # If ENV DATABASE_URL is modified by user, don't update it
+        _untouched_db_url = "sqlite:////data/trailarr.db"
+        if value == _untouched_db_url:
+            value = self._DEFAULT_DB_URL
         self._database_url = value
         self._save_to_env("DATABASE_URL", self._database_url)
 

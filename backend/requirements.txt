@@ -1,5 +1,5 @@
 # Backend
-aiohttp==3.10.0
+aiohttp==3.10.2
 aiofiles==24.1.0
 alembic==1.13.2
 apscheduler==3.10.4
@@ -7,4 +7,4 @@ async-lru==2.0.4
 fastapi[standard]==0.112.0 # Update version in README.md as well
 pillow==10.4.0
 sqlmodel==0.0.21
-yt-dlp==2024.8.1
+yt-dlp==2024.8.6

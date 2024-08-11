@@ -19,14 +19,17 @@ RUN chmod +x /tmp/install_ffmpeg.sh && \
 FROM python:3.12-slim
 
 # ARG APP_VERSION, will be set during build by github actions
-ARG APP_VERSION
+ARG APP_VERSION=0.0.0-dev
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION=${APP_VERSION:-0.0.6b}
+    APP_PORT=7889 \
+    APP_DATA_DIR="/data" \
+    PUID=1000 \
+    PGID=1000
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
@@ -55,9 +58,6 @@ COPY --from=python-deps /usr/local/ /usr/local/
 # Set the python path
 ENV PYTHONPATH="${PYTHONPATH:-}:/app/backend"
 
-# Create a volume for data directory
-VOLUME ["/data"]
-
 # Copy the entrypoint script and make it executable
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
@@ -67,7 +67,7 @@ COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Expose the port the app runs on
-EXPOSE 7889
+EXPOSE ${APP_PORT}
 
 # Set permissions for appuser on /app directory
 RUN chmod -R 750 /app

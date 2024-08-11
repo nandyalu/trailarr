@@ -46,6 +46,10 @@ Environment variables are optional.
 - `TZ` - Set the timezone for the application. Default is `America/New_York`.
 - `PUID` - Set the user ID for the application. Default is `1000`.
 - `PGID` - Set the group ID for the application. Default is `1000`.
+- `APP_DATA_DIR` - Set the application data directory. Default is `/data`. If setting this, make sure to map the volume to the same directory.
+
+> Note: If you are setting the `APP_DATA_DIR` environment variable, make sure to set an absolute path like `/data` or `/config/abc`, and map the volume to the same directory.
+
 
 Volume mapping is required.
 - Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.

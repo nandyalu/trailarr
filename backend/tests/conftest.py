@@ -1,4 +1,3 @@
-import os
 from urllib.parse import urlencode, urljoin
 from aioresponses import aioresponses
 import pytest
@@ -6,7 +5,7 @@ import pytest
 
 # TODO! Update all tests to current codebase
 def pytest_configure():
-    os.environ["TESTING"] = "True"
+    # os.environ["TESTING"] = "True"
     from core.base.database.utils.init_db import init_db
 
     init_db()
@@ -14,7 +13,8 @@ def pytest_configure():
 
 @pytest.fixture(autouse=True)
 def debug_database():
-    os.environ["TESTING"] = "True"
+    # os.environ["TESTING"] = "True"
+    pass
 
 
 TEST_AIOHTTP_APIKEY = "API_KEY"

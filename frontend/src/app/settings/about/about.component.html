@@ -12,6 +12,10 @@
             <code>{{settings?.api_key}}</code>
         </div>
         <div class="about-content">
+            <label>Appdata Folder</label>
+            <code>{{settings?.app_data_dir}}</code>
+        </div>
+        <div class="about-content">
             <label>Server Stated</label>
             <code>{{settings?.server_start_time ? (settings?.server_start_time | timeago) : 'Unknwon'}}</code>
         </div>

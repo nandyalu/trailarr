@@ -1,5 +1,6 @@
 export interface Settings {
     api_key: string
+    app_data_dir: string
     version: string
     server_start_time: string
     timezone: string

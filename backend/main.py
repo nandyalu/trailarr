@@ -97,18 +97,14 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 # Register other routes here (if any)
 
 # Mount images folders - Load these before mountic frontend
-images_dir = os.path.abspath("/data/web/images")
+images_dir = os.path.join(app_settings.app_data_dir, "web", "images")
 if not os.path.exists(images_dir):
     logging.info("Creating images directory")
     os.makedirs(images_dir)
-    trailarr_api.mount(
-        "/data/web/images", StaticFiles(directory=images_dir), name="images"
-    )
+    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 else:
     logging.info("Mounting images directory for frontend!")
-    trailarr_api.mount(
-        "/data/web/images", StaticFiles(directory=images_dir), name="images"
-    )
+    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 
 
 # Mount static frontend files to serve frontend

@@ -2,6 +2,29 @@
 
 # THIS SCRIPT WILL BE RUN AS THE ROOT USER IN THE CONTAINER BEFORE APP STARTS
 
+# Print 'TRAILARR' as ASCII Art 
+# Generated using https://www.asciiart.eu/text-to-ascii-art
+# Font: Banner3, Horizontal Layout: Wide, Vertical Layout: Wide, Width: 80
+# Border: PlusBox v2, V. Padding: 1, H. Padding: 3
+# Whitespace break: enabled, Trim Whitespace: enabled, Replace Whitespace: disabled
+echo "+==============================================================================+";
+echo "|                                                                              |";
+echo "|   ######## ########     ###    #### ##          ###    ########  ########    |";
+echo "|      ##    ##     ##   ## ##    ##  ##         ## ##   ##     ## ##     ##   |";
+echo "|      ##    ##     ##  ##   ##   ##  ##        ##   ##  ##     ## ##     ##   |";
+echo "|      ##    ########  ##     ##  ##  ##       ##     ## ########  ########    |";
+echo "|      ##    ##   ##   #########  ##  ##       ######### ##   ##   ##   ##     |";
+echo "|      ##    ##    ##  ##     ##  ##  ##       ##     ## ##    ##  ##    ##    |";
+echo "|      ##    ##     ## ##     ## #### ######## ##     ## ##     ## ##     ##   |";
+echo "|                                                                              |";
+echo "+==============================================================================+";
+echo "Starting Trailarr container with the following configuration:"
+echo "APP_DATA_DIR: ${APP_DATA_DIR}"
+echo "PUID: ${PUID}"
+echo "PGID: ${PGID}"
+echo "TZ: ${TZ}"
+echo "-----------------------------------------------------------------";
+
 # Set TimeZone based on env variable
 # Print date time before 
 echo "Current date time: $(date)"
@@ -11,9 +34,12 @@ echo $TZ > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata
 echo "Current date time after tzdate: $(date)"
 
-# Create data folder for storing database and other config files
-echo "Creating '/data' folder for storing database and other config files"
-mkdir -p /data/logs && chmod -R 755 /data
+# Remove trailing slash from APP_DATA_DIR if it exists
+export APP_DATA_DIR=$(echo $APP_DATA_DIR | sed 's:/*$::')
+
+# Create appdata (default=/data) folder for storing database and other config files
+echo "Creating '$APP_DATA_DIR' folder for storing database and other config files"
+mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 chmod -R 755 /app/assets
 
 # Set default values for PUID and PGID if not provided
@@ -46,10 +72,10 @@ else
 fi
 
 # Set permissions for appuser on /app and /data directories
-echo "Changing the owner of app and data directories to '$APPUSER'"
+echo "Changing the owner of '/app' and '$APP_DATA_DIR' directories to '$APPUSER'"
 chmod -R 750 /app
 chown -R "$APPUSER":"$APPGROUP" /app
-chown -R "$APPUSER":"$APPGROUP" /data
+chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
 # Switch to the non-root user and execute the command
 echo "Switching to user '$APPUSER' and starting the application"

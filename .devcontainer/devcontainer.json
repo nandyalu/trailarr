@@ -22,7 +22,11 @@
 
 
 	"containerEnv": {
-		"PYTHONPATH": "${containerWorkspaceFolder}/backend"
+		"PYTHONPATH": "${containerWorkspaceFolder}/backend",
+		"DEBUG": "False",
+		"TESTING": "False",
+		"APP_PORT": "7888",
+		"APP_DATA_DIR": "/data"
 	},
 
 	"customizations": {
