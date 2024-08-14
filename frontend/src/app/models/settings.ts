@@ -25,6 +25,7 @@ export interface Settings {
 export interface ServerStats {
     trailers_downloaded: number
     movies_count: number
+    movies_monitored: number
     series_count: number
-    monitored_count: number
+    series_monitored: number
 }
