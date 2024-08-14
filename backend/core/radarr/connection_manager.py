@@ -2,15 +2,15 @@ from core.base.connection_manager import (
     BaseConnectionManager,
     MediaUpdateDC,
 )
+from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaReadDC
+from core.base.database.models.media import MediaCreate
 from core.radarr.data_parser import parse_movie
-from core.radarr.database_manager import MovieDatabaseManager
 from core.base.database.models.connection import ConnectionRead
-from core.radarr.models import MovieCreate
 from core.radarr.api_manager import RadarrManager
 
 
-class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
+class RadarrConnectionManager(BaseConnectionManager):
     """Connection manager for working with the Radarr application."""
 
     connection_id: int
@@ -28,13 +28,13 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
             inline_trailer=True,
         )
 
-    def create_or_update_bulk(self, media_data: list[MovieCreate]) -> list[MediaReadDC]:
+    def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
         """Create or update movies in the database and return MediaRead objects.\n
         Args:
             media_data (list[MovieCreate]): The movie data to create or update.\n
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
-        movie_read_list = MovieDatabaseManager().create_or_update_bulk(media_data)
+        movie_read_list = MediaDatabaseManager().create_or_update_bulk(media_data)
         return [
             MediaReadDC(
                 movie_read.id,
@@ -50,7 +50,7 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
         """Remove the media from the database that are not present in the Radarr application. \n
         Args:
             media_ids (list[int]): List of media ids to remove."""
-        MovieDatabaseManager().delete_except(self.connection_id, media_ids)
+        MediaDatabaseManager().delete_except(self.connection_id, media_ids)
         return
 
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
@@ -58,5 +58,5 @@ class RadarrConnectionManager(BaseConnectionManager[MovieCreate]):
         Args:
             media_status_list (list[tuple[int, bool, bool]]): List of tuples containing the \
                 media id, monitor status, and trailer status."""
-        MovieDatabaseManager().update_media_status_bulk(media_update_list)
+        MediaDatabaseManager().update_media_status_bulk(media_update_list)
         return

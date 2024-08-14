@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import AliasPath, BaseModel, Field, field_validator
 
-from core.radarr.models import MovieCreate
+from core.base.database.models.media import MediaCreate
 
 
 class RadarrDataParser(BaseModel):
@@ -10,6 +10,7 @@ class RadarrDataParser(BaseModel):
 
     connection_id: int = Field(default=0)
     arr_id: int = Field(validation_alias="id")
+    is_movie: bool = Field(default=True)
     title: str = Field()
     year: int = Field()
     language: str = Field(
@@ -33,7 +34,7 @@ class RadarrDataParser(BaseModel):
         return str(v)
 
 
-def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MovieCreate:
+def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MediaCreate:
     """Parse the movie data from Radarr to a MovieCreate object.\n
     Args:
         connection_id (int): The connection id.
@@ -45,7 +46,7 @@ def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MovieCreate:
 
     # print(movie_parsed.model_dump())
 
-    new_movie = MovieCreate.model_validate(movie_parsed.model_dump())
+    new_movie = MediaCreate.model_validate(movie_parsed.model_dump())
     for image in movie_data["images"]:
         # Check if the image is a poster or fanart
         if image["coverType"] == "poster":

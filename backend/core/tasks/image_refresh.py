@@ -1,8 +1,7 @@
+from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaImage
 from core.base.database.models.media import MediaUpdate
 from core.download.image import refresh_media_images
-from core.radarr.database_manager import MovieDatabaseManager
-from core.sonarr.database_manager import SeriesDatabaseManager
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("ImageRefreshTasks")
@@ -21,17 +20,13 @@ async def refresh_images(recent_only: bool = False):
 
 
 async def refresh_and_save_media_images(is_movie: bool, recent_only: bool = False):
-    if is_movie:
-        db_manager = MovieDatabaseManager()
-    else:
-        db_manager = SeriesDatabaseManager()
-
+    db_manager = MediaDatabaseManager()
     if recent_only:
         # Get all media from the database that have been added/updated in the last 24 hours
-        db_media_list = db_manager.read_recent()
+        db_media_list = db_manager.read_recent(movies_only=is_movie)
     else:
         # Get all media from the database
-        db_media_list = db_manager.read_all()
+        db_media_list = db_manager.read_all(movies_only=is_movie)
     media_image_list: list[MediaImage] = []
     logger.debug(
         f"Refreshing images for {len(db_media_list)} {'movies' if is_movie else 'series'}"

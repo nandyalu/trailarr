@@ -8,9 +8,8 @@ from core.base.database.models.connection import (
     ConnectionUpdate,
 )
 
+from core.base.database.models.media import Media
 from core.base.database.utils.engine import manage_session
-from core.radarr.models import Movie
-from core.sonarr.models import Series
 from exceptions import ItemNotFoundError
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
@@ -179,10 +178,7 @@ class ConnectionDatabaseManager:
         """
         connection = self._get_db_item(connection_id, _session=_session)
         _session.delete(connection)
-        if connection.arr_type == ArrType.RADARR:
-            _statement = select(Movie).where(Movie.connection_id == connection_id)
-        else:
-            _statement = select(Series).where(Series.connection_id == connection_id)
+        _statement = select(Media).where(Media.connection_id == connection_id)
         media_list = _session.exec(_statement).all()
         for media in media_list:
             _session.delete(media)

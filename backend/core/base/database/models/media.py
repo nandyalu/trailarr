@@ -12,10 +12,10 @@ def get_current_year():
 
 # TODO: Change Movie and Series models to Media model
 class MediaBase(SQLModel):
-    """Base class for the Media model. Extend this class for Movie and Series models. \n
+    """Base class for the Media model. \n
     Note: \n
-        **DO NOT USE THIS CLASS DIRECTLY.** \n
-    Use Movie or Series models instead.
+        🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
+    Use MediaCreate, MediaRead, MediaUpdate models instead.
     """
 
     connection_id: int = Field(
@@ -42,33 +42,12 @@ class MediaBase(SQLModel):
     arr_monitored: bool = Field(default=False)
 
 
-class MediaDB(MediaBase):
-    """Media model for the database. \n
-    Extend this class to create database models for Movie and Series. \n
-    Add `table=True` to the class definition while extending.
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
-    Use Movie or Series models instead.
-    """
-
-    id: int | None = Field(default=None, primary_key=True)
-    connection_id: int = Field(foreign_key="connection.id", index=True)
-
-    added_at: datetime = Field(default_factory=get_current_time)
-    updated_at: datetime = Field(default_factory=get_current_time)
-    downloaded_at: datetime | None = Field(default=None)
-
-
 class Media(MediaBase, table=True):
     """Media model for the database. \n
-    Extend this class to create database models for Movie and Series. \n
-    Add `table=True` to the class definition while extending. \n
+    This class is used for database CRUD operations only \n
     Note: \n
-        **DO NOT USE THIS CLASS DIRECTLY.** \n
-    Use Movie or Series models instead.
+        🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
+    Use MediaCreate, MediaRead, MediaUpdate models instead.
     """
 
     id: int | None = Field(default=None, primary_key=True)
@@ -81,17 +60,13 @@ class Media(MediaBase, table=True):
 
 
 class MediaCreate(MediaBase):
-    """Media model for creating a new media. \n
-    Extend this class to create models for creating Movie and Series. \n
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
+    """Media model for creating a new media objects. \n
     Defaults:
+    - is_movie: True
     - year: current year
     - language: "en"
     - runtime: 0
+    - youtube_trailer_id: None
     - trailer_exists: False
     - monitor: False
     - arr_monitored: False
@@ -101,15 +76,7 @@ class MediaCreate(MediaBase):
 
 
 class MediaRead(MediaBase):
-    """Media model for reading media. \n
-    Extend this class to create models for reading Movie and Series. \n
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
-    Use MovieRead or SeriesRead models instead.
-    """
+    """Media model for reading media."""
 
     id: int
     added_at: datetime
@@ -119,12 +86,6 @@ class MediaRead(MediaBase):
 
 class MediaUpdate(MediaBase):
     """Media model for updating media. \n
-    Extend this class to create models for updating Movie and Series. \n
-
-    Note:
-
-        **DO NOT USE THIS CLASS DIRECTLY.**
-
     Defaults:
     - updated_at: current time [if any field is updated]
     """

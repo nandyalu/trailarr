@@ -6,6 +6,7 @@ from app_logger import ModuleLogger
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
+from core.base.database.models.media import MediaCreate
 
 logger = ModuleLogger("ConnectionManager")
 
@@ -26,7 +27,7 @@ class ArrManagerProtocol(Protocol):
         raise NotImplementedError("Subclasses must implement this method")
 
 
-class BaseConnectionManager[_MediaCreate](ABC):
+class BaseConnectionManager(ABC):
     """Connection manager for working with the Arr applications.
     Abstract class that provides the base functionality for working with the Arr applications.
     """
@@ -35,13 +36,13 @@ class BaseConnectionManager[_MediaCreate](ABC):
     connection_id: int
     inline_trailer: bool
     monitor: MonitorType
-    parse_media: Callable[[int, dict[str, Any]], _MediaCreate]
+    parse_media: Callable[[int, dict[str, Any]], MediaCreate]
 
     def __init__(
         self,
         connection: ConnectionRead,
         arr_manager: ArrManagerProtocol,
-        parse_media: Callable[[int, dict[str, Any]], _MediaCreate],
+        parse_media: Callable[[int, dict[str, Any]], MediaCreate],
         inline_trailer: bool,
     ):
         """Initialize the ArrConnectionManager. \n
@@ -74,7 +75,7 @@ class BaseConnectionManager[_MediaCreate](ABC):
             logger.error("Failed to get media data from Arr application.")
             return []
 
-    async def _parse_data(self) -> list[_MediaCreate]:
+    async def _parse_data(self) -> list[MediaCreate]:
         """Parse media received from the Arr API to objects that can be added to database.\n
         Returns:
             list[_MediaCreate]: list of parsed media objects."""
@@ -125,9 +126,7 @@ class BaseConnectionManager[_MediaCreate](ABC):
         return False
 
     @abstractmethod
-    def create_or_update_bulk(
-        self, media_data: list[_MediaCreate]
-    ) -> list[MediaReadDC]:
+    def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
         """Create or update media in the database and return \
             objects that satisfy MediaReadProtocol.\n
         Args:

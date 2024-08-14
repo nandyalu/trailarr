@@ -4,10 +4,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
 from api.v1.models import ErrorResponse
+from core.base.database.manager.base import MediaDatabaseManager
+from core.base.database.models.media import MediaRead, MediaUpdate
 from core.files_handler import FilesHandler, FolderInfo
-from core.radarr.database_manager import MovieDatabaseManager
-from core.radarr.models import MovieRead, MovieUpdate
-from core.sonarr.models import SeriesRead
 from core.tasks.download_trailers import download_trailer_by_id
 
 
@@ -15,42 +14,17 @@ movies_router = APIRouter(prefix="/movies", tags=["Movies"])
 
 
 @movies_router.get("/")
-async def get_recent_movies(limit: int = 30, offset: int = 0) -> list[MovieRead]:
-    db_handler = MovieDatabaseManager()
+async def get_recent_movies(limit: int = 30, offset: int = 0) -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
     movies = db_handler.read_recent(limit, offset)
     return movies
 
 
-class MediaRes(MovieRead):
-    is_movie: bool = False
-
-    def __init__(self, media: MovieRead | SeriesRead):
-        super().__init__(**media.model_dump())
-        self.is_movie = isinstance(media, MovieRead)
-
-
 @movies_router.get("/downloaded")
-async def get_recently_download(limit: int = 30, offset: int = 0) -> list[MediaRes]:
-
-    def convert_media(media: list):
-        return [MediaRes(x) for x in media]
-
-    def filter_media(media: list):
-        return [x for x in convert_media(media) if x.downloaded_at is not None]
-
-    from core.sonarr.database_manager import SeriesDatabaseManager
-
-    db_handler = MovieDatabaseManager()
-    movies = db_handler.read_recently_downloaded(limit, offset)
-
-    db_handler2 = SeriesDatabaseManager()
-    series = db_handler2.read_recently_downloaded(limit, offset)
-
-    media = filter_media(movies) + filter_media(series)
-    media.sort(key=lambda x: x.downloaded_at, reverse=True)  # type: ignore
-
-    # Return only the required number of items
-    return media[:limit]
+async def get_recently_download(limit: int = 30, offset: int = 0) -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
+    media_list = db_handler.read_recently_downloaded(limit, offset)
+    return media_list
 
 
 @movies_router.get(
@@ -63,8 +37,8 @@ async def get_recently_download(limit: int = 30, offset: int = 0) -> list[MediaR
         }
     },
 )
-async def get_movie_by_id(movie_id: int) -> MovieRead:
-    db_handler = MovieDatabaseManager()
+async def get_movie_by_id(movie_id: int) -> MediaRead:
+    db_handler = MediaDatabaseManager()
     try:
         movie = db_handler.read(movie_id)
     except Exception as e:
@@ -83,7 +57,7 @@ async def get_movie_by_id(movie_id: int) -> MovieRead:
     },
 )
 async def get_movie_files(movie_id: int) -> FolderInfo | str:
-    db_handler = MovieDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         movie = db_handler.read(movie_id)
         if not movie.folder_path:
@@ -127,14 +101,14 @@ async def download_movie_trailer(movie_id: int, yt_id: str = "") -> str:
 )
 async def monitor_movie(movie_id: int, monitor: bool = True) -> str:
     logging.info(f"Monitoring movie with ID: {movie_id}")
-    db_handler = MovieDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         movie = db_handler.read(movie_id)
         if movie.trailer_exists and monitor:
             msg = f"Movie '{movie.title}' [{movie.id}] already has a trailer!"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        movie_update = MovieUpdate(monitor=monitor)
+        movie_update = MediaUpdate(monitor=monitor)
         db_handler.update(movie_id, movie_update)
         if monitor:
             msg = f"Movie '{movie.title}' [{movie.id}] is now monitored"
@@ -160,7 +134,7 @@ async def monitor_movie(movie_id: int, monitor: bool = True) -> str:
 )
 async def delete_movie_trailer(movie_id: int) -> str:
     logging.info(f"Deleting trailer for movie with ID: {movie_id}")
-    db_handler = MovieDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         movie = db_handler.read(movie_id)
         if not movie.trailer_exists:
@@ -177,7 +151,7 @@ async def delete_movie_trailer(movie_id: int) -> str:
             msg = f"Failed to delete trailer for movie '{movie.title}' [{movie.id}]"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        movie_update = MovieUpdate(trailer_exists=False)
+        movie_update = MediaUpdate(trailer_exists=False)
         db_handler.update(movie_id, movie_update)
         msg = f"Trailer for movie '{movie.title}' [{movie.id}] has been deleted."
         logging.info(msg)
@@ -189,7 +163,7 @@ async def delete_movie_trailer(movie_id: int) -> str:
 
 
 @movies_router.get("/search/{query}")
-async def search_movies(query: str) -> list[MovieRead]:
-    db_handler = MovieDatabaseManager()
+async def search_movies(query: str) -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
     movies = db_handler.search(query)
     return movies
