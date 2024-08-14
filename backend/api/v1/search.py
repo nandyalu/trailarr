@@ -13,6 +13,7 @@ async def search_media(query: str) -> list[SearchMedia]:
     media_list = db_handler.search(query)
     search_media_list: list[SearchMedia] = []
     for media in media_list:
-        search_media = SearchMedia.model_validate(media)
+        media_data = media.model_dump()
+        search_media = SearchMedia.model_validate(media_data)
         search_media_list.append(search_media)
     return search_media_list
