@@ -16,7 +16,7 @@ movies_router = APIRouter(prefix="/movies", tags=["Movies"])
 @movies_router.get("/")
 async def get_recent_movies(limit: int = 30, offset: int = 0) -> list[MediaRead]:
     db_handler = MediaDatabaseManager()
-    movies = db_handler.read_recent(limit, offset)
+    movies = db_handler.read_recent(limit, offset, movies_only=True)
     return movies
 
 
