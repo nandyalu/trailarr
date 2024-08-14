@@ -22,6 +22,7 @@ class MediaBase(SQLModel):
         foreign_key=ForeignKey("connection.id", on_delete="CASCADE"), index=True
     )
     arr_id: int = Field(index=True)
+    is_movie: bool = Field(default=True, index=True)
     title: str = Field(index=True)
     year: int = Field(default_factory=get_current_year, index=True)
     language: str = Field(default="en", index=True)
@@ -55,6 +56,24 @@ class MediaDB(MediaBase):
 
     id: int | None = Field(default=None, primary_key=True)
     connection_id: int = Field(foreign_key="connection.id", index=True)
+
+    added_at: datetime = Field(default_factory=get_current_time)
+    updated_at: datetime = Field(default_factory=get_current_time)
+    downloaded_at: datetime | None = Field(default=None)
+
+
+class Media(MediaBase, table=True):
+    """Media model for the database. \n
+    Extend this class to create database models for Movie and Series. \n
+    Add `table=True` to the class definition while extending. \n
+    Note: \n
+        **DO NOT USE THIS CLASS DIRECTLY.** \n
+    Use Movie or Series models instead.
+    """
+
+    id: int | None = Field(default=None, primary_key=True)
+    connection_id: int = Field(foreign_key="connection.id", index=True)
+    is_movie: bool = Field(default=True, index=True)
 
     added_at: datetime = Field(default_factory=get_current_time)
     updated_at: datetime = Field(default_factory=get_current_time)
