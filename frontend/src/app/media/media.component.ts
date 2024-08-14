@@ -41,7 +41,7 @@ export class MediaComponent {
       media_list.forEach((media, index) => {
         setTimeout(() => {
           this.media_list.push(media);
-        }, index * 50); // 0.1 seconds delay for each item
+        }, index * 20); // 20 milliseconds delay for each item
       });
     });
   }
