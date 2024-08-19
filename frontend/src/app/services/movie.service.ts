@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, map } from "rxjs";
+import { Observable, catchError, map, of } from "rxjs";
 import { environment } from "../../environment";
 import { FolderInfo, Media, mapFolderInfo, mapMedia } from "../models/media";
 
@@ -14,13 +14,13 @@ export class MovieService {
     constructor(private http: HttpClient) { }
 
     getRecentMedia(): Observable<Media[]> {
-        return this.http.get<Media[]>(this.moviesUrl).pipe(
+        return this.http.get<Media[]>(`${this.moviesUrl}?limit=50`).pipe(
             map((movie_list: any[]) => movie_list.map(movie => mapMedia(movie, true)))
         );
     }
 
     getRecentlyDownloaded(): Observable<Media[]> {
-        return this.http.get<Media[]>(`${this.moviesUrl}downloaded`).pipe(
+        return this.http.get<Media[]>(`${this.moviesUrl}downloaded?limit=50`).pipe(
             map((movie_list: any[]) => movie_list.map(movie => mapMedia(movie, movie.is_movie)))
         );
     }
@@ -43,9 +43,22 @@ export class MovieService {
         return this.http.delete(`${this.moviesUrl}${id}/trailer`);
     }
 
-    getMediaFiles(id: number): Observable<FolderInfo> {
+    getMediaFiles(id: number): Observable<FolderInfo | string> {
         return this.http.get<FolderInfo>(`${this.moviesUrl}${id}/files`).pipe(
-            map(folder => mapFolderInfo(folder))
+            map(response => {
+                if (typeof response === 'string') {
+                    // Handle the string response
+                    return response;
+                } else {
+                    // Map the FolderInfo object
+                    return mapFolderInfo(response);
+                }
+            }),
+            catchError(error => {
+                // Handle error appropriately
+                console.error('Error fetching media files:', error);
+                return of(`Error: ${error.message}`);
+            })
         );
     }
 
