@@ -1,15 +1,17 @@
-<div class="mainbody">
-  <div class="topnavbar">
+<div class="mainroot">
+  <header class="topnavbar">
     <!-- Navbar content goes here -->
     <app-topnav></app-topnav>
-  </div>
-  <div class="sidebar">
-    <!-- Sidebar content goes here -->
-    <app-sidenav></app-sidenav>
-  </div>
-  <div class="main-content">
-    <!-- Main content goes here -->
-    <router-outlet></router-outlet>
+  </header>
+  <div class="mainbody">
+    <div class="sidebar">
+      <!-- Sidebar content goes here -->
+      <app-sidenav></app-sidenav>
+    </div>
+    <div class="main-content">
+      <!-- Main content goes here -->
+      <router-outlet></router-outlet>
+    </div>
   </div>
   <!-- Container to show Websocket messages received from server -->
   <div class="toast-container">

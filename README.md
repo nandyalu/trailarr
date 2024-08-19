@@ -65,7 +65,7 @@ For example, if you want to store the application data in `/var/appdata/trailarr
     volumes:
         - /var/appdata/trailarr:/data
         - /mnt/disk1/media/movies:/media/movies
-        - /mnt/disk1/media/tv:/media/tv \
+        - /mnt/disk1/media/tv:/media/tv
 ```
 
 Or you could simply map local folder `/mnt/disk1/media` to `/media` in Trailarr:

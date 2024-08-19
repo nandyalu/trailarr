@@ -1,26 +1,33 @@
 /* File: settings.component.css */
 .settings-container {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   /* min-height: 100%; */
+  overflow: hidden;
+  position: relative;
 }
 
 .settingsnav {
-  grid-row: 1;
-  /* overflow: auto; */
   position: sticky;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 99;
-  align-self: start;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  /* align-items: start; */
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface);
+
+  @media (width < 765px) {
+    order: 2;
+    justify-content: space-around;
+    /* Make this work properly */
+    position: fixed;
+    top: auto;
+    bottom: 78px;
+  }
 }
 
 .settingsnav > * {
@@ -28,11 +35,15 @@
 }
 
 .settings-content {
-  min-height: auto;
-  overflow-y: auto;
-  grid-row: 2;
+  order: 2;
+  overflow: hidden;
   padding: 0.5rem;
-  position: relative;
+  position: relative; /* for the sticky update message in components */
+
+  @media (width < 765px) {
+    margin-bottom: 80px;
+    order: 1;
+  }
 }
 
 .setnav-btn {
@@ -65,7 +76,7 @@
   border-bottom: 2px solid var(--color-primary);
 }
 
-@media (max-width: 765px) {
+/* @media (max-width: 765px) {
     .settings-container {
         grid-template-rows: 1fr auto;
     }
@@ -80,4 +91,4 @@
     .settings-content {
       grid-row: 1;
     }
-}
+} */

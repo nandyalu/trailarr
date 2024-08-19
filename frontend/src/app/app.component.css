@@ -1,63 +1,97 @@
 /* File: app.component.css */
-.mainbody {
-  margin: 0;
-  /* TODO fix scroll to hide menus on mobile browsers */
-  /* height: 100vh; */
-  /* height: 100dvh; */
-  /* overflow: auto; */
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: auto 1fr;
-  background-color: var(--color-surface-container-lowest);
-  color: var(--color-on-surface);
+.mainroot {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #090f0f;
+  color: #dde4e3;
   position: relative;
+
+  @media (width < 765px) {
+    min-height: 100%;
+    height: auto;
+  }
 }
 
 .topnavbar {
-  grid-row: 1;
-  grid-column: 1 / span 2;
   width: 100%;
+  height: auto;
+  z-index: 100;
   position: sticky;
   top: 0;
-  z-index: 100;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
 }
 
+.mainbody {
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+
+  @media (width < 765px) {
+    flex-direction: column;
+    min-height: 100%;
+    height: auto;
+  }
+}
+
+
 .sidebar {
-  grid-row: 2;
-  grid-column: 1;
-  height: calc(100dvh - 78px); /* 78px is the height of the topnavbar */
   width: auto;
-  position: sticky;
-  align-self: start;
-  top: 78px; /* 78px is the height of the topnavbar */
   z-index: 100;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
+  order: 1;
+
+  @media (width < 768px) {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    order: 2
+  }
 }
 
 .main-content {
-  grid-row: 2;
-  grid-column: 2;
-  min-height: calc(100dvh - 78px); /* 78px is the height of the topnavbar */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   overflow-x: hidden;
   overflow-y: auto;
+  order: 2;
   padding: 1rem;
   background-color: var(--color-surface);
   color: var(--color-on-surface);
+
+  @media (width < 768px) {
+    order: 1;
+    padding: 0.5rem;
+    margin-bottom: 80px;
+  }
 }
 
 .toast-container {
   position: fixed;
   top: 5rem;
   right: 3rem;
-  z-index: 1000;
+  z-index: 999;
   max-width: 25%;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  @media (width < 768px) {
+    max-width: 80%;
+    right: 1rem;
+    padding: 0.5rem;
+  }
 }
 
 .toast {
@@ -82,40 +116,6 @@
 .error {
   background-color: var(--color-warning);
   color: var(--color-warning-text);
-}
-
-@media (max-width: 900px) {
-  .sidebar {
-      width: auto;
-  }
-}
-
-@media (max-width: 765px) {
-  .mainbody {
-    grid-template-rows: auto 1fr auto;
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    grid-row: 3;
-    grid-column: 1;
-    width: 100%;
-    height: auto;
-    top: auto;
-    bottom: 0;
-  }
-
-  .main-content {
-    grid-row: 2;
-    grid-column: 1;
-    padding: 0.5rem;
-  }
-
-  .toast-container {
-    max-width: 80%;
-    right: 1rem;
-    padding: 0.5rem;
-  }
 }
 
 @keyframes slideInRight {
