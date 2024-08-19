@@ -3,12 +3,16 @@
   display: grid;
   grid-template-rows: auto 1fr;
   grid-template-columns: 1fr;
-  height: 100%;
+  /* min-height: 100%; */
 }
 
 .settingsnav {
   grid-row: 1;
-  overflow: auto;
+  /* overflow: auto; */
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  align-self: start;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -24,7 +28,7 @@
 }
 
 .settings-content {
-  height: auto;
+  min-height: auto;
   overflow-y: auto;
   grid-row: 2;
   padding: 0.5rem;
@@ -69,6 +73,8 @@
     .settingsnav {
       grid-row: 2;
       justify-content:space-around;
+      top: auto;
+      bottom: 0;
     }
 
     .settings-content {

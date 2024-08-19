@@ -9,7 +9,7 @@ echo "Backing up database before running migrations..."
 BACKUPS_DIR="${APP_DATA_DIR}/backups"
 NEW_DB="${BACKUPS_DIR}/trailarr_$(date +%Y%m%d%H%M%S).db"
 OLD_DB="${APP_DATA_DIR}/trailarr.db"
-mkdir -p "${BACKUPS_DIR}" && cp $OLD_DB $new_db && echo "Database backup created successfully!"
+mkdir -p "${BACKUPS_DIR}" && cp $OLD_DB $NEW_DB && echo "Database backup created successfully!"
 
 # Keep only the most recent 30 backups and delete the rest
 echo "Deleting older backups if more than 30 exist..."

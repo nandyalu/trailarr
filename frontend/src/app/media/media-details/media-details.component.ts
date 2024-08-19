@@ -20,6 +20,7 @@ export class MediaDetailsComponent {
   mediaId: number = 0;
   media?: Media = undefined;
   mediaFiles?: FolderInfo = undefined;
+  mediaFilesResponse: string = 'No files found';
   isLoading = true;
   filesLoading = true;
   trailer_url: string = '';
@@ -104,8 +105,12 @@ export class MediaDetailsComponent {
       }
     });
     // Get Media Files
-    this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo) => {
-      this.mediaFiles = files;
+    this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo | string) => {
+      if (typeof files === 'string') {
+        this.mediaFilesResponse = files;
+      } else {
+        this.mediaFiles = files;
+      }
       this.filesLoading = false;
     });
   }

@@ -1,30 +1,36 @@
 import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConnectionCreate } from '../../../models/connection';
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-add-connection',
   standalone: true,
-  imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
+  imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
   templateUrl: './add-connection.component.html',
   styleUrl: './add-connection.component.css'
 })
 export class AddConnectionComponent {
 
-  constructor(private _location: Location, private settingsService: SettingsService) {}
+  constructor(private _location: Location, private settingsService: SettingsService) { }
   arrOptions = ['radarr', 'sonarr'];
   monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
   url = new FormControl('', [Validators.required, Validators.pattern('https?://.*:\\d{2,}')]);
-  apiKey = new FormControl('', [Validators.required, Validators.minLength(32), Validators.maxLength(50)]);
+  apiKey = new FormControl('', [
+    Validators.required,
+    Validators.pattern('^[a-zA-Z0-9]*$'),
+    Validators.minLength(32),
+    Validators.maxLength(50)
+  ]);
   addConnectionForm = new FormGroup({
     name: this.name,
     arrType: new FormControl('radarr'),
     monitorType: new FormControl('new'),
     url: this.url,
-    apiKey: this.apiKey
+    apiKey: this.apiKey,
+    path_mappings: new FormArray([])
   });
 
   setArrType(selectedArrType: string) {
@@ -32,6 +38,22 @@ export class AddConnectionComponent {
   }
   setMonitorType(selectedMonitorType: string) {
     this.addConnectionForm.patchValue({ monitorType: selectedMonitorType });
+  }
+
+  get pathMappings(): FormArray {
+    return this.addConnectionForm.get('path_mappings') as FormArray;
+  }
+
+  addPathMapping() {
+    const pathMappingGroup = new FormGroup({
+      path_from: new FormControl('', Validators.required),
+      path_to: new FormControl('', Validators.required)
+    });
+    this.pathMappings.push(pathMappingGroup);
+  }
+
+  removePathMapping(index: number) {
+    this.pathMappings.removeAt(index);
   }
 
   // Reference to the dialog element
@@ -46,7 +68,7 @@ export class AddConnectionComponent {
     // Close the confirmation dialog
     this.cancelDialog.nativeElement.close(); // Close the dialog
   }
-  
+
   onCancel() {
     // Check if form is dirty before showing the dialog, if not go back
     if (this.addConnectionForm.dirty) {
@@ -74,7 +96,8 @@ export class AddConnectionComponent {
       arr_type: this.addConnectionForm.value.arrType || '',
       url: this.addConnectionForm.value.url || '',
       api_key: this.addConnectionForm.value.apiKey || '',
-      monitor: this.addConnectionForm.value.monitorType || ''
+      monitor: this.addConnectionForm.value.monitorType || '',
+      path_mappings: this.addConnectionForm.value.path_mappings || []
     };
     this.settingsService.addConnection(newConnection).subscribe((result: string) => {
       this.addConnResult = result;

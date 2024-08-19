@@ -1,8 +1,8 @@
 import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Connection, ConnectionUpdate } from '../../../models/connection';
+import { Connection, ConnectionUpdate, PathMapping } from '../../../models/connection';
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -31,6 +31,13 @@ export class EditConnectionComponent {
           url: conn.url,
           apiKey: conn.api_key
         });
+        // Clear existing path_mappings
+        this.pathMappings.clear();
+
+        // Add path_mappings from the connection
+        conn.path_mappings.forEach(mapping => {
+          this.addPathMapping(mapping);
+        });
       });
     });
   }
@@ -45,7 +52,8 @@ export class EditConnectionComponent {
     arrType: new FormControl('radarr'),
     monitorType: new FormControl('new'),
     url: this.url,
-    apiKey: this.apiKey
+    apiKey: this.apiKey,
+    path_mappings: new FormArray([])
   });
 
   setArrType(selectedArrType: string) {
@@ -53,6 +61,27 @@ export class EditConnectionComponent {
   }
   setMonitorType(selectedMonitorType: string) {
     this.editConnectionForm.patchValue({ monitorType: selectedMonitorType });
+  }
+
+  get pathMappings(): FormArray {
+    return this.editConnectionForm.get('path_mappings') as FormArray;
+  }
+
+  addPathMapping(path_mapping: PathMapping | null = null) {
+    if (!path_mapping) {
+      path_mapping = { id: null, connection_id: null, path_from: '', path_to: '' };
+    }
+    const pathMappingGroup = new FormGroup({
+      id: new FormControl(path_mapping.id),
+      connection_id: new FormControl(path_mapping.connection_id),
+      path_from: new FormControl(path_mapping.path_from, Validators.required),
+      path_to: new FormControl(path_mapping.path_to, Validators.required)
+    });
+    this.pathMappings.push(pathMappingGroup);
+  }
+
+  removePathMapping(index: number) {
+    this.pathMappings.removeAt(index);
   }
   
   // Reference to the dialog element
@@ -96,7 +125,8 @@ export class EditConnectionComponent {
       arr_type: this.editConnectionForm.value.arrType || '',
       url: this.editConnectionForm.value.url || '',
       api_key: this.editConnectionForm.value.apiKey || '',
-      monitor: this.editConnectionForm.value.monitorType || ''
+      monitor: this.editConnectionForm.value.monitorType || '',
+      path_mappings: this.editConnectionForm.value.path_mappings || []
     };
     this.settingsService.updateConnection(updatedConnection).subscribe((result: string) => {
       this.addConnResult = result;

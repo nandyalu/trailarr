@@ -4,9 +4,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
 from api.v1.models import ErrorResponse
+from core.base.database.manager.base import MediaDatabaseManager
+from core.base.database.models.media import MediaRead, MediaUpdate
 from core.files_handler import FilesHandler, FolderInfo
-from core.sonarr.database_manager import SeriesDatabaseManager
-from core.sonarr.models import SeriesRead, SeriesUpdate
 from core.tasks.download_trailers import download_trailer_by_id
 
 
@@ -14,9 +14,9 @@ series_router = APIRouter(prefix="/series", tags=["Series"])
 
 
 @series_router.get("/")
-async def get_recent_series(limit: int = 30, offset: int = 0) -> list[SeriesRead]:
-    db_handler = SeriesDatabaseManager()
-    all_series = db_handler.read_recent(limit, offset)
+async def get_recent_series(limit: int = 30, offset: int = 0) -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
+    all_series = db_handler.read_recent(limit, offset, movies_only=False)
     return all_series
 
 
@@ -30,8 +30,8 @@ async def get_recent_series(limit: int = 30, offset: int = 0) -> list[SeriesRead
         }
     },
 )
-async def get_series_by_id(series_id: int) -> SeriesRead:
-    db_handler = SeriesDatabaseManager()
+async def get_series_by_id(series_id: int) -> MediaRead:
+    db_handler = MediaDatabaseManager()
     try:
         series = db_handler.read(series_id)
     except Exception as e:
@@ -50,7 +50,7 @@ async def get_series_by_id(series_id: int) -> SeriesRead:
     },
 )
 async def get_series_files(series_id: int) -> FolderInfo | str:
-    db_handler = SeriesDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         series = db_handler.read(series_id)
         if not series.folder_path:
@@ -94,14 +94,14 @@ async def download_series_trailer(series_id: int, yt_id: str = "") -> str:
 )
 async def monitor_series(series_id: int, monitor: bool = True) -> str:
     logging.info(f"Updating monitor status for series with ID: {series_id}")
-    db_handler = SeriesDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         series = db_handler.read(series_id)
         if series.trailer_exists and monitor:
             msg = f"Series '{series.title}' [{series.id}] already has a trailer!"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        series_update = SeriesUpdate(monitor=monitor)
+        series_update = MediaUpdate(monitor=monitor)
         db_handler.update(series_id, series_update)
         if monitor:
             msg = f"Series '{series.title}' [{series.id}] is now monitored"
@@ -129,7 +129,7 @@ async def monitor_series(series_id: int, monitor: bool = True) -> str:
 )
 async def delete_series_trailer(series_id: int) -> str:
     logging.info(f"Deleting trailer for series with ID: {series_id}")
-    db_handler = SeriesDatabaseManager()
+    db_handler = MediaDatabaseManager()
     try:
         series = db_handler.read(series_id)
         if not series.trailer_exists:
@@ -146,7 +146,7 @@ async def delete_series_trailer(series_id: int) -> str:
             msg = f"Failed to delete trailer for series '{series.title}' [{series.id}]"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        series_update = SeriesUpdate(trailer_exists=False)
+        series_update = MediaUpdate(trailer_exists=False)
         db_handler.update(series_id, series_update)
         msg = f"Trailer for series '{series.title}' [{series.id}] has been deleted."
         logging.info(msg)
@@ -158,7 +158,7 @@ async def delete_series_trailer(series_id: int) -> str:
 
 
 @series_router.get("/search/{query}")
-async def search_series(query: str) -> list[SeriesRead]:
-    db_handler = SeriesDatabaseManager()
+async def search_series(query: str) -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
     series = db_handler.search(query)
     return series

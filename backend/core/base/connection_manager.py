@@ -6,6 +6,7 @@ from app_logger import ModuleLogger
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
+from core.base.database.models.media import MediaCreate
 
 logger = ModuleLogger("ConnectionManager")
 
@@ -26,7 +27,7 @@ class ArrManagerProtocol(Protocol):
         raise NotImplementedError("Subclasses must implement this method")
 
 
-class BaseConnectionManager[_MediaCreate](ABC):
+class BaseConnectionManager(ABC):
     """Connection manager for working with the Arr applications.
     Abstract class that provides the base functionality for working with the Arr applications.
     """
@@ -35,19 +36,20 @@ class BaseConnectionManager[_MediaCreate](ABC):
     connection_id: int
     inline_trailer: bool
     monitor: MonitorType
-    parse_media: Callable[[int, dict[str, Any]], _MediaCreate]
+    parse_media: Callable[[int, dict[str, Any]], MediaCreate]
 
     def __init__(
         self,
         connection: ConnectionRead,
         arr_manager: ArrManagerProtocol,
-        parse_media: Callable[[int, dict[str, Any]], _MediaCreate],
+        parse_media: Callable[[int, dict[str, Any]], MediaCreate],
         inline_trailer: bool,
     ):
         """Initialize the ArrConnectionManager. \n
         Args:
             connection (ConnectionRead): The connection data."""
         self.connection_id = connection.id
+        self.path_mappings = connection.path_mappings
         self.monitor = connection.monitor
         self.arr_manager = arr_manager
         self.parse_media = parse_media
@@ -74,7 +76,7 @@ class BaseConnectionManager[_MediaCreate](ABC):
             logger.error("Failed to get media data from Arr application.")
             return []
 
-    async def _parse_data(self) -> list[_MediaCreate]:
+    async def _parse_data(self) -> list[MediaCreate]:
         """Parse media received from the Arr API to objects that can be added to database.\n
         Returns:
             list[_MediaCreate]: list of parsed media objects."""
@@ -83,6 +85,30 @@ class BaseConnectionManager[_MediaCreate](ABC):
             self.parse_media(self.connection_id, each_media_data)
             for each_media_data in media_data
         ]
+
+    def _apply_path_mappings(self, media_list: list[MediaCreate]) -> list[MediaCreate]:
+        """Update the paths of the media based on the path mappings.\n
+        Args:
+            media_list (list[MediaCreate]): The list of media objects.\n
+        Returns:
+            list[MediaCreate]: The updated list of media objects."""
+        # If no path mappings exist, return the media list as is
+        if len(self.path_mappings) == 0:
+            return media_list
+        # Loop through the media_list and apply the path mappings
+        updated_media_list: list[MediaCreate] = []
+        for media in media_list:
+            if not media.folder_path:
+                updated_media_list.append(media)
+                continue
+            for path_mapping in self.path_mappings:
+                if media.folder_path.startswith(path_mapping.path_from):
+                    media.folder_path = media.folder_path.replace(
+                        path_mapping.path_from, path_mapping.path_to
+                    )
+                    updated_media_list.append(media)
+                    break
+        return updated_media_list
 
     async def _check_trailer(self, folder_path: str) -> bool:
         """Check if a trailer exists for the media in the folder path.\n
@@ -125,9 +151,7 @@ class BaseConnectionManager[_MediaCreate](ABC):
         return False
 
     @abstractmethod
-    def create_or_update_bulk(
-        self, media_data: list[_MediaCreate]
-    ) -> list[MediaReadDC]:
+    def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
         """Create or update media in the database and return \
             objects that satisfy MediaReadProtocol.\n
         Args:
@@ -157,8 +181,10 @@ class BaseConnectionManager[_MediaCreate](ABC):
         if len(parsed_media) == 0:
             logger.warning("No media found in the Arr application")
             return
+        # Apply path mappings to the media folder paths
+        parsed_media2 = self._apply_path_mappings(parsed_media)
         # Create or update the media in the database
-        media_res = self.create_or_update_bulk(parsed_media)
+        media_res = self.create_or_update_bulk(parsed_media2)
         # Delete any media that is not present in the Arr application
         media_ids = [media.id for media in media_res]
         self.remove_deleted_media(media_ids)

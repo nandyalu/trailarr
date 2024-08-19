@@ -2,11 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
 from core.download.trailer import download_trailers
 from core.files_handler import FilesHandler
-from core.radarr.database_manager import MovieDatabaseManager
-from core.sonarr.database_manager import SeriesDatabaseManager
 from core.tasks import scheduler
 
 logger = ModuleLogger("TrailerDownloadTasks")
@@ -16,13 +15,10 @@ def _download_missing_media_trailers(is_movie: bool):
     if not app_settings.monitor_enabled:
         logger.warning("Monitoring is disabled, skipping download trailers")
         return
-    if is_movie:
-        db_manager = MovieDatabaseManager()
-    else:
-        db_manager = SeriesDatabaseManager()
+    db_manager = MediaDatabaseManager()
     media_type = "movies" if is_movie else "series"
     # Get all media from the database
-    db_media_list = db_manager.read_all()
+    db_media_list = db_manager.read_all(movies_only=is_movie)
     media_trailer_list = []
     logger.debug(f"Checking trailers for {len(db_media_list)} monitored {media_type}")
     # Create MediaTrailer objects for each movie/series
@@ -115,10 +111,8 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
                 downloaded_at=media.downloaded_at,
             )
         )
-    if is_movie:
-        db_manager = MovieDatabaseManager()
-    else:
-        db_manager = SeriesDatabaseManager()
+
+    db_manager = MediaDatabaseManager()
     # Update the trailer statuses in database
     db_manager.update_media_status_bulk(media_update_list)
 
@@ -128,10 +122,7 @@ def download_trailer_by_id(media_id: int, is_movie: bool, yt_id: str = "") -> st
     logger.info(
         f"Downloading trailer for {'movie' if is_movie else 'series'} ID: {media_id}"
     )
-    if is_movie:
-        db_manager = MovieDatabaseManager()
-    else:
-        db_manager = SeriesDatabaseManager()
+    db_manager = MediaDatabaseManager()
     try:
         media = db_manager.read(media_id)
     except Exception as e:

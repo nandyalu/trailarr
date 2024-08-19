@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import AliasPath, BaseModel, Field, field_validator
 
-from core.sonarr.models import SeriesCreate
+from core.base.database.models.media import MediaCreate
 
 
 class SonarrDataParser(BaseModel):
@@ -10,6 +10,7 @@ class SonarrDataParser(BaseModel):
 
     connection_id: int = Field(default=0)
     arr_id: int = Field(validation_alias="id")
+    is_movie: bool = Field(default=False)
     title: str = Field()
     year: int = Field()
     language: str = Field(
@@ -34,7 +35,7 @@ class SonarrDataParser(BaseModel):
         return str(v)
 
 
-def parse_series(connection_id: int, series_data: dict[str, Any]) -> SeriesCreate:
+def parse_series(connection_id: int, series_data: dict[str, Any]) -> MediaCreate:
     """Parse the series data from Sonarr to a SeriesCreate object.\n
     Args:
         connection_id (int): The connection id.
@@ -46,7 +47,7 @@ def parse_series(connection_id: int, series_data: dict[str, Any]) -> SeriesCreat
 
     # print(series_parsed.model_dump())
 
-    new_series = SeriesCreate.model_validate(series_parsed.model_dump())
+    new_series = MediaCreate.model_validate(series_parsed.model_dump())
     for image in series_data["images"]:
         # Check if the image is a poster or fanart
         if image["coverType"] == "poster":

@@ -3,8 +3,7 @@ from sqlmodel import SQLModel
 # !!! IMPORTANT !!!
 # Import all the models that are used in the application so that SQLModel can create the tables
 from core.base.database.models.connection import Connection  # noqa: F401
-from core.radarr.models import Movie  # noqa: F401
-from core.sonarr.models import Series  # noqa: F401
+from core.base.database.models.media import Media  # noqa: F401
 from core.base.database.utils.engine import engine
 
 

@@ -6,11 +6,11 @@ from core.base.database.models.connection import (
     ConnectionCreate,
     ConnectionRead,
     ConnectionUpdate,
+    PathMapping,
 )
 
+from core.base.database.models.media import Media
 from core.base.database.utils.engine import manage_session
-from core.radarr.models import Movie
-from core.sonarr.models import Series
 from exceptions import ItemNotFoundError
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
@@ -41,8 +41,11 @@ class ConnectionDatabaseManager:
         """
         # Validate the connection details, will raise an error if invalid
         status = await validate_connection(connection)
-        # Use the session to add the connection to the database
+        # Create db connection object from input
         db_connection = Connection.model_validate(connection)
+        # Create db path mappings from input
+        db_connection.path_mappings = self._convert_path_mappings(connection)
+        # Use the session to add the connection to the database
         _session.add(db_connection)
         _session.commit()
         return status
@@ -81,6 +84,75 @@ class ConnectionDatabaseManager:
         statement = select(Connection)
         connections = _session.exec(statement).all()
         return [ConnectionRead.model_validate(connection) for connection in connections]
+
+    def _convert_path_mappings(
+        self, connection: ConnectionCreate | ConnectionUpdate
+    ) -> list[PathMapping]:
+        """Convert the path mappings of a connection to database objects \n
+        Args:
+            connection (ConnectionCreate | ConnectionUpdate): The connection to convert \n
+        Returns:
+            list[PathMapping]: The list of path mappings as database objects
+        """
+        db_path_mappings: list[PathMapping] = []
+        for path_mapping in connection.path_mappings:
+            db_path_mapping = PathMapping.model_validate(path_mapping)
+            db_path_mappings.append(db_path_mapping)
+        return db_path_mappings
+
+    def _update_path_mappings(
+        self,
+        db_connection: Connection,
+        connection_update: ConnectionUpdate,
+        *,
+        _session: Session,
+    ) -> None:
+        """Compare new and existing path mappings of a connection. \n
+        Does the following: \n
+        1. Update existing mappings \n
+        2. Add new mappings \n
+        3. Delete removed mappings \n
+        All mappings are added to session, but not committed \n
+        Args:
+            connection (Connection): The connection to update
+            connection_update (ConnectionUpdate): The connection update object
+            _session (Session): The database session to use \n
+        Returns:
+            None: No return value, updates are made in place to \
+                the connection object, and added to the session.
+        """
+        # Get new path mappings
+        new_mappings = self._convert_path_mappings(connection_update)
+        # Make a dictionary of new mappings by id
+        new_mappings_ids = [mapping.id for mapping in new_mappings if mapping.id]
+        # Get existing path mappings
+        existing_mappings = db_connection.path_mappings
+        existing_mappings_dict = {mapping.id: mapping for mapping in existing_mappings}
+
+        # Delete removed mappings
+        for db_mapping in existing_mappings[:]:  # Copy the list to avoid modifying
+            if db_mapping.id not in new_mappings_ids:
+                db_connection.path_mappings.remove(db_mapping)
+                _session.delete(db_mapping)
+
+        for new_mapping in new_mappings:
+            if new_mapping.id:
+                # Update existing mappings
+                if new_mapping.id in existing_mappings_dict:
+                    existing_mapping = existing_mappings_dict[new_mapping.id]
+                    existing_mapping.path_from = new_mapping.path_from
+                    existing_mapping.path_to = new_mapping.path_to
+                    _session.add(existing_mapping)
+                # If new mapping has an id, but it does not exist in the database \
+                # then clear it's id and add it as a new mapping
+                else:
+                    new_mapping.id = None
+                    new_mapping.connection_id = db_connection.id
+                    db_connection.path_mappings.append(new_mapping)
+            # Add new mappings
+            else:
+                db_connection.path_mappings.append(new_mapping)
+        return None
 
     @manage_session
     def _get_db_item(
@@ -153,6 +225,8 @@ class ConnectionDatabaseManager:
         # Update the connection details from input
         connection_update_data = connection_update.model_dump(exclude_unset=True)
         db_connection.sqlmodel_update(connection_update_data)
+        # Update the path mappings
+        self._update_path_mappings(db_connection, connection_update, _session=_session)
         # Validate the connection details
         await validate_connection(db_connection)
         # Commit the changes to the database
@@ -179,10 +253,11 @@ class ConnectionDatabaseManager:
         """
         connection = self._get_db_item(connection_id, _session=_session)
         _session.delete(connection)
-        if connection.arr_type == ArrType.RADARR:
-            _statement = select(Movie).where(Movie.connection_id == connection_id)
-        else:
-            _statement = select(Series).where(Series.connection_id == connection_id)
+        # Delete all path mappings associated with the connection
+        for path_mapping in connection.path_mappings:
+            _session.delete(path_mapping)
+        # Delete all media associated with the connection
+        _statement = select(Media).where(Media.connection_id == connection_id)
         media_list = _session.exec(_statement).all()
         for media in media_list:
             _session.delete(media)
