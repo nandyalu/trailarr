@@ -12,6 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 import sqlmodel
 import sqlmodel.sql.sqltypes
+from app_logger import ModuleLogger
 from sqlalchemy.schema import SchemaItem
 
 
@@ -21,9 +22,40 @@ down_revision: Union[str, None] = "325a4fb01c20"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+logging = ModuleLogger("AlembicMigrations")
+
+
+def _check_table_exists(table_name: str) -> bool:
+    tables = sa.inspect(op.get_bind()).get_table_names()
+    if table_name in tables:
+        logging.info(f"{table_name.title()} table already exists")
+        return True
+    return False
+
+
+def _create_mapping_table() -> None:
+    if _check_table_exists("pathmapping"):
+        return
+    logging.info("Creating PathMapping Table")
+    op.create_table(
+        "pathmapping",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("connection_id", sa.Integer(), nullable=True),
+        sa.Column("path_from", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("path_to", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["connection_id"],
+            ["connection.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    return
+
 
 def _create_media_table(table_name: str, create_is_movie_column: bool) -> None:
-    print(f"Creating {table_name} table")
+    if _check_table_exists(table_name):
+        return
+    logging.info(f"Creating {table_name} table")
     # Create media table
     _columns: list[SchemaItem] = [
         sa.Column("connection_id", sa.Integer(), nullable=False),
@@ -65,7 +97,7 @@ def _create_media_table(table_name: str, create_is_movie_column: bool) -> None:
     op.create_table(table_name, *_columns)
 
     # Create indexes
-    print(f"Creating indexes for {table_name} table")
+    logging.info(f"Creating indexes for {table_name} table")
     op.create_index(f"ix_{table_name}_year", table_name, ["year"], unique=False)
     op.create_index(f"ix_{table_name}_txdb_id", table_name, ["txdb_id"], unique=False)
     op.create_index(f"ix_{table_name}_title", table_name, ["title"], unique=False)
@@ -84,7 +116,7 @@ def _create_media_table(table_name: str, create_is_movie_column: bool) -> None:
 
 
 def _create_is_movie_column(table_name: str, create_index: bool) -> None:
-    print(f"Adding 'is_movie' column to {table_name} table")
+    logging.info(f"Adding 'is_movie' column to {table_name} table")
     # Alter table to add is_movie column
     with op.batch_alter_table(table_name, schema=None) as batch_op:
         batch_op.add_column(
@@ -97,7 +129,7 @@ def _create_is_movie_column(table_name: str, create_index: bool) -> None:
         )
     # Create index on is_movie column
     if create_index:
-        print(f"Creating index for is_movie column in {table_name} table")
+        logging.info(f"Creating index for is_movie column in {table_name} table")
         op.create_index(
             f"ix_{table_name}_is_movie", table_name, ["is_movie"], unique=False
         )
@@ -105,7 +137,7 @@ def _create_is_movie_column(table_name: str, create_index: bool) -> None:
 
 
 def _copy_to_media_table(table_name: str) -> None:
-    print(f"Copying data from {table_name} table to media table")
+    logging.info(f"Copying data from {table_name} table to media table")
     all_cols = """
         connection_id, arr_id, title, year, language, overview, runtime, youtube_trailer_id, folder_path, imdb_id, txdb_id, poster_url, fanart_url, poster_path, fanart_path, trailer_exists, monitor, arr_monitored, added_at, updated_at, downloaded_at, is_movie
     """  # noqa: E501
@@ -122,7 +154,7 @@ def _copy_to_media_table(table_name: str) -> None:
 
 
 def _copy_from_media_table(table_name: str) -> None:
-    print(f"Copying data from media table to {table_name} table")
+    logging.info(f"Copying data from media table to {table_name} table")
     all_cols = """
         connection_id, arr_id, title, year, language, overview, runtime, youtube_trailer_id, folder_path, imdb_id, txdb_id, poster_url, fanart_url, poster_path, fanart_path, trailer_exists, monitor, arr_monitored, added_at, updated_at, downloaded_at
     """  # noqa: E501
@@ -143,7 +175,7 @@ def _copy_from_media_table(table_name: str) -> None:
 
 
 def _drop_table(table_name: str) -> None:
-    print(f"Dropping {table_name} table and it's indexes")
+    logging.info(f"Dropping {table_name} table and it's indexes")
     # Get all indexes for the table
     indexes = sa.inspect(op.get_bind()).get_indexes(table_name)
 
@@ -151,11 +183,11 @@ def _drop_table(table_name: str) -> None:
     for index in indexes:
         if not index["name"]:
             continue
-        print(f"Dropping index {index['name']} from {table_name} table")
+        logging.info(f"Dropping index {index['name']} from {table_name} table")
         op.drop_index(index["name"], table_name=table_name)
 
     # Drop the table
-    print(f"Dropping {table_name} table")
+    logging.info(f"Dropping {table_name} table")
     op.drop_table(table_name)
     return
 
@@ -166,11 +198,7 @@ def upgrade() -> None:
     _create_is_movie_column("series", create_index=False)
 
     # Create media table
-    tables = sa.inspect(op.get_bind()).get_table_names()
-    if "media" not in tables:
-        _create_media_table("media", create_is_movie_column=True)
-    else:
-        print("Media table already exists")
+    _create_media_table("media", create_is_movie_column=True)
 
     # Copy data from movie and series tables to media table
     _copy_to_media_table("series")
@@ -179,6 +207,9 @@ def upgrade() -> None:
     # Drop movie and series tables
     _drop_table("series")
     _drop_table("movie")
+
+    # Create PathMapping Table
+    _create_mapping_table()
     return
 
 
@@ -192,6 +223,7 @@ def downgrade() -> None:
     _copy_from_media_table("movie")
     _copy_from_media_table("series")
 
-    # Drop media table
+    # Drop media table and pathmapping table
     _drop_table("media")
+    _drop_table("pathmapping")
     # ### end Alembic commands ###

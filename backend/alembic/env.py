@@ -1,4 +1,4 @@
-from logging.config import fileConfig
+# from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -8,6 +8,7 @@ from alembic import context
 
 import core.base.database.utils.init_db  # noqa: F401
 from config.settings import app_settings
+import app_logger  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -15,8 +16,9 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+# if config.config_file_name is not None:
+#     fileConfig(config.config_file_name)
+#  ## Removed default logging configuration and import app_logger instead
 
 # add your model's MetaData object here
 # for 'autogenerate' support
