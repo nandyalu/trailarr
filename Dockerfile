@@ -29,7 +29,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_PORT=7889 \
     APP_DATA_DIR="/data" \
     PUID=1000 \
-    PGID=1000
+    PGID=1000 \
+    APP_VERSION=${APP_VERSION}
 
 # Install tzdata, gosu and set timezone
 RUN apt update && apt install -y tzdata gosu && \
