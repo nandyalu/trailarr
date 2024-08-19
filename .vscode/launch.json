@@ -12,7 +12,7 @@
             "args": [
                 "backend.main:trailarr_api",
                 "--reload",
-                "--port=7889"
+                "--port=7888"
             ], 
             "jinja": true,
             "justMyCode": true
