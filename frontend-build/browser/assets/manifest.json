@@ -1,0 +1,152 @@
+{
+    "short_name": "Trailarr",
+    "name": "Trailarr: Movie and Tv Show trailer downloader",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "type": "image/ico",
+            "sizes": "48x48"
+        },
+        {
+            "src": "/assets/logos/trailarr-256.ico",
+            "type": "image/ico",
+            "sizes": "256x256"
+        },
+        {
+            "src": "/assets/logos/trailarr-96.ico",
+            "type": "image/ico",
+            "sizes": "96x96"
+        },
+        {
+            "src": "/assets/logos/trailarr-maskable-512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/logos/trailarr-maskable-512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/assets/logos/trailarr-maskable-192.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/logos/trailarr-maskable-192.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "maskable"
+        }
+    ],
+    "id": "/",
+    "start_url": "/",
+    "background_color": "#0e1514",
+    "display_override": [
+        "window-control-overlay",
+        "minimal-ui"
+    ],
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#2f3636",
+    "shortcuts": [
+        {
+            "name": "Home",
+            "url": "/home",
+            "icons": [
+                {
+                    "src": "/assets/icons/home.svg",
+                    "type": "image/svg+xml",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Movies",
+            "url": "/movies",
+            "icons": [
+                {
+                    "src": "/assets/icons/movies.svg",
+                    "type": "image/svg+xml",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Tv Shows",
+            "url": "/series",
+            "icons": [
+                {
+                    "src": "/assets/icons/series.svg",
+                    "type": "image/svg+xml",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Settings",
+            "url": "/settings",
+            "icons": [
+                {
+                    "src": "/assets/icons/settings.svg",
+                    "type": "image/svg+xml",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "description": "Trailarr is a Docker application to download and manage trailers for your media library. It integrates with your existing services, such as Plex, Radarr, and Sonarr!",
+    "screenshots": [
+        {
+            "src": "/assets/screenshots/home.png",
+            "type": "image/png",
+            "sizes": "1377x926",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshots/series.png",
+            "type": "image/png",
+            "sizes": "1377x926",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshots/settings.png",
+            "type": "image/png",
+            "sizes": "1377x926",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshots/light.png",
+            "type": "image/png",
+            "sizes": "1377x926",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshots/mobile/home.png",
+            "type": "image/png",
+            "sizes": "1442x3202",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/assets/screenshots/mobile/series.png",
+            "type": "image/png",
+            "sizes": "1442x3202",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/assets/screenshots/mobile/settings.png",
+            "type": "image/png",
+            "sizes": "1442x3202",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/assets/screenshots/mobile/light.png",
+            "type": "image/png",
+            "sizes": "1442x3202",
+            "form_factor": "narrow"
+        }
+    ]
+}
