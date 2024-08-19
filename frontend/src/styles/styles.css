@@ -37,7 +37,7 @@
 
 body {
   margin: 0;
-  height: 100dvh;
+  /* height: 100dvh; */
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
@@ -184,6 +184,18 @@ hr {
   font-size: 1rem;
 }
 
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
 .text-primary {
   color: var(--color-primary);
 }
@@ -223,6 +235,11 @@ button.primary {
 button.secondary {
   background-color: var(--color-secondary);
   color: var(--color-on-secondary);
+}
+
+button.tertiary {
+  background-color: var(--color-tertiary);
+  color: var(--color-on-tertiary);
 }
 
 button.danger {

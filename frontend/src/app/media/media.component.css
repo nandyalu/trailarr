@@ -1,4 +1,4 @@
- .media-container {
+.media-container {
   height: 100%;
   width: 100%;
   display: flex;
@@ -28,7 +28,7 @@
   flex-direction: column;
   transition: all 0.4s;
   border-radius: 10px;
-  box-shadow: 0px 0px 10px 5px  rgba(0, 0, 0, 0.705);
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.705);
   cursor: pointer;
   position: relative;
 }
@@ -38,20 +38,20 @@
   border-radius: 10px;
 }
 
-.media-card svg{
+.media-card svg {
   position: absolute;
   top: 5px;
   height: 24px;
   width: 24px;
 }
 
-.media-card .monitored-icon ,
+.media-card .monitored-icon,
 .media-card .downloaded-icon {
   fill: var(--color-info);
   right: 5px;
 }
 
-.media-card .success{
+.media-card .success {
   fill: var(--color-success);
 }
 
@@ -62,8 +62,8 @@
 .media-card:hover {
   border-radius: 15px;
   /* transform: scale(1.1); */
-  box-shadow: 0px 0px 10px 5px  rgba(0, 0, 0, 0.705);
-  
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.705);
+
 }
 
 .media-card:hover img {
