@@ -1,8 +1,6 @@
 <div class="message-container">
-    <div *ngFor="let message of updateResults"
-        class="update-message" [class.error]="message.toLowerCase().includes('error')">
-        {{message}}
-    </div>
+    <div *ngFor="let message of updateResults" class="update-message"
+        [class.error]="message.toLowerCase().includes('error')"> {{message}} </div>
 </div>
 <div class="trailer-container">
     <div *ngIf="settings?.debug" class="update-message error">
