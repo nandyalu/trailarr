@@ -11,7 +11,7 @@ COPY ./backend/requirements.txt .
 RUN python -m pip install --disable-pip-version-check --upgrade -r requirements.txt
 
 # Install ffmpeg using install_ffmpeg.sh script
-COPY install_ffmpeg.sh /tmp/install_ffmpeg.sh
+COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
 RUN chmod +x /tmp/install_ffmpeg.sh && \
     /tmp/install_ffmpeg.sh
 
@@ -60,11 +60,11 @@ COPY --from=python-deps /usr/local/ /usr/local/
 ENV PYTHONPATH="${PYTHONPATH:-}:/app/backend"
 
 # Copy the entrypoint script and make it executable
-COPY entrypoint.sh /app/entrypoint.sh
+COPY ./scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Copy startup script and make it executable
-COPY start.sh /app/start.sh
+COPY ./scripts/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Expose the port the app runs on
