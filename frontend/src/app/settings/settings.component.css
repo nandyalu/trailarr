@@ -2,9 +2,11 @@
 .settings-container {
   display: flex;
   flex-direction: column;
-  /* min-height: 100%; */
-  overflow: hidden;
-  position: relative;
+  margin: 1rem;
+
+  @media (width < 765px) {
+    padding: 0.5rem;
+  }
 }
 
 .settingsnav {
@@ -23,7 +25,6 @@
   @media (width < 765px) {
     order: 2;
     justify-content: space-around;
-    /* Make this work properly */
     position: fixed;
     top: auto;
     bottom: 78px;
@@ -36,9 +37,7 @@
 
 .settings-content {
   order: 2;
-  overflow: hidden;
   padding: 0.5rem;
-  position: relative; /* for the sticky update message in components */
 
   @media (width < 765px) {
     margin-bottom: 80px;

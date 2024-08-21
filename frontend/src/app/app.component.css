@@ -65,7 +65,6 @@
   overflow-x: hidden;
   overflow-y: auto;
   order: 2;
-  padding: 1rem;
   background-color: var(--color-surface);
   color: var(--color-on-surface);
 
