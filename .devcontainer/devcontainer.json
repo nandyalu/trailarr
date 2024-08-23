@@ -7,7 +7,8 @@
         "dockerfile": "Dockerfile"
     },
 	"runArgs": [
-		"-p=7888:7888"
+		"-p=7888:7888",
+		"-p=7887:8000"
 	],
 
 	// Mount appdata folder for persistent storage
@@ -46,7 +47,8 @@
 				"usernamehw.errorlens",
 				"KevinRose.vsc-python-indent",
 				"qwtel.sqlite-viewer",
-				"oderwat.indent-rainbow"
+				"oderwat.indent-rainbow",
+				"redhat.vscode-yaml"
 			]
 		}
 	},
