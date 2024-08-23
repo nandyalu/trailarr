@@ -73,6 +73,10 @@ EXPOSE ${APP_PORT}
 # Set permissions for appuser on /app directory
 RUN chmod -R 750 /app
 
+# Define a healthcheck command
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+    CMD curl -f http://localhost:${APP_PORT}/status || exit 1
+
 # Run entrypoint script to create directories, set permissions and timezone \
 # and start the application as appuser
 ENTRYPOINT ["/app/entrypoint.sh"]
