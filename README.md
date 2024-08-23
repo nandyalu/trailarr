@@ -32,7 +32,7 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 - Runs in background like Radarr/Sonarr.
 - Checks if a trailer already exists for movie/series. Download it if set to monitor.
 - Downloads trailer and organizes it in the media folder.
-- Follows [plex](https://www.plex.tv/) naming conventions. Works with [Plex]((https://www.plex.tv/)), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
+- Follows [plex](https://www.plex.tv/) naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.
 - Option to download desired video as trailer for any movie/series.
