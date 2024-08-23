@@ -1,5 +1,5 @@
 .navbar {
-  padding: 1rem 0 1rem 0;
+  padding: 1rem 0.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -32,7 +32,7 @@
   justify-content: center;
   width: auto;
   flex-grow: 1;
-  padding: 5px;
+  padding: 0.25rem;
   position: relative;
 }
 
@@ -42,14 +42,18 @@
 
 .navsearch-form input {
   width: 100%;
-  flex-grow: 1;
   padding: 0.5rem;
-  border: 0.5px solid var(--color-outline);
-  border-radius: 5px;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
   margin: 0;
   font-size: 1rem;
   background-color: var(--color-surface-container-highest);
   color: var(--color-on-surface);
+
+  &:focus {
+    outline: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
 }
 
 /* navsearch-form input:focus { For custom focus color
@@ -69,7 +73,6 @@
   background-color: var(--color-surface-container-highest);
   border: 0.5px solid var(--color-outline);
   border-radius: 5px;
-  padding: 0.5rem;
   visibility: hidden;
   opacity: 0;
   display: none;
@@ -83,11 +86,16 @@
   flex-direction: column;
   max-height: 40vh;
   max-width: 60vw;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 0.5rem;
   scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
   transition: 0.25s;
+
+  @media (width < 765px) {
+    max-width: 75vw;
+  }
 }
 
 .navsearch-results .title {
@@ -96,6 +104,7 @@
   width: auto;
   padding: 0.5rem;
   text-align: left;
+  text-wrap: pretty;
   cursor: pointer;
 }
 
@@ -108,14 +117,14 @@
   text-align: left;
 }
 
-.navsearch-results .title:hover, 
-.navsearch-results .title:focus, 
+.navsearch-results .title:hover,
+.navsearch-results .title:focus,
 .navsearch-results .selected {
   background-color: var(--color-surface-variant);
   outline: none;
 }
 
-.navsearch-results .title:focus, 
+.navsearch-results .title:focus,
 .navsearch-results .selected {
   scroll-snap-align: center;
 }
@@ -171,23 +180,23 @@
 .slider2:before {
   position: absolute;
   content: "";
-  height: var(--size-of-icon,1.4em);
-  width: var(--size-of-icon,1.4em);
+  height: var(--size-of-icon, 1.4em);
+  width: var(--size-of-icon, 1.4em);
   border-radius: 20px;
-  left: var(--slider-offset,0.3em);
+  left: var(--slider-offset, 0.3em);
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(40deg,#775651,#904b40 70%);
+  background: linear-gradient(40deg, #775651, #904b40 70%);
   ;
- transition: .5s;
+  transition: .5s;
 }
 
-input:checked + .slider2 {
+input:checked+.slider2 {
   background-color: #140c0b;
 }
 
-input:checked + .slider2:before {
-  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+input:checked+.slider2:before {
+  left: calc(100% - (var(--size-of-icon, 1.4em) + var(--slider-offset, 0.3em)));
   background: #140c0b;
   /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
   box-shadow: inset -3px -2px 5px -2px #e7bdb6, inset -10px -4px 0 0 #ffb4a8;

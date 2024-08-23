@@ -18,8 +18,13 @@
 
 * {
   box-sizing: border-box;
-  scrollbar-width: thin !important;
-  scrollbar-color: var(--color-secondary) transparent;
+
+  @media (width > 765px) {
+    /* Only on large screens */
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--color-secondary) transparent;
+  }
+  
 }
 
 /* *::-webkit-scrollbar {
@@ -35,13 +40,22 @@
   background: var(--color-tertiary);
 } */
 
+html,
+body {
+  height: 100%
+}
+
 body {
   margin: 0;
-  /* height: 100dvh; */
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
   transition: background-color 0.5s ease, color 0.5s ease;
+  overflow: hidden;
+  
+  @media (width < 765px) {
+    overflow-y: auto;
+  }
 }
 
 .sm-show {

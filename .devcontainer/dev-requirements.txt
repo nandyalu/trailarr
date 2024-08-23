@@ -1,4 +1,7 @@
 # DevContainer requirements
+# Docs
+mkdocs-material==9.5.32
+
 # Backend
 aiohttp==3.10.2
 aiofiles==24.1.0

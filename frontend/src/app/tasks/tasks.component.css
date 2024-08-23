@@ -1,70 +1,71 @@
- .tasks-container {
-   height: 100%;
-   width: 100%;
-   display: flex;
-   flex-direction: column;
-   overflow: hidden;
-   /* gap: 2rem; */
- }
+.tasks-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
 
- .text-heading {
-   margin-top: 1rem;
-   text-align: left;
-   font-size: 2rem;
- }
+  @media (width < 765px) {
+    padding: 0.5rem;
+  }
+}
 
- .center {
-   margin: auto;
- }
+.text-heading {
+  margin-top: 1rem;
+  text-align: left;
+  font-size: 2rem;
+}
 
- .table-container {
-   width: 100%;
-   overflow-x: auto;
-   min-height: 25%;
-   -webkit-overflow-scrolling: touch;
-   /* Smooth scrolling for touch devices */
-   margin-top: 0.5rem;
-   margin-bottom: 2rem;
- }
+.center {
+  margin: auto;
+}
 
- .last-table {
-   margin-bottom: 0;
- }
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  min-height: 25%;
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling for touch devices */
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
 
- .tasks-table {
-   width: 100%;
-   max-width: 100%;
-   white-space: nowrap;
-   border-collapse: collapse;
- }
+.last-table {
+  margin-bottom: 0;
+}
 
- .tasks-table .table-row {
-   border-bottom: 1px solid var(--color-outline);
-   white-space: nowrap;
-   text-align: left;
- }
+.tasks-table {
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  border-collapse: collapse;
+}
 
- .tasks-table th,
- .tasks-table td {
-   padding: 1rem 0.5rem;
- }
+.tasks-table .table-row {
+  border-bottom: 1px solid var(--color-outline);
+  white-space: nowrap;
+  text-align: left;
+}
 
- .tasks-table .header {
-   /* Header row */
-   font-weight: bold;
-   border-bottom: 2px solid var(--color-outline);
- }
+.tasks-table th,
+.tasks-table td {
+  padding: 1rem 0.5rem;
+}
 
- .tasks-table .name {
-   width: 100%;
- }
+.tasks-table .header {
+  /* Header row */
+  font-weight: bold;
+  border-bottom: 2px solid var(--color-outline);
+}
 
- .table-row svg {
-   margin: 0 0.5rem;
-   width: 1rem;
-   fill: var(--color-primary)
- }
+.tasks-table .name {
+  width: 100%;
+}
 
- .table-row:hover:not(:first-child) {
-   background-color: var(--color-tertiary-container);
- }
+.table-row svg {
+  margin: 0 0.5rem;
+  width: 1rem;
+  fill: var(--color-primary)
+}
+
+.table-row:hover:not(:first-child) {
+  background-color: var(--color-tertiary-container);
+}

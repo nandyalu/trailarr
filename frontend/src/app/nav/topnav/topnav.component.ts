@@ -36,7 +36,7 @@ export class TopnavComponent {
         this.onSearch(value);
       });
   }
-  
+
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
@@ -71,7 +71,8 @@ export class TopnavComponent {
       }
       let firstId = this.searchResults[0].id;
       let lastId = this.searchResults[this.searchResults.length - 1].id;
-      if (event.key === 'ArrowDown') {
+      if (event.key === 'ArrowDown' || event.key === 'Tab' && !event.shiftKey) {
+        event.preventDefault();
         // If the last item is selected, loop back to the first item
         if (this.selectedId === lastId) {
           this.selectedIndex = 0;
@@ -82,7 +83,8 @@ export class TopnavComponent {
         this.selectedIndex = this.selectedIndex + 1;
         this.selectedId = this.searchResults[this.selectedIndex].id;
         return;
-      } else if (event.key === 'ArrowUp') {
+      } else if (event.key === 'ArrowUp' || (event.shiftKey && event.key === 'Tab')) {
+        event.preventDefault();
         // If the first item is selected, loop back to the last item
         if (this.selectedId === firstId) {
           this.selectedIndex = this.searchResults.length - 1;
@@ -101,7 +103,7 @@ export class TopnavComponent {
       }
     }
   }
-  
+
   // Check theme preference on page load and apply it
   ngOnInit() {
     // Check if theme is already set in local storage
@@ -146,7 +148,7 @@ export class TopnavComponent {
     // console.log('Theme set to %s', theme);
     return;
   }
-  
+
 
   onSearch(query: string = '') {
     if (query.length < 3) {

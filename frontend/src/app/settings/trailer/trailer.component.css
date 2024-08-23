@@ -11,9 +11,16 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    position: fixed;
+    top: 5rem;
+    right: 3rem;
+    z-index: 999;
+    max-width: 25%;
+
+    @media (width < 768px) {
+        max-width: 80%;
+        right: 1rem;
+    }
 }
 
 .update-message {
@@ -55,14 +62,14 @@
     text-wrap: nowrap;
 }
 
-.trailer-content > svg {
+.trailer-content>svg {
     width: 1.5rem;
     height: 1.5rem;
     cursor: pointer;
     fill: var(--color-success);
 }
 
-.trailer-content > :nth-child(2) {
+.trailer-content> :nth-child(2) {
     text-decoration: none;
     text-align: left;
     margin: 0;
@@ -75,7 +82,7 @@
     gap: 0.5rem;
 }
 
-.text-input > input {
+.text-input>input {
     width: 5rem;
     height: 3rem;
     padding: 0.25rem;
@@ -94,14 +101,14 @@
     border: 0.5px solid var(--color-outline);
 }
 
-.options-bar > .option {
+.options-bar>.option {
     padding: 10px;
     cursor: pointer;
     border-radius: 10px;
     transition: .3s ease;
 }
 
-.options-bar > .selected {
+.options-bar>.selected {
     background-color: var(--color-tertiary-container);
     font-weight: 600;
     color: var(--color-on-tertiary-container);
@@ -126,6 +133,7 @@
     from {
         transform: translateY(-100%);
     }
+
     to {
         transform: translateY(0);
     }

@@ -1,0 +1,76 @@
+site_name: Trailarr Docs
+site_url: https://nandyalu.github.io/trailarr
+site_description: Trailarr is a simple, lightweight, and easy-to-use media server for your personal media collection.
+repo_name: nandyalu/trailarr
+repo_url: https://github.com/nandyalu/trailarr
+theme:
+  name: material
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+  logo: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png
+  favicon: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+extra:
+  social:
+    - icon: fontawesome/brands/github 
+      link: https://github.com/nandyalu/trailarr
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/nandyalu/trailarr
+nav:
+  - Trailarr: index.md
+  - Install:
+    - Install: install/install.md
+    - Environment Variables: install/env-variables.md
+    - Volume Mapping: install/volume-mapping.md
+    - Docker Compose: install/docker-compose.md
+    - Docker Run: install/docker-cli.md
+  - Setup:
+    - Connections: setup/connections.md
+    - Settings: setup/settings.md

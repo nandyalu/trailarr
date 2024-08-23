@@ -71,6 +71,13 @@ trailarr_api.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Health check route
+@trailarr_api.get("/status", tags=["Health Check"])
+async def health_check():
+    return {"status": "healthy"}
+
+
 # Register API routes
 trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 
