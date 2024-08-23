@@ -33,7 +33,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_VERSION=${APP_VERSION}
 
 # Install tzdata, gosu and set timezone
-RUN apt update && apt install -y tzdata gosu && \
+RUN apt-get update && apt-get install -y tzdata gosu curl && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
@@ -57,7 +57,7 @@ COPY ./frontend-build /app/frontend-build
 COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path
-ENV PYTHONPATH="${PYTHONPATH:-}:/app/backend"
+ENV PYTHONPATH=/app/backend
 
 # Copy the entrypoint script and make it executable
 COPY ./scripts/entrypoint.sh /app/entrypoint.sh

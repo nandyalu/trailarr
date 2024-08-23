@@ -15,13 +15,13 @@ install_ffmpeg_debian() {
     else
         # If the architecture is not supported, install ffmpeg using apt
         echo "Unsupported architecture: $ARCH, Install ffmpeg manually"
-        apt install ffmpeg
+        apt-get install -y ffmpeg
         mv /usr/bin/ff* /usr/local/bin/
         exit 0
     fi
 
     # Install the required dependencies
-    apt update && apt install -y curl xz-utils
+    apt-get update && apt-get install -y curl xz-utils
     # Download and install ffmpeg
     echo "Downloading ffmpeg for $ARCH"
     curl -L -o /tmp/ffmpeg.tar.xz "$FFMPEG_URL"
