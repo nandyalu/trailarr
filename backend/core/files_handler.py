@@ -148,6 +148,9 @@ class FilesHandler:
             path (str): Folder path to check for a media file.\n
         Returns:
             bool: True if a media file exists in the folder, False otherwise."""
+        _is_dir = await aiofiles.os.path.isdir(path)
+        if not _is_dir:
+            return False
         for entry in os.scandir(path):
             if entry.is_dir():
                 if FilesHandler.check_media_exists(entry.path):
