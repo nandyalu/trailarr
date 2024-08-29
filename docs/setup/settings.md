@@ -104,6 +104,8 @@ Select the format of the subtitles to download. Available options are `srt`, `vt
 
 Select the language of the subtitles to download. A valid ISO 639-1 language code is required. See [ISO 639-1 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes){:target="_blank"} for more information.
 
+!!! info
+    Multiple languages can be set with a comma separated list. For example, `en,es,fr`.
 
 ## Other Settings
 
