@@ -112,6 +112,7 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "True",
         ).lower() in ["true", "1"]
+        self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
 
     def as_dict(self):
         return {
@@ -136,6 +137,7 @@ class _Config:
             "server_start_time": self.server_start_time,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "yt_cookies_path": self.yt_cookies_path,
         }
 
     @property

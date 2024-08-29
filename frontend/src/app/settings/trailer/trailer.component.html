@@ -17,10 +17,8 @@
             </div>
             <div id="debug" class="options-bar">
                 <div *ngFor="let option of trueFalseOptions" class="option" tabindex="1"
-                    [class.selected]="option === settings?.debug"
-                    (click)="updateSetting('debug', option)"
-                    (keydown.enter)="updateSetting('debug', option)"
-                    (keydown.space)="updateSetting('debug', option)">
+                    [class.selected]="option === settings?.debug" (click)="updateSetting('debug', option)"
+                    (keydown.enter)="updateSetting('debug', option)" (keydown.space)="updateSetting('debug', option)">
                     {{option}}
                 </div>
             </div>
@@ -50,7 +48,8 @@
                 <input id="monitor_interval" type="number" [(ngModel)]="monitorInterval" maxlength="6"
                     placeholder="Monitor Interval" autocomplete="off" tabindex="3">
                 <button *ngIf="settings?.monitor_interval != monitorInterval" class="primary icononly-button"
-                    id="update_monitor_interval" tabindex="4" (click)="updateSetting('monitor_interval', monitorInterval)">
+                    id="update_monitor_interval" tabindex="4"
+                    (click)="updateSetting('monitor_interval', monitorInterval)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                     </svg>
@@ -98,9 +97,9 @@
             </div>
             <div id="trailer_folder_series" class="options-bar">
                 <div *ngFor="let option of trueFalseOptions" class="option" tabindex="6"
-                    [class.selected]="option === settings?.trailer_folder_series" 
+                    [class.selected]="option === settings?.trailer_folder_series"
                     (click)="updateSetting('trailer_folder_series', option)"
-                    (keydown.enter)="updateSetting('trailer_folder_series', option)" 
+                    (keydown.enter)="updateSetting('trailer_folder_series', option)"
                     (keydown.space)="updateSetting('trailer_folder_series', option)">
                     {{option}}
                 </div>
@@ -117,10 +116,10 @@
                 <small>Valid values: 240, 360, 480, 720, 1080, 1440, 2160</small>
             </div>
             <div class="text-input">
-                <input id="trailer_resolution" type="number" [(ngModel)]="resolution"
-                    maxlength="4" placeholder="Trailer Resolution" autocomplete="off" tabindex="7">
-                <button *ngIf="settings?.trailer_resolution != resolution" 
-                    class="primary icononly-button" id="update_trailer_resolution" tabindex="8" 
+                <input id="trailer_resolution" type="number" [(ngModel)]="resolution" maxlength="4"
+                    placeholder="Trailer Resolution" autocomplete="off" tabindex="7">
+                <button *ngIf="settings?.trailer_resolution != resolution" class="primary icononly-button"
+                    id="update_trailer_resolution" tabindex="8"
                     (click)="updateSetting('trailer_resolution', resolution)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
@@ -210,9 +209,9 @@
             </div>
             <div class="text-input">
                 <input id="trailer_subtitles_language" type="text" [(ngModel)]="subtitleLanguage"
-                    maxlength="2" placeholder="Trailer Subtitles Language" autocomplete="off" tabindex="14">
-                <button *ngIf="subtitleLanguage != settings?.trailer_subtitles_language" 
-                    class="primary icononly-button" id="update_trailer_subtitles_language" tabindex="15"
+                    placeholder="Trailer Subtitles Language" autocomplete="off" tabindex="14">
+                <button *ngIf="subtitleLanguage != settings?.trailer_subtitles_language" class="primary icononly-button"
+                    id="update_trailer_subtitles_language" tabindex="15"
                     (click)="updateSetting('trailer_subtitles_language', subtitleLanguage)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
@@ -257,7 +256,8 @@
         <div class="trailer-content">
             <div class="content-label">
                 <label for="trailer_web_optimized">Trailer Web Optimized</label>
-                <small>Enabling this will convert the video to a web optimized video, useful for streaming video over network, might slightly increase file size.</small>
+                <small>Enabling this will convert the video to a web optimized video, useful for streaming video over
+                    network, might slightly increase file size.</small>
             </div>
             <div id="trailer_web_optimized" class="options-bar">
                 <div *ngFor="let option of trueFalseOptions" class="option" tabindex="18"
@@ -269,5 +269,26 @@
                 </div>
             </div>
         </div>
+    </section>
+    <section *ngIf="settings?.monitor_enabled" class="section">
+        <h1>Advanced Options</h1>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="yt_cookies_path">Yt-dlp Cookies Path</label>
+                <small>Use cookies from a file for downloading trailers with yt-dlp.</small>
+            </div>
+            <div class="text-input">
+                <input id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath" placeholder="Yt-dlp cookies path"
+                    autocomplete="off" tabindex="19">
+                <button *ngIf="subtitleLanguage != settings?.yt_cookies_path" class="primary icononly-button"
+                    id="update_yt_cookies_path" tabindex="20" (click)="updateSetting('yt_cookies_path', ytCookiesPath)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
     </section>
 </div>

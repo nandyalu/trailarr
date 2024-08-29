@@ -22,6 +22,7 @@ export class TrailerComponent {
   audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]
   videoFormats = ["h264", "h265", "vp8", "vp9", "av1"]
   subtitleFormats = ["srt", "vtt", "pgs"]
+  ytCookiesPath = "";
 
   constructor(private settingsService: SettingsService) { }
 

@@ -20,6 +20,7 @@ export interface Settings {
     trailer_remove_sponsorblocks: boolean
     trailer_web_optimized: boolean
     wait_for_media: boolean
+    yt_cookies_path: string
 }
 
 export interface ServerStats {
