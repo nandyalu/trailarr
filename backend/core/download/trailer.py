@@ -163,8 +163,9 @@ def normalize_filename(filename: str) -> str:
     )
 
     # Remove any character that is not alphanumeric, underscore, hyphen, comma, dot or space
-    filename = re.sub(r"[^a-zA-Z0-9_-,. ]", "_", filename)
-
+    filename = re.sub(r"[^a-zA-Z0-9_,. -]", "_", filename)
+    # Replace multiple spaces with a single space
+    filename = re.sub(r"\s+", " ", filename)
     # Remove leading and trailing special characters
     filename = filename.strip("_.-")
     return filename
