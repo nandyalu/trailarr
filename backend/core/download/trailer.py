@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 from threading import Semaphore
+import unicodedata
 
 from yt_dlp import YoutubeDL
 
@@ -153,6 +154,22 @@ def get_folder_permissions(path: str) -> int:
     return os.stat(parent_dir).st_mode
 
 
+def normalize_filename(filename: str) -> str:
+    # Normalize the filename to handle Unicode characters
+    filename = (
+        unicodedata.normalize("NFKD", filename)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+
+    # Remove any character that is not alphanumeric, underscore, hyphen, comma, dot or space
+    filename = re.sub(r"[^a-zA-Z0-9_-,. ]", "_", filename)
+
+    # Remove leading and trailing special characters
+    filename = filename.strip("_.-")
+    return filename
+
+
 def get_trailer_path(
     src_path: str, dst_folder_path: str, new_title: str, increment_index: int = 1
 ) -> str:
@@ -177,6 +194,9 @@ def get_trailer_path(
         filename = f"{new_title} - Trailer {increment_index}-trailer{_ext}"
     else:
         filename = f"{new_title} - Trailer-trailer{_ext}"
+    # Normalize the filename
+    filename = normalize_filename(filename)
+    # Get the destination path
     dst_file_path = os.path.join(dst_folder_path, filename)
     # If file exists in destination, increment the index, else return path
     if os.path.exists(dst_file_path):
