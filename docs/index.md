@@ -67,7 +67,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues)
+If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post a question on [Reddit](https://www.reddit.com/r/trailarr/){:target="_blank"}.
 
 ## Issues
 
