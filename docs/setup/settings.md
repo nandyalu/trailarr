@@ -104,6 +104,8 @@ Select the format of the subtitles to download. Available options are `srt`, `vt
 
 Select the language of the subtitles to download. A valid ISO 639-1 language code is required. See [ISO 639-1 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes){:target="_blank"} for more information.
 
+!!! info
+    Multiple languages can be set with a comma separated list. For example, `en,es,fr`.
 
 ## Other Settings
 
@@ -124,3 +126,16 @@ Enable this setting to remove sponsor blocks from the trailers, if available. Sp
 - Default is `true`
 
 Enable this setting to optimize trailers for web streaming. This will allow trailers to start playing faster while streaming over network. Might slightly increase file size.
+
+## Advanced Settings
+
+### Yt-dlp Cookies Path
+
+- Default is `None`
+
+If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can set the path to a file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
+
+See yt-dlp [documentation](https://github.com/yt-dlp/yt-dlp){:target="_blank"} for more information on how to get the cookies file.
+
+!!! warning
+    Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the file in this setting.

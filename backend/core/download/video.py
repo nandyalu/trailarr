@@ -100,6 +100,8 @@ def _get_ytdl_options() -> dict[str, Any]:
         "postprocessors": [],
         "postprocessor_args": {},
     }
+    if app_settings.yt_cookies_path:
+        ydl_options["cookiefile"] = f"{app_settings.yt_cookies_path}"
     postprocessors: list[dict] = []
     output_options: list[str] = []
 
