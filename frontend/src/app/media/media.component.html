@@ -1,3 +1,47 @@
+<div *ngIf="media_list.length > 0" class="media-header">
+    <!-- Sort Options -->
+    <div class="media-header-sortitem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path d="M120-240v-60h240v60H120Zm0-210v-60h480v60H120Zm0-210v-60h720v60H120Z" />
+        </svg>
+        <div> {{displayOptionTitle(selectedSort)}}</div>
+        <div class="sortitem-dropdown">
+            <div *ngFor="let sortOption of sortOptions" class="sortitem-dropdown-option" (click)="sortMediaList(sortOption)">
+                {{displayOptionTitle(sortOption)}}
+                <div *ngIf="selectedSort == sortOption && sortAscending">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path
+                        d="M480-200 240-440l42-42 198 198 198-198 42 42-240 240Zm0-253L240-693l42-42 198 198 198-198 42 42-240 240Z" />
+                    </svg>
+                </div>
+                <div *ngIf="selectedSort == sortOption && !sortAscending">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path
+                            d="m282-225-42-42 240-240 240 240-42 42-198-198-198 198Zm0-253-42-42 240-240 240 240-42 42-198-198-198 198Z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Filter Options -->
+    <div class="media-header-filteritem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path d="M120-240v-60h240v60H120Zm0-210v-60h480v60H120Zm0-210v-60h720v60H120Z" />
+        </svg>
+        <div> {{displayOptionTitle(selectedFilter)}}</div>
+        <div class="filteritem-dropdown">
+            <div *ngFor="let filterOption of filterOptions" class="filteritem-dropdown-option" (click)="setMediaFilter(filterOption)">
+                {{displayOptionTitle(filterOption)}}
+                <div *ngIf="selectedFilter == filterOption">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path
+                            d="M480-200 240-440l42-42 198 198 198-198 42 42-240 240Zm0-253L240-693l42-42 198 198 198-198 42 42-240 240Z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="media-container">
     <!-- <h1 class="text-center">{{title}}</h1> -->
     <div *ngIf="isLoading; else mediaLoaded" class="loading-wave center">
@@ -12,13 +56,15 @@
                 Click me!
             </div>
         </div>
+
         <div class="media-row">
             <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
                 <ng-container *ngIf="media.monitor; else trailerExistsIcon">
                     <!-- Monitored Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon"
+                        aria-label="Monitored">
                         <path
                             d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
                     </svg>

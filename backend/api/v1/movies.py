@@ -13,6 +13,13 @@ from core.tasks.download_trailers import download_trailer_by_id
 movies_router = APIRouter(prefix="/movies", tags=["Movies"])
 
 
+@movies_router.get("/all")
+async def get_all_movies() -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
+    movies = db_handler.read_all(movies_only=True)
+    return movies
+
+
 @movies_router.get("/")
 async def get_recent_movies(limit: int = 30, offset: int = 0) -> list[MediaRead]:
     db_handler = MediaDatabaseManager()

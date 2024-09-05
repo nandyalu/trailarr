@@ -13,6 +13,12 @@ export class MovieService {
 
     constructor(private http: HttpClient) { }
 
+    getAllMedia(): Observable<Media[]> {
+        return this.http.get<Media[]>(`${this.moviesUrl}all`).pipe(
+            map((movie_list: any[]) => movie_list.map(movie => mapMedia(movie, true)))
+        );
+    }
+
     getRecentMedia(): Observable<Media[]> {
         return this.http.get<Media[]>(`${this.moviesUrl}?limit=50`).pipe(
             map((movie_list: any[]) => movie_list.map(movie => mapMedia(movie, true)))

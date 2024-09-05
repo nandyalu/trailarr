@@ -47,7 +47,7 @@ body {
 
 body {
   margin: 0;
-  background-color: var(--color-surface-container);
+  background-color: var(--color-surface);
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
   transition: background-color 0.5s ease, color 0.5s ease;
