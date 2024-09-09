@@ -68,7 +68,7 @@ extra:
 nav:
   - Trailarr: index.md
   - Install:
-    - Install: install/install.md
+    - Install: install.md
     - Environment Variables: install/env-variables.md
     - Volume Mapping: install/volume-mapping.md
     - Docker Compose: install/docker-compose.md
@@ -76,3 +76,5 @@ nav:
   - Setup:
     - Connections: setup/connections.md
     - Settings: setup/settings.md
+  # - Advanced:
+  #   - Windows Setup: advanced/windows-setup.md

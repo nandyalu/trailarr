@@ -43,7 +43,7 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 
 ## Installation
 
-See the [Installation](https://nandyalu.github.io/trailarr/install/install/) guide for detailed instructions on how to install Trailarr.
+See the [Installation](https://nandyalu.github.io/trailarr/install/) guide for detailed instructions on how to install Trailarr.
 
 ## Setup
 

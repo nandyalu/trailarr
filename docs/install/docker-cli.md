@@ -20,6 +20,9 @@ docker run -d \
 
 Open your browser and navigate to [http://localhost:7889](http://localhost:7889){:target="_blank"} to access the application.
 
+!!! info
+    It is recommended to use `docker-compose` to run the application, as it makes updating easier. See the [Docker Compose](./docker-compose.md) guide for more information.
+
 ## Updating
 
 To update the application, run the following commands:

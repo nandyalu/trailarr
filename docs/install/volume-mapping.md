@@ -27,6 +27,8 @@ Some [examples](#examples) are provided below.
 !!! tip
     Make sure the folder paths are correct and the Trailarr has read/write access to the folders.
 
+!!! warning
+    If your folder paths have spaces, you need to escape them with a backslash (`\`) or enclose the path in quotes (`"`) like `/tv\ shows` or `/"tv shows"`.
 
 ### Radarr
 
@@ -102,11 +104,11 @@ For example, if Radarr has `/mnt/disk1/media/movies` mapped to `/media` and Sona
 2. Set the [path mapping](../setup/connections.md#path-mapping) for Radarr like:
 ![Radarr Path Mapping](radarr-mapping.png)
 
-!!! tip
-    The `Path From` needs to match root folder inside Radarr (`/media`), and the `Path To` needs to match the folder inside Trailarr where the media is mapped (`/media/movies`).
+    !!! tip
+        The `Path From` needs to match root folder inside Radarr (`/media`), and the `Path To` needs to match the folder inside Trailarr where the media is mapped (`/media/movies`).
 
 3. Set the [path mapping](../setup/connections.md#path-mapping) for Sonarr like:
 ![Sonarr Path Mapping](sonarr-mapping.png)
 
-!!! tip
-    The `Path From` needs to match root folder inside Sonarr (`/media`), and the `Path To` needs to match the folder inside Trailarr where the media is mapped (`/media/tv`).
+    !!! tip
+        The `Path From` needs to match root folder inside Sonarr (`/media`), and the `Path To` needs to match the folder inside Trailarr where the media is mapped (`/media/tv`).
