@@ -34,7 +34,7 @@ export class MediaComponent {
     private seriesService: SeriesService,
     private route: ActivatedRoute
   ) { }
-  
+
   ngOnInit(): void {
     this.isLoading = true;
     let type = this.route.snapshot.url[0].path;
