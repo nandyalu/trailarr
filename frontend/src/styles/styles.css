@@ -40,9 +40,15 @@
   background: var(--color-tertiary);
 } */
 
-html,
+html {
+  height: 100%;
+  color-scheme: dark light;
+}
+
 body {
-  height: 100%
+  /* min-height: 100vh; */
+  /* min-height: 100dvh; */
+  height: 100%;
 }
 
 body {
