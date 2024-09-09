@@ -1,7 +1,7 @@
 .media-header {
   display: flex;
   position: sticky;
-  top: 0;
+  top: 76px;
   width: 100%;
   justify-content: flex-end;
   background-color: var(--color-surface-container-high);

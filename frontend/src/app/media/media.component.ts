@@ -16,6 +16,7 @@ import { SeriesService } from '../services/series.service';
 })
 export class MediaComponent {
   title = 'Media';
+  pageType = 'Media';
   displayCount = 50;
   displayMediaList: Media[] = [];
   filteredMediaList: Media[] = [];
@@ -39,18 +40,21 @@ export class MediaComponent {
     let type = this.route.snapshot.url[0].path;
     if (type === 'movies') {
       this.title = 'Movies';
+      this.pageType = 'Movies';
       this.mediaService = this.movieService;
       this.mediaService.getAllMedia().subscribe((mediaList: Media[]) => {
         this.displayMedia(mediaList);
       });
     } else if (type === 'series') {
       this.title = 'Series';
+      this.pageType = 'Series';
       this.mediaService = this.seriesService;
-      this.mediaService.getRecentMedia().subscribe((mediaList: Media[]) => {
+      this.mediaService.getAllMedia().subscribe((mediaList: Media[]) => {
         this.displayMedia(mediaList);
       });
     } else {
       this.title = 'All Media';
+      this.pageType = 'AllMedia';
       this.mediaService = this.movieService;
       this.mediaService.getAllMedia().subscribe((mediaList: Media[]) => {
         this.displayMedia(mediaList);
@@ -58,28 +62,63 @@ export class MediaComponent {
     }
   }
 
+  saveSortOption(): void {
+    // Save the sort option to the local session
+    localStorage.setItem(`Trailarr${this.pageType}Sort`, this.selectedSort);
+    localStorage.setItem(`Trailarr${this.pageType}SortAscending`, this.sortAscending.toString());
+  }
+
+  saveFilterOption(): void {
+    // Save the filter option to the local session
+    localStorage.setItem(`Trailarr${this.pageType}Filter`, this.selectedFilter);
+  }
+
+  retrieveSortOption(): void {
+    // Retrieve the sort option from the local session
+    let sortOption = localStorage.getItem(`Trailarr${this.pageType}Sort`);
+    let sortAscending = localStorage.getItem(`Trailarr${this.pageType}SortAscending`);
+    if (sortOption) {
+      this.selectedSort = sortOption as keyof Media;
+    }
+    if (sortAscending) {
+      this.sortAscending = sortAscending === 'true';
+    }
+  }
+
+  retrieveFilterOption(): void {
+    // Retrieve the filter option from the local session
+    let filterOption = localStorage.getItem(`Trailarr${this.pageType}Filter`);
+    if (filterOption) {
+      this.selectedFilter = filterOption;
+    }
+  }
+
   displayMedia(mediaList: Media[]): void {
+    this.retrieveSortOption();
+    this.retrieveFilterOption();
     this.displayMediaList = [];
+    this.displayCount = 50;
     this.allMedia = mediaList;
     // debugger;
     this.filteredMediaList = this.filterMediaList(this.selectedFilter, mediaList);
     this.sortMediaList(this.selectedSort, this.filteredMediaList);
     this.isLoading = false;
-    this.filteredMediaList.forEach((media, index) => {
-      if (index < this.displayCount) {
-        this.displayMediaList.push(media);
-      }
-      // this.displayMediaList.push(media);
-      // if (index > 60) {
-      //   setTimeout(() => {
-      //     this.displayMediaList.push(media);
-      //   }, 61 * 20); // 20 milliseconds delay for each item
-      // } else {
-      //   setTimeout(() => {
-      //     this.displayMediaList.push(media);
-      //   }, index * 20); // 20 milliseconds delay for each item
-      // }
-    });
+    this.displayMediaList = this.filteredMediaList.slice(0, this.displayCount);
+    // this.filteredMediaList.forEach((media, index) => {
+    //   if (index < this.displayCount) {
+    //     this.displayMediaList.push(media);
+    //   }
+    //   // this.displayMediaList.push(media);
+    //   // if (index > 60) {
+    //   //   setTimeout(() => {
+    //   //     this.displayMediaList.push(media);
+    //   //   }, 61 * 20); // 20 milliseconds delay for each item
+    //   // } else {
+    //   //   setTimeout(() => {
+    //   //     this.displayMediaList.push(media);
+    //   //   }, index * 20); // 20 milliseconds delay for each item
+    //   // }
+    // });
   }
 
   displayOptionTitle(option: string): string {
@@ -97,26 +136,32 @@ export class MediaComponent {
   }
 
   setMediaSort(sortBy: keyof Media): void {
+    this.displayCount = 50;
     if (this.selectedSort === sortBy) {
       this.sortAscending = !this.sortAscending;
     } else {
       this.selectedSort = sortBy;
       this.sortAscending = true;
     }
-    this.sortMediaList(sortBy, this.displayMediaList);
+    this.sortMediaList(sortBy, this.filteredMediaList);
+    this.displayMediaList = this.filteredMediaList.slice(0, this.displayCount);
+    this.saveSortOption();
     return;
   }
 
   setMediaFilter(filterBy: string): void {
     this.isLoading = true;
+    this.displayCount = 50;
     this.displayMediaList = [];
+    this.filteredMediaList = [];
     this.selectedFilter = filterBy;
     this.filteredMediaList = this.filterMediaList(filterBy, this.allMedia);
     this.sortMediaList(this.selectedSort, this.filteredMediaList);
     setTimeout(() => {
       this.isLoading = false;
-      this.displayMediaList = this.filteredMediaList;
+      this.displayMediaList = this.filteredMediaList.slice(0, this.displayCount);
     }, 1000);
+    this.saveFilterOption();
     return;
   }
 
@@ -139,21 +184,12 @@ export class MediaComponent {
     if (filterBy === 'missing') {
       return mediaList.filter((media) => !media.trailer_exists);
     }
-    // return this.allMedia.filter((media) => {
-    //   if (filterBy === 'unmonitored') {
-    //     return !media.monitor;
-    //   } else if (filterBy === 'downloaded') {
-    //     return media.downloaded_at;
-    //   } else if (filterBy === 'missing') {
-    //     return !media.downloaded_at;
-    //   }
-    //   return false;
-    // });
     return mediaList;
   }
 
   onNearEndScroll(): void {
-    console.log('Near end of scroll');
+    // Load more media when near the end of the scroll
+    // console.log('Near end of scroll');
     if (this.displayCount >= this.filteredMediaList.length) {
       return;
     }

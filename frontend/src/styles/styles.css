@@ -45,11 +45,10 @@ html {
   color-scheme: dark light;
 }
 
-body {
-  /* min-height: 100vh; */
-  /* min-height: 100dvh; */
-  height: 100%;
-}
+/* body {
+  min-height: 100vh;
+  min-height: 100dvh;
+} */
 
 body {
   margin: 0;
@@ -57,7 +56,7 @@ body {
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
   transition: background-color 0.5s ease, color 0.5s ease;
-  overflow: hidden;
+  /* overflow: hidden; */
   
   @media (width < 765px) {
     overflow-y: auto;
