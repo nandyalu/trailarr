@@ -115,8 +115,9 @@ def download_trailer(
     # Download the trailer
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
-    output_file = download_video(trailer_url, f"/tmp/{media.id}-trailer.%(ext)s")
-    if not output_file:
+    tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
+    output_file = download_video(trailer_url, tmp_output_file)
+    if not output_file or not os.path.exists(tmp_output_file):
         if retry_count > 0:
             logger.debug(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
