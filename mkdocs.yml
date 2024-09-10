@@ -76,5 +76,8 @@ nav:
   - Setup:
     - Connections: setup/connections.md
     - Settings: setup/settings.md
+  - Help:
+    - FAQ: help/faq.md
+    - Release Notes: help/release-notes.md
   # - Advanced:
   #   - Windows Setup: advanced/windows-setup.md
