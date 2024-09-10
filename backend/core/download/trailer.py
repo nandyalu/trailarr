@@ -137,8 +137,8 @@ def download_trailer(
     else:
         trailer_path = media.folder_path
     try:
-        if not os.path.exists(trailer_path):
-            os.makedirs(trailer_path)
+        # if not os.path.exists(trailer_path):
+        #     os.makedirs(trailer_path)
         return move_trailer_to_folder(output_file, trailer_path, media.title)
     except Exception as e:
         logger.error(f"Failed to move trailer to folder: {e}")
@@ -220,6 +220,8 @@ def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) 
     if not os.path.exists(dst_folder_path):
         logger.debug(f"Creating folder: {dst_folder_path}")
         os.makedirs(dst_folder_path, mode=dst_permissions)
+        # Explicitly set the permissions for the folder
+        os.chmod(dst_folder_path, dst_permissions)
 
     # Construct the new filename and move the file
     dst_file_path = get_trailer_path(src_path, dst_folder_path, new_title)
