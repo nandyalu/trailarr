@@ -117,6 +117,9 @@ def download_trailer(
     logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
     tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
     output_file = download_video(trailer_url, tmp_output_file)
+    tmp_output_file = tmp_output_file.replace(
+        "%(ext)s", app_settings.trailer_file_format
+    )
     if not output_file or not os.path.exists(tmp_output_file):
         if retry_count > 0:
             logger.debug(
