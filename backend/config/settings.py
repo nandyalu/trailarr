@@ -413,6 +413,18 @@ class _Config:
         self._trailer_web_optimized = value
         self._save_to_env("TRAILER_WEB_OPTIMIZED", self._trailer_web_optimized)
 
+    @property
+    def yt_cookies_path(self):
+        """Path to the YouTube cookies file. \n
+        Default is empty string. \n
+        Valid values are any file path."""
+        return self._yt_cookies_path
+
+    @yt_cookies_path.setter
+    def yt_cookies_path(self, value: str):
+        self._yt_cookies_path = value
+        self._save_to_env("YT_COOKIES_PATH", self._yt_cookies_path)
+
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
         os.environ[key.upper()] = str(value)
