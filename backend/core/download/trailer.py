@@ -1,5 +1,6 @@
 # Extract youtube video id from url
 from datetime import datetime, timezone
+from functools import partial
 import os
 import re
 import shutil
@@ -32,6 +33,26 @@ def _get_youtube_id(url: str) -> str | None:
         return None
 
 
+def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
+    """Filter for videos shorter than 10 minutes and not a review."""
+    id = info.get("id")
+    if not id:
+        return None
+    if not exclude:
+        exclude = []
+    if id in exclude:
+        logger.debug(f"Skipping video in excluded list: {id}")
+        return "Video in excluded list"
+    duration = int(info.get("duration", 0))
+    if duration and duration > 600:
+        logger.debug(f"Skipping long video (>10m): {id}")
+        return "The video is longer than 10 minutes"
+    title = str(info.get("title", ""))
+    if "review" in title.lower():
+        logger.debug(f"Skipping review video: {id}")
+        return "The video is a review"
+
+
 def _search_yt_for_trailer(
     movie_title: str,
     is_movie=True,
@@ -47,20 +68,22 @@ def _search_yt_for_trailer(
         str | None: Youtube video id / None if not found."""
     logger.debug(f"Searching youtube for trailer for '{movie_title}'...")
     # Set options
+    filter_func = partial(_yt_search_filter, exclude=exclude)
     options = {
         "format": "bestvideo[height<=?1080]+bestaudio",
+        "match_filter": filter_func,
         "noplaylist": True,
         "extract_flat": "discard_in_playlist",
         "fragment_retries": 10,
         # Fix issue with youtube-dl not being able to download some videos
         # See https://github.com/yt-dlp/yt-dlp/issues/9554
-        "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
+        # "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
         "noprogress": True,
         "no_warnings": True,
         "quiet": True,
     }
-    # Construct search query with keywords
-    search_query = f"ytsearch: {movie_title}"
+    # Construct search query with keywords for 5 search results
+    search_query = f"ytsearch5: {movie_title}"
     if movie_year:
         search_query += f" ({movie_year})"
     search_query += " movie" if is_movie else " series"
@@ -77,11 +100,13 @@ def _search_yt_for_trailer(
         return None
     if "entries" not in search_results:
         return None
-    # Return the first search result video id
+    # Return the first search result video id that matches the criteria
     if not exclude:
         exclude = []
     for result in search_results["entries"]:
+        # Skip if video id is in exclude list
         if result["id"] in exclude:
+            logger.debug(f"Skipping excluded video: {result['id']}")
             continue
         logger.debug(f"Found trailer for {movie_title}: {result['id']}")
         return str(result["id"])
@@ -202,7 +227,7 @@ def get_trailer_path(
 
     # Remove increment index if it's 0
     title_opts["i"] = increment_index
-    if increment_index == 0:
+    if increment_index == 1:
         title_format = title_format.replace("{i}", "")
     else:
         # If increment index > 0 and not in title format, add it
