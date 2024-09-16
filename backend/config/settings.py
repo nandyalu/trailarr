@@ -41,7 +41,7 @@ class _Config:
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
-    _DEFAULT_FILE_NAME = "{title} - Trailer{i}-trailer.{ext}"
+    _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
