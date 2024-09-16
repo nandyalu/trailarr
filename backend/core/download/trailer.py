@@ -143,7 +143,7 @@ def download_trailer(
     try:
         # if not os.path.exists(trailer_path):
         #     os.makedirs(trailer_path)
-        return move_trailer_to_folder(output_file, trailer_path, media.title)
+        return move_trailer_to_folder(output_file, trailer_path, media)
     except Exception as e:
         logger.error(f"Failed to move trailer to folder: {e}")
         return False
@@ -176,7 +176,7 @@ def normalize_filename(filename: str) -> str:
 
 
 def get_trailer_path(
-    src_path: str, dst_folder_path: str, new_title: str, increment_index: int = 1
+    src_path: str, dst_folder_path: str, media: MediaTrailer, increment_index: int = 1
 ) -> str:
     """Get the destination path for the trailer file. \n
     Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
@@ -189,29 +189,58 @@ def get_trailer_path(
     Args:
         src_path (str): Source path of the trailer file.
         dst_folder_path (str): Destination folder path.
-        new_title (str): New title of the media.
+        media (MediaTitle): MediaTitle object.
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Destination path for the trailer file."""
+    # Get trailer file name format from settings
+    title_format = app_settings.trailer_file_name
+    if title_format.count("{") != title_format.count("}"):
+        logger.error("Invalid title format, setting to default")
+        return src_path
+    title_opts = media.to_dict()  # Convert media object to dictionary for formatting
+
+    # Remove increment index if it's 0
+    title_opts["i"] = increment_index
+    if increment_index == 0:
+        title_format = title_format.replace("{i}", "")
+    else:
+        # If increment index > 0 and not in title format, add it
+        if "{i}" not in title_format:
+            # If title format ends with "-trailer.{ext}", add increment index before it
+            if title_format.endswith("-trailer.{ext}"):
+                title_format = title_format.replace(
+                    "-trailer.{ext}", "{i}-trailer.{ext}"
+                )
+            # If title format does not end with "-trailer.{ext}",
+            # add increment index before extension
+            else:
+                title_format = title_format.replace(".{ext}", "{i}.{ext}")
+        # Add space before increment index
+        title_format = title_format.replace("{i}", "{i: }")
+
+    # Get filename from source path and extract extension
     filename = os.path.basename(src_path)
     _ext = os.path.splitext(filename)[1]
-    if increment_index > 1:
-        filename = f"{new_title} - Trailer {increment_index}-trailer{_ext}"
-    else:
-        filename = f"{new_title} - Trailer-trailer{_ext}"
+    _ext = _ext.replace(".", "")
+    title_opts["ext"] = _ext
+
+    # Format the title to get the new filename
+    filename = title_format.format(**title_opts)
+
     # Normalize the filename
     filename = normalize_filename(filename)
     # Get the destination path
     dst_file_path = os.path.join(dst_folder_path, filename)
     # If file exists in destination, increment the index, else return path
     if os.path.exists(dst_file_path):
-        return get_trailer_path(
-            src_path, dst_folder_path, new_title, increment_index + 1
-        )
+        return get_trailer_path(src_path, dst_folder_path, media, increment_index + 1)
     return dst_file_path
 
 
-def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) -> bool:
+def move_trailer_to_folder(
+    src_path: str, dst_folder_path: str, media: MediaTrailer
+) -> bool:
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
         logger.debug(f"Trailer file not found at: {src_path}")
@@ -228,7 +257,7 @@ def move_trailer_to_folder(src_path: str, dst_folder_path: str, new_title: str) 
         os.chmod(dst_folder_path, dst_permissions)
 
     # Construct the new filename and move the file
-    dst_file_path = get_trailer_path(src_path, dst_folder_path, new_title)
+    dst_file_path = get_trailer_path(src_path, dst_folder_path, media)
     shutil.move(src_path, dst_file_path)
 
     # Set the moved file's permissions to match the destination folder's permissions

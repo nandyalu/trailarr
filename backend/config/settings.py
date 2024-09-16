@@ -41,6 +41,7 @@ class _Config:
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
+    _DEFAULT_FILE_NAME = "{title} - Trailer{i}-trailer.{ext}"
 
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
@@ -112,6 +113,7 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "True",
         ).lower() in ["true", "1"]
+        self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
 
     def as_dict(self):
@@ -137,6 +139,7 @@ class _Config:
             "server_start_time": self.server_start_time,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "trailer_file_name": self.trailer_file_name,
             "yt_cookies_path": self.yt_cookies_path,
         }
 
@@ -254,6 +257,25 @@ class _Config:
     def wait_for_media(self, value: bool):
         self._wait_for_media = value
         self._save_to_env("WAIT_FOR_MEDIA", self._wait_for_media)
+
+    @property
+    def trailer_file_name(self):
+        """File name format for trailers. \n
+        Default is '{title} - Trailer{i}-trailer.{ext}'. \n
+        Valid values are any string with placeholders."""
+        return self._trailer_file_name
+
+    @trailer_file_name.setter
+    def trailer_file_name(self, value: str):
+        value = value.strip()
+        if value.count("{") != value.count("}"):
+            value = self._DEFAULT_FILE_NAME
+        if not value.endswith(".{ext}"):
+            value = value.replace("{ext}", ".{ext}")
+        if not value.endswith(".{ext}"):
+            value += ".{ext}"
+        self._trailer_file_name = value
+        self._save_to_env("TRAILER_FILE_NAME", self._trailer_file_name)
 
     @property
     def trailer_folder_movie(self):

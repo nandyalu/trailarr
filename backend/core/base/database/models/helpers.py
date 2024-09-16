@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime
 
 
@@ -22,6 +22,10 @@ class MediaTrailer:
     yt_id: str | None
     folder_path: str
     downloaded_at: datetime | None = None
+
+    def to_dict(self) -> dict:
+        """Convert MediaTrailer object to a dictionary."""
+        return asdict(self)
 
 
 @dataclass(eq=False, frozen=True, repr=False, slots=True)
