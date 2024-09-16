@@ -145,6 +145,8 @@ def download_trailer(
     tmp_output_file = tmp_output_file.replace(
         "%(ext)s", app_settings.trailer_file_format
     )
+
+    # Check if the trailer is downloaded successfully
     if not output_file or not os.path.exists(tmp_output_file):
         if retry_count > 0:
             logger.debug(
