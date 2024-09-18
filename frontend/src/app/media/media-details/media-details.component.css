@@ -175,13 +175,38 @@
   text-align: center;
 }
 
+.loading-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.loading {
+  animation: spin-animation 2s linear infinite;
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .media-files-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin: 1rem;
 }
- 
+
 .media-files-container .media-files {
   width: 100%;
   display: block;

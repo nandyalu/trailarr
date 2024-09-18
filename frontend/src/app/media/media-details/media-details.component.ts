@@ -1,4 +1,4 @@
-import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common';
+import { NgFor, NgIf, NgTemplateOutlet, TitleCasePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -12,7 +12,7 @@ import { WebsocketService } from '../../services/websocket.service';
 @Component({
   selector: 'app-media-details',
   standalone: true,
-  imports: [NgIf, NgFor, FormsModule, DurationConvertPipe, NgTemplateOutlet],
+  imports: [NgIf, NgFor, FormsModule, DurationConvertPipe, NgTemplateOutlet, TitleCasePipe],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.css'
 })
@@ -22,9 +22,11 @@ export class MediaDetailsComponent {
   mediaFiles?: FolderInfo = undefined;
   mediaFilesResponse: string = 'No files found';
   isLoading = true;
+  isLoadingMonitor = false;
+  isLoadingDownload = false;
   filesLoading = true;
   trailer_url: string = '';
-  status = 'Missing';
+  // status = 'Missing';
   private mediaService: MovieService | SeriesService = this.seriesService;
   private webSocketSubscription?: Subscription;
 
@@ -98,11 +100,11 @@ export class MediaDetailsComponent {
       this.media = media_res;
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
-      if (media_res.trailer_exists) {
-        this.status = 'Downloaded';
-      } else {
-        this.status = media_res.monitor ? 'Monitored' : 'Missing';
-      }
+      // if (media_res.trailer_exists) {
+      //   this.status = 'Downloaded';
+      // } else {
+      //   this.status = media_res.monitor ? 'Monitored' : 'Missing';
+      // }
     });
     // Get Media Files
     this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo | string) => {
@@ -122,6 +124,7 @@ export class MediaDetailsComponent {
       // Trailer id is the same, no need to download
       return;
     }
+    this.isLoadingDownload = true;
     // console.log('Downloading trailer');
     this.mediaService.downloadMediaTrailer(this.mediaId, this.trailer_url).subscribe((res: string) => {
       console.log(res);
@@ -130,10 +133,12 @@ export class MediaDetailsComponent {
 
   monitorSeries() {
     // console.log('Toggling Media Monitoring');
+    this.isLoadingMonitor = true;
     const monitor = !this.media?.monitor;
     this.mediaService.monitorMedia(this.mediaId, monitor).subscribe((res: string) => {
       console.log(res);
       this.media!.monitor = monitor;
+      this.isLoadingMonitor = false;
     });
   }
 
