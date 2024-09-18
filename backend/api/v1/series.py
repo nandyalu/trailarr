@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from api.v1 import websockets
 from api.v1.models import ErrorResponse
 from core.base.database.manager.base import MediaDatabaseManager
-from core.base.database.models.media import MediaRead, MediaUpdate
+from core.base.database.models.media import MediaRead, MediaUpdate, MonitorStatus
 from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import download_trailer_by_id
 
@@ -108,7 +108,14 @@ async def monitor_series(series_id: int, monitor: bool = True) -> str:
             msg = f"Series '{series.title}' [{series.id}] already has a trailer!"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        series_update = MediaUpdate(monitor=monitor)
+        if monitor:
+            monitor_status = MonitorStatus.MONITORED
+        else:
+            if series.trailer_exists:
+                monitor_status = MonitorStatus.DOWNLOADED
+            else:
+                monitor_status = MonitorStatus.MISSING
+        series_update = MediaUpdate(monitor=monitor, status=monitor_status)
         db_handler.update(series_id, series_update)
         if monitor:
             msg = f"Series '{series.title}' [{series.id}] is now monitored"
@@ -153,7 +160,7 @@ async def delete_series_trailer(series_id: int) -> str:
             msg = f"Failed to delete trailer for series '{series.title}' [{series.id}]"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        series_update = MediaUpdate(trailer_exists=False)
+        series_update = MediaUpdate(trailer_exists=False, status=MonitorStatus.MISSING)
         db_handler.update(series_id, series_update)
         msg = f"Trailer for series '{series.title}' [{series.id}] has been deleted."
         logging.info(msg)

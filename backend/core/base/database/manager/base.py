@@ -10,6 +10,7 @@ from core.base.database.models.media import (
     MediaCreate,
     MediaRead,
     MediaUpdate,
+    MonitorStatus,
 )
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
@@ -22,7 +23,9 @@ class MediaUpdateProtocol(Protocol):
     @property
     def monitor(self) -> bool: ...
     @property
-    def trailer_exists(self) -> bool: ...
+    def status(self) -> MonitorStatus: ...
+    @property
+    def trailer_exists(self) -> bool | None: ...
     @property
     def yt_id(self) -> str | None: ...
     @property
@@ -200,7 +203,7 @@ class MediaDatabaseManager:
         limit = max(1, min(limit, 100))
         statement = (
             select(Media)
-            .where(col(Media.downloaded_at).is_not(None))
+            .where(Media.status == MonitorStatus.DOWNLOADED)
             .order_by(desc(Media.downloaded_at))
             .offset(offset)
             .limit(limit)
@@ -263,7 +266,7 @@ class MediaDatabaseManager:
         db_media = self._get_db_item(media_id, _session)
         media_update_data = media_update.model_dump(
             exclude_unset=True,
-            exclude_defaults=True,
+            # exclude_defaults=True,
             exclude_none=True,
             exclude={"youtube_trailer_id", "downloaded_at"},
         )
@@ -316,8 +319,25 @@ class MediaDatabaseManager:
             ItemNotFoundError: If the media item with provided id doesn't exist.
         """
         db_media = self._get_db_item(media_update.id, _session)
-        db_media.monitor = media_update.monitor
-        db_media.trailer_exists = media_update.trailer_exists
+        if media_update.trailer_exists is not None:
+            db_media.trailer_exists = media_update.trailer_exists
+        # If trailer exists, disable monitoring
+        if db_media.trailer_exists:
+            db_media.monitor = False
+        else:
+            db_media.monitor = media_update.monitor
+        # Update status based on monitor status and trailer existence if not downloading
+        if media_update.status != MonitorStatus.DOWNLOADING:
+            if db_media.trailer_exists:
+                _status = MonitorStatus.DOWNLOADED
+            else:
+                if db_media.monitor:
+                    _status = MonitorStatus.MONITORED
+                else:
+                    _status = MonitorStatus.MISSING
+        else:  # If downloading, set status to downloading
+            _status = MonitorStatus.DOWNLOADING
+        db_media.status = _status
         if media_update.downloaded_at:
             db_media.downloaded_at = media_update.downloaded_at
         if media_update.yt_id:

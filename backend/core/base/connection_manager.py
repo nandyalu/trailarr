@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from functools import cache
 from typing import Any, Callable, Protocol
 
 from app_logger import ModuleLogger
+from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
-from core.base.database.models.media import MediaCreate
+from core.base.database.models.media import MediaCreate, MonitorStatus
 
 logger = ModuleLogger("ConnectionManager")
 
@@ -150,29 +151,61 @@ class BaseConnectionManager(ABC):
             return arr_monitored
         return False
 
-    @abstractmethod
-    def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
-        """Create or update media in the database and return \
-            objects that satisfy MediaReadProtocol.\n
+    @cache
+    def _get_media_status(
+        self, trailer_exists: bool, monitor: bool, current_status: MonitorStatus
+    ) -> MonitorStatus:
+        """Get the media status based on the trailer and monitoring status.\n
         Args:
-            media_data (list[_MediaCreate]): The media data to create or update.\n
+            trailer_exists (bool): Flag indicating if a trailer exists on disk.
+            monitor (bool): Flag indicating if the media should be monitored.
+            current_status (MonitorStatus): The current media status.\n
         Returns:
-            list[MediaReadProtocol]: The media objects that satisfy MediaReadProtocol."""
-        raise NotImplementedError("Subclasses must implement this method")
+            MonitorStatus: The new media status."""
+        # If media is already downloading, return downloading status
+        if current_status == MonitorStatus.DOWNLOADING:
+            return MonitorStatus.DOWNLOADING
+        # If trailer exists, return downloaded status
+        if trailer_exists:
+            return MonitorStatus.DOWNLOADED
+        # If media is monitored, return monitored status
+        if monitor:
+            return MonitorStatus.MONITORED
+        # Else, return missing status
+        return MonitorStatus.MISSING
 
-    @abstractmethod
+    def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
+        """Create or update media in the database and return MediaRead objects.\n
+        Args:
+            media_data (list[MovieCreate]): The movie data to create or update.\n
+        Returns:
+            list[MediaReadDC]: A list of MediaRead objects."""
+        movie_read_list = MediaDatabaseManager().create_or_update_bulk(media_data)
+        return [
+            MediaReadDC(
+                id=movie_read.id,
+                created=created,
+                folder_path=movie_read.folder_path,
+                arr_monitored=movie_read.arr_monitored,
+                monitor=movie_read.monitor,
+                status=movie_read.status,
+            )
+            for movie_read, created in movie_read_list
+        ]
+
     def remove_deleted_media(self, media_ids: list[int]) -> None:
         """Remove the media from the database that are not present in the Arr application. \n
         Args:
             media_ids (list[int]): List of media ids to remove."""
-        raise NotImplementedError("Subclasses must implement this method")
+        MediaDatabaseManager().delete_except(self.connection_id, media_ids)
+        return
 
-    @abstractmethod
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
         """Update the media status in the database. \n
         Args:
             media_update_list (list[MediaUpdateDC]): List of media update data."""
-        raise NotImplementedError("Subclasses must implement this method")
+        MediaDatabaseManager().update_media_status_bulk(media_update_list)
+        return
 
     async def refresh(self):
         """Gets new data from Arr API and saves it to the database."""
@@ -201,14 +234,18 @@ class BaseConnectionManager(ABC):
             else:
                 # Else, check if monitor needs to be enabled now
                 monitor_media = self._check_monitoring(
-                    media_read.created,
-                    trailer_exists,
-                    media_read.arr_monitored,
+                    media_read.created, trailer_exists, media_read.arr_monitored
                 )
+            # Set media status based on trailer and monitoring status
+            status = self._get_media_status(
+                trailer_exists, monitor_media, media_read.status
+            )
+            # Append to the update list
             update_list.append(
                 MediaUpdateDC(
                     id=media_read.id,
                     monitor=monitor_media,
+                    status=status,
                     trailer_exists=trailer_exists,
                 )
             )
