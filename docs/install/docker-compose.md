@@ -21,7 +21,7 @@ services:
         ports:
             - 7889:7889
         volumes:
-            - <LOCAL_APPDATA_FOLDER>:/data
+            - <LOCAL_APPDATA_FOLDER>:/config
             - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
             - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
         restart: on-failure

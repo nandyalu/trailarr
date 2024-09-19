@@ -11,7 +11,7 @@ docker run -d \
     -e PUID=1000 \
     -e PGID=1000 \
     -p 7889:7889 \
-    -v <LOCAL_APPDATA_FOLDER>:/data \
+    -v <LOCAL_APPDATA_FOLDER>:/config \
     -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
     -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
     --restart unless-stopped \

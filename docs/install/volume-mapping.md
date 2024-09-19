@@ -2,14 +2,14 @@
 
 ## AppData
 
-Trailarr needs a folder to store the application data. You need to map a local folder to the `/data` folder in the Trailarr container.
+Trailarr needs a folder to store the application data. You need to map a local folder to the `/config` folder in the Trailarr container.
 
 Change `<LOCAL_APPDATA_FOLDER>` to the folder where you want to store the application data.
 
 For example, if you want to store the application data in `/var/appdata/trailarr`, the volume mapping would look like this:
 ```yaml
     volumes:
-        - /var/appdata/trailarr:/data
+        - /var/appdata/trailarr:/config
 ```
 
 !!! warning

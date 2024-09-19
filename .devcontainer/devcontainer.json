@@ -13,7 +13,7 @@
 
 	// Mount appdata folder for persistent storage
 	"mounts": [
-		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
+		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
 	],
 
@@ -27,7 +27,7 @@
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/data"
+		"APP_DATA_DIR": "/config"
 	},
 
 	"customizations": {

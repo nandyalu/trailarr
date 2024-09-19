@@ -211,7 +211,7 @@ class _Config:
     @property
     def database_url(self):
         """Database URL for the application. \n
-        Default is 'sqlite:////data/trailarr.db'. \n
+        Default is 'sqlite:////config/trailarr.db'. \n
         Valid values are any database URL."""
         return self._database_url
 
@@ -222,6 +222,7 @@ class _Config:
         # If APP_DATA_DIR has updated, and database_url is default, update it to new path
         # If ENV DATABASE_URL is modified by user, don't update it
         _untouched_db_url = "sqlite:////data/trailarr.db"
+        # TODO: Change this to /data/trailarr.db in next update!
         if value == _untouched_db_url:
             value = self._DEFAULT_DB_URL
         self._database_url = value
