@@ -4,7 +4,9 @@ import secrets
 
 from dotenv import load_dotenv, set_key
 
-APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/data"))
+from config import app_logger_opts
+
+APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/config"))
 ENV_PATH = f"{APP_DATA_DIR}/.env"
 RESOLUTION_DICT = {
     "SD": 360,
@@ -43,6 +45,7 @@ class _Config:
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
     _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
 
+    _VALID_LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
     _VALID_SUBTITLES_FORMATS = ["srt", "vtt", "pgs"]
@@ -59,7 +62,7 @@ class _Config:
 
         # Read properties from ENV variables or set default values if not present
         self.api_key = os.getenv("API_KEY", "")
-        self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
+        self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.testing = os.getenv("TESTING", "False").lower() in ["true", "1"]
         self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
         self.monitor_enabled = os.getenv(
@@ -120,7 +123,7 @@ class _Config:
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
-            "debug": self.debug,
+            "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
             "timezone": self.timezone,
@@ -179,16 +182,19 @@ class _Config:
         pass
 
     @property
-    def debug(self):
-        """Debug mode for the application. \n
-        Default is False. \n
-        Valid values are True/False."""
+    def log_level(self):
+        """Log level for the application. \n
+        Default is INFO. \n
+        Valid values are DEBUG, INFO, WARNING, ERROR, CRITICAL."""
         return self._debug
 
-    @debug.setter
-    def debug(self, value: bool):
-        self._debug = value
-        self._save_to_env("DEBUG", self._debug)
+    @log_level.setter
+    def log_level(self, value: str):
+        if value.upper() not in self._VALID_LOG_LEVELS:
+            value = "INFO"
+        self._debug = value.upper()
+        app_logger_opts.set_logger_level(self._debug)
+        self._save_to_env("LOG_LEVEL", self._debug)
 
     @property
     def testing(self):

@@ -6,6 +6,7 @@ import multiprocessing
 import pathlib
 import threading
 
+from config import app_logger_opts
 from config.settings import app_settings
 
 _is_logging_setup = False
@@ -25,34 +26,6 @@ def stop_logging(queue: multiprocessing.Queue):
     queue.close()
 
 
-def set_handler_level(handler_name, level: int):
-    """Set the level for a specific handler."""
-    logger = logging.getLogger()
-    for handler in logger.handlers:
-        if handler.get_name() == handler_name:
-            handler.setLevel(level)
-            break
-    return
-
-
-def set_logger_level() -> None:
-    """Set the log level for the root logger."""
-    log_levels = {
-        "DEBUG": logging.DEBUG,
-        "INFO": logging.INFO,
-        "WARNING": logging.WARNING,
-        "ERROR": logging.ERROR,
-        "CRITICAL": logging.CRITICAL,
-    }
-    _log_level = "DEBUG" if app_settings.debug else "INFO"
-    level = log_levels.get(_log_level, logging.INFO)
-    logging.getLogger().setLevel(level)
-    set_handler_level("console", level)
-    set_handler_level("file", level)
-    logging.info(f"Log level set to '{_log_level}'")
-    return
-
-
 def config_logging():
     """Setup the logging configuration using the config file.
     This will setup the root logger configuration and start the queue handler listener.
@@ -70,7 +43,7 @@ def config_logging():
         logging.debug(f"Logger config file not found: {config_file}")
 
     logging.config.dictConfig(config)
-    set_logger_level()
+    app_logger_opts.set_logger_level(app_settings.log_level)
     logger_thread = threading.Thread(target=handle_logs, args=(queue,))
     logger_thread.daemon = True
     logger_thread.start()

@@ -4,7 +4,7 @@ export interface Settings {
     version: string
     server_start_time: string
     timezone: string
-    debug: boolean
+    log_level: string
     monitor_enabled: boolean
     monitor_interval: number
     trailer_file_name: string

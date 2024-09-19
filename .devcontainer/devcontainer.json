@@ -24,7 +24,7 @@
 
 	"containerEnv": {
 		"PYTHONPATH": "${containerWorkspaceFolder}/backend",
-		"DEBUG": "False",
+		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
 		"APP_DATA_DIR": "/data"

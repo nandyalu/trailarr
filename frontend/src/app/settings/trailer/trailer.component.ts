@@ -17,6 +17,7 @@ export class TrailerComponent {
   monitorInterval = 60;
   resolution = 1080;
   subtitleLanguage = 'en';
+  loggingOptions = ["Debug", "Info", "Warning", "Error"];
   trueFalseOptions = [true, false];
   fileFormats = ["mkv", "mp4", "webm"];
   audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]

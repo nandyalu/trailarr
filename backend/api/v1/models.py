@@ -24,7 +24,7 @@ class Settings(BaseModel):
     version: str
     server_start_time: str
     timezone: str
-    debug: bool
+    log_level: str
     monitor_enabled: bool
     monitor_interval: int
     trailer_folder_movie: bool
