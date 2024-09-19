@@ -388,7 +388,7 @@ class _Config:
         self._trailer_subtitles_format = value
         if self._trailer_subtitles_format.lower() not in self._VALID_SUBTITLES_FORMATS:
             self._trailer_subtitles_format = self._DEFAULT_SUBTITLES_FORMAT
-        self._save_to_env("TRAILER_VIDEO_FORMAT", self._trailer_subtitles_format)
+        self._save_to_env("TRAILER_SUBTITLES_FORMAT", self._trailer_subtitles_format)
 
     @property
     def trailer_file_format(self):
