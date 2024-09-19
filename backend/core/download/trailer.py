@@ -226,25 +226,28 @@ def get_trailer_path(
         logger.error("Invalid title format, setting to default")
         return src_path
     title_opts = media.to_dict()  # Convert media object to dictionary for formatting
+    title_opts["resolution"] = f"{app_settings.trailer_resolution}p"
+    title_opts["vcodec"] = app_settings.trailer_video_format
+    title_opts["acodec"] = app_settings.trailer_audio_format
 
     # Remove increment index if it's 0
-    title_opts["i"] = increment_index
+    title_opts["ii"] = increment_index
     if increment_index == 1:
-        title_format = title_format.replace("{i}", "")
+        title_format = title_format.replace("{ii}", "")
     else:
         # If increment index > 0 and not in title format, add it
-        if "{i}" not in title_format:
+        if "{ii}" not in title_format:
             # If title format ends with "-trailer.{ext}", add increment index before it
             if title_format.endswith("-trailer.{ext}"):
                 title_format = title_format.replace(
-                    "-trailer.{ext}", "{i}-trailer.{ext}"
+                    "-trailer.{ext}", "{ii}-trailer.{ext}"
                 )
             # If title format does not end with "-trailer.{ext}",
             # add increment index before extension
             else:
-                title_format = title_format.replace(".{ext}", "{i}.{ext}")
+                title_format = title_format.replace(".{ext}", "{ii}.{ext}")
         # Add space before increment index
-        title_format = title_format.replace("{i}", "{i: }")
+        title_format = title_format.replace("{ii}", "{ii: }")
 
     # Get filename from source path and extract extension
     filename = os.path.basename(src_path)
