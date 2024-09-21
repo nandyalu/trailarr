@@ -98,6 +98,7 @@ class BaseConnectionManager(ABC):
             return media_list
         # Loop through the media_list and apply the path mappings
         updated_media_list: list[MediaCreate] = []
+        media_path_updated = False
         for media in media_list:
             if not media.folder_path:
                 updated_media_list.append(media)
@@ -107,8 +108,13 @@ class BaseConnectionManager(ABC):
                     media.folder_path = media.folder_path.replace(
                         path_mapping.path_from, path_mapping.path_to
                     )
+                    media.folder_path = media.folder_path.replace("\\", "/")
                     updated_media_list.append(media)
+                    media_path_updated = True
                     break
+            if not media_path_updated:
+                media.folder_path = media.folder_path.replace("\\", "/")
+                updated_media_list.append(media)
         return updated_media_list
 
     async def _check_trailer(self, folder_path: str) -> bool:
