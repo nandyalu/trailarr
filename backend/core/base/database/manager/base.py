@@ -50,7 +50,7 @@ class MediaDatabaseManager:
         If media already exists, it will be updated, otherwise it will be created.\n
         Args:
             media_create_list (list[MediaCreate]): List of media objects to create or update.\n
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[tuple[MediaRead, bool]]: List of tuples with MediaRead objects and created flag.\n
@@ -90,7 +90,7 @@ class MediaDatabaseManager:
         """Get a media object from the database by id.\n
         Args:
             id (int): The id of the media object to get.
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             MediaRead: The MediaRead object if it exists.
@@ -111,10 +111,10 @@ class MediaDatabaseManager:
     ) -> list[MediaRead]:
         """Get all media objects from the database.\n
         Args:
-            movies_only (bool) [Optional]: Flag to get only movies. Default is None.\n
+            movies_only (bool, Optional): Flag to get only movies. Default is None.\n
                 If True, it will return only movies. If False, it will return only series.\n
                 If None, it will return all media items.\n
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -135,7 +135,7 @@ class MediaDatabaseManager:
         """Get all media objects from the database for a given connection.\n
         Args:
             connection_id (int): The id of the connection to get media items for.
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -163,12 +163,12 @@ class MediaDatabaseManager:
     ) -> list[MediaRead]:
         """Get the most recent media objects from the database.\n
         Args:
-            limit (int) [Optional]: The number of recent media items to get. Max 100
-            offset (int) [Optional]: The offset to start from. Default is 0.
-            movies_only (bool) [Optional]: Flag to get only movies. Default is None.\n
+            limit (int, Optional): The number of recent media items to get. Max 100
+            offset (int, Optional): The offset to start from. Default is 0.
+            movies_only (bool, Optional): Flag to get only movies. Default is None.\n
                 If True, it will return only movies. If False, it will return only series.\n
                 If None, it will return all media items.\n
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -192,9 +192,9 @@ class MediaDatabaseManager:
     ) -> list[MediaRead]:
         """Get the most recently downloaded media objects from the database.\n
         Args:
-            limit (int) [Optional]: The number of recent media items to get. Max 100
-            offset (int) [Optional]: The offset to start from. Default is 0.
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            limit (int, Optional): The number of recent media items to get. Max 100
+            offset (int, Optional): The offset to start from. Default is 0.
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -227,8 +227,8 @@ class MediaDatabaseManager:
         Otherwise, it will return a list of [max 50 recently added] Media matching the query.\n
         Args:
             query (str): The search query to search for in the media items.
-            offset (int) [Optional]: The offset to start from. Default is 0.
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            offset (int, Optional): The offset to start from. Default is 0.
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -255,8 +255,8 @@ class MediaDatabaseManager:
         Args:
             media_id (int): The id of the media to update.
             media_update (MediaUpdate): The media data to update.
-            _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`.
-            _session (Session) [Optional]: A session to use for the database connection. \
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
                 Default is None, in which case a new session will be created. \n
         Returns:
             None
@@ -287,7 +287,7 @@ class MediaDatabaseManager:
         Args:
             media_updates (list[tuple[int, MediaUpdate]]): List of tuples with media id \
                 and update data.\n
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
             None
@@ -310,9 +310,9 @@ class MediaDatabaseManager:
         """Update the monitoring status of a media item in the database by id.\n
         Args:
             media_update (MediaUpdateProtocol): The media update object satisfying the protocol.
-            _commit (bool) [Optional]: Flag to `commit` the changes. Default is `True`.
-            _session (Session) [Optional]: A session to use for the database connection. \
-                Default is None, in which case a new session will be created.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
         Returns:
             None
         Raises:
@@ -357,7 +357,7 @@ class MediaDatabaseManager:
         """Update the monitoring status of multiple media items in the database at once.\n
         Args:
             media_update_list (Sequence[MediaUpdateProtocol]): Sequence of media update objects.\n
-            _session (Session) [Optional]: A session to use for the database connection.\n
+            _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.
         Returns:
             None
@@ -379,7 +379,7 @@ class MediaDatabaseManager:
         """Delete a media item from the database by id.\n
         Args:
             media_id (int): The id of the media to delete.
-            _session (Session) [Optional]: A session to use for the database connection.\
+            _session (Session, Optional): A session to use for the database connection.\
                 Default is None, in which case a new session will be created.\n
         Returns:
             None
@@ -401,7 +401,7 @@ class MediaDatabaseManager:
         """Delete multiple media items from the database at once.\n
         Args:
             media_ids (list[int]): List of media id's to delete.
-            _session (Session) [Optional]: A session to use for the database connection.\
+            _session (Session, Optional): A session to use for the database connection.\
                 Default is None, in which case a new session will be created.\n
         Returns:
             None
@@ -432,7 +432,7 @@ class MediaDatabaseManager:
         Args:
             connection_id (int): The id of the connection to delete media items for.
             media_ids (list[int]): List of media id's to keep.
-            _session (Session) [Optional]: A session to use for the database connection.\
+            _session (Session, Optional): A session to use for the database connection.\
                 Default is None, in which case a new session will be created.\n
         Returns:
             None
