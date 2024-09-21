@@ -6,6 +6,10 @@ import json
 
 from pydantic import BaseModel
 
+from app_logger import ModuleLogger
+
+logger = ModuleLogger("VideoAnalysis")
+
 
 class StreamInfo(BaseModel):
 
@@ -34,6 +38,13 @@ class VideoInfo(BaseModel):
 
 
 def get_media_info(file_path: str) -> VideoInfo | None:
+    """
+    Get media information using ffprobe. \n
+    Args:
+        file_path (str): Path to the media file. \n
+    Returns:
+        VideoInfo | None: VideoInfo object if successful, None otherwise.
+    """
     entries_required = (
         "format=format_name,duration,size,bit_rate : "
         "stream=index,codec_type,codec_name,coded_height,coded_width"
@@ -49,6 +60,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         file_path,
     ]
     try:
+        logger.debug(f"Running media analysis for: {file_path}")
         # Run ffprobe command to get media info
         result = subprocess.run(
             ffprobe_cmd,
@@ -56,35 +68,68 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             stderr=subprocess.PIPE,
             text=True,
         )
+        # Return None if command failed
+        if result.returncode != 0:
+            logger.error(f"Error: {result.stderr}")
+            return None
+
         # If command ran successfully, parse the output
-        if result.returncode == 0:
-            info = json.loads(result.stdout)
-            format: dict[str, str] = info.get("format", {})
-            # Create VideoInfo object
-            video_info = VideoInfo(
-                name=os.path.basename(file_path),
-                format_name=str(format.get("format_name", "N/A")),
-                duration_seconds=int(float(format.get("duration", "0"))),
-                size=int(format.get("size", "0")),
-                bit_rate=int(format.get("bit_rate", "0")),
-                streams=[],
+        info = json.loads(result.stdout)
+        format: dict[str, str] = info.get("format", {})
+        # Create VideoInfo object
+        video_info = VideoInfo(
+            name=os.path.basename(file_path),
+            format_name=str(format.get("format_name", "N/A")),
+            duration_seconds=int(float(format.get("duration", "0"))),
+            size=int(format.get("size", "0")),
+            bit_rate=int(format.get("bit_rate", "0")),
+            streams=[],
+        )
+        # Loop through streams and create StreamInfo objects
+        for stream in info["streams"]:
+            stream_info = StreamInfo(
+                index=int(stream.get("index", 0)),
+                codec_type=str(stream.get("codec_type", "N/A")),
+                codec_name=str(stream.get("codec_name", "N/A")),
+                coded_height=int(stream.get("coded_height", 0)),
+                coded_width=int(stream.get("coded_width", 0)),
             )
-            # Loop through streams and create StreamInfo objects
-            for stream in info["streams"]:
-                stream_info = StreamInfo(
-                    index=int(stream.get("index", 0)),
-                    codec_type=str(stream.get("codec_type", "N/A")),
-                    codec_name=str(stream.get("codec_name", "N/A")),
-                    coded_height=int(stream.get("coded_height", 0)),
-                    coded_width=int(stream.get("coded_width", 0)),
-                )
-                video_info.streams.append(stream_info)
-            return video_info
-        else:
-            print(f"Error: {result.stderr}")
+            video_info.streams.append(stream_info)
+        return video_info
     except Exception as e:
         print(f"Exception: {str(e)}")
     return None
+
+
+def verify_trailer_streams(trailer_path: str):
+    """
+    Check if the trailer has audio and video streams. \n
+    Args:
+        trailer_path (str): Path to the trailer file. \n
+    Returns:
+        bool: True if the trailer has audio and video streams, False otherwise.
+    """
+    # Check trailer file exists
+    if not trailer_path:
+        return False
+    # Get media analysis for the trailer
+    media_info = get_media_info(trailer_path)
+    if media_info is None:
+        return False
+    # Verify the trailer has audio and video streams
+    streams = media_info.streams
+    if len(streams) == 0:
+        return False
+    audio_exists = False
+    video_exists = False
+    for stream in streams:
+        if stream.codec_type == "audio":
+            audio_exists = True
+        if stream.codec_type == "video":
+            video_exists = True
+    if not audio_exists or not video_exists:
+        return False
+    return True
 
 
 def get_silence_timestamps(file_path):

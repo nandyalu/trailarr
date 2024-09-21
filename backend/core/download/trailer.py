@@ -12,6 +12,7 @@ from yt_dlp import YoutubeDL
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer
+from core.download import video_analysis
 from core.download.video import download_video
 
 logger = ModuleLogger("TrailersDownloader")
@@ -126,6 +127,7 @@ def download_trailer(
         is_movie (bool): Whether the media type is movie or show. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
+    trailer_downloaded = False
     if not exclude:
         exclude = []
     if media.yt_id:
@@ -136,25 +138,42 @@ def download_trailer(
         # Search for trailer on youtube
         video_id = _search_yt_for_trailer(media.title, is_movie, media.year, exclude)
     if not video_id:
-        return False
-    # Download the trailer
-    trailer_url = f"https://www.youtube.com/watch?v={video_id}"
-    logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
-    tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
-    output_file = download_video(trailer_url, tmp_output_file)
-    tmp_output_file = tmp_output_file.replace(
-        "%(ext)s", app_settings.trailer_file_format
-    )
+        trailer_downloaded = False
+    else:
+        # Download the trailer
+        trailer_url = f"https://www.youtube.com/watch?v={video_id}"
+        logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
+        tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
+        output_file = download_video(trailer_url, tmp_output_file)
+        tmp_output_file = tmp_output_file.replace(
+            "%(ext)s", app_settings.trailer_file_format
+        )
+        # Check if the trailer is downloaded successfully
+        if not output_file or not os.path.exists(tmp_output_file):
+            trailer_downloaded = False
+        else:
+            # Verify the trailer has audio and video streams
+            trailer_downloaded = video_analysis.verify_trailer_streams(output_file)
+            if not trailer_downloaded:
+                logger.debug(
+                    f"Trailer has either no audio or video streams: {media.title}"
+                )
+                logger.debug(f"Deleting failed trailer file: {output_file}")
+                try:
+                    os.remove(output_file)
+                except Exception as e:
+                    logger.error(f"Failed to delete trailer file: {e}")
 
-    # Check if the trailer is downloaded successfully
-    if not output_file or not os.path.exists(tmp_output_file):
+    # Retry downloading the trailer if failed
+    if not trailer_downloaded:
         if retry_count > 0:
             logger.debug(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
                 f"trying again... [{3 - retry_count}/3]"
             )
             media.yt_id = None
-            exclude.append(video_id)
+            if video_id:
+                exclude.append(video_id)
             return download_trailer(
                 media, trailer_folder, is_movie, retry_count - 1, exclude
             )

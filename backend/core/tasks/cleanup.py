@@ -30,37 +30,6 @@ async def delete_trailer_and_monitor(
     return None
 
 
-async def verify_trailer_streams(trailer_path: str):
-    """
-    Check if the trailer has audio and video streams. \n
-    Args:
-        trailer_path (str): Path to the trailer file. \n
-    Returns:
-        bool: True if the trailer has audio and video streams, False otherwise.
-    """
-    # Check trailer file exists
-    if not trailer_path:
-        return False
-    # Get media analysis for the trailer
-    media_info = video_analysis.get_media_info(trailer_path)
-    if media_info is None:
-        return False
-    # Verify the trailer has audio and video streams
-    streams = media_info.streams
-    if len(streams) == 0:
-        return False
-    audio_exists = False
-    video_exists = False
-    for stream in streams:
-        if stream.codec_type == "audio":
-            audio_exists = True
-        if stream.codec_type == "video":
-            video_exists = True
-    if not audio_exists or not video_exists:
-        return False
-    return True
-
-
 async def trailer_cleanup():
     """
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
@@ -85,7 +54,7 @@ async def trailer_cleanup():
 
         # Verify the trailer has audio and video streams
         # if not, delete the trailer file and set monitor to True
-        if not await verify_trailer_streams(trailer_path):
+        if not video_analysis.verify_trailer_streams(trailer_path):
             await delete_trailer_and_monitor(trailer_path, media.id, db_manager)
             continue
     # Cleanup any residual files left in '/tmp' directory
