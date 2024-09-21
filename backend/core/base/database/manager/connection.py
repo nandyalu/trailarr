@@ -85,6 +85,29 @@ class ConnectionDatabaseManager:
         connections = _session.exec(statement).all()
         return [ConnectionRead.model_validate(connection) for connection in connections]
 
+    def _end_path_with_slash(self, path: str) -> str:
+        """End a path with a slash if it does not already have one \n
+        Args:
+            path (str): The path to end with a slash \n
+        Returns:
+            str: The path with a slash at the end
+        """
+        # Check if path has a slash '/' (Linux/MacOS)
+        if path.count("/") > 1:
+            # End path with a slash if it does not have one
+            if not path.endswith("/"):
+                path += "/"
+            return path
+        # Check if path has a backslash '\' (Windows)
+        # Python uses double backslashes for escape characters, so we need to check for '\\'
+        # to escape the backslash itself which will be a single backslash in the path
+        if path.count("\\") > 1:
+            # End path with a slash if it does not have one
+            if not path.endswith("\\"):
+                path += "\\"
+            return path
+        return path
+
     def _convert_path_mappings(
         self, connection: ConnectionCreate | ConnectionUpdate
     ) -> list[PathMapping]:
@@ -97,6 +120,11 @@ class ConnectionDatabaseManager:
         db_path_mappings: list[PathMapping] = []
         for path_mapping in connection.path_mappings:
             db_path_mapping = PathMapping.model_validate(path_mapping)
+            # Make sure that path_from/path_to ends with a slash
+            db_path_mapping.path_from = self._end_path_with_slash(
+                db_path_mapping.path_from
+            )
+            db_path_mapping.path_to = self._end_path_with_slash(db_path_mapping.path_to)
             db_path_mappings.append(db_path_mapping)
         return db_path_mappings
 
