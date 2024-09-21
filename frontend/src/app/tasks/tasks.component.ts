@@ -48,7 +48,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       complete: handleCloseEvent
     });
   }
-  
+
   getSecondsToNextScheduledEvent(sTasks: ScheduledTask[], qTasks: QueuedTask[]): number {
     // Get the time to the next event
     let secondsToNextEvent = 30; // Default to 30 seconds
@@ -60,7 +60,7 @@ export class TasksComponent implements OnInit, OnDestroy {
         return 10;
       }
     }
-    
+
     // If no QueuedTask is running, get the time to the next event
     for (let sTask of sTasks) {
       let now = new Date().getTime();
@@ -91,7 +91,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.queuedTasks = tasks;
       this.isLoading2 = false;
     });
-    
+
     // Get the time to the next event
     let secondsToNextEvent = this.getSecondsToNextScheduledEvent(this.scheduledTasks, this.queuedTasks);
 
@@ -110,7 +110,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   runTask(task_id: string) {
-    console.log('Running task with id:', task_id);
+    // console.log('Running task with id:', task_id);
     this.tasksService.runScheduledTask(task_id).subscribe((res: string) => {
       console.log(res);
     });

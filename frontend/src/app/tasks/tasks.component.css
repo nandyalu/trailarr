@@ -63,9 +63,25 @@
 .table-row svg {
   margin: 0 0.5rem;
   width: 1rem;
-  fill: var(--color-primary)
+  fill: var(--color-primary);
+  cursor: pointer;
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
 }
 
 .table-row:hover:not(:first-child) {
   background-color: var(--color-tertiary-container);
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
