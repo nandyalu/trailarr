@@ -275,7 +275,7 @@ class FilesHandler:
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():
                     continue
-                if not entry.name.endswith((".mp4", ".mkv", ".avi")):
+                if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
                     continue
                 if "-trailer." not in entry.name:
                     continue
