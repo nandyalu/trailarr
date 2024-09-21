@@ -88,4 +88,4 @@ This sets the environment variables to run the app with following settings:
 - Group ID: 1000
 - Application data directory: /data/trailarr
 - Volume mapping: /var/appdata/trailarr:/data/trailarr
-```
+

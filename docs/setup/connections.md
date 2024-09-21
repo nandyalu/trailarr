@@ -57,7 +57,21 @@ Turns off monitoring for the connection and does not download any trailers.
 
 ## Path Mapping
 
-Path mappings are optional and only required if you have a setup that requires them. You can set different path mappings for each Radarr/Sonarr instance.
+In simple words, Path Mappings are used to tell Trailarr what to replace the path with when it gets a path from Radarr/Sonarr. `Path From` is what it looks for in the path, and `Path To` is what it replaces it with.
+
+If you are using Windows, you might need to add path mappings in most cases, unless you are also running Radarr/Sonarr as docker containers. See [Volume Mapping](../install/volume-mapping.md) for more information.
+
+!!! info
+    Path mappings are optional and only required if you have a setup that requires them. You can set different path mappings for each Radarr/Sonarr instance.
+
+??? example
+    Adding a path mapping for a connection as:
+    ```yaml
+    Path From: C:\Users\username\Movies
+    Path To: /media/movies
+    ```
+    will replace `C:\Users\username\Movies` with `/media/movies` in the path received from Radarr/Sonarr.
+    So, if Radarr/Sonarr sends a path like `C:\Users\username\Movies\The MAtrix (1999)`, it will be replaced with `/media/movies/The Matrix (1999)`.
 
 1. Click the `Add Path Mapping` button.
 ![Add Path Mapping](add-path-mapping.png)
