@@ -25,14 +25,15 @@ class ConnectionDatabaseManager:
         connection: ConnectionCreate,
         *,
         _session: Session = None,  # type: ignore
-    ) -> str:
+    ) -> tuple[str, int]:
         """Create a new connection in the database \n
         Args:
             connection (Connection): The connection to create
             _session (optional): A session to use for the database connection. \
                 Defaults to None, in which case a new session is created. \n
         Returns:
-            str: The status message of the connection with version if created. \n
+            tuple(str, int): The status message of the connection with version if created. \
+                and the id of the created connection. \n
         Raises:
             ConnectionError: If the connection is refused / response is not 200
             ConnectionTimeoutError: If the connection times out
@@ -48,7 +49,8 @@ class ConnectionDatabaseManager:
         # Use the session to add the connection to the database
         _session.add(db_connection)
         _session.commit()
-        return status
+        assert db_connection.id is not None
+        return status, db_connection.id
 
     @manage_session
     def check_if_exists(
