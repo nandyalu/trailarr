@@ -349,6 +349,7 @@ class FilesHandler:
             folder_path (str): Path to the folder containing the trailer file.\n
         Returns:
             bool: True if the trailer is deleted successfully, False otherwise."""
+        logging.debug(f"Deleting trailer from folder: {folder_path}")
         if await FilesHandler._check_trailer_as_file(folder_path):
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():

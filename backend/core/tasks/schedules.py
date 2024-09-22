@@ -131,6 +131,9 @@ def schedule_all_tasks():
     # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now
     image_refresh_job()
 
+    # Schedule trailer cleanup task to run every hour, start in 5 minutes from now
+    trailer_cleanup_job()
+
     # Schedule trailer download task to run every hour, start in 15 minutes from now
     download_missing_trailers_job()
 

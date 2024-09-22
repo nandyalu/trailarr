@@ -110,15 +110,18 @@ def verify_trailer_streams(trailer_path: str):
         bool: True if the trailer has audio and video streams, False otherwise.
     """
     # Check trailer file exists
+    logger.debug(f"Verifying trailer streams for: {trailer_path}")
     if not trailer_path:
         return False
     # Get media analysis for the trailer
     media_info = get_media_info(trailer_path)
     if media_info is None:
+        logger.debug(f"No media info found for the trailer: {trailer_path}")
         return False
     # Verify the trailer has audio and video streams
     streams = media_info.streams
     if len(streams) == 0:
+        logger.debug(f"No streams found in the trailer: {trailer_path}")
         return False
     audio_exists = False
     video_exists = False
@@ -127,8 +130,13 @@ def verify_trailer_streams(trailer_path: str):
             audio_exists = True
         if stream.codec_type == "video":
             video_exists = True
-    if not audio_exists or not video_exists:
+    if not audio_exists:
+        logger.debug(f"No audio stream found in the trailer: {trailer_path}")
         return False
+    if not video_exists:
+        logger.debug(f"No video stream found in the trailer: {trailer_path}")
+        return False
+    logger.debug(f"Trailer streams verified for: {trailer_path}")
     return True
 
 
