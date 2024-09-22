@@ -1,4 +1,4 @@
-## **v0.2.0-beta** - _September 21, 2024_
+## **v0.2.0-beta** - _September 22, 2024_
 **What's New:** ✨
 
 1. **BREAKING CHANGE**: Changed default `APP_DATA_DIR` (appdata folder) from `/data` to `/config`. You need to remap your app data folder in your docker compose / set `APP_DATA_DIR` Env variable to `/data` explicitly.
