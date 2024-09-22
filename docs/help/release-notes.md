@@ -1,3 +1,35 @@
+## **v0.2.0-beta** - _September 21, 2024_
+**What's New:** ✨
+
+1. **BREAKING CHANGE**: Changed default `APP_DATA_DIR` (appdata folder) from `/data` to `/config`. You need to remap your app data folder in your docker compose / set `APP_DATA_DIR` Env variable to `/data` explicitly.
+2. Added sort and filtering options in Movies and Series pages. Fixes #16 
+3. Link to Docs page updated in About page.
+4. Added an option to customize trailer file name. Supports `title`, `year`, `resolution`, `vcodec` and `acodec` options.
+5. App now skips videos longer than 10 minutes and/or videos that contain `review` in the title. Should help #36 
+6. Added Browser login to Frontend. Default username is `admin` with password `trailarr`. These cannot be updated now, will add an option to update them in future update. Fixes #31 
+7. Renamed `DEBUG` to `LOG_LEVEL` to make it consistent with what it does.
+8. Adding/Updating a connection will also run the `Arr Data Refresh` task for that connection.
+9. App will now verify the downloaded trailer has an audio and a video stream, else mark it as failed and retry download. Also, added a task to clean up any existing trailers without audio/video, delete them and start monitoring those for downloading trailers for them in next run.
+
+**Bug Fixes:** 🐛
+
+1. Fixed a bug that was preventing the app from setting the right permissions to 'Trailers' folder (if enabled for either Movies/Series).
+2. Check downloaded trailer is the expected file and contains audio and video streams. Fixes #37 
+3. Fixed a bug that prevented Yt-dlp to use the cookies file even when set. Fixes #29.
+4. Fixed an issue with `Trailer Subtitle Format` option saving to incorrect variable. Fixes #40 
+5. Fixed an issue with app not able to delete trailers with `.webm` extensions.
+6. Fixed a bug that was removing all media items from library if path mappings are set for that connection and none of them match the media. 
+
+**Other Changes:** ⚡
+
+1. Updated Docs to include `Release Notes` and some `FAQ`s.
+2. App now displays logs for video conversions after download.
+3. Updated npm and python packages.
+4. Added `monitor status` arg to Media object.
+5. Added some functionality to always make sure path mappings end with a slash.
+6. Added an example in docs for Windows users.
+
+
 ## **v0.1.3-beta** - _August 29, 2024_
 **What's New:** ✨
 
