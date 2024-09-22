@@ -4,7 +4,9 @@ import secrets
 
 from dotenv import load_dotenv, set_key
 
-APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/data"))
+from config import app_logger_opts
+
+APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/config"))
 ENV_PATH = f"{APP_DATA_DIR}/.env"
 RESOLUTION_DICT = {
     "SD": 360,
@@ -41,7 +43,9 @@ class _Config:
     _DEFAULT_RESOLUTION = 1080
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
+    _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
 
+    _VALID_LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
     _VALID_SUBTITLES_FORMATS = ["srt", "vtt", "pgs"]
@@ -58,9 +62,9 @@ class _Config:
 
         # Read properties from ENV variables or set default values if not present
         self.api_key = os.getenv("API_KEY", "")
-        self.debug = os.getenv("DEBUG", "False").lower() in ["true", "1"]
+        self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.testing = os.getenv("TESTING", "False").lower() in ["true", "1"]
-        self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
+        # self.database_url = os.getenv("DATABASE_URL", self._DEFAULT_DB_URL)
         self.monitor_enabled = os.getenv(
             "MONITOR_ENABLED",
             "True",
@@ -112,13 +116,14 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "True",
         ).lower() in ["true", "1"]
+        self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
 
     def as_dict(self):
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
-            "debug": self.debug,
+            "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
             "timezone": self.timezone,
@@ -137,6 +142,7 @@ class _Config:
             "server_start_time": self.server_start_time,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "trailer_file_name": self.trailer_file_name,
             "yt_cookies_path": self.yt_cookies_path,
         }
 
@@ -176,16 +182,19 @@ class _Config:
         pass
 
     @property
-    def debug(self):
-        """Debug mode for the application. \n
-        Default is False. \n
-        Valid values are True/False."""
+    def log_level(self):
+        """Log level for the application. \n
+        Default is INFO. \n
+        Valid values are DEBUG, INFO, WARNING, ERROR, CRITICAL."""
         return self._debug
 
-    @debug.setter
-    def debug(self, value: bool):
-        self._debug = value
-        self._save_to_env("DEBUG", self._debug)
+    @log_level.setter
+    def log_level(self, value: str):
+        if value.upper() not in self._VALID_LOG_LEVELS:
+            value = "INFO"
+        self._debug = value.upper()
+        app_logger_opts.set_logger_level(self._debug)
+        self._save_to_env("LOG_LEVEL", self._debug)
 
     @property
     def testing(self):
@@ -202,21 +211,23 @@ class _Config:
     @property
     def database_url(self):
         """Database URL for the application. \n
-        Default is 'sqlite:////data/trailarr.db'. \n
+        Default is 'sqlite:////config/trailarr.db'. \n
         Valid values are any database URL."""
-        return self._database_url
+        # return self._database_url
+        return self._DEFAULT_DB_URL
 
-    @database_url.setter
-    def database_url(self, value: str):
-        if not value:
-            value = self._DEFAULT_DB_URL
-        # If APP_DATA_DIR has updated, and database_url is default, update it to new path
-        # If ENV DATABASE_URL is modified by user, don't update it
-        _untouched_db_url = "sqlite:////data/trailarr.db"
-        if value == _untouched_db_url:
-            value = self._DEFAULT_DB_URL
-        self._database_url = value
-        self._save_to_env("DATABASE_URL", self._database_url)
+    # @database_url.setter
+    # def database_url(self, value: str):
+    #     if not value:
+    #         value = self._DEFAULT_DB_URL
+    #     # If APP_DATA_DIR has updated, and database_url is default, update it to new path
+    #     # If ENV DATABASE_URL is modified by user, don't update it
+    #     _untouched_db_url = "sqlite:////data/trailarr.db"
+    #     # TODO: Change this to /data/trailarr.db in next update!
+    #     if value == _untouched_db_url:
+    #         value = self._DEFAULT_DB_URL
+    #     self._database_url = value
+    #     self._save_to_env("DATABASE_URL", self._database_url)
 
     @property
     def monitor_enabled(self):
@@ -254,6 +265,25 @@ class _Config:
     def wait_for_media(self, value: bool):
         self._wait_for_media = value
         self._save_to_env("WAIT_FOR_MEDIA", self._wait_for_media)
+
+    @property
+    def trailer_file_name(self):
+        """File name format for trailers. \n
+        Default is '{title} - Trailer{i}-trailer.{ext}'. \n
+        Valid values are any string with placeholders."""
+        return self._trailer_file_name
+
+    @trailer_file_name.setter
+    def trailer_file_name(self, value: str):
+        value = value.strip()
+        if value.count("{") != value.count("}"):
+            value = self._DEFAULT_FILE_NAME
+        if not value.endswith(".{ext}"):
+            value = value.replace("{ext}", ".{ext}")
+        if not value.endswith(".{ext}"):
+            value += ".{ext}"
+        self._trailer_file_name = value
+        self._save_to_env("TRAILER_FILE_NAME", self._trailer_file_name)
 
     @property
     def trailer_folder_movie(self):
@@ -359,7 +389,7 @@ class _Config:
         self._trailer_subtitles_format = value
         if self._trailer_subtitles_format.lower() not in self._VALID_SUBTITLES_FORMATS:
             self._trailer_subtitles_format = self._DEFAULT_SUBTITLES_FORMAT
-        self._save_to_env("TRAILER_VIDEO_FORMAT", self._trailer_subtitles_format)
+        self._save_to_env("TRAILER_SUBTITLES_FORMAT", self._trailer_subtitles_format)
 
     @property
     def trailer_file_format(self):
@@ -412,6 +442,18 @@ class _Config:
     def trailer_web_optimized(self, value: bool):
         self._trailer_web_optimized = value
         self._save_to_env("TRAILER_WEB_OPTIMIZED", self._trailer_web_optimized)
+
+    @property
+    def yt_cookies_path(self):
+        """Path to the YouTube cookies file. \n
+        Default is empty string. \n
+        Valid values are any file path."""
+        return self._yt_cookies_path
+
+    @yt_cookies_path.setter
+    def yt_cookies_path(self, value: str):
+        self._yt_cookies_path = value
+        self._save_to_env("YT_COOKIES_PATH", self._yt_cookies_path)
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""

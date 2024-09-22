@@ -36,7 +36,7 @@ export class EditConnectionComponent {
 
         // Add path_mappings from the connection
         conn.path_mappings.forEach(mapping => {
-          this.addPathMapping(mapping);
+          this.addPathMapping(mapping, false);
         });
       });
     });
@@ -58,16 +58,20 @@ export class EditConnectionComponent {
 
   setArrType(selectedArrType: string) {
     this.editConnectionForm.patchValue({ arrType: selectedArrType });
+    this.editConnectionForm.markAsTouched();
+    this.editConnectionForm.markAsDirty();
   }
   setMonitorType(selectedMonitorType: string) {
     this.editConnectionForm.patchValue({ monitorType: selectedMonitorType });
+    this.editConnectionForm.markAsTouched();
+    this.editConnectionForm.markAsDirty();
   }
 
   get pathMappings(): FormArray {
     return this.editConnectionForm.get('path_mappings') as FormArray;
   }
 
-  addPathMapping(path_mapping: PathMapping | null = null) {
+  addPathMapping(path_mapping: PathMapping | null = null, markAsTouched = true) {
     if (!path_mapping) {
       path_mapping = { id: null, connection_id: null, path_from: '', path_to: '' };
     }
@@ -78,10 +82,16 @@ export class EditConnectionComponent {
       path_to: new FormControl(path_mapping.path_to, Validators.required)
     });
     this.pathMappings.push(pathMappingGroup);
+    if (markAsTouched) {
+      this.editConnectionForm.markAsTouched();
+      this.editConnectionForm.markAsDirty();
+    }
   }
 
   removePathMapping(index: number) {
     this.pathMappings.removeAt(index);
+    this.editConnectionForm.markAsTouched();
+    this.editConnectionForm.markAsDirty();
   }
   
   // Reference to the dialog element

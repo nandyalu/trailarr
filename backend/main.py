@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from api.v1.authentication import validate_api_key_cookie
+from api.v1.authentication import validate_api_key_cookie, validate_login
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
@@ -15,7 +15,6 @@ from core.tasks.schedules import schedule_all_tasks
 
 logging = ModuleLogger("Main")
 # from web.routes import web_router
-# TODO! Remove sensitive information from historic commits
 # TODO: Move these to main() function later and setup docker to run main.py
 # No need to setup the logger and it's config, importing the logger from app_logger.py will do setup
 
@@ -114,9 +113,24 @@ else:
     trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 
 
+# Mount Frontend 'assets/manifest.json' without authorization
+@trailarr_api.get("/assets/manifest.json", include_in_schema=False)
+async def serve_manifest():
+    file_path = os.path.normpath(os.path.join(static_dir, "assets", "manifest.json"))
+    if os.path.isfile(file_path):
+        # If the path corresponds to a static file, return the file
+        return FileResponse(file_path)
+    else:
+        return HTMLResponse(status_code=404)
+
+
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
-@trailarr_api.get("/{rest_of_path:path}", include_in_schema=False)
+@trailarr_api.get(
+    "/{rest_of_path:path}",
+    include_in_schema=False,
+    dependencies=[Depends(validate_login)],
+)
 async def serve_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
         # If the path starts with "api", it's an API request and not meant for the frontend

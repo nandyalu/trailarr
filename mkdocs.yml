@@ -57,6 +57,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - md_in_html
 extra:
   social:
     - icon: fontawesome/brands/github 
@@ -68,11 +69,20 @@ extra:
 nav:
   - Trailarr: index.md
   - Install:
-    - Install: install/install.md
+    - Install: install.md
     - Environment Variables: install/env-variables.md
     - Volume Mapping: install/volume-mapping.md
     - Docker Compose: install/docker-compose.md
     - Docker Run: install/docker-cli.md
+    # - Docker Builder: install/docker-builder.md
+    # - Usage: install/form.html
   - Setup:
     - Connections: setup/connections.md
     - Settings: setup/settings.md
+  - Help:
+    - FAQ: help/faq.md
+    - Release Notes: help/release-notes.md
+  # - Advanced:
+  #   - Windows Setup: advanced/windows-setup.md
+# extra_javascript:
+#   - js/docker-builder.js

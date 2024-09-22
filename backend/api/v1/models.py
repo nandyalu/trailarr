@@ -24,12 +24,13 @@ class Settings(BaseModel):
     version: str
     server_start_time: str
     timezone: str
-    debug: bool
+    log_level: str
     monitor_enabled: bool
     monitor_interval: int
     trailer_folder_movie: bool
     trailer_folder_series: bool
     trailer_resolution: int
+    trailer_file_name: str
     trailer_file_format: str
     trailer_audio_format: str
     trailer_video_format: str
@@ -40,6 +41,7 @@ class Settings(BaseModel):
     trailer_remove_sponsorblocks: bool
     trailer_web_optimized: bool
     wait_for_media: bool
+    yt_cookies_path: str
 
 
 class UpdateSetting(BaseModel):

@@ -69,7 +69,7 @@
             </div>
         </div>
         <div class="d-row">
-            <button class="animated-button tertiary" id="cancel" tabindex="10"
+            <button class="animated-button tertiary" id="add-path-mapping" tabindex="10"
                 (click)="addPathMapping()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                     <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
@@ -97,7 +97,7 @@
         <p *ngIf="addConnResult">{{ addConnResult }}</p>
     </form>
 </div>
-<dialog #cancelDialog *ngIf="editConnectionForm.touched" (click)="closeCancelDialog()">
+<dialog #cancelDialog (click)="closeCancelDialog()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Unsaved Changes</h2>
         <p>Canges will be lost. Are you sure you want to cancel?</p>

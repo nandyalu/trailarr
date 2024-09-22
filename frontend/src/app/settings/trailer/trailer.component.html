@@ -3,26 +3,12 @@
         [class.error]="message.toLowerCase().includes('error')"> {{message}} </div>
 </div>
 <div class="trailer-container">
-    <div *ngIf="settings?.debug" class="update-message error">
-        <strong>Warning:</strong> Debug mode is enabled, disable it if not needed!
+    <div *ngIf="settings?.log_level == 'DEBUG'" class="update-message error">
+        <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
     </div>
     <section class="section">
         <h1>General</h1>
         <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="debug">Debug Mode</label>
-                <small>Set app into Debug mode, this will generate too much log data!</small>
-                <small>Use this only when requested!!!</small>
-            </div>
-            <div id="debug" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="1"
-                    [class.selected]="option === settings?.debug" (click)="updateSetting('debug', option)"
-                    (keydown.enter)="updateSetting('debug', option)" (keydown.space)="updateSetting('debug', option)">
-                    {{option}}
-                </div>
-            </div>
-        </div>
         <div class="trailer-content">
             <div class="content-label">
                 <label for="monitor_enabled">Monitor Trailers</label>
@@ -275,14 +261,46 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
+                <label for="log_level">Log Level</label>
+                <small>Set logging level for the app!</small>
+                <!-- <small>Container restart needed to take effect!</small> -->
+                <!-- <small>Set this to Debug if you're having issues!!!</small> -->
+            </div>
+            <div id="log_level" class="options-bar">
+                <div *ngFor="let option of loggingOptions" class="option" tabindex="1"
+                    [class.selected]="option.toLowerCase() == settings?.log_level?.toLowerCase()" (click)="updateSetting('log_level', option)"
+                    (keydown.enter)="updateSetting('log_level', option)" (keydown.space)="updateSetting('log_level', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_file_name">Trailer File Name</label>
+                <small>Customize trailer file name to use for downloaded trailers. Available options: title, year, resolution, vcodec, acodec</small>
+            </div>
+            <div class="text-input">
+                <input class="input-path" id="trailer_file_name" type="text" [(ngModel)]="trailerFileName"
+                    placeholder="Trailer File Name Format" autocomplete="off" tabindex="19">
+                <button *ngIf="trailerFileName != settings?.trailer_file_name" class="primary icononly-button"
+                    id="update_trailer_file_name" tabindex="20" (click)="updateSetting('trailer_file_name', trailerFileName)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
                 <label for="yt_cookies_path">Yt-dlp Cookies Path</label>
                 <small>Use cookies from a file for downloading trailers with yt-dlp.</small>
             </div>
             <div class="text-input">
-                <input id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath" placeholder="Yt-dlp cookies path"
-                    autocomplete="off" tabindex="19">
-                <button *ngIf="subtitleLanguage != settings?.yt_cookies_path" class="primary icononly-button"
-                    id="update_yt_cookies_path" tabindex="20" (click)="updateSetting('yt_cookies_path', ytCookiesPath)">
+                <input class="input-path" id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath"
+                    placeholder="Yt-dlp cookies path" autocomplete="off" tabindex="21">
+                <button *ngIf="ytCookiesPath != settings?.yt_cookies_path" class="primary icononly-button"
+                    id="update_yt_cookies_path" tabindex="22"
+                    (click)="updateSetting('yt_cookies_path', ytCookiesPath)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                     </svg>

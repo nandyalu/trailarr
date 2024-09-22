@@ -25,14 +25,15 @@ class ConnectionDatabaseManager:
         connection: ConnectionCreate,
         *,
         _session: Session = None,  # type: ignore
-    ) -> str:
+    ) -> tuple[str, int]:
         """Create a new connection in the database \n
         Args:
             connection (Connection): The connection to create
             _session (optional): A session to use for the database connection. \
                 Defaults to None, in which case a new session is created. \n
         Returns:
-            str: The status message of the connection with version if created. \n
+            tuple(str, int): The status message of the connection with version if created. \
+                and the id of the created connection. \n
         Raises:
             ConnectionError: If the connection is refused / response is not 200
             ConnectionTimeoutError: If the connection times out
@@ -48,7 +49,8 @@ class ConnectionDatabaseManager:
         # Use the session to add the connection to the database
         _session.add(db_connection)
         _session.commit()
-        return status
+        assert db_connection.id is not None
+        return status, db_connection.id
 
     @manage_session
     def check_if_exists(
@@ -85,6 +87,29 @@ class ConnectionDatabaseManager:
         connections = _session.exec(statement).all()
         return [ConnectionRead.model_validate(connection) for connection in connections]
 
+    def _end_path_with_slash(self, path: str) -> str:
+        """End a path with a slash if it does not already have one \n
+        Args:
+            path (str): The path to end with a slash \n
+        Returns:
+            str: The path with a slash at the end
+        """
+        # Check if path has a slash '/' (Linux/MacOS)
+        if path.count("/") > 1:
+            # End path with a slash if it does not have one
+            if not path.endswith("/"):
+                path += "/"
+            return path
+        # Check if path has a backslash '\' (Windows)
+        # Python uses double backslashes for escape characters, so we need to check for '\\'
+        # to escape the backslash itself which will be a single backslash in the path
+        if path.count("\\") > 1:
+            # End path with a slash if it does not have one
+            if not path.endswith("\\"):
+                path += "\\"
+            return path
+        return path
+
     def _convert_path_mappings(
         self, connection: ConnectionCreate | ConnectionUpdate
     ) -> list[PathMapping]:
@@ -97,6 +122,11 @@ class ConnectionDatabaseManager:
         db_path_mappings: list[PathMapping] = []
         for path_mapping in connection.path_mappings:
             db_path_mapping = PathMapping.model_validate(path_mapping)
+            # Make sure that path_from/path_to ends with a slash
+            db_path_mapping.path_from = self._end_path_with_slash(
+                db_path_mapping.path_from
+            )
+            db_path_mapping.path_to = self._end_path_with_slash(db_path_mapping.path_to)
             db_path_mappings.append(db_path_mapping)
         return db_path_mappings
 

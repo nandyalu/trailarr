@@ -17,11 +17,13 @@ export class TrailerComponent {
   monitorInterval = 60;
   resolution = 1080;
   subtitleLanguage = 'en';
+  loggingOptions = ["Debug", "Info", "Warning", "Error"];
   trueFalseOptions = [true, false];
   fileFormats = ["mkv", "mp4", "webm"];
   audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]
   videoFormats = ["h264", "h265", "vp8", "vp9", "av1"]
   subtitleFormats = ["srt", "vtt", "pgs"]
+  trailerFileName = "";
   ytCookiesPath = "";
 
   constructor(private settingsService: SettingsService) { }
@@ -36,12 +38,14 @@ export class TrailerComponent {
       this.monitorInterval = settings.monitor_interval;
       this.resolution = settings.trailer_resolution;
       this.subtitleLanguage = settings.trailer_subtitles_language;
+      this.trailerFileName = settings.trailer_file_name;
+      this.ytCookiesPath = settings.yt_cookies_path;
     });
   }
 
   updateSetting(key: keyof Settings, value: any) {
     // Do not update if setting value hasn't changed
-    if (this.settings? this.settings[key] === value : false) {
+    if (this.settings ? this.settings[key] === value : false) {
       return;
     }
     this.settingsService.updateSetting(key, value).subscribe(msg => {

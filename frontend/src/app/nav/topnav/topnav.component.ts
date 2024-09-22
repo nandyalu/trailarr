@@ -56,7 +56,8 @@ export class TopnavComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.ctrlKey && event.key === 'f') {
+    // if (event.ctrlKey && event.key === 'f') {
+    if (event.key === 'f') {
       event.preventDefault();  // Prevent the browser's default Ctrl+F behavior
       const searchInput = document.getElementById('searchForm')?.querySelector('input');
       searchInput?.focus();  // Focus the search input field

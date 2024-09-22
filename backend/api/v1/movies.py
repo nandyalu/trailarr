@@ -5,12 +5,19 @@ from fastapi import APIRouter, HTTPException, status
 from api.v1 import websockets
 from api.v1.models import ErrorResponse
 from core.base.database.manager.base import MediaDatabaseManager
-from core.base.database.models.media import MediaRead, MediaUpdate
+from core.base.database.models.media import MediaRead, MediaUpdate, MonitorStatus
 from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import download_trailer_by_id
 
 
 movies_router = APIRouter(prefix="/movies", tags=["Movies"])
+
+
+@movies_router.get("/all")
+async def get_all_movies() -> list[MediaRead]:
+    db_handler = MediaDatabaseManager()
+    movies = db_handler.read_all(movies_only=True)
+    return movies
 
 
 @movies_router.get("/")
@@ -108,7 +115,14 @@ async def monitor_movie(movie_id: int, monitor: bool = True) -> str:
             msg = f"Movie '{movie.title}' [{movie.id}] already has a trailer!"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        movie_update = MediaUpdate(monitor=monitor)
+        if monitor:
+            monitor_status = MonitorStatus.MONITORED
+        else:
+            if movie.trailer_exists:
+                monitor_status = MonitorStatus.DOWNLOADED
+            else:
+                monitor_status = MonitorStatus.MISSING
+        movie_update = MediaUpdate(monitor=monitor, status=monitor_status)
         db_handler.update(movie_id, movie_update)
         if monitor:
             msg = f"Movie '{movie.title}' [{movie.id}] is now monitored"
@@ -151,7 +165,7 @@ async def delete_movie_trailer(movie_id: int) -> str:
             msg = f"Failed to delete trailer for movie '{movie.title}' [{movie.id}]"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        movie_update = MediaUpdate(trailer_exists=False)
+        movie_update = MediaUpdate(trailer_exists=False, status=MonitorStatus.MISSING)
         db_handler.update(movie_id, movie_update)
         msg = f"Trailer for movie '{movie.title}' [{movie.id}] has been deleted."
         logging.info(msg)

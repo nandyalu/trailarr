@@ -35,9 +35,13 @@ export class AddConnectionComponent {
 
   setArrType(selectedArrType: string) {
     this.addConnectionForm.patchValue({ arrType: selectedArrType });
+    this.addConnectionForm.markAsTouched();
+    this.addConnectionForm.markAsDirty();
   }
   setMonitorType(selectedMonitorType: string) {
     this.addConnectionForm.patchValue({ monitorType: selectedMonitorType });
+    this.addConnectionForm.markAsTouched();
+    this.addConnectionForm.markAsDirty();
   }
 
   get pathMappings(): FormArray {
@@ -50,10 +54,14 @@ export class AddConnectionComponent {
       path_to: new FormControl('', Validators.required)
     });
     this.pathMappings.push(pathMappingGroup);
+    this.addConnectionForm.markAsTouched();
+    this.addConnectionForm.markAsDirty();
   }
 
   removePathMapping(index: number) {
     this.pathMappings.removeAt(index);
+    this.addConnectionForm.markAsTouched();
+    this.addConnectionForm.markAsDirty();
   }
 
   // Reference to the dialog element

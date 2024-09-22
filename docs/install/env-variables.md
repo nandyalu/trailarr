@@ -4,19 +4,19 @@ Here are the optional environment variables you can set:
 
 ### `APP_DATA_DIR`
 
-- Default is `/data`.
+- Default is `/config`.
 
 This environment variable is used to set the application data directory. If setting this, make sure to map the volume to the same directory.
 
 Useful if you want to store the application data in a different directory than the default.
 
-For example, if you want to store the application data in `/config/abc`, you can set the `APP_DATA_DIR` environment variable like this:
+For example, if you want to store the application data in `/app_config/abc`, you can set the `APP_DATA_DIR` environment variable like this:
 
 ```yaml hl_lines="2 4"
     environment:
-        - APP_DATA_DIR=/config/abc
+        - APP_DATA_DIR=/app_config/abc
     volumes:
-        - /var/appdata/trailarr:/config/abc
+        - /var/appdata/trailarr:/app_config/abc
 ```
 
 !!! warning
@@ -76,9 +76,9 @@ Here is an example of setting the environment variables:
         - TZ=America/Los_Angeles
         - PUID=1000
         - PGID=1000
-        - APP_DATA_DIR=/config
+        - APP_DATA_DIR=/data/trailarr
     volumes:
-        - /var/appdata/trailarr:/config
+        - /var/appdata/trailarr:/data/trailarr
 ```
 
 This sets the environment variables to run the app with following settings:
@@ -86,5 +86,6 @@ This sets the environment variables to run the app with following settings:
 - Timezone: America/Los_Angeles
 - User ID: 1000
 - Group ID: 1000
-- Application data directory: /config
-- Volume mapping: /var/appdata/trailarr:/config
+- Application data directory: /data/trailarr
+- Volume mapping: /var/appdata/trailarr:/data/trailarr
+

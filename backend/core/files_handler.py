@@ -229,6 +229,84 @@ class FilesHandler:
         return False
 
     @staticmethod
+    async def _get_inline_trailer_path(folder_path: str) -> str | None:
+        """Get the path to the trailer file in the specified folder.\n
+        Args:
+            folder_path (str): Path to the folder containing the trailer file.\n
+        Returns:
+            str | None: Path to the trailer file if it exists, otherwise an empty string. \
+                None if the folder does not exist or the trailer file is not found.
+            """
+        # Check if folder exists
+        if not await aiofiles.os.path.isdir(folder_path):
+            return None
+
+        # Check for trailer as a file
+        for entry in await aiofiles.os.scandir(folder_path):
+            if not entry.is_file():
+                continue
+            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                continue
+            if "-trailer." not in entry.name:
+                continue
+            return entry.path
+        return None
+
+    @staticmethod
+    async def _get_folder_trailer_path(folder_path: str) -> str | None:
+        """Get the path to the trailer file in the specified folder.\n
+        Args:
+            folder_path (str): Path to the folder containing the trailer file.\n
+        Returns:
+            str | None: Path to the trailer file if it exists, otherwise an empty string. \
+                None if the folder does not exist or the trailer file is not found.
+            """
+        # Check if folder exists
+        if not await aiofiles.os.path.isdir(folder_path):
+            return None
+
+        # Check for trailer as a folder
+        for entry in await aiofiles.os.scandir(folder_path):
+            if not entry.is_dir():
+                continue
+            if not entry.name.lower() == "trailers":
+                continue
+            for sub_entry in await aiofiles.os.scandir(entry.path):
+                if not sub_entry.is_file():
+                    continue
+                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                    return sub_entry.path
+        return None
+
+    @staticmethod
+    async def get_trailer_path(folder_path: str, check_inline_file=False) -> str | None:
+        """Get the path to the trailer file in the specified folder.\n
+        Args:
+            folder_path (str): Path to the folder containing the trailer file.\n
+            check_inline_file (bool): If True, check for a trailer file in the given folder and \
+            as a seperate file. If False (default), only checks for a 'trailers' folder \
+            for a trailer file.\n
+        Returns:
+            str | None: Path to the trailer file if it exists, otherwise an empty string. \
+                None if the folder does not exist or the trailer file is not found.
+            """
+        # Check if folder exists
+        if not await aiofiles.os.path.isdir(folder_path):
+            return None
+
+        # Check for trailer in 'trailers' folder
+        trailer_path = await FilesHandler._get_folder_trailer_path(folder_path)
+        if trailer_path:
+            return trailer_path
+
+        # Check for trailer as an inline file, if specified
+        if check_inline_file:
+            trailer_path = await FilesHandler._get_inline_trailer_path(folder_path)
+            if trailer_path:
+                return trailer_path
+        return None
+
+    @staticmethod
     async def delete_file(file_path: str) -> bool:
         """Delete a file from the filesystem.\n
         Args:
@@ -271,11 +349,12 @@ class FilesHandler:
             folder_path (str): Path to the folder containing the trailer file.\n
         Returns:
             bool: True if the trailer is deleted successfully, False otherwise."""
+        logging.debug(f"Deleting trailer from folder: {folder_path}")
         if await FilesHandler._check_trailer_as_file(folder_path):
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():
                     continue
-                if not entry.name.endswith((".mp4", ".mkv", ".avi")):
+                if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
                     continue
                 if "-trailer." not in entry.name:
                     continue
@@ -289,3 +368,21 @@ class FilesHandler:
                     continue
                 return await FilesHandler.delete_folder(entry.path)
         return False
+
+    @staticmethod
+    async def cleanup_tmp_dir() -> bool:
+        """Cleanup any residual files left in the '/tmp' directory.\n
+        Returns:
+            bool: True if the '/tmp' directory is cleaned up successfully, False otherwise.
+        """
+        try:
+            for entry in await aiofiles.os.scandir("/tmp"):
+                if entry.is_file():
+                    await FilesHandler.delete_file(entry.path)
+                elif entry.is_dir():
+                    await FilesHandler.delete_folder(entry.path)
+            logging.debug("Temporary directory cleaned up.")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to cleanup temporary directory. Exception: {e}")
+            return False

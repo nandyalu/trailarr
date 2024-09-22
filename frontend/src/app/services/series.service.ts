@@ -13,15 +13,21 @@ export class SeriesService {
 
   constructor(private http: HttpClient) { }
 
+  getAllMedia(): Observable<Media[]> {
+    return this.http.get<Media[]>(`${this.seriesUrl}all`).pipe(
+      map(series_list => series_list.map(series => mapMedia(series)))
+    );
+  }
+
   getRecentMedia(): Observable<Media[]> {
     return this.http.get<Media[]>(`${this.seriesUrl}?limit=50`).pipe(
-      map(series_list => series_list.map(series => mapMedia(series, false)))
+      map(series_list => series_list.map(series => mapMedia(series)))
     );
   }
 
   getMediaById(id: number): Observable<Media> {
     return this.http.get<Media>(`${this.seriesUrl}${id}`).pipe(
-      map(series => mapMedia(series, false))
+      map(series => mapMedia(series))
     );
   }
 

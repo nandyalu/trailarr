@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from enum import Enum
 from sqlmodel import Field, SQLModel, ForeignKey
 
 
@@ -10,7 +11,15 @@ def get_current_year():
     return datetime.now(timezone.utc).year
 
 
-# TODO: Change Movie and Series models to Media model
+class MonitorStatus(Enum):
+    """Monitor status for media. \n"""
+
+    DOWNLOADED = "downloaded"
+    DOWNLOADING = "downloading"
+    MISSING = "missing"
+    MONITORED = "monitored"
+
+
 class MediaBase(SQLModel):
     """Base class for the Media model. \n
     Note: \n
@@ -40,6 +49,7 @@ class MediaBase(SQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
+    status: MonitorStatus = Field(default=MonitorStatus.MISSING)
 
 
 class Media(MediaBase, table=True):

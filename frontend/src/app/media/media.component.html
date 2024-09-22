@@ -1,24 +1,74 @@
-<div class="media-container">
-    <!-- <h1 class="text-center">{{title}}</h1> -->
-    <div *ngIf="isLoading; else mediaLoaded" class="loading-wave center">
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-    </div>
-    <ng-template #mediaLoaded>
-        <div *ngIf="media_list.length === 0" class="center">
-            <div class="all-empty-card" [routerLink]="['/settings', 'connections', 'add']">
-                Click me!
+<div class="media-header">
+    <!-- Sort Options -->
+    <div class="media-header-sortitem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path d="M74-159v-135h304v135H74Zm0-255v-134h558v134H74Zm0-254v-135h812v135H74Z" />
+        </svg>
+        <div> {{displayOptionTitle(selectedSort)}}</div>
+        <div class="sortitem-dropdown">
+            <div *ngFor="let sortOption of sortOptions" class="sortitem-dropdown-option"
+                (click)="setMediaSort(sortOption)">
+                {{displayOptionTitle(sortOption)}}
+                <div *ngIf="selectedSort == sortOption && sortAscending">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path
+                            d="M480-130 200-410l96-96 184 185 184-185 96 96-280 280Zm0-299L200-708l96-97 184 185 184-185 96 97-280 279Z" />
+                    </svg>
+                </div>
+                <div *ngIf="selectedSort == sortOption && !sortAscending">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path
+                            d="m296-155-96-97 280-279 280 279-96 97-184-185-184 185Zm0-299-96-96 280-280 280 280-96 96-184-185-184 185Z" />
+                    </svg>
+                </div>
             </div>
         </div>
-        <div class="media-row">
-            <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.id]">
+    </div>
+    <!-- Filter Options -->
+    <div class="media-header-filteritem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path d="M371-158v-135h219v135H371ZM200-413v-135h558v135H200ZM74-668v-135h812v135H74Z" />
+        </svg>
+        <div> {{displayOptionTitle(selectedFilter)}}</div>
+        <div class="filteritem-dropdown">
+            <div *ngFor="let filterOption of filterOptions" class="filteritem-dropdown-option"
+                (click)="setMediaFilter(filterOption)">
+                {{displayOptionTitle(filterOption)}}
+                <div *ngIf="selectedFilter == filterOption">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                        <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="media-container">
+    <!-- <h1 class="text-center">{{title}}</h1> -->
+    <div *ngIf="isLoading; else mediaLoaded" class="center">
+        <div class="loading-wave">
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+    <ng-template #mediaLoaded>
+        <div *ngIf="displayMediaList.length === 0" class="center">
+            <p>No media items found matching the selected filter!</p>
+            <!-- <div class="all-empty-card" [routerLink]="['/settings', 'connections', 'add']">
+                Click me!
+            </div> -->
+        </div>
+
+        <div class="media-row" appScrollNearEnd (nearEnd)="onNearEndScroll()">
+            <div *ngFor="let media of displayMediaList" class="media-card" [routerLink]="[media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
                 <ng-container *ngIf="media.monitor; else trailerExistsIcon">
                     <!-- Monitored Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon"
+                        aria-label="Monitored">
                         <path
                             d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
                     </svg>

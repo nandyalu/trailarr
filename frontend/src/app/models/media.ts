@@ -20,16 +20,16 @@ export interface Media {
     trailer_exists: boolean;
     monitor: boolean;
     arr_monitored: boolean;
+    status: string;
     id: number;
     added_at: Date;
     updated_at: Date;
     downloaded_at: Date;
 }
 
-export function mapMedia(media: any, is_movie: boolean): Media {
+export function mapMedia(media: any): Media {
     return {
         ...media,
-        is_movie: is_movie,
         added_at: new DatePipe('en-US').transform(media.added_at, 'medium'),
         updated_at: new DatePipe('en-US').transform(media.updated_at, 'medium'),
         downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium')

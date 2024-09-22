@@ -12,7 +12,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/){:target="_blank"}
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black){:target="_blank"}
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.112.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
 [![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr){:target="_blank"}
 
@@ -48,7 +48,7 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 
 ## Installation
 
-See the [Installation](./install/install.md) guide for detailed instructions on how to install Trailarr.
+See the [Installation](./install.md) guide for detailed instructions on how to install Trailarr.
 
 ## Setup
 
@@ -67,7 +67,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post a question on [Reddit](https://www.reddit.com/r/trailarr/){:target="_blank"}.
+If you have any questions or need help, please read the [FAQ](./help/faq.md) first. If you still need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post a question on [Reddit](https://www.reddit.com/r/trailarr/){:target="_blank"}.
 
 ## Issues
 

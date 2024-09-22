@@ -4,6 +4,7 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
+from core.base.database.models.media import MonitorStatus
 from core.download.trailer import download_trailers
 from core.files_handler import FilesHandler
 from core.tasks import scheduler
@@ -73,6 +74,7 @@ def _download_missing_media_trailers(is_movie: bool):
             MediaUpdateDC(
                 id=media.id,
                 monitor=False,
+                status=MonitorStatus.DOWNLOADED,
                 trailer_exists=True,
                 downloaded_at=media.downloaded_at,
                 yt_id=media.yt_id,
@@ -93,9 +95,25 @@ def download_missing_trailers():
 
 
 def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
+    db_manager = MediaDatabaseManager()
+    db_manager.update_media_status(
+        MediaUpdateDC(
+            id=mediaT.id,
+            monitor=True,
+            status=MonitorStatus.DOWNLOADING,
+            yt_id=mediaT.yt_id,
+        )
+    )
     download_media = download_trailers([mediaT], is_movie)
     if not download_media:
-        logger.info("No trailers downloaded")
+        logger.info("Trailer download failed!")
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=mediaT.id,
+                monitor=True,
+                status=MonitorStatus.MISSING,
+            )
+        )
         return
     logger.debug("Updating trailer status in database")
     media_update_list = []
@@ -106,13 +124,13 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
             MediaUpdateDC(
                 id=media.id,
                 monitor=False,
+                status=MonitorStatus.DOWNLOADED,
                 trailer_exists=True,
                 yt_id=media.yt_id,
                 downloaded_at=media.downloaded_at,
             )
         )
 
-    db_manager = MediaDatabaseManager()
     # Update the trailer statuses in database
     db_manager.update_media_status_bulk(media_update_list)
 

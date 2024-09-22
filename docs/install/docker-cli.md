@@ -11,7 +11,7 @@ docker run -d \
     -e PUID=1000 \
     -e PGID=1000 \
     -p 7889:7889 \
-    -v <LOCAL_APPDATA_FOLDER>:/data \
+    -v <LOCAL_APPDATA_FOLDER>:/config \
     -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
     -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
     --restart unless-stopped \
@@ -19,6 +19,9 @@ docker run -d \
 ```
 
 Open your browser and navigate to [http://localhost:7889](http://localhost:7889){:target="_blank"} to access the application.
+
+!!! info
+    It is recommended to use `docker-compose` to run the application, as it makes updating easier. See the [Docker Compose](./docker-compose.md) guide for more information.
 
 ## Updating
 

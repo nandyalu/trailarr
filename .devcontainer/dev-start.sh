@@ -5,7 +5,7 @@ echo "Setting TimeZone to $TZ"
 echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
 
 # Create data folder for storing database and other config files
-mkdir -p /data/logs && chown -R vscode:vscode /data
+mkdir -p /config/logs && chown -R vscode:vscode /config
 
 # Run Alembic migrations
 echo "Running Alembic migrations"

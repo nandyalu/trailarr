@@ -2,12 +2,6 @@ There are a few settings that you can use to customize the behavior of Trailarr 
 
 ## General Settings
 
-### Debug Mode
-
-- Default is `false`
-
-Enable debug mode to display additional information in the logs. This is useful for troubleshooting issues.
-
 ### Monitor Trailers
 
 - Default is `true`
@@ -128,6 +122,29 @@ Enable this setting to remove sponsor blocks from the trailers, if available. Sp
 Enable this setting to optimize trailers for web streaming. This will allow trailers to start playing faster while streaming over network. Might slightly increase file size.
 
 ## Advanced Settings
+
+### Log Level
+
+- Default is `Info`
+
+Select the logging level for the app. Available options are `Debug`, `Info`, `Warning`, `Error`.
+
+??? info
+    If you are having issues and need to troubleshoot or request help, set the log level to `Debug` to get more detailed logs.
+
+### Trailer File Name
+
+- Default is `{title} - Trailer-trailer.{ext}`
+
+Select the file name format for the trailers. Wrap a supported variable in `{}` like `{title}` and it will be replaced in the actual file name. Supports [Python string formatting options](https://docs.python.org/3/library/string.html#formatstrings). 
+
+Available options are:
+
+- `title`: Title of the media. Eg: 'The Matrix'
+- `year`: Year of the media. Eg: '1999'
+- `resolution`: Resolution of the trailer. Eg: '1080p'
+- `vcodec`: Video codec of the trailer. Eg: 'h264'
+- `acodec`: Audio codec of the trailer. Eg: 'aac'
 
 ### Yt-dlp Cookies Path
 

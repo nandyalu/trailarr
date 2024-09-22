@@ -39,7 +39,7 @@ def _postprocessor_hook(d):
             "endtime": None,
             "filepath": "",
         }
-        logger.debug(f"'Trailers': [{pprocessor}] Converting downloaded file...")
+        logger.info(f"'Trailers': [{pprocessor}] Converting downloaded file...")
     if d["status"] == "processing":
         logger.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
     if d["status"] == "finished":  # Guaranteed to call

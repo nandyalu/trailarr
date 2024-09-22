@@ -37,6 +37,20 @@ echo "Current date time after tzdate: $(date)"
 # Remove trailing slash from APP_DATA_DIR if it exists
 export APP_DATA_DIR=$(echo $APP_DATA_DIR | sed 's:/*$::')
 
+# Check if trailarr.db exists in APP_DATA_DIR folder
+if [ -f "${APP_DATA_DIR}/trailarr.db" ]; then
+    # Do nothing if database file exists in APP_DATA_DIR folder
+    echo ""
+else
+    # Check if trailarr.db exists in /data folder
+    if [ -f "/data/trailarr.db" ]; then
+        echo "Database file 'trailarr.db' found in '/data' folder"
+        echo "Setting 'APP_DATA_DIR' to '/data' folder to prevent data loss"
+        export APP_DATA_DIR="/data"
+    fi
+fi
+
+
 # Create appdata (default=/data) folder for storing database and other config files
 echo "Creating '$APP_DATA_DIR' folder for storing database and other config files"
 mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR

@@ -5,6 +5,7 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
+from core.tasks.cleanup import trailer_cleanup
 from core.tasks.download_trailers import download_missing_trailers
 from core.tasks.image_refresh import refresh_images
 
@@ -31,6 +32,12 @@ def _refresh_api_data():
 def _refresh_images():
     """Refreshes all images in the database."""
     run_async(refresh_images)
+    return
+
+
+def _cleanup_trailers():
+    """Cleanup trailers without audio."""
+    run_async(trailer_cleanup)
     return
 
 
@@ -73,6 +80,25 @@ def image_refresh_job():
     return
 
 
+def trailer_cleanup_job():
+    """Schedules a background job to cleanup trailers.\n
+        - Runs once an hour (default, or monitor_interval), first run in 5 minutes. \n
+    Returns:
+        None
+    """
+    scheduler.add_job(
+        func=_cleanup_trailers,
+        trigger="interval",
+        minutes=app_settings.monitor_interval,
+        id="trailer_cleanup_job",
+        name="Trailer Cleanup",
+        next_run_time=datetime.now() + timedelta(seconds=300),
+        max_instances=1,
+    )
+    logger.info("Trailer Cleanup job scheduled!")
+    return
+
+
 def download_missing_trailers_job():
     """Schedules a background job to download missing trailers. \n
         Runs once an hour, first run in 15 minutes. \n
@@ -104,6 +130,9 @@ def schedule_all_tasks():
 
     # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now
     image_refresh_job()
+
+    # Schedule trailer cleanup task to run every hour, start in 5 minutes from now
+    trailer_cleanup_job()
 
     # Schedule trailer download task to run every hour, start in 15 minutes from now
     download_missing_trailers_job()

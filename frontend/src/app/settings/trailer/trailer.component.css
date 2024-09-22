@@ -94,6 +94,12 @@
     border-radius: 0.5rem;
 }
 
+.input-path {
+    width: auto !important;
+    max-width: 25rem !important;
+    font-size: larger;
+}
+
 .options-bar {
     display: flex;
     background-color: var(--color-surface-container-high);

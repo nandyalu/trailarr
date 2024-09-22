@@ -37,7 +37,8 @@ async def get_connections() -> list[ConnectionRead]:
 async def create_connection(connection: ConnectionCreate) -> str:
     db_handler = ConnectionDatabaseManager()
     try:
-        result = await db_handler.create(connection)
+        result, connection_id = await db_handler.create(connection)
+        await refresh_connection(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast("Failed to add Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -80,7 +81,10 @@ async def get_connection(connection_id: int) -> ConnectionRead:
 async def update_connection(connection_id: int, connection: ConnectionUpdate) -> str:
     db_handler = ConnectionDatabaseManager()
     try:
+        # Update the connection in the database
         await db_handler.update(connection_id, connection)
+        # Refresh data from API for the connection
+        await refresh_connection(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast("Failed to update Connection!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
