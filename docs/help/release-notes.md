@@ -1,3 +1,20 @@
+## **v0.2.1-beta** - _September 27, 2024_
+**What's New:** ✨
+
+1. App will now check for updates and display a message in logs and `Update Available` in Settings > About page.
+
+**Bug Fixes:** 🐛
+
+1. Add default `trailer_url` in `download_trailer` function to prevent errors when no trailer is found. Fixes #45
+2. Fixed an issue with `f` keypress not working in Frontend. Fixes #44
+
+
+**Other Changes:** ⚡
+
+1. Updated Docs to indicate that changing Monitor Interval needs container restart to take effect. Fixes #43
+2. Updated FAQ in Docs to include information about Trailers taking longer time to download.
+
+
 ## **v0.2.0-beta** - _September 22, 2024_
 **What's New:** ✨
 

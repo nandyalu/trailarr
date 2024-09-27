@@ -8,6 +8,7 @@ from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import trailer_cleanup
 from core.tasks.download_trailers import download_missing_trailers
 from core.tasks.image_refresh import refresh_images
+from core.updates.docket_check import check_for_update
 
 # from core.tasks.task_runner import TaskRunner
 
@@ -77,6 +78,25 @@ def image_refresh_job():
         max_instances=1,
     )
     logger.info("Image refresh job scheduled!")
+    return
+
+
+def update_check_job():
+    """Schedules a background job to check for image updates.\n
+        - Runs once a day, first run in 4 minutes. \n
+    Returns:
+        None
+    """
+    scheduler.add_job(
+        func=check_for_update,
+        trigger="interval",
+        days=1,
+        id="update_check_job",
+        name="Image Update Check",
+        next_run_time=datetime.now() + timedelta(seconds=240),
+        max_instances=1,
+    )
+    logger.info("Update Check job scheduled!")
     return
 
 
