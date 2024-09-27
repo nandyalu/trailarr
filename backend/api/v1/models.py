@@ -40,6 +40,7 @@ class Settings(BaseModel):
     trailer_embed_metadata: bool
     trailer_remove_sponsorblocks: bool
     trailer_web_optimized: bool
+    update_available: bool
     wait_for_media: bool
     yt_cookies_path: str
 

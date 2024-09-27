@@ -55,6 +55,7 @@ class _Config:
     def __init__(self):
         # Some generic attributes for server
         self.version = os.getenv("APP_VERSION", "0.0.1")
+        self.update_available = False
         _now = datetime.now(timezone.utc)
         self.server_start_time = os.getenv("SERVER_START_TIME", f"{_now}")
         self.timezone = os.getenv("TZ", "UTC")
@@ -140,6 +141,7 @@ class _Config:
             "trailer_video_format": self.trailer_video_format,
             "trailer_web_optimized": self.trailer_web_optimized,
             "server_start_time": self.server_start_time,
+            "update_available": self.update_available,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
             "trailer_file_name": self.trailer_file_name,

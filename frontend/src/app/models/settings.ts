@@ -20,6 +20,7 @@ export interface Settings {
     trailer_embed_metadata: boolean
     trailer_remove_sponsorblocks: boolean
     trailer_web_optimized: boolean
+    update_available: boolean
     wait_for_media: boolean
     yt_cookies_path: string
 }
