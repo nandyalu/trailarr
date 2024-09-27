@@ -56,9 +56,17 @@ export class TopnavComponent {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    const activeElement = document.activeElement as HTMLElement;
+
+    // Check if the active element is an input, textarea, or contenteditable element
+    const isInputField = activeElement.tagName === 'INPUT' ||
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.isContentEditable;
+
+    // Only handle the 'f' key if the active element is not an input field
+    if (!isInputField && event.key === 'f') {
     // if (event.ctrlKey && event.key === 'f') {
-    if (event.key === 'f') {
-      event.preventDefault();  // Prevent the browser's default Ctrl+F behavior
+      event.preventDefault();  // Prevent the browser's default behavior
       const searchInput = document.getElementById('searchForm')?.querySelector('input');
       searchInput?.focus();  // Focus the search input field
       return;
