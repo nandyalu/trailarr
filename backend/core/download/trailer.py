@@ -128,6 +128,7 @@ def download_trailer(
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
     trailer_downloaded = False
+    trailer_url = ""
     if not exclude:
         exclude = []
     if media.yt_id:
