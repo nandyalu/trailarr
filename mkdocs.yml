@@ -82,7 +82,6 @@ nav:
   - Help:
     - FAQ: help/faq.md
     - Release Notes: help/release-notes.md
-  # - Advanced:
-  #   - Windows Setup: advanced/windows-setup.md
+    # - Docker Builder: help/docker-builder/builder.html
 # extra_javascript:
 #   - js/docker-builder.js
