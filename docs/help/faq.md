@@ -36,3 +36,10 @@ Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will
 
 ## Can I download multiple trailers for a Movie or Series?
 Trailarr will not download multiple trailers for same Movie or Series automatically. You can manually update the youtube trailer link and click `Download` to download another trailer. Trailarr will download and save the new trailer in the Movie or Series folder along with the old trailer.
+
+## App is stuck on "Downloading" status for a long time. What should I do?
+Trailarr downloads the best available video in the selected resolution, and then use ffmpeg to convert to selected audio and video codecs. This process can take some time based on the video size and your server hardware. 
+
+The amount of time it takes to convert a 3 minute video usually takes around 1-2 minutes on latest hardware (like i3-12100 or Ryzen 5 5600X).
+
+If you are using a Raspberry Pi or a low powered server, it might take longer to convert the video. You can check the logs to see the progress of the conversion process.
