@@ -2,6 +2,14 @@
 
 1. Navigate to the application in your browser at [http://localhost:7889/settings/connections](http://localhost:7889/settings/connections){:target="_blank"}.
 
+    !!! info "Trailarr Login"
+        When you open Trailarr in browser, it will ask you to login. Default login is:
+        
+        ```bash
+        Username: admin
+        Password: trailarr
+        ```
+
 2. Go to `Settings` > `Connections` and Click the `Add New` button to add your Radarr and Sonarr instances.
 ![Add New](add-new.png)
 
