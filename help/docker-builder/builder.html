@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trailarr Config Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./builder.css">
+</head>
+
+<body>
+    <header class="page-header">
+        <img src="https://raw.githubusercontent.com/nandyalu/trailarr/refs/heads/main/assets/images/trailarr-full-512.png"
+            class="sm-none" alt="Trailarr Logo" height="40" class="sm-none">
+        <img src="https://raw.githubusercontent.com/nandyalu/trailarr/refs/heads/main/assets/images/trailarr-256.png"
+            alt="Trailarr Logo" height="40" class="lg-none">
+        <h1 class="header-title">Config Tool</h1>
+        <div class="header-icons">
+            <a href="https://github.com/nandyalu/trailarr" title="Github" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
+                    <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                    <path
+                        d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3 .3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5 .3-6.2 2.3zm44.2-1.7c-2.9 .7-4.9 2.6-4.6 4.9 .3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3 .7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3 .3 2.9 2.3 3.9 1.6 1 3.6 .7 4.3-.7 .7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3 .7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3 .7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z" />
+                </svg>
+            </a>
+            <a href="https://nandyalu.github.io/trailarr" title="Docs" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 89 89">
+                    <!-- Icon from Material for MkDocs - https://squidfunk.github.io/mkdocs-material -->
+                    <path d="M3.136,17.387l0,42.932l42.932,21.467l-42.932,-64.399Z"></path>
+                    <path d="M21.91,8l42.933,64.398l-18.775,9.388l-42.932,-64.399l18.774,-9.387Z"
+                        style="fill-opacity: 0.5"></path>
+                    <path d="M67.535,17.387l-27.262,18.156l21.878,32.818l5.384,2.691l0,-53.665Z"></path>
+                    <path d="M67.535,17.387l0,53.666l18.774,-9.388l0,-53.665l-18.774,9.387Z" style="fill-opacity: 0.25">
+                    </path>
+                </svg>
+            </a>
+            <a href="https://hub.docker.com/r/nandyalu/trailarr" title="Docker Hub" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+                    <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                    <path
+                        d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4 .4 67.6 .1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z" />
+                </svg>
+            </a>
+            <a href="https://www.reddit.com/r/trailarr" title="Reddit" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                    <path
+                        d="M373 138.6c-25.2 0-46.3-17.5-51.9-41l0 0c-30.6 4.3-54.2 30.7-54.2 62.4l0 .2c47.4 1.8 90.6 15.1 124.9 36.3c12.6-9.7 28.4-15.5 45.5-15.5c41.3 0 74.7 33.4 74.7 74.7c0 29.8-17.4 55.5-42.7 67.5c-2.4 86.8-97 156.6-213.2 156.6S45.5 410.1 43 323.4C17.6 311.5 0 285.7 0 255.7c0-41.3 33.4-74.7 74.7-74.7c17.2 0 33 5.8 45.7 15.6c34-21.1 76.8-34.4 123.7-36.4l0-.3c0-44.3 33.7-80.9 76.8-85.5C325.8 50.2 347.2 32 373 32c29.4 0 53.3 23.9 53.3 53.3s-23.9 53.3-53.3 53.3zM157.5 255.3c-20.9 0-38.9 20.8-40.2 47.9s17.1 38.1 38 38.1s36.6-9.8 37.8-36.9s-14.7-49.1-35.7-49.1zM395 303.1c-1.2-27.1-19.2-47.9-40.2-47.9s-36.9 22-35.7 49.1c1.2 27.1 16.9 36.9 37.8 36.9s39.3-11 38-38.1zm-60.1 70.8c1.5-3.6-1-7.7-4.9-8.1c-23-2.3-47.9-3.6-73.8-3.6s-50.8 1.3-73.8 3.6c-3.9 .4-6.4 4.5-4.9 8.1c12.9 30.8 43.3 52.4 78.7 52.4s65.8-21.6 78.7-52.4z" />
+                </svg>
+            </a>
+
+        </div>
+    </header>
+    <div class="page-content">
+        <div class="container">
+            <h2>Under Construction - Coming Soon!!!</h2>
+            <p>This tool is still under construction and will be available soon. Please check back later.</p>
+        </div>
+        <!-- Instructions -->
+        <div class="container">
+            <h2>Instructions</h2>
+            <p>This tool recommends docker config with volume mappings and additional settings for Trailarr.</p>
+            <ul>
+                <li>Choose whether you want to use Docker Compose (recommended) or Docker CLI.</li>
+                <li>Choose your operating system you are using to run Docker.</li>
+                <li>Enable Radarr and/or Sonarr if you want to use them.</li>
+                <ul>
+                    <li>Select whether you are running Radarr/Sonarr as a container.</li>
+                    <li>Enter the media volume mapping, if using Radarr as docker container.</li>
+                    <li>Enter the Radarr Media folder path on the local system, if not using Radarr as container.</li>
+                    <li>If you need to connect multiple Radarr instances, enter additional paths as needed.</li>
+                </ul>
+                <li>Click the "Generate Command" button to get the command to run.</li>
+            </ul>
+            <p class="note">This is just a tool that runs on your browser, rest assured that it doesn't store any of the
+                info you entered!!!</p>
+        </div>
+
+        <!-- Docker Inputs -->
+        <div class="container">
+            <h2>Docker Inputs</h2>
+            <form id="dockerForm" class="docker-form">
+                <div class="form-group">
+                    <label class="main-label">
+                        <span>Do you want to use Trailarr with Docker Compose or Docker CLI?</span>
+                        <div class="radio-options">
+                            <label for="docker-compose">
+                                <input type="radio" id="docker-compose" name="docker-type" value="docker-compose"
+                                    checked>
+                                <span>Docker Compose</span>
+                            </label>
+                            <label for="docker-cli">
+                                <input type="radio" id="docker-cli" name="docker-type" value="docker-cli">
+                                <span>Docker CLI</span>
+                            </label>
+                        </div>
+                    </label>
+                    <p class="note">Docker Compose is recommended for making it easier to update in future!</p>
+                </div>
+                <div class="form-group">
+                    <label class="main-label" required>
+                        <span>Which operating system are you using to run Docker?</span>
+                        <div class="radio-options">
+                            <label for="linux">
+                                <input type="radio" id="linux" name="os-type" value="linux" checked>
+                                <span>Linux</span>
+                            </label>
+                            <label for="windows">
+                                <input type="radio" id="windows" name="os-type" value="windows">
+                                <span>Windows</span>
+                            </label>
+                        </div>
+                    </label>
+                    <p class="note">For Unraid or MacOS, select Linux.</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Connection 1 -->
+        <div class="container hidden" id="connection0">
+            <h2 id="connection0Title">Connection 1</h2>
+            <form id="connection0Form" class="docker-form">
+                <div class="form-group">
+                    <label class="main-label">
+                        <span>What type of Connecttion do you want to add?</span>
+                        <div class="radio-options">
+                            <label for="connection0Radarr">
+                                <input type="radio" id="connection0Radarr" name="connection0Type" value="radarr">
+                                <span>Radarr</span>
+                            </label>
+                            <label for="connection0Sonarr">
+                                <input type="radio" id="connection0Sonarr" name="connection0Type" value="sonarr">
+                                <span>Sonarr</span>
+                            </label>
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group hidden" id="connection0ContainerDiv">
+                    <label class="main-label">
+                        <span>Are you running this as a container?</span>
+                        <div class="radio-options">
+                            <label for="connection0DockerYes">
+                                <input type="radio" id="connection0DockerYes" name="connection0Container" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label for="connection0DockerNo">
+                                <input type="radio" id="connection0DockerNo" name="connection0Container" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group hidden" id="connection0HostPathDiv">
+                    <label for="connection0HostPath" class="main-label">Enter the media folder path on local
+                        system:</label>
+                    <input type="text" id="connection0HostPath" name="connection0HostPath"
+                        placeholder="/mnt/disk1/media/movies OR D:\Media\Movies" spellcheck="false" autocorrect="off"
+                        autocapitalize="off" required pattern="^(/|[A-Za-z]:\\)[A-Za-z0-9].*">
+                    <p class="note">This should be the path that is mapped to Radarr/Sonarr!</p>
+                </div>
+                <div class="form-group hidden" id="connection0DockerPathDiv">
+                    <label for="connection0DockerPath" class="main-label">Enter the media volume mapping:</label>
+                    <input type="text" id="connection0DockerPath" name="connection0DockerPath"
+                        placeholder="/media/movies OR D:\Media\Movies" spellcheck="false" autocorrect="off"
+                        autocapitalize="off" required pattern="^(/|[A-Za-z]:\\)[A-Za-z0-9].*">
+                    <p class="note">This should be the path that Radarr/Sonarr container can see!</p>
+                </div>
+                <button type="button" id="removeConnection1" onclick="removeConnection('connection0')">Remove
+                    Connecttion</button>
+            </form>
+        </div>
+
+        <button type="button" id="addConnection" onclick="addConnection()">Add Another Connecttion</button>
+        <button type="button" id="generateCommand" onclick="generateCommand()">Generate Output</button>
+        <div class="container">
+            <h2>Outputs</h2>
+            <h3>Docker Compose</h3>
+            <div class="output">
+                <pre id="outputComposePre">
+                    <button type="button" onclick="copyToClipboard('outputComposeCode')"></button>
+                    <code id="outputComposeCode"></code>
+                </pre>
+            </div>
+            <h3>Docker CLI</h3>
+            <div class="output">
+                <pre id="outputCliPre">
+                    <button type="button" onclick="copyToClipboard('outputCliCode')"></button>
+                    <code id="outputCliCode"></code>
+                </pre>
+            </div>
+        </div>
+        <div class="container" id="pathMappings" class="hidden">
+            <h2>Path Mappings</h2>
+            <div class="output" id="outputPathMappings">
+            </div>
+        </div>
+    </div>
+    <script src="./builder.js"></script>
+</body>
+
+</html>

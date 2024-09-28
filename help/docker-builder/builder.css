@@ -1,0 +1,403 @@
+:root {
+  font-size: 16px;
+  font-family: "Roboto Mono", monospace;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  --transition-speed: 600ms;
+  --color-success: #00bc8c;
+  --color-info: #3498db;
+  --color-warning: #f39c12;
+  --color-danger: #e74c3c;
+  --color-success-text: #ccf2e8;
+  --color-info-text: #d6eaf8;
+  --color-warning-text: #fdebd0;
+  --color-danger-text: #fadbd8;
+
+  /* Material UI Dark Theme */
+  --color-primary: rgb(170 199 255);
+  --color-surface-tint: rgb(170 199 255);
+  --color-on-primary: rgb(10 48 95);
+  --color-primary-container: rgb(40 71 119);
+  --color-on-primary-container: rgb(214 227 255);
+  --color-secondary: rgb(190 198 220);
+  --color-on-secondary: rgb(40 49 65);
+  --color-secondary-container: rgb(62 71 89);
+  --color-on-secondary-container: rgb(218 226 249);
+  --color-tertiary: rgb(221 188 224);
+  --color-on-tertiary: rgb(63 40 68);
+  --color-tertiary-container: rgb(87 62 92);
+  --color-on-tertiary-container: rgb(250 216 253);
+  --color-error: rgb(255 180 171);
+  --color-on-error: rgb(105 0 5);
+  --color-error-container: rgb(147 0 10);
+  --color-on-error-container: rgb(255 218 214);
+  --color-background: rgb(17 19 24);
+  --color-on-background: rgb(226 226 233);
+  --color-surface: rgb(17 19 24);
+  --color-on-surface: rgb(226 226 233);
+  --color-surface-variant: rgb(68 71 78);
+  --color-on-surface-variant: rgb(196 198 208);
+  --color-outline: rgb(142 144 153);
+  --color-outline-variant: rgb(68 71 78);
+  --color-shadow: rgb(0 0 0);
+  --color-scrim: rgb(0 0 0);
+  --color-inverse-surface: rgb(226 226 233);
+  --color-inverse-on-surface: rgb(46 48 54);
+  --color-inverse-primary: rgb(65 95 145);
+  --color-primary-fixed: rgb(214 227 255);
+  --color-on-primary-fixed: rgb(0 27 62);
+  --color-primary-fixed-dim: rgb(170 199 255);
+  --color-on-primary-fixed-variant: rgb(40 71 119);
+  --color-secondary-fixed: rgb(218 226 249);
+  --color-on-secondary-fixed: rgb(19 28 43);
+  --color-secondary-fixed-dim: rgb(190 198 220);
+  --color-on-secondary-fixed-variant: rgb(62 71 89);
+  --color-tertiary-fixed: rgb(250 216 253);
+  --color-on-tertiary-fixed: rgb(40 19 46);
+  --color-tertiary-fixed-dim: rgb(221 188 224);
+  --color-on-tertiary-fixed-variant: rgb(87 62 92);
+  --color-surface-dim: rgb(17 19 24);
+  --color-surface-bright: rgb(55 57 62);
+  --color-surface-container-lowest: rgb(12 14 19);
+  --color-surface-container-low: rgb(25 28 32);
+  --color-surface-container: rgb(29 32 36);
+  --color-surface-container-high: rgb(40 42 47);
+  --color-surface-container-highest: rgb(51 53 58);
+}
+
+* {
+  box-sizing: border-box;
+
+  @media (width > 765px) {
+    /* Only on large screens */
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--color-secondary) transparent;
+  }
+
+  .lg-none {
+    /* Hide on large screens */
+    display: block;
+
+    @media (width > 765px) {
+      display: none !important;
+    }
+  }
+
+  .sm-none {
+    /* Hide on small screens */
+    display: block;
+
+    @media (width < 765px) {
+      display: none !important;
+    }
+  }
+
+}
+
+.hidden {
+  display: none !important;
+}
+
+.blinking {
+  animation: blink 500ms linear 0s 3;
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+    background-color: var(--color-surface-variant);
+  }
+
+  20%,
+  80% {
+    opacity: 0.6;
+    background-color: var(--color-surface-variant);
+  }
+
+  40%,
+  60% {
+    opacity: 0.3;
+    background-color: var(--color-surface-variant);
+  }
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  margin-bottom: 5rem;
+}
+
+.page-header {
+  text-align: center;
+  padding: 0 1rem;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-primary);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  position: sticky;
+  top: 0;
+}
+
+.header-title {
+  flex: 1;
+  font-size: 2rem;
+  margin: 0;
+  padding: 1.5rem;
+  align-self: center;
+}
+
+.header-icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  a svg {
+    width: 1.5rem;
+    fill: var(--color-on-surface);
+    cursor: pointer;
+    margin: 0 0.5rem;
+  }
+
+  @media screen and (width < 765px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    justify-content: flex-start;
+    background-color: var(--color-surface-container-lowest);
+    padding: 0.5rem;
+  }
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin: 1rem;
+}
+
+.container {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+  width: 80vw;
+  font-size: 1.25rem;
+}
+
+ul {
+  list-style-type: counter;
+  padding: 0 1rem;
+  margin: 1.5rem;
+}
+
+li {
+  margin: 1rem 0;
+}
+
+.note {
+  background-color: var(--color-surface-container-highest);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.note::before {
+  content: " Note:";
+  font-style: italic;
+  font-weight: bold;
+  border-left: 3px solid var(--color-warning);
+  padding: 0 0.5rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  width: fit-content;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+button:hover {
+  background-color: var(--color-secondary);
+}
+
+pre {
+  background-color: var(--color-surface-container-low);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem;
+  font-size: 1rem;
+  overflow-x: auto;
+  position: relative;
+}
+
+pre>button {
+  display: contents;
+}
+
+pre>button::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: "";
+  background-color: var(--color-outline);
+  mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1Z"/></svg>');
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  display: block;
+  height: 1.5rem;
+  width: 1.5rem;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+pre>button:hover::after {
+  background-color: var(--color-tertiary);
+}
+
+.docker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+/* .connections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+  width: 80vw;
+} */
+
+.container h2 {
+  text-align: center;
+  margin: 0 0 2rem;
+  color: var(--color-primary);
+}
+
+.form-group {
+  background-color: var(--color-surface-container-high);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  opacity: 1;
+}
+
+.main-label {
+  display: block;
+  width: 100%;
+}
+
+.radio-options {
+  margin: 0 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
+.radio-options label {
+  display: inline-block;
+  margin: 1rem 2rem 1rem 0.5rem;
+  cursor: pointer;
+}
+
+/* Radio Options */
+
+/* .radio-options {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+  padding: 0.25rem;
+  width: 300px;
+  font-size: 14px;
+}
+
+.radio-options label {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.radio-options label input {
+  display: none;
+}
+
+.radio-options label span {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: none;
+  padding: .5rem 0;
+  color: rgba(51, 65, 85, 1);
+  transition: all .15s ease-in-out;
+}
+
+.radio-options label input:checked+span {
+  background-color: var(--color-tertiary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 600;
+} */
+/* End Radio Options */
+
+.form-group input[type="text"] {
+  width: 95%;
+  padding: 0.5rem;
+  margin: 1rem;
+  font-size: 1.25rem;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.25rem;
+  color: var(--color-tertiary);
+  background-color: var(--color-surface-container-low);
+}
+
+.form-group input[type="text"]:user-invalid {
+  border: 1px dashed var(--color-error-container);
+  color: var(--color-error-container);
+}
+
+/* .form-group input[type="text"]:user-valid {
+  border: 1px solid var(--color-success);
+  color: var(--color-success-text);
+} */
+
+.form-group input[type="radio"],
+.form-group input[type="checkbox"] {
+  width: auto;
+}
+
+.output {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: var(--color-surface-container-low);
+  border-radius: 0.75rem;
+  text-wrap: wrap;
+  width: 100%;
+  overflow-x: auto;
+}
