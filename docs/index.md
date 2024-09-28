@@ -31,6 +31,9 @@ Docker Hub: [https://hub.docker.com/r/nandyalu/trailarr/](https://hub.docker.com
 
 Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr){:target="_blank"}
 
+Reddit:
+[https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr){:target=_blank}
+
 ## Features
 
 - Manages multiple Radarr and Sonarr instances to find media
