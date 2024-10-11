@@ -25,6 +25,20 @@
   padding: 0.25rem;
 }
 
+.update-available {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: 5px;
+  border-radius: 1rem;
+  padding: 0.25rem 0.5rem;
+  font-style: italic;
+}
+
+.latest {
+  background-color: var(--color-tertiary);
+  color: var(--color-on-tertiary);
+}
+
 @media screen and (max-width: 768px) {
   .about-content {
     flex-direction: column;

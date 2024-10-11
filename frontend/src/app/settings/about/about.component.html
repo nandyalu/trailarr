@@ -5,7 +5,8 @@
         <hr>
         <div class="about-content">
             <label>Version</label>
-            <code>{{settings?.version}} {{ "Update Available" ? settings?.update_available : "" }}</code>
+            <code>{{settings?.version}}</code>
+            <span class="update-available" [class.latest]="!settings?.update_available">{{ settings?.update_available ? "Update Available" : "Latest" }}</span>
         </div>
         <div class="about-content">
             <label>API Key</label>
