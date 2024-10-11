@@ -1,6 +1,9 @@
 import requests
 
+from app_logger import ModuleLogger
 from config.settings import app_settings
+
+logger = ModuleLogger("UpdateChecker")
 
 
 def get_image_versions(image_name):
@@ -85,16 +88,18 @@ def check_for_update():
     current_digest = get_current_version_digest(all_versions, current_version)
 
     if not latest_digest or not current_digest:
-        print("Error: Could not update details from Docker Hub.")
+        logger.error("Error: Could not update details from Docker Hub.")
         return
 
     if latest_digest != current_digest:
-        print(
+        logger.info(
             f"A newer version ({latest_version}) of the image is available. Please update!"
         )
         app_settings.update_available = True
     else:
-        print(f"You are using the latest version ({current_version}) of the image.")
+        logger.info(
+            f"You are using the latest version ({current_version}) of the image."
+        )
 
 
 if __name__ == "__main__":
