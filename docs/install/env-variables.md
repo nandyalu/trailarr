@@ -67,6 +67,24 @@ For a list of valid timezones, see [tz database time zones](https://en.wikipedia
         - TZ=America/New_York
 ```
 
+### WEBUI_PASSWORD
+
+- Default is `trailarr`.
+
+Trailarr Web Interface has a browser login to access the app. Default credentials are:
+
+```bash
+Username: admin
+Password: trailarr
+```
+
+This environment variable is used to change the default password for the web interface.
+
+```yaml
+    environment:
+        - WEBUI_PASSWORD='mysecretpassword.$' # Make sure to use single quotes around the password
+```
+
 ### Example
 
 Here is an example of setting the environment variables:

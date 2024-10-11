@@ -118,6 +118,7 @@ class _Config:
             "True",
         ).lower() in ["true", "1"]
         self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
+        self.webui_password = os.getenv("WEBUI_PASSWORD", "trailarr")
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
 
     def as_dict(self):
@@ -444,6 +445,18 @@ class _Config:
     def trailer_web_optimized(self, value: bool):
         self._trailer_web_optimized = value
         self._save_to_env("TRAILER_WEB_OPTIMIZED", self._trailer_web_optimized)
+
+    @property
+    def webui_password(self):
+        """Password for the WebUI. \n
+        Default is 'trailarr'. \n
+        Valid values are any string."""
+        return self._webui_password
+
+    @webui_password.setter
+    def webui_password(self, value: str):
+        self._webui_password = value
+        self._save_to_env("WEBUI_PASSWORD", self._webui_password)
 
     @property
     def yt_cookies_path(self):
