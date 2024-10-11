@@ -42,10 +42,16 @@ class ConnectionDatabaseManager:
         """
         # Validate the connection details, will raise an error if invalid
         status = await validate_connection(connection)
+        # Convert path mappings to database objects
+        # Calling Connection.model_validate(connection) will raise an error \
+        # with the current implementation of PathMappingCRU
+        # https://github.com/nandyalu/trailarr/issues/53
+        _path_mappings = self._convert_path_mappings(connection)
+        connection.path_mappings = []  # Clear path mappings from input connection
         # Create db connection object from input
         db_connection = Connection.model_validate(connection)
-        # Create db path mappings from input
-        db_connection.path_mappings = self._convert_path_mappings(connection)
+        # Add path mappings to database connection
+        db_connection.path_mappings = _path_mappings
         # Use the session to add the connection to the database
         _session.add(db_connection)
         _session.commit()
