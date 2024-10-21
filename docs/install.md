@@ -29,3 +29,6 @@ See [Docker Compose](install/docker-compose.md) for the Docker Compose installat
 
 See [Docker CLI](install/docker-cli.md) for the Docker CLI installation instructions.
 
+## Help
+
+Use the [Docker Config Tool](help/docker-builder/builder.html){:target="_blank"} to generate the Docker Compose file/CLI command for setting up Docker Volumes and Path Mappings for Trailarr.

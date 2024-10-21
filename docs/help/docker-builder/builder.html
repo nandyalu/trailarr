@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trailarr Config Tool</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
@@ -58,6 +59,10 @@
 
         </div>
     </header>
+    <div id="toast" class="toast">
+        <div id="toast-content" class="toast-content"></div>
+        <div class="toast-progress"></div>
+    </div>
     <div class="page-content">
         <div class="container">
             <h2>Under Construction - Coming Soon!!!</h2>
@@ -70,13 +75,15 @@
             <ul>
                 <li>Choose whether you want to use Docker Compose (recommended) or Docker CLI.</li>
                 <li>Choose your operating system you are using to run Docker.</li>
+                <li>Enter the folder where you want Trailarr to save it's data on your local file system.</li>
                 <li>Enable Radarr and/or Sonarr if you want to use them.</li>
                 <ul>
+                    <li>Select type of connectiion: Radarr/Sonarr</li>
                     <li>Select whether you are running Radarr/Sonarr as a container.</li>
-                    <li>Enter the media volume mapping, if using Radarr as docker container.</li>
-                    <li>Enter the Radarr Media folder path on the local system, if not using Radarr as container.</li>
-                    <li>If you need to connect multiple Radarr instances, enter additional paths as needed.</li>
+                    <li>Enter the media folder path on the local system.</li>
+                    <li>If running as container, Enter the media folder path inside the container.</li>
                 </ul>
+                <li>If you need to connect multiple Radarr/Sonarr instances, add a connection by clicking on "Add Connection" for each of them and enter additional paths as needed.</li>
                 <li>Click the "Generate Command" button to get the command to run.</li>
             </ul>
             <p class="note">This is just a tool that runs on your browser, rest assured that it doesn't store any of the
@@ -120,12 +127,20 @@
                     </label>
                     <p class="note">For Unraid or MacOS, select Linux.</p>
                 </div>
+                <div class="form-group" id="appDataHostPathDiv">
+                    <label for="connection0HostPath" class="main-label">Enter the folder path on local
+                        system to use as Trailarr App Data folder:</label>
+                    <input type="text" id="appDataHostPath" name="appDataHostPath"
+                        placeholder="/var/appdata/trailarr OR C:\Users\<user>\docker\appdata\trailarr" spellcheck="false" autocorrect="off"
+                        autocapitalize="off" required pattern="^(/|[A-Za-z]:\\)[A-Za-z0-9].*">
+                    <p class="note">This should be the path where Trailarr stores it's app data!</p>
+                </div>
             </form>
         </div>
 
-        <!-- Connection 1 -->
+        <!-- Connection 0 -->
         <div class="container hidden" id="connection0">
-            <h2 id="connection0Title">Connection 1</h2>
+            <h2 id="connection0Title">Connection 0</h2>
             <form id="connection0Form" class="docker-form">
                 <div class="form-group">
                     <label class="main-label">
@@ -179,27 +194,61 @@
 
         <button type="button" id="addConnection" onclick="addConnection()">Add Another Connecttion</button>
         <button type="button" id="generateCommand" onclick="generateCommand()">Generate Output</button>
-        <div class="container">
+
+        <!-- Output: Docker Compose/Command -->
+        <div class="container hidden" id="outputContainer">
             <h2>Outputs</h2>
+            <p>This is an example Docker command that can used with Trailarr. Please modify as needed.</p>
             <h3>Docker Compose</h3>
             <div class="output">
-                <pre id="outputComposePre">
-                    <button type="button" onclick="copyToClipboard('outputComposeCode')"></button>
-                    <code id="outputComposeCode"></code>
-                </pre>
+                <i type="button" onclick="copyToClipboard('outputComposePre')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1Z" />
+                    </svg>
+                </i>
+                <pre id="outputComposePre"></pre>
             </div>
             <h3>Docker CLI</h3>
             <div class="output">
-                <pre id="outputCliPre">
-                    <button type="button" onclick="copyToClipboard('outputCliCode')"></button>
-                    <code id="outputCliCode"></code>
-                </pre>
+                <i type="button" onclick="copyToClipboard('outputCliPre')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1Z" />
+                    </svg>
+                </i>
+                <pre id="outputCliPre"></pre>
             </div>
         </div>
-        <div class="container" id="pathMappings" class="hidden">
+
+        <!-- Output: Path Mappings -->
+        <div class="container hidden" id="pathMappingsContainer">
             <h2>Path Mappings</h2>
-            <div class="output" id="outputPathMappings">
-            </div>
+            <p>Once Trailarr container is created using above Docker Compose/CLI command, open Trailarr Web UI (<a href="http://localhost:7889" target="_blank">http://localhost:7889</a>), go into <code>Settings > Connections</code>, add the Radarr and/or Sonarr connections and add below path mappings.</p>
+            <p>For more information on how to add Connections, see <a href="https://nandyalu.github.io/trailarr/setup/connections/" target="_blank">Connections</a></p>
+            <details class="hidden indent" id="pathMapping0" open>
+                <summary>Path Mapping - Connection 0</summary>
+                <label for="pathMapping0PreFrom">Path From:</label>
+                <div class="output path-mapping">
+                    <i type="button" id="pathMapping0From" onclick="copyToClipboard('pathMapping0PreFrom')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1Z" />
+                        </svg>
+                    </i>
+                    <pre id="pathMapping0PreFrom"></pre>
+                </div>
+                <label for="pathMapping0PreTo">Path To:</label>
+                <div class="output">
+                    <i type="button" id="pathMapping0To" onclick="copyToClipboard('pathMapping0PreTo')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1Z" />
+                        </svg>
+                    </i>
+                    <pre id="pathMapping0PreTo"></pre>
+                </div>
+            </details>
         </div>
     </div>
     <script src="./builder.js"></script>
