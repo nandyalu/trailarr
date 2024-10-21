@@ -80,6 +80,8 @@ Thank you for creating them.
 
 Contributions are welcome! Please see the [Contributing](https://github.com/nandyalu/trailarr/blob/main/.github/CONTRIBUTING.md) guide for more information.
 
+Looking for a frontend developer (Angular) to help with the UI, if you are interested, please reach out in the [Discussions](https://github.com/nandyalu/trailarr/discussions) or [Reddit](https://www.reddit.com/r/trailarr/).
+
 ## License
 
 This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file) for more details.
