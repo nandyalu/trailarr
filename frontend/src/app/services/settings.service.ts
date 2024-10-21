@@ -43,6 +43,27 @@ export class SettingsService {
     );
   }
 
+  updatePassword(currentPassword: string, newPassword: string): Observable<string> {
+    const updatePasswordUrl = this.settingsUrl + 'updatepassword';
+    const update_obj = {
+      current_password: currentPassword,
+      new_password: newPassword
+    }
+    return this.http.put<string>(updatePasswordUrl, update_obj).pipe(
+      catchError((error: any) => {
+        let errorMessage = '';
+        if (error.error instanceof ErrorEvent) {
+          // client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // server-side error
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        return of(errorMessage);
+      })
+    );
+  }
+
   private connectionsUrl = environment.apiUrl + environment.connections;
   getConnections(): Observable<Connection[]> {
     return this.http.get<Connection[]>(this.connectionsUrl).pipe(

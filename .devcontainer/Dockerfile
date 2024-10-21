@@ -28,7 +28,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.0.4-beta"
+    APP_VERSION="0.2.1-beta"
 
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"

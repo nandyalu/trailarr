@@ -1,5 +1,6 @@
 let connectionCount = 0;
 let connectionDivs = [];
+let pathMappingDivs = [];
 
 // Get the add connection button
 const addConnectionButton = document.getElementById('addConnection');
@@ -106,10 +107,10 @@ function addConnection() {
     return;
   }
 
-  oldConnId = connection0.id;
+  const oldConnId = connection0.id;
   // Clone the original connection div
   connectionCount++;
-  newConnId = `connection${connectionCount}`;
+  const newConnId = `connection${connectionCount}`;
   const newDiv = connection0.cloneNode(true);
 
   // Update the id and name attributes of the cloned div
@@ -318,6 +319,53 @@ function generateMappings(connectionValues) {
   return { pathMappings, volumeMappings };
 }
 
+// Get the original Path Mapping div already in document
+const pathMapping0 = document.getElementById('pathMapping0');
+
+function addPathMappingDivs(pathMappings) {
+  const pathMappingsDiv = document.getElementById('pathMappingsContainer');
+
+  // Remove all existing path mapping divs
+  pathMappingDivs.forEach(pathMappingDiv => {
+    pathMappingDiv.remove();
+  });
+  pathMappingDivs = [];
+
+  let pmCount = 0;
+  pathMappings.forEach(pathMapping => {
+    const { from, to, id } = pathMapping;
+    
+    const oldId = pathMapping0.id;
+    // Clone the original connection div
+    pmCount++;
+    const newId = `pathMapping${pmCount}`;
+    const newDiv = pathMapping0.cloneNode(true);
+  
+    // Update the id and name attributes of the cloned div
+    newDiv.id = newId;
+    if (newDiv.classList.contains('hidden')) {
+      newDiv.classList.remove('hidden');
+    }
+    
+    newDiv.querySelectorAll('*').forEach(element => {
+      if (element.id === 'pathMapping0PreFrom') {
+        element.innerHTML = `${from.trim()}`;
+      }
+      if (element.id === 'pathMapping0PreTo') {
+        element.innerHTML = `${to.trim()}`;
+      }
+    });
+    newDiv.querySelector('summary').textContent = `Path Mapping - ${id.replace('connection', 'Connection ')}`;
+    const innerhtml = newDiv.innerHTML.replaceAll(oldId, newId);
+    newDiv.innerHTML = innerhtml;
+  
+    // Insert the cloned div at the end of the path mappings div
+    pathMappingsDiv.appendChild(newDiv);
+    pathMappingDivs.push(newDiv);
+  });
+
+}
+
 /**
  * Get the values of all connection divs
  * 
@@ -335,42 +383,107 @@ function generateCommand() {
     connectionValues.push(connection);
   });
 
+  // Get AppData path
+  const appDataPath = document.getElementById('appDataHostPath').value;
+
   // Convert connection values to final paths
   connectionValues = convertConnectionValues(connectionValues);
 
   // Generate path mappings and volume mappings
   const { pathMappings, volumeMappings } = generateMappings(connectionValues);
 
-  let dockerComposeVolumes = '';
-  let dockerCliVolumes = '';
+  let dockerComposeVolumes = `      - ${appDataPath}:/config  #AppData\n`;
+  let dockerCliVolumes = `-v ${appDataPath}:/config \\\n`;
 
   // Generate volume mappings for Docker Compose and Docker CLI commands
   volumeMappings.forEach(({ from, to, id }) => {
     dockerComposeVolumes += `      - ${from}:${to}  #${id}\n`;
-    dockerCliVolumes += ` -v ${from}:${to}`;
+    dockerCliVolumes += `  -v ${from}:${to} \\\n`;
   });
 
-  const dockerComposeCommand = `
-services:
+  const dockerComposeCommand = `services:
   trailarr:
     image: nandyalu/trailarr:latest
+    container_name: trailarr
+    environment:
+      - TZ=America/New_York
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - 7889:7889
+    restart: on-failure
     volumes:
 ${dockerComposeVolumes}`;
 
-  const dockerCliCommand = `docker run -d --name trailarr${dockerCliVolumes} nandyalu/trailarr:latest`;
+  const dockerCliCommand = `
+docker run -d --name trailarr \\
+  --container_name trailarr \\
+  -e TZ=America/New_York \\
+  -e PUID=1000 \\
+  -e PGID=1000 \\
+  -p 7889:7889 \\
+  ${dockerCliVolumes}  --restart on-failure \\
+  nandyalu/trailarr:latest`;
 
-  outputComposeDiv = document.getElementById('outputComposeCode');
+  outputComposeDiv = document.getElementById('outputComposePre');
   outputComposeDiv.innerText = dockerComposeCommand;
 
-  document.getElementById('outputCliCode').innerText = `${dockerCliCommand.trim()}`;
-  outputPathMappingsDiv = document.getElementById('outputPathMappings');
-  outputPathMappingsDiv.innerText = JSON.stringify(pathMappings, null, 2);
-  outputPathMappingsDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('outputCliPre').innerText = `${dockerCliCommand.trim()}`;
 
-  console.log(connectionValues);
-  console.log(volumeMappings);
-  console.log(pathMappings);
+  // Display output container div
+  showDiv('outputContainer');
+
+  // Display the path mappings
+  showDiv('pathMappingsContainer');
+  addPathMappingDivs(pathMappings);
+
+  // console.log(connectionValues);
+  // console.log(volumeMappings);
+  // console.log(pathMappings);
   return;
+}
+
+async function copyToClipboard(elementId) {
+  // debugger;
+  const element = document.getElementById(elementId);
+  const textToCopy = element.innerText;
+
+  // Ensure the document is focused
+  // if (!document.hasFocus()) {
+  //   element.focus();
+  // }
+
+  // Use the new Clipboard API (if available) to copy to clipboard
+  if (navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      showToast("Copied to clipboard!");
+    } catch (err) {
+      showToast("Error copying text to clipboard. Please copy manually!", "Error");
+      console.error('Failed to copy: ', err);
+    }
+  } else {
+    // Fallback to the old execCommand() way (for wider browser coverage)
+    element.select();
+    document.execCommand('copy');
+    showToast("Copied to clipboard!");
+  }
+  return;
+}
+
+function showToast(message, isError = false) {
+  const toast = document.getElementById('toast');
+  const toastContent = document.getElementById('toast-content');
+  toastContent.innerText = message;
+  toast.classList.add('show');
+  if (isError) {
+    toast.classList.add('error');
+  } else {
+    toast.classList.remove('error');
+  }
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
 }
 
 console.log('builder.js loaded');

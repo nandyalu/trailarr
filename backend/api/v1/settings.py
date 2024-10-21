@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from api.v1.models import Settings, UpdateSetting
+from api.v1.models import Settings, UpdatePassword, UpdateSetting
+from api.v1 import authentication
 from config.settings import app_settings
 from core.base.database.manager.general import GeneralDatabaseManager, ServerStats
 
@@ -32,3 +33,14 @@ async def update_setting(update: UpdateSetting) -> str:
     _new_value = getattr(app_settings, update.key, None)
     _name = update.key.replace("_", " ").title()
     return f"Setting {_name} updated to {_new_value}"
+
+
+@settings_router.put("/updatepassword")
+async def update_password(passwords: UpdatePassword) -> str:
+    if not passwords.current_password:
+        return "Error updating password: Current password is required!"
+    if not passwords.new_password:
+        return "Error updating password: Password cannot be empty!"
+    if not authentication.verify_password(passwords.current_password):
+        return "Error updating password: Current password is incorrect!"
+    return authentication.set_password(passwords.new_password)

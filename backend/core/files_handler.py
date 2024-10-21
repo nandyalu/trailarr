@@ -197,7 +197,7 @@ class FilesHandler:
                 continue
             if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
                 continue
-            if "-trailer." not in entry.name:
+            if "trailer" not in entry.name:
                 continue
             return True
         return False

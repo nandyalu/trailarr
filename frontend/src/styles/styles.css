@@ -78,6 +78,7 @@ body {
 }
 
 .dark {
+  color-scheme: dark;
   --color-primary: rgb(128 213 212);
   --color-surface-tint: rgb(128 213 212);
   --color-on-primary: rgb(0 55 55);
@@ -130,6 +131,7 @@ body {
 }
 
 .light {
+  color-scheme: light;
   --color-primary: rgb(0 106 106);
   --color-surface-tint: rgb(0 106 106);
   --color-on-primary: rgb(255 255 255);

@@ -8,7 +8,7 @@ from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import trailer_cleanup
 from core.tasks.download_trailers import download_missing_trailers
 from core.tasks.image_refresh import refresh_images
-from core.updates.docket_check import check_for_update
+from core.updates.docker_check import check_for_update
 
 # from core.tasks.task_runner import TaskRunner
 
@@ -91,8 +91,8 @@ def update_check_job():
         func=check_for_update,
         trigger="interval",
         days=1,
-        id="update_check_job",
-        name="Image Update Check",
+        id="docker_update_check_job",
+        name="Docker Update Check",
         next_run_time=datetime.now() + timedelta(seconds=240),
         max_instances=1,
     )
@@ -148,14 +148,17 @@ def schedule_all_tasks():
     # Schedule API Refresh to run every hour
     refresh_api_data_job()
 
+    # Schedule update check task to run once a day, start in 4 minutes from now
+    update_check_job()
+
+    # Schedule trailer download task to run every hour, start in 15 minutes from now
+    download_missing_trailers_job()
+
     # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now
     image_refresh_job()
 
     # Schedule trailer cleanup task to run every hour, start in 5 minutes from now
     trailer_cleanup_job()
-
-    # Schedule trailer download task to run every hour, start in 15 minutes from now
-    download_missing_trailers_job()
 
     logger.info("All tasks scheduled!")
     return

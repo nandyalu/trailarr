@@ -33,6 +33,9 @@ Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will
 !!! info
     Trailarr will not delete the trailer that was already downloaded. You have to manually click on `Delete` button to delete the trailer.
 
+## Trailarr not downloading the specified youtube video, but downloading a different video. Why?
+Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > Trailer > Advanced` to download restricted videos. See [Settings](../setup/settings.md) for more info.
+
 
 ## Can I download multiple trailers for a Movie or Series?
 Trailarr will not download multiple trailers for same Movie or Series automatically. You can manually update the youtube trailer link and click `Download` to download another trailer. Trailarr will download and save the new trailer in the Movie or Series folder along with the old trailer.

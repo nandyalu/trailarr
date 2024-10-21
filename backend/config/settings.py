@@ -44,6 +44,10 @@ class _Config:
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
     _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
+    # Default WebUI password 'trailarr' hashed
+    _DEFAULT_WEBUI_PASSWORD = (
+        "$2b$12$CU7h.sOkBp5RFRJIYEwXU.1LCUTD2pWE4p5nsW3k1iC9oZEGVWeum"
+    )
 
     _VALID_LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
@@ -118,6 +122,7 @@ class _Config:
             "True",
         ).lower() in ["true", "1"]
         self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
+        self.webui_password = os.getenv("WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
 
     def as_dict(self):
@@ -444,6 +449,20 @@ class _Config:
     def trailer_web_optimized(self, value: bool):
         self._trailer_web_optimized = value
         self._save_to_env("TRAILER_WEB_OPTIMIZED", self._trailer_web_optimized)
+
+    @property
+    def webui_password(self):
+        """Password for the WebUI (hashed and stored). \n
+        Default is 'trailarr'. \n
+        Valid values are any hashed string of password."""
+        return self._webui_password
+
+    @webui_password.setter
+    def webui_password(self, value: str):
+        if not value:
+            value = self._DEFAULT_WEBUI_PASSWORD
+        self._webui_password = value
+        self._save_to_env("WEBUI_PASSWORD", value)
 
     @property
     def yt_cookies_path(self):
