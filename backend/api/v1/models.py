@@ -48,3 +48,8 @@ class Settings(BaseModel):
 class UpdateSetting(BaseModel):
     key: str
     value: int | str | bool
+
+
+class UpdatePassword(BaseModel):
+    current_password: str
+    new_password: str
