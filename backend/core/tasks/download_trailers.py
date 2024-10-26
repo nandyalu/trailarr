@@ -135,19 +135,20 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
     db_manager.update_media_status_bulk(media_update_list)
 
 
-def download_trailer_by_id(media_id: int, is_movie: bool, yt_id: str = "") -> str:
+def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
     """Download trailer for a movie or series by ID."""
-    logger.info(
-        f"Downloading trailer for {'movie' if is_movie else 'series'} ID: {media_id}"
-    )
     db_manager = MediaDatabaseManager()
     try:
         media = db_manager.read(media_id)
+        logger.info(
+            f"Downloading trailer for {'movie' if media.is_movie else 'series'} ID: {media_id}"
+        )
     except Exception as e:
-        msg = f"Failed to get {'movie' if is_movie else 'series'} with ID: {media_id}"
+        msg = f"Failed to get media with ID: {media_id}"
         logger.error(msg)
         logger.exception(e)
         return msg
+    is_movie = media.is_movie
     if not media.folder_path:
         msg = f"{'Movie' if is_movie else 'Series'} '{media.title}' has no folder path"
         logger.error(msg)
