@@ -370,6 +370,99 @@ class MediaDatabaseManager:
         return
 
     @manage_session
+    def update_monitoring(
+        self,
+        media_id: int,
+        monitor: bool,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> tuple[str, bool]:
+        """Update the monitoring status of a media item in the database by id.\n
+        Also updates the status based on the monitor status and trailer existence.\n
+        Args:
+            media_id (int): The id of the media to update.
+            monitor (bool): The monitoring status to set.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            tuple(msg, bool): Message indicating the status of the operation, \
+                and a flag indicating success.
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        # Check if the monitor status is already set to the same value
+        if db_media.monitor == monitor:
+            msg = f"Media '{db_media.title}' [{db_media.id}] is already"
+            msg += " monitored!" if monitor else " not monitored!"
+            return msg, False
+        # Monitor = True
+        if monitor:
+            # If trailer exists, change nothing!
+            if db_media.trailer_exists:
+                msg = f"Media '{db_media.title}' [{db_media.id}] already has a trailer!"
+                return msg, False
+            # Trailer doesn't exist, set monitor status
+            db_media.monitor = monitor
+            db_media.status = MonitorStatus.MONITORED
+            _session.add(db_media)
+            if _commit:
+                _session.commit()
+            msg = f"Media '{db_media.title}' [{db_media.id}] is now monitored"
+            return msg, True
+        # Monitor = False
+        # If trailer exists, set status to downloaded, else set to missing
+        db_media.monitor = monitor
+        if db_media.trailer_exists:
+            db_media.status = MonitorStatus.DOWNLOADED
+        else:
+            db_media.status = MonitorStatus.MISSING
+        msg = f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return msg, True
+
+    @manage_session
+    def update_trailer_exists(
+        self,
+        media_id: int,
+        trailer_exists: bool,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the trailer_exists status of a media item in the database by id.\n
+        Args:
+            media_id (int): The id of the media to update.
+            trailer_exists (bool): The trailer_exists status to set.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        db_media.trailer_exists = trailer_exists
+        # If trailer exists, disable monitoring
+        if trailer_exists:
+            db_media.monitor = False
+            db_media.status = MonitorStatus.DOWNLOADED
+        else:
+            if db_media.monitor:
+                db_media.status = MonitorStatus.MONITORED
+            else:
+                db_media.status = MonitorStatus.MISSING
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return None
+
+    @manage_session
     def delete(
         self,
         media_id: int,
