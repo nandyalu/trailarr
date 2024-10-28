@@ -13,8 +13,14 @@ media_router = APIRouter(prefix="/media", tags=["Media"])
 
 
 @media_router.get("/all")
-async def get_all_media(movies_only: bool | None = None) -> list[MediaRead]:
+async def get_all_media(
+    movies_only: bool | None = None,
+    filter_by: str | None = "all",
+    sort_by: str | None = None,
+    sort_asc: bool = True,
+) -> list[MediaRead]:
     """Get all media from the database. \n
+    Optionally apply filters and sorting. \n
     Args:
         movies_only (bool, Optional): \
             Flag to get only movies. \
@@ -22,11 +28,22 @@ async def get_all_media(movies_only: bool | None = None) -> list[MediaRead]:
             If `False`, it will return only `series`.\
             If `None`, it will return all media items. \
             Default is `None`. \n
+        filter_by (str, Optional): Filter the media items by a column value. \
+            Can be `all`, `downloaded`, `monitored`, `missing`, or `unmonitored`. \
+            Default is `all`.
+        sort_by (str, Optional): Sort the media items by `title`, `year`, `added_at`, \
+            or `updated_at`. Default is None.
+        sort_asc (bool, Optional): Flag to sort in ascending order. Default is True.
     Returns:
         list[MediaRead]: List of media objects. \n
     """
     db_handler = MediaDatabaseManager()
-    media = db_handler.read_all(movies_only=movies_only)
+    media = db_handler.read_all(
+        movies_only=movies_only,
+        filter_by=filter_by,
+        sort_by=sort_by,
+        sort_asc=sort_asc,
+    )
     return media
 
 

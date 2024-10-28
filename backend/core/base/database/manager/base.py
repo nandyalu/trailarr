@@ -106,15 +106,26 @@ class MediaDatabaseManager:
     def read_all(
         self,
         movies_only: bool | None = None,
+        filter_by: str | None = "all",
+        sort_by: str | None = None,
+        sort_asc: bool = True,
         *,
         _session: Session = None,  # type: ignore
     ) -> list[MediaRead]:
-        """Get all media objects from the database.\n
+        """Get all media objects from the database. \n
+        Optionally apply filtering and sorting\n
         Args:
-            movies_only (bool, Optional): Flag to get only movies. Default is None.\n
-                If True, it will return only movies. If False, it will return only series.\n
-                If None, it will return all media items.\n
-            _session (Session, Optional): A session to use for the database connection.\n
+            movies_only (bool, Optional): Flag to get only movies. Default is None.\
+                If `True`, it will return only movies. \
+                If `False`, it will return only series. \
+                If `None`, it will return both movies and series.
+            filter_by (str, Optional): Filter the media items by a column value. \
+                Can be `all`, `downloaded`, `monitored`, `missing`, or `unmonitored`. \
+                Default is `all`.
+            sort_by (str, Optional): Sort the media items by `title`, `year`, `added_at`, \
+                or `updated_at`. Default is None.
+            sort_asc (bool, Optional): Flag to sort in ascending order. Default is True.
+            _session (Session, Optional): A session to use for the database connection.\
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -122,6 +133,13 @@ class MediaDatabaseManager:
         statement = select(Media)
         if movies_only is not None:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
+        if filter_by:
+            statement = self._apply_filter(statement, filter_by)
+        if sort_by and getattr(Media, sort_by, None) is not None:
+            if sort_asc:
+                statement = statement.order_by(col(sort_by))
+            else:
+                statement = statement.order_by(desc(col(sort_by)))
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
@@ -542,6 +560,35 @@ class MediaDatabaseManager:
             _session.delete(db_media)
         _session.commit()
         return
+
+    def _apply_filter(
+        self, statement: SelectOfScalar[Media], filter_by: str
+    ) -> SelectOfScalar[Media]:
+        """🚨This is a private method🚨 \n
+        Apply a filter to the database query based on the filter_by parameter.\n
+        Args:
+            statement (SelectOfScalar[Media]): The database query statement.
+            filter_by (str): The filter to apply to the statement.\
+                Can be `all`, `downloaded`, `monitored`, `missing`, or `unmonitored`.\n
+        Returns:
+            SelectOfScalar[Media]: The updated statement with the filter applied.
+        """
+        if filter_by == "downloaded":
+            statement = statement.where(col(Media.trailer_exists).is_(True))
+            return statement
+        if filter_by == "monitored":
+            statement = statement.where(col(Media.monitor).is_(True))
+            return statement
+        if filter_by == "missing":
+            statement = statement.where(col(Media.trailer_exists).is_(False))
+            return statement
+        if filter_by == "unmonitored":
+            statement = statement.where(col(Media.monitor).is_(False))
+            statement = statement.where(col(Media.trailer_exists).is_(False))
+            return statement
+        # If filter_by is `all` or doesn't match any of the above,
+        # return the statement as is
+        return statement
 
     def _create_or_update(
         self, media_create: MediaCreate, session: Session
