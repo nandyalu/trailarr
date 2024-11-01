@@ -150,6 +150,12 @@ export class MediaService {
     );
   }
 
+  /**
+   * Searches for media items based on the provided query string.
+   *
+   * @param query - The search query string used to find media items.
+   * @returns An Observable that emits an array of SearchMedia objects matching the query.
+   */
   searchMedia(query: string): Observable<SearchMedia[]> {
     return this.http.get<SearchMedia[]>(`${this.mediaUrl}search?query=${query}`);
   }

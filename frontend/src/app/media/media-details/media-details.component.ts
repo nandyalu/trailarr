@@ -35,6 +35,23 @@ export class MediaDetailsComponent {
     private websocketService: WebsocketService
   ) { }
 
+  /**
+   * Copies the provided text to the clipboard. If the Clipboard API is not available,
+   * it falls back to using the `execCommand` method for wider browser compatibility.
+   * 
+   * @param textToCopy - The text string to be copied to the clipboard.
+   * @returns A promise that resolves when the text has been successfully copied.
+   * 
+   * @remarks
+   * This method uses the modern Clipboard API if available, and falls back to the
+   * `execCommand` method for older browsers. It also displays a toast notification
+   * indicating the success or failure of the copy operation.
+   * 
+   * @example
+   * ```typescript
+   * this.copyToClipboard("Hello, World!");
+   * ```
+   */
   async copyToClipboard(textToCopy: string) {
     if (!navigator.clipboard) {
       // Fallback to the old execCommand() way (for wider browser coverage)
@@ -92,6 +109,17 @@ export class MediaDetailsComponent {
     this.webSocketSubscription?.unsubscribe();
   }
 
+  /**
+   * Fetches media data and media files based on the current media ID.
+   * 
+   * This method performs two asynchronous operations:
+   * 1. Retrieves media data from the media service and assigns it to the `media` property.
+   *    - Sets the `trailer_url` property using the `youtube_trailer_id` from the media response.
+   *    - Sets the `isLoading` flag to `false` once the media data is retrieved.
+   * 2. Retrieves media files from the media service and assigns them to the `mediaFiles` property.
+   *    - If the response is a string, assigns it to the `mediaFilesResponse` property.
+   *    - Sets the `filesLoading` flag to `false` once the media files are retrieved.
+   */
   getMediaData() {
     // Get Media Data
     this.mediaService.getMediaById(this.mediaId).subscribe((media_res: Media) => {
@@ -110,6 +138,15 @@ export class MediaDetailsComponent {
     });
   }
 
+  /**
+   * Downloads the trailer for the current media if the trailer ID has changed.
+   * 
+   * This method checks if the new trailer URL contains the old trailer ID and if the trailer already exists.
+   * If the trailer ID is the same and the trailer exists, it does not proceed with the download.
+   * Otherwise, it sets the loading state to true and initiates the download process via the media service.
+   * 
+   * @returns {void}
+   */
   downloadTrailer() {
     const old_id = this.media?.youtube_trailer_id?.toLowerCase() || '';
     const new_id = this.trailer_url.toLowerCase();
@@ -124,6 +161,14 @@ export class MediaDetailsComponent {
     });
   }
 
+  /**
+   * Toggles the monitoring status of the current media item.
+   * 
+   * This method sets the `isLoadingMonitor` flag to true, then toggles the `monitor` status of the media item.
+   * It calls the `monitorMedia` method of `mediaService` with the media ID and the new monitor status.
+   * Once the subscription receives a response, it logs the response, updates the media's monitor status,
+   * and sets the `isLoadingMonitor` flag to false.
+   */
   monitorSeries() {
     // console.log('Toggling Media Monitoring');
     this.isLoadingMonitor = true;
@@ -135,6 +180,12 @@ export class MediaDetailsComponent {
     });
   }
 
+  /**
+   * Opens a new browser tab to play the YouTube trailer of the current media.
+   * If the media does not have a YouTube trailer ID, the function returns without doing anything.
+   *
+   * @returns {void}
+   */
   openTrailer(): void {
     if (!this.media?.youtube_trailer_id) {
       return;
@@ -145,14 +196,32 @@ export class MediaDetailsComponent {
   // Reference to the dialog element
   @ViewChild('deleteDialog') deleteDialog!: ElementRef<HTMLDialogElement>;
 
+  /**
+   * Displays the delete dialog modal.
+   * This method opens the delete dialog by calling the `showModal` method
+   * on the native element of the delete dialog.
+   *
+   * @returns {void}
+   */
   showDeleteDialog(): void {
     this.deleteDialog.nativeElement.showModal(); // Open the dialog
   }
 
+  /**
+   * Closes the delete dialog.
+   * 
+   * This method is used to close the delete dialog by accessing the native element
+   * and invoking the `close` method on it.
+   */
   closeDeleteDialog(): void {
     this.deleteDialog.nativeElement.close(); // Close the dialog
   }
 
+  /**
+   * Handles the confirmation of trailer deletion.
+   * Closes the delete dialog and calls the media service to delete the trailer.
+   * Updates the media object to reflect that the trailer no longer exists.
+   */
   onConfirmDelete() {
     // console.log('Deleting trailer');
     this.closeDeleteDialog();
