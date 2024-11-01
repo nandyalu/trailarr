@@ -5,8 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { DurationConvertPipe } from '../../helpers/duration-pipe';
 import { FolderInfo, Media } from '../../models/media';
-import { MovieService } from '../../services/movie.service';
-import { SeriesService } from '../../services/series.service';
+import { MediaService } from '../../services/media.service';
 import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
@@ -27,12 +26,11 @@ export class MediaDetailsComponent {
   filesLoading = true;
   trailer_url: string = '';
   // status = 'Missing';
-  private mediaService: MovieService | SeriesService = this.seriesService;
+  // private mediaService: MovieService | SeriesService = this.seriesService;
   private webSocketSubscription?: Subscription;
 
   constructor(
-    private movieService: MovieService,
-    private seriesService: SeriesService,
+    private mediaService: MediaService,
     private route: ActivatedRoute,
     private websocketService: WebsocketService
   ) { }
@@ -63,12 +61,12 @@ export class MediaDetailsComponent {
     this.isLoading = true;
     this.filesLoading = true;
     this.route.params.subscribe(params => {
-      let type = this.route.snapshot.url[0].path;
-      if (type === 'movies') {
-        this.mediaService = this.movieService;
-      } else {
-        this.mediaService = this.seriesService;
-      }
+      // let type = this.route.snapshot.url[0].path;
+      // if (type === 'movies') {
+      //   this.moviesOnly = true;
+      // } else {
+      //   this.moviesOnly = false;
+      // }
       this.mediaId = params['id'];
       this.getMediaData();
     });
@@ -100,11 +98,6 @@ export class MediaDetailsComponent {
       this.media = media_res;
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
-      // if (media_res.trailer_exists) {
-      //   this.status = 'Downloaded';
-      // } else {
-      //   this.status = media_res.monitor ? 'Monitored' : 'Missing';
-      // }
     });
     // Get Media Files
     this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo | string) => {
