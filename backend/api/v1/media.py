@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
-from api.v1.models import ErrorResponse
+from api.v1.models import ErrorResponse, SearchMedia
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
 from core.files_handler import FilesHandler, FolderInfo
@@ -81,6 +81,24 @@ async def get_recently_downloaded(limit: int = 30, offset: int = 0) -> list[Medi
     db_handler = MediaDatabaseManager()
     media_list = db_handler.read_recently_downloaded(limit, offset)
     return media_list
+
+
+@media_router.get("/search", tags=["Search"])
+async def search_media(query: str) -> list[SearchMedia]:
+    """Search media by query. \n
+    Args:
+        query (str): Search query. \n
+    Returns:
+        list[SearchMedia]: List of search media objects. \n
+    """
+    db_handler = MediaDatabaseManager()
+    media_list = db_handler.search(query)
+    search_media_list: list[SearchMedia] = []
+    for media in media_list:
+        media_data = media.model_dump()
+        search_media = SearchMedia.model_validate(media_data)
+        search_media_list.append(search_media)
+    return search_media_list
 
 
 @media_router.get(
@@ -238,16 +256,3 @@ async def delete_media_trailer(media_id: int) -> str:
     except Exception as e:
         await websockets.ws_manager.broadcast("Error deleting trailer!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-
-
-@media_router.get("/search/{query}", tags=["Search"])
-async def search_media(query: str) -> list[MediaRead]:
-    """Search media by query. \n
-    Args:
-        query (str): Search query. \n
-    Returns:
-        list[MediaRead]: List of media objects.
-    """
-    db_handler = MediaDatabaseManager()
-    media = db_handler.search(query)
-    return media
