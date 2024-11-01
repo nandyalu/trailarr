@@ -12,7 +12,7 @@
             </div>
         </div>
         <div class="media-row">
-            <div *ngFor="let media of media_list" class="media-card" [routerLink]="[media.is_movie? '/movies': '/series', media.id]">
+            <div *ngFor="let media of media_list" class="media-card" [routerLink]="['/media', media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
                 <ng-container *ngIf="media.monitor; else trailerExistsIcon">
