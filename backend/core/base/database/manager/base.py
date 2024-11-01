@@ -135,11 +135,11 @@ class MediaDatabaseManager:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
         if filter_by:
             statement = self._apply_filter(statement, filter_by)
-        if sort_by and getattr(Media, sort_by, None) is not None:
+        if sort_by and hasattr(Media, sort_by):
             if sort_asc:
-                statement = statement.order_by(col(sort_by))
+                statement = statement.order_by(sort_by)
             else:
-                statement = statement.order_by(desc(col(sort_by)))
+                statement = statement.order_by(desc(sort_by))
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
