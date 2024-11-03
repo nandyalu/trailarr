@@ -52,6 +52,21 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
+    exclude_words = app_settings.exclude_words
+    if exclude_words:
+        if "," in exclude_words:
+            exclude_words = exclude_words.split(",")
+            for word in exclude_words:
+                word = word.strip()
+                if word in title.lower():
+                    logger.debug(f"Skipping video with excluded word '{word}': {id}")
+                    return "The video contains an excluded word"
+        else:
+            if exclude_words in title.lower():
+                logger.debug(
+                    f"Skipping video with excluded word '{exclude_words}': {id}"
+                )
+                return "The video contains an excluded word"
 
 
 def _search_yt_for_trailer(

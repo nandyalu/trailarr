@@ -1,6 +1,7 @@
 export interface Settings {
     api_key: string
     app_data_dir: string
+    exclude_words: string
     version: string
     server_start_time: string
     timezone: string

@@ -26,6 +26,7 @@ export class TrailerComponent {
   subtitleFormats = ["srt", "vtt", "pgs"]
   trailerFileName = "";
   ytCookiesPath = "";
+  excludeWords = "";
 
   constructor(private settingsService: SettingsService) { }
 

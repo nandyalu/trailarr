@@ -285,6 +285,23 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
+                <label for="exclude_words">Exclude Words in Title</label>
+                <small>Exclude downloading a video if it contains certain words in video title. Seperate words with a comma (,)</small>
+                <small>Example: 'comment,teaser,untitled'</small>
+            </div>
+            <div class="text-input">
+                <input class="input-path" id="exclude_words" type="text" [(ngModel)]="excludeWords"
+                    placeholder="comment,teaser" autocomplete="off" tabindex="19">
+                <button *ngIf="excludeWords != settings?.exclude_words" class="primary icononly-button"
+                    id="update_exclude_words" tabindex="20" (click)="updateSetting('exclude_words', trailerFileName)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
                 <label for="trailer_file_name">Trailer File Name</label>
                 <small>Customize trailer file name to use for downloaded trailers. Available options: title, year, resolution, vcodec, acodec</small>
             </div>

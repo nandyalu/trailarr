@@ -124,11 +124,13 @@ class _Config:
         self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
         self.webui_password = os.getenv("WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
+        self.exclude_words = os.getenv("EXCLUDE_WORDS", "")
 
     def as_dict(self):
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
+            "exclude_words": self.exclude_words,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
@@ -475,6 +477,18 @@ class _Config:
     def yt_cookies_path(self, value: str):
         self._yt_cookies_path = value
         self._save_to_env("YT_COOKIES_PATH", self._yt_cookies_path)
+
+    @property
+    def exclude_words(self):
+        """Exclude words for trailers. \n
+        Default is empty string. \n
+        Valid values are any string."""
+        return self._exclude_words
+
+    @exclude_words.setter
+    def exclude_words(self, value: str):
+        self._exclude_words = value
+        self._save_to_env("EXCLUDE_WORDS", self._exclude_words)
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
