@@ -105,8 +105,8 @@ export class TopnavComponent {
         this.selectedId = this.searchResults[this.selectedIndex].id;
         return;
       } else if (event.key === 'Enter') {
-        const selectedResult = this.searchResults[this.selectedIndex];
-        this.router.navigate([selectedResult.is_movie ? 'movies' : 'series', this.selectedId]);
+        // const selectedResult = this.searchResults[this.selectedIndex];
+        this.router.navigate(['media', this.selectedId]);
         this.searchResults = [];
         return;
       }
