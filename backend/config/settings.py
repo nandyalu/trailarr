@@ -125,6 +125,8 @@ class _Config:
         self.webui_password = os.getenv("WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
         self.exclude_words = os.getenv("EXCLUDE_WORDS", "")
+        self.trailer_min_duration = int(os.getenv("TRAILER_MIN_DURATION", 30))
+        self.trailer_max_duration = int(os.getenv("TRAILER_MAX_DURATION", 600))
 
     def as_dict(self):
         return {
@@ -140,6 +142,8 @@ class _Config:
             "trailer_file_format": self.trailer_file_format,
             "trailer_folder_movie": self.trailer_folder_movie,
             "trailer_folder_series": self.trailer_folder_series,
+            "trailer_max_duration": self.trailer_max_duration,
+            "trailer_min_duration": self.trailer_min_duration,
             "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
             "trailer_resolution": self.trailer_resolution,
             "trailer_subtitles_enabled": self.trailer_subtitles_enabled,
@@ -317,6 +321,37 @@ class _Config:
     def trailer_folder_series(self, value: bool):
         self._trailer_folder_series = value
         self._save_to_env("TRAILER_FOLDER_SERIES", self._trailer_folder_series)
+
+    @property
+    def trailer_min_duration(self):
+        """Minimum duration for trailers. \n
+        Minimum is 30 seconds. \n
+        Default is 30 seconds. \n
+        Valid values are integers."""
+        return self._trailer_min_duration
+
+    @trailer_min_duration.setter
+    def trailer_min_duration(self, value: int):
+        value = max(30, value)  # Minimum duration is 30 seconds
+        self._trailer_min_duration = value
+        self._save_to_env("TRAILER_MIN_DURATION", self._trailer_min_duration)
+
+    @property
+    def trailer_max_duration(self):
+        """Maximum duration for trailers. \n
+        Minimum is greater than minimum duration by atleast a minute. \n
+        Maximum is 600 seconds. \n
+        Default is 600 seconds. \n
+        Valid values are integers."""
+        return self._trailer_max_duration
+
+    @trailer_max_duration.setter
+    def trailer_max_duration(self, value: int):
+        # At least minimum + 60 seconds
+        value = max(self.trailer_min_duration + 60, value)
+        value = min(600, value)  # Maximum duration is 600 seconds
+        self._trailer_max_duration = value
+        self._save_to_env("TRAILER_MAX_DURATION", self._trailer_max_duration)
 
     @property
     def trailer_subtitles_enabled(self):

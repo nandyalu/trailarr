@@ -27,6 +27,8 @@ export class TrailerComponent {
   trailerFileName = "";
   ytCookiesPath = "";
   excludeWords = "";
+  minDuration = 30;
+  maxDuration = 600;
 
   constructor(private settingsService: SettingsService) { }
 
@@ -43,6 +45,9 @@ export class TrailerComponent {
       this.subtitleLanguage = settings.trailer_subtitles_language;
       this.trailerFileName = settings.trailer_file_name;
       this.ytCookiesPath = settings.yt_cookies_path;
+      this.excludeWords = settings.exclude_words;
+      this.minDuration = settings.trailer_min_duration;
+      this.maxDuration = settings.trailer_max_duration;
       this.isLoading = false;
     });
   }

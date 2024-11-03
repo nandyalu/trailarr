@@ -45,9 +45,14 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
         logger.debug(f"Skipping video in excluded list: {id}")
         return "Video in excluded list"
     duration = int(info.get("duration", 0))
-    if duration and duration > 600:
-        logger.debug(f"Skipping long video (>10m): {id}")
-        return "The video is longer than 10 minutes"
+    min_duration = app_settings.trailer_min_duration
+    if duration and duration < min_duration:
+        logger.debug(f"Skipping short video (<{min_duration}): {id}")
+        return f"The video is shorter than {min_duration} seconds"
+    max_duration = app_settings.trailer_max_duration
+    if duration and duration > max_duration:
+        logger.debug(f"Skipping long video (>{max_duration}): {id}")
+        return f"The video is longer than {max_duration} seconds"
     title = str(info.get("title", ""))
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")

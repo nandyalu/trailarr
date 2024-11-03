@@ -49,6 +49,8 @@ class Settings(BaseModel):
     trailer_subtitles_format: str
     trailer_subtitles_language: str
     trailer_embed_metadata: bool
+    trailer_min_duration: int
+    trailer_max_duration: int
     trailer_remove_sponsorblocks: bool
     trailer_web_optimized: bool
     update_available: bool
