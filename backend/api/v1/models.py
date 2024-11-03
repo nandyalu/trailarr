@@ -7,6 +7,16 @@ class ErrorResponse(BaseModel):
     message: str
 
 
+class Log(BaseModel):
+    datetime: str
+    level: str
+    filename: str
+    lineno: int
+    module: str
+    message: str
+    raw_log: str
+
+
 class SearchMedia(BaseModel):
     id: int
     title: str
