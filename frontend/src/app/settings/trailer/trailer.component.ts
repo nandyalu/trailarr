@@ -12,6 +12,7 @@ import { SettingsService } from '../../services/settings.service';
   styleUrl: './trailer.component.css'
 })
 export class TrailerComponent {
+  isLoading: boolean = false;
   settings?: Settings;
   updateResults: String[] = [];
   monitorInterval = 60;
@@ -29,6 +30,7 @@ export class TrailerComponent {
   constructor(private settingsService: SettingsService) { }
 
   ngOnInit() {
+    this.isLoading = true;
     this.getSettings();
   }
 
@@ -40,6 +42,7 @@ export class TrailerComponent {
       this.subtitleLanguage = settings.trailer_subtitles_language;
       this.trailerFileName = settings.trailer_file_name;
       this.ytCookiesPath = settings.yt_cookies_path;
+      this.isLoading = false;
     });
   }
 

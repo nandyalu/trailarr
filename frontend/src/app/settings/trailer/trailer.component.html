@@ -3,6 +3,15 @@
         [class.error]="message.toLowerCase().includes('error')"> {{message}} </div>
 </div>
 <div class="trailer-container">
+    <div *ngIf="isLoading; else settingsLoaded" class="loading-wave center">
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+    </div>
+</div>
+
+<ng-template #settingsLoaded>
     <div *ngIf="settings?.log_level == 'DEBUG'" class="update-message error">
         <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
     </div>
@@ -307,6 +316,6 @@
                 </button>
             </div>
         </div>
-
+    
     </section>
-</div>
+</ng-template>
