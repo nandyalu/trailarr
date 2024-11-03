@@ -23,7 +23,7 @@ logging = ModuleLogger("Main")
 async def lifespan(app: FastAPI):
     # Before startup
     # Schedule all tasks
-    logging.info("Scheduling tasks")
+    logging.debug("Scheduling tasks")
     schedule_all_tasks()
     scheduler.start()
 
@@ -42,7 +42,8 @@ APP_VERSION = os.getenv("APP_VERSION", "0.0.1")
 # logger.debug("Initializing the database")
 # init_db()
 # Create the FastAPI application
-logging.info("Creating the FastAPI application")
+logging.info("Starting Trailarr application")
+logging.debug("Creating the FastAPI application")
 trailarr_api = FastAPI(
     lifespan=lifespan,
     title=f"{APP_NAME} API",
@@ -88,7 +89,7 @@ trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 )
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await ws_manager.connect(websocket)
-    logging.info(f"Client #{client_id} connected!")
+    logging.debug(f"Client #{client_id} connected!")
     try:
         while True:
             data = await websocket.receive_text()
@@ -96,7 +97,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
             await ws_manager.broadcast(f"Client #{client_id} says: {data}")
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
-        logging.info(f"Client #{client_id} disconnected!")
+        logging.debug(f"Client #{client_id} disconnected!")
         # await ws_manager.broadcast(f"Client #{client_id} disconnected!")
 
 
@@ -105,11 +106,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 # Mount images folders - Load these before mountic frontend
 images_dir = os.path.join(app_settings.app_data_dir, "web", "images")
 if not os.path.exists(images_dir):
-    logging.info("Creating images directory")
+    logging.debug("Creating images directory")
     os.makedirs(images_dir)
     trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 else:
-    logging.info("Mounting images directory for frontend!")
+    logging.debug("Mounting images directory for frontend!")
     trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 
 
@@ -158,8 +159,8 @@ async def serve_frontend(rest_of_path: str = ""):
 # Check if the frontend directory exists, if not create it
 static_dir = os.path.abspath("/app/frontend-build/browser")
 if not os.path.exists(static_dir):
-    logging.info("Creating static directory")
+    logging.debug("Creating static directory")
     os.makedirs(static_dir)
 else:
-    logging.info("Mounting frontend directory for frontend files!")
+    logging.debug("Mounting frontend directory for frontend files!")
     trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")

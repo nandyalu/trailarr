@@ -18,7 +18,7 @@ from api.v1.tasks import tasks_router
 
 from app_logger import ModuleLogger
 
-logging = ModuleLogger("API Routes")
+logging = ModuleLogger("APIRoutes")
 
 logging.info("Creating API v1 Routes")
 
