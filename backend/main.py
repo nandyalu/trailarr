@@ -127,12 +127,29 @@ async def serve_manifest():
 
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
-@trailarr_api.get(
-    "/{rest_of_path:path}",
-    include_in_schema=False,
-    dependencies=[Depends(validate_login)],
-)
-async def serve_frontend(rest_of_path: str = ""):
+login_enabled = os.getenv("WEBUI_DISABLE_AUTH", "false").lower() != "true"
+if login_enabled:
+    # Authentication is enabled
+    @trailarr_api.get(
+        "/{rest_of_path:path}",
+        include_in_schema=False,
+        dependencies=[Depends(validate_login)],
+    )
+    async def serve_frontend(rest_of_path: str = ""):
+        return await get_frontend(rest_of_path)
+
+else:
+    # Authentication is disabled - Serve frontend without authentication
+    logging.info(
+        "WebUI Authentication is disabled - Frontend will be served without authentication"
+    )
+
+    @trailarr_api.get("/{rest_of_path:path}", include_in_schema=False)
+    async def serve_frontend2(rest_of_path: str = ""):
+        return await get_frontend(rest_of_path)
+
+
+async def get_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
         # If the path starts with "api", it's an API request and not meant for the frontend
         return HTMLResponse(status_code=404)
