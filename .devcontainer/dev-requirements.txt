@@ -3,7 +3,7 @@
 mkdocs-material==9.5.32
 
 # Backend
-aiohttp==3.10.5
+aiohttp==3.10.11
 aiofiles==24.1.0
 alembic==1.13.2
 apscheduler==3.10.4
