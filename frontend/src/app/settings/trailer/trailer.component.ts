@@ -5,11 +5,10 @@ import { Settings } from '../../models/settings';
 import { SettingsService } from '../../services/settings.service';
 
 @Component({
-  selector: 'app-trailer',
-  standalone: true,
-  imports: [NgIf, NgFor, FormsModule],
-  templateUrl: './trailer.component.html',
-  styleUrl: './trailer.component.css'
+    selector: 'app-trailer',
+    imports: [NgIf, NgFor, FormsModule],
+    templateUrl: './trailer.component.html',
+    styleUrl: './trailer.component.css'
 })
 export class TrailerComponent {
   isLoading: boolean = false;

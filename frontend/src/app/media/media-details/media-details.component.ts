@@ -9,11 +9,10 @@ import { MediaService } from '../../services/media.service';
 import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
-  selector: 'app-media-details',
-  standalone: true,
-  imports: [NgIf, NgFor, FormsModule, DurationConvertPipe, NgTemplateOutlet, TitleCasePipe],
-  templateUrl: './media-details.component.html',
-  styleUrl: './media-details.component.css'
+    selector: 'app-media-details',
+    imports: [NgIf, NgFor, FormsModule, DurationConvertPipe, NgTemplateOutlet, TitleCasePipe],
+    templateUrl: './media-details.component.html',
+    styleUrl: './media-details.component.css'
 })
 export class MediaDetailsComponent {
   mediaId: number = 0;

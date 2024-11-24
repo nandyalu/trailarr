@@ -7,12 +7,11 @@ import { TopnavComponent } from './nav/topnav/topnav.component';
 import { MessageData, WebsocketService } from './services/websocket.service';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
+    selector: 'app-root',
+    imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
-  })
+})
 export class AppComponent {
   messages: MessageData[] = [];
   private toastSubscription?: Subscription;

@@ -1,4 +1,4 @@
-import { NgFor, NgIf, UpperCasePipe } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,11 +8,10 @@ import { Media } from '../models/media';
 import { MediaService } from '../services/media.service';
 
 @Component({
-  selector: 'app-media',
-  standalone: true,
-  imports: [UpperCasePipe, FormsModule, NgIf, NgFor, RouterLink, ScrollNearEndDirective],
-  templateUrl: './media.component.html',
-  styleUrl: './media.component.css'
+    selector: 'app-media',
+    imports: [FormsModule, NgIf, NgFor, RouterLink, ScrollNearEndDirective],
+    templateUrl: './media.component.html',
+    styleUrl: './media.component.css'
 })
 export class MediaComponent {
   title = 'Media';

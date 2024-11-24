@@ -7,11 +7,10 @@ import { Logs } from '../models/logs';
 import { LogsService } from '../services/logs.service';
 
 @Component({
-  selector: 'app-logs',
-  standalone: true,
-  imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
-  templateUrl: './logs.component.html',
-  styleUrl: './logs.component.css'
+    selector: 'app-logs',
+    imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
+    templateUrl: './logs.component.html',
+    styleUrl: './logs.component.css'
 })
 export class LogsComponent {
 

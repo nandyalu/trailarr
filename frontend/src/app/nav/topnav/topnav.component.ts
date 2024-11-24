@@ -7,11 +7,10 @@ import { SearchMedia } from '../../models/media';
 import { MediaService } from '../../services/media.service';
 
 @Component({
-  selector: 'app-topnav',
-  standalone: true,
-  imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
-  templateUrl: './topnav.component.html',
-  styleUrl: './topnav.component.css'
+    selector: 'app-topnav',
+    imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
+    templateUrl: './topnav.component.html',
+    styleUrl: './topnav.component.css'
 })
 export class TopnavComponent {
   isDarkModeEnabled = true;
