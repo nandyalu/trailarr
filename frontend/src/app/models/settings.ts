@@ -1,6 +1,7 @@
 export interface Settings {
     api_key: string
     app_data_dir: string
+    exclude_words: string
     version: string
     server_start_time: string
     timezone: string
@@ -20,6 +21,8 @@ export interface Settings {
     trailer_embed_metadata: boolean
     trailer_remove_sponsorblocks: boolean
     trailer_web_optimized: boolean
+    trailer_min_duration: number
+    trailer_max_duration: number
     update_available: boolean
     wait_for_media: boolean
     yt_cookies_path: string

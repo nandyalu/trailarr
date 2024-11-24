@@ -45,13 +45,33 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
         logger.debug(f"Skipping video in excluded list: {id}")
         return "Video in excluded list"
     duration = int(info.get("duration", 0))
-    if duration and duration > 600:
-        logger.debug(f"Skipping long video (>10m): {id}")
-        return "The video is longer than 10 minutes"
+    min_duration = app_settings.trailer_min_duration
+    if duration and duration < min_duration:
+        logger.debug(f"Skipping short video (<{min_duration}): {id}")
+        return f"The video is shorter than {min_duration} seconds"
+    max_duration = app_settings.trailer_max_duration
+    if duration and duration > max_duration:
+        logger.debug(f"Skipping long video (>{max_duration}): {id}")
+        return f"The video is longer than {max_duration} seconds"
     title = str(info.get("title", ""))
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
+    exclude_words = app_settings.exclude_words
+    if exclude_words:
+        if "," in exclude_words:
+            exclude_words = exclude_words.split(",")
+            for word in exclude_words:
+                word = word.strip()
+                if word in title.lower():
+                    logger.debug(f"Skipping video with excluded word '{word}': {id}")
+                    return "The video contains an excluded word"
+        else:
+            if exclude_words in title.lower():
+                logger.debug(
+                    f"Skipping video with excluded word '{exclude_words}': {id}"
+                )
+                return "The video contains an excluded word"
 
 
 def _search_yt_for_trailer(
@@ -143,7 +163,7 @@ def download_trailer(
     else:
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
-        logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
+        logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
         tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
         output_file = download_video(trailer_url, tmp_output_file)
         tmp_output_file = tmp_output_file.replace(
@@ -168,7 +188,7 @@ def download_trailer(
     # Retry downloading the trailer if failed
     if not trailer_downloaded:
         if retry_count > 0:
-            logger.debug(
+            logger.info(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
                 f"trying again... [{3 - retry_count}/3]"
             )
@@ -180,7 +200,7 @@ def download_trailer(
             )
 
         return False
-    logger.debug(f"Trailer downloaded for {media.title}, Moving to folder...")
+    logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
     media.yt_id = video_id
     # Move the trailer to the specified folder
     if trailer_folder:
@@ -190,8 +210,17 @@ def download_trailer(
     try:
         # if not os.path.exists(trailer_path):
         #     os.makedirs(trailer_path)
-        return move_trailer_to_folder(output_file, trailer_path, media)
+        move_res = move_trailer_to_folder(output_file, trailer_path, media)
+        e = "Move File Failed!"
     except Exception as e:
+        move_res = False
+        e = str(e)
+    if move_res:
+        logger.info(
+            f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
+        )
+        return True
+    else:
         logger.error(f"Failed to move trailer to folder: {e}")
         return False
 
@@ -349,3 +378,17 @@ def download_trailers(
         sem.release()
     logger.info(f"Downloaded trailers for {len(download_list)} {media_type}")
     return download_list
+
+
+# Uncomment below for testing, change logging level to DEBUG for additional logs
+# if __name__ == "__main__":
+#     mediaT = MediaTrailer(
+#         id=1,
+#         title="The Matrix",
+#         year=1999,
+#         yt_id="pLWda_RrQn4",
+#         folder_path="/tmp/The Matrix (1999)",
+#     )
+#     res = download_trailer(mediaT, False, True)
+#     if res:
+#         print(res)

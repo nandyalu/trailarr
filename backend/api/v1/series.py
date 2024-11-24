@@ -10,7 +10,7 @@ from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import download_trailer_by_id
 
 
-series_router = APIRouter(prefix="/series", tags=["Series"])
+series_router = APIRouter(prefix="/series", tags=["Series"], deprecated=True)
 
 
 @series_router.get("/all")
@@ -86,7 +86,7 @@ async def download_series_trailer(series_id: int, yt_id: str = "") -> str:
     if yt_id:
         msg += f" from [{yt_id}]"
     logging.info(msg)
-    return download_trailer_by_id(series_id, is_movie=False, yt_id=yt_id)
+    return download_trailer_by_id(series_id, yt_id=yt_id)
 
 
 @series_router.post(

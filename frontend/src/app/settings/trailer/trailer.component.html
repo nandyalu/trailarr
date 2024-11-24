@@ -3,6 +3,15 @@
         [class.error]="message.toLowerCase().includes('error')"> {{message}} </div>
 </div>
 <div class="trailer-container">
+    <div *ngIf="isLoading; else settingsLoaded" class="loading-wave center">
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+    </div>
+</div>
+
+<ng-template #settingsLoaded>
     <div *ngIf="settings?.log_level == 'DEBUG'" class="update-message error">
         <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
     </div>
@@ -95,6 +104,40 @@
     <section *ngIf="settings?.monitor_enabled" class="section">
         <h1>Trailer</h1>
         <hr>
+        <div *ngIf="settings?.monitor_enabled" class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_min_duration">Miminum Trailer Duration</label>
+                <small>Minimum trailer duration (in seconds) to consider while searching.</small>
+                <small>Default is 30. Minuimum is 30.</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_min_duration" type="number" [(ngModel)]="minDuration" maxlength="6"
+                    placeholder="60" autocomplete="off" tabindex="6">
+                <button *ngIf="settings?.trailer_min_duration != minDuration" class="primary icononly-button"
+                    id="update_trailer_min_duration" tabindex="6" (click)="updateSetting('trailer_min_duration', minDuration)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_max_duration">Maximum Trailer Duration</label>
+                <small>Maximum trailer duration (in seconds) to consider while searching.</small>
+                <small>Default is 600. Should be atleast `Minimum Duration + 60`. Maximum is 600.</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_max_duration" type="number" [(ngModel)]="maxDuration" maxlength="6"
+                    placeholder="300" autocomplete="off" tabindex="7">
+                <button *ngIf="settings?.trailer_max_duration != maxDuration" class="primary icononly-button"
+                    id="update_trailer_max_duration" tabindex="7" (click)="updateSetting('trailer_max_duration', maxDuration)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
         <div class="trailer-content">
             <div class="content-label">
                 <label for="trailer_resolution">Trailer Resolution</label>
@@ -103,7 +146,7 @@
             </div>
             <div class="text-input">
                 <input id="trailer_resolution" type="number" [(ngModel)]="resolution" maxlength="4"
-                    placeholder="Trailer Resolution" autocomplete="off" tabindex="7">
+                    placeholder="Trailer Resolution" autocomplete="off" tabindex="8">
                 <button *ngIf="settings?.trailer_resolution != resolution" class="primary icononly-button"
                     id="update_trailer_resolution" tabindex="8"
                     (click)="updateSetting('trailer_resolution', resolution)">
@@ -276,6 +319,23 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
+                <label for="exclude_words">Exclude Words in Title</label>
+                <small>Exclude downloading a video if it contains certain words in video title. Seperate words with a comma (,)</small>
+                <small>Example: 'comment,teaser,untitled'</small>
+            </div>
+            <div class="text-input">
+                <input class="input-path" id="exclude_words" type="text" [(ngModel)]="excludeWords"
+                    placeholder="comment,teaser" autocomplete="off" tabindex="19">
+                <button *ngIf="excludeWords != settings?.exclude_words" class="primary icononly-button"
+                    id="update_exclude_words" tabindex="20" (click)="updateSetting('exclude_words', trailerFileName)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
                 <label for="trailer_file_name">Trailer File Name</label>
                 <small>Customize trailer file name to use for downloaded trailers. Available options: title, year, resolution, vcodec, acodec</small>
             </div>
@@ -307,6 +367,6 @@
                 </button>
             </div>
         </div>
-
+    
     </section>
-</div>
+</ng-template>

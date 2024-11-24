@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 
 from api.v1.authentication import validate_api_key
 from api.v1.connections import connections_router
+from api.v1.media import media_router
 from api.v1.movies import movies_router
 from api.v1.search import search_router
 from api.v1.series import series_router
@@ -17,7 +18,7 @@ from api.v1.tasks import tasks_router
 
 from app_logger import ModuleLogger
 
-logging = ModuleLogger("API Routes")
+logging = ModuleLogger("APIRoutes")
 
 logging.info("Creating API v1 Routes")
 
@@ -31,6 +32,7 @@ authenticated_router = APIRouter(
     },
 )
 authenticated_router.include_router(connections_router)
+authenticated_router.include_router(media_router)
 authenticated_router.include_router(movies_router)
 authenticated_router.include_router(search_router)
 authenticated_router.include_router(series_router)

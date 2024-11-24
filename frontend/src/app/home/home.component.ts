@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Media } from '../models/media';
-import { MovieService } from '../services/movie.service';
+import { MediaService } from '../services/media.service';
 
 @Component({
   selector: 'app-home',
@@ -17,12 +17,12 @@ export class HomeComponent {
   isLoading = true;
 
   constructor(
-    private movieService: MovieService,
+    private mediaService: MediaService,
   ) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.movieService.getRecentlyDownloaded().subscribe((media_list: Media[]) => {
+    this.mediaService.getRecentlyDownloaded(null).subscribe((media_list: Media[]) => {
       this.media_list = [];
       this.isLoading = false;
       media_list.forEach((media, index) => {

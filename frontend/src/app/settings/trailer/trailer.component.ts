@@ -12,6 +12,7 @@ import { SettingsService } from '../../services/settings.service';
   styleUrl: './trailer.component.css'
 })
 export class TrailerComponent {
+  isLoading: boolean = false;
   settings?: Settings;
   updateResults: String[] = [];
   monitorInterval = 60;
@@ -25,10 +26,14 @@ export class TrailerComponent {
   subtitleFormats = ["srt", "vtt", "pgs"]
   trailerFileName = "";
   ytCookiesPath = "";
+  excludeWords = "";
+  minDuration = 30;
+  maxDuration = 600;
 
   constructor(private settingsService: SettingsService) { }
 
   ngOnInit() {
+    this.isLoading = true;
     this.getSettings();
   }
 
@@ -40,6 +45,10 @@ export class TrailerComponent {
       this.subtitleLanguage = settings.trailer_subtitles_language;
       this.trailerFileName = settings.trailer_file_name;
       this.ytCookiesPath = settings.yt_cookies_path;
+      this.excludeWords = settings.exclude_words;
+      this.minDuration = settings.trailer_min_duration;
+      this.maxDuration = settings.trailer_max_duration;
+      this.isLoading = false;
     });
   }
 

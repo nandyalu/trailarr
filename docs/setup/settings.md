@@ -44,6 +44,23 @@ Enable this setting to save trailers in a `Trailers` folder inside the series fo
 
 ## Trailer Settings
 
+### Trailer Minimum Duration
+
+- Default is `30` seconds
+
+Select the minimum duration of the trailers to download. Trailers with a duration less than this value will be skipped.
+Minimum is `30` seconds.
+
+### Trailer Maximum Duration
+
+- Default is `600` seconds
+
+Select the maximum duration of the trailers to download. Trailers with a duration greater than this value will be skipped.
+Minimum is `Trailer Minimum Duration + 60` seconds. Maximum is `600` seconds.
+
+!!! info
+    If you want to download trailers with a duration of 2 minutes to 5 minutes, set `Trailer Minimum Duration` to `120` seconds and `Trailer Maximum Duration` to `300` seconds.
+
 ### Trailer Resolution
 
 - Default is `1080`
@@ -134,6 +151,18 @@ Select the logging level for the app. Available options are `Debug`, `Info`, `Wa
 
 ??? info
     If you are having issues and need to troubleshoot or request help, set the log level to `Debug` to get more detailed logs.
+
+### Exclude Words in Title
+
+- Default is `` (empty)
+
+Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, `teaser,clip,featurette`.
+
+### Youtube Search Query
+
+- Default is `{title} {is_movie} trailer`
+
+Enter a search query to use when searching for trailers on YouTube. Available options are `title`, `year`, `is_movie` (will be replaced by `movie` or `series`).
 
 ### Trailer File Name
 

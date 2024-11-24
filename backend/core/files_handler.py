@@ -1,11 +1,14 @@
 from datetime import datetime as dt
-import logging
 import os
 from pathlib import Path
 import shutil
 import aiofiles.os
 from pydantic import BaseModel, Field
 import unicodedata
+
+from app_logger import ModuleLogger
+
+logger = ModuleLogger("FilesHandler")
 
 
 class FileInfo(BaseModel):
@@ -315,13 +318,13 @@ class FilesHandler:
             bool: True if the file is deleted successfully, False otherwise."""
         try:
             await aiofiles.os.remove(file_path)
-            logging.debug(f"File deleted: {file_path}")
+            logger.debug(f"File deleted: {file_path}")
             return True
         except FileNotFoundError:
-            logging.error(f"File not found: {file_path}")
+            logger.error(f"File not found: {file_path}")
             return False
         except Exception as e:
-            logging.error(f"Failed to delete file: {file_path}. Exception: {e}")
+            logger.error(f"Failed to delete file: {file_path}. Exception: {e}")
             return False
 
     @staticmethod
@@ -333,13 +336,13 @@ class FilesHandler:
             bool: True if the folder is deleted successfully, False otherwise."""
         try:
             shutil.rmtree(folder_path)
-            logging.debug(f"Folder deleted: {folder_path}")
+            logger.debug(f"Folder deleted: {folder_path}")
             return True
         except FileNotFoundError:
-            logging.error(f"Folder not found: {folder_path}")
+            logger.error(f"Folder not found: {folder_path}")
             return False
         except Exception as e:
-            logging.error(f"Failed to delete folder: {folder_path}. Exception: {e}")
+            logger.error(f"Failed to delete folder: {folder_path}. Exception: {e}")
             return False
 
     @staticmethod
@@ -349,7 +352,7 @@ class FilesHandler:
             folder_path (str): Path to the folder containing the trailer file.\n
         Returns:
             bool: True if the trailer is deleted successfully, False otherwise."""
-        logging.debug(f"Deleting trailer from folder: {folder_path}")
+        logger.debug(f"Deleting trailer from folder: {folder_path}")
         if await FilesHandler._check_trailer_as_file(folder_path):
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():
@@ -381,8 +384,8 @@ class FilesHandler:
                     await FilesHandler.delete_file(entry.path)
                 elif entry.is_dir():
                     await FilesHandler.delete_folder(entry.path)
-            logging.debug("Temporary directory cleaned up.")
+            logger.debug("Temporary directory cleaned up.")
             return True
         except Exception as e:
-            logging.error(f"Failed to cleanup temporary directory. Exception: {e}")
+            logger.error(f"Failed to cleanup temporary directory. Exception: {e}")
             return False

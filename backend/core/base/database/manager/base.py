@@ -106,15 +106,26 @@ class MediaDatabaseManager:
     def read_all(
         self,
         movies_only: bool | None = None,
+        filter_by: str | None = "all",
+        sort_by: str | None = None,
+        sort_asc: bool = True,
         *,
         _session: Session = None,  # type: ignore
     ) -> list[MediaRead]:
-        """Get all media objects from the database.\n
+        """Get all media objects from the database. \n
+        Optionally apply filtering and sorting\n
         Args:
-            movies_only (bool, Optional): Flag to get only movies. Default is None.\n
-                If True, it will return only movies. If False, it will return only series.\n
-                If None, it will return all media items.\n
-            _session (Session, Optional): A session to use for the database connection.\n
+            movies_only (bool, Optional): Flag to get only movies. Default is None.\
+                If `True`, it will return only movies. \
+                If `False`, it will return only series. \
+                If `None`, it will return both movies and series.
+            filter_by (str, Optional): Filter the media items by a column value. \
+                Can be `all`, `downloaded`, `monitored`, `missing`, or `unmonitored`. \
+                Default is `all`.
+            sort_by (str, Optional): Sort the media items by `title`, `year`, `added_at`, \
+                or `updated_at`. Default is None.
+            sort_asc (bool, Optional): Flag to sort in ascending order. Default is True.
+            _session (Session, Optional): A session to use for the database connection.\
                 Default is None, in which case a new session will be created.\n
         Returns:
             list[MediaRead]: List of MediaRead objects.
@@ -122,6 +133,13 @@ class MediaDatabaseManager:
         statement = select(Media)
         if movies_only is not None:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
+        if filter_by:
+            statement = self._apply_filter(statement, filter_by)
+        if sort_by and hasattr(Media, sort_by):
+            if sort_asc:
+                statement = statement.order_by(sort_by)
+            else:
+                statement = statement.order_by(desc(sort_by))
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
@@ -370,6 +388,99 @@ class MediaDatabaseManager:
         return
 
     @manage_session
+    def update_monitoring(
+        self,
+        media_id: int,
+        monitor: bool,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> tuple[str, bool]:
+        """Update the monitoring status of a media item in the database by id.\n
+        Also updates the status based on the monitor status and trailer existence.\n
+        Args:
+            media_id (int): The id of the media to update.
+            monitor (bool): The monitoring status to set.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            tuple(msg, bool): Message indicating the status of the operation, \
+                and a flag indicating success.
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        # Check if the monitor status is already set to the same value
+        if db_media.monitor == monitor:
+            msg = f"Media '{db_media.title}' [{db_media.id}] is already"
+            msg += " monitored!" if monitor else " not monitored!"
+            return msg, False
+        # Monitor = True
+        if monitor:
+            # If trailer exists, change nothing!
+            if db_media.trailer_exists:
+                msg = f"Media '{db_media.title}' [{db_media.id}] already has a trailer!"
+                return msg, False
+            # Trailer doesn't exist, set monitor status
+            db_media.monitor = monitor
+            db_media.status = MonitorStatus.MONITORED
+            _session.add(db_media)
+            if _commit:
+                _session.commit()
+            msg = f"Media '{db_media.title}' [{db_media.id}] is now monitored"
+            return msg, True
+        # Monitor = False
+        # If trailer exists, set status to downloaded, else set to missing
+        db_media.monitor = monitor
+        if db_media.trailer_exists:
+            db_media.status = MonitorStatus.DOWNLOADED
+        else:
+            db_media.status = MonitorStatus.MISSING
+        msg = f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return msg, True
+
+    @manage_session
+    def update_trailer_exists(
+        self,
+        media_id: int,
+        trailer_exists: bool,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the trailer_exists status of a media item in the database by id.\n
+        Args:
+            media_id (int): The id of the media to update.
+            trailer_exists (bool): The trailer_exists status to set.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        db_media.trailer_exists = trailer_exists
+        # If trailer exists, disable monitoring
+        if trailer_exists:
+            db_media.monitor = False
+            db_media.status = MonitorStatus.DOWNLOADED
+        else:
+            if db_media.monitor:
+                db_media.status = MonitorStatus.MONITORED
+            else:
+                db_media.status = MonitorStatus.MISSING
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return None
+
+    @manage_session
     def delete(
         self,
         media_id: int,
@@ -449,6 +560,35 @@ class MediaDatabaseManager:
             _session.delete(db_media)
         _session.commit()
         return
+
+    def _apply_filter(
+        self, statement: SelectOfScalar[Media], filter_by: str
+    ) -> SelectOfScalar[Media]:
+        """🚨This is a private method🚨 \n
+        Apply a filter to the database query based on the filter_by parameter.\n
+        Args:
+            statement (SelectOfScalar[Media]): The database query statement.
+            filter_by (str): The filter to apply to the statement.\
+                Can be `all`, `downloaded`, `monitored`, `missing`, or `unmonitored`.\n
+        Returns:
+            SelectOfScalar[Media]: The updated statement with the filter applied.
+        """
+        if filter_by == "downloaded":
+            statement = statement.where(col(Media.trailer_exists).is_(True))
+            return statement
+        if filter_by == "monitored":
+            statement = statement.where(col(Media.monitor).is_(True))
+            return statement
+        if filter_by == "missing":
+            statement = statement.where(col(Media.trailer_exists).is_(False))
+            return statement
+        if filter_by == "unmonitored":
+            statement = statement.where(col(Media.monitor).is_(False))
+            statement = statement.where(col(Media.trailer_exists).is_(False))
+            return statement
+        # If filter_by is `all` or doesn't match any of the above,
+        # return the statement as is
+        return statement
 
     def _create_or_update(
         self, media_create: MediaCreate, session: Session

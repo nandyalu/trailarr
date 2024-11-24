@@ -62,7 +62,7 @@
         </div>
 
         <div class="media-row" appScrollNearEnd (nearEnd)="onNearEndScroll()">
-            <div *ngFor="let media of displayMediaList" class="media-card" [routerLink]="[media.id]">
+            <div *ngFor="let media of displayMediaList" class="media-card" [routerLink]="['/media', media.id]">
                 <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
                 <h5 class="card-title">{{media.title}}</h5>
                 <ng-container *ngIf="media.monitor; else trailerExistsIcon">

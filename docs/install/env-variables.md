@@ -67,6 +67,17 @@ For a list of valid timezones, see [tz database time zones](https://en.wikipedia
         - TZ=America/New_York
 ```
 
+### `WEBUI_DISABLE_AUTH`
+
+- Default is `False`.
+
+This environment variable is used to disable the authentication for the web interface.
+    
+```yaml
+    environment:
+        - WEBUI_DISABLE_AUTH=True # This will disable the web UI authentication
+```
+
 ### WEBUI_PASSWORD
 
 - Default is `trailarr` (hashed).

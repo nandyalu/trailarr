@@ -11,47 +11,69 @@ from config.settings import app_settings
 # So, we are instead logging progress using progress hooks.
 
 logger = ModuleLogger("TrailersDownloader")
+last_log_time = datetime.now(timezone.utc) - timedelta(
+    seconds=4
+)  # For logging progress every 3 seconds
 
 
 def _progress_hook(d):
+    global last_log_time
+    yt_id = "trailer"
+    if "info_dict" in d:
+        if "id" in d["info_dict"]:
+            yt_id = d["info_dict"]["id"]
     if d["status"] == "downloading":
-        if d["_percent_str"] in ["25.0%", "50.0%", "75.0%", "100.0%"]:
+        current_time = datetime.now(timezone.utc)
+        if current_time - last_log_time >= timedelta(seconds=3):
             logger.debug(
-                f"'Trailers': Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
+                f"[{yt_id}] Downloading {d['_percent_str']} of {d['_total_bytes_str']}"
             )
+            last_log_time = current_time
     if d["status"] == "error":
-        logger.info(f"'Trailers': Error downloading {d['filename']}")
+        logger.debug(f"[{yt_id}] Error downloading {d['filename']}")
     if d["status"] == "finished":  # Guaranteed to call
         timetook = timedelta(seconds=d["elapsed"])
         data["filepath"] = d["filename"]
         logger.debug(
-            f"'Trailers': Download completed in {timetook}! Size: {d['_total_bytes_str']} "
+            f"[{yt_id}] Download completed in {timetook}! Size: {d['_total_bytes_str']} "
             f'Filepath: "{d["filename"]}"'
         )
 
 
 def _postprocessor_hook(d):
     pprocessor = d["postprocessor"]
-    if d["status"] == "started":  # Guaranteed to call
+    yt_id = ""
+    if "info_dict" in d:
+        if "id" in d["info_dict"]:
+            yt_id = d["info_dict"]["id"]
+    status = ""
+    if "status" in d:
+        status = d["status"]
+        # Check if the processor is already in data with same status
+        # This makes sure we don't log the same status twice!
+        if data and f"{pprocessor}" in data:
+            if data[pprocessor]["status"] == status:
+                return
+    if status == "started":  # Guaranteed to call
         data[pprocessor] = {
             "starttime": datetime.now(timezone.utc),
             "status": "started",
             "endtime": None,
             "filepath": "",
         }
-        logger.info(f"'Trailers': [{pprocessor}] Converting downloaded file...")
-    if d["status"] == "processing":
-        logger.debug(f"'Trailers': [{pprocessor}] Conversion in progress...")
-    if d["status"] == "finished":  # Guaranteed to call
+        logger.debug(f"[{yt_id}][{pprocessor}] Converting downloaded file...")
+    if status == "processing":
+        logger.debug(f"[{yt_id}][{pprocessor}] Conversion in progress...")
+    if status == "finished":  # Guaranteed to call
         data[pprocessor]["status"] = "finished"
         data[pprocessor]["endtime"] = datetime.now(timezone.utc)
         timetook = data[pprocessor]["endtime"] - data[pprocessor]["starttime"]
-        logger.debug(f"'Trailers': [{pprocessor}] Done converting in {timetook}!")
+        logger.debug(f"[{yt_id}][{pprocessor}] Done converting in {timetook}!")
         if "filepath" in d["info_dict"]:
             filepath = d["info_dict"]["filepath"]
             data[pprocessor]["filepath"] = filepath
             data["filepath"] = filepath
-            logger.debug(f"'Trailers': [{pprocessor}] Filepath: \"{filepath}\"")
+            logger.debug(f'[{yt_id}][{pprocessor}] Filepath: "{filepath}"')
 
 
 data: dict[str, Any] = {}
@@ -185,11 +207,23 @@ def download_video(url: str, file_path: str | None = None) -> str:
     ydl_opts = _get_ytdl_options()
     ydl_opts["outtmpl"] = file_path
     try:
+        logger.debug(f"Downloading video from '{url}'")
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         if data and "filepath" in data:
+            logger.debug(f"Downloaded video from '{url}' to: {data['filepath']}")
             return str(data["filepath"])
-    except (YoutubeDLError, Exception):
-        pass
-    logger.exception(f"Failed to download video from {url}")
+    except (YoutubeDLError, Exception) as e:
+        logger.info(f"Error occurred while downloading video from {url}. Error: {e}")
+    logger.debug(f"Failed to download video from {url}")
     return ""
+
+
+# Uncomment below for testing, change logging level to DEBUG for additional logs
+# if __name__ == "__main__":
+#     # Random video
+#     res = download_video("https://www.youtube.com/watch?v=WHXq62VCaCM")
+#     # Age restricted video
+#     res = download_video("https://www.youtube.com/watch?v=pLWda_RrQn4")
+#     if res:
+#         print(res)
