@@ -97,6 +97,16 @@ Select the audio codec of the trailers to download. Available options are `aac`,
 !!! info
     App will download trailer in the available codec and then convert it to the selected codec using Ffmpeg.
 
+### Trailer Audio Volume Level
+
+- Default is `100`
+
+Set the audio volume level of the downloaded trailer. Use this option to increase or decrease audio loudness of the trailer.
+Set to `100` for no change. Minimum is `1`. Maximum is `200`. 
+
+!!! warning
+    Do not modify this setting unless you know what you are doing.
+
 ### Trailer Subtitles Enabled
 
 - Default is `true`
