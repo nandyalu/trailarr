@@ -38,12 +38,23 @@
   top: 145px;
   /* 76px topnav + 69px logs title */
   z-index: 2;
+  gap: .5rem;
 
   @media (width < 765px) {
     padding: 0.5rem;
     top: 113px;
     /* 76px topnav + 53px logs title - 16px for title padding */
   }
+}
+
+.refresh-icon {
+  cursor: pointer;
+  fill: var(--color-on-surface);
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
 }
 
 .logssearch-form {
@@ -107,7 +118,7 @@ summary .logs-text {
   margin-left: 2rem;
 }
 
-i {
+.logs-icon {
   position: absolute;
   top: 0.75rem;
   left: 0;
@@ -116,7 +127,7 @@ i {
   z-index: 0;
 }
 
-svg {
+.logs-icon svg {
   width: 1.5rem;
   fill: var(--color-outline);
 }

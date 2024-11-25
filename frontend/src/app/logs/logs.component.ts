@@ -16,6 +16,7 @@ export class LogsComponent {
 
   title = 'Logs';
   isLoading = true;
+  isUpdating = false;
   all_logs: Logs[] = [];
   searchQuery = '';
   searchForm = new FormControl();
@@ -30,16 +31,23 @@ export class LogsComponent {
       .subscribe((value) => {
         this.onSearch(value);
       });
-   }
+  }
 
   ngOnInit(): void {
     this.isLoading = true;
+    this.getLogs();
+  }
+
+  getLogs(): void {
+    this.isUpdating = true;
     this.logsService.getLogs().subscribe((logs: Logs[]) => {
       this.all_logs = logs;
       this.filtered_logs = logs;
       this.isLoading = false;
+      this.isUpdating = false;
     });
   }
+
   onSearch(query: string = '') {
     if (query.length < 3) {
       this.filtered_logs = this.all_logs;
