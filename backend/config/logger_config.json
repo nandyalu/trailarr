@@ -28,7 +28,7 @@
       "level": "INFO",
       "formatter": "detailed",
       "filename": "/data/logs/trailarr.log",
-      "maxBytes": 100000,
+      "maxBytes": 1000000,
       "backupCount": 10
     }
   },
