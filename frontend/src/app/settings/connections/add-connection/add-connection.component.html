@@ -12,7 +12,7 @@
 
         <div class="d-row">
             <div class="option-container">
-                <label>Arr Type: </label>
+                <span>Arr Type: </span>
                 <div id="arrtype" class="options-bar">
                     <div *ngFor="let option of arrOptions" class="option" tabindex="2"
                     [class.selected]="option === addConnectionForm.value.arrType" 
@@ -25,7 +25,7 @@
             </div>
         
             <div class="option-container">
-                <label>Monitor Type: </label>
+                <span>Monitor Type: </span>
                 <div id="monitorType" class="options-bar">
                     <div *ngFor="let option of monitorOptions" class="option" tabindex="3"
                     [class.selected]="option === addConnectionForm.value.monitorType" 
@@ -45,7 +45,7 @@
         </div>
         
         <div class="input-group">
-            <label for="api_key">API Key</label>
+            <label for="apiKey">API Key</label>
             <input id="apiKey" type="text" formControlName="apiKey" placeholder="APIKEY" tabindex="5" autocomplete="off">
             <p *ngIf="apiKey.invalid && apiKey.touched" class="invalid-text">APIKey is invalid!</p>
         </div>
