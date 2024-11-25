@@ -10,8 +10,18 @@ import { mapFolderInfo, mapMedia, Media, SearchMedia } from '../models/media';
 export class MediaService {
 
   private mediaUrl = environment.apiUrl + environment.media;
+  private filteredMediaMap: { [key: string]: Media[] } = {};
+  private mediaMap: Map<number, Media> = new Map();
+
 
   constructor(private http: HttpClient) { }
+
+  saveMedia(mediaList: Media[]) {
+    mediaList.forEach(media => {
+      this.mediaMap.set(media.id, media);
+    });
+    // console.log('Saved', mediaList.length, 'new items to media list:', this.mediaMap.size);
+  }
 
   /**
    * Fetches all media items from the server with optional filtering and sorting.
@@ -36,8 +46,20 @@ export class MediaService {
     sortAsc: boolean = true
   ): Observable<Media[]> {
     const getMediaUrl = `${this.mediaUrl}all?movies_only=${moviesOnly}&filter_by=${filterBy}&sort_by=${sortBy}&sort_asc=${sortAsc}`;
+    let mapKey = `${moviesOnly}-${filterBy}`;
+    // Check if the filtered media list is already cached
+    if (this.filteredMediaMap[mapKey]) {
+      // console.log('Returning cached media list for:', mapKey);
+      return of(this.filteredMediaMap[mapKey]);
+    }
+    // Else, Fetch the filtered media list from the server
     return this.http.get<Media[]>(`${getMediaUrl}`).pipe(
-      map((media_list: any[]) => media_list.map(media => mapMedia(media)))
+      map((media_list: any[]) => {
+        let media_res = media_list.map(media => mapMedia(media));
+        this.filteredMediaMap[mapKey] = media_res;
+        this.saveMedia(media_res);
+        return media_res;
+      })
     );
   }
 
@@ -52,8 +74,20 @@ export class MediaService {
    */
   getRecentMedia(moviesOnly: boolean | null): Observable<Media[]> {
     const getMediaUrl = `${this.mediaUrl}?limit=50&movies_only=${moviesOnly}`;
+    let mapKey = 'recents';
+    // Check if the filtered media list is already cached
+    if (this.filteredMediaMap[mapKey]) {
+      // console.log('Returning cached media list for:', mapKey);
+      return of(this.filteredMediaMap[mapKey]);
+    }
+    // Else, Fetch the filtered media list from the server
     return this.http.get<Media[]>(`${getMediaUrl}`).pipe(
-      map((media_list: any[]) => media_list.map(media => mapMedia(media)))
+      map((media_list: any[]) => {
+        let media_res = media_list.map(media => mapMedia(media));
+        this.filteredMediaMap[mapKey] = media_res;
+        this.saveMedia(media_res);
+        return media_res;
+      })
     );
   }
 
@@ -68,8 +102,20 @@ export class MediaService {
    */
   getRecentlyDownloaded(moviesOnly: boolean | null): Observable<Media[]> {
     const getMediaUrl = `${this.mediaUrl}downloaded?limit=50&movies_only=${moviesOnly}`;
+    let mapKey = 'recentDownloads';
+    // Check if the filtered media list is already cached
+    if (this.filteredMediaMap[mapKey]) {
+      // console.log('Returning cached media list for:', mapKey);
+      return of(this.filteredMediaMap[mapKey]);
+    }
+    // Else, Fetch the filtered media list from the server
     return this.http.get<Media[]>(`${getMediaUrl}`).pipe(
-      map((media_list: any[]) => media_list.map(media => mapMedia(media)))
+      map((media_list: any[]) => {
+        let media_res = media_list.map(media => mapMedia(media));
+        this.filteredMediaMap[mapKey] = media_res;
+        this.saveMedia(media_res);
+        return media_res;
+      })
     );
   }
 
@@ -77,13 +123,31 @@ export class MediaService {
    * Fetches a single Media item by its ID.
    * 
    * @param id - The ID of the Media item to fetch.
+   * @param forceUpdate - If `true`, the Media item will be fetched from the server even if it is already cached.
    * @returns - An Observable that emits a single Media object with the specified ID.
    * - If no Media item is found with the specified ID, the Observable will emit `null`.
    * - If an error occurs during the request, the Observable will emit an error.
    */
-  getMediaById(id: number): Observable<Media> {
+  getMediaById(id: number, forceUpdate: boolean = false): Observable<Media> {
+    id = parseInt(`${id}`);
+    // console.log('Fetching media: ', id, ' Force: ', forceUpdate);
+    // Check if the media item is already cached
+    if (!forceUpdate) {
+      if (this.mediaMap.has(id)) {
+        let media = this.mediaMap.get(id);
+        if (media && media.id == id) {
+          // console.log('Returning cached media:', media.id);
+          return of(media);
+        }
+      }
+    }
+    // Else, Fetch the media item from the server
     return this.http.get<Media>(`${this.mediaUrl}${id}`).pipe(
-      map(media => mapMedia(media))
+      map(media => {
+        let media_res = mapMedia(media);
+        this.mediaMap.set(id, media_res);
+        return media_res;
+      })
     );
   }
 

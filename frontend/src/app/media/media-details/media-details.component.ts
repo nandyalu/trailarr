@@ -90,7 +90,7 @@ export class MediaDetailsComponent {
     // Subscribe to the WebSocket events and refresh data
     // Calling this.getMediaData() directly in subscription fails, so we use a handler
     const handleWebSocketEvent = () => {
-      this.getMediaData();
+      this.getMediaData(true);
     };
 
     // Subscribe to the WebSocket events with the simplified handler
@@ -118,10 +118,14 @@ export class MediaDetailsComponent {
    * 2. Retrieves media files from the media service and assigns them to the `mediaFiles` property.
    *    - If the response is a string, assigns it to the `mediaFilesResponse` property.
    *    - Sets the `filesLoading` flag to `false` once the media files are retrieved.
+   * 
+   * @param forceUpdate - A boolean flag indicating whether to force an update of the media data. 
+   *  - Defaults to `false`.
+   * @returns {void}
    */
-  getMediaData() {
+  getMediaData(forceUpdate: boolean = false): void {
     // Get Media Data
-    this.mediaService.getMediaById(this.mediaId).subscribe((media_res: Media) => {
+    this.mediaService.getMediaById(this.mediaId, forceUpdate).subscribe((media_res: Media) => {
       this.media = media_res;
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
