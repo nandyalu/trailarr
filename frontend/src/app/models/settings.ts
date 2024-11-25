@@ -13,6 +13,7 @@ export interface Settings {
     trailer_folder_series: boolean
     trailer_resolution: number
     trailer_audio_format: string
+    trailer_audio_volume_level: number
     trailer_video_format: string
     trailer_subtitles_enabled: boolean
     trailer_subtitles_format: string

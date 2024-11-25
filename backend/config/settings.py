@@ -93,6 +93,9 @@ class _Config:
         self.trailer_audio_format = os.getenv(
             "TRAILER_AUDIO_FORMAT", self._DEFAULT_AUDIO_FORMAT
         )
+        self.trailer_audio_volume_level = int(
+            os.getenv("TRAILER_AUDIO_VOLUME_LEVEL", 100)
+        )
         self.trailer_video_format = os.getenv(
             "TRAILER_VIDEO_FORMAT", self._DEFAULT_VIDEO_FORMAT
         )
@@ -138,6 +141,7 @@ class _Config:
             "monitor_interval": self.monitor_interval,
             "timezone": self.timezone,
             "trailer_audio_format": self.trailer_audio_format,
+            "trailer_audio_volume_level": self.trailer_audio_volume_level,
             "trailer_embed_metadata": self.trailer_embed_metadata,
             "trailer_file_format": self.trailer_file_format,
             "trailer_folder_movie": self.trailer_folder_movie,
@@ -406,6 +410,22 @@ class _Config:
         if self._trailer_audio_format.lower() not in self._VALID_AUDIO_FORMATS:
             self._trailer_audio_format = self._DEFAULT_AUDIO_FORMAT
         self._save_to_env("TRAILER_AUDIO_FORMAT", self._trailer_audio_format)
+
+    @property
+    def trailer_audio_volume_level(self):
+        """Audio volume level for trailers, between 1 and 200.\n
+        Default is 100 -> No change in audio level. \n
+        Valid values are integers beteen 1 and 200."""
+        return self._trailer_audio_volume_level
+
+    @trailer_audio_volume_level.setter
+    def trailer_audio_volume_level(self, value: int):
+        value = max(1, value)  # Minimum volume level is 1
+        value = min(200, value)  # Maximum volume level is 200
+        self._trailer_audio_volume_level = value
+        self._save_to_env(
+            "TRAILER_AUDIO_VOLUME_LEVEL", self._trailer_audio_volume_level
+        )
 
     @property
     def trailer_video_format(self):

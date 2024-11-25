@@ -16,6 +16,7 @@ export class TrailerComponent {
   updateResults: String[] = [];
   monitorInterval = 60;
   resolution = 1080;
+  audioVolumeLevel = 100;
   subtitleLanguage = 'en';
   loggingOptions = ["Debug", "Info", "Warning", "Error"];
   trueFalseOptions = [true, false];

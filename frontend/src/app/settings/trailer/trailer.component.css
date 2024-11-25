@@ -63,7 +63,22 @@
   width: 60%;
 }
 
-.trailer-content label {
+.input-range {
+  width: 15vw !important;
+  max-width: 25rem !important;
+
+  @media (width < 768px) {
+    width: 60vw !important;
+    max-width: 100% !important;
+  }
+}
+
+.input-range-value {
+  text-align: center;
+  align-self: center;
+}
+
+.trailer-content label, .trailer-content span {
   font-weight: bold;
   text-wrap: nowrap;
 }

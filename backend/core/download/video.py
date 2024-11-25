@@ -140,6 +140,12 @@ def _get_ytdl_options() -> dict[str, Any]:
     output_options.append("-crf")
     output_options.append("22")
 
+    # Apply audio volume level filter if enabled
+    if app_settings.trailer_audio_volume_level != 100:
+        volume_level = app_settings.trailer_audio_volume_level * 0.01
+        output_options.append("-af")
+        output_options.append(f"volume={volume_level}")
+
     # Set audio specific options
     audio_format = _AUDIO_CODECS[app_settings.trailer_audio_format]
     output_options.append("-c:a")

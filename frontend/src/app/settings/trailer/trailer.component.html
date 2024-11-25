@@ -20,7 +20,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="monitor_enabled">Monitor Trailers</label>
+                <span>Monitor Trailers</span>
                 <small>Monitor media from Radarr/Sonarr to download trailers.</small>
             </div>
             <div id="monitor_enabled" class="options-bar">
@@ -57,7 +57,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="wait_for_media">Wait for Media</label>
+                <span for="wait_for_media">Wait for Media</span>
                 <small>Wait for media to be imported into Radarr/Sonarr before downloading trailers.</small>
             </div>
             <div id="wait_for_media" class="options-bar">
@@ -72,7 +72,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_folder_movie">Trailer Folder Movie</label>
+                <span for="trailer_folder_movie">Trailer Folder Movie</span>
                 <small>Save trailer file in a 'Trailers' folder inside Movie folder.</small>
             </div>
             <div id="trailer_folder_movie" class="options-bar">
@@ -87,7 +87,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_folder_series">Trailer Folder Series</label>
+                <span for="trailer_folder_series">Trailer Folder Series</span>
                 <small>Save trailer file in a 'Trailers' folder inside Series folder.</small>
             </div>
             <div id="trailer_folder_series" class="options-bar">
@@ -158,7 +158,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_file_format">Trailer File Format</label>
+                <span for="trailer_file_format">Trailer File Format</span>
                 <small>Final file format(extension) of the trailer file.</small>
             </div>
             <div id="trailer_file_format" class="options-bar">
@@ -173,7 +173,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_video_format">Trailer Video Format</label>
+                <span for="trailer_video_format">Trailer Video Format</span>
                 <small>Final video format(codec) of the trailer file.</small>
             </div>
             <div id="trailer_video_format" class="options-bar">
@@ -188,7 +188,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_audio_format">Trailer Audio Format</label>
+                <span for="trailer_audio_format">Trailer Audio Format</span>
                 <small>Final audio format(codec) of the trailer file.</small>
             </div>
             <div id="trailer_audio_format" class="options-bar">
@@ -203,7 +203,25 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_subtitles_enabled">Trailer Subtitles Enabled</label>
+                <label for="trailer_audio_volume_level">Trailer Audio Volume Level</label>
+                <small>Volume level of the trailer audio. Value less than 100 will reduce loudness, and viceversa!</small>
+                <small>Default is 100. Minuimum is 1. Maximum is 200.</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_audio_volume_level" class="input-range" type="range" min="1" max="200" [(ngModel)]="audioVolumeLevel" autocomplete="off" tabindex="12">
+                <span class="input-range-value">{{audioVolumeLevel}}</span>
+                <button *ngIf="settings?.trailer_audio_volume_level != audioVolumeLevel" class="primary icononly-button"
+                    id="update_trailer_audio_volume_level" tabindex="12"
+                    (click)="updateSetting('trailer_audio_volume_level', audioVolumeLevel)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <span for="trailer_subtitles_enabled">Trailer Subtitles Enabled</span>
                 <small>Download subtitles and added them to trailer file, if available.</small>
             </div>
             <div id="trailer_subtitles_enabled" class="options-bar">
@@ -218,7 +236,7 @@
         </div>
         <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
             <div class="content-label">
-                <label for="trailer_subtitles_format">Trailer Subtitles Format</label>
+                <span for="trailer_subtitles_format">Trailer Subtitles Format</span>
                 <small>Final subtitles format in the trailer file.</small>
             </div>
             <div id="trailer_subtitles_format" class="options-bar">
@@ -254,7 +272,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_embed_metadata">Trailer Embed Metadata</label>
+                <span for="trailer_embed_metadata">Trailer Embed Metadata</span>
                 <small>Embed info from youtube video into the trailer file.</small>
             </div>
             <div id="trailer_embed_metadata" class="options-bar">
@@ -269,7 +287,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_remove_sponsorblocks">Trailer Remove SponsorBlocks</label>
+                <span for="trailer_remove_sponsorblocks">Trailer Remove SponsorBlocks</span>
                 <small>Remove Sponsor Blocks like intro, outro blocks from youtube video if available.</small>
             </div>
             <div id="trailer_remove_sponsorblocks" class="options-bar">
@@ -284,7 +302,7 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_web_optimized">Trailer Web Optimized</label>
+                <span for="trailer_web_optimized">Trailer Web Optimized</span>
                 <small>Enabling this will convert the video to a web optimized video, useful for streaming video over
                     network, might slightly increase file size.</small>
             </div>
@@ -304,7 +322,7 @@
         <hr>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="log_level">Log Level</label>
+                <span for="log_level">Log Level</span>
                 <small>Set logging level for the app!</small>
                 <!-- <small>Container restart needed to take effect!</small> -->
                 <!-- <small>Set this to Debug if you're having issues!!!</small> -->
@@ -357,7 +375,7 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath"
-                    placeholder="Yt-dlp cookies path" autocomplete="off" tabindex="21">
+                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="21">
                 <button *ngIf="ytCookiesPath != settings?.yt_cookies_path" class="primary icononly-button"
                     id="update_yt_cookies_path" tabindex="22"
                     (click)="updateSetting('yt_cookies_path', ytCookiesPath)">

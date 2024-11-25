@@ -44,6 +44,7 @@ class Settings(BaseModel):
     trailer_file_name: str
     trailer_file_format: str
     trailer_audio_format: str
+    trailer_audio_volume_level: int
     trailer_video_format: str
     trailer_subtitles_enabled: bool
     trailer_subtitles_format: str
