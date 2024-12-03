@@ -28,6 +28,8 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 
 Reddit: [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr)
 
+Discord: [https://discord.gg/BAJsv76N](https://discord.gg/BAJsv76N)
+
 ## Features
 
 - Manages multiple Radarr and Sonarr instances to find media
