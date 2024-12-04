@@ -43,6 +43,8 @@ class Settings(BaseModel):
     trailer_resolution: int
     trailer_file_name: str
     trailer_file_format: str
+    trailer_always_search: bool
+    trailer_search_query: str
     trailer_audio_format: str
     trailer_audio_volume_level: int
     trailer_video_format: str

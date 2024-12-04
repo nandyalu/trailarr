@@ -44,6 +44,7 @@ class _Config:
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
     _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
+    _DEFAULT_SEARCH_QUERY = "{title} {year} {is_movie} trailer"
     # Default WebUI password 'trailarr' hashed
     _DEFAULT_WEBUI_PASSWORD = (
         "$2b$12$CU7h.sOkBp5RFRJIYEwXU.1LCUTD2pWE4p5nsW3k1iC9oZEGVWeum"
@@ -130,6 +131,13 @@ class _Config:
         self.exclude_words = os.getenv("EXCLUDE_WORDS", "")
         self.trailer_min_duration = int(os.getenv("TRAILER_MIN_DURATION", 30))
         self.trailer_max_duration = int(os.getenv("TRAILER_MAX_DURATION", 600))
+        self.trailer_always_search = os.getenv(
+            "TRAILER_ALWAYS_SEARCH",
+            "False",
+        ).lower() in ["true", "1"]
+        self.trailer_search_query = os.getenv(
+            "TRAILER_SEARCH_QUERY", self._DEFAULT_SEARCH_QUERY
+        )
 
     def as_dict(self):
         return {
@@ -146,6 +154,8 @@ class _Config:
             "trailer_file_format": self.trailer_file_format,
             "trailer_folder_movie": self.trailer_folder_movie,
             "trailer_folder_series": self.trailer_folder_series,
+            "trailer_always_search": self.trailer_always_search,
+            "trailer_search_query": self.trailer_search_query,
             "trailer_max_duration": self.trailer_max_duration,
             "trailer_min_duration": self.trailer_min_duration,
             "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
@@ -282,6 +292,33 @@ class _Config:
     def wait_for_media(self, value: bool):
         self._wait_for_media = value
         self._save_to_env("WAIT_FOR_MEDIA", self._wait_for_media)
+
+    @property
+    def trailer_always_search(self):
+        """Always search for trailers. \n
+        Default is False. \n
+        Valid values are True/False."""
+        return self._trailer_always_search
+
+    @trailer_always_search.setter
+    def trailer_always_search(self, value: bool):
+        self._trailer_always_search = value
+        self._save_to_env("TRAILER_ALWAYS_SEARCH", self._trailer_always_search)
+
+    @property
+    def trailer_search_query(self):
+        """Search query for trailers. \n
+        Default is '{title} {year} {is_movie} trailer'. \n
+        Valid values are any string with placeholders."""
+        return self._trailer_search_query
+
+    @trailer_search_query.setter
+    def trailer_search_query(self, value: str):
+        value = value.strip()
+        if value.count("{") != value.count("}"):
+            value = self._DEFAULT_SEARCH_QUERY
+        self._trailer_search_query = value
+        self._save_to_env("TRAILER_SEARCH_QUERY", self._trailer_search_query)
 
     @property
     def trailer_file_name(self):

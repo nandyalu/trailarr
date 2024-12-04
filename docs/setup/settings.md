@@ -168,11 +168,24 @@ Select the logging level for the app. Available options are `Debug`, `Info`, `Wa
 
 Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, `teaser,clip,featurette`.
 
+### Trailer Always Search
+
+- Default is `false`
+
+Enable this setting to always search YouTube for trailers. If disabled, the app will only search YouTube if it cannot find a trailer in Radarr, Sonarr doesn't provide youtube trailer ids.
+
 ### Youtube Search Query
 
-- Default is `{title} {is_movie} trailer`
+- Default is `{title} {year} {is_movie} trailer`
 
-Enter a search query to use when searching for trailers on YouTube. Available options are `title`, `year`, `is_movie` (will be replaced by `movie` or `series`).
+Enter a search query to use when searching for trailers on YouTube. Wrap a supported variable in `{}` like `{title}` and it will be replaced in the actual search query. Supports [Python string formatting options](https://docs.python.org/3/library/string.html#formatstrings).
+
+Available options are:
+
+- `title`: Title of the media. Eg: 'The Matrix'
+- `year`: Year of the media. Eg: '1999'
+- `is_movie`: 'movie' if the media is a movie, 'series' if the media is a series.
+- `language`: Language of the media. Eg: 'English'
 
 ### Trailer File Name
 

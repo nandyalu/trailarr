@@ -361,7 +361,39 @@
                 <input class="input-path" id="trailer_file_name" type="text" [(ngModel)]="trailerFileName"
                     placeholder="Trailer File Name Format" autocomplete="off" tabindex="19">
                 <button *ngIf="trailerFileName != settings?.trailer_file_name" class="primary icononly-button"
-                    id="update_trailer_file_name" tabindex="20" (click)="updateSetting('trailer_file_name', trailerFileName)">
+                    id="update_trailer_file_name" tabindex="19" (click)="updateSetting('trailer_file_name', trailerFileName)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <span for="trailer_always_search">Trailer Always Search</span>
+                <small>Enable this setting to always search YouTube for trailers.</small>
+            </div>
+            <div class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="20"
+                    [class.selected]="option === settings?.trailer_always_search"
+                    (click)="updateSetting('trailer_always_search', option)"
+                    (keydown.enter)="updateSetting('trailer_always_search', option)"
+                    (keydown.space)="updateSetting('trailer_always_search', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_search_query">Trailer Search Query</label>
+                <small>query to use when searching for trailers on YouTube</small>
+            </div>
+            <div class="text-input">
+                <input class="input-path" id="trailer_search_query" type="text" [(ngModel)]="trailerSearchQuery"
+                    placeholder="Trailer Search Query" autocomplete="off" tabindex="21">
+                <button *ngIf="trailerSearchQuery != settings?.trailer_search_query" class="primary icononly-button"
+                    id="update_trailer_search_query" tabindex="21"
+                    (click)="updateSetting('trailer_search_query', trailerSearchQuery)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                     </svg>
@@ -375,7 +407,7 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath"
-                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="21">
+                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="22">
                 <button *ngIf="ytCookiesPath != settings?.yt_cookies_path" class="primary icononly-button"
                     id="update_yt_cookies_path" tabindex="22"
                     (click)="updateSetting('yt_cookies_path', ytCookiesPath)">

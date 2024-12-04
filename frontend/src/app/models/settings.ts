@@ -11,6 +11,8 @@ export interface Settings {
     trailer_file_name: string
     trailer_folder_movie: boolean
     trailer_folder_series: boolean
+    trailer_always_search: boolean
+    trailer_search_query: string
     trailer_resolution: number
     trailer_audio_format: string
     trailer_audio_volume_level: number

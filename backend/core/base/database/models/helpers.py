@@ -20,6 +20,8 @@ class MediaTrailer:
 
     id: int
     title: str
+    is_movie: bool
+    language: str
     year: int
     yt_id: str | None
     folder_path: str
@@ -48,3 +50,32 @@ class MediaUpdateDC:
     trailer_exists: bool | None = None
     yt_id: str | None = None
     downloaded_at: datetime | None = None
+
+
+language_names = {
+    "en": "English",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "it": "Italian",
+    "nl": "Dutch",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "ko": "Korean",
+    "sv": "Swedish",
+    "no": "Norwegian",
+    "da": "Danish",
+    "fi": "Finnish",
+    "pl": "Polish",
+    "tr": "Turkish",
+    "cs": "Czech",
+    "hu": "Hungarian",
+    "el": "Greek",
+    "he": "Hebrew",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "th": "Thai",
+    "vi": "Vietnamese",
+}

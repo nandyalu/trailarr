@@ -11,7 +11,7 @@ from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.models.helpers import MediaTrailer
+from core.base.database.models.helpers import MediaTrailer, language_names
 from core.download import video_analysis
 from core.download.video import download_video
 
@@ -75,19 +75,16 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
 
 
 def _search_yt_for_trailer(
-    movie_title: str,
-    is_movie=True,
-    movie_year: int | None = None,
+    media: MediaTrailer,
     exclude: list[str] | None = None,
 ):
     """Search for trailer on youtube. \n
     Args:
-        movie_title (str): Title of the movie or show.
-        is_movie (bool): Whether the media type is movie or show.
-        movie_year (str): Year of the movie or show. \n
+        media (MediaTrailer): Media object.
+        exclude (list[str], Optional): List of video ids to exclude. \n
     Returns:
         str | None: Youtube video id / None if not found."""
-    logger.debug(f"Searching youtube for trailer for '{movie_title}'...")
+    logger.debug(f"Searching youtube for trailer for '{media.title}'...")
     # Set options
     filter_func = partial(_yt_search_filter, exclude=exclude)
     options = {
@@ -104,11 +101,28 @@ def _search_yt_for_trailer(
         "quiet": True,
     }
     # Construct search query with keywords for 5 search results
-    search_query = f"ytsearch5: {movie_title}"
-    if movie_year:
-        search_query += f" ({movie_year})"
-    search_query += " movie" if is_movie else " series"
-    search_query += " trailer"
+    search_query_format = app_settings.trailer_search_query
+    format_opts = media.to_dict()  # Convert media object to dictionary for formatting
+    format_opts["is_movie"] = "movie" if media.is_movie else "series"
+    # Remove year from search query if 0
+    if media.year == 0:
+        format_opts["year"] = ""
+    # Replace language code with language name
+    format_opts["language"] = language_names.get(media.language, media.language)
+    # Get search query by replacing supplied options
+    search_query = search_query_format.format(**format_opts)
+    # Remove extra spaces and trailing spaces
+    search_query = search_query.replace("  ", " ").strip()
+    # Add ytsearch5: prefix to search query
+    search_query = f"ytsearch5: {search_query}"
+    # Append "trailer" to search query if not already present
+    if "trailers" not in search_query:
+        search_query += " trailer"
+    # search_query = f"ytsearch5: {media.title}"
+    # if media.year:
+    #     search_query += f" ({media.year})"
+    # search_query += " movie" if media.is_movie else " series"
+    # search_query += " trailer"
 
     # Search for video
     with YoutubeDL(options) as ydl:
@@ -129,7 +143,7 @@ def _search_yt_for_trailer(
         if result["id"] in exclude:
             logger.debug(f"Skipping excluded video: {result['id']}")
             continue
-        logger.debug(f"Found trailer for {movie_title}: {result['id']}")
+        logger.debug(f"Found trailer for {media.title}: {result['id']}")
         return str(result["id"])
 
 
@@ -157,7 +171,7 @@ def download_trailer(
         video_id = media.yt_id
     else:
         # Search for trailer on youtube
-        video_id = _search_yt_for_trailer(media.title, is_movie, media.year, exclude)
+        video_id = _search_yt_for_trailer(media, exclude)
     if not video_id:
         trailer_downloaded = False
     else:
@@ -367,14 +381,19 @@ def download_trailers(
     for media in media_list:
         sem.acquire()
         logger.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
-        if download_trailer(media, trailer_folder, is_movie):
-            media.downloaded_at = datetime.now(timezone.utc)
-            download_list.append(media)
-            logger.info(
-                f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+        try:
+            if download_trailer(media, trailer_folder, is_movie):
+                media.downloaded_at = datetime.now(timezone.utc)
+                download_list.append(media)
+                logger.info(
+                    f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+                )
+            else:
+                logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
+        except Exception as e:
+            logger.error(
+                f"Failed to download trailer for '[{media.id}]{media.title}': {e}"
             )
-        else:
-            logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
         sem.release()
     logger.info(f"Downloaded trailers for {len(download_list)} {media_type}")
     return download_list

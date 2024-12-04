@@ -47,9 +47,14 @@ def _download_missing_media_trailers(is_movie: bool):
                     f"Skipping {db_media.title} (id:{db_media.id}), media file(s) not found"
                 )
                 continue
+        # If always search is enabled, set trailer id to None
+        if app_settings.trailer_always_search:
+            db_media.youtube_trailer_id = None
         media_trailer = MediaTrailer(
             id=db_media.id,
             title=db_media.title,
+            is_movie=db_media.is_movie,
+            language=db_media.language,
             year=db_media.year,
             folder_path=db_media.folder_path,
             yt_id=db_media.youtube_trailer_id,
@@ -153,14 +158,21 @@ def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
         msg = f"{'Movie' if is_movie else 'Series'} '{media.title}' has no folder path"
         logger.error(msg)
         return msg
+    _yt_id = None
+    # If always search is enabled, do not use the id from the database
+    if not app_settings.trailer_always_search:
+        _yt_id = media.youtube_trailer_id
+    # If yt_id is provided, always use it
     if yt_id:
-        media.youtube_trailer_id = yt_id
+        _yt_id = yt_id
     media_trailer = MediaTrailer(
         id=media.id,
         title=media.title,
+        is_movie=media.is_movie,
+        language=media.language,
         year=media.year,
         folder_path=media.folder_path,
-        yt_id=media.youtube_trailer_id,
+        yt_id=_yt_id,
     )
 
     # Add Job to scheduler to download trailer
