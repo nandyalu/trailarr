@@ -6,8 +6,8 @@
         <div class="about-content">
             <span>Version</span>
             <code>{{settings?.version}}</code>
-            <span class="update-available" [class.latest]="!settings?.update_available">{{ settings?.update_available ?
-                "Update Available" : "Latest" }}</span>
+            <a class="update-available" [class.latest]="!settings?.update_available" href="https://hub.docker.com/r/nandyalu/trailarr" target="_blank">{{ settings?.update_available ?
+                "Update Available" : "Latest" }}</a>
         </div>
         <div class="about-content">
             <span>API Key</span>
@@ -61,17 +61,25 @@
         <h1>Getting Support</h1>
         <hr>
         <div class="about-content">
-            <span>Github</span>
-            <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
-        </div>
-        <div class="about-content">
             <span>Documentation</span>
             <a href="https://nandyalu.github.io/trailarr" target="_blank">https://nandyalu.github.io/trailarr</a>
+        </div>
+        <div class="about-content">
+            <span>Discord</span>
+            <a href="https://discord.gg/BAJsv76N" target="_blank">https://discord.gg/BAJsv76N</a>
+        </div>
+        <div class="about-content">
+            <span>Github</span>
+            <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
         </div>
         <div class="about-content">
             <span>Issues</span>
             <a href="https://github.com/nandyalu/trailarr/issues"
                 target="_blank">https://github.com/nandyalu/trailarr/issues</a>
+        </div>
+        <div class="about-content">
+            <span>Reddit</span>
+            <a href="https://www.reddit.com/r/trailarr" target="_blank">https://www.reddit.com/r/trailarr</a>
         </div>
     </section>
 </div>
