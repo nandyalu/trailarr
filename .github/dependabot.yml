@@ -6,7 +6,33 @@
 
 version: 2
 updates:
- - package-ecosystem: "devcontainers"
-   directory: "/"
-   schedule:
-     interval: weekly
+  # Maintain dependencies for pip - devcontainer
+  - package-ecosystem: "pip"
+    directory: "/.devcontainer"
+    schedule:
+      interval: weekly
+    target-branch: "dev"
+    open-pull-requests-limit: 3 # Limit the number of open PRs
+    reviewers: # Add reviewers
+      - "nandyalu"
+  # Maintain dependencies for pip - backend
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    target-branch: "dev"
+    open-pull-requests-limit: 3 # Limit the number of open PRs
+    reviewers: # Add reviewers
+      - "nandyalu"
+  # Maintain dependencies for npm - frontend (Angular and rxjs only)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    target-branch: "dev"
+    open-pull-requests-limit: 3 # Limit the number of open PRs
+    reviewers: # Add reviewers
+      - "nandyalu"
+    allow:
+      - dependency-name: "@angular/*"
+      - dependency-name: "rxjs"
