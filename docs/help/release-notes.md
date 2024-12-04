@@ -13,7 +13,7 @@
 
 **Bug Fixes:** 🐛
 
-- Added some exception handling so that when a trailer download fails, it continues with the next download. Closes [#70]
+- Added some exception handling so that when a trailer download fails, it continues with the next download. Closes [#70](https://github.com/nandyalu/trailarr/issues/70)
 - Some other minor bug fixes in trailer downloads.
 
 
