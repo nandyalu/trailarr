@@ -1,6 +1,7 @@
 ## **v0.2.3-beta** - _December 04, 2024_
 **What's New:** ✨
-- Created a [Discord Server](https://discord.gg/BAJsv76N)
+
+- Created a [Discord Server](https://discord.gg/BAJsv76N) for Trailarr.
 - Added an option `Always Search` which when enabled will not use the YouTube trailer id provided by Arrs and searches on YouTube. Related to [#6](https://github.com/nandyalu/trailarr/issues/6)
 - Added an option `Search Query` to specify the query used to search for trailers on YouTube. Fixes [#6](https://github.com/nandyalu/trailarr/issues/6)
 - Added an option `Trailer Volume Level` to increase/decrease loudness of the downloaded trailer. Fixes [#41](https://github.com/nandyalu/trailarr/issues/41)
@@ -9,11 +10,15 @@
 - Browser authentication can now be disabled by setting `WEBUI_DISABLE_AUTH=True` env variable in docker command. Fixes [#67](https://github.com/nandyalu/trailarr/issues/67)
 - Logs layout has been updated, added a search bar and increased log size to 1MB (more logs will be displayed now).
 
+
 **Bug Fixes:** 🐛
+
 - Added some exception handling so that when a trailer download fails, it continues with the next download. Closes [#70]
 - Some other minor bug fixes in trailer downloads.
 
+
 **Other Changes:** ⚡
+
 - Updated some logs for trailer downloads. 
 - Updated the search service in Frontend so that it displays a message when no results are found.
 - Upgraded npm and python packages to latest available versions. Updated node to v22, Angular to v19, FastAPI to v0.115.6.
