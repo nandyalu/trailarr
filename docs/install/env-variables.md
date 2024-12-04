@@ -78,7 +78,7 @@ This environment variable is used to disable the authentication for the web inte
         - WEBUI_DISABLE_AUTH=True # This will disable the web UI authentication
 ```
 
-### WEBUI_PASSWORD
+### `WEBUI_PASSWORD`
 
 - Default is `trailarr` (hashed).
 
@@ -91,12 +91,19 @@ Password: trailarr
 
 If you forget your password, set this environment variable to `''` (empty string) to reset the password for the web interface to default.
 
-To change the password, go to `Settings > About > Password` in web interface.
-
 ```yaml
     environment:
         - WEBUI_PASSWORD='' # This will reset the password to default
 ```
+
+To change the password, go to `Settings > About > Password` in web interface. 
+
+!!! info
+    If you change your password from the web interface, the password will be hashed and stored internally. There is no way to retrieve the password as only a hashed version is stored, you need to reset it if you forget it.
+
+!!! warning
+    Once you change your password, don't forget to remove the `WEBUI_PASSWORD` environment variable from the docker-compose file.
+
 
 ### Example
 
