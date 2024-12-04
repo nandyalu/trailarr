@@ -71,7 +71,7 @@ input.ng-touched.ng-invalid {
   margin: 1rem 0 0 0;
 }
 
-.option-container label {
+.option-container label, .option-container span {
   padding: 10px;
   padding-left: 0;
   display: block;

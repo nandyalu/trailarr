@@ -35,7 +35,11 @@ There are 2 parts to a volume mapping:
 
 Trailarr gets the media folders from the Radarr and Sonarr connections you add. So, you need to map the root folder of Radarr and Sonarr to the Trailarr container in a way that Trailarr can access the media files on the paths provided by Radarr and Sonarr. 
 
-Some [examples](#examples) are provided below.
+Some [examples](#examples) are provided below. 
+
+If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/help/docker-builder/builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
+
+If you are still facing issues, you can ask for help in the [Discord Server](https://discord.gg/BAJsv76N){:target="_blank"}.
 
 !!! tip
     Make sure the folder paths are correct and the Trailarr has read/write access to the folders.

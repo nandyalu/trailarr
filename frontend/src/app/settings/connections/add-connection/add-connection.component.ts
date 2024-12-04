@@ -5,11 +5,10 @@ import { ConnectionCreate } from '../../../models/connection';
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
-  selector: 'app-add-connection',
-  standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
-  templateUrl: './add-connection.component.html',
-  styleUrl: './add-connection.component.css'
+    selector: 'app-add-connection',
+    imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
+    templateUrl: './add-connection.component.html',
+    styleUrl: './add-connection.component.css'
 })
 export class AddConnectionComponent {
 

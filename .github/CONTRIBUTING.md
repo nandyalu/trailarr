@@ -68,6 +68,14 @@ The commit message:
 - is clear about what part of the code is affected -- often by prefixing with the name of the subsystem and a colon, like "express: ..." or "docs: ...".
 - is a complete sentence, ending with a period.
 
+### Commit Signing Error
+
+If you get an error like `gpg: signing failed: Inappropriate ioctl for device` while committing, you can test signing by running the following command:
+
+```bash
+echo "This is a test message for GPG signing." | gpg --clearsign
+```
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under its [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file).

@@ -12,7 +12,7 @@
   gap: 1rem;
 }
 
-.about-content label {
+.about-content label, .about-content span {
   font-weight: bold;
   text-align: left;
   width: 40%;
@@ -32,6 +32,7 @@
   border-radius: 1rem;
   padding: 0.25rem 0.5rem;
   font-style: italic;
+  width: auto !important;
 }
 
 .latest {

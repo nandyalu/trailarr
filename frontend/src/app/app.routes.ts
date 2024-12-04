@@ -19,25 +19,30 @@ export const routes: Routes = [
         pathMatch: 'full'
     },
     {
+        path: 'media',
+        redirectTo: 'home',
+        pathMatch: 'full'
+    },
+    {
         path: 'home',
         component: HomeComponent
+    },
+    {
+        path: 'media/:id',
+        component: MediaDetailsComponent
     },
     {
         path: 'movies',
         component: MediaComponent
     },
     {
-        path: 'movies/:id',
-        component: MediaDetailsComponent
-    },
-    {
         path: 'series',
         component: MediaComponent
     },
-    {
-        path: 'series/:id',
-        component: MediaDetailsComponent
-    },
+    // {
+    //     path: 'series/:id',
+    //     component: MediaDetailsComponent
+    // },
     {
         path: 'tasks',
         component: TasksComponent

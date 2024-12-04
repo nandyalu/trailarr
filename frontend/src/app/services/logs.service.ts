@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment';
+import { Logs } from '../models/logs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class LogsService {
 
   constructor(private http: HttpClient) { }
 
-  getLogs(): Observable<string[]> {
-    return this.http.get<string[]>(this.logsUrl);
+  getLogs(): Observable<Logs[]> {
+    return this.http.get<Logs[]>(this.logsUrl);
   }
 }

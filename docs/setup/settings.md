@@ -44,6 +44,23 @@ Enable this setting to save trailers in a `Trailers` folder inside the series fo
 
 ## Trailer Settings
 
+### Trailer Minimum Duration
+
+- Default is `30` seconds
+
+Select the minimum duration of the trailers to download. Trailers with a duration less than this value will be skipped.
+Minimum is `30` seconds.
+
+### Trailer Maximum Duration
+
+- Default is `600` seconds
+
+Select the maximum duration of the trailers to download. Trailers with a duration greater than this value will be skipped.
+Minimum is `Trailer Minimum Duration + 60` seconds. Maximum is `600` seconds.
+
+!!! info
+    If you want to download trailers with a duration of 2 minutes to 5 minutes, set `Trailer Minimum Duration` to `120` seconds and `Trailer Maximum Duration` to `300` seconds.
+
 ### Trailer Resolution
 
 - Default is `1080`
@@ -134,6 +151,41 @@ Select the logging level for the app. Available options are `Debug`, `Info`, `Wa
 
 ??? info
     If you are having issues and need to troubleshoot or request help, set the log level to `Debug` to get more detailed logs.
+
+### Trailer Audio Volume Level
+
+- Default is `100`
+
+Set the audio volume level of the downloaded trailer. Use this option to increase or decrease audio loudness of the trailer.
+Set to `100` for no change. Minimum is `1`. Maximum is `200`. 
+
+!!! warning
+    Do not modify this setting unless you know what you are doing.
+
+### Exclude Words in Title
+
+- Default is `` (empty)
+
+Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, `teaser,clip,featurette`.
+
+### Trailer Always Search
+
+- Default is `false`
+
+Enable this setting to always search YouTube for trailers. If disabled, the app will only search YouTube if it cannot find a trailer in Radarr, Sonarr doesn't provide youtube trailer ids.
+
+### Youtube Search Query
+
+- Default is `{title} {year} {is_movie} trailer`
+
+Enter a search query to use when searching for trailers on YouTube. Wrap a supported variable in `{}` like `{title}` and it will be replaced in the actual search query. Supports [Python string formatting options](https://docs.python.org/3/library/string.html#formatstrings).
+
+Available options are:
+
+- `title`: Title of the media. Eg: 'The Matrix'
+- `year`: Year of the media. Eg: '1999'
+- `is_movie`: 'movie' if the media is a movie, 'series' if the media is a series.
+- `language`: Language of the media. Eg: 'English'
 
 ### Trailer File Name
 

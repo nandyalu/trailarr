@@ -7,12 +7,11 @@ import { TasksService } from '../services/tasks.service';
 import { WebsocketService } from '../services/websocket.service';
 
 @Component({
-  selector: 'app-tasks',
-  standalone: true,
-  imports: [NgIf, NgFor, TimeagoModule],
-  providers: [],
-  templateUrl: './tasks.component.html',
-  styleUrl: './tasks.component.css'
+    selector: 'app-tasks',
+    imports: [NgIf, NgFor, TimeagoModule],
+    providers: [],
+    templateUrl: './tasks.component.html',
+    styleUrl: './tasks.component.css'
 })
 export class TasksComponent implements OnInit, OnDestroy {
   scheduledTasks: ScheduledTask[] = [];

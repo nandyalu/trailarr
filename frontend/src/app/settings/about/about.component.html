@@ -4,25 +4,25 @@
         <h1>About Trailarr</h1>
         <hr>
         <div class="about-content">
-            <label>Version</label>
+            <span>Version</span>
             <code>{{settings?.version}}</code>
-            <span class="update-available" [class.latest]="!settings?.update_available">{{ settings?.update_available ?
-                "Update Available" : "Latest" }}</span>
+            <a class="update-available" [class.latest]="!settings?.update_available" href="https://hub.docker.com/r/nandyalu/trailarr" target="_blank">{{ settings?.update_available ?
+                "Update Available" : "Latest" }}</a>
         </div>
         <div class="about-content">
-            <label>API Key</label>
+            <span>API Key</span>
             <code>{{settings?.api_key}}</code>
         </div>
         <div class="about-content">
-            <label>Appdata Folder</label>
+            <span>Appdata Folder</span>
             <code>{{settings?.app_data_dir}}</code>
         </div>
         <div class="about-content">
-            <label>Server Started</label>
+            <span>Server Started</span>
             <code>{{settings?.server_start_time ? (settings?.server_start_time | timeago) : 'Unknwon'}}</code>
         </div>
         <div class="about-content">
-            <label>Timezone</label>
+            <span>Timezone</span>
             <code>{{settings?.timezone}}</code>
         </div>
     </section>
@@ -30,23 +30,23 @@
         <h1>Statistics</h1>
         <hr>
         <div class="about-content">
-            <label>Movies</label>
+            <span>Movies</span>
             <code>{{serverStats?.movies_count}}</code>
         </div>
         <div class="about-content">
-            <label>Movies Monitored</label>
+            <span>Movies Monitored</span>
             <code>{{serverStats?.movies_monitored}}</code>
         </div>
         <div class="about-content">
-            <label>Series</label>
+            <span>Series</span>
             <code>{{serverStats?.series_count}}</code>
         </div>
         <div class="about-content">
-            <label>Series Monitored</label>
+            <span>Series Monitored</span>
             <code>{{serverStats?.series_monitored}}</code>
         </div>
         <div class="about-content">
-            <label>Trailers downloaded</label>
+            <span>Trailers downloaded</span>
             <code>{{serverStats?.trailers_downloaded}}</code>
         </div>
     </section>
@@ -61,17 +61,25 @@
         <h1>Getting Support</h1>
         <hr>
         <div class="about-content">
-            <label>Github</label>
-            <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
-        </div>
-        <div class="about-content">
-            <label>Documentation</label>
+            <span>Documentation</span>
             <a href="https://nandyalu.github.io/trailarr" target="_blank">https://nandyalu.github.io/trailarr</a>
         </div>
         <div class="about-content">
-            <label>Issues</label>
+            <span>Discord</span>
+            <a href="https://discord.gg/BAJsv76N" target="_blank">https://discord.gg/BAJsv76N</a>
+        </div>
+        <div class="about-content">
+            <span>Github</span>
+            <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
+        </div>
+        <div class="about-content">
+            <span>Issues</span>
             <a href="https://github.com/nandyalu/trailarr/issues"
                 target="_blank">https://github.com/nandyalu/trailarr/issues</a>
+        </div>
+        <div class="about-content">
+            <span>Reddit</span>
+            <a href="https://www.reddit.com/r/trailarr" target="_blank">https://www.reddit.com/r/trailarr</a>
         </div>
     </section>
 </div>

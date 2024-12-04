@@ -75,13 +75,3 @@
 .table-row:hover:not(:first-child) {
   background-color: var(--color-tertiary-container);
 }
-
-@keyframes spin-animation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}

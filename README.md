@@ -8,8 +8,8 @@
 
 [![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/) 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
-[![Angular](https://img.shields.io/badge/angular-17.3.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
+[![Angular](https://img.shields.io/badge/angular-19.0.1-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
 
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Container&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr) 
@@ -27,6 +27,8 @@ Docker Hub: [https://hub.docker.com/r/nandyalu/trailarr/](https://hub.docker.com
 Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr)
 
 Reddit: [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr)
+
+Discord: [https://discord.gg/BAJsv76N](https://discord.gg/BAJsv76N)
 
 ## Features
 
@@ -64,7 +66,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you need help, please craete an issue on the [GitHub repository](https://github.com/nandyalu/issues) or post a question on [Reddit](https://www.reddit.com/r/trailarr/).
+If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/help/faq/) first. If you still need help, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues) or post a question on [Reddit](https://www.reddit.com/r/trailarr/) or join our [Discord](https://discord.gg/BAJsv76N) (recommended).
 
 ## Issues
 

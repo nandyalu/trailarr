@@ -48,7 +48,8 @@
 				"KevinRose.vsc-python-indent",
 				"qwtel.sqlite-viewer",
 				"oderwat.indent-rainbow",
-				"redhat.vscode-yaml"
+				"redhat.vscode-yaml",
+				"GitHub.copilot-chat"
 			]
 		}
 	},

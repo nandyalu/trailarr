@@ -6,7 +6,7 @@ from core.tasks import schedules
 # from core.tasks.task_runner import TaskRunner
 
 
-tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
+tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 
 @tasks_router.get("/schedules")

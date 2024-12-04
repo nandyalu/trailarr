@@ -44,6 +44,7 @@ class _Config:
     _DEFAULT_LANGUAGE = "en"
     _DEFAULT_DB_URL = f"sqlite:///{APP_DATA_DIR}/trailarr.db"
     _DEFAULT_FILE_NAME = "{title} - Trailer-trailer.{ext}"
+    _DEFAULT_SEARCH_QUERY = "{title} {year} {is_movie} trailer"
     # Default WebUI password 'trailarr' hashed
     _DEFAULT_WEBUI_PASSWORD = (
         "$2b$12$CU7h.sOkBp5RFRJIYEwXU.1LCUTD2pWE4p5nsW3k1iC9oZEGVWeum"
@@ -93,6 +94,9 @@ class _Config:
         self.trailer_audio_format = os.getenv(
             "TRAILER_AUDIO_FORMAT", self._DEFAULT_AUDIO_FORMAT
         )
+        self.trailer_audio_volume_level = int(
+            os.getenv("TRAILER_AUDIO_VOLUME_LEVEL", 100)
+        )
         self.trailer_video_format = os.getenv(
             "TRAILER_VIDEO_FORMAT", self._DEFAULT_VIDEO_FORMAT
         )
@@ -124,20 +128,36 @@ class _Config:
         self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
         self.webui_password = os.getenv("WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD)
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
+        self.exclude_words = os.getenv("EXCLUDE_WORDS", "")
+        self.trailer_min_duration = int(os.getenv("TRAILER_MIN_DURATION", 30))
+        self.trailer_max_duration = int(os.getenv("TRAILER_MAX_DURATION", 600))
+        self.trailer_always_search = os.getenv(
+            "TRAILER_ALWAYS_SEARCH",
+            "False",
+        ).lower() in ["true", "1"]
+        self.trailer_search_query = os.getenv(
+            "TRAILER_SEARCH_QUERY", self._DEFAULT_SEARCH_QUERY
+        )
 
     def as_dict(self):
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
+            "exclude_words": self.exclude_words,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
             "timezone": self.timezone,
             "trailer_audio_format": self.trailer_audio_format,
+            "trailer_audio_volume_level": self.trailer_audio_volume_level,
             "trailer_embed_metadata": self.trailer_embed_metadata,
             "trailer_file_format": self.trailer_file_format,
             "trailer_folder_movie": self.trailer_folder_movie,
             "trailer_folder_series": self.trailer_folder_series,
+            "trailer_always_search": self.trailer_always_search,
+            "trailer_search_query": self.trailer_search_query,
+            "trailer_max_duration": self.trailer_max_duration,
+            "trailer_min_duration": self.trailer_min_duration,
             "trailer_remove_sponsorblocks": self.trailer_remove_sponsorblocks,
             "trailer_resolution": self.trailer_resolution,
             "trailer_subtitles_enabled": self.trailer_subtitles_enabled,
@@ -274,6 +294,33 @@ class _Config:
         self._save_to_env("WAIT_FOR_MEDIA", self._wait_for_media)
 
     @property
+    def trailer_always_search(self):
+        """Always search for trailers. \n
+        Default is False. \n
+        Valid values are True/False."""
+        return self._trailer_always_search
+
+    @trailer_always_search.setter
+    def trailer_always_search(self, value: bool):
+        self._trailer_always_search = value
+        self._save_to_env("TRAILER_ALWAYS_SEARCH", self._trailer_always_search)
+
+    @property
+    def trailer_search_query(self):
+        """Search query for trailers. \n
+        Default is '{title} {year} {is_movie} trailer'. \n
+        Valid values are any string with placeholders."""
+        return self._trailer_search_query
+
+    @trailer_search_query.setter
+    def trailer_search_query(self, value: str):
+        value = value.strip()
+        if value.count("{") != value.count("}"):
+            value = self._DEFAULT_SEARCH_QUERY
+        self._trailer_search_query = value
+        self._save_to_env("TRAILER_SEARCH_QUERY", self._trailer_search_query)
+
+    @property
     def trailer_file_name(self):
         """File name format for trailers. \n
         Default is '{title} - Trailer{i}-trailer.{ext}'. \n
@@ -315,6 +362,37 @@ class _Config:
     def trailer_folder_series(self, value: bool):
         self._trailer_folder_series = value
         self._save_to_env("TRAILER_FOLDER_SERIES", self._trailer_folder_series)
+
+    @property
+    def trailer_min_duration(self):
+        """Minimum duration for trailers. \n
+        Minimum is 30 seconds. \n
+        Default is 30 seconds. \n
+        Valid values are integers."""
+        return self._trailer_min_duration
+
+    @trailer_min_duration.setter
+    def trailer_min_duration(self, value: int):
+        value = max(30, value)  # Minimum duration is 30 seconds
+        self._trailer_min_duration = value
+        self._save_to_env("TRAILER_MIN_DURATION", self._trailer_min_duration)
+
+    @property
+    def trailer_max_duration(self):
+        """Maximum duration for trailers. \n
+        Minimum is greater than minimum duration by atleast a minute. \n
+        Maximum is 600 seconds. \n
+        Default is 600 seconds. \n
+        Valid values are integers."""
+        return self._trailer_max_duration
+
+    @trailer_max_duration.setter
+    def trailer_max_duration(self, value: int):
+        # At least minimum + 60 seconds
+        value = max(self.trailer_min_duration + 60, value)
+        value = min(600, value)  # Maximum duration is 600 seconds
+        self._trailer_max_duration = value
+        self._save_to_env("TRAILER_MAX_DURATION", self._trailer_max_duration)
 
     @property
     def trailer_subtitles_enabled(self):
@@ -369,6 +447,22 @@ class _Config:
         if self._trailer_audio_format.lower() not in self._VALID_AUDIO_FORMATS:
             self._trailer_audio_format = self._DEFAULT_AUDIO_FORMAT
         self._save_to_env("TRAILER_AUDIO_FORMAT", self._trailer_audio_format)
+
+    @property
+    def trailer_audio_volume_level(self):
+        """Audio volume level for trailers, between 1 and 200.\n
+        Default is 100 -> No change in audio level. \n
+        Valid values are integers beteen 1 and 200."""
+        return self._trailer_audio_volume_level
+
+    @trailer_audio_volume_level.setter
+    def trailer_audio_volume_level(self, value: int):
+        value = max(1, value)  # Minimum volume level is 1
+        value = min(200, value)  # Maximum volume level is 200
+        self._trailer_audio_volume_level = value
+        self._save_to_env(
+            "TRAILER_AUDIO_VOLUME_LEVEL", self._trailer_audio_volume_level
+        )
 
     @property
     def trailer_video_format(self):
@@ -475,6 +569,18 @@ class _Config:
     def yt_cookies_path(self, value: str):
         self._yt_cookies_path = value
         self._save_to_env("YT_COOKIES_PATH", self._yt_cookies_path)
+
+    @property
+    def exclude_words(self):
+        """Exclude words for trailers. \n
+        Default is empty string. \n
+        Valid values are any string."""
+        return self._exclude_words
+
+    @exclude_words.setter
+    def exclude_words(self, value: str):
+        self._exclude_words = value
+        self._save_to_env("EXCLUDE_WORDS", self._exclude_words)
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""

@@ -155,7 +155,8 @@ select {
 [type=submit],
 button,
 html [type=button] {
-    -webkit-appearance: button
+    -webkit-appearance: button;
+    appearance: button;
 }
 
 [type=button]::-moz-focus-inner,
@@ -208,6 +209,7 @@ textarea {
 
 [type=search] {
     -webkit-appearance: textfield;
+    appearance: textfield;
     outline-offset: -2px
 }
 
@@ -2058,7 +2060,7 @@ img {
 }
 
 .cf {
-    *zoom: 1
+    zoom: 1;
 }
 
 .cl {
@@ -3440,7 +3442,8 @@ code {
 
 .input-reset {
     -webkit-appearance: none;
-    -moz-appearance: none
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .button-reset::-moz-focus-inner,
@@ -9580,8 +9583,9 @@ body * {
 .swagger-ui .opblock .opblock-summary-description {
     color: var(--color-on-surface);
     font-family: sans-serif;
-    font-size: 13px;
-    word-break: break-word
+    /* font-size: 13px; */
+    word-break: break-word;
+    font-style: italic;
 }
 
 .swagger-ui .opblock .opblock-summary-path-description-wrapper {
@@ -9604,7 +9608,8 @@ body * {
     align-items: center;
     cursor: pointer;
     display: flex;
-    padding: 5px
+    padding: 5px;
+    gap: 10px;
 }
 
 .swagger-ui .opblock .opblock-summary .view-line-link {

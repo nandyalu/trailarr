@@ -11,7 +11,7 @@ assignees: ''
 - [ ] I already checked existing Issues to see if this is reported
 
 **Describe your question**
-A clear and concise description of what you need help with. Ex. I'm having difficulty in setting up volume mapping [...]
+<!-- A clear and concise description of what you need help with. Ex. I'm having difficulty in setting up volume mapping [...] -->
 
 **Additional context**
-Add any other context or screenshots about the request here.
+<!-- Add any other context or screenshots about the request here. -->

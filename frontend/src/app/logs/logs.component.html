@@ -1,5 +1,5 @@
 <div class="logs-container">
-    <h1 class="text-center">{{title}}</h1>
+    <h1 class="logs-title text-center">{{title}}</h1>
     <div *ngIf="isLoading; else logsLoaded" class="loading-wave center">
         <div class="loading-bar"></div>
         <div class="loading-bar"></div>
@@ -7,10 +7,73 @@
         <div class="loading-bar"></div>
     </div>
     <ng-template #logsLoaded>
+        <div class="logssearch">
+            <i class="icononly-button" [class.loading]="isUpdating" title="Refresh" (click)="getLogs()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="refresh-icon">
+                    <path
+                        d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z" />
+                </svg>
+            </i>
+            <form id="searchForm" class="logssearch-form">
+                <input type="text" autocomplete="off" [formControl]="searchForm" name="query"
+                placeholder="Filter logs..." aria-label="filter logs" />
+            </form>
+        </div>
         <div class="logs-table">
-            <div *ngFor="let log of all_logs" class="logs-row">
-                <p>{{ log }}</p>
+            <div *ngFor="let log of filtered_logs" class="logs-row">
+                <details>
+                    <summary>
+                        <p class="logs-text {{log.level.toLowerCase()}}" title="{{log.level.toLowerCase()}} log">
+                            <i class="logs-icon">
+                                <ng-container *ngIf="log.level == 'DEBUG' then debugLog"></ng-container>
+                                <ng-container *ngIf="log.level == 'INFO' then infoLog"></ng-container>
+                                <ng-container *ngIf="log.level == 'WARNING' then warningLog"></ng-container>
+                                <ng-container *ngIf="log.level == 'ERROR' then errorLog"></ng-container>
+                                <ng-container *ngIf="log.level == 'OTHER' then otherLog"></ng-container>
+                            </i>
+                            <strong>{{ log.module }}: </strong>{{ log.message }}
+                        </p>
+                        <small class="logs-dt">{{ log.datetime | timeago }}</small>
+                    </summary>
+                    <!-- <em class="logs-type">{{ log.level}} | {{ log.filename }}:{{ log.lineno }} </em> -->
+                    <p class="logs-raw">{{ log.raw_log }}</p>
+                </details>
             </div>
         </div>
     </ng-template>
 </div>
+
+<ng-template #debugLog>
+    <!-- Google Fonts Icon: code no-fill -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="M320-242 80-482l242-242 43 43-199 199 197 197-43 43Zm318 2-43-43 199-199-197-197 43-43 240 240-242 242Z" />
+    </svg>
+</ng-template>
+<ng-template #infoLog>
+    <!-- Google Fonts Icon: info no-fill -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+        d="M453-280h60v-240h-60v240Zm26.98-314q14.02 0 23.52-9.2T513-626q0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2Zm.29 514q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z" />
+    </svg>
+</ng-template>
+<ng-template #warningLog>
+    <!-- Google Fonts Icon: warning no-fill -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+        d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm340.18-57q12.82 0 21.32-8.68 8.5-8.67 8.5-21.5 0-12.82-8.68-21.32-8.67-8.5-21.5-8.5-12.82 0-21.32 8.68-8.5 8.67-8.5 21.5 0 12.82 8.68 21.32 8.67 8.5 21.5 8.5ZM454-348h60v-224h-60v224Zm26-122Z" />
+    </svg>
+</ng-template>
+<ng-template #errorLog>
+    <!-- Google Fonts Icon: priority high no-fill -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+            d="M479.91-120q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5ZM410-360v-480h140v480H410Z" />
+    </svg>
+</ng-template>
+<ng-template #otherLog>
+    <!-- Google Fonts Icon: help center no-fill -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+            d="M477.03-246Q493-246 504-257.03q11-11.03 11-27T503.97-311q-11.03-11-27-11T450-310.97q-11 11.03-11 27T450.03-257q11.03 11 27 11ZM444-394h57q0-31 10-50.5t34.72-44.22Q579-522 592-547.5t13-53.5q0-53-34-84t-91.52-31q-51.87 0-88.17 24.5Q355-667 338-624l53 22q14-28 36.2-42.5Q449.4-659 479-659q32 0 50.5 16t18.5 44.1q0 19.9-11 38.4T500-517q-37 35-46.5 60t-9.5 63ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z" />
+    </svg>
+</ng-template>

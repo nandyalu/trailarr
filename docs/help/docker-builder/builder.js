@@ -245,7 +245,7 @@ function convertConnectionValues(connectionValues) {
     // Set finalHostPath in connectionValues
     connection.HostPathFinal = hostPath;
 
-    // Get it to a unique path
+    // Get a unique path
     dockerPath = getUniqueDockerPath(connId, isRadarr);
 
     // Remove trailing slashes from dockerPath

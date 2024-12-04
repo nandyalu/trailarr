@@ -11,7 +11,7 @@ from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.models.helpers import MediaTrailer
+from core.base.database.models.helpers import MediaTrailer, language_names
 from core.download import video_analysis
 from core.download.video import download_video
 
@@ -45,29 +45,46 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
         logger.debug(f"Skipping video in excluded list: {id}")
         return "Video in excluded list"
     duration = int(info.get("duration", 0))
-    if duration and duration > 600:
-        logger.debug(f"Skipping long video (>10m): {id}")
-        return "The video is longer than 10 minutes"
+    min_duration = app_settings.trailer_min_duration
+    if duration and duration < min_duration:
+        logger.debug(f"Skipping short video (<{min_duration}): {id}")
+        return f"The video is shorter than {min_duration} seconds"
+    max_duration = app_settings.trailer_max_duration
+    if duration and duration > max_duration:
+        logger.debug(f"Skipping long video (>{max_duration}): {id}")
+        return f"The video is longer than {max_duration} seconds"
     title = str(info.get("title", ""))
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
+    exclude_words = app_settings.exclude_words
+    if exclude_words:
+        if "," in exclude_words:
+            exclude_words = exclude_words.split(",")
+            for word in exclude_words:
+                word = word.strip()
+                if word in title.lower():
+                    logger.debug(f"Skipping video with excluded word '{word}': {id}")
+                    return "The video contains an excluded word"
+        else:
+            if exclude_words in title.lower():
+                logger.debug(
+                    f"Skipping video with excluded word '{exclude_words}': {id}"
+                )
+                return "The video contains an excluded word"
 
 
 def _search_yt_for_trailer(
-    movie_title: str,
-    is_movie=True,
-    movie_year: int | None = None,
+    media: MediaTrailer,
     exclude: list[str] | None = None,
 ):
     """Search for trailer on youtube. \n
     Args:
-        movie_title (str): Title of the movie or show.
-        is_movie (bool): Whether the media type is movie or show.
-        movie_year (str): Year of the movie or show. \n
+        media (MediaTrailer): Media object.
+        exclude (list[str], Optional): List of video ids to exclude. \n
     Returns:
         str | None: Youtube video id / None if not found."""
-    logger.debug(f"Searching youtube for trailer for '{movie_title}'...")
+    logger.debug(f"Searching youtube for trailer for '{media.title}'...")
     # Set options
     filter_func = partial(_yt_search_filter, exclude=exclude)
     options = {
@@ -84,11 +101,28 @@ def _search_yt_for_trailer(
         "quiet": True,
     }
     # Construct search query with keywords for 5 search results
-    search_query = f"ytsearch5: {movie_title}"
-    if movie_year:
-        search_query += f" ({movie_year})"
-    search_query += " movie" if is_movie else " series"
-    search_query += " trailer"
+    search_query_format = app_settings.trailer_search_query
+    format_opts = media.to_dict()  # Convert media object to dictionary for formatting
+    format_opts["is_movie"] = "movie" if media.is_movie else "series"
+    # Remove year from search query if 0
+    if media.year == 0:
+        format_opts["year"] = ""
+    # Replace language code with language name
+    format_opts["language"] = language_names.get(media.language, media.language)
+    # Get search query by replacing supplied options
+    search_query = search_query_format.format(**format_opts)
+    # Remove extra spaces and trailing spaces
+    search_query = search_query.replace("  ", " ").strip()
+    # Add ytsearch5: prefix to search query
+    search_query = f"ytsearch5: {search_query}"
+    # Append "trailer" to search query if not already present
+    if "trailers" not in search_query:
+        search_query += " trailer"
+    # search_query = f"ytsearch5: {media.title}"
+    # if media.year:
+    #     search_query += f" ({media.year})"
+    # search_query += " movie" if media.is_movie else " series"
+    # search_query += " trailer"
 
     # Search for video
     with YoutubeDL(options) as ydl:
@@ -109,7 +143,7 @@ def _search_yt_for_trailer(
         if result["id"] in exclude:
             logger.debug(f"Skipping excluded video: {result['id']}")
             continue
-        logger.debug(f"Found trailer for {movie_title}: {result['id']}")
+        logger.debug(f"Found trailer for {media.title}: {result['id']}")
         return str(result["id"])
 
 
@@ -137,13 +171,13 @@ def download_trailer(
         video_id = media.yt_id
     else:
         # Search for trailer on youtube
-        video_id = _search_yt_for_trailer(media.title, is_movie, media.year, exclude)
+        video_id = _search_yt_for_trailer(media, exclude)
     if not video_id:
         trailer_downloaded = False
     else:
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
-        logger.debug(f"Downloading trailer for {media.title} from {trailer_url}")
+        logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
         tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
         output_file = download_video(trailer_url, tmp_output_file)
         tmp_output_file = tmp_output_file.replace(
@@ -168,7 +202,7 @@ def download_trailer(
     # Retry downloading the trailer if failed
     if not trailer_downloaded:
         if retry_count > 0:
-            logger.debug(
+            logger.info(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
                 f"trying again... [{3 - retry_count}/3]"
             )
@@ -180,7 +214,7 @@ def download_trailer(
             )
 
         return False
-    logger.debug(f"Trailer downloaded for {media.title}, Moving to folder...")
+    logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
     media.yt_id = video_id
     # Move the trailer to the specified folder
     if trailer_folder:
@@ -190,8 +224,17 @@ def download_trailer(
     try:
         # if not os.path.exists(trailer_path):
         #     os.makedirs(trailer_path)
-        return move_trailer_to_folder(output_file, trailer_path, media)
+        move_res = move_trailer_to_folder(output_file, trailer_path, media)
+        e = "Move File Failed!"
     except Exception as e:
+        move_res = False
+        e = str(e)
+    if move_res:
+        logger.info(
+            f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
+        )
+        return True
+    else:
         logger.error(f"Failed to move trailer to folder: {e}")
         return False
 
@@ -338,14 +381,33 @@ def download_trailers(
     for media in media_list:
         sem.acquire()
         logger.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
-        if download_trailer(media, trailer_folder, is_movie):
-            media.downloaded_at = datetime.now(timezone.utc)
-            download_list.append(media)
-            logger.info(
-                f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+        try:
+            if download_trailer(media, trailer_folder, is_movie):
+                media.downloaded_at = datetime.now(timezone.utc)
+                download_list.append(media)
+                logger.info(
+                    f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+                )
+            else:
+                logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
+        except Exception as e:
+            logger.error(
+                f"Failed to download trailer for '[{media.id}]{media.title}': {e}"
             )
-        else:
-            logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
         sem.release()
     logger.info(f"Downloaded trailers for {len(download_list)} {media_type}")
     return download_list
+
+
+# Uncomment below for testing, change logging level to DEBUG for additional logs
+# if __name__ == "__main__":
+#     mediaT = MediaTrailer(
+#         id=1,
+#         title="The Matrix",
+#         year=1999,
+#         yt_id="pLWda_RrQn4",
+#         folder_path="/tmp/The Matrix (1999)",
+#     )
+#     res = download_trailer(mediaT, False, True)
+#     if res:
+#         print(res)

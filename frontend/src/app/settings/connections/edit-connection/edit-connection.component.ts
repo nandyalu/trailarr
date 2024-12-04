@@ -6,11 +6,10 @@ import { Connection, ConnectionUpdate, PathMapping } from '../../../models/conne
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
-  selector: 'app-edit-connection',
-  standalone: true,
-  imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
-  templateUrl: './edit-connection.component.html',
-  styleUrl: './edit-connection.component.css'
+    selector: 'app-edit-connection',
+    imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
+    templateUrl: './edit-connection.component.html',
+    styleUrl: './edit-connection.component.css'
 })
 export class EditConnectionComponent {
   constructor(

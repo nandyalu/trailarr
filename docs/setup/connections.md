@@ -34,17 +34,19 @@
 
 9. If you have a setup that requires `Path Mappings` to be set as described in [Volume Mapping](../install/volume-mapping.md), you can add them here. See [Path Mapping](#path-mapping) below for more information.
 
+    If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/help/docker-builder/builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
+
     !!! tip
         _You can set different path mappings for each Radarr/Sonarr instance._
 
     !!! warning
         _Path mappings are optional and only required if you have a setup that requires them._
 
-9. Click the `Save` button to save the connection.
+10. Click the `Save` button to save the connection.
 
-10. Repeat the steps for each Radarr and Sonarr instance you want to monitor.
+11. Repeat the steps for each Radarr and Sonarr instance you want to monitor.
 
-11. That's it! The application will now start downloading trailers for your media library. See [settings](settings.md) for more information on how to adjust settings.
+12. That's it! The application will now start downloading trailers for your media library. See [settings](settings.md) for more information on how to adjust settings.
 
 ## Monitor Types
 

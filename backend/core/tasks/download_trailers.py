@@ -47,9 +47,14 @@ def _download_missing_media_trailers(is_movie: bool):
                     f"Skipping {db_media.title} (id:{db_media.id}), media file(s) not found"
                 )
                 continue
+        # If always search is enabled, set trailer id to None
+        if app_settings.trailer_always_search:
+            db_media.youtube_trailer_id = None
         media_trailer = MediaTrailer(
             id=db_media.id,
             title=db_media.title,
+            is_movie=db_media.is_movie,
+            language=db_media.language,
             year=db_media.year,
             folder_path=db_media.folder_path,
             yt_id=db_media.youtube_trailer_id,
@@ -135,31 +140,39 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
     db_manager.update_media_status_bulk(media_update_list)
 
 
-def download_trailer_by_id(media_id: int, is_movie: bool, yt_id: str = "") -> str:
+def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
     """Download trailer for a movie or series by ID."""
-    logger.info(
-        f"Downloading trailer for {'movie' if is_movie else 'series'} ID: {media_id}"
-    )
     db_manager = MediaDatabaseManager()
     try:
         media = db_manager.read(media_id)
+        logger.info(
+            f"Downloading trailer for {'movie' if media.is_movie else 'series'} ID: {media_id}"
+        )
     except Exception as e:
-        msg = f"Failed to get {'movie' if is_movie else 'series'} with ID: {media_id}"
+        msg = f"Failed to get media with ID: {media_id}"
         logger.error(msg)
         logger.exception(e)
         return msg
+    is_movie = media.is_movie
     if not media.folder_path:
         msg = f"{'Movie' if is_movie else 'Series'} '{media.title}' has no folder path"
         logger.error(msg)
         return msg
+    _yt_id = None
+    # If always search is enabled, do not use the id from the database
+    if not app_settings.trailer_always_search:
+        _yt_id = media.youtube_trailer_id
+    # If yt_id is provided, always use it
     if yt_id:
-        media.youtube_trailer_id = yt_id
+        _yt_id = yt_id
     media_trailer = MediaTrailer(
         id=media.id,
         title=media.title,
+        is_movie=media.is_movie,
+        language=media.language,
         year=media.year,
         folder_path=media.folder_path,
-        yt_id=media.youtube_trailer_id,
+        yt_id=_yt_id,
     )
 
     # Add Job to scheduler to download trailer

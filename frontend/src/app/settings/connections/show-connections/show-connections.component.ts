@@ -5,11 +5,10 @@ import { Connection } from '../../../models/connection';
 import { SettingsService } from '../../../services/settings.service';
 
 @Component({
-  selector: 'app-show-connections',
-  standalone: true,
-  imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
-  templateUrl: './show-connections.component.html',
-  styleUrl: './show-connections.component.css'
+    selector: 'app-show-connections',
+    imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
+    templateUrl: './show-connections.component.html',
+    styleUrl: './show-connections.component.css'
 })
 export class ShowConnectionsComponent {
   connectionList: Connection[] = [];

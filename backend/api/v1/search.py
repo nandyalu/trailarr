@@ -4,7 +4,7 @@ from api.v1.models import SearchMedia
 from core.base.database.manager.base import MediaDatabaseManager
 
 
-search_router = APIRouter(prefix="/search", tags=["Search"])
+search_router = APIRouter(prefix="/search", tags=["Search"], deprecated=True)
 
 
 @search_router.get("/{query}")

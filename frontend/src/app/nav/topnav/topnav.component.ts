@@ -4,14 +4,13 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SearchMedia } from '../../models/media';
-import { SearchService } from '../../services/search.service';
+import { MediaService } from '../../services/media.service';
 
 @Component({
-  selector: 'app-topnav',
-  standalone: true,
-  imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
-  templateUrl: './topnav.component.html',
-  styleUrl: './topnav.component.css'
+    selector: 'app-topnav',
+    imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
+    templateUrl: './topnav.component.html',
+    styleUrl: './topnav.component.css'
 })
 export class TopnavComponent {
   isDarkModeEnabled = true;
@@ -22,7 +21,7 @@ export class TopnavComponent {
   selectedId = -1;
   constructor(
     private renderer: Renderer2,
-    private searchService: SearchService,
+    private mediaService: MediaService,
     private elementRef: ElementRef,
     private router: Router,
   ) {
@@ -105,8 +104,8 @@ export class TopnavComponent {
         this.selectedId = this.searchResults[this.selectedIndex].id;
         return;
       } else if (event.key === 'Enter') {
-        const selectedResult = this.searchResults[this.selectedIndex];
-        this.router.navigate([selectedResult.is_movie ? 'movies' : 'series', this.selectedId]);
+        // const selectedResult = this.searchResults[this.selectedIndex];
+        this.router.navigate(['media', this.selectedId]);
         this.searchResults = [];
         return;
       }
@@ -158,7 +157,16 @@ export class TopnavComponent {
     return;
   }
 
-
+  noSearchResult: SearchMedia = {
+    id: -1,
+    title: 'No results found',
+    imdb_id: '',
+    txdb_id: '',
+    poster_path: '',
+    year: 0,
+    youtube_trailer_id: '',
+    is_movie: true,
+  }
   onSearch(query: string = '') {
     if (query.length < 3) {
       this.searchResults = [];
@@ -169,8 +177,12 @@ export class TopnavComponent {
     }
     this.searchQuery = query;
     // console.log('Search query: %s', this.searchQuery);
-    this.searchService.searchMedia(this.searchQuery).subscribe((media_list: SearchMedia[]) => {
+    this.mediaService.searchMedia(this.searchQuery).subscribe((media_list: SearchMedia[]) => {
       // console.log('Search results: %o', media_list);
+      if (media_list.length === 0) {
+        this.searchResults = [this.noSearchResult];
+        return;
+      }
       this.searchResults = media_list;
     });
   }

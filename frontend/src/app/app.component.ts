@@ -1,5 +1,4 @@
-import { NgClass, NgFor, NgIf } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { NgClass, NgFor } from '@angular/common';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -8,11 +7,10 @@ import { TopnavComponent } from './nav/topnav/topnav.component';
 import { MessageData, WebsocketService } from './services/websocket.service';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, TopnavComponent, SidenavComponent, HttpClientModule, NgIf, NgFor, NgClass],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+    selector: 'app-root',
+    imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css'
 })
 export class AppComponent {
   messages: MessageData[] = [];

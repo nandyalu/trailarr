@@ -3,14 +3,14 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 RUN apt-get update && apt-get install -y curl xz-utils tzdata git
 
 # Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&\
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - &&\
     apt-get install -y nodejs
 
 # Install specific version of npm
-RUN npm install -g npm@10.8.3
+RUN npm install -g npm@10.9.1
 
 # Install specific version of Angular CLI
-RUN npm install -g @angular/cli@17.3.6
+RUN npm install -g @angular/cli@19.0.1
 
 # Install Python Packages
 COPY dev-requirements.txt .

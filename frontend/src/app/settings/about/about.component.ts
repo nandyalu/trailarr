@@ -6,11 +6,10 @@ import { ServerStats, Settings } from '../../models/settings';
 import { SettingsService } from '../../services/settings.service';
 
 @Component({
-  selector: 'app-about',
-  standalone: true,
-  imports: [TimeagoModule, NgIf, FormsModule],
-  templateUrl: './about.component.html',
-  styleUrl: './about.component.css'
+    selector: 'app-about',
+    imports: [TimeagoModule, NgIf, FormsModule],
+    templateUrl: './about.component.html',
+    styleUrl: './about.component.css'
 })
 export class AboutComponent {
   settings?: Settings;

@@ -11,9 +11,13 @@
     </form>
     <div class="navsearch-results" [class.active]="searchResults.length > 0">
       <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
-      <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId" [routerLink]="[result.is_movie ? '/movies' : '/series', result.id]" (click)="searchResults = []">
-        <img src="{{result.poster_path || 'assets/poster-lg.png'}}" alt="{{result.title}}" class="search-poster">
-        <span class="search-title">{{ result.title + " (" + result.year + ")"}}</span> 
+
+      <div *ngFor="let result of searchResults" class="title" [class.selected]="result.id === selectedId"
+        [routerLink]="result.id === -1 ? null : ['/media/', result.id]"
+        (click)="searchResults = []">
+        <img *ngIf="result.id > 0" src="{{result.poster_path || 'assets/poster-lg.png'}}" alt="{{result.title}}" class="search-poster">
+        <span *ngIf="result.id > 0" class="search-title">{{ result.title + " (" + result.year + ")"}}</span> 
+        <span *ngIf="result.id < 0" class="search-title">{{ result.title }}</span>
       </div>
     </div>
   </div>

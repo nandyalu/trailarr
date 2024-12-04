@@ -66,6 +66,8 @@ extra:
       link: https://hub.docker.com/r/nandyalu/trailarr
     - icon: fontawesome/brands/reddit-alien
       link: https://www.reddit.com/r/trailarr
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/BAJsv76N
 nav:
   - Trailarr: index.md
   - Install:
