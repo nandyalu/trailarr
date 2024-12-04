@@ -203,24 +203,6 @@
         </div>
         <div class="trailer-content">
             <div class="content-label">
-                <label for="trailer_audio_volume_level">Trailer Audio Volume Level</label>
-                <small>Volume level of the trailer audio. Value less than 100 will reduce loudness, and viceversa!</small>
-                <small>Default is 100. Minuimum is 1. Maximum is 200.</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_audio_volume_level" class="input-range" type="range" min="1" max="200" [(ngModel)]="audioVolumeLevel" autocomplete="off" tabindex="12">
-                <span class="input-range-value">{{audioVolumeLevel}}</span>
-                <button *ngIf="settings?.trailer_audio_volume_level != audioVolumeLevel" class="primary icononly-button"
-                    id="update_trailer_audio_volume_level" tabindex="12"
-                    (click)="updateSetting('trailer_audio_volume_level', audioVolumeLevel)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
                 <span for="trailer_subtitles_enabled">Trailer Subtitles Enabled</span>
                 <small>Download subtitles and added them to trailer file, if available.</small>
             </div>
@@ -328,11 +310,30 @@
                 <!-- <small>Set this to Debug if you're having issues!!!</small> -->
             </div>
             <div id="log_level" class="options-bar">
-                <div *ngFor="let option of loggingOptions" class="option" tabindex="1"
+                <div *ngFor="let option of loggingOptions" class="option" tabindex="19"
                     [class.selected]="option.toLowerCase() == settings?.log_level?.toLowerCase()" (click)="updateSetting('log_level', option)"
                     (keydown.enter)="updateSetting('log_level', option)" (keydown.space)="updateSetting('log_level', option)">
                     {{option}}
                 </div>
+            </div>
+        </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="trailer_audio_volume_level">Trailer Audio Volume Level</label>
+                <small>Volume level of the trailer audio. Value less than 100 will reduce loudness, and viceversa!</small>
+                <small>Default is 100. Minuimum is 1. Maximum is 200.</small>
+            </div>
+            <div class="text-input">
+                <input id="trailer_audio_volume_level" class="input-range" type="range" min="1" max="200"
+                    [(ngModel)]="audioVolumeLevel" autocomplete="off" tabindex="20">
+                <span class="input-range-value">{{audioVolumeLevel}}</span>
+                <button *ngIf="settings?.trailer_audio_volume_level != audioVolumeLevel" class="primary icononly-button"
+                    id="update_trailer_audio_volume_level" tabindex="20"
+                    (click)="updateSetting('trailer_audio_volume_level', audioVolumeLevel)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
             </div>
         </div>
         <div class="trailer-content">
@@ -343,9 +344,9 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="exclude_words" type="text" [(ngModel)]="excludeWords"
-                    placeholder="comment,teaser" autocomplete="off" tabindex="19">
+                    placeholder="comment,teaser" autocomplete="off" tabindex="21">
                 <button *ngIf="excludeWords != settings?.exclude_words" class="primary icononly-button"
-                    id="update_exclude_words" tabindex="20" (click)="updateSetting('exclude_words', trailerFileName)">
+                    id="update_exclude_words" tabindex="21" (click)="updateSetting('exclude_words', trailerFileName)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                     </svg>
@@ -359,9 +360,9 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="trailer_file_name" type="text" [(ngModel)]="trailerFileName"
-                    placeholder="Trailer File Name Format" autocomplete="off" tabindex="19">
+                    placeholder="Trailer File Name Format" autocomplete="off" tabindex="22">
                 <button *ngIf="trailerFileName != settings?.trailer_file_name" class="primary icononly-button"
-                    id="update_trailer_file_name" tabindex="19" (click)="updateSetting('trailer_file_name', trailerFileName)">
+                    id="update_trailer_file_name" tabindex="22" (click)="updateSetting('trailer_file_name', trailerFileName)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                     </svg>
@@ -374,7 +375,7 @@
                 <small>Enable this setting to always search YouTube for trailers.</small>
             </div>
             <div class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="20"
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="23"
                     [class.selected]="option === settings?.trailer_always_search"
                     (click)="updateSetting('trailer_always_search', option)"
                     (keydown.enter)="updateSetting('trailer_always_search', option)"
@@ -390,9 +391,9 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="trailer_search_query" type="text" [(ngModel)]="trailerSearchQuery"
-                    placeholder="Trailer Search Query" autocomplete="off" tabindex="21">
+                    placeholder="Trailer Search Query" autocomplete="off" tabindex="24">
                 <button *ngIf="trailerSearchQuery != settings?.trailer_search_query" class="primary icononly-button"
-                    id="update_trailer_search_query" tabindex="21"
+                    id="update_trailer_search_query" tabindex="24"
                     (click)="updateSetting('trailer_search_query', trailerSearchQuery)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
@@ -407,9 +408,9 @@
             </div>
             <div class="text-input">
                 <input class="input-path" id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath"
-                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="22">
+                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="25">
                 <button *ngIf="ytCookiesPath != settings?.yt_cookies_path" class="primary icononly-button"
-                    id="update_yt_cookies_path" tabindex="22"
+                    id="update_yt_cookies_path" tabindex="25"
                     (click)="updateSetting('yt_cookies_path', ytCookiesPath)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                         <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
