@@ -1,18 +1,18 @@
 # DevContainer requirements
 # Docs
-mkdocs-material==9.5.32
+mkdocs-material==9.5.47
 
 # Backend
-aiohttp==3.10.11
+aiohttp==3.11.9
 aiofiles==24.1.0
-alembic==1.13.2
-apscheduler==3.10.4
+alembic==1.14.0
+apscheduler==3.11.0
 async-lru==2.0.4
-fastapi[standard]==0.115.0
-bcrypt==4.2.0
-pillow==10.4.0
+fastapi[standard]==0.115.6
+bcrypt==4.2.1
+pillow==11.0.0
 sqlmodel==0.0.22
-yt-dlp==2024.8.6
+yt-dlp[default]==2024.12.03
 
 # Testing
 aioresponses==0.7.6

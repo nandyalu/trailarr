@@ -7,7 +7,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - &&\
     apt-get install -y nodejs
 
 # Install specific version of npm
-RUN npm install -g npm@10.9.0
+RUN npm install -g npm@10.9.1
 
 # Install specific version of Angular CLI
 RUN npm install -g @angular/cli@19.0.1
