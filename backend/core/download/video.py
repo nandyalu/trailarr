@@ -109,7 +109,7 @@ def _get_ytdl_options() -> dict[str, Any]:
         "fragment_retries": 10,
         # Fix issue with youtube-dl not being able to download some videos
         # See https://github.com/yt-dlp/yt-dlp/issues/9554
-        "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
+        # "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
         "progress_hooks": [_progress_hook],
         "postprocessor_hooks": [_postprocessor_hook],
         "restrictfilenames": True,
