@@ -224,4 +224,5 @@ These are experimental options, might not work as expected! You can enable them 
 - Default is 'False'
 
 Enable this option to let Trailarr analyse the video file and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
+
 Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.
