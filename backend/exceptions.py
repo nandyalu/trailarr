@@ -1,18 +1,20 @@
 class ConnectionTimeoutError(Exception):
     """Raised when a connection times out"""
+    pass
 
+
+class DownloadFailedError(Exception):
+    """Raised when a download fails"""
     pass
 
 
 class InvalidResponseError(Exception):
     """Raised when a connection returns an invalid response"""
-
     pass
 
 
 class ItemExistsError(Exception):
     """Raised when an Item already exists in the database"""
-
     pass
 
 

@@ -48,6 +48,19 @@ export class LogsComponent {
     });
   }
 
+  // downloadLogs(): void {
+  //   // this.isUpdating = true;
+  //   this.logsService.downloadLogs().subscribe((data: Blob) => {
+  //     const url = window.URL.createObjectURL(data);
+  //     const a = document.createElement('a');
+  //     a.href = url;
+  //     a.click();
+  //     window.URL.revokeObjectURL(url);
+  //     // this.isUpdating = false;
+  //     // return data;
+  //   });
+  // }
+
   onSearch(query: string = '') {
     if (query.length < 3) {
       this.filtered_logs = this.all_logs;

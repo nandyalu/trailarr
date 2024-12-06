@@ -1,3 +1,22 @@
+## **v0.2.4-beta** - _December 06, 2024_
+**What's New:** ✨
+
+- Added an experimental setting for `Trailer Silence Removal` that will detect and remove silence at end of video. Related to [#75](https://github.com/nandyalu/trailarr/issues/75)
+- Added a button to download logs in Frontend `Logs` page, and logs now displays 1000 logs instead of 100.
+
+**Bug Fixes:** 🐛
+
+- Excluded words setting not updating. Fixes [#76](https://github.com/nandyalu/trailarr/issues/76)
+- Remove `player_client` option in `yt-dlp` command as that can interfere with cookies when supplied.
+- Fixed a bug with trailer download that is causing an exception when moving trailer to media folder. [Issue posted on Reddit](https://www.reddit.com/r/trailarr/comments/1h6rm6s/v0233beta_error/)
+- Refactored trailer download method to simplify and reduce errors. Also, when a trailer download fails, the notification will now say Error instead of 'Task Finished'. Fixes [#56](https://github.com/nandyalu/trailarr/issues/56)
+
+**Other Changes:** ⚡
+
+- Completely refactored trailer download to handle Exceptions and logs better.
+- Added a section for `YouTube Cookies` in Docs with a recommended way to get `cookies.txt` file.
+
+
 ## **v0.2.3-beta** - _December 04, 2024_
 **What's New:** ✨
 

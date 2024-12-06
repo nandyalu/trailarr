@@ -10,6 +10,8 @@ on:
       - '**/.github/**'
       - '**/.devcontainer/**'
       - '**/*.md'
+      - '**/docs/**'
+      - '**/frontend/**'
   pull_request:
     branches: [ "main" ]
     paths-ignore:
@@ -18,6 +20,8 @@ on:
       - '**/.github/**'
       - '**/.devcontainer/**'
       - '**/*.md'
+      - '**/docs/**'
+      - '**/frontend/**'
 
 jobs:
 

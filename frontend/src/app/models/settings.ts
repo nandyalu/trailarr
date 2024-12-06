@@ -29,6 +29,7 @@ export interface Settings {
     update_available: boolean
     wait_for_media: boolean
     yt_cookies_path: string
+    trailer_remove_silence: boolean
 }
 
 export interface ServerStats {

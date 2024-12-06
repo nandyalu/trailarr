@@ -143,6 +143,8 @@ Enable this setting to optimize trailers for web streaming. This will allow trai
 
 ## Advanced Settings
 
+These are advanced settings, if you don't know what they do, do not modify them!
+
 ### Log Level
 
 - Default is `Info`
@@ -207,17 +209,20 @@ Available options are:
 
 If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can set the path to a file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
 
-The best way to get the cookies file is:
-
-1. Login to YouTube in chrome browser.
-2. Install a cookies exporter extension like [Get Cookies.txt locally](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc?hl=en)
-3. Make sure `Export Format` is set to `Netscape`
-4. Export the cookies to a file say `cookies.txt`.
-5. Save/Copy that cookies file to Trailarr App data folder. For example, if you mapped `/var/appdata/trailarr` to `/config` in the container, save the cookies file in `/var/appdata/trailarr` folder.
-6. Now open Trailarr in browser and navigate to `Settings > Trailer`. Under `Advanced` settings, set `Yt-dlp Cookies Path` to `/config/cookies.txt` (if you saved the file in `/var/appdata/trailarr` folder).
-7. Any new trailers downloaded will use the cookies to bypass restrictions.
-
-See yt-dlp [documentation](https://github.com/yt-dlp/yt-dlp){:target="_blank"} for more information on how to get the cookies file.
+See [Export YouTube Cookies.txt file](../help/common.md#export-youtube-cookiestxt-file) for more info.
 
 !!! warning
     Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the file in this setting.
+
+
+## Experimental Settings
+
+These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
+
+### Trailer Remove Silence
+
+- Default is 'False'
+
+Enable this option to let Trailarr analyse the video file and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
+
+Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.

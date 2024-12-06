@@ -1,24 +1,22 @@
 # Extract youtube video id from url
 from datetime import datetime, timezone
 from functools import partial
-import os
 import re
-import shutil
 from threading import Semaphore
-import unicodedata
 
 from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.helpers import MediaTrailer, language_names
-from core.download import video_analysis
 from core.download.video import download_video
+from core.download import trailer_file, video_analysis
+from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailersDownloader")
 
 
-def _get_youtube_id(url: str) -> str | None:
+def _extract_youtube_id(url: str) -> str | None:
     """Extract youtube video id from url. \n
     Args:
         url (str): URL of the youtube video. \n
@@ -77,7 +75,7 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
 def _search_yt_for_trailer(
     media: MediaTrailer,
     exclude: list[str] | None = None,
-):
+) -> str | None:
     """Search for trailer on youtube. \n
     Args:
         media (MediaTrailer): Media object.
@@ -147,31 +145,51 @@ def _search_yt_for_trailer(
         return str(result["id"])
 
 
+def _get_yt_id(media: MediaTrailer, exclude: list[str] | None = None) -> str | None:
+    """Get youtube video id for the media object. \n
+    Search for trailer on youtube if not found. \n
+    Args:
+        media (MediaTrailer): Media object.
+        exclude (list[str], Optional=None): List of video ids to exclude. \n
+    Returns:
+        str | None: Youtube video id / None if not found."""
+    video_id = ""
+    if media.yt_id:
+        if "youtu" in media.yt_id:
+            video_id = _extract_youtube_id(media.yt_id)
+        else:
+            video_id = media.yt_id
+    if video_id:
+        return video_id
+    # Search for trailer on youtube
+    video_id = _search_yt_for_trailer(media, exclude)
+    return video_id
+
+
 def download_trailer(
     media: MediaTrailer,
-    trailer_folder: bool,
-    is_movie: bool,
+    trailer_folder: bool | None = None,
+    # is_movie: bool,
     retry_count: int = 2,
     exclude: list[str] | None = None,
 ) -> bool:
     """Download trailer for a media object. \n
     Args:
         media (MediaTrailer): Media object.
-        trailer_folder (bool): Whether to move the trailer to a separate folder.
-        is_movie (bool): Whether the media type is movie or show. \n
+        trailer_folder (bool, Optional): Whether to move the trailer to a separate folder.
+        retry_count (int, Optional=2): Number of retries to download the trailer.
+        exclude (list[str], Optional=None): List of video ids to exclude. \n
+    Raises:
+        DownloadFailedError: If trailer download fails. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
+    output_file = ""
     trailer_downloaded = False
     trailer_url = ""
     if not exclude:
         exclude = []
-    if media.yt_id:
-        if media.yt_id.startswith("http"):
-            media.yt_id = _get_youtube_id(media.yt_id)
-        video_id = media.yt_id
-    else:
-        # Search for trailer on youtube
-        video_id = _search_yt_for_trailer(media, exclude)
+    # Get youtube video id for the media object, search youtube if not found
+    video_id = _get_yt_id(media, exclude)
     if not video_id:
         trailer_downloaded = False
     else:
@@ -183,21 +201,13 @@ def download_trailer(
         tmp_output_file = tmp_output_file.replace(
             "%(ext)s", app_settings.trailer_file_format
         )
-        # Check if the trailer is downloaded successfully
-        if not output_file or not os.path.exists(tmp_output_file):
-            trailer_downloaded = False
-        else:
-            # Verify the trailer has audio and video streams
-            trailer_downloaded = video_analysis.verify_trailer_streams(output_file)
-            if not trailer_downloaded:
-                logger.debug(
-                    f"Trailer has either no audio or video streams: {media.title}"
-                )
-                logger.debug(f"Deleting failed trailer file: {output_file}")
-                try:
-                    os.remove(output_file)
-                except Exception as e:
-                    logger.error(f"Failed to delete trailer file: {e}")
+        # Check if the trailer is downloaded successfully and verify audio/video streams
+        trailer_downloaded = trailer_file.verify_download(
+            tmp_output_file, output_file, media.title
+        )
+        # Remove silence at end of video if enabled
+        if app_settings.trailer_remove_silence:
+            output_file = video_analysis.remove_silence_at_end(output_file)
 
     # Retry downloading the trailer if failed
     if not trailer_downloaded:
@@ -209,153 +219,22 @@ def download_trailer(
             media.yt_id = None
             if video_id:
                 exclude.append(video_id)
-            return download_trailer(
-                media, trailer_folder, is_movie, retry_count - 1, exclude
-            )
-
-        return False
+            return download_trailer(media, trailer_folder, retry_count - 1, exclude)
+        raise DownloadFailedError(f"Failed to download trailer for {media.title}")
     logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
-    media.yt_id = video_id
+    media.yt_id = video_id  # Update the youtube video id
+    
     # Move the trailer to the specified folder
-    if trailer_folder:
-        trailer_path = os.path.join(media.folder_path, "Trailers")
-    else:
-        trailer_path = media.folder_path
     try:
-        # if not os.path.exists(trailer_path):
-        #     os.makedirs(trailer_path)
-        move_res = move_trailer_to_folder(output_file, trailer_path, media)
-        e = "Move File Failed!"
-    except Exception as e:
-        move_res = False
-        e = str(e)
-    if move_res:
+        trailer_file.move_trailer_to_folder(output_file, media, trailer_folder)
         logger.info(
             f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
         )
         return True
-    else:
-        logger.error(f"Failed to move trailer to folder: {e}")
-        return False
-
-
-def get_folder_permissions(path: str) -> int:
-    # Get the permissions of the directory (if exists)
-    # otherwise get it's parent directory permissions (that exists, recursively)
-    while not os.path.exists(path):
-        path = os.path.dirname(path)
-    parent_dir = os.path.dirname(path)
-    return os.stat(parent_dir).st_mode
-
-
-def normalize_filename(filename: str) -> str:
-    # Normalize the filename to handle Unicode characters
-    filename = (
-        unicodedata.normalize("NFKD", filename)
-        .encode("ascii", "ignore")
-        .decode("ascii")
-    )
-
-    # Remove any character that is not alphanumeric, underscore, hyphen, comma, dot or space
-    filename = re.sub(r"[^a-zA-Z0-9_,. -]", "_", filename)
-    # Replace multiple spaces with a single space
-    filename = re.sub(r"\s+", " ", filename)
-    # Remove leading and trailing special characters
-    filename = filename.strip("_.-")
-    return filename
-
-
-def get_trailer_path(
-    src_path: str, dst_folder_path: str, media: MediaTrailer, increment_index: int = 1
-) -> str:
-    """Get the destination path for the trailer file. \n
-    Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
-    If it exists, increments the index and checks again. \n
-    Recursively increments the index until a non-existing filename is found. \n
-    Example filenames: \n
-    - <new_title> - Trailer-trailer.mp4 \n
-    - <new_title> - Trailer 2-trailer.mp4 \n
-    - <new_title> - Trailer 3-trailer.mp4 \n
-    Args:
-        src_path (str): Source path of the trailer file.
-        dst_folder_path (str): Destination folder path.
-        media (MediaTitle): MediaTitle object.
-        increment_index (int): Index to increment the trailer number. \n
-    Returns:
-        str: Destination path for the trailer file."""
-    # Get trailer file name format from settings
-    title_format = app_settings.trailer_file_name
-    if title_format.count("{") != title_format.count("}"):
-        logger.error("Invalid title format, setting to default")
-        return src_path
-    title_opts = media.to_dict()  # Convert media object to dictionary for formatting
-    title_opts["resolution"] = f"{app_settings.trailer_resolution}p"
-    title_opts["vcodec"] = app_settings.trailer_video_format
-    title_opts["acodec"] = app_settings.trailer_audio_format
-
-    # Remove increment index if it's 0
-    title_opts["ii"] = increment_index
-    if increment_index == 1:
-        title_format = title_format.replace("{ii}", "")
-    else:
-        # If increment index > 0 and not in title format, add it
-        if "{ii}" not in title_format:
-            # If title format ends with "-trailer.{ext}", add increment index before it
-            if title_format.endswith("-trailer.{ext}"):
-                title_format = title_format.replace(
-                    "-trailer.{ext}", "{ii}-trailer.{ext}"
-                )
-            # If title format does not end with "-trailer.{ext}",
-            # add increment index before extension
-            else:
-                title_format = title_format.replace(".{ext}", "{ii}.{ext}")
-        # Add space before increment index
-        title_format = title_format.replace("{ii}", "{ii: }")
-
-    # Get filename from source path and extract extension
-    filename = os.path.basename(src_path)
-    _ext = os.path.splitext(filename)[1]
-    _ext = _ext.replace(".", "")
-    title_opts["ext"] = _ext
-
-    # Format the title to get the new filename
-    filename = title_format.format(**title_opts)
-
-    # Normalize the filename
-    filename = normalize_filename(filename)
-    # Get the destination path
-    dst_file_path = os.path.join(dst_folder_path, filename)
-    # If file exists in destination, increment the index, else return path
-    if os.path.exists(dst_file_path):
-        return get_trailer_path(src_path, dst_folder_path, media, increment_index + 1)
-    return dst_file_path
-
-
-def move_trailer_to_folder(
-    src_path: str, dst_folder_path: str, media: MediaTrailer
-) -> bool:
-    # Move the trailer file to the specified folder
-    if not os.path.exists(src_path):
-        logger.debug(f"Trailer file not found at: {src_path}")
-        return False
-
-    # Get destination permissions
-    dst_permissions = get_folder_permissions(dst_folder_path)
-
-    # Check if destination exists, else create it
-    if not os.path.exists(dst_folder_path):
-        logger.debug(f"Creating folder: {dst_folder_path}")
-        os.makedirs(dst_folder_path, mode=dst_permissions)
-        # Explicitly set the permissions for the folder
-        os.chmod(dst_folder_path, dst_permissions)
-
-    # Construct the new filename and move the file
-    dst_file_path = get_trailer_path(src_path, dst_folder_path, media)
-    shutil.move(src_path, dst_file_path)
-
-    # Set the moved file's permissions to match the destination folder's permissions
-    os.chmod(dst_file_path, dst_permissions)
-    return True
+    except Exception as e:
+        _move_res_msg = str(e)
+        logger.error(f"Failed to move trailer to folder: {_move_res_msg}")
+        raise DownloadFailedError(f"Failed to move trailer to folder: {_move_res_msg}")
 
 
 def download_trailers(
@@ -369,20 +248,14 @@ def download_trailers(
         list[MediaTrailer]: List of media objects for which trailers are downloaded."""
     media_type = "movies" if is_movie else "series"
     logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
-    trailer_folder = False
-    if is_movie:
-        if app_settings.trailer_folder_movie:
-            trailer_folder = True
-    else:
-        if app_settings.trailer_folder_series:
-            trailer_folder = True
+    trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     sem = Semaphore(2)
     download_list = []
     for media in media_list:
         sem.acquire()
         logger.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
         try:
-            if download_trailer(media, trailer_folder, is_movie):
+            if download_trailer(media, trailer_folder):
                 media.downloaded_at = datetime.now(timezone.utc)
                 download_list.append(media)
                 logger.info(
