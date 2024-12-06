@@ -420,4 +420,24 @@
         </div>
     
     </section>
+    <section *ngIf="settings?.monitor_enabled" class="section">
+        <h1>Experimental Options</h1>
+        <p>These are experimental options, might not work as expected!</p>
+        <hr>
+        <div class="trailer-content">
+            <div class="content-label">
+                <span for="trailer_remove_silence">Remove Silence</span>
+                <small>Detect and remove silence (3s+, below 30dB) at end of trailer</small>
+            </div>
+            <div id="trailer_remove_silence" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="26"
+                    [class.selected]="option === settings?.trailer_remove_silence"
+                    (click)="updateSetting('trailer_remove_silence', option)"
+                    (keydown.enter)="updateSetting('trailer_remove_silence', option)"
+                    (keydown.space)="updateSetting('trailer_remove_silence', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+    </section>
 </ng-template>
