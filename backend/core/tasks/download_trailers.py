@@ -5,7 +5,7 @@ from config.settings import app_settings
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
 from core.base.database.models.media import MonitorStatus
-from core.download.trailer import download_trailers
+from core.download.trailer import download_trailer, download_trailers
 from core.files_handler import FilesHandler
 from core.tasks import scheduler
 
@@ -99,7 +99,7 @@ def download_missing_trailers():
     return
 
 
-def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
+def _download_trailer_by_id(mediaT: MediaTrailer):
     db_manager = MediaDatabaseManager()
     db_manager.update_media_status(
         MediaUpdateDC(
@@ -109,35 +109,39 @@ def _download_trailer_by_id(mediaT: MediaTrailer, is_movie: bool):
             yt_id=mediaT.yt_id,
         )
     )
-    download_media = download_trailers([mediaT], is_movie)
-    if not download_media:
-        logger.info("Trailer download failed!")
-        db_manager.update_media_status(
-            MediaUpdateDC(
-                id=mediaT.id,
-                monitor=True,
-                status=MonitorStatus.MISSING,
+    exception_msg = ""
+    try:
+        trailer_downloaded = download_trailer(mediaT)
+        if trailer_downloaded:
+            logger.debug("Trailer downloaded! Updating trailer status in database")
+            db_manager.update_media_status(
+                MediaUpdateDC(
+                    id=mediaT.id,
+                    monitor=False,
+                    status=MonitorStatus.DOWNLOADED,
+                    trailer_exists=True,
+                    yt_id=mediaT.yt_id,
+                    downloaded_at=datetime.now(timezone.utc),
+                )
             )
+            logger.info(f"Trailer downloaded for {mediaT.title}")
+            return
+    except Exception as e:
+        exception_msg = str(e)
+    logger.debug("Trailer download failed! Updating trailer status in database")
+    db_manager.update_media_status(
+        MediaUpdateDC(
+            id=mediaT.id,
+            monitor=True,
+            status=MonitorStatus.MISSING,
         )
-        return
-    logger.debug("Updating trailer status in database")
-    media_update_list = []
-    for media in download_media:
-        if media.downloaded_at is None:
-            media.downloaded_at = datetime.now(timezone.utc)
-        media_update_list.append(
-            MediaUpdateDC(
-                id=media.id,
-                monitor=False,
-                status=MonitorStatus.DOWNLOADED,
-                trailer_exists=True,
-                yt_id=media.yt_id,
-                downloaded_at=media.downloaded_at,
-            )
-        )
-
-    # Update the trailer statuses in database
-    db_manager.update_media_status_bulk(media_update_list)
+    )
+    logger.exception(
+        f"Failed to download trailer for {mediaT.title}, Exception: {exception_msg}"
+    )
+    raise Exception(
+        f"Failed to download trailer for {mediaT.title}, Exception: {exception_msg}"
+    )
 
 
 def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
@@ -178,7 +182,7 @@ def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
     # Add Job to scheduler to download trailer
     scheduler.add_job(
         func=_download_trailer_by_id,
-        args=(media_trailer, is_movie),
+        args=(media_trailer, ),
         trigger="date",
         run_date=datetime.now() + timedelta(seconds=1),
         id=f"download_trailer_by_id_{media_id}_{is_movie}",

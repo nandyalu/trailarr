@@ -140,9 +140,20 @@ def verify_trailer_streams(trailer_path: str):
     return True
 
 
-def get_silence_timestamps(file_path):
-    time = datetime.now()
+def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
+    """
+    Get silence timestamps using ffmpeg silencedetect filter. \n
+    Args:
+        file_path (str): Path to the video file. \n
+    Returns:
+        tuple[float | None, float | None]: Silence start and end timestamps if found, \
+            None otherwise.
+    """
+    # time = datetime.now()
+    logger.debug(f"Getting silence timestamps for: {file_path}")
     try:
+        # Get silence timestamps using ffmpeg silencedetect filter
+        logger.debug(f"Running ffmpeg silencedetect for: {file_path}")
         result = subprocess.run(
             [
                 "ffmpeg",
@@ -160,6 +171,9 @@ def get_silence_timestamps(file_path):
         )
         silence_start = None
         silence_end = None
+        logger.debug(
+            f"Silence detection completed for: {file_path}, parsing results..."
+        )
         for line in result.stderr.split("\n"):
             if "silence_start" in line:
                 silence_start = float(
@@ -170,22 +184,39 @@ def get_silence_timestamps(file_path):
                     re.search(r"silence_end: (\d+\.\d+)", line).group(1)  # type: ignore
                 )
             if silence_start is not None and silence_end is not None:
-                print(f"Silence start: {silence_start}, Silence end: {silence_end}")
+                logger.debug(
+                    "Silence detected at end of video. "
+                    f"Timestamps Start: {silence_start}, End: {silence_end}"
+                )
                 break
-        timeTook = datetime.now() - time
-        print(f"Time took: {timeTook}")
+        # timeTook = datetime.now() - time
+        # print(f"Time took: {timeTook}")
         return silence_start, silence_end
     except Exception as e:
-        print(f"Exception: {str(e)}")
-    timeTook = datetime.now() - time
-    print(f"Time took: {timeTook}")
+        logger.exception(f"Exception while detecting silence in video: {str(e)}")
+    # timeTook = datetime.now() - time
+    # print(f"Time took: {timeTook}")
     return None, None
 
 
-def detect_silence(file_path, output_file, end_timestamp):
+def trim_video_at_end(
+    file_path: str, output_file: str, end_timestamp: int | float | str
+) -> bool:
+    """Trim the video at the end using ffmpeg. \n
+    Args:
+        file_path (str): Path to the video file.
+        output_file (str): Path to save the output file.
+        end_timestamp (int | float | str): End timestamp to trim the video. \n
+    Returns:
+        bool: True if video trimmed successfully, False otherwise.
+    Raises:
+        Exception: If error occurs while trimming video.
+    """
     time = datetime.now()
+    logger.debug(f"Trimming video to end (at {end_timestamp}): {file_path}")
     try:
-        # Remove silence
+        # Remove silence part from end of video
+        logger.debug(f"Running ffmpeg trim command on video: {file_path}")
         remove_cmd = [
             "ffmpeg",
             "-i",
@@ -206,14 +237,48 @@ def detect_silence(file_path, output_file, end_timestamp):
         if remove_result.returncode == 0:
             # print("STDERR:")
             # print(remove_result.stderr)
-            print(f"Silent parts removed and saved to {output_file}")
+            timeTook = datetime.now() - time
+            logger.debug(
+                f"Video trimmed successfully in {timeTook} and saved to: {output_file}"
+            )
+            return True
         else:
-            print(f"Error: {remove_result.stderr}")
+            raise Exception(f"FFMPEG Exception: {remove_result.stderr}")
+            # print(f"Error: {remove_result.stderr}")
     except Exception as e:
-        print(f"Exception: {str(e)}")
-    timeTook = datetime.now() - time
-    print(f"Time took: {timeTook}")
-    return None
+        raise Exception(f"Exception while trimming video: {str(e)}")
+    # timeTook = datetime.now() - time
+    # print(f"Time took: {timeTook}")
+    return False
+
+
+def remove_silence_at_end(file_path: str) -> str:
+    """
+    Remove silence from the end of the video. \n
+    Args:
+        file_path (str): Path to the video file. \n
+    Returns:
+        str: Path to the trimmed video file.
+    """
+    logger.info(f"Detecting silence at end of video: {file_path}")
+    # Get silence timestamps
+    silence_start, silence_end = get_silence_timestamps(file_path)
+    if silence_start is None or silence_end is None:
+        logger.info("No silence detected at end of video")
+        return file_path
+    # Remove silence from the end of the video
+    output_file = f"/tmp/trimmed_{os.path.basename(file_path)}"
+    try:
+        logger.info(
+            f"Silence detected at end of video. Trimming video at {silence_end}"
+        )
+        trim_video_at_end(file_path, output_file, silence_start)
+    except Exception as e:
+        logger.exception(f"Exception while removing silence from video: {str(e)}")
+        return file_path
+    silence_time = silence_end - silence_start
+    logger.info(f"Silence removed ({silence_time:.2f}s) from end of video: {file_path}")
+    return output_file
 
 
 # folder = "/media/movies/all/Pechi (2024) {imdb-tt33034505}"

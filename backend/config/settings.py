@@ -138,6 +138,11 @@ class _Config:
         self.trailer_search_query = os.getenv(
             "TRAILER_SEARCH_QUERY", self._DEFAULT_SEARCH_QUERY
         )
+        # Experimental settings
+        self.trailer_remove_silence = os.getenv(
+            "TRAILER_REMOVE_SILENCE",
+            "False",
+        ).lower() in ["true", "1"]
 
     def as_dict(self):
         return {
@@ -171,6 +176,7 @@ class _Config:
             "wait_for_media": self.wait_for_media,
             "trailer_file_name": self.trailer_file_name,
             "yt_cookies_path": self.yt_cookies_path,
+            "trailer_remove_silence": self.trailer_remove_silence,
         }
 
     @property
@@ -581,6 +587,18 @@ class _Config:
     def exclude_words(self, value: str):
         self._exclude_words = value
         self._save_to_env("EXCLUDE_WORDS", self._exclude_words)
+    
+    @property
+    def trailer_remove_silence(self):
+        """Remove silence from the trailers. \n
+        Default is False. \n
+        Valid values are True/False."""
+        return self._trailer_remove_silence
+    
+    @trailer_remove_silence.setter
+    def trailer_remove_silence(self, value: bool):
+        self._trailer_remove_silence = value
+        self._save_to_env("TRAILER_REMOVE_SILENCE", self._trailer_remove_silence)
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
