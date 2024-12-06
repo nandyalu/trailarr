@@ -16,4 +16,8 @@ export class LogsService {
   getLogs(): Observable<Logs[]> {
     return this.http.get<Logs[]>(this.logsUrl);
   }
+
+  downloadLogs(): Observable<Blob> {
+    return this.http.get(this.logsUrl + 'download', { responseType: 'blob' });
+  }
 }

@@ -6,6 +6,7 @@ import aiofiles
 from aiofiles import os as async_os
 import os
 from fastapi import APIRouter
+from fastapi.responses import FileResponse
 
 from api.v1.models import Log
 from config.settings import app_settings
@@ -14,8 +15,21 @@ from config.settings import app_settings
 logs_router = APIRouter(prefix="/logs", tags=["Logs"])
 
 
+@logs_router.get("/download")
+def download_file():
+    # Read logs from file and send it back
+    logs_dir = os.path.abspath(os.path.join(app_settings.app_data_dir, "logs"))
+    file_location = f"{logs_dir}/trailarr.log"
+    if not os.path.exists(file_location):
+        return {"message": "Logs file not found"}
+    file_name = f"trailarr_logs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    return FileResponse(
+        file_location, media_type="application/octet-stream", filename=file_name
+    )
+
+
 @logs_router.get("/")
-async def get_logs(page: int = 1, limit: int = 100) -> list[Log]:
+async def get_logs(page: int = 0, limit: int = 1000) -> list[Log]:
     # Read logs from file and send it back
     logs_dir = os.path.abspath(os.path.join(app_settings.app_data_dir, "logs"))
     # logs: list[str] = []
@@ -33,8 +47,12 @@ async def get_logs(page: int = 1, limit: int = 100) -> list[Log]:
                 raw_log="No Logs Found",
             )
         ]
+    log_ext = ".log"
+    if page > 0:
+        # If page is greater than 0, then read logs from the log file with page number
+        log_ext = f".log.{page}"
     for log_file in await async_os.listdir(logs_dir):
-        if log_file.endswith(".log"):
+        if log_file.endswith(log_ext):
             # logging.info(f"Reading logs from {log_file}")
             # with open(f"{logs_dir}/{log_file}", "r") as f:
             #     for line in f:
