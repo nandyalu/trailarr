@@ -82,6 +82,7 @@ nav:
     - Connections: setup/connections.md
     - Settings: setup/settings.md
   - Help:
+    - Common: help/common.md
     - FAQ: help/faq.md
     - Release Notes: help/release-notes.md
     - Docker Builder: help/docker-builder/builder.html
