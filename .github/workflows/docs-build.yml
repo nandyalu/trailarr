@@ -11,11 +11,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Configure Git Credentials
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Needed for mkdocs-git-revision-date-localized-plugin
-        run: |
+      - run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - uses: actions/setup-python@v5
