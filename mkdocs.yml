@@ -51,7 +51,7 @@ plugins:
   - git-revision-date-localized
   # - swagger-ui-tag
   - mkdocs_github_changelog:
-        # token: !ENV GITHUB_TOKEN
+        token: !ENV GITHUB_TOKEN
         # Github token (needs repo scope for private repos, and may be worth setting for public repos due to rate limiting).
         # github_api_url: <url>
         # URL for github api endpoint if not standard github.com (This is not tested on github enterprise server).
