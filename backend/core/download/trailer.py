@@ -206,7 +206,7 @@ def download_trailer(
             tmp_output_file, output_file, media.title
         )
         # Remove silence at end of video if enabled
-        if app_settings.trailer_remove_silence:
+        if trailer_downloaded and app_settings.trailer_remove_silence:
             output_file = video_analysis.remove_silence_at_end(output_file)
 
     # Retry downloading the trailer if failed
