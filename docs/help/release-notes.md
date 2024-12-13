@@ -1,3 +1,13 @@
+## **v0.2.6-beta** - _December 13, 2024_
+**Bug Fixes:** 🐛
+
+- Fixed a bug in v0.2.5 release that caused trailer download task to fail.
+
+**Other Changes:** ⚡
+
+- A few minor improvements in logging for trailer downloads.
+- Added logging (debug only) to indicate that cookies file is used for downloading trailers.
+
 ## **v0.2.5-beta** - _December 13, 2024_
 **Other Changes:** ⚡
 

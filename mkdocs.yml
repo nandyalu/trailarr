@@ -102,7 +102,7 @@ nav:
     - Common: help/common.md
     - FAQ: help/faq.md
     - Release Notes: help/release-notes.md
-    - Changelog: help/changelog.md
+    # - Changelog: help/changelog.md
     - Docker Builder: help/docker-builder/builder.html
 # extra_javascript:
 #   - js/docker-builder.js
