@@ -56,7 +56,7 @@ plugins:
         # github_api_url: <url>
         # URL for github api endpoint if not standard github.com (This is not tested on github enterprise server).
         # release_template: <jinja2 str>
-        # Jinja2 template string to override the default.
+        # Jinja2 template string to override the default. 
         match: '[0-9+].[0-9+].[0-9]+'
         # Regex string for matching the rleease name.
         autoprocess: True

@@ -1,4 +1,11 @@
 ## **v0.2.4-beta** - _December 06, 2024_
+**Other Changes:** ⚡
+
+- Current installed version of `yt-dlp` stopped working a few days ago, updating to the latest version!
+- A few minor improvements in logging for trailer downloads.
+- Updated Github Actions to create PRs for dependency upgrades.
+
+## **v0.2.4-beta** - _December 06, 2024_
 **What's New:** ✨
 
 - Added an experimental setting for `Trailer Silence Removal` that will detect and remove silence at end of video. Related to [#75](https://github.com/nandyalu/trailarr/issues/75)
