@@ -1,4 +1,4 @@
-## **v0.2.4-beta** - _December 06, 2024_
+## **v0.2.5-beta** - _December 13, 2024_
 **Other Changes:** ⚡
 
 - Current installed version of `yt-dlp` stopped working a few days ago, updating to the latest version!

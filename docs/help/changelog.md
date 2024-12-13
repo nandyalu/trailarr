@@ -1,6 +1,6 @@
 markdown
 
-::github-release-changelog <org>\<repo>
+::github-release-changelog nandyalu\trailarr
     base_indent: 2
     token: !ENV GITHUB_TOKEN
     <!-- github_api_url: <url> -->
