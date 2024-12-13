@@ -75,13 +75,15 @@ def _download_missing_media_trailers(is_movie: bool):
         logger.info(
             f"Skipping trailer download for {skip_count} {media_type}, waiting for media"
         )
-    for skip_reason, skip_titles in skipped_titles:
-        if len(skip_titles) > 0:
-            all_titles = ", ".join(skip_titles)
-        else:
-            all_titles = "None"
+    for skip_reason in skipped_titles:
+        skip_titles = skipped_titles[skip_reason]
+        # if len(skip_titles) > 0:
+        #     all_titles = ", ".join(skip_titles)
+        # else:
+        #     all_titles = "None"
         skip_reason = skip_reason.replace("_", " ")
-        logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}: {all_titles}")
+        logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}")
+        # logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}: {all_titles}")
 
     if not media_trailer_list:
         logger.info(f"No missing {media_type} trailers to download")
