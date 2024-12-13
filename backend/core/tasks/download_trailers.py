@@ -24,28 +24,38 @@ def _download_missing_media_trailers(is_movie: bool):
     logger.debug(f"Checking trailers for {len(db_media_list)} monitored {media_type}")
     # Create MediaTrailer objects for each movie/series
     skip_count = 0
+    skipped_titles = {
+        "monitoring_disabled": [],
+        "missing_folder_path": [],
+        "trailer_exists": [],
+        "media_not_found": [],
+    }
     for db_media in db_media_list:
         if not db_media.monitor:
-            logger.debug(
-                f"Skipping {db_media.title} (id:{db_media.id}), monitoring disabled"
-            )
+            skipped_titles["monitoring_disabled"].append(db_media.title)
+            # logger.debug(
+            #     f"Skipping {db_media.title} (id:{db_media.id}), monitoring disabled"
+            # )
             continue
         if db_media.folder_path is None:
-            logger.debug(
-                f"Skipping {db_media.title} (id:{db_media.id}), folder path not found"
-            )
+            skipped_titles["missing_folder_path"].append(db_media.title)
+            # logger.debug(
+            #     f"Skipping {db_media.title} (id:{db_media.id}), folder path not found"
+            # )
             continue
         if db_media.trailer_exists:
-            logger.debug(
-                f"Skipping {db_media.title} (id:{db_media.id}), trailer exists"
-            )
+            skipped_titles["trailer_exists"].append(db_media.title)
+            # logger.debug(
+            #     f"Skipping {db_media.title} (id:{db_media.id}), trailer exists"
+            # )
             continue
         if app_settings.wait_for_media:
             if not FilesHandler.check_media_exists(db_media.folder_path):
+                skipped_titles["media_not_found"].append(db_media.title)
                 skip_count += 1
-                logger.debug(
-                    f"Skipping {db_media.title} (id:{db_media.id}), media file(s) not found"
-                )
+                # logger.debug(
+                #     f"Skipping {db_media.title} (id:{db_media.id}), media file(s) not found"
+                # )
                 continue
         # If always search is enabled, set trailer id to None
         if app_settings.trailer_always_search:
@@ -60,8 +70,18 @@ def _download_missing_media_trailers(is_movie: bool):
             yt_id=db_media.youtube_trailer_id,
         )
         media_trailer_list.append(media_trailer)
+    # Log skipped media titles
     if skip_count:
-        logger.info(f"Skipping trailer download for {skip_count} {media_type}")
+        logger.info(
+            f"Skipping trailer download for {skip_count} {media_type}, waiting for media"
+        )
+    for skip_reason, skip_titles in skipped_titles:
+        if len(skip_titles) > 0:
+            all_titles = ", ".join(skip_titles)
+        else:
+            all_titles = "None"
+        skip_reason = skip_reason.replace("_", " ")
+        logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}: {all_titles}")
 
     if not media_trailer_list:
         logger.info(f"No missing {media_type} trailers to download")
@@ -182,7 +202,7 @@ def download_trailer_by_id(media_id: int, yt_id: str = "") -> str:
     # Add Job to scheduler to download trailer
     scheduler.add_job(
         func=_download_trailer_by_id,
-        args=(media_trailer, ),
+        args=(media_trailer,),
         trigger="date",
         run_date=datetime.now() + timedelta(seconds=1),
         id=f"download_trailer_by_id_{media_id}_{is_movie}",

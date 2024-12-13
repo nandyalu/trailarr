@@ -12,6 +12,7 @@ on:
       - '**/*.md'
       - '**/docs/**'
       - '**/frontend/**'
+      - '**/mkdocs.yml'
   pull_request:
     branches: [ "main" ]
     paths-ignore:
@@ -22,6 +23,7 @@ on:
       - '**/*.md'
       - '**/docs/**'
       - '**/frontend/**'
+      - '**/mkdocs.yml'
 
 jobs:
 
