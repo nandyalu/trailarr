@@ -20,7 +20,7 @@ updates:
     directory: "/backend"
     schedule:
       interval: weekly
-    target-branch: "dev"
+    target-branch: "main"
     open-pull-requests-limit: 3 # Limit the number of open PRs
     reviewers: # Add reviewers
       - "nandyalu"
