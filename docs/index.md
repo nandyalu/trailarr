@@ -34,7 +34,7 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 Reddit:
 [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr){:target=_blank}
 
-Discord: [https://discord.gg/BAJsv76N](https://discord.gg/BAJsv76N){:target="_blank"}
+Discord: [https://discord.gg/rWC3TaaK](https://discord.gg/rWC3TaaK){:target="_blank"}
 
 ## Features
 
