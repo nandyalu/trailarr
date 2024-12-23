@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -1017,8 +1017,12 @@
 <p>Trailarr will not download multiple trailers for same Movie or Series automatically. You can manually update the youtube trailer link and click <code>Download</code> to download another trailer. Trailarr will download and save the new trailer in the Movie or Series folder along with the old trailer.</p>
 <h2 id="app-is-stuck-on-downloading-status-for-a-long-time-what-should-i-do">App is stuck on "Downloading" status for a long time. What should I do?</h2>
 <p>Trailarr downloads the best available video in the selected resolution, and then use ffmpeg to convert to selected audio and video codecs. This process can take some time based on the video size and your server hardware. </p>
-<p>The amount of time it takes to convert a 3 minute video usually takes around 1-2 minutes on latest hardware (like i3-12100 or Ryzen 5 5600X).</p>
-<p>If you are using a Raspberry Pi or a low powered server, it might take longer to convert the video. You can check the logs to see the progress of the conversion process.</p>
+<p>The amount of time it takes to convert a 3 minute video usually takes around 1-2 minutes on latest hardware (like i3-12100 or Ryzen 5 5600X). </p>
+<p>If you are using a Raspberry Pi or a low powered server, it might take longer to convert the video. You can check the (debug) logs to see the progress of the conversion process.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>YouTube trailers are usually in <code>vp9</code> video codec and <code>opus</code> audio codec, so setting theses codecs in Trailarr settings will prevent conversion. Most modern players support these codecs, so you can use these codecs in Trailarr settings to speed up the process.</p>
+</div>
 
 
 
@@ -1039,7 +1043,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 11, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 23, 2024</span>
   </span>
 
     
@@ -1185,7 +1189,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "content.code.annotate", "navigation.tabs", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "search.suggest"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
     
   </body>

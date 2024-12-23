@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#youtube-cookies" class="md-skip">
+        <a href="#download-trailer-in-specific-language" class="md-skip">
           Skip to content
         </a>
       
@@ -689,6 +689,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#download-trailer-in-specific-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      Download Trailer in Specific Language
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#youtube-cookies" class="md-nav__link">
     <span class="md-ellipsis">
       YouTube Cookies
@@ -816,6 +825,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#download-trailer-in-specific-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      Download Trailer in Specific Language
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#youtube-cookies" class="md-nav__link">
     <span class="md-ellipsis">
       YouTube Cookies
@@ -859,6 +877,39 @@
 
   <h1>Common</h1>
 
+<h2 id="download-trailer-in-specific-language">Download Trailer in Specific Language</h2>
+<p>If you want trailers to be downloaded in a specific language, you can use the below steps to instruct Trailarr to try searching for trailers in that language.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is not a foolproof method as it depends on multiple factors like:</p>
+<ul>
+<li>availability of the trailer in that language on YouTube</li>
+<li>YouTube returning that result when searched using the search query</li>
+<li>whether it matches the other filters like duration, quality, etc. </li>
+</ul>
+</div>
+<p>To do this, navigate to <code>Settings &gt; Trailer &gt; Advanced</code> and change the following settings:</p>
+<ul>
+<li>
+<p><code>Trailer Always Search</code> to <code>True</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>This setting will tell Trailarr to not use the YouTube trailer id from Radarr/Sonarr. Instead, it will search for the trailer based on the <code>YouTube Search Query</code> setting.</p>
+</div>
+</li>
+<li>
+<p><code>YouTube Search Query</code> to the specify desired language like <code>{title} {year} {is_movie} French trailer</code>. </p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The <code>{title}</code>, <code>{year}</code>, <code>{is_movie}</code> are placeholders that will be replaced with the actual values. The language can be any language like <code>French</code>, <code>Spanish</code>, <code>German</code>, etc.</p>
+</div>
+</li>
+</ul>
+<p>Once you have updated these settings, any trailers downloaded afterwards will be searched using the new search query.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This will not impact any trailers that have already been downloaded.</p>
+</div>
 <h2 id="youtube-cookies">YouTube Cookies</h2>
 <p>If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can save your YouTube cookies and set the <a href="../../setup/settings/#yt-dlp-cookies-path">Yt-dlp Cookies Path</a> to cookies.txt file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.</p>
 <p>YouTube rotates cookies frequently on open YouTube browser tabs as a security measure. To export cookies that will remain working with yt-dlp, you will need to export cookies in such a way that they are never rotated.</p>
@@ -908,7 +959,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 6, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 23, 2024</span>
   </span>
 
     
@@ -1054,7 +1105,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "content.code.annotate", "navigation.tabs", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "search.suggest"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
     
   </body>
