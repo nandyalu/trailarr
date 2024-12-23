@@ -1,3 +1,33 @@
+## Download Trailer in Specific Language
+
+If you want trailers to be downloaded in a specific language, you can use the below steps to instruct Trailarr to try searching for trailers in that language.
+
+!!! note
+    This is not a foolproof method as it depends on multiple factors like:
+
+    - availability of the trailer in that language on YouTube
+    - YouTube returning that result when searched using the search query
+    - whether it matches the other filters like duration, quality, etc. 
+
+
+To do this, navigate to `Settings > Trailer > Advanced` and change the following settings:
+
+- `Trailer Always Search` to `True`.
+
+    !!! info
+        This setting will tell Trailarr to not use the YouTube trailer id from Radarr/Sonarr. Instead, it will search for the trailer based on the `YouTube Search Query` setting.
+
+- `YouTube Search Query` to the specify desired language like `{title} {year} {is_movie} French trailer`. 
+
+    !!! info
+        The `{title}`, `{year}`, `{is_movie}` are placeholders that will be replaced with the actual values. The language can be any language like `French`, `Spanish`, `German`, etc.
+
+Once you have updated these settings, any trailers downloaded afterwards will be searched using the new search query.
+
+!!! warning
+    This will not impact any trailers that have already been downloaded.
+
+
 ## YouTube Cookies
 
 If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can save your YouTube cookies and set the [Yt-dlp Cookies Path](../setup/settings.md#yt-dlp-cookies-path) to cookies.txt file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
