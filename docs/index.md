@@ -34,7 +34,7 @@ Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/
 Reddit:
 [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr){:target=_blank}
 
-Discord: [https://discord.gg/rWC3TaaK](https://discord.gg/rWC3TaaK){:target="_blank"}
+Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target="_blank"}
 
 ## Features
 
@@ -72,7 +72,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you have any questions or need help, please read the [FAQ](./help/faq.md) first. If you still need help, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post a question on [Reddit](https://www.reddit.com/r/trailarr/){:target="_blank"} or join our [Discord](https://discord.gg/BAJsv76N){:target="_blank"} (recommended).
+If you have any questions or need help, please read the [FAQ](./help/faq.md) first. If you still need help, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post a question on [Reddit](https://www.reddit.com/r/trailarr/){:target="_blank"} or join our [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
 
 ## Issues
 

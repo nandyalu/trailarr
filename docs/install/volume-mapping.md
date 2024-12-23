@@ -39,7 +39,7 @@ Some [examples](#examples) are provided below.
 
 If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/help/docker-builder/builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
 
-If you are still facing issues, you can ask for help in the [Discord Server](https://discord.gg/BAJsv76N){:target="_blank"}.
+If you are still facing issues, you can ask for help in the [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
 !!! tip
     Make sure the folder paths are correct and the Trailarr has read/write access to the folders.
