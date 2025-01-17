@@ -6,9 +6,13 @@ FROM python:3.12-slim AS python-deps
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# Set the working directory
+WORKDIR /app
+
 # Install pip requirements
 COPY ./backend/requirements.txt .
-RUN python -m pip install --disable-pip-version-check --upgrade -r requirements.txt
+RUN python -m pip install --no-cache-dir --disable-pip-version-check \
+    --upgrade -r /app/requirements.txt
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
@@ -37,9 +41,6 @@ RUN apt-get update && apt-get install -y tzdata gosu curl && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
-
-# Create a directory for the app
-RUN mkdir /app
 
 # Set the working directory
 WORKDIR /app
