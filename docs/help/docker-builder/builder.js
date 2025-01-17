@@ -161,7 +161,6 @@ function addConnection() {
  * @returns {void}
  */
 function removeConnection(divId) {
-  debugger;
   if (connectionCount === 0) {
     return;
   }
