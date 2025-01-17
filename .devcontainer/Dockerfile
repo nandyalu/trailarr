@@ -1,10 +1,14 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # Install the xz-utils package
-RUN apt-get update && apt-get install -y curl xz-utils tzdata git gnupg2
+RUN apt-get update && apt-get install -y curl xz-utils tzdata git gnupg2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - &&\
-    apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install specific version of npm
 RUN npm install -g npm@10.9.1
@@ -12,9 +16,13 @@ RUN npm install -g npm@10.9.1
 # Install specific version of Angular CLI
 RUN npm install -g @angular/cli@19.0.1
 
+# Set the working directory
+WORKDIR /app
+
 # Install Python Packages
 COPY dev-requirements.txt .
-RUN python -m pip install --no-cache-dir --upgrade -r dev-requirements.txt
+RUN python -m pip install --no-cache-dir --disable-pip-version-check \
+    --upgrade -r /app/dev-requirements.txt
 
 # Download and extract the custom FFmpeg build from yt-dlp
 RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
