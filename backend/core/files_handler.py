@@ -379,7 +379,7 @@ class FilesHandler:
             bool: True if the '/tmp' directory is cleaned up successfully, False otherwise.
         """
         try:
-            for entry in await aiofiles.os.scandir("/tmp"):
+            for entry in await aiofiles.os.scandir("/app/tmp"):
                 if entry.is_file():
                     await FilesHandler.delete_file(entry.path)
                 elif entry.is_dir():
