@@ -210,7 +210,7 @@ def download_video(url: str, file_path: str | None = None) -> str:
     global data
     data = {}
     if not file_path:
-        file_path = "/tmp/%(title)s.%(ext)s"
+        file_path = "/app/tmp/%(title)s.%(ext)s"
     ydl_opts = _get_ytdl_options()
     ydl_opts["outtmpl"] = file_path
     try:

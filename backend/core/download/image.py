@@ -30,7 +30,6 @@ async def get_base_path(is_movie: bool, is_poster: bool) -> str:
         await aiofiles.os.makedirs(base_path, exist_ok=True)
     except Exception:
         logger.error(f"Unable to create images folder: '{base_path}'")
-        pass
     return base_path
 
 
@@ -39,7 +38,7 @@ def get_md5_filename(url: str) -> str:
     Args:
         url (str): URL of the image."""
     # Return the MD5 hash of the URL as the filename (str)
-    return hashlib.md5(url.encode()).hexdigest()
+    return hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
 
 
 async def delete_image(image_path: str):
@@ -49,7 +48,8 @@ async def delete_image(image_path: str):
     try:
         await aiofiles.os.remove(image_path)
     except Exception:
-        pass
+        logger.error(f"Unable to delete image: '{image_path}'")
+    return
 
 
 async def download_needed(is_movie: bool, media: MediaImage) -> bool:
