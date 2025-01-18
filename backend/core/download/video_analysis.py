@@ -217,8 +217,12 @@ def trim_video_at_end(
     try:
         # Remove silence part from end of video
         logger.debug(f"Running ffmpeg trim command on video: {file_path}")
+        result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
+        ffmpeg_path = result.stdout.strip()
+        if not ffmpeg_path:
+            ffmpeg_path = "/usr/bin/ffmpeg"
         remove_cmd = [
-            "ffmpeg",
+            ffmpeg_path,
             "-i",
             file_path,
             "-to",
@@ -267,7 +271,7 @@ def remove_silence_at_end(file_path: str) -> str:
         logger.info("No silence detected at end of video")
         return file_path
     # Remove silence from the end of the video
-    output_file = f"/tmp/trimmed_{os.path.basename(file_path)}"
+    output_file = f"/app/tmp/trimmed_{os.path.basename(file_path)}"
     try:
         logger.info(
             f"Silence detected at end of video. Trimming video at {silence_end}"
