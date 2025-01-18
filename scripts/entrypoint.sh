@@ -91,6 +91,9 @@ chmod -R 750 /app
 chown -R "$APPUSER":"$APPGROUP" /app
 chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
+# Create a temporary directory to download trailers to
+mkdir -p /app/tmp
+
 # Switch to the non-root user and execute the command
 echo "Switching to user '$APPUSER' and starting the application"
 exec gosu "$APPUSER" bash -c /app/start.sh
