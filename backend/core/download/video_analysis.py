@@ -50,7 +50,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         "stream=index,codec_type,codec_name,coded_height,coded_width"
     )
     ffprobe_cmd = [
-        "ffprobe",
+        "/usr/local/bin/ffprobe",
         "-v",
         "error",
         "-show_entries",
@@ -156,7 +156,7 @@ def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
         logger.debug(f"Running ffmpeg silencedetect for: {file_path}")
         result = subprocess.run(
             [
-                "ffmpeg",
+                "/usr/local/bin/ffmpeg",
                 "-i",
                 file_path,
                 "-af",
@@ -218,7 +218,7 @@ def trim_video_at_end(
         # Remove silence part from end of video
         logger.debug(f"Running ffmpeg trim command on video: {file_path}")
         remove_cmd = [
-            "ffmpeg",
+            "/usr/local/bin/ffmpeg",
             "-i",
             file_path,
             "-to",
@@ -267,7 +267,7 @@ def remove_silence_at_end(file_path: str) -> str:
         logger.info("No silence detected at end of video")
         return file_path
     # Remove silence from the end of the video
-    output_file = f"/tmp/trimmed_{os.path.basename(file_path)}"
+    output_file = f"/app/tmp/trimmed_{os.path.basename(file_path)}"
     try:
         logger.info(
             f"Silence detected at end of video. Trimming video at {silence_end}"

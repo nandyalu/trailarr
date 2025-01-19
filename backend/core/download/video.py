@@ -96,6 +96,9 @@ _AUDIO_CODECS = {
     "opus": "libopus",
 }
 
+# Manual yt-dlp command for reference:
+# yt-dlp -o "visfor trailer-trailer.%(ext)s" -f "bestvideo[height<=1080]+bestaudio" --embed-subs --sub-lang "all" --merge-output-format mkv https://www.youtube.com/watch?v=5FtOsxgI9DA  # noqa: E501
+
 
 def _get_ytdl_options() -> dict[str, Any]:
     """Returns the options for youtube-dl to download trailers based on app config."""
@@ -210,7 +213,7 @@ def download_video(url: str, file_path: str | None = None) -> str:
     global data
     data = {}
     if not file_path:
-        file_path = "/tmp/%(title)s.%(ext)s"
+        file_path = "/app/tmp/%(title)s.%(ext)s"
     ydl_opts = _get_ytdl_options()
     ydl_opts["outtmpl"] = file_path
     try:

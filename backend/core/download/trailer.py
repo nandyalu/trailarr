@@ -196,7 +196,7 @@ def download_trailer(
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
         logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
-        tmp_output_file = f"/tmp/{media.id}-trailer.%(ext)s"
+        tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
         output_file = download_video(trailer_url, tmp_output_file)
         tmp_output_file = tmp_output_file.replace(
             "%(ext)s", app_settings.trailer_file_format

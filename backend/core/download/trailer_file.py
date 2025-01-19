@@ -185,7 +185,9 @@ def move_trailer_to_folder(
 
     # Check if destination exists, else create it
     if not os.path.exists(dst_folder_path):
-        logger.debug(f"Destination folder does not exist! Creating folder: '{dst_folder_path}'")
+        logger.debug(
+            f"Destination folder does not exist! Creating folder: '{dst_folder_path}'"
+        )
         os.makedirs(dst_folder_path, mode=dst_permissions)
         # Explicitly set the permissions for the folder
         logger.debug(
@@ -199,7 +201,9 @@ def move_trailer_to_folder(
     shutil.move(src_path, dst_file_path)
 
     # Set the moved file's permissions to match the destination folder's permissions
-    logger.debug(f"Setting permissions for file: '{dst_file_path}' to '{oct(dst_permissions)}'")
+    logger.debug(
+        f"Setting permissions for file: '{dst_file_path}' to '{oct(dst_permissions)}'"
+    )
     os.chmod(dst_file_path, dst_permissions)
     logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
     return True
@@ -215,15 +219,16 @@ def verify_download(tmp_output_file: str, output_file: str, title: str) -> bool:
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
     # Check if the trailer is downloaded successfully
+    # This check is to ensure that correct file is downloaded
+    # and not a partial file like a video only or audio only file
+    # which wouldn't match the actual file extension
     if not output_file or not os.path.exists(tmp_output_file):
         trailer_downloaded = False
     else:
         # Verify the trailer has audio and video streams
         trailer_downloaded = video_analysis.verify_trailer_streams(output_file)
         if not trailer_downloaded:
-            logger.debug(
-                f"Trailer has either no audio or video streams: {title}"
-            )
+            logger.debug(f"Trailer has either no audio or video streams: {title}")
             logger.debug(f"Deleting failed trailer file: {output_file}")
             try:
                 os.remove(output_file)
