@@ -56,6 +56,38 @@ echo "Creating '$APP_DATA_DIR' folder for storing database and other config file
 mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 chmod -R 755 /app/assets
 
+# Check for NVIDIA GPU
+export NVIDIA_AVAILABLE=0
+if command -v nvidia-smi &> /dev/null; then
+    if nvidia-smi > /dev/null 2>&1; then
+        echo "NVIDIA GPU is available."
+        export NVIDIA_GPU_AVAILABLE=1
+    else
+        echo "NVIDIA GPU is not available."
+    fi
+else
+    echo "nvidia-smi command not found."
+fi
+
+# Check if /dev/dri exists
+export INTEL_GPU_AVAILABLE=0
+if [ -d /dev/dri ]; then
+    # Check for Intel GPU
+    if ls /dev/dri | grep -q "renderD"; then
+        # Intel QSV might be available. Further check for Intel-specific devices
+        if lspci | grep -iE 'Display|VGA' | grep -i 'Intel'; then
+            export QSV_GPU_AVAILABLE=1
+            echo "Intel GPU detected. Intel QSV is likely available."
+        else
+            echo "No Intel GPU detected. Intel QSV is not available."
+        fi
+    else
+        echo "Intel QSV not detected. No renderD devices found in /dev/dri."
+    fi
+else
+    echo "Intel QSV is not available. /dev/dri does not exist."
+fi
+
 # Set default values for PUID and PGID if not provided
 PUID=${PUID:-1000}
 PGID=${PGID:-1000}

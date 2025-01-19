@@ -37,7 +37,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_VERSION=${APP_VERSION}
 
 # Install tzdata, gosu and set timezone
-RUN apt-get update && apt-get install -y tzdata gosu curl && \
+RUN apt-get update && apt-get install -y tzdata gosu curl pciutils && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
