@@ -161,7 +161,6 @@ function addConnection() {
  * @returns {void}
  */
 function removeConnection(divId) {
-  debugger;
   if (connectionCount === 0) {
     return;
   }
@@ -486,4 +485,4 @@ function showToast(message, isError = false) {
   }, 3000);
 }
 
-console.log('builder.js loaded');
+// console.log('builder.js loaded');
