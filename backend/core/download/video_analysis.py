@@ -97,7 +97,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             video_info.streams.append(stream_info)
         return video_info
     except Exception as e:
-        print(f"Exception: {str(e)}")
+        logger.error(f"Error extracting video info: {str(e)}")
     return None
 
 
