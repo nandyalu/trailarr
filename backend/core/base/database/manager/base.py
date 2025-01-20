@@ -361,6 +361,7 @@ class MediaDatabaseManager:
             db_media.downloaded_at = media_update.downloaded_at
         if media_update.yt_id:
             db_media.youtube_trailer_id = media_update.yt_id
+        db_media.updated_at = datetime.now(timezone.utc)
         _session.add(db_media)
         if _commit:
             _session.commit()

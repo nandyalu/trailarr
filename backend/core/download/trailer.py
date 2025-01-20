@@ -191,6 +191,7 @@ def download_trailer(
         DownloadFailedError: If trailer download fails. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
+    db_manager = MediaDatabaseManager()
     output_file = ""
     trailer_downloaded = False
     trailer_url = ""
@@ -201,6 +202,15 @@ def download_trailer(
     if not video_id:
         trailer_downloaded = False
     else:
+        # Update status in database
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=True,
+                status=MonitorStatus.DOWNLOADING,
+                yt_id=media.yt_id,
+            )
+        )
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
         logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
@@ -238,13 +248,31 @@ def download_trailer(
     # Move the trailer to the specified folder
     try:
         trailer_file.move_trailer_to_folder(output_file, media, trailer_folder)
+        media.downloaded_at = datetime.now(timezone.utc)
         logger.info(
             f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
+        )
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=False,
+                status=MonitorStatus.DOWNLOADED,
+                trailer_exists=True,
+                downloaded_at=media.downloaded_at,
+                yt_id=media.yt_id,
+            )
         )
         return True
     except Exception as e:
         _move_res_msg = str(e)
         logger.error(f"Failed to move trailer to folder: {_move_res_msg}")
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=True,
+                status=MonitorStatus.MISSING,
+            )
+        )
         raise DownloadFailedError(f"Failed to move trailer to folder: {_move_res_msg}")
 
 
@@ -260,45 +288,20 @@ def download_trailers(
     media_type = "movies" if is_movie else "series"
     logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
     trailer_folder = trailer_file.trailer_folder_needed(is_movie)
-    db_manager = MediaDatabaseManager()
     sem = Semaphore(2)
     download_list = []
     for media in media_list:
         sem.acquire()
         logger.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
         try:
-            db_manager.update_media_status(
-                MediaUpdateDC(
-                    id=media.id,
-                    monitor=True,
-                    status=MonitorStatus.DOWNLOADING,
-                    yt_id=media.yt_id,
-                )
-            )
             if download_trailer(media, trailer_folder):
                 media.downloaded_at = datetime.now(timezone.utc)
                 download_list.append(media)
                 logger.info(
                     f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
                 )
-                update_res = MediaUpdateDC(
-                    id=media.id,
-                    monitor=False,
-                    status=MonitorStatus.DOWNLOADED,
-                    trailer_exists=True,
-                    downloaded_at=media.downloaded_at,
-                    yt_id=media.yt_id,
-                )
-                db_manager.update_media_status(update_res)
             else:
                 logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
-                db_manager.update_media_status(
-                    MediaUpdateDC(
-                        id=media.id,
-                        monitor=True,
-                        status=MonitorStatus.MISSING,
-                    )
-                )
         except Exception as e:
             logger.error(
                 f"Failed to download trailer for '[{media.id}]{media.title}': {e}"
