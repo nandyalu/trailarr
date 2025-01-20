@@ -77,11 +77,6 @@ def _get_ytdl_options() -> list[str]:
         _options.append("--embed-subs")
         _options.append("--sub-lang")
         _options.append(app_settings.trailer_subtitles_language)
-        # _options.append("--sub-format")
-        # if app_settings.trailer_subtitles_format:
-        #     _options.append(app_settings.trailer_subtitles_format)
-        # else:
-        #     _options.append("srt")
     # Fragment retries option - Not needed as default is 10
     # _options.append("--fragment-retries")
     # _options.append("10")
@@ -93,10 +88,8 @@ def _get_ytdl_options() -> list[str]:
     # Add cookies if available
     if app_settings.yt_cookies_path:
         logger.info(f"Using cookies file: {app_settings.yt_cookies_path}")
-        # _options.append("--cookies")
-        # _options.append(app_settings.yt_cookies_path)
-    _options.append("--cookies")
-    _options.append("/config/cookies.txt")
+        _options.append("--cookies")
+        _options.append(app_settings.yt_cookies_path)
     # Embed metadata if enabled
     if app_settings.trailer_embed_metadata:
         _options.append("--embed-metadata")
@@ -271,7 +264,7 @@ def download_video(url: str, file_path: str) -> str:
         )
         # Convert the video to the desired format
         _convert_video(download_file_path, converted_file_path)
-        os.remove(temp_file_path)
+        os.remove(download_file_path)
     except Exception as e:
         logger.error(f"Error downloading video: {e}")
         return ""
