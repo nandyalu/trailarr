@@ -61,6 +61,8 @@ class FolderInfo(BaseModel):
 class FilesHandler:
     """Utility class to handle files and folders."""
 
+    VIDEO_EXTENSIONS = tuple([".avi", "mkv", ".mp4", ".webm"])
+
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
         """Converts the size of the file to human-readable format (e.g. "10 KB") \n
@@ -160,7 +162,7 @@ class FilesHandler:
                     return True
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if entry.stat().st_size < 100 * 1024 * 1024:  # 100 MB
                 continue
@@ -184,7 +186,7 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     return True
         return False
 
@@ -198,7 +200,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if "trailer" not in entry.name:
                 continue
@@ -248,7 +250,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if "-trailer." not in entry.name:
                 continue
@@ -277,7 +279,7 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     return sub_entry.path
         return None
 
@@ -357,7 +359,7 @@ class FilesHandler:
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():
                     continue
-                if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     continue
                 if "-trailer." not in entry.name:
                     continue
@@ -389,3 +391,30 @@ class FilesHandler:
         except Exception as e:
             logger.error(f"Failed to cleanup temporary directory. Exception: {e}")
             return False
+
+    @staticmethod
+    def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
+        """Find all folders containing trailers in the specified root folders.\n
+        Finds trailers in the media folder and also in a 'trailer' folder\n
+        Args:
+            root_media_dir (str): The root directory to search for trailers.\n
+        Returns:
+            set[str]: Set of folder paths containing trailers."""
+        logger.info(f"Scanning '{root_media_dir}' for trailers.")
+        trailer_folders = set()
+        trailer_folders_inline = set()
+        count = 0
+        for root, dirs, files in os.walk(root_media_dir):
+            count += 1
+            for file in files:
+                if file.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
+                    if "trailer" in root.lower():
+                        trailer_folders.add(root)
+                        break  # No need to check more files in this folder
+                    if "trailer" in file.lower():
+                        trailer_folders_inline.add(root)
+                        break  # No need to check more files in this folder
+        msg = f"Scanned {count} media folders. Found {len(trailer_folders)} (folders) "
+        msg += f"and {len(trailer_folders_inline)} (inline) trailers."
+        logger.info(msg)
+        return trailer_folders_inline.union(trailer_folders)

@@ -7,6 +7,7 @@ from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import trailer_cleanup
 from core.tasks.download_trailers import download_missing_trailers
+from core.tasks.files_scan import scan_disk_for_trailers
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_update
 
@@ -64,7 +65,7 @@ def refresh_api_data_job():
 
 def image_refresh_job():
     """Schedules a background job to refresh images.\n
-        - Runs once every 6 hours, first run in 10 minutes. \n
+        - Runs once every 6 hours, first run in 12 minutes. \n
     Returns:
         None
     """
@@ -74,10 +75,29 @@ def image_refresh_job():
         hours=6,
         id="image_refresh_job",
         name="Image Refresh",
-        next_run_time=datetime.now() + timedelta(seconds=600),
+        next_run_time=datetime.now() + timedelta(seconds=720),
         max_instances=1,
     )
     logger.info("Image refresh job scheduled!")
+    return
+
+
+def scan_disk_for_trailers_job():
+    """Schedules a background job to scan disk for trailers.\n
+        - Runs once an hour, first run in 8 minute. \n
+    Returns:
+        None
+    """
+    scheduler.add_job(
+        func=scan_disk_for_trailers,
+        trigger="interval",
+        minutes=app_settings.monitor_interval,
+        id="scan_disk_for_trailers_job",
+        name="Scan Disk for Trailers",
+        next_run_time=datetime.now() + timedelta(seconds=480),
+        max_instances=1,
+    )
+    logger.info("Scan Disk for Trailers job scheduled!")
     return
 
 
@@ -150,6 +170,9 @@ def schedule_all_tasks():
 
     # Schedule update check task to run once a day, start in 4 minutes from now
     update_check_job()
+
+    # Schedule disk scan task to run every hour, start in 10 minutes from now
+    scan_disk_for_trailers_job()
 
     # Schedule trailer download task to run every hour, start in 15 minutes from now
     download_missing_trailers_job()
