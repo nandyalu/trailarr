@@ -1,7 +1,7 @@
 # Backend
 aiohttp==3.11.11
 aiofiles==24.1.0
-alembic==1.14.0
+alembic==1.14.1
 apscheduler==3.11.0
 async-lru==2.0.4
 fastapi[standard]==0.115.6  # Update version in README.md as well
