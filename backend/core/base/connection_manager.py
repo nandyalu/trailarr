@@ -1,6 +1,6 @@
 from abc import ABC
 from functools import cache
-from typing import Any, Callable, Protocol
+from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
 from core.base.database.manager.base import MediaDatabaseManager
@@ -36,6 +36,7 @@ class BaseConnectionManager(ABC):
     arr_manager: ArrManagerProtocol
     connection_id: int
     inline_trailer: bool
+    is_movie: bool
     monitor: MonitorType
     parse_media: Callable[[int, dict[str, Any]], MediaCreate]
 
@@ -45,6 +46,7 @@ class BaseConnectionManager(ABC):
         arr_manager: ArrManagerProtocol,
         parse_media: Callable[[int, dict[str, Any]], MediaCreate],
         inline_trailer: bool,
+        is_movie: bool = True,
     ):
         """Initialize the ArrConnectionManager. \n
         Args:
@@ -55,6 +57,10 @@ class BaseConnectionManager(ABC):
         self.arr_manager = arr_manager
         self.parse_media = parse_media
         self.inline_trailer = inline_trailer
+        self.is_movie = is_movie
+        self.created_count = 0
+        self.updated_count = 0
+        self.media_ids = []
 
     async def get_system_status(self):
         """Get the system status from the Arr application. \n
@@ -77,15 +83,29 @@ class BaseConnectionManager(ABC):
             logger.error("Failed to get media data from Arr application.")
             return []
 
-    async def _parse_data(self) -> list[MediaCreate]:
+    async def _parse_data(self) -> AsyncGenerator[list[MediaCreate], None]:
         """Parse media received from the Arr API to objects that can be added to database.\n
-        Returns:
-            list[_MediaCreate]: list of parsed media objects."""
+        Yields:
+            list[_MediaCreate]: list of parsed media objects in chunks of 100."""
         media_data = await self.get_media_data()
-        return [
-            self.parse_media(self.connection_id, each_media_data)
-            for each_media_data in media_data
-        ]
+        if not media_data:
+            yield []
+            return
+        # Parse the media data to MediaCreate objects in chunks of 100
+        count = 0
+        parsed_media: list[MediaCreate] = []
+        for media in media_data:
+            parsed_media.append(self.parse_media(self.connection_id, media))
+            count += 1
+            if count == 100:
+                yield parsed_media
+                count = 0
+                parsed_media = []
+        yield parsed_media
+        # return [
+        #     self.parse_media(self.connection_id, each_media_data)
+        #     for each_media_data in media_data
+        # ]
 
     def _apply_path_mappings(self, media_list: list[MediaCreate]) -> list[MediaCreate]:
         """Update the paths of the media based on the path mappings.\n
@@ -186,24 +206,32 @@ class BaseConnectionManager(ABC):
             media_data (list[MovieCreate]): The movie data to create or update.\n
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
-        movie_read_list = MediaDatabaseManager().create_or_update_bulk(media_data)
-        return [
-            MediaReadDC(
-                id=movie_read.id,
-                created=created,
-                folder_path=movie_read.folder_path,
-                arr_monitored=movie_read.arr_monitored,
-                monitor=movie_read.monitor,
-                status=movie_read.status,
-            )
-            for movie_read, created in movie_read_list
-        ]
+        media_read_list = MediaDatabaseManager().create_or_update_bulk(media_data)
+        # return [
+        #     MediaReadDC(
+        #         id=movie_read.id,
+        #         created=created,
+        #         folder_path=movie_read.folder_path,
+        #         arr_monitored=movie_read.arr_monitored,
+        #         monitor=movie_read.monitor,
+        #         status=movie_read.status,
+        #     )
+        #     for movie_read, created, updated in movie_read_list
+        # ]
+        media_read_dc_list = []
+        for media_read, created, updated in media_read_list:
+            self.media_ids.append(media_read.id)
+            if created:
+                self.created_count += 1
+            if updated:
+                self.updated_count += 1
+            media_read_dc = MediaReadDC(**media_read.model_dump(), created=created)
+            media_read_dc_list.append(media_read_dc)
+        return media_read_dc_list
 
-    def remove_deleted_media(self, media_ids: list[int]) -> None:
-        """Remove the media from the database that are not present in the Arr application. \n
-        Args:
-            media_ids (list[int]): List of media ids to remove."""
-        MediaDatabaseManager().delete_except(self.connection_id, media_ids)
+    def remove_deleted_media(self) -> None:
+        """Remove the media from the database that are not present in the Arr application."""
+        MediaDatabaseManager().delete_except(self.connection_id, self.media_ids)
         return
 
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
@@ -213,10 +241,10 @@ class BaseConnectionManager(ABC):
         MediaDatabaseManager().update_media_status_bulk(media_update_list)
         return
 
-    async def refresh(self):
-        """Gets new data from Arr API and saves it to the database."""
-        # Get the parsed data from the Arr API
-        parsed_media = await self._parse_data()
+    async def _process_media_list(self, parsed_media: list[MediaCreate]):
+        """Process the media list and update the database with the new data.\n
+        Args:
+            parsed_media (list[MediaCreate]): The parsed media data."""
         if len(parsed_media) == 0:
             logger.warning("No media found in the Arr application")
             return
@@ -224,16 +252,19 @@ class BaseConnectionManager(ABC):
         parsed_media2 = self._apply_path_mappings(parsed_media)
         # Create or update the media in the database
         media_res = self.create_or_update_bulk(parsed_media2)
-        # Delete any media that is not present in the Arr application
-        media_ids = [media.id for media in media_res]
-        self.remove_deleted_media(media_ids)
         # Check if media has trailer and should be monitored
         update_list: list[MediaUpdateDC] = []
         for media_read in media_res:
+            # Check if trailer exists
+            trailer_exists = None
             if media_read.folder_path is None:
                 trailer_exists = False
             else:
-                trailer_exists = await self._check_trailer(media_read.folder_path)
+                # Check if trailer exists on disk for new media only
+                if media_read.created:
+                    trailer_exists = await self._check_trailer(media_read.folder_path)
+                else:
+                    trailer_exists = media_read.trailer_exists
             # Check if monitor is already enabled
             if media_read.monitor:
                 monitor_media = True
@@ -257,4 +288,19 @@ class BaseConnectionManager(ABC):
             )
         # Update the database with trailer and monitoring status
         self.update_media_status_bulk(update_list)
+        return
+
+    async def refresh(self):
+        """Gets new data from Arr API and saves it to the database."""
+        # Get the parsed data from the Arr API
+        # parsed_media = await self._parse_data()
+        async for parsed_media in self._parse_data():
+            # Process the media list
+            await self._process_media_list(parsed_media)
+        media_type = "Movies" if self.is_movie else "Series"
+        logger.info(
+            f"{media_type}: {self.created_count} created, {self.updated_count} updated."
+        )
+        # Delete any media that is not present in the Arr application
+        self.remove_deleted_media()
         return

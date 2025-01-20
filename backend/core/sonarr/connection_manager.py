@@ -20,4 +20,5 @@ class SonarrConnectionManager(BaseConnectionManager):
             sonarr_manager,
             parse_series,
             inline_trailer=False,
+            is_movie=False,
         )

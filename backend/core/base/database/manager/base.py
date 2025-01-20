@@ -45,7 +45,7 @@ class MediaDatabaseManager:
         media_create_list: list[MediaCreate],
         *,
         _session: Session = None,  # type: ignore
-    ) -> list[tuple[MediaRead, bool]]:
+    ) -> list[tuple[MediaRead, bool, bool]]:
         """Create or update multiple media objects in the database at once. \n
         If media already exists, it will be updated, otherwise it will be created.\n
         Args:
@@ -53,31 +53,32 @@ class MediaDatabaseManager:
             _session (Session, Optional): A session to use for the database connection.\n
                 Default is None, in which case a new session will be created.\n
         Returns:
-            list[tuple[MediaRead, bool]]: List of tuples with MediaRead objects and created flag.\n
+            list[tuple[MediaRead, bool, bool]]: List of tuples with MediaRead object, \
+                created and updated flags.\n
             Example::\n
-                [(<MediaRead obj 1>, True), (<MediaRead obj 2>, False), ...] \n
+                [(<MediaRead obj 1>, True, False), (<MediaRead obj 2>, False, False), ...] \n
         Raises:
             ItemNotFoundError: If any of the connections with provided connection_id's are invalid.
             ValidationError: If any of the media items are invalid.
         """
         self._check_connection_exists_bulk(media_create_list, session=_session)
-        db_media_list: list[tuple[Media, bool]] = []
+        db_media_list: list[tuple[Media, bool, bool]] = []
         new_count: int = 0
         updated_count: int = 0
         for media_create in media_create_list:
             db_media, created, updated = self._create_or_update(media_create, _session)
-            db_media_list.append((db_media, created))
+            db_media_list.append((db_media, created, updated))
             if created:
                 new_count += 1
             if updated:
                 updated_count += 1
         _session.commit()
-        logger.info(
-            f"{self.__model_name}: {new_count} Created, {updated_count} Updated."
-        )
+        # logger.info(
+        #     f"{self.__model_name}: {new_count} Created, {updated_count} Updated."
+        # )
         return [
-            (MediaRead.model_validate(db_media), created)
-            for db_media, created in db_media_list
+            (MediaRead.model_validate(db_media), created, updated)
+            for db_media, created, updated in db_media_list
         ]
 
     @manage_session
@@ -479,6 +480,31 @@ class MediaDatabaseManager:
         if _commit:
             _session.commit()
         return None
+
+    @manage_session
+    def update_trailer_exists_bulk(
+        self,
+        media_updates: list[tuple[int, bool]],
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the trailer_exists status of multiple media items in the database at once.\n
+        Args:
+            media_updates (list[tuple[int, bool]]): List of tuples with media id and \
+                trailer_exists status.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If any of the media items with provided id's don't exist.
+        """
+        for media_id, trailer_exists in media_updates:
+            self.update_trailer_exists(
+                media_id, trailer_exists, _session=_session, _commit=False
+            )
+        _session.commit()
+        return
 
     @manage_session
     def delete(
