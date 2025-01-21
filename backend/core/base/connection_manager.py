@@ -106,6 +106,8 @@ class BaseConnectionManager(ABC):
                 yield parsed_media
                 count = 0
                 parsed_media = []
+        chunk_count += 1
+        logger.debug(f"Chunk {chunk_count}/{total_chunks} parsed")
         yield parsed_media
         # return [
         #     self.parse_media(self.connection_id, each_media_data)
