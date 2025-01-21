@@ -219,15 +219,15 @@ class _Config:
         """Log level for the application. \n
         Default is INFO. \n
         Valid values are DEBUG, INFO, WARNING, ERROR, CRITICAL."""
-        return self._debug
+        return self._log_level
 
     @log_level.setter
     def log_level(self, value: str):
         if value.upper() not in self._VALID_LOG_LEVELS:
             value = "INFO"
-        self._debug = value.upper()
-        app_logger_opts.set_logger_level(self._debug)
-        self._save_to_env("LOG_LEVEL", self._debug)
+        self._log_level = value.upper()
+        app_logger_opts.set_logger_level(self._log_level)
+        self._save_to_env("LOG_LEVEL", self._log_level)
 
     @property
     def testing(self):
@@ -587,14 +587,14 @@ class _Config:
     def exclude_words(self, value: str):
         self._exclude_words = value
         self._save_to_env("EXCLUDE_WORDS", self._exclude_words)
-    
+
     @property
     def trailer_remove_silence(self):
         """Remove silence from the trailers. \n
         Default is False. \n
         Valid values are True/False."""
         return self._trailer_remove_silence
-    
+
     @trailer_remove_silence.setter
     def trailer_remove_silence(self, value: bool):
         self._trailer_remove_silence = value
