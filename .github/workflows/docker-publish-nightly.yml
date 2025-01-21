@@ -27,6 +27,7 @@ on:
       - '**/docs/**'
       - '**/frontend/**'
       - '**/mkdocs.yml'
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -80,4 +81,4 @@ jobs:
           # cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           platforms: linux/amd64,linux/arm64
           build-args: |
-            APP_VERSION=${{ env.APP_VERSION }}
+            APP_VERSION=$(date +'%y%m%d')-nightly
