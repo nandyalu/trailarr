@@ -216,6 +216,7 @@ def download_trailer(
         logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
         tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
         if os.getenv("NEW_DOWNLOAD_METHOD", "false").lower() == "true":
+            logger.info("Using new download method for trailers")
             output_file = download_video2(trailer_url, tmp_output_file)
         else:
             output_file = download_video(trailer_url, tmp_output_file)
