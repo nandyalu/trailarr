@@ -400,7 +400,7 @@ class FilesHandler:
             root_media_dir (str): The root directory to search for trailers.\n
         Returns:
             set[str]: Set of folder paths containing trailers."""
-        logger.info(f"Scanning '{root_media_dir}' for trailers.")
+        logger.debug(f"Scanning '{root_media_dir}' for trailers.")
         trailer_folders = set()
         trailer_folders_inline = set()
         count = 0
@@ -416,5 +416,5 @@ class FilesHandler:
                         break  # No need to check more files in this folder
         msg = f"Scanned {count} media folders. Found {len(trailer_folders)} (folders) "
         msg += f"and {len(trailer_folders_inline)} (inline) trailers."
-        logger.info(msg)
+        logger.debug(msg)
         return trailer_folders_inline.union(trailer_folders)
