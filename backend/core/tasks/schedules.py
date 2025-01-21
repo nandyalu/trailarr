@@ -129,10 +129,10 @@ def trailer_cleanup_job():
     scheduler.add_job(
         func=_cleanup_trailers,
         trigger="interval",
-        minutes=app_settings.monitor_interval,
+        days=1,
         id="trailer_cleanup_job",
         name="Trailer Cleanup",
-        next_run_time=datetime.now() + timedelta(seconds=300),
+        next_run_time=datetime.now() + timedelta(hours=4),
         max_instances=1,
     )
     logger.info("Trailer Cleanup job scheduled!")
