@@ -1,8 +1,10 @@
 import os
 import subprocess
+import time
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.download.video_analysis import VideoInfo, get_media_info
+from core.download.video_analysis import VideoInfo
+from core.download.video_conversion import get_ffmpeg_cmd
 
 
 logger = ModuleLogger("TrailersDownloader2")
@@ -344,13 +346,14 @@ def _convert_video(input_file: str, output_file: str) -> str:
     Returns:
         str: Success message if the video is converted successfully
     """
-    # Get the media info of the input file
-    media_info = get_media_info(input_file)
-    if not media_info or len(media_info.streams) == 0:
-        logger.error("Failed to get media info, falling back to default options")
-        ffmpeg_cmd = _get_ffmpeg_cmd(input_file, output_file)
-    else:
-        ffmpeg_cmd = _get_ffmpeg_cmd_smart(media_info, input_file, output_file)
+    # # Get the media info of the input file
+    # media_info = get_media_info(input_file)
+    # if not media_info or len(media_info.streams) == 0:
+    #     logger.error("Failed to get media info, falling back to default options")
+    #     ffmpeg_cmd = _get_ffmpeg_cmd(input_file, output_file)
+    # else:
+    #     ffmpeg_cmd = _get_ffmpeg_cmd_smart(media_info, input_file, output_file)
+    ffmpeg_cmd = get_ffmpeg_cmd(input_file, output_file)
     # Convert the video
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
     with subprocess.Popen(
@@ -371,6 +374,17 @@ def _convert_video(input_file: str, output_file: str) -> str:
     return "Video converted successfully"
 
 
+def _cleanup_files(file_path: str):
+    """Cleanup the temporary files created during the download and conversion"""
+    # Check if a file already exists at the given path, delete it
+    dir_name = os.path.dirname(file_path)
+    if os.path.exists(dir_name):
+        for file in os.listdir(dir_name):
+            file_name_wo_ext, file_ext = os.path.splitext(file)
+            if file_name_wo_ext in file:
+                os.remove(os.path.join(dir_name, file))
+
+
 def download_video(url: str, file_path: str) -> str:
     """Download the video from the given URL
     Args:
@@ -382,16 +396,25 @@ def download_video(url: str, file_path: str) -> str:
         str: Success message if the video is downloaded successfully
     """
     try:
-        # Download the video using yt-dlp
+        # Get the file name from the file path
         file_name = os.path.basename(file_path)
         temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
+        # Cleanup the temporary files
+        _cleanup_files(file_path)
+
+        # Download the video using yt-dlp
+        start_time = time.perf_counter()  # Download start time
         download_file_path = _download_with_ytdlp(url, temp_file_path)
+        end_time = time.perf_counter()  # Download end time / Conversion start time
+        logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
+
         # Add the file extension from download file to the output file
         converted_file_path = file_path.replace(
             "%(ext)s", download_file_path.split(".")[-1]
         )
         # Convert the video to the desired format
         _convert_video(download_file_path, converted_file_path)
+        logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
         os.remove(download_file_path)
     except Exception as e:
         logger.error(f"Error downloading video: {e}")

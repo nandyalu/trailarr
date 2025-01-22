@@ -59,11 +59,11 @@ mkdir -p /app/tmp && chmod -R 755 /app/tmp
 
 echo "Checking for GPU availability..."
 # Check for NVIDIA GPU
-export NVIDIA_GPU_AVAILABLE="0"
+export NVIDIA_GPU_AVAILABLE="false"
 if command -v nvidia-smi &> /dev/null; then
     if nvidia-smi > /dev/null 2>&1; then
         echo "NVIDIA GPU is available."
-        export NVIDIA_GPU_AVAILABLE="1"
+        export NVIDIA_GPU_AVAILABLE="true"
     else
         echo "NVIDIA GPU is not available."
     fi
@@ -72,13 +72,13 @@ else
 fi
 
 # Check if /dev/dri exists
-export QSV_GPU_AVAILABLE="0"
+export QSV_GPU_AVAILABLE="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
         # Intel QSV might be available. Further check for Intel-specific devices
         if lspci | grep -iE 'Display|VGA' | grep -i 'Intel'; then
-            export QSV_GPU_AVAILABLE="1"
+            export QSV_GPU_AVAILABLE="true"
             echo "Intel GPU detected. Intel QSV is likely available."
         else
             echo "No Intel GPU detected. Intel QSV is not available."
