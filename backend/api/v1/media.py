@@ -5,7 +5,9 @@ from fastapi import APIRouter, HTTPException, status
 from api.v1 import websockets
 from api.v1.models import ErrorResponse, SearchMedia
 from core.base.database.manager.base import MediaDatabaseManager
+from core.base.database.models.helpers import MediaTrailer
 from core.base.database.models.media import MediaRead
+from core.download import trailer
 from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import download_trailer_by_id
 
@@ -211,6 +213,92 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     except Exception as e:
         await websockets.ws_manager.broadcast("Error changing Monitor status!", "Error")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@media_router.post(
+    "/{media_id}/update",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        },
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ErrorResponse,
+            "description": "Invalid YouTube URL/ID",
+        },
+    },
+)
+async def update_yt_id(media_id: int, yt_id: str) -> str:
+    """Update YouTube ID for media by ID. \n
+    Args:
+        media_id (int): ID of the media item.
+        yt_id (str): YouTube ID of the trailer. \n
+    Returns:
+        str: Updating YouTube ID message.
+    """
+    logging.info(f"Updating YouTube ID for media with ID: {media_id}")
+    # Check if yt_id is a URL and extract the ID
+    if yt_id and yt_id.startswith("http"):
+        _yt_id = trailer.extract_youtube_id(yt_id)
+        if not _yt_id:
+            msg = "Invalid YouTube URL/ID!"
+            await websockets.ws_manager.broadcast(msg, "Error")
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail="Invalid YouTube URL/ID!",
+            )
+        yt_id = _yt_id
+    db_handler = MediaDatabaseManager()
+    try:
+        db_handler.update_ytid(media_id, yt_id)
+        msg = f"YouTube ID for media with ID: {media_id} has been updated."
+        logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
+        return msg
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@media_router.post(
+    "/{media_id}/search",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        }
+    },
+)
+async def search_for_trailer(media_id: int) -> str:
+    """Search for trailer for media by ID. \n
+    Args:
+        media_id (int): ID of the media item. \n
+    Returns:
+        str: Searching for trailer message.
+    """
+    logging.info(f"Searching for trailer for media with ID: {media_id}")
+    db_handler = MediaDatabaseManager()
+    media = db_handler.read(media_id)
+    mediaT = MediaTrailer(
+        id=media.id,
+        title=media.title,
+        is_movie=media.is_movie,
+        language=media.language,
+        year=media.year,
+        yt_id=media.youtube_trailer_id,
+        folder_path=media.folder_path or "",
+    )
+    if yt_id := trailer.search_yt_for_trailer(mediaT):
+        db_handler.update_ytid(media_id, yt_id)
+        msg = f"Trailer found for media '{media.title}' [{media.id}] as [{yt_id}]"
+        logging.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success")
+        return msg
+    msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
+    logging.info(msg)
+    await websockets.ws_manager.broadcast(msg, "Error")
+    return msg
 
 
 @media_router.delete(

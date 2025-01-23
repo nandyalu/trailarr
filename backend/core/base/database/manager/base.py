@@ -508,6 +508,34 @@ class MediaDatabaseManager:
         return
 
     @manage_session
+    def update_ytid(
+        self,
+        media_id: int,
+        yt_id: str,
+        *,
+        _commit: bool = True,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the youtube trailer id of a media item in the database by id.\n
+        Args:
+            media_id (int): The id of the media to update.
+            yt_id (str): The youtube trailer id to set.
+            _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If the media item with provided id doesn't exist.
+        """
+        db_media = self._get_db_item(media_id, _session)
+        db_media.youtube_trailer_id = yt_id
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+        return
+
+    @manage_session
     def delete(
         self,
         media_id: int,

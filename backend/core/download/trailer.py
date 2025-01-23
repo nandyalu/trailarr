@@ -24,7 +24,7 @@ from exceptions import DownloadFailedError
 logger = ModuleLogger("TrailersDownloader")
 
 
-def _extract_youtube_id(url: str) -> str | None:
+def extract_youtube_id(url: str) -> str | None:
     """Extract youtube video id from url. \n
     Args:
         url (str): URL of the youtube video. \n
@@ -80,7 +80,7 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
                 return "The video contains an excluded word"
 
 
-def _search_yt_for_trailer(
+def search_yt_for_trailer(
     media: MediaTrailer,
     exclude: list[str] | None = None,
 ) -> str | None:
@@ -164,13 +164,13 @@ def _get_yt_id(media: MediaTrailer, exclude: list[str] | None = None) -> str | N
     video_id = ""
     if media.yt_id:
         if "youtu" in media.yt_id:
-            video_id = _extract_youtube_id(media.yt_id)
+            video_id = extract_youtube_id(media.yt_id)
         else:
             video_id = media.yt_id
     if video_id:
         return video_id
     # Search for trailer on youtube
-    video_id = _search_yt_for_trailer(media, exclude)
+    video_id = search_yt_for_trailer(media, exclude)
     return video_id
 
 
