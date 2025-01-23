@@ -50,13 +50,9 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 
-## Installation
+## Installation & Setup
 
-See the [Installation](./install.md) guide for detailed instructions on how to install Trailarr.
-
-## Setup
-
-See the [Setup](./setup/connections.md) guide for detailed instructions on how to setup Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on how to [install](./install.md) and [setup](./setup/connections.md) Trailarr.
 
 ## Dependencies
 
@@ -85,13 +81,13 @@ If you like the project, please consider giving us a star on [GitHub](https://gi
 
 ## Issues
 
-If you encounter any issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
 
 ## Contributing
 
 Contributions are welcome! Please see the [Contributing](./CONTRIBUTING.md) guide for more information.
 
-Looking for a frontend developer (Angular) to help with the UI, if you are interested, please reach out in the [Discussions](https://github.com/nandyalu/trailarr/discussions) or [Reddit](https://www.reddit.com/r/trailarr/).
+Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
 ## License
 
@@ -99,4 +95,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](https://nandyalu.github.io/trailarr/help/legal-disclaimer/).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](./help/legal-disclaimer/).

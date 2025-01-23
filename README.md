@@ -47,11 +47,8 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 
 ## Installation
 
-See the [Installation](https://nandyalu.github.io/trailarr/install/) guide for detailed instructions on how to install Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on how to [install](https://nandyalu.github.io/trailarr/install/) and [setup](https://nandyalu.github.io/trailarr/setup/connections/) Trailarr.
 
-## Setup
-
-See the [Setup](https://nandyalu.github.io/trailarr/setup/connections/) guide for detailed instructions on how to setup Trailarr.
 
 ## Dependencies
 
@@ -80,7 +77,7 @@ If you like the project, please consider giving us a star on [GitHub](https://gi
 
 ## Issues
 
-If you encounter any issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
 
 ## Contributing
 

@@ -129,12 +129,6 @@ Select the language of the subtitles to download. A valid ISO 639-1 language cod
 
 Enable this setting to embed metadata in the trailers.
 
-### Trailer Remove SponsorBlocks
-
-- Default is `true`
-
-Enable this setting to remove sponsor blocks from the trailers, if available. Sponsor blocks are sections of the trailer that contain promotional content like intros, outros, ads, etc.
-
 ### Trailer Web Optimized
 
 - Default is `true`
@@ -217,12 +211,21 @@ See [Export YouTube Cookies.txt file](../help/common.md#export-youtube-cookiestx
 
 ## Experimental Settings
 
-These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
+These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
 ### Trailer Remove Silence
 
-- Default is 'False'
+- Default is `false`
 
 Enable this option to let Trailarr analyse the video file and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
 
 Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.
+
+## Hardware Acceleration
+
+- Default is `false`
+
+Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
+
+!!! note
+    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../install/hardware-acceleration.md).

@@ -93,6 +93,7 @@ nav:
     - Volume Mapping: install/volume-mapping.md
     - Docker Compose: install/docker-compose.md
     - Docker Run: install/docker-cli.md
+    - Hardware Acceleration: install/hardware-acceleration.md
     # - Docker Builder: install/docker-builder.md
     # - Usage: install/form.html
   - Setup:
