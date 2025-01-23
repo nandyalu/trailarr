@@ -60,6 +60,9 @@ class Settings(BaseModel):
     wait_for_media: bool
     yt_cookies_path: str
     trailer_remove_silence: bool
+    nvidia_gpu_available: bool
+    trailer_hardware_acceleration: bool
+    new_download_method: bool
 
 
 class UpdateSetting(BaseModel):
