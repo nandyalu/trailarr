@@ -76,6 +76,8 @@ If you still need help, please use the below:
 > **Note:** Please do not use the GitHub issues for support requests!
 
 
+If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr).
+
 ## Issues
 
 If you encounter any issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
