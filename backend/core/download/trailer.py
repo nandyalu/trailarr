@@ -1,7 +1,6 @@
 # Extract youtube video id from url
 from datetime import datetime, timezone
 from functools import partial
-import os
 import re
 from threading import Semaphore
 
@@ -106,6 +105,9 @@ def search_yt_for_trailer(
         "no_warnings": True,
         "quiet": True,
     }
+    if app_settings.yt_cookies_path:
+        logger.debug(f"Using cookies file: {app_settings.yt_cookies_path}")
+        options["cookiefile"] = f"{app_settings.yt_cookies_path}"
     # Construct search query with keywords for 5 search results
     search_query_format = app_settings.trailer_search_query
     format_opts = media.to_dict()  # Convert media object to dictionary for formatting
@@ -215,7 +217,7 @@ def download_trailer(
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
         logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
         tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
-        if os.getenv("NEW_DOWNLOAD_METHOD", "false").lower() == "true":
+        if app_settings.new_download_method:
             logger.info("Using new download method for trailers")
             output_file = download_video2(trailer_url, tmp_output_file)
         else:
