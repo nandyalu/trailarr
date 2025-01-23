@@ -104,5 +104,6 @@ nav:
     - Release Notes: help/release-notes.md
     # - Changelog: help/changelog.md
     - Docker Builder: help/docker-builder/builder.html
+    - Legal Disclaimer: help/legal-disclaimer.md
 # extra_javascript:
 #   - js/docker-builder.js
