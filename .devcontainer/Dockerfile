@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # Install the xz-utils package
-RUN apt-get update && apt-get install -y curl xz-utils tzdata git gnupg2 \
+RUN apt-get update && apt-get install -y curl xz-utils tzdata \
+    git gnupg2 pciutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -11,7 +12,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install specific version of npm
-RUN npm install -g npm@10.9.1
+RUN npm install -g npm@11.0.0
 
 # Install specific version of Angular CLI
 RUN npm install -g @angular/cli@19.0.1
@@ -36,7 +37,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.2.1-beta"
+    APP_VERSION="0.2.1-beta" \
+    NVIDIA_VISIBLE_DEVICES="all" \
+    NVIDIA_DRIVER_CAPABILITIES="all" \
+    NEW_DOWNLOAD_METHOD="false"
 
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
