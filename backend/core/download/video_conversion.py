@@ -1,4 +1,3 @@
-import os
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.download.video_analysis import StreamInfo, get_media_info
@@ -240,10 +239,9 @@ def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
     Returns:
         list[str]: FFMPEG command list."""
     # Check if NVIDIA hardware acceleration is enabled
-    nvidia_available = os.getenv("NVIDIA_GPU_AVAILABLE", "false") == "true"
-    # nvidia_available = True
-    # app_settings.trailer_hardware_acceleration
-    use_nvidia = True and nvidia_available
+    use_nvidia = (
+        app_settings.nvidia_gpu_available and app_settings.trailer_hardware_acceleration
+    )
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
     _subtitle_stream: StreamInfo | None = None
