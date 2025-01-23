@@ -36,6 +36,8 @@ _VIDEO_CODECS = {
     "vp8": "libvpx",
     "vp9": "libvpx-vp9",
     # "av1": "libaom-av1",
+    # if av1 is selected and downloaded video is not in av1 codec, then convert to vp9
+    "av1": "libvpx-vp9",
 }
 
 _VIDEO_CODECS_NVIDIA = {

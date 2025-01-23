@@ -76,6 +76,10 @@ def _get_ytdl_options() -> list[str]:
     _options.append("-f")
     _vres = f"[height<=?{app_settings.trailer_resolution}]"
     _vcodec = f"[vcodec={app_settings.trailer_video_format}]"
+    # Most of the current hardware struggles with av1 conversion
+    # So, we will try and download from YT in av1 format directly if available
+    if app_settings.trailer_video_format == "av1":
+        _vcodec = "[vcodec^=av]"
     _acodec = f"[acodec={app_settings.trailer_audio_format}]"
     # Format 1: Best video and audio with the given resolution and codecs
     _format = f"bestvideo{_vres}{_vcodec}+bestaudio{_acodec}"
