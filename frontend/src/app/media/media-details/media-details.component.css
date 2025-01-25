@@ -166,6 +166,17 @@
   border-bottom-right-radius: 6px;
 }
 
+.input-row {
+  display: flex;
+  flex-direction: row;
+  gap: .5rem;
+}
+
+.save-button {
+  height: 40px;
+  width: 40px;
+}
+
 .info-text {
   margin: 0.5rem;
   padding: 0.5rem;

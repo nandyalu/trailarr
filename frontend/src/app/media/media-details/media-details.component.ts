@@ -183,6 +183,24 @@ export class MediaDetailsComponent {
     });
   }
 
+  searchTrailer() {
+    // console.log('Searching for trailer');
+    this.isLoadingDownload = true;
+    this.mediaService.searchMediaTrailer(this.mediaId).subscribe((res: string) => {
+      this.media!.youtube_trailer_id = res;
+      this.isLoadingDownload = false;
+    });
+  }
+
+  saveYtId() {
+    // console.log('Saving youtube id');
+    this.isLoadingDownload = true;
+    this.mediaService.saveMediaTrailer(this.mediaId, this.trailer_url).subscribe((res: string) => {
+      this.media!.youtube_trailer_id = res;
+      this.isLoadingDownload = false;
+    });
+  }
+
   /**
    * Opens a new browser tab to play the YouTube trailer of the current media.
    * If the media does not have a YouTube trailer ID, the function returns without doing anything.
