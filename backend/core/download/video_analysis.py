@@ -189,8 +189,8 @@ def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
                     f"Timestamps Start: {silence_start}, End: {silence_end}"
                 )
                 break
-        # timeTook = datetime.now() - time
-        # print(f"Time took: {timeTook}")
+        # Add 2 seconds to silence start to avoid cutting the audio abruptly
+        silence_start = silence_start + 2.0 if silence_start is not None else None
         return silence_start, silence_end
     except Exception as e:
         logger.exception(f"Exception while detecting silence in video: {str(e)}")
@@ -268,9 +268,11 @@ def remove_silence_at_end(file_path: str) -> str:
         return file_path
     # Remove silence from the end of the video
     output_file = f"/app/tmp/trimmed_{os.path.basename(file_path)}"
+    # file_name, file_ext = os.path.splitext(file_path)
+    # output_srt = f"/app/tmp/trimmed_{os.path.basename(file_name)}.srt"
     try:
         logger.info(
-            f"Silence detected at end of video. Trimming video at {silence_end}"
+            f"Silence detected at end of video. Trimming video at {silence_start}"
         )
         trim_video_at_end(file_path, output_file, silence_start)
     except Exception as e:
