@@ -59,6 +59,28 @@ export class TrailerComponent {
     if (this.settings ? this.settings[key] === value : false) {
       return;
     }
+    // Special handling for trailer_file_format
+    if (key === 'trailer_file_format') {
+      // If the file format is webm, ensure the audio and video formats are compatible
+      let videoCodec = this.settings?.trailer_video_format;
+      if (value.toLowerCase() === 'webm') {
+        if (this.settings?.trailer_audio_format != 'opus') {
+          this.updateSetting('trailer_audio_format', 'opus');
+        }
+        if (videoCodec != 'vp8' && videoCodec != 'vp9' && videoCodec != 'av1') {
+          this.updateSetting('trailer_video_format', 'vp9');
+        }
+      }
+      // If the file format is mp4, ensure the audio and video formats are compatible
+      if (value.toLowerCase() === 'mp4') {
+        if (this.settings?.trailer_audio_format != 'aac') {
+          this.updateSetting('trailer_audio_format', 'aac');
+        }
+        if (videoCodec != 'h264' && videoCodec != 'h265' && videoCodec != 'av1') {
+          this.updateSetting('trailer_video_format', 'h264');
+        }
+      }
+    }
     this.settingsService.updateSetting(key, value).subscribe(msg => {
       // Add update result message to end of list
       this.updateResults.push(msg);
