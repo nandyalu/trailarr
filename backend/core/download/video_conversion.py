@@ -258,8 +258,8 @@ def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
     ffmpeg_cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
-        "-loglevel",
-        "warning",
+        # "-loglevel",
+        # "repeat+level+warning",
     ]
     # Set video specific options
     ffmpeg_cmd.extend(_get_video_options(input_file, use_nvidia, _video_stream))
