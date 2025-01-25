@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager.base import MediaDatabaseManager
-from core.base.database.models.helpers import MediaTrailer
+from core.base.database.models.helpers import MediaTrailer, MediaUpdateDC
+from core.base.database.models.media import MonitorStatus
 from core.download.trailer import download_trailer, download_trailers
 from core.files_handler import FilesHandler
 from core.tasks import scheduler
@@ -149,6 +150,14 @@ def _download_trailer_by_id(mediaT: MediaTrailer):
             return
     except Exception as e:
         exception_msg = str(e)
+        db_manager = MediaDatabaseManager()
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=mediaT.id,
+                monitor=True,
+                status=MonitorStatus.MISSING,
+            )
+        )
     logger.debug("Trailer download failed! Updating trailer status in database")
     # db_manager.update_media_status(
     #     MediaUpdateDC(
