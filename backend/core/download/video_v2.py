@@ -399,37 +399,38 @@ def download_video(url: str, file_path: str) -> str:
     Returns:
         str: Success message if the video is downloaded successfully
     """
-    try:
-        # Get the file name from the file path
-        file_name = os.path.basename(file_path)
-        temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
-        # Cleanup the temporary files
-        _cleanup_files(file_path)
+    # try:
+    # Get the file name from the file path
+    file_name = os.path.basename(file_path)
+    temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
+    # Cleanup the temporary files
+    _cleanup_files(file_path)
 
-        # Download the video using yt-dlp
-        start_time = time.perf_counter()  # Download start time
-        download_file_path = _download_with_ytdlp(url, temp_file_path)
-        end_time = time.perf_counter()  # Download end time / Conversion start time
-        logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
+    # Download the video using yt-dlp
+    start_time = time.perf_counter()  # Download start time
+    download_file_path = _download_with_ytdlp(url, temp_file_path)
+    end_time = time.perf_counter()  # Download end time / Conversion start time
+    logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
 
-        # Add the file extension from download file to the output file
-        converted_file_path = file_path.replace(
-            "%(ext)s", download_file_path.split(".")[-1]
-        )
-        # Convert the video to the desired format
-        _convert_video(download_file_path, converted_file_path)
-        logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
-        os.remove(download_file_path)
-    except Exception as e:
-        logger.error(f"Error downloading video: {e}")
-        return ""
+    # Add the file extension from download file to the output file
+    converted_file_path = file_path.replace(
+        "%(ext)s", download_file_path.split(".")[-1]
+    )
+    # Convert the video to the desired format
+    _convert_video(download_file_path, converted_file_path)
+    logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
+    os.remove(download_file_path)
+    # except Exception as e:
+    #     logger.error(f"Error downloading video: {e}")
+    #     return ""
     logger.info("Video downloaded successfully")
     return converted_file_path
 
 
 if __name__ == "__main__":
     app_settings.log_level = "DEBUG"
-    download_video("https://www.youtube.com/watch?v=WHXq62VCaCM", "output.mkv")
+    _convert_video("/app/tmp/tmp_2782-trailer.webm", "/app/tmp/output1-converted.mkv")
+    # download_video("https://www.youtube.com/watch?v=WHXq62VCaCM", "output.mkv")
     # Age restricted video
     # download_video("https://www.youtube.com/watch?v=pLWda_RrQn4", "output2.mkv")
     # download_video("https://www.youtube.com/watch?v=IS_-maoP9Qs", "output3.mkv")
