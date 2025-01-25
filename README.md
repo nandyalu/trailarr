@@ -77,13 +77,13 @@ If you like the project, please consider giving us a star on [GitHub](https://gi
 
 ## Issues
 
-If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues) or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ) (recommended).
 
 ## Contributing
 
 Contributions are welcome! Please see the [Contributing](https://github.com/nandyalu/trailarr/blob/main/.github/CONTRIBUTING.md) guide for more information.
 
-Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
+Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ).
 
 ## License
 

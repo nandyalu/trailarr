@@ -85,3 +85,11 @@ To enable hardware acceleration in Trailarr, navigate to `Settings` -> `General`
 
 !!! note
     Hardware acceleration with NVIDIA GPUs is only available for `H.264` and `H.265` codecs at this time. Other codecs use software encoding.
+
+### Helpful Links
+
+- [NVIDIA Container Toolkit Installation Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html){:target="_blank"}
+- [Docker Compose - GPU](https://docs.docker.com/compose/how-tos/gpu-support/){:target="_blank"}
+- [Docker GPU Support](https://docs.docker.com/desktop/features/gpu/){:target="_blank"}
+- [Enable NVIDIA in WSL](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-cuda-in-wsl){:target="_blank"}
+- [NVIDIA Blog Post](https://developer.nvidia.com/blog/gpu-containers-runtime/){:target="_blank"}
