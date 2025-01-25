@@ -275,7 +275,7 @@ async def search_for_trailer(media_id: int) -> str:
     Args:
         media_id (int): ID of the media item. \n
     Returns:
-        str: Searching for trailer message.
+        str: Youtube ID of the trailer if found, else empty string. \n
     """
     logging.info(f"Searching for trailer for media with ID: {media_id}")
     db_handler = MediaDatabaseManager()
@@ -294,11 +294,11 @@ async def search_for_trailer(media_id: int) -> str:
         msg = f"Trailer found for media '{media.title}' [{media.id}] as [{yt_id}]"
         logging.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
-        return msg
+        return yt_id
     msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
     logging.info(msg)
     await websockets.ws_manager.broadcast(msg, "Error")
-    return msg
+    return ""
 
 
 @media_router.delete(
