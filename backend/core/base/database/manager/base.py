@@ -346,7 +346,7 @@ class MediaDatabaseManager:
         else:
             db_media.monitor = media_update.monitor
         # Update status based on monitor status and trailer existence if not downloading
-        if media_update.status != MonitorStatus.DOWNLOADING:
+        if media_update.status not in (MonitorStatus.DOWNLOADING, MonitorStatus.MISSING):
             if db_media.trailer_exists:
                 _status = MonitorStatus.DOWNLOADED
             else:
