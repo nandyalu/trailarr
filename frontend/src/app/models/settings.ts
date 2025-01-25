@@ -29,7 +29,11 @@ export interface Settings {
     update_available: boolean
     wait_for_media: boolean
     yt_cookies_path: string
+    new_download_method: boolean
+    nvidia_gpu_available: boolean
     trailer_remove_silence: boolean
+
+    trailer_hardware_acceleration: boolean
 }
 
 export interface ServerStats {
