@@ -37,6 +37,12 @@ def _refresh_images():
     return
 
 
+def _scan_disk_for_trailers():
+    """Scans the disk for trailers."""
+    run_async(scan_disk_for_trailers)
+    return
+
+
 def _cleanup_trailers():
     """Cleanup trailers without audio."""
     run_async(trailer_cleanup)
@@ -89,7 +95,7 @@ def scan_disk_for_trailers_job():
         None
     """
     scheduler.add_job(
-        func=scan_disk_for_trailers,
+        func=_scan_disk_for_trailers,
         trigger="interval",
         minutes=app_settings.monitor_interval,
         id="scan_disk_for_trailers_job",
