@@ -249,6 +249,11 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
                 detail="Invalid YouTube URL/ID!",
             )
         yt_id = _yt_id
+    # If id is not empty, check if it is valid (length > 11)
+    if yt_id and len(yt_id) < 11:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Invalid YouTube ID!"
+        )
     db_handler = MediaDatabaseManager()
     try:
         db_handler.update_ytid(media_id, yt_id)
