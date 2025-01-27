@@ -73,11 +73,8 @@ export class TrailerComponent {
       }
       // If the file format is mp4, ensure the audio and video formats are compatible
       if (value.toLowerCase() === 'mp4') {
-        if (this.settings?.trailer_audio_format != 'aac') {
-          this.updateSetting('trailer_audio_format', 'aac');
-        }
         if (videoCodec != 'h264' && videoCodec != 'h265' && videoCodec != 'av1') {
-          this.updateSetting('trailer_video_format', 'h264');
+          this.updateSetting('trailer_video_format', 'h265');
         }
       }
     }

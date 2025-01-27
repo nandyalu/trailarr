@@ -467,6 +467,8 @@ dialog {
   display: none;
   padding: 0;
   opacity: 0;
+  margin: auto;
+  border-radius: 0.5rem;
   translate: 0 25vh;
   transition-property: overlay display opacity;
   transition-duration: 1s;

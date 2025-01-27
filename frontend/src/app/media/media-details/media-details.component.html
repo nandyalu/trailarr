@@ -150,7 +150,7 @@
                 <span class="text-md sm-show">Youtube ID/URL:</span>
                 <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL">
               </div>
-              @if (media.youtube_trailer_id == "" && trailer_url == "") {
+              @if (media.youtube_trailer_id == "" && trailer_url == "" && !isLoadingDownload) {
               <span class="search-button icon-link" title="Search Trailer" (click)="searchTrailer()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
@@ -158,7 +158,26 @@
                 </svg>
               </span>
               }
-              @if (trailer_url != media.youtube_trailer_id) {
+              @if (isLoadingDownload) {
+              <!-- Show loading icon -->
+              <span class="loading-search icon-link" title="Searching for Trailer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+                  <circle stroke-width="14" r="15" cx="40" cy="65">
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+                      repeatCount="indefinite" begin="-.4"></animate>
+                  </circle>
+                  <circle stroke-width="14" r="15" cx="100" cy="65">
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+                      repeatCount="indefinite" begin="-.2"></animate>
+                  </circle>
+                  <circle stroke-width="14" r="15" cx="160" cy="65">
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+                      repeatCount="indefinite" begin="0"></animate>
+                  </circle>
+                </svg>
+              </span>
+              }
+              @if (trailer_url != media.youtube_trailer_id && !isLoadingDownload) {
               <button *ngIf="trailer_url != media.youtube_trailer_id" class="primary icononly-button save-button success" id="update_trailer_search_query" tabindex="24" (click)="saveYtId()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
@@ -191,81 +210,10 @@
         </div>
       </div>
     </div>
-    <!-- New Accordian Files -->
-    <div class="media-files-container">
-      <p class="text-md files-title">Files</p>
-      <hr>
-      <div *ngIf="filesLoading; else filessLoaded" class="loading-wave center">
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-      </div>
-      <ng-template #filessLoaded>
-        <div *ngIf="mediaFiles; else noFilesFound" class="media-files">
-          <!-- Header -->
-          <div class="files-header sm-none text-sm">
-            <div></div> <!-- Empty Col for Icons -->
-            <div>Name</div>
-            <div>Size</div>
-            <div>Modified</div>
-          </div>
-          <!-- Content -->
-          <ng-container *ngTemplateOutlet="folTemplate; context:{ folder: mediaFiles }"></ng-container>
-        </div>
-      </ng-template>
-    </div>
+    <!-- Show Media Files -->
+    <media-files [mediaId]="media?.id || 0"></media-files>
   </ng-template>
 </div>
-
-<ng-template #noFilesFound>
-  <div class="media-files">
-    <p class="text-sm text-center">No Files Found</p>
-  </div>
-</ng-template>
-
-<ng-template let-folder="folder" #folTemplate>
-  <div class="files-accordion">
-    <div class="files-header" (click)="folder.isExpanded = !folder.isExpanded" [class.parent]="folder.type == 'folder'">
-      <div class="files-icon">
-        <ng-container *ngIf="folder.type === 'folder'; else fileIcon">
-          <!-- Show Folder Icon -->
-          <ng-container *ngIf="folder.isExpanded; else folderClosedIcon">
-            <!-- Folder Open Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-              <path
-                d="M146.67-160q-26.34 0-46.5-20.17Q80-200.33 80-226.67v-506.66q0-26.34 20.17-46.5Q120.33-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67H146.67v440l100-373.33H940L834.33-209.67q-6.66 24.67-24.5 37.17Q792-160 766.67-160h-620Z" />
-            </svg>
-          </ng-container>
-          <ng-template #folderClosedIcon>
-            <!-- Folder Closed Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-              <path
-                d="M146.67-160q-27 0-46.84-20.17Q80-200.33 80-226.67v-506.66q0-26.34 19.83-46.5Q119.67-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67v440q0 26.34-20.17 46.5Q839.67-160 813.33-160H146.67Z" />
-            </svg>
-          </ng-template>
-        </ng-container>
-        <ng-template #fileIcon>
-          <!-- File Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-            <path
-              d="M319.33-246.67h321.34v-66.66H319.33v66.66Zm0-166.66h321.34V-480H319.33v66.67ZM226.67-80q-27 0-46.84-19.83Q160-119.67 160-146.67v-666.66q0-27 19.83-46.84Q199.67-880 226.67-880H574l226 226v507.33q0 27-19.83 46.84Q760.33-80 733.33-80H226.67Zm314-542.67h192.66L540.67-813.33v190.66Z" />
-          </svg>
-        </ng-template>
-      </div>
-      <div class="files-name">{{folder.name}}</div>
-      <div class="files-size">{{folder.size}}</div>
-      <div class="files-modified">{{folder.modified}}</div>
-    </div>
-    <div *ngIf="folder.type == 'folder'" class="child">
-      <ng-container *ngIf="folder.isExpanded">
-        <ng-container *ngFor="let childFolder of folder.files">
-          <ng-container *ngTemplateOutlet="folTemplate; context:{ folder: childFolder }"></ng-container>
-        </ng-container>
-      </ng-container>
-    </div>
-  </div>
-</ng-template>
 
 <dialog #deleteDialog (click)="closeDeleteDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">

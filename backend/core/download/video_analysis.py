@@ -18,6 +18,10 @@ class StreamInfo(BaseModel):
     codec_name: str
     coded_height: int = 0
     coded_width: int = 0
+    audio_channels: int = 0
+    sample_rate: int = 0
+    language: str = ""
+    duration: str = ""
 
 
 class VideoInfo(BaseModel):
@@ -25,16 +29,32 @@ class VideoInfo(BaseModel):
     name: str
     format_name: str
     duration_seconds: int = 0
+    duration: str = "0:00:00"
     size: int = 0
-    bit_rate: int = 0
+    bitrate: str = "0 bps"
     streams: list[StreamInfo]
 
-    @property
-    def duration(self):
-        duration = self.duration_seconds
-        hours, remainder = divmod(duration, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        return f"{hours}:{minutes:02}:{seconds:02}"
+
+def convert_duration(duration_seconds: str) -> str:
+    duration = int(float(duration_seconds))
+    hours, remainder = divmod(duration, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours}:{minutes:02}:{seconds:02}"
+
+
+def convert_bitrate(bit_rate: str) -> str:
+    # Convert to human readable format
+    value = int(bit_rate)
+    _rate = 1000 * 1000 * 1000  # 1 Gbps
+    if value > _rate:
+        return f"{value / _rate:.2f} Gbps"
+    _rate = 1000 * 1000  # 1 Mbps
+    if value > _rate:
+        return f"{value / _rate:.2f} Mbps"
+    _rate = 1000  # 1 Kbps
+    if value > _rate:
+        return f"{value / _rate:.2f} kbps"
+    return f"{value} bps"
 
 
 def get_media_info(file_path: str) -> VideoInfo | None:
@@ -47,7 +67,8 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate : "
-        "stream=index,codec_type,codec_name,coded_height,coded_width"
+        "stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate : "
+        "stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
         "/usr/local/bin/ffprobe",
@@ -81,18 +102,31 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             name=os.path.basename(file_path),
             format_name=str(format.get("format_name", "N/A")),
             duration_seconds=int(float(format.get("duration", "0"))),
+            duration=convert_duration(format.get("duration", "0")),
             size=int(format.get("size", "0")),
-            bit_rate=int(format.get("bit_rate", "0")),
+            bitrate=convert_bitrate(format.get("bit_rate", "0")),
             streams=[],
         )
         # Loop through streams and create StreamInfo objects
         for stream in info["streams"]:
+            _language = ""
+            if "tags" in stream and "language" in stream["tags"]:
+                _language = stream["tags"]["language"]
+            _duration = "0"
+            if "tags" in stream and "DURATION" in stream["tags"]:
+                _duration = stream["tags"]["DURATION"]
+            if "tags" in stream and "duration" in stream["tags"]:
+                _duration = stream["tags"]["duration"]
             stream_info = StreamInfo(
                 index=int(stream.get("index", 0)),
                 codec_type=str(stream.get("codec_type", "N/A")),
                 codec_name=str(stream.get("codec_name", "N/A")),
                 coded_height=int(stream.get("coded_height", 0)),
                 coded_width=int(stream.get("coded_width", 0)),
+                audio_channels=int(stream.get("channels", 0)),
+                sample_rate=int(stream.get("sample_rate", 0)),
+                language=_language,
+                duration=_duration,
             )
             video_info.streams.append(stream_info)
         return video_info
