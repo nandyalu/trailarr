@@ -95,4 +95,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](./help/legal-disclaimer/).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](./help/legal-disclaimer.md).
