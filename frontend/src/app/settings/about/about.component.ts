@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TimeagoModule } from 'ngx-timeago';
 import { ServerStats, Settings } from '../../models/settings';
 import { SettingsService } from '../../services/settings.service';
+import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
     selector: 'app-about',
@@ -22,7 +23,10 @@ export class AboutComponent {
   newPasswordVisible = false;
 
 
-  constructor(private settingsService: SettingsService) {}
+  constructor(
+    private settingsService: SettingsService,
+    private websocketService: WebsocketService
+  ) {}
 
   ngOnInit() {
     this.settingsService.getSettings().subscribe(settings => this.settings = settings);
@@ -31,6 +35,28 @@ export class AboutComponent {
 
   updatePassword() {
     // this.settingsService.updatePassword().subscribe();
+  }
+
+  async copyToClipboard(textToCopy: string) {
+    if (!navigator.clipboard) {
+      // Fallback to the old execCommand() way (for wider browser coverage)
+      const tempInput = document.createElement("input");
+      tempInput.value = textToCopy;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      this.websocketService.showToast("Copied to clipboard!");
+    } else {
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        this.websocketService.showToast("Copied to clipboard!");
+      } catch (err) {
+        this.websocketService.showToast("Error copying text to clipboard.", "Error");
+        console.error('Failed to copy: ', err);
+      }
+    }
+    return;
   }
 
   // Reference to the dialog element
