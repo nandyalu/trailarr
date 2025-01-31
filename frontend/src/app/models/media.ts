@@ -51,12 +51,17 @@ export interface FolderInfo {
     type: string;
     name: string;
     size: string;
+    path: string;
     files: FolderInfo[];
     modified: Date;
+    isExpanded: boolean;
 }
 
 export function mapFolderInfo(folder: any): FolderInfo {
-    let _files = [{ type: 'folder', name: 'None', size: '', files: [], modified: new Date() }];
+    let _files = [{
+        type: 'folder', name: 'None', size: '', path: '',
+        files: [], modified: new Date(), isExpanded: false
+    }];
     if (folder.files) {
         _files = folder.files.map((file: any) => isFile(file) ? mapFileInfo(file) : mapFolderInfo(file));
     }
@@ -71,6 +76,7 @@ export function mapFolderInfo(folder: any): FolderInfo {
 function mapFileInfo(file: any): FolderInfo {
     return {
         ...file,
+        isExpanded: false,
         modified: new DatePipe('en-US').transform(file.created, 'medium')
     };
 }

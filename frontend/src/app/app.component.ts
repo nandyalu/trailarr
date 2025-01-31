@@ -15,32 +15,15 @@ import { MessageData, WebsocketService } from './services/websocket.service';
 export class AppComponent {
   messages: MessageData[] = [];
   private toastSubscription?: Subscription;
-  private websocketSubscription?: Subscription;
 
   private timeoutId: any;
   private readonly IDLE_LIMIT: number = 10 * 60 * 1000; // 10 minutes in milliseconds
-
 
   constructor(private websocketService: WebsocketService) { }
 
   ngOnInit() {
     // Reset the idle timer
     this.resetIdleTimer();
-    // Subscribe to the WebSocket events and display the messages
-    this.websocketSubscription = this.websocketService.connect().subscribe({
-      next: (data: MessageData) => {
-        this.messages.unshift(data);
-        setTimeout(() => {
-          this.messages.pop();
-        }, 3000);
-      },
-      error: (error) => {
-        console.error('Error:', error);
-      },
-      complete: () => {
-        console.log('Connection closed');
-      }
-    })
 
     // Subscribe to messages and display them
     this.toastSubscription = this.websocketService.toastMessage.subscribe({
@@ -73,7 +56,6 @@ export class AppComponent {
     // Close the websocket connection
     this.websocketService.close();
     // Unsubscribe from the websocket and toast messages
-    this.websocketSubscription?.unsubscribe();
     this.toastSubscription?.unsubscribe();
     // Clear api_key from cookies
     document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';

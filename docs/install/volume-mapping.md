@@ -169,3 +169,33 @@ For example, if Radarr has `/mnt/disk1/media/movies` mapped to `/media` and Sona
 ```
 
 Now, Trailarr will replace `C:\Users\username\Movies` with `/media/movies` in the media paths provided by Radarr, and `C:\Users\username\TV` with `/media/tv` in the media paths provided by Sonarr.
+
+
+### Example 5 - Windows with Drives/Network Shares and Docker Volume for AppData
+
+If you are using network shares, you need to mount the network share(s)/Drive(s) to your system, and then map the local folder(s) to the Trailarr container.
+
+Windows and Docker Desktop have some problems with slow performance when using a local folder for appdata (`/config`), so it's recommended to use a docker volume for appdata. You can use the following docker-compose file to setup Trailarr with network shares/drives and docker volume for appdata:
+
+
+``` yaml
+services:
+  trailarr:
+    image: nandyalu/trailarr:latest
+    container_name: trailarr
+    environment:
+        - TZ=America/Chicago
+    ports:
+        - 7889:7889
+    volumes:
+        - trailarr_data:/config
+        - m:\movies:/m/movies   #movies drive
+        - r:\tv:/r/tv           #tv series drive 1
+        - s:\tv:/s/tv           #tv series drive 2
+        - t:\tv:/t/tv           #tv series drive 3
+    restart: unless-stopped
+
+#These docker volume will available after containers destroyed to persist data within Docker 
+volumes:
+  trailarr_data:
+```

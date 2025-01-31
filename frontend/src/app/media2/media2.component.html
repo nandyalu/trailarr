@@ -1,0 +1,207 @@
+@if (!inEditMode) {
+<div class="media-header">
+  <!-- Edit Button -->
+  <div class="media-header-button" (click)="inEditMode = true" aria-label="Edit" title="Edit">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
+      <path
+        d="M640-160v-360H160v360h480Zm80-200v-80h80v-360H320v200h-80v-200q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80ZM160-80q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h480q33 0 56.5 23.5T720-520v360q0 33-23.5 56.5T640-80H160Zm400-603ZM400-340Z" />
+    </svg>
+    <span>Edit</span>
+  </div>
+  <div class="empty-space"></div>
+  <!-- Sort Options -->
+  <div class="media-header-sortitem">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+      <path d="M74-159v-135h304v135H74Zm0-255v-134h558v134H74Zm0-254v-135h812v135H74Z" />
+    </svg>
+    <div> {{displayOptionTitle(selectedSort())}}</div>
+    <div class="sortitem-dropdown">
+      @for (sortOption of sortOptions; track sortOption) {
+      <div class="sortitem-dropdown-option" (click)="setMediaSort(sortOption)">
+        {{displayOptionTitle(sortOption)}}
+        @if (selectedSort() == sortOption) {
+        <div>
+          @if (sortAscending()) {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path
+              d="M480-130 200-410l96-96 184 185 184-185 96 96-280 280Zm0-299L200-708l96-97 184 185 184-185 96 97-280 279Z" />
+          </svg>
+          } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path
+              d="m296-155-96-97 280-279 280 279-96 97-184-185-184 185Zm0-299-96-96 280-280 280 280-96 96-184-185-184 185Z" />
+          </svg>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  <!-- Filter Options -->
+  <div class="media-header-filteritem">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+      <path d="M371-158v-135h219v135H371ZM200-413v-135h558v135H200ZM74-668v-135h812v135H74Z" />
+    </svg>
+    <div> {{displayOptionTitle(selectedFilter())}}</div>
+    <div class="filteritem-dropdown">
+      @for (filterOption of filterOptions; track filterOption) {
+      <div class="filteritem-dropdown-option" (click)="setMediaFilter(filterOption)">
+        {{displayOptionTitle(filterOption)}}
+        @if (selectedFilter() == filterOption) {
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
+          </svg>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>
+} @else {
+<!-- Edit Mode Header -->
+<div class="media-header edit">
+  <!-- Monitor Button -->
+  <div class="media-header-button" (click)="batchUpdate('monitor')" aria-label="Monitor" title="Monitor">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Monitor">
+      <path
+        d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
+    </svg>
+    <span>Monitor</span>
+  </div>
+  <!-- Unmonitor Button -->
+  <div class="media-header-button" (click)="batchUpdate('unmonitor')" aria-label="UnMonitor" title="UnMonitor">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="UnMonitor">
+      <path
+        d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z" />
+    </svg>
+    <span>UnMonitor</span>
+  </div>
+  <!-- Download Trailer Button -->
+  <div class="media-header-button" (click)="batchUpdate('download')" aria-label="Download" title="Download">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Download">
+      <path
+        d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+    </svg>
+    <span>Download</span>
+  </div>
+  <!-- Delete Trailer Button -->
+  <div class="media-header-button delete" (click)="batchUpdate('delete')" aria-label="Delete" title="Delete">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Delete">
+      <path
+        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+    </svg>
+    <span>Delete</span>
+  </div>
+  <!-- Cancel Button -->
+  <div class="media-header-button" (click)="toggleEditMode(false)" aria-label="Cancel" title="Cancel">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Cancel">
+      <path
+        d="M819-28 407-440H160v280h480v-161l80 80v81q0 33-23.5 56.5T640-80H160q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h80v-7L27-820l57-57L876-85l-57 57Zm-99-327-80-80-165-165h165q33 0 56.5 23.5T720-520v80h80v-280H355L246-829q8-23 28.5-37t45.5-14h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80v5Z" />
+    </svg>
+    <span>Cancel</span>
+  </div>
+  <div class="empty-space"></div>
+  <!-- Selected Count -->
+  <p class="count">
+    <span>Selected: </span>
+    {{selectedMedia.length}}
+    <span> / {{filteredSortedMedia().length}}</span>
+  </p>
+  <!-- Select All Button -->
+  <div class="media-header-button" (click)="selectAll()" aria-label="Select All" title="Select All">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
+      <path
+        d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z" />
+    </svg>
+  </div>
+  <!-- Clear Button -->
+  <div class="media-header-button" (click)="selectedMedia = []" aria-label="Clear" title="Clear">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
+      <path
+        d="m500-120-56-56 142-142-142-142 56-56 142 142 142-142 56 56-142 142 142 142-56 56-142-142-142 142Zm-220 0v-80h80v80h-80Zm-80-640h-80q0-33 23.5-56.5T200-840v80Zm80 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80q33 0 56.5 23.5T840-760h-80ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm640 0v-80h80v80h-80Z" />
+    </svg>
+  </div>
+</div>
+}
+<div class="media-container">
+  <!-- <h1 class="text-center">{{title}}</h1> -->
+  @if (isLoading()) {
+  <div class="center">
+    <div class="loading-wave">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+  } @else {
+  @if (filteredSortedMedia().length === 0) {
+  <!-- No media items found -->
+  <div class="center">
+    <!-- Table Eye Icon - Google Fonts -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="empty-icon">
+      <path
+        d="M215.38-160q-23.05 0-39.22-16.16Q160-192.33 160-215.38v-529.24q0-23.05 16.16-39.22Q192.33-800 215.38-800h529.24q23.05 0 39.22 16.16Q800-767.67 800-744.62V-418q-7.33-4.55-15.4-7.82-8.08-3.27-15.37-6.8v-185.84H495.38v201.61q-10.84 6.39-22.26 13.54-11.43 7.16-21.89 14.85H190.77v173.08q0 10.76 6.92 17.69 6.93 6.92 17.69 6.92h128.16q6.15 8.54 12.42 16.12 6.27 7.57 12.66 14.65H215.38Zm-24.61-259.23h273.85v-199.23H190.77v199.23Zm0-230h578.46v-95.39q0-10.76-6.92-17.69-6.93-6.92-17.69-6.92H215.38q-10.76 0-17.69 6.92-6.92 6.93-6.92 17.69v95.39ZM480-480Zm0 0Zm0 0Zm0 0ZM650.37-98.46q-71.22 0-131.91-36.54t-97.23-97.31q36.54-60.77 97.23-97.31 60.69-36.53 132.16-36.53 71.46 0 131.76 36.53 60.31 36.54 97.62 97.81-36.08 61.27-97.25 97.31T650.37-98.46Zm.25-30.77q57.76 0 108.07-28.35 50.31-28.34 85.08-74.73-34.77-46.38-84.9-74.73-50.12-28.34-108.64-28.34-57.38 0-108.08 28.34-50.69 28.35-84.69 74.73 34 46.39 84.69 74.73 50.7 28.35 108.47 28.35Zm-.12-67.69q-15.12 0-25.38-10.44-10.27-10.43-10.27-25.11t10.42-24.95q10.41-10.27 25.08-10.27 15.5 0 25.38 10.43 9.89 10.43 9.89 25.12 0 14.68-10.01 24.95-10 10.27-25.11 10.27Z" />
+    </svg>
+    <p>No media items found matching the selected filter!</p>
+    <!-- <div class="all-empty-card" [routerLink]="['/settings', 'connections', 'add']">
+                    Click me!
+                </div> -->
+  </div>
+  }
+
+  <div class="media-row" appScrollNearEnd (nearEnd)="onNearEndScroll()">
+    @for (media of displayMedia(); track media) {
+    <!-- <div class="media-card" [routerLink]="['/media', media.id]"> -->
+    @if (inEditMode){
+    <!-- Edit Mode - Show Checkboxes -->
+    <div class="media-card">
+      <input type="checkbox" [id]="media.id" class="media-card-checkbox" (click)="$event.stopPropagation()"
+        (change)="onMediaSelected(media, $event)" [checked]="selectedMedia.includes(media.id)">
+      <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
+    </div>
+    } @else {
+    <!-- Normal Mode - Show Media Card -->
+    <div class="media-card" [routerLink]="['/media', media.id]">
+      <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
+    </div>
+    }
+    }
+  </div>
+  }
+</div>
+
+<ng-template #mediaCard let-media="media">
+  <label [for]="media.id">
+    <img src="{{media.poster_path || 'assets/poster-sm.png'}}" alt="{{media.title}}">
+    <p>{{media.title}}</p>
+  </label>
+  @if (media.status.toLowerCase() == 'downloading') {
+    <!-- Downloading Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Downloading">
+      <g transform="scale(0.9) translate(65,-60)">
+        <path
+          d="M343 -107q-120 -42 -194.5 -146.5T74 -490q0 -29 4 -57.5T91 -604l-57 33 -37 -62 185 -107 106 184 -63 36 -54 -92q-13 30 -18.5 60.5T147 -490q0 113 65.5 200T381 -171zm291 -516v-73h107q-47 -60 -115.5 -93.5T480 -823q-66 0 -123.5 24T255 -734l-38 -65q54 -45 121 -71t142 -26q85 0 160.5 33T774 -769v-67h73v213zM598 -1 413 -107l107 -184 62 37 -54 94q123 -17 204.5 -110.5T814 -489q0 -19 -2.5 -37.5T805 -563h74q4 18 6 36.5t2 36.5q0 142 -87 251.5T578 -96l56 33z">
+          <animateTransform attributeName="transform" type="rotate" from="0 470 -480" to="360 470 -480" dur="5"
+            repeatCount="indefinite" />
+        </path>
+      </g>
+    </svg>
+  } @else if (media.monitor) {
+  <!-- Monitored Icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
+    <path
+      d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z" />
+  </svg>
+  } @else {
+  <!-- Trailer Exists Icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon"
+    [class.success]="media.trailer_exists" aria-label="Trailer Exists">
+    <path
+      d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z" />
+  </svg>
+  }
+</ng-template>
