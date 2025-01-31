@@ -439,5 +439,39 @@
                 </div>
             </div>
         </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <span for="new_download_method">New Download Method</span>
+                <small>Use the new download and conversion method for trailers</small>
+                <small>HW Acceleration is available only when this is enabled.</small>
+            </div>
+            <div id="new_download_method" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="27"
+                    [class.selected]="option === settings?.new_download_method"
+                    (click)="updateSetting('new_download_method', option)"
+                    (keydown.enter)="updateSetting('new_download_method', option)"
+                    (keydown.space)="updateSetting('new_download_method', option)">
+                    {{option}}
+                </div>
+            </div>
+        </div>
+        @if (settings?.new_download_method && settings?.nvidia_gpu_available) {
+            <div class="trailer-content">
+                <div class="content-label">
+                    <span for="trailer_hardware_acceleration">Hardware Acceleration</span>
+                    <small>Use Hardware Acceleration to convert trailers to specified format.</small>
+                    <small>Only applies to 'h264' and 'h265' video codecs</small>
+                </div>
+                <div id="trailer_hardware_acceleration" class="options-bar">
+                    <div *ngFor="let option of trueFalseOptions" class="option" tabindex="28"
+                    [class.selected]="option === settings?.trailer_hardware_acceleration"
+                    (click)="updateSetting('trailer_hardware_acceleration', option)"
+                    (keydown.enter)="updateSetting('trailer_hardware_acceleration', option)"
+                    (keydown.space)="updateSetting('trailer_hardware_acceleration', option)">
+                    {{option}}
+                    </div>
+                </div>
+            </div>
+        }
     </section>
 </ng-template>

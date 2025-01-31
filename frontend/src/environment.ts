@@ -1,9 +1,10 @@
 export const environment = {
-    production: false,
+    production: true,
     apiUrl: '/api/v1/',
     connections: 'connections/',
-    media: 'media/',
+    files: 'files/',
     logs: 'logs/',
+    media: 'media/',
     settings: 'settings/',
     tasks: 'tasks/',
 };

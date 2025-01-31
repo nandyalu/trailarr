@@ -1,5 +1,6 @@
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 
 from app_logger import ModuleLogger
@@ -10,6 +11,12 @@ timezone = os.getenv("TZ", "UTC")
 
 # Initialize a MemeoryJobStore for the scheduler
 jobstores = {"default": MemoryJobStore()}
+
+# Configure executors
+executors = {
+    "default": ThreadPoolExecutor(10),
+    "processpool": ProcessPoolExecutor(10),
+}
 
 # Get a logger
 tasks_logger = ModuleLogger("Tasks")

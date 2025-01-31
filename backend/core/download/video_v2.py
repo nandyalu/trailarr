@@ -1,7 +1,10 @@
 import os
 import subprocess
+import time
 from app_logger import ModuleLogger
 from config.settings import app_settings
+from core.download.video_analysis import VideoInfo
+from core.download.video_conversion import get_ffmpeg_cmd
 
 
 logger = ModuleLogger("TrailersDownloader2")
@@ -68,20 +71,31 @@ def _get_ytdl_options() -> list[str]:
     _options.append("--no-playlist")
     _options.append("--progress-delta")
     _options.append("3")  # Update progress every 3 seconds
-    # Add Format
+
+    # Add Format preferences
     _options.append("-f")
-    _options.append(f"bestvideo[height<=?{app_settings.trailer_resolution}]+bestaudio")
+    _vres = f"[height<=?{app_settings.trailer_resolution}]"
+    _vcodec = f"[vcodec={app_settings.trailer_video_format}]"
+    # Most of the current hardware struggles with av1 conversion
+    # So, we will try and download from YT in av1 format directly if available
+    if app_settings.trailer_video_format == "av1":
+        _vcodec = "[vcodec^=av]"
+    _acodec = f"[acodec={app_settings.trailer_audio_format}]"
+    # Format 1: Best video and audio with the given resolution and codecs
+    _format = f"bestvideo{_vres}{_vcodec}+bestaudio{_acodec}"
+    # Format 2: Best video and audio with the given resolution and audio codec
+    _format += f"/bestvideo{_vres}+bestaudio{_acodec}"
+    # Format 3: Best video and audio with the given resolution and any codecs
+    _format += f"/bestvideo{_vres}+bestaudio"
+    _options.append(_format)
+    logger.debug(f"Using format: {_format}")
+
     # Subtitle options
     if app_settings.trailer_subtitles_enabled:
         _options.append("--write-auto-subs")
         _options.append("--embed-subs")
         _options.append("--sub-lang")
         _options.append(app_settings.trailer_subtitles_language)
-        # _options.append("--sub-format")
-        # if app_settings.trailer_subtitles_format:
-        #     _options.append(app_settings.trailer_subtitles_format)
-        # else:
-        #     _options.append("srt")
     # Fragment retries option - Not needed as default is 10
     # _options.append("--fragment-retries")
     # _options.append("10")
@@ -93,10 +107,8 @@ def _get_ytdl_options() -> list[str]:
     # Add cookies if available
     if app_settings.yt_cookies_path:
         logger.info(f"Using cookies file: {app_settings.yt_cookies_path}")
-        # _options.append("--cookies")
-        # _options.append(app_settings.yt_cookies_path)
-    _options.append("--cookies")
-    _options.append("/config/cookies.txt")
+        _options.append("--cookies")
+        _options.append(app_settings.yt_cookies_path)
     # Embed metadata if enabled
     if app_settings.trailer_embed_metadata:
         _options.append("--embed-metadata")
@@ -187,6 +199,7 @@ def _get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
     #     ffmpeg_cmd.append("-qp")
     #     ffmpeg_cmd.append("22")
     # else:
+    logger.debug(f"Converting video to {app_settings.trailer_video_format} codec")
     ffmpeg_cmd.append(_VIDEO_CODECS[app_settings.trailer_video_format])
     ffmpeg_cmd.append("-preset")
     ffmpeg_cmd.append("veryfast")
@@ -195,27 +208,135 @@ def _get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
 
     # Apply audio volume level filter if enabled
     if app_settings.trailer_audio_volume_level != 100:
+        logger.debug(
+            "Applying audio volume level filter: "
+            f"'-af volume={app_settings.trailer_audio_volume_level}'"
+        )
         volume_level = app_settings.trailer_audio_volume_level * 0.01
         ffmpeg_cmd.append("-af")
         ffmpeg_cmd.append(f"volume={volume_level}")
     # Set audio specific options
+    logger.debug(f"Converting audio to {app_settings.trailer_audio_format} codec")
     ffmpeg_cmd.append("-c:a")
     ffmpeg_cmd.append(_AUDIO_CODECS[app_settings.trailer_audio_format])
     ffmpeg_cmd.append("-b:a")
     ffmpeg_cmd.append("128k")
     # Set subtitle specific options
     if app_settings.trailer_subtitles_enabled:
+        logger.debug(
+            f"Converting subtitles to {app_settings.trailer_subtitles_format} format"
+        )
         ffmpeg_cmd.append("-c:s")
         ffmpeg_cmd.append(app_settings.trailer_subtitles_format)
     # Add web optimized options if enabled
     if app_settings.trailer_web_optimized:
         # Below options are for fast streaming, but might increase filesize
+        logger.debug("Converting to a web optimized format")
         ffmpeg_cmd.append("-movflags")
         ffmpeg_cmd.append("+faststart")
         ffmpeg_cmd.append("-tune")
         ffmpeg_cmd.append("zerolatency")
     ffmpeg_cmd.append(output_file)
 
+    return ffmpeg_cmd
+
+
+def _get_ffmpeg_cmd_smart(
+    media_info: VideoInfo, input_file: str, output_file: str
+) -> list[str]:
+    """Generate the ffmpeg command based on the environment and settings
+    Args:
+        media_info (VideoInfo): Media info of the input file
+        input_file (str): Input video file path
+        output_file (str): Output video file path
+    Returns:
+        list[str]: FFMPEG command list."""
+    ffmpeg_cmd: list[str] = [
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "warning",
+        "-i",
+        input_file,
+    ]
+    for stream in media_info.streams:
+        if stream.codec_type == "video":
+            _vcodec = app_settings.trailer_video_format
+            _vencoder = _VIDEO_CODECS[_vcodec]
+            # Set video specific options
+            ffmpeg_cmd.append("-c:v")
+            if stream.codec_name == _vcodec:
+                logger.debug(
+                    f"Downloaded video is already in required codec: {_vcodec}, "
+                    "copying stream without converting"
+                )
+                ffmpeg_cmd.append("copy")
+                continue
+            logger.debug(
+                f"Converting video from {stream.codec_name} to {_vcodec} codec"
+            )
+            ffmpeg_cmd.append(_vencoder)
+            ffmpeg_cmd.append("-preset")
+            ffmpeg_cmd.append("veryfast")
+            ffmpeg_cmd.append("-crf")
+            ffmpeg_cmd.append("22")
+            continue
+        if stream.codec_type == "audio":
+            _acodec = app_settings.trailer_audio_format
+            _aencoder = _AUDIO_CODECS[_acodec]
+            # Apply audio volume level filter if enabled
+            if app_settings.trailer_audio_volume_level != 100:
+                logger.debug(
+                    "Applying audio volume level filter: "
+                    f"'-af volume={app_settings.trailer_audio_volume_level}'"
+                )
+                volume_level = app_settings.trailer_audio_volume_level * 0.01
+                ffmpeg_cmd.append("-af")
+                ffmpeg_cmd.append(f"volume={volume_level}")
+                logger.debug(
+                    f"Converting audio from {stream.codec_name} to {_acodec} codec"
+                )
+                ffmpeg_cmd.append("-c:a")
+                ffmpeg_cmd.append(_aencoder)
+                ffmpeg_cmd.append("-b:a")
+                ffmpeg_cmd.append("128k")
+                continue
+            # Set audio specific options
+            ffmpeg_cmd.append("-c:a")
+            if stream.codec_name == _acodec:
+                logger.debug(
+                    f"Downloaded audio is already in required codec: {_acodec}, "
+                    "copying stream without converting"
+                )
+                ffmpeg_cmd.append("copy")
+                continue
+            else:
+                logger.debug(
+                    f"Converting audio from {stream.codec_name} to {_acodec} codec"
+                )
+                ffmpeg_cmd.append(_aencoder)
+                ffmpeg_cmd.append("-b:a")
+                ffmpeg_cmd.append("128k")
+                continue
+        if stream.codec_type == "subtitle":
+            # Set subtitle specific options
+            if app_settings.trailer_subtitles_enabled:
+                logger.debug(
+                    f"Converting subtitles from {stream.codec_name} to "
+                    f"{app_settings.trailer_subtitles_format} format"
+                )
+                ffmpeg_cmd.append("-c:s")
+                ffmpeg_cmd.append(app_settings.trailer_subtitles_format)
+                continue
+    # Add web optimized options if enabled
+    if app_settings.trailer_web_optimized:
+        # Below options are for fast streaming, but might increase filesize
+        logger.debug("Converting to a web optimized format")
+        ffmpeg_cmd.append("-movflags")
+        ffmpeg_cmd.append("+faststart")
+        ffmpeg_cmd.append("-tune")
+        ffmpeg_cmd.append("zerolatency")
+    ffmpeg_cmd.append(output_file)
     return ffmpeg_cmd
 
 
@@ -229,7 +350,14 @@ def _convert_video(input_file: str, output_file: str) -> str:
     Returns:
         str: Success message if the video is converted successfully
     """
-    ffmpeg_cmd = _get_ffmpeg_cmd(input_file, output_file)
+    # # Get the media info of the input file
+    # media_info = get_media_info(input_file)
+    # if not media_info or len(media_info.streams) == 0:
+    #     logger.error("Failed to get media info, falling back to default options")
+    #     ffmpeg_cmd = _get_ffmpeg_cmd(input_file, output_file)
+    # else:
+    #     ffmpeg_cmd = _get_ffmpeg_cmd_smart(media_info, input_file, output_file)
+    ffmpeg_cmd = get_ffmpeg_cmd(input_file, output_file)
     # Convert the video
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
     with subprocess.Popen(
@@ -250,6 +378,17 @@ def _convert_video(input_file: str, output_file: str) -> str:
     return "Video converted successfully"
 
 
+def _cleanup_files(file_path: str):
+    """Cleanup the temporary files created during the download and conversion"""
+    # Check if a file already exists at the given path, delete it
+    dir_name = os.path.dirname(file_path)
+    if os.path.exists(dir_name):
+        for file in os.listdir(dir_name):
+            file_name_wo_ext, file_ext = os.path.splitext(file)
+            if file_name_wo_ext in file:
+                os.remove(os.path.join(dir_name, file))
+
+
 def download_video(url: str, file_path: str) -> str:
     """Download the video from the given URL
     Args:
@@ -260,28 +399,39 @@ def download_video(url: str, file_path: str) -> str:
     Returns:
         str: Success message if the video is downloaded successfully
     """
-    try:
-        # Download the video using yt-dlp
-        file_name = os.path.basename(file_path)
-        temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
-        download_file_path = _download_with_ytdlp(url, temp_file_path)
-        # Add the file extension from download file to the output file
-        converted_file_path = file_path.replace(
-            "%(ext)s", download_file_path.split(".")[-1]
-        )
-        # Convert the video to the desired format
-        _convert_video(download_file_path, converted_file_path)
-        os.remove(temp_file_path)
-    except Exception as e:
-        logger.error(f"Error downloading video: {e}")
-        return ""
+    # try:
+    # Get the file name from the file path
+    file_name = os.path.basename(file_path)
+    temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
+    # Cleanup the temporary files
+    _cleanup_files(file_path)
+
+    # Download the video using yt-dlp
+    start_time = time.perf_counter()  # Download start time
+    download_file_path = _download_with_ytdlp(url, temp_file_path)
+    end_time = time.perf_counter()  # Download end time / Conversion start time
+    logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
+
+    # Add the file extension from download file to the output file
+    converted_file_path = file_path.replace(
+        "%(ext)s", download_file_path.split(".")[-1]
+    )
+    # Convert the video to the desired format
+    _convert_video(download_file_path, converted_file_path)
+    logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
+    os.remove(download_file_path)
+    # except Exception as e:
+    #     logger.error(f"Error downloading video: {e}")
+    #     return ""
     logger.info("Video downloaded successfully")
     return converted_file_path
 
 
-# if __name__ == "__main__":
-# download_video("https://www.youtube.com/watch?v=WHXq62VCaCM", "output.mkv")
-# Age restricted video
-# download_video("https://www.youtube.com/watch?v=pLWda_RrQn4", "output2.mkv")
-# download_video("https://www.youtube.com/watch?v=IS_-maoP9Qs", "output3.mkv")
-# _convert_video("temp_output2.mkv", "output2-converted.mkv")
+if __name__ == "__main__":
+    app_settings.log_level = "DEBUG"
+    _convert_video("/app/tmp/tmp_2782-trailer.webm", "/app/tmp/output1-converted.mkv")
+    # download_video("https://www.youtube.com/watch?v=WHXq62VCaCM", "output.mkv")
+    # Age restricted video
+    # download_video("https://www.youtube.com/watch?v=pLWda_RrQn4", "output2.mkv")
+    # download_video("https://www.youtube.com/watch?v=IS_-maoP9Qs", "output3.mkv")
+    # _convert_video("temp_output2.mkv", "output2-converted.mkv")

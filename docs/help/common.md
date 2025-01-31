@@ -58,3 +58,37 @@ See below for more info regarding youtube downloaders and cookies:
 
 !!! warning
     Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the cookies file in [`Yt-dlp Cookies Path` setting](../setup/settings.md#yt-dlp-cookies-path).
+
+
+### Trailarr is slow
+
+Slow downloads are usually due to time it takes for Trailarr to download and convert it, which is dependent on the speed of the server, your internet connection, and the YouTube server. Below solution does not work for slow downloads.
+
+If you are experiencing lsow performance in Trailarr, like slow loading, taking a long time to refresh Arr data, etc., you could try setting up a docker volume for the Trailarr app data folder. This will help in improving the performance of the app.
+
+Here's an example docker compose file with a volume setup for Trailarr app data folder:
+
+
+```yaml
+version: "2.1"
+services:
+  trailarr:
+    image: ghcr.io/trailarr/trailarr:latest
+    container_name: trailarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - trailarrdata:/config # volume for app data, the first part `trailarrdata` is the volume name
+      # rest of the volumes for media folders  
+    ports:
+      - 7889:7889
+    restart: unless-stopped
+volume:
+  trailarrdata: # volume name, should match the volume name in the service
+    # Any extra options for the volume
+```
+
+!!! tip
+    If you are on Windows, this might help speed up Trailarr!
