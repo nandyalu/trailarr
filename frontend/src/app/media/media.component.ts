@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,7 +9,7 @@ import { MediaService } from '../services/media.service';
 
 @Component({
     selector: 'app-media',
-    imports: [FormsModule, NgIf, NgFor, RouterLink, ScrollNearEndDirective],
+    imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective],
     templateUrl: './media.component.html',
     styleUrl: './media.component.css'
 })
@@ -27,11 +27,13 @@ export class MediaComponent {
   sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
   selectedFilter = 'missing';
   filterOptions: string[] = ['all', 'monitored', 'unmonitored', 'downloaded', 'missing'];
+  inEditMode = false;
   filteredMediaMap: { [key: string]: Media[] } = {};
   monitoredMedia: Media[] = [];
   unmonitoredMedia: Media[] = [];
   downloadedMedia: Media[] = [];
   missingMedia: Media[] = [];
+  selectedMedia: number[] = [];
 
   constructor(
     private mediaService: MediaService,
@@ -57,6 +59,21 @@ export class MediaComponent {
     this.retrieveFilterOption();
     this.retrieveSortOption();
     this.getAndDisplayMedia();
+  }
+
+  toggleEditMode(enabled: boolean): void {
+    this.inEditMode = enabled;
+  }
+
+  onMediaSelected(media: Media, event: Event): void {
+    // Navigate to the media details page
+    const inputElement = event.target as HTMLInputElement;
+    // console.log("Media selected:", media.id, "Checked:", inputElement.checked);
+    if (inputElement.checked) {
+      this.selectedMedia.push(media.id);
+    } else {
+      this.selectedMedia = this.selectedMedia.filter((id) => id !== media.id);
+    }
   }
 
   /**

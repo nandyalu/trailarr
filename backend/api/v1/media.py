@@ -3,13 +3,13 @@ import logging
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
-from api.v1.models import ErrorResponse, SearchMedia
+from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaTrailer
 from core.base.database.models.media import MediaRead
 from core.download import trailer
 from core.files_handler import FilesHandler, FolderInfo
-from core.tasks.download_trailers import download_trailer_by_id
+from core.tasks.download_trailers import batch_download_trailers, download_trailer_by_id
 
 media_router = APIRouter(prefix="/media", tags=["Media"])
 
@@ -68,6 +68,19 @@ async def get_recent_media(
     """
     db_handler = MediaDatabaseManager()
     media = db_handler.read_recent(limit, offset, movies_only=movies_only)
+    return media
+
+
+@media_router.get("/updated")
+async def get_updated_after(seconds: int) -> list[MediaRead]:
+    """Get media updated after a certain datetime. \n
+    Args:
+    - timestamp (datetime): Timestamp to filter by. \n
+    Returns:
+    - list[MediaRead]: List of media objects. \n
+    """
+    db_handler = MediaDatabaseManager()
+    media = db_handler.read_updated_after(seconds)
     return media
 
 
@@ -348,4 +361,51 @@ async def delete_media_trailer(media_id: int) -> str:
         return msg
     except Exception as e:
         await websockets.ws_manager.broadcast("Error deleting trailer!", "Error")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@media_router.post(
+    "/batch_update",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        }
+    },
+)
+async def batch_update_media(update: BatchUpdate) -> None:
+    """Batch update media by their IDs. \n
+    Available update types are: \n
+    - monitor: Monitor media items. \n
+    - unmonitor: Unmonitor media items. \n
+    - delete: Delete media items. \n
+    - download: Download trailers for media items. \n
+    Args:
+        update (BulkUpdate): Bulk update object with media ids and update type. \n
+    Returns:
+        str: Monitoring message.
+    """
+    logging.info(f"Monitoring media with IDs: {update.media_ids}")
+    db_handler = MediaDatabaseManager()
+    try:
+        msg = ""
+        if update.action == "monitor":
+            db_handler.update_monitoring_bulk(update.media_ids, True)
+            msg = f"{len(update.media_ids)} Media are now monitored"
+        elif update.action == "unmonitor":
+            db_handler.update_monitoring_bulk(update.media_ids, False)
+            msg = f"{len(update.media_ids)} Media are now unmonitored"
+        elif update.action == "delete":
+            for media_id in update.media_ids:
+                await delete_media_trailer(media_id)
+        elif update.action == "download":
+            batch_download_trailers(update.media_ids)
+        if msg:
+            logging.info(msg)
+            await websockets.ws_manager.broadcast(msg, "Success")
+            return
+    except Exception as e:
+        await websockets.ws_manager.broadcast("Error updating Media!", "Error")
+        logging.error(e)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
