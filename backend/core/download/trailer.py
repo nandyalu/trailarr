@@ -280,17 +280,21 @@ def download_trailer(
 
 
 def download_trailers(
-    media_list: list[MediaTrailer], is_movie: bool
+    media_list: list[MediaTrailer], is_movie: bool | None
 ) -> list[MediaTrailer]:
     """Download trailers for a list of media objects. \n
     Args:
         media_list (list[MediaTrailer]): List of media objects.
-        is_movie (bool): Whether the media type is movie or show. \n
+        is_movie (bool, None): Whether the media type is movie or show. \n
     Returns:
         list[MediaTrailer]: List of media objects for which trailers are downloaded."""
-    media_type = "movies" if is_movie else "series"
+    if is_movie is None:
+        media_type = "Media"
+        trailer_folder = None
+    else:
+        media_type = "movies" if is_movie else "series"
+        trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
-    trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     sem = Semaphore(2)
     download_list = []
     for media in media_list:
