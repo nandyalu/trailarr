@@ -8,15 +8,22 @@ from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.models.helpers import MediaTrailer, language_names
+from core.base.database.manager.base import MediaDatabaseManager
+from core.base.database.models.helpers import (
+    MediaTrailer,
+    MediaUpdateDC,
+    language_names,
+)
+from core.base.database.models.media import MonitorStatus
 from core.download.video import download_video
+from core.download.video_v2 import download_video as download_video2
 from core.download import trailer_file, video_analysis
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailersDownloader")
 
 
-def _extract_youtube_id(url: str) -> str | None:
+def extract_youtube_id(url: str) -> str | None:
     """Extract youtube video id from url. \n
     Args:
         url (str): URL of the youtube video. \n
@@ -72,7 +79,7 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
                 return "The video contains an excluded word"
 
 
-def _search_yt_for_trailer(
+def search_yt_for_trailer(
     media: MediaTrailer,
     exclude: list[str] | None = None,
 ) -> str | None:
@@ -98,6 +105,9 @@ def _search_yt_for_trailer(
         "no_warnings": True,
         "quiet": True,
     }
+    if app_settings.yt_cookies_path:
+        logger.debug(f"Using cookies file: {app_settings.yt_cookies_path}")
+        options["cookiefile"] = f"{app_settings.yt_cookies_path}"
     # Construct search query with keywords for 5 search results
     search_query_format = app_settings.trailer_search_query
     format_opts = media.to_dict()  # Convert media object to dictionary for formatting
@@ -156,13 +166,13 @@ def _get_yt_id(media: MediaTrailer, exclude: list[str] | None = None) -> str | N
     video_id = ""
     if media.yt_id:
         if "youtu" in media.yt_id:
-            video_id = _extract_youtube_id(media.yt_id)
+            video_id = extract_youtube_id(media.yt_id)
         else:
             video_id = media.yt_id
     if video_id:
         return video_id
     # Search for trailer on youtube
-    video_id = _search_yt_for_trailer(media, exclude)
+    video_id = search_yt_for_trailer(media, exclude)
     return video_id
 
 
@@ -183,6 +193,7 @@ def download_trailer(
         DownloadFailedError: If trailer download fails. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
+    db_manager = MediaDatabaseManager()
     output_file = ""
     trailer_downloaded = False
     trailer_url = ""
@@ -193,11 +204,24 @@ def download_trailer(
     if not video_id:
         trailer_downloaded = False
     else:
+        # Update status in database
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=True,
+                status=MonitorStatus.DOWNLOADING,
+                yt_id=media.yt_id,
+            )
+        )
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
         logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
         tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
-        output_file = download_video(trailer_url, tmp_output_file)
+        if app_settings.new_download_method:
+            logger.info("Using new download method for trailers")
+            output_file = download_video2(trailer_url, tmp_output_file)
+        else:
+            output_file = download_video(trailer_url, tmp_output_file)
         tmp_output_file = tmp_output_file.replace(
             "%(ext)s", app_settings.trailer_file_format
         )
@@ -223,32 +247,54 @@ def download_trailer(
         raise DownloadFailedError(f"Failed to download trailer for {media.title}")
     logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
     media.yt_id = video_id  # Update the youtube video id
-    
+
     # Move the trailer to the specified folder
     try:
         trailer_file.move_trailer_to_folder(output_file, media, trailer_folder)
+        media.downloaded_at = datetime.now(timezone.utc)
         logger.info(
             f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
+        )
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=False,
+                status=MonitorStatus.DOWNLOADED,
+                trailer_exists=True,
+                downloaded_at=media.downloaded_at,
+                yt_id=media.yt_id,
+            )
         )
         return True
     except Exception as e:
         _move_res_msg = str(e)
         logger.error(f"Failed to move trailer to folder: {_move_res_msg}")
+        db_manager.update_media_status(
+            MediaUpdateDC(
+                id=media.id,
+                monitor=True,
+                status=MonitorStatus.MISSING,
+            )
+        )
         raise DownloadFailedError(f"Failed to move trailer to folder: {_move_res_msg}")
 
 
 def download_trailers(
-    media_list: list[MediaTrailer], is_movie: bool
+    media_list: list[MediaTrailer], is_movie: bool | None
 ) -> list[MediaTrailer]:
     """Download trailers for a list of media objects. \n
     Args:
         media_list (list[MediaTrailer]): List of media objects.
-        is_movie (bool): Whether the media type is movie or show. \n
+        is_movie (bool, None): Whether the media type is movie or show. \n
     Returns:
         list[MediaTrailer]: List of media objects for which trailers are downloaded."""
-    media_type = "movies" if is_movie else "series"
+    if is_movie is None:
+        media_type = "Media"
+        trailer_folder = None
+    else:
+        media_type = "movies" if is_movie else "series"
+        trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
-    trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     sem = Semaphore(2)
     download_list = []
     for media in media_list:

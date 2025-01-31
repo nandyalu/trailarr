@@ -59,8 +59,6 @@ See below for more info regarding youtube downloaders and cookies:
 !!! warning
     Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the cookies file in [`Yt-dlp Cookies Path` setting](../setup/settings.md#yt-dlp-cookies-path).
 
-    
----
 
 ## Windows Docker Desktop Users
 ### Known Issue - File Access Slowness and Workaround
@@ -85,7 +83,7 @@ services:
     ports:
       - 7889:7889
     volumes:
-      - trailarr_data:/config
+      - trailarr_data:/config # volume for app data, the first part `trailarr_data` is the volume name
       - m:\movies:/m/movies   # Movies drive
       - r:\tv:/r/tv           # TV series drive 1
       - s:\tv:/s/tv           # TV series drive 2
@@ -93,7 +91,8 @@ services:
     restart: unless-stopped
 
 volumes:
-  trailarr_data:
+  trailarr_data:  # volume name, should match the volume name in the service
+    # Any extra options for the volume if needed
 ```
 
 ### Path Mappings in Trailarr
@@ -134,3 +133,4 @@ If you need to add a `cookies.txt` file (for YouTube age verification), you can 
 ### Notes
 - The `/config` directory inside the container is backed by the `trailarr_data` volume. Once the file is in the volume, it will persist even if you recreate the container.
 - If the file path or permissions cause issues, ensure the `cookies.txt` file on your host machine is accessible and readable.
+

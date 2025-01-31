@@ -34,7 +34,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_DATA_DIR="/config" \
     PUID=1000 \
     PGID=1000 \
-    APP_VERSION=${APP_VERSION}
+    APP_VERSION=${APP_VERSION} \
+    NVIDIA_VISIBLE_DEVICES="all" \
+    NVIDIA_DRIVER_CAPABILITIES="all" \
+    NEW_DOWNLOAD_METHOD="false"
 
 # Install tzdata, gosu and set timezone
 RUN apt-get update && apt-get install -y tzdata gosu curl pciutils && \

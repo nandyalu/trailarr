@@ -214,6 +214,14 @@ export class MediaService {
     );
   }
 
+  searchMediaTrailer(id: number): Observable<any> {
+    return this.http.post(`${this.mediaUrl}${id}/search`, {});
+  }
+
+  saveMediaTrailer(id: number, yt_id: string): Observable<any> {
+    return this.http.post(`${this.mediaUrl}${id}/update?yt_id=${yt_id}`, {});
+  }
+
   /**
    * Searches for media items based on the provided query string.
    *

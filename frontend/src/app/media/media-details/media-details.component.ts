@@ -1,28 +1,26 @@
-import { NgFor, NgIf, NgTemplateOutlet, TitleCasePipe } from '@angular/common';
+import { NgIf, TitleCasePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { catchError, of, Subscription } from 'rxjs';
 import { DurationConvertPipe } from '../../helpers/duration-pipe';
-import { FolderInfo, Media } from '../../models/media';
+import { Media } from '../../models/media';
 import { MediaService } from '../../services/media.service';
 import { WebsocketService } from '../../services/websocket.service';
+import { FilesComponent } from "./files/files.component";
 
 @Component({
     selector: 'app-media-details',
-    imports: [NgIf, NgFor, FormsModule, DurationConvertPipe, NgTemplateOutlet, TitleCasePipe],
+    imports: [NgIf, FormsModule, DurationConvertPipe, TitleCasePipe, FilesComponent],
     templateUrl: './media-details.component.html',
     styleUrl: './media-details.component.css'
 })
 export class MediaDetailsComponent {
   mediaId: number = 0;
   media?: Media = undefined;
-  mediaFiles?: FolderInfo = undefined;
-  mediaFilesResponse: string = 'No files found';
   isLoading = true;
   isLoadingMonitor = false;
   isLoadingDownload = false;
-  filesLoading = true;
   trailer_url: string = '';
   // status = 'Missing';
   // private mediaService: MovieService | SeriesService = this.seriesService;
@@ -75,7 +73,6 @@ export class MediaDetailsComponent {
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.filesLoading = true;
     this.route.params.subscribe(params => {
       // let type = this.route.snapshot.url[0].path;
       // if (type === 'movies') {
@@ -130,15 +127,6 @@ export class MediaDetailsComponent {
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
     });
-    // Get Media Files
-    this.mediaService.getMediaFiles(this.mediaId).subscribe((files: FolderInfo | string) => {
-      if (typeof files === 'string') {
-        this.mediaFilesResponse = files;
-      } else {
-        this.mediaFiles = files;
-      }
-      this.filesLoading = false;
-    });
   }
 
   /**
@@ -180,6 +168,46 @@ export class MediaDetailsComponent {
       console.log(res);
       this.media!.monitor = monitor;
       this.isLoadingMonitor = false;
+    });
+  }
+
+  searchTrailer() {
+    // console.log('Searching for trailer');
+    this.websocketService.showToast("Searching for trailer...");
+    this.isLoadingDownload = true;
+    this.mediaService.searchMediaTrailer(this.mediaId).pipe(
+      catchError((error) => {
+        console.error('Error searching trailer:', error.error.detail);
+        this.websocketService.showToast(error.error.detail, "Error");
+        this.isLoadingDownload = false;
+        return of('');
+      })
+    ).subscribe((res: string) => {
+      if (res) {
+        this.media!.youtube_trailer_id = res;
+        this.trailer_url = res;
+      }
+      this.isLoadingDownload = false;
+    });
+  }
+
+  saveYtId() {
+    // console.log('Saving youtube id');
+    this.websocketService.showToast("Saving youtube id...");
+    this.isLoadingDownload = true;
+    this.mediaService.saveMediaTrailer(this.mediaId, this.trailer_url).pipe(
+      catchError((error) => {
+        console.error('Error searching trailer:', error.error.detail);
+        this.websocketService.showToast(error.error.detail, "Error");
+        this.isLoadingDownload = false;
+        return of('');
+      })
+    ).subscribe((res: string) => {
+      if (res) {
+        this.media!.youtube_trailer_id = res;
+        this.trailer_url = res;
+      }
+      this.isLoadingDownload = false;
     });
   }
 

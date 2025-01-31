@@ -1,4 +1,4 @@
-There are a few settings that you can use to customize the behavior of Trailarr app. These settings can be set by opening the app in browser [http://localhost:7889/settings](http://localhost:8000/settings){:target="_blank"} and navigatings  to `Settings > Trailer` page.
+There are several settings that you can use to customize the behavior of Trailarr app. These settings can be set by opening the app in browser [http://localhost:7889/settings](http://localhost:8000/settings){:target="_blank"} and navigatings  to `Settings > Trailer` page.
 
 ## General Settings
 
@@ -76,6 +76,29 @@ Select the resolution of the trailers to download. Available options are `240`, 
 
 Select the file format of the trailers to download. Available options are `mkv`, `mp4`, `webm`.
 
+
+Not all file formats support all video and audio codecs. The following tables shows the supported formats:
+
+Video Codecs:
+
+| Format | h264               | h265               | vp8                | vp9                | av1                |
+|:------:|:------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
+| mkv    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| mp4    | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: |
+| webm   | :x:                | :x:                | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+
+Audio Codecs:
+
+| Format | aac                | ac3                | eac3               | flac               | opus               |
+|:------:|:------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
+| mkv    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| mp4    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| webm   | :x:                | :x:                | :x:                | :x:                | :white_check_mark: |
+
+!!! note ""
+    Please make sure to select a file format that supports the video and audio codecs you want to use.
+
+
 !!! info
     App will download trailer in the available format and then convert it to the selected format using Ffmpeg.
 
@@ -87,6 +110,9 @@ Select the video codec of the trailers to download. Available options are `h264`
 
 !!! info
     App will download trailer in the available codec and then convert it to the selected codec using Ffmpeg.
+
+!!! warning
+    If `av1` is selected, app will try to download trailer in `av1` format. If not available, it will fallback to `vp9`. App will not convert the downloaded trailer to `av1` format.
 
 ### Trailer Audio Format
 
@@ -128,12 +154,6 @@ Select the language of the subtitles to download. A valid ISO 639-1 language cod
 - Default is `true`
 
 Enable this setting to embed metadata in the trailers.
-
-### Trailer Remove SponsorBlocks
-
-- Default is `true`
-
-Enable this setting to remove sponsor blocks from the trailers, if available. Sponsor blocks are sections of the trailer that contain promotional content like intros, outros, ads, etc.
 
 ### Trailer Web Optimized
 
@@ -217,12 +237,30 @@ See [Export YouTube Cookies.txt file](../help/common.md#export-youtube-cookiestx
 
 ## Experimental Settings
 
-These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
+These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
 ### Trailer Remove Silence
 
-- Default is 'False'
+- Default is `false`
 
 Enable this option to let Trailarr analyse the video file and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
 
 Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.
+
+## New Download Method
+
+- Default is `false`
+
+Default `yt-dlp` download and convert method has some limitations and a few bugs. So, a new download method that downloads using `yt-dlp` and converts using `ffmpeg` is added as an experimental option. You can enable this option to try the new method.
+
+!!! note
+    This option needs to be enabled if you want to use hardware acceleration for video conversion.
+
+## Hardware Acceleration
+
+- Default is `false`
+
+Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
+
+!!! note
+    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../install/hardware-acceleration.md).

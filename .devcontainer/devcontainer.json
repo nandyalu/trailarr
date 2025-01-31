@@ -8,7 +8,8 @@
     },
 	"runArgs": [
 		"-p=7888:7888",
-		"-p=7887:8000"
+		"-p=7887:8000",
+		"--runtime=nvidia"
 	],
 
 	// Mount appdata folder for persistent storage
@@ -27,7 +28,8 @@
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/config"
+		"APP_DATA_DIR": "/config",
+		"NEW_DOWNLOAD_METHOD": "True"
 	},
 
 	"customizations": {

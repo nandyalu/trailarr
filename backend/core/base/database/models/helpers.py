@@ -1,5 +1,6 @@
 from dataclasses import dataclass, asdict
 from datetime import datetime
+from sqlmodel import SQLModel
 
 from core.base.database.models.media import MonitorStatus
 
@@ -32,14 +33,15 @@ class MediaTrailer:
         return asdict(self)
 
 
-@dataclass(eq=False, frozen=True, repr=False, slots=True)
-class MediaReadDC:
+# @dataclass(eq=False, frozen=True, repr=False, slots=True)
+class MediaReadDC(SQLModel):
     id: int
     created: bool
     folder_path: str | None
     arr_monitored: bool
     monitor: bool
     status: MonitorStatus
+    trailer_exists: bool
 
 
 @dataclass(eq=False, frozen=True, repr=False, slots=True)

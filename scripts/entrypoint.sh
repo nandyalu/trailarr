@@ -55,13 +55,15 @@ fi
 echo "Creating '$APP_DATA_DIR' folder for storing database and other config files"
 mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 chmod -R 755 /app/assets
+mkdir -p /app/tmp && chmod -R 755 /app/tmp
 
+echo "Checking for GPU availability..."
 # Check for NVIDIA GPU
-export NVIDIA_AVAILABLE=0
+export NVIDIA_GPU_AVAILABLE="false"
 if command -v nvidia-smi &> /dev/null; then
     if nvidia-smi > /dev/null 2>&1; then
         echo "NVIDIA GPU is available."
-        export NVIDIA_GPU_AVAILABLE=1
+        export NVIDIA_GPU_AVAILABLE="true"
     else
         echo "NVIDIA GPU is not available."
     fi
@@ -70,13 +72,13 @@ else
 fi
 
 # Check if /dev/dri exists
-export INTEL_GPU_AVAILABLE=0
+export QSV_GPU_AVAILABLE="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
         # Intel QSV might be available. Further check for Intel-specific devices
         if lspci | grep -iE 'Display|VGA' | grep -i 'Intel'; then
-            export QSV_GPU_AVAILABLE=1
+            export QSV_GPU_AVAILABLE="true"
             echo "Intel GPU detected. Intel QSV is likely available."
         else
             echo "No Intel GPU detected. Intel QSV is not available."
@@ -123,8 +125,8 @@ chmod -R 750 /app
 chown -R "$APPUSER":"$APPGROUP" /app
 chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
-# Create a temporary directory to download trailers to
-mkdir -p /app/tmp
+# # Create a temporary directory to download trailers to
+# mkdir -p /app/tmp
 
 # Switch to the non-root user and execute the command
 echo "Switching to user '$APPUSER' and starting the application"

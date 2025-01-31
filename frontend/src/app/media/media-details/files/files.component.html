@@ -1,0 +1,306 @@
+<div class="media-files-container">
+  <p class="text-md files-title">Files</p>
+  <hr>
+  @if (filesLoading) {
+    <div class="loading-wave center">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  } @else {
+    <div class="media-files">
+      @if (mediaFiles === undefined) {
+        <p class="text-sm text-center">{{mediaFilesResponse}}</p>
+      } @else {
+        <!-- Header -->
+        <div class="files-header sm-none text-sm">
+          <div></div> <!-- Empty Col for Icons -->
+          <div>Name</div>
+          <div>Size</div>
+          <div>Modified</div>
+        </div>
+        <!-- Content -->
+        <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: mediaFiles }"></ng-container>
+      }
+    </div>
+  }
+</div>
+
+<ng-template let-folderUntyped="folderUntyped" #folFileTemplate>
+  @let folder=asFolderInfo(folderUntyped);
+  <div class="files-accordion">
+    <div class="files-header" (click)="openFolderOrOptions(folder)" [class.parent]="folder.type == 'folder'">
+      <div class="files-icon">
+        @if (folder.type === 'folder') {
+          <!-- Show Folder Icon -->
+          @if (folder.isExpanded) {
+            <!-- Folder Open Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M146.67-160q-26.34 0-46.5-20.17Q80-200.33 80-226.67v-506.66q0-26.34 20.17-46.5Q120.33-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67H146.67v440l100-373.33H940L834.33-209.67q-6.66 24.67-24.5 37.17Q792-160 766.67-160h-620Z" />
+            </svg>
+          } @else {
+            <!-- Folder Closed Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M146.67-160q-27 0-46.84-20.17Q80-200.33 80-226.67v-506.66q0-26.34 19.83-46.5Q119.67-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67v440q0 26.34-20.17 46.5Q839.67-160 813.33-160H146.67Z" />
+            </svg>
+          }
+        } @else {
+          <!-- File Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M319.33-246.67h321.34v-66.66H319.33v66.66Zm0-166.66h321.34V-480H319.33v66.67ZM226.67-80q-27 0-46.84-19.83Q160-119.67 160-146.67v-666.66q0-27 19.83-46.84Q199.67-880 226.67-880H574l226 226v507.33q0 27-19.83 46.84Q760.33-80 733.33-80H226.67Zm314-542.67h192.66L540.67-813.33v190.66Z" />
+          </svg>
+        }
+      </div>
+      <div class="files-name">{{folder.name}}</div>
+      <div class="files-size">{{folder.size}}</div>
+      <div class="files-modified">{{folder.modified}}</div>
+    </div>
+    @if (folder.type === 'folder') {
+      <div class="child">
+        <!-- Child Folders -->
+        @if (folder.isExpanded) {
+          <!-- Recursive call for child folders -->
+          @for (childFolder of folder.files; track childFolder) {
+            <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: childFolder }"></ng-container>
+          }
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<!-- Options Dialog -->
+<dialog #optionsDialog (click)="closeOptionsDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()" #optionsDialogContent>
+    <h2>Options</h2>
+    <!-- <div class="dialog-header">
+    </div> -->
+    <i class="close" (click)="closeOptionsDialog()">
+      <!-- Close Icon - Google Fonts -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="m249-186-63-63 231-231-231-230 63-64 231 230 231-230 63 64-230 230 230 231-63 63-231-230-231 230Z" />
+      </svg>
+    </i>
+    <div class="dialog-options">
+      @if (isVideoFile()) {
+      <div class="icon-link" (click)="closeOptionsDialog(); openVideoDialog()" title="Play Video">
+        <span>
+          <!-- Play Arrow Icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M320-203v-560l440 280-440 280Zm60-280Zm0 171 269-171-269-171v342Z" />
+          </svg>
+        </span>
+        <span>Play Video</span>
+      </div>
+      <div class="icon-link" (click)="closeOptionsDialog(); openVideoInfoDialog()" title="Video Info">
+        <span>
+          <!-- Info Icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M447-272h73v-248h-73v248Zm32.89-330Q496-602 507-612.59q11-10.58 11-26.23 0-17.63-10.87-28.4Q496.26-678 480.19-678q-17.19 0-27.69 10.6T442-639.68q0 16.28 10.89 26.98 10.9 10.7 27 10.7Zm-.08 538q-85.92 0-161.52-33.02-75.61-33.02-131.93-89.34-56.32-56.32-89.34-132.13T64-480.5q0-86.09 33.08-161.81t89.68-132.31q56.61-56.59 132.06-88.99Q394.27-896 480.06-896q86.15 0 162.17 32.39 76.02 32.4 132.4 89Q831-718 863.5-641.96 896-565.92 896-479.72q0 86.19-32.39 161.29-32.4 75.11-88.99 131.51Q718.03-130.53 642-97.26 565.98-64 479.81-64Zm.69-73q142.01 0 242.26-100.74Q823-338.49 823-480.5T722.94-722.76Q622.89-823 480-823q-141.51 0-242.26 100.06Q137-622.89 137-480q0 141.51 100.74 242.26Q338.49-137 480.5-137Zm-.5-343Z" />
+          </svg>
+        </span>
+        <span>Video Info</span>
+      </div>
+      } @else {
+      @if (isTextFile()) {
+      <div class="icon-link" (click)="closeOptionsDialog(); openTextDialog()" title="View Text">
+        <span>
+          <!-- Description Icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M321-250h318v-69H321v69Zm0-169h319v-68H321v68ZM229-59q-35.78 0-63.39-26.91Q138-112.83 138-150v-660q0-37.59 27.61-64.79Q193.22-902 229-902h364l230 228v524q0 37.17-27.91 64.09Q767.19-59 731-59H229Zm316-569v-182H229v660h502v-478H545ZM229-810v182-182 660-660Z" />
+          </svg>
+        </span>
+        <span>View Text</span>
+      </div>
+      }
+      }
+      <div class="icon-link" title="Rename" (click)="openRenameDialog()">
+        <span>
+          <!-- Border Color Icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M81-5v-138h798V-5H81Zm150-327h30l371-371-13.35-15.86L604-733 231-362v30Zm-68 69v-126l486-488q10-9 23.11-14.5 13.12-5.5 26-5.5 12.89 0 25.89 5.75T748-876l28 25q12 10 17 23.99 5 13.99 5 26.52 0 13.17-5.46 26.76Q787.09-760.14 777-751L288-263H163Zm563-538-27-27 27 27Zm-94 98-13.35-15.86L604-733l28 30Z" />
+          </svg>
+        </span>
+        <span>Rename</span>
+      </div>
+      <div class="icon-link danger-option" title="Delete" (click)="openDeleteFileDialog()">
+        <span>
+          <!-- Delete Icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M253-99q-38.21 0-65.11-26.6Q161-152.2 161-190v-552h-58v-91h228v-47h297v47h228v91h-58v552q0 37.18-27.21 64.09Q743.59-99 706-99H253Zm453-643H253v552h453v-552ZM357-268h74v-398h-74v398Zm173 0h75v-398h-75v398ZM253-742v552-552Z" />
+          </svg>
+        </span>
+        <span>Delete</span>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Text Dialog -->
+<dialog #textDialog (click)="closeTextDialog()">
+  @if (textFileLoading) {
+    <div class="loading-wave center">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  } @else {
+  <div class="text-dialog" (click)="$event.stopPropagation()">
+    <h2>{{selectedFileName}}</h2>
+    <div class="text-content">
+      <pre>
+        @for (line of selectedFileText; track line) {
+          <!-- <span class="line">{{line}}</span> -->
+          <code>{{line}}</code>
+        }
+        <!-- <code>{{selectedFileText}}</code> -->
+      </pre>
+    </div>
+    <div class="buttons-row">
+      <button class="tertiary" (click)="closeTextDialog()">Close</button>
+    </div>
+  </div>
+  }
+</dialog>
+
+<!-- PlayVideo Dialog -->
+<dialog #videoDialog (click)="closeVideoDialog()">
+  <div (click)="$event.stopPropagation()" #videoDialogContent>
+    <!-- <video controls [autoplay]="true" [muted]="true" controlsList="nodownload" oncanplay="this.play()" onloadedmetadata="this.muted = true" #videoElement>
+      <source [src]="apiVideoUrl" type="video/mp4">
+      Your browser does not support the video tag.
+    </video> -->
+  </div>
+</dialog>
+
+<!-- Video Info Dialog -->
+<dialog #videoInfoDialog (click)="closeVideoInfoDialog()">
+  @if (videoInfoLoading) {
+    <div class="loading-wave center">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  } @else {
+  <div class="info-dialog">
+    <h1>Video Properties</h1>
+    <div class="info-container" (click)="$event.stopPropagation()">
+      @if (!videoInfo) {
+      <h2>Video Info</h2>
+      <hr>
+      <code class="video-info">
+          Unable to fetch video info.
+        </code>
+      }@else {
+      <section open>
+        <h2>File Info</h2>
+        <hr>
+        <div class="info-content">
+          <span>File Name</span>
+          <code>{{videoInfo.name}}</code>
+        </div>
+        <div class="info-content">
+          <span>Format</span>
+          <code>{{videoInfo.format_name}}</code>
+        </div>
+        <div class="info-content">
+          <span>Bitrate</span>
+          <code>{{videoInfo.bitrate}}</code>
+        </div>
+        <div class="info-content">
+          <span>Duration</span>
+          <code>{{videoInfo.duration}}</code>
+        </div>
+        @if (audioTracks.length > 0) {
+        <div class="info-content">
+          <span>Audio Tracks</span>
+          <code>{{audioTracks}}</code>
+        </div>
+        }
+        @if (subtitleTracks.length > 0) {
+        <div class="info-content">
+          <span>Subtitles</span>
+          <code>{{subtitleTracks}}</code>
+        </div>
+        }
+      </section>
+      @for (stream of videoInfo.streams; track stream.index) {
+      <section>
+        <h2>Track {{stream.index}}: {{stream.codec_type}}</h2>
+        <hr>
+        @if (stream.codec_name) {
+        <div class="info-content">
+          <span>Codec</span>
+          <code>{{stream.codec_name}}</code>
+        </div>
+        }
+        @if (stream.language) {
+        <div class="info-content">
+          <span>Language</span>
+          <code>{{stream.language}}</code>
+        </div>
+        }
+        @if (stream.coded_height && stream.coded_width) {
+        <div class="info-content">
+          <span>Display Dimensions</span>
+          <code>{{stream.coded_width}}x{{stream.coded_height}}</code>
+        </div>
+        }
+        @if (stream.audio_channels) {
+        <div class="info-content">
+          <span>Audio Channels</span>
+          <code>{{stream.audio_channels}}</code>
+        </div>
+        }
+        @if (stream.sample_rate) {
+        <div class="info-content">
+          <span>Audio Frequency</span>
+          <code>{{stream.sample_rate}}</code>
+        </div>
+        }
+      </section>
+      }
+      }
+    </div>
+    <div class="buttons-row">
+      <button class="tertiary" (click)="closeVideoInfoDialog()">Close</button>
+    </div>
+  </div>
+  }
+</dialog>
+
+<!-- Rename Dialog -->
+<dialog #renameDialog (click)="closeRenameDialog()">
+  <div class="rename-dialog" (click)="$event.stopPropagation()">
+    <h2>Rename</h2>
+    <input id="rename-file" class="rename-input" type="text" [(ngModel)]="selectedFileName" placeholder="New Name" />
+    <div class="buttons-row">
+      <button class="primary" (click)="renameFile()">Rename</button>
+      <button class="tertiary" (click)="closeRenameDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Delete Dialog -->
+<dialog #deleteFileDialog (click)="closeDeleteFileDialog()">
+  <div class="delete-dialog" (click)="$event.stopPropagation()">
+    <h2>Confirm Delete</h2>
+    <p>Are you sure you want to delete this?</p>
+    <code>{{selectedFileName}}</code>
+    <div class="buttons-row">
+      <button class="danger" (click)="deleteFile()">Confirm</button>
+      <button class="tertiary" (click)="closeDeleteFileDialog()">Cancel</button>
+    </div>
+  </div>
+
+</dialog>
