@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import re
 from typing import Protocol, Sequence
 from sqlmodel import Session, col, desc, select
@@ -231,6 +231,28 @@ class MediaDatabaseManager:
         return self._convert_to_read_list(db_media_list)
 
     @manage_session
+    def read_updated_after(
+        self,
+        seconds: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[MediaRead]:
+        """Get all media objects from the database that were updated after a given date.\n
+        Args:
+            updated_at (datetime): The date to check for updates.
+            _session (Session, Optional): A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[MediaRead]: List of MediaRead objects.
+        """
+        seconds = max(1, seconds + 1)  # Add 1 second to avoid missing items
+        seconds = min(seconds, 86400)  # Max 1 day
+        updated_at = datetime.now(timezone.utc) - timedelta(seconds=seconds)
+        statement = select(Media).where(Media.updated_at > updated_at)
+        db_media_list = _session.exec(statement).all()
+        return self._convert_to_read_list(db_media_list)
+
+    @manage_session
     def search(
         self,
         query: str,
@@ -346,7 +368,10 @@ class MediaDatabaseManager:
         else:
             db_media.monitor = media_update.monitor
         # Update status based on monitor status and trailer existence if not downloading
-        if media_update.status not in (MonitorStatus.DOWNLOADING, MonitorStatus.MISSING):
+        if media_update.status not in (
+            MonitorStatus.DOWNLOADING,
+            MonitorStatus.MISSING,
+        ):
             if db_media.trailer_exists:
                 _status = MonitorStatus.DOWNLOADED
             else:
@@ -354,8 +379,8 @@ class MediaDatabaseManager:
                     _status = MonitorStatus.MONITORED
                 else:
                     _status = MonitorStatus.MISSING
-        else:  # If downloading, set status to downloading
-            _status = MonitorStatus.DOWNLOADING
+        else:  # If not downloading/missing, set received status
+            _status = media_update.status
         db_media.status = _status
         if media_update.downloaded_at:
             db_media.downloaded_at = media_update.downloaded_at
@@ -427,6 +452,7 @@ class MediaDatabaseManager:
             # Trailer doesn't exist, set monitor status
             db_media.monitor = monitor
             db_media.status = MonitorStatus.MONITORED
+            db_media.updated_at = datetime.now(timezone.utc)
             _session.add(db_media)
             if _commit:
                 _session.commit()
@@ -439,11 +465,36 @@ class MediaDatabaseManager:
             db_media.status = MonitorStatus.DOWNLOADED
         else:
             db_media.status = MonitorStatus.MISSING
+        db_media.updated_at = datetime.now(timezone.utc)
         msg = f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
         _session.add(db_media)
         if _commit:
             _session.commit()
         return msg, True
+
+    @manage_session
+    def update_monitoring_bulk(
+        self,
+        media_ids: list,
+        monitor: bool,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the monitoring status of multiple media items in the database at once.\n
+        Args:
+            media_ids (list[int]): List of media id's to update.
+            monitor (bool): The monitoring status to set.
+            _session (Session, Optional): A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If any of the media items with provided id's don't exist.
+        """
+        for media_id in media_ids:
+            self.update_monitoring(media_id, monitor, _session=_session, _commit=False)
+        _session.commit()
+        return
 
     @manage_session
     def update_trailer_exists(
@@ -468,6 +519,7 @@ class MediaDatabaseManager:
         """
         db_media = self._get_db_item(media_id, _session)
         db_media.trailer_exists = trailer_exists
+        db_media.updated_at = datetime.now(timezone.utc)
         # If trailer exists, disable monitoring
         if trailer_exists:
             db_media.monitor = False
@@ -530,6 +582,7 @@ class MediaDatabaseManager:
         """
         db_media = self._get_db_item(media_id, _session)
         db_media.youtube_trailer_id = yt_id
+        db_media.updated_at = datetime.now(timezone.utc)
         _session.add(db_media)
         if _commit:
             _session.commit()
