@@ -57,6 +57,15 @@ mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 chmod -R 755 /app/assets
 mkdir -p /app/tmp && chmod -R 755 /app/tmp
 
+# Check if the appdata folder has .env file and Check if there is a env variable 'UPDATE_YTDLP' set to true
+if [ -f "${APP_DATA_DIR}/.env" ]; then
+    echo "Found .env file in '$APP_DATA_DIR' folder"
+    if [ "$UPDATE_YTDLP" = "true" ]; then
+        echo "UPDATE_YTDLP is set to true. Updating .env file with new values"
+        pip install yt-dlp --upgrade
+    fi
+fi
+
 echo "Checking for GPU availability..."
 # Check for NVIDIA GPU
 export NVIDIA_GPU_AVAILABLE="false"
