@@ -106,7 +106,7 @@ def _get_ytdl_options() -> list[str]:
     _options.append(app_settings.trailer_file_format)
     # Add cookies if available
     if app_settings.yt_cookies_path:
-        logger.info(f"Using cookies file: {app_settings.yt_cookies_path}")
+        logger.debug(f"Using cookies file: {app_settings.yt_cookies_path}")
         _options.append("--cookies")
         _options.append(app_settings.yt_cookies_path)
     # Embed metadata if enabled
