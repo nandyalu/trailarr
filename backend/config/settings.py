@@ -164,7 +164,7 @@ class _Config:
     _VALID_LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     _VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
     _VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1"]
-    _VALID_SUBTITLES_FORMATS = ["srt", "vtt", "pgs"]
+    _VALID_SUBTITLES_FORMATS = ["srt", "vtt"]
     _VALID_FILE_FORMATS = ["mp4", "mkv", "webm"]
     _VALID_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
 

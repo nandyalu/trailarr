@@ -21,9 +21,9 @@ export class TrailerComponent {
   loggingOptions = ["Debug", "Info", "Warning", "Error"];
   trueFalseOptions = [true, false];
   fileFormats = ["mkv", "mp4", "webm"];
-  audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]
-  videoFormats = ["h264", "h265", "vp8", "vp9", "av1"]
-  subtitleFormats = ["srt", "vtt", "pgs"]
+  audioFormats = ["aac", "ac3", "eac3", "flac", "opus"];
+  videoFormats = ["h264", "h265", "vp8", "vp9", "av1"];
+  subtitleFormats = ["srt", "vtt"];
   trailerFileName = "";
   ytCookiesPath = "";
   excludeWords = "";
