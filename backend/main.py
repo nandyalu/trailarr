@@ -50,6 +50,7 @@ trailarr_api = FastAPI(
     description=f"API for {APP_NAME} application.",
     summary=f"{APP_NAME} API available commands.",
     version=APP_VERSION,
+    root_path=f"{app_settings.url_base}",
     openapi_url="/api/v1/openapi.json",
     docs_url=None,
     redoc_url=None,

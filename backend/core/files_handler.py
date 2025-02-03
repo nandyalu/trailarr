@@ -47,6 +47,10 @@ class FolderInfo(BaseModel):
         default="0 KB",
         description="Size of the file/folder in human-readable format (e.g. '10 KB').",
     )
+    path: str = Field(
+        ...,
+        description="Path of the file/folder.",
+    )
     files: list["FolderInfo"] = Field(
         default=[],
         description="List of FileInfo or FolderInfo objects representing files and folders \
@@ -60,6 +64,8 @@ class FolderInfo(BaseModel):
 
 class FilesHandler:
     """Utility class to handle files and folders."""
+
+    VIDEO_EXTENSIONS = tuple([".avi", "mkv", ".mp4", ".webm"])
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -93,6 +99,7 @@ class FilesHandler:
             type="file",
             name=unicodedata.normalize("NFKD", entry.name),
             size=FilesHandler._convert_file_size(info.st_size),
+            path=entry.path,
             created=dt.fromtimestamp(info.st_ctime).strftime("%Y-%m-%d %H:%M:%S"),
         )
 
@@ -136,6 +143,7 @@ class FilesHandler:
             name=unicodedata.normalize("NFKD", os.path.basename(folder_path)),
             files=dir_info,
             size=dir_size_str,
+            path=folder_path,
             created=dt.fromtimestamp(os.path.getctime(folder_path)).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),
@@ -160,7 +168,7 @@ class FilesHandler:
                     return True
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if entry.stat().st_size < 100 * 1024 * 1024:  # 100 MB
                 continue
@@ -184,7 +192,7 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     return True
         return False
 
@@ -198,7 +206,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if "trailer" not in entry.name:
                 continue
@@ -248,7 +256,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                 continue
             if "-trailer." not in entry.name:
                 continue
@@ -277,7 +285,7 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     return sub_entry.path
         return None
 
@@ -316,6 +324,10 @@ class FilesHandler:
             file_path (str): Path to the file to delete.\n
         Returns:
             bool: True if the file is deleted successfully, False otherwise."""
+        # Make sure the path is at least 2 levels deep from the root
+        if file_path.count("/") < 3:
+            logger.error(f"Cannot delete top level file: {file_path}")
+            return False
         try:
             await aiofiles.os.remove(file_path)
             logger.debug(f"File deleted: {file_path}")
@@ -331,9 +343,18 @@ class FilesHandler:
     async def delete_folder(folder_path: str) -> bool:
         """Delete a folder from the filesystem.\n
         Args:
-            folder_path (str): Path to the folder to delete.\n
+            folder_path (str): Path to the folder to delete. \
+                Should be at least 3 folders deep from root. \n
         Returns:
             bool: True if the folder is deleted successfully, False otherwise."""
+        # Make sure we are not deleting the root folder or a top level folder
+        if folder_path == "/" or folder_path == "" or folder_path.count("/") < 3:
+            logger.error(f"Cannot delete root folder: {folder_path}")
+            return False
+        # Make sure the path is at least 3 levels deep from the root
+        if folder_path.count("/") < 3:
+            logger.error(f"Cannot delete top level folder: {folder_path}")
+            return False
         try:
             shutil.rmtree(folder_path)
             logger.debug(f"Folder deleted: {folder_path}")
@@ -357,7 +378,7 @@ class FilesHandler:
             for entry in await aiofiles.os.scandir(folder_path):
                 if not entry.is_file():
                     continue
-                if not entry.name.endswith((".mp4", ".mkv", ".avi", ".webm")):
+                if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
                     continue
                 if "-trailer." not in entry.name:
                     continue
@@ -389,3 +410,63 @@ class FilesHandler:
         except Exception as e:
             logger.error(f"Failed to cleanup temporary directory. Exception: {e}")
             return False
+
+    @staticmethod
+    def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
+        """Find all folders containing trailers in the specified root folders.\n
+        Finds trailers in the media folder and also in a 'trailer' folder\n
+        Args:
+            root_media_dir (str): The root directory to search for trailers.\n
+        Returns:
+            set[str]: Set of folder paths containing trailers."""
+        logger.debug(f"Scanning '{root_media_dir}' for trailers.")
+        trailer_folders = set()
+        trailer_folders_inline = set()
+        count = 0
+        for root, dirs, files in os.walk(root_media_dir):
+            count += 1
+            for file in files:
+                if file.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
+                    if "trailer" in root.lower():
+                        trailer_folders.add(root)
+                        break  # No need to check more files in this folder
+                    if "trailer" in file.lower():
+                        trailer_folders_inline.add(root)
+                        break  # No need to check more files in this folder
+        msg = f"Scanned {count} media folders. Found {len(trailer_folders)} (folders) "
+        msg += f"and {len(trailer_folders_inline)} (inline) trailers."
+        logger.debug(msg)
+        return trailer_folders_inline.union(trailer_folders)
+
+    @staticmethod
+    async def rename_file_fol(old_path: str, new_path: str) -> bool:
+        """Rename a file or folder.\n
+        Args:
+            old_path (str): Path of the file/folder to rename.
+            new_path (str): New path of the file/folder.
+        Returns:
+            bool: True if the file/folder is renamed successfully, False otherwise."""
+        try:
+            await aiofiles.os.rename(old_path, new_path)
+            logger.debug(f"File/Folder renamed: {old_path} -> {new_path}")
+            return True
+        except FileNotFoundError:
+            logger.error(f"File/Folder not found: {old_path}")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to rename file/folder: {old_path}. Exception: {e}")
+            return False
+
+    @staticmethod
+    async def delete_file_fol(path: str) -> bool:
+        """Delete a file or folder from the filesystem.\n
+        Args:
+            path (str): Path to the file/folder to delete.\n
+        Returns:
+            bool: True if the file/folder is deleted successfully, False otherwise."""
+        # Check if the path is a file or folder
+        _is_dir = await aiofiles.os.path.isdir(path)
+        if _is_dir:
+            return await FilesHandler.delete_folder(path)
+        else:
+            return await FilesHandler.delete_file(path)
