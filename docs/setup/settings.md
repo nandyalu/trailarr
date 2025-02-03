@@ -270,3 +270,9 @@ Enable this setting to use hardware acceleration for video conversion. This will
 - Default is `false`
 
 Enable this setting to update `yt-dlp` to the latest version on every app start. This will ensure that the app uses the latest features and bug fixes.
+
+### URL Base
+
+- Default is  `(empty)`
+
+Enter the base URL of the app for use with reverse proxies. This will allow the app to generate correct URLs when behind a reverse proxy.

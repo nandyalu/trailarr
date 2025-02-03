@@ -105,10 +105,12 @@ nav:
     - Settings: setup/settings.md
   - Help:
     - Common: help/common.md
-    - FAQ: help/faq.md
-    - Release Notes: help/release-notes.md
-    # - Changelog: help/changelog.md
     - Docker Builder: help/docker-builder/builder.html
+    - FAQ: help/faq.md
+    - Release Notes:
+      - 2025: help/release-notes/2025.md
+      - 2024: help/release-notes/2024.md
+    # - Changelog: help/changelog.md
     - Legal Disclaimer: help/legal-disclaimer.md
 # extra_javascript:
 #   - js/docker-builder.js
