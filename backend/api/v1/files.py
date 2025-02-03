@@ -14,6 +14,8 @@ CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
 
 UNSAFE_PATHS = [".", "/app", "/bin", "/boot", "/etc", "/lib", "/sbin", "/usr", "/var"]
 
+UNSAFE_PATHS = [".", "/app", "/bin", "/boot", "/etc", "/lib", "/sbin", "/usr", "/var"]
+
 
 def _is_path_safe(path: str) -> bool:
     """Check if the path is safe.\n
@@ -21,7 +23,8 @@ def _is_path_safe(path: str) -> bool:
         path (str): Path to check.
     Returns:
         bool: True if the path is safe, False otherwise."""
-    abs_path = os.path.abspath(path)
+    norm_path = os.path.normpath(path)
+    abs_path = os.path.abspath(norm_path)
     # Check if path is in unsafe paths
     for unsafe_path in UNSAFE_PATHS:
         if abs_path.startswith(unsafe_path):
