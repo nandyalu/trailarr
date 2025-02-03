@@ -4,7 +4,7 @@ aiofiles==24.1.0
 alembic==1.14.1
 apscheduler==3.11.0
 async-lru==2.0.4
-fastapi[standard]==0.115.6  # Update version in README.md as well
+fastapi[standard]==0.115.8  # Update version in README.md as well
 bcrypt==4.2.1
 pillow==11.1.0
 sqlmodel==0.0.22
