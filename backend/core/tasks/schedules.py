@@ -128,7 +128,7 @@ def update_check_job():
 
 def trailer_cleanup_job():
     """Schedules a background job to cleanup trailers.\n
-        - Runs once an hour (default, or monitor_interval), first run in 5 minutes. \n
+        - Runs once a day, first run in 4 hours. \n
     Returns:
         None
     """
