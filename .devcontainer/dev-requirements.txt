@@ -21,6 +21,6 @@ yt-dlp[default]==2024.12.13
 aioresponses==0.7.6
 hypothesis==6.112.1
 schemathesis==3.39.8
-pytest==8.3.3
+pytest==8.3.4
 pytest-asyncio==0.24.0
 pytest-cov==5.0.0
