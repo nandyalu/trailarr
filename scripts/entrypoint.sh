@@ -57,11 +57,19 @@ mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 chmod -R 755 /app/assets
 mkdir -p /app/tmp && chmod -R 755 /app/tmp
 
+# Read the specific environment variable
+read_env() {
+    grep -o "^$1=.*" .env | cut -d= -f2-
+}
+
+
 # Check if the appdata folder has .env file and Check if there is a env variable 'UPDATE_YTDLP' set to true
 if [ -f "${APP_DATA_DIR}/.env" ]; then
-    echo "Found .env file in '$APP_DATA_DIR' folder"
+    # echo "Found .env file in '$APP_DATA_DIR' folder"
+    UPDATE_YTDLP=$(read_env "UPDATE_YTDLP")
+    echo "UPDATE_YTDLP : $UPDATE_YTDLP"
     if [ "$UPDATE_YTDLP" = "true" ]; then
-        echo "UPDATE_YTDLP is set to true. Updating .env file with new values"
+        echo "UPDATE_YTDLP is set to true. Updating yt-dlp to latest version..."
         pip install yt-dlp --upgrade
     fi
 fi
