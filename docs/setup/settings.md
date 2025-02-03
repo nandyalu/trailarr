@@ -133,7 +133,7 @@ Enable this setting to download subtitles for trailers, if available.
 
 - Default is `srt`
 
-Select the format of the subtitles to download. Available options are `srt`, `vtt`, `pgs`.
+Select the format of the subtitles to download. Available options are `srt`, `vtt`.
 
 !!! info
     App will download subtitles in the available format and then convert it to the selected format using Ffmpeg.
@@ -247,7 +247,7 @@ Enable this option to let Trailarr analyse the video file and remove it. This he
 
 Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.
 
-## New Download Method
+### New Download Method
 
 - Default is `false`
 
@@ -256,7 +256,7 @@ Default `yt-dlp` download and convert method has some limitations and a few bugs
 !!! note
     This option needs to be enabled if you want to use hardware acceleration for video conversion.
 
-## Hardware Acceleration
+### Hardware Acceleration
 
 - Default is `false`
 
@@ -264,3 +264,9 @@ Enable this setting to use hardware acceleration for video conversion. This will
 
 !!! note
     This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../install/hardware-acceleration.md).
+
+### Update Yt-dlp
+
+- Default is `false`
+
+Enable this setting to update `yt-dlp` to the latest version on every app start. This will ensure that the app uses the latest features and bug fixes.
