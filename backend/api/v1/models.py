@@ -69,6 +69,7 @@ class Settings(BaseModel):
     trailer_hardware_acceleration: bool
     new_download_method: bool
     update_ytdlp: bool
+    url_base: str
 
 
 class UpdateSetting(BaseModel):

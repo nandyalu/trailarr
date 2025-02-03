@@ -35,6 +35,7 @@ export interface Settings {
 
     trailer_hardware_acceleration: boolean
     update_ytdlp: boolean
+    url_base: string
 }
 
 export interface ServerStats {

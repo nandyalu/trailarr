@@ -30,6 +30,7 @@ export class TrailerComponent {
   minDuration = 30;
   maxDuration = 600;
   trailerSearchQuery = "";
+  urlBase = "";
 
   constructor(private settingsService: SettingsService) { }
 

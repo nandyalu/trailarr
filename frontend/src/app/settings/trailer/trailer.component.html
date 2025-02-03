@@ -489,5 +489,22 @@
                 </div>
             </div>
         </div>
+        <div class="trailer-content">
+            <div class="content-label">
+                <label for="url_base">URL Base</label>
+                <small>URL Base for use with reverse proxy configuration</small>
+                <small>Restart required to take effect!</small>
+            </div>
+            <div class="text-input">
+                <input class="input-path" id="url_base" type="text" [(ngModel)]="urlBase"
+                    placeholder="trailarr" autocomplete="off" tabindex="30">
+                <button *ngIf="urlBase != settings?.url_base" class="primary icononly-button"
+                    id="url_base" tabindex="30" (click)="updateSetting('url_base', urlBase)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </section>
 </ng-template>

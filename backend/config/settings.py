@@ -276,6 +276,7 @@ class _Config:
             "trailer_hardware_acceleration": self.trailer_hardware_acceleration,
             "new_download_method": self.new_download_method,
             "update_ytdlp": self.update_ytdlp,
+            "url_base": self.url_base,
         }
 
     @property
@@ -858,6 +859,11 @@ class _Config:
     """Update yt-dlp binary on startup.
         - Default is False.
         - Valid values are True/False."""
+
+    url_base = str_property("URL_BASE", default="")
+    """URL Base for the application for use with reverse proxy.
+        - Default is empty string.
+        - If a value is provided, app will start with that url_base as root path."""
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
