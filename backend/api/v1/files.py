@@ -12,6 +12,8 @@ files_router = APIRouter(prefix="/files", tags=["Files", "media"])
 
 CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
 
+UNSAFE_PATHS = [".", "/app", "/bin", "/boot", "/etc", "/lib", "/sbin", "/usr", "/var"]
+
 
 def _is_path_safe(path: str) -> bool:
     """Check if the path is safe.\n
@@ -20,6 +22,10 @@ def _is_path_safe(path: str) -> bool:
     Returns:
         bool: True if the path is safe, False otherwise."""
     abs_path = os.path.abspath(path)
+    # Check if path is in unsafe paths
+    for unsafe_path in UNSAFE_PATHS:
+        if abs_path.startswith(unsafe_path):
+            return False
     # Check if path is atleast 3 levels deep
     if abs_path.count("/") < 3:
         return False
