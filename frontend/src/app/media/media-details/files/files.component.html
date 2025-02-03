@@ -292,15 +292,14 @@
 </dialog>
 
 <!-- Delete Dialog -->
-<dialog #deleteFileDialog (click)="closeDeleteFileDialog()">
+<dialog #deleteFileDialog id="deleteFileDialog" (click)="closeDeleteFileDialog()">
   <div class="delete-dialog" (click)="$event.stopPropagation()">
-    <h2>Confirm Delete</h2>
-    <p>Are you sure you want to delete this?</p>
+    <h3>Confirm Delete</h3>
     <code>{{selectedFileName}}</code>
+    <p>Are you sure you want to delete this file?</p>
     <div class="buttons-row">
       <button class="danger" (click)="deleteFile()">Confirm</button>
       <button class="tertiary" (click)="closeDeleteFileDialog()">Cancel</button>
     </div>
   </div>
-
 </dialog>

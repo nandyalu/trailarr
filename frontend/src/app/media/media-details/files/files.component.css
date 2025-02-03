@@ -224,6 +224,18 @@ dialog .loading-wave {
   }
 }
 
+.delete-dialog {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 0 1rem 1rem;
+  margin: 0;
+  gap: 1rem;
+}
+
+#deleteFileDialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
 .text-content {
   max-width: 75vw;
   max-height: 70vh;
