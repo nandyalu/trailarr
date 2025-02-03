@@ -78,6 +78,21 @@ class BaseConnectionManager(ABC):
         except Exception:
             return None
 
+    def _remove_end_slash(self, path: str) -> str:
+        """Remove the end slash from the path. \n
+        Args:
+            path (str): The path to remove the end slash from. \n
+        Returns:
+            str: The path without the end slash."""
+        # Linux paths
+        if path.endswith("/"):
+            return path[:-1]
+        # Windows paths
+        if path.endswith("\\"):
+            return path[:-1]
+        # No end slash
+        return path
+
     def _apply_path_mappings_to_path(self, path: str) -> str:
         """Apply the path mappings to the given path. \n
         Args:
@@ -89,6 +104,12 @@ class BaseConnectionManager(ABC):
         for path_mapping in self.path_mappings:
             if path.startswith(path_mapping.path_from):
                 path = path.replace(path_mapping.path_from, path_mapping.path_to)
+                break
+            # Apply path mappings to the root folders that doesn't have a trailing slash
+            _path_from = self._remove_end_slash(path_mapping.path_from)
+            _path_to = self._remove_end_slash(path_mapping.path_to)
+            if path.startswith(_path_from):
+                path = path.replace(_path_from, _path_to)
                 break
         path = path.replace("\\", "/")
         return path
