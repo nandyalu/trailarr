@@ -11,7 +11,7 @@
 <!-- # Trailarr -->
 
 [![Python](https://img.shields.io/badge/python-3.12-3670A0?style=flat&logo=python)](https://www.python.org/){:target="_blank"}
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.7-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.8-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
 [![Angular](https://img.shields.io/badge/angular-19.1.4-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr){:target="_blank"}
 
