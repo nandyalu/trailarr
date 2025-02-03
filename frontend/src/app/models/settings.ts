@@ -34,6 +34,7 @@ export interface Settings {
     trailer_remove_silence: boolean
 
     trailer_hardware_acceleration: boolean
+    update_ytdlp: boolean
 }
 
 export interface ServerStats {

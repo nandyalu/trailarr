@@ -275,6 +275,7 @@ class _Config:
             "nvidia_gpu_available": self.nvidia_gpu_available,
             "trailer_hardware_acceleration": self.trailer_hardware_acceleration,
             "new_download_method": self.new_download_method,
+            "update_ytdlp": self.update_ytdlp,
         }
 
     @property
@@ -850,6 +851,11 @@ class _Config:
 
     trailer_remove_silence = bool_property("TRAILER_REMOVE_SILENCE", default=False)
     """Remove silence from the trailers.
+        - Default is False.
+        - Valid values are True/False."""
+
+    update_ytdlp = bool_property("UPDATE_YTDLP", default=False)
+    """Update yt-dlp binary on startup.
         - Default is False.
         - Valid values are True/False."""
 

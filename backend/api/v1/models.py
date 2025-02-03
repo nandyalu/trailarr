@@ -68,6 +68,7 @@ class Settings(BaseModel):
     nvidia_gpu_available: bool
     trailer_hardware_acceleration: bool
     new_download_method: bool
+    update_ytdlp: bool
 
 
 class UpdateSetting(BaseModel):

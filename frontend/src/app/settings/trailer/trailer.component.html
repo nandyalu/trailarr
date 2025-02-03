@@ -473,5 +473,21 @@
                 </div>
             </div>
         }
+        <div class="trailer-content">
+            <div class="content-label">
+                <span for="update_ytdlp">Update Yt-dlp</span>
+                <small>Update yt-dlp to latest version during container startup</small>
+                <small>You need to restart the container to update</small>
+            </div>
+            <div id="update_ytdlp" class="options-bar">
+                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="29"
+                [class.selected]="option === settings?.update_ytdlp"
+                (click)="updateSetting('update_ytdlp', option)"
+                (keydown.enter)="updateSetting('update_ytdlp', option)"
+                (keydown.space)="updateSetting('update_ytdlp', option)">
+                {{option}}
+                </div>
+            </div>
+        </div>
     </section>
 </ng-template>
