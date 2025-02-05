@@ -3,43 +3,10 @@
     "name": "Trailarr: Movie and Tv Show trailer downloader",
     "icons": [
         {
-            "src": "/favicon.ico",
-            "type": "image/ico",
-            "sizes": "48x48"
-        },
-        {
-            "src": "/assets/logos/trailarr-256.ico",
-            "type": "image/ico",
-            "sizes": "256x256"
-        },
-        {
-            "src": "/assets/logos/trailarr-96.ico",
-            "type": "image/ico",
-            "sizes": "96x96"
-        },
-        {
-            "src": "/assets/logos/trailarr-maskable-512.png",
-            "type": "image/png",
-            "sizes": "512x512",
+            "src": "/assets/logos/trailarr.svg",
+            "type": "image/svg+xml",
+            "sizes": "any",
             "purpose": "any"
-        },
-        {
-            "src": "/assets/logos/trailarr-maskable-512.png",
-            "type": "image/png",
-            "sizes": "512x512",
-            "purpose": "maskable"
-        },
-        {
-            "src": "/assets/logos/trailarr-maskable-192.png",
-            "type": "image/png",
-            "sizes": "192x192",
-            "purpose": "any"
-        },
-        {
-            "src": "/assets/logos/trailarr-maskable-192.png",
-            "type": "image/png",
-            "sizes": "192x192",
-            "purpose": "maskable"
         }
     ],
     "id": "/",
