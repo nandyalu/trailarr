@@ -123,5 +123,5 @@ class AsyncBaseArrManager(AsyncRequestManager):
                 raise InvalidResponseError("Response in not a dict")
             if "path" not in rootfolder:
                 raise InvalidResponseError("Path not found in response")
-            rootfolders.append(rootfolder["path"])
+            rootfolders.append(f"{rootfolder["path"]}")
         return rootfolders
