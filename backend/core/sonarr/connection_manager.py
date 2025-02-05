@@ -19,6 +19,6 @@ class SonarrConnectionManager(BaseConnectionManager):
             connection,
             sonarr_manager,
             parse_series,
-            inline_trailer=False,
+            # inline_trailer=False,
             is_movie=False,
         )

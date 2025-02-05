@@ -41,7 +41,7 @@ class BaseConnectionManager(ABC):
 
     arr_manager: ArrManagerProtocol
     connection_id: int
-    inline_trailer: bool
+    # inline_trailer: bool
     is_movie: bool
     monitor: MonitorType
     parse_media: Callable[[int, dict[str, Any]], MediaCreate]
@@ -51,7 +51,7 @@ class BaseConnectionManager(ABC):
         connection: ConnectionRead,
         arr_manager: ArrManagerProtocol,
         parse_media: Callable[[int, dict[str, Any]], MediaCreate],
-        inline_trailer: bool,
+        # inline_trailer: bool,
         is_movie: bool = True,
     ):
         """Initialize the ArrConnectionManager. \n
@@ -62,7 +62,7 @@ class BaseConnectionManager(ABC):
         self.monitor = connection.monitor
         self.arr_manager = arr_manager
         self.parse_media = parse_media
-        self.inline_trailer = inline_trailer
+        # self.inline_trailer = inline_trailer
         self.is_movie = is_movie
         self.created_count = 0
         self.updated_count = 0
@@ -198,9 +198,10 @@ class BaseConnectionManager(ABC):
             folder_path (str): The folder path to check for the trailer.\n
         Returns:
             bool: True if the trailer exists, False otherwise."""
+        # Check if there ia a trailer either inline or in a 'Trailers' subfolder
         trailer_exists = await FilesHandler.check_trailer_exists(
             path=folder_path,
-            check_inline_file=self.inline_trailer,
+            check_inline_file=True,
         )
         return trailer_exists
 
