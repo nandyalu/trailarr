@@ -125,9 +125,10 @@ class BaseConnectionManager(ABC):
             if len(self.path_mappings) == 0:
                 return rootfolders
             # Apply path mappings to the rootfolders
+            final_rootfolders: list[str] = []
             for rootfolder in rootfolders:
-                rootfolder = self._apply_path_mappings_to_path(rootfolder)
-            return rootfolders
+                final_rootfolders.append(self._apply_path_mappings_to_path(rootfolder))
+            return final_rootfolders
         except Exception:
             logger.error("Failed to get root folders from Arr application.")
             return []
