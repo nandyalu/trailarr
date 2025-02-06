@@ -25,6 +25,9 @@ export interface Media {
     added_at: Date;
     updated_at: Date;
     downloaded_at: Date;
+
+    // Additional properties
+    isImageLoaded: boolean;
 }
 
 export function mapMedia(media: any): Media {
@@ -32,7 +35,8 @@ export function mapMedia(media: any): Media {
         ...media,
         added_at: new DatePipe('en-US').transform(media.added_at, 'medium'),
         updated_at: new DatePipe('en-US').transform(media.updated_at, 'medium'),
-        downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium')
+        downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium'),
+        isImageLoaded: false
     };
 }
 
