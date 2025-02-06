@@ -16,7 +16,7 @@ export class AddConnectionComponent {
   arrOptions = ['radarr', 'sonarr'];
   monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
-  url = new FormControl('', [Validators.required, Validators.pattern('https?://.*:\\d{2,}')]);
+  url = new FormControl('', [Validators.required, Validators.pattern('https?://.*'), Validators.minLength(10)]);
   apiKey = new FormControl('', [
     Validators.required,
     Validators.pattern('^[a-zA-Z0-9]*$'),
