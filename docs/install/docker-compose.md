@@ -50,3 +50,15 @@ docker-compose pull nandyalu/trailarr
 ```bash
 docker-compose up -d
 ```
+
+## `nightly` build
+
+Trailarr also has a `nightly` build available, which is built on the `dev` branch with the most recent changes that are in development.
+
+`nightly` build might have some additional features that you can use right away, however, might have some bugs. 
+
+To use the `nightly` build, you can use the same `docker cli` or `docker-compose` commands by replacing `nandyalu/trailarr:latest` with `nandyalu/trailarr:nightly`.
+
+!!! warning
+    It is strongly recommended to use a separate container for nightly build and keep your production container to latest build.
+    To add a separate container for nightly map the `config` folder to a new folder like `/rest_of_path/trailarr-dev:/config`

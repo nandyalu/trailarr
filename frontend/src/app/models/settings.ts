@@ -29,11 +29,18 @@ export interface Settings {
     update_available: boolean
     wait_for_media: boolean
     yt_cookies_path: string
+    new_download_method: boolean
+    nvidia_gpu_available: boolean
     trailer_remove_silence: boolean
+
+    trailer_hardware_acceleration: boolean
+    update_ytdlp: boolean
+    url_base: string
 }
 
 export interface ServerStats {
     trailers_downloaded: number
+    trailers_detected: number
     movies_count: number
     movies_monitored: number
     series_count: number

@@ -27,12 +27,27 @@ class WSConnectionManager:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, type: str = "Success"):
+    async def broadcast(self, message: str, type: str = "Success") -> None:
+        """Send a message to all connected clients.
+        Args:
+            message (str): The message to send.
+            type (str, optional): The type of message. Defaults to "Success".
+        Returns:
+            None
+        """
         for connection in self.active_connections:
             await connection.send_json({"type": type, "message": message})
 
 
 def broadcast(message: str, type: str = "Success") -> None:
+    """Send a message to all connected clients. Non-Async function.
+    Args:
+        message (str): The message to send.
+        type (str, optional): The type of message. Defaults to "Success".
+    Returns:
+        None
+    """
+
     def send_message() -> None:
         """Run the async task in a separate event loop."""
         new_loop = asyncio.new_event_loop()

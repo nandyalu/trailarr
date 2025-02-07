@@ -3,6 +3,11 @@ from pydantic import BaseModel
 # THESE MODELS ARE ONLY FOR API RESPONSES
 
 
+class BatchUpdate(BaseModel):
+    media_ids: list[int]
+    action: str
+
+
 class ErrorResponse(BaseModel):
     message: str
 
@@ -60,6 +65,11 @@ class Settings(BaseModel):
     wait_for_media: bool
     yt_cookies_path: str
     trailer_remove_silence: bool
+    nvidia_gpu_available: bool
+    trailer_hardware_acceleration: bool
+    new_download_method: bool
+    update_ytdlp: bool
+    url_base: str
 
 
 class UpdateSetting(BaseModel):

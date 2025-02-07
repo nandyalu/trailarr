@@ -19,5 +19,6 @@ class RadarrConnectionManager(BaseConnectionManager):
             connection,
             radarr_manager,
             parse_movie,
-            inline_trailer=True,
+            # inline_trailer=True,
+            is_movie=True,
         )

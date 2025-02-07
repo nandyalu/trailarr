@@ -21,15 +21,16 @@ export class TrailerComponent {
   loggingOptions = ["Debug", "Info", "Warning", "Error"];
   trueFalseOptions = [true, false];
   fileFormats = ["mkv", "mp4", "webm"];
-  audioFormats = ["aac", "ac3", "eac3", "flac", "opus"]
-  videoFormats = ["h264", "h265", "vp8", "vp9", "av1"]
-  subtitleFormats = ["srt", "vtt", "pgs"]
+  audioFormats = ["aac", "ac3", "eac3", "flac", "opus"];
+  videoFormats = ["h264", "h265", "vp8", "vp9", "av1"];
+  subtitleFormats = ["srt", "vtt"];
   trailerFileName = "";
   ytCookiesPath = "";
   excludeWords = "";
   minDuration = 30;
   maxDuration = 600;
   trailerSearchQuery = "";
+  urlBase = "";
 
   constructor(private settingsService: SettingsService) { }
 
@@ -58,6 +59,25 @@ export class TrailerComponent {
     // Do not update if setting value hasn't changed
     if (this.settings ? this.settings[key] === value : false) {
       return;
+    }
+    // Special handling for trailer_file_format
+    if (key === 'trailer_file_format') {
+      // If the file format is webm, ensure the audio and video formats are compatible
+      let videoCodec = this.settings?.trailer_video_format;
+      if (value.toLowerCase() === 'webm') {
+        if (this.settings?.trailer_audio_format != 'opus') {
+          this.updateSetting('trailer_audio_format', 'opus');
+        }
+        if (videoCodec != 'vp8' && videoCodec != 'vp9' && videoCodec != 'av1') {
+          this.updateSetting('trailer_video_format', 'vp9');
+        }
+      }
+      // If the file format is mp4, ensure the audio and video formats are compatible
+      if (value.toLowerCase() === 'mp4') {
+        if (videoCodec != 'h264' && videoCodec != 'h265' && videoCodec != 'av1') {
+          this.updateSetting('trailer_video_format', 'h265');
+        }
+      }
     }
     this.settingsService.updateSetting(key, value).subscribe(msg => {
       // Add update result message to end of list

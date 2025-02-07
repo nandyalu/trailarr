@@ -94,3 +94,34 @@ class AsyncBaseArrManager(AsyncRequestManager):
             InvalidResponseError: If the API response is invalid
         """
         return await self._request("GET", "/ping")
+
+    async def get_rootfolders(self) -> list[str]:
+        """Get the root folders from the Arr API. \n
+        Args:
+            None \n
+        Returns:
+            list[str]: The root folders list from the Arr API \n
+        Raises:
+            ConnectionError: If the connection is refused / response is not 200
+            ConnectionTimeoutError: If the connection times out
+            InvalidResponseError: If the API response is invalid
+        """
+        response: str | dict[str, Any] | list[dict[str, Any]] = await self._request(
+            "GET", f"/api/{self.version}/rootfolder"
+        )
+        if isinstance(response, str):
+            raise InvalidResponseError(response)
+        if not isinstance(response, list):
+            raise InvalidResponseError(
+                f"Unable to parse response! Response: ({response})"
+            )
+
+        # Now status is a list[dict], check if the paths exist in the response
+        rootfolders: list[str] = []
+        for rootfolder in response:
+            if not isinstance(rootfolder, dict):
+                raise InvalidResponseError("Response in not a dict")
+            if "path" not in rootfolder:
+                raise InvalidResponseError("Path not found in response")
+            rootfolders.append(f"{rootfolder["path"]}")
+        return rootfolders

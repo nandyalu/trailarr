@@ -66,6 +66,13 @@ plugins:
 markdown_extensions:
   - attr_list
   - admonition
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
@@ -93,6 +100,7 @@ nav:
     - Volume Mapping: install/volume-mapping.md
     - Docker Compose: install/docker-compose.md
     - Docker Run: install/docker-cli.md
+    - Hardware Acceleration: install/hardware-acceleration.md
     # - Docker Builder: install/docker-builder.md
     # - Usage: install/form.html
   - Setup:
@@ -100,9 +108,12 @@ nav:
     - Settings: setup/settings.md
   - Help:
     - Common: help/common.md
-    - FAQ: help/faq.md
-    - Release Notes: help/release-notes.md
-    # - Changelog: help/changelog.md
     - Docker Builder: help/docker-builder/builder.html
+    - FAQ: help/faq.md
+    - Release Notes:
+      - 2025: help/release-notes/2025.md
+      - 2024: help/release-notes/2024.md
+    # - Changelog: help/changelog.md
+    - Legal Disclaimer: help/legal-disclaimer.md
 # extra_javascript:
 #   - js/docker-builder.js

@@ -21,6 +21,14 @@
   width: 210px;
 }
 
+.trailarr .logo-text {
+  fill: var(--color-on-surface);
+}
+
+.trailarr:hover .logo-text {
+  fill: var(--color-primary);
+}
+
 .navlogotext {
   margin-left: 0.5rem;
 }

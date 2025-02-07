@@ -25,6 +25,9 @@ export interface Media {
     added_at: Date;
     updated_at: Date;
     downloaded_at: Date;
+
+    // Additional properties
+    isImageLoaded: boolean;
 }
 
 export function mapMedia(media: any): Media {
@@ -32,7 +35,8 @@ export function mapMedia(media: any): Media {
         ...media,
         added_at: new DatePipe('en-US').transform(media.added_at, 'medium'),
         updated_at: new DatePipe('en-US').transform(media.updated_at, 'medium'),
-        downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium')
+        downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium'),
+        isImageLoaded: false
     };
 }
 
@@ -51,12 +55,17 @@ export interface FolderInfo {
     type: string;
     name: string;
     size: string;
+    path: string;
     files: FolderInfo[];
     modified: Date;
+    isExpanded: boolean;
 }
 
 export function mapFolderInfo(folder: any): FolderInfo {
-    let _files = [{ type: 'folder', name: 'None', size: '', files: [], modified: new Date() }];
+    let _files = [{
+        type: 'folder', name: 'None', size: '', path: '',
+        files: [], modified: new Date(), isExpanded: false
+    }];
     if (folder.files) {
         _files = folder.files.map((file: any) => isFile(file) ? mapFileInfo(file) : mapFolderInfo(file));
     }
@@ -71,6 +80,7 @@ export function mapFolderInfo(folder: any): FolderInfo {
 function mapFileInfo(file: any): FolderInfo {
     return {
         ...file,
+        isExpanded: false,
         modified: new DatePipe('en-US').transform(file.created, 'medium')
     };
 }

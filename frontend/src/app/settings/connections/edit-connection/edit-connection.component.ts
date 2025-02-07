@@ -44,7 +44,7 @@ export class EditConnectionComponent {
   arrOptions = ['radarr', 'sonarr'];
   monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
-  url = new FormControl('', [Validators.required, Validators.pattern('https?://.*:\\d{2,}')]);
+  url = new FormControl('', [Validators.required, Validators.pattern('https?://.*'), Validators.minLength(10)]);
   apiKey = new FormControl('', [Validators.required, Validators.minLength(32), Validators.maxLength(50)]);
   editConnectionForm = new FormGroup({
     name: this.name,

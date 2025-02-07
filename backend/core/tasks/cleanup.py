@@ -65,7 +65,7 @@ async def trailer_cleanup():
             logger.info(f"Deleting trailer with missing audio/video for {media.title}")
             await delete_trailer_and_monitor(trailer_path, media.id, db_manager)
             continue
-    # Cleanup any residual files left in '/tmp' directory
-    logger.debug("Cleaning up '/tmp' directory...")
+    # Cleanup any residual files left in '/app/tmp' directory
+    logger.debug("Cleaning up '/app/tmp' directory...")
     await FilesHandler.cleanup_tmp_dir()
     return None

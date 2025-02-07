@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 export interface MessageData {
@@ -13,9 +13,12 @@ export interface MessageData {
 export class WebsocketService {
 
   private socket$!: WebSocketSubject<any>;
+  websocketSubscription?: Subscription;
   toastMessage = new Subject<MessageData>();
 
-  constructor() { }
+  constructor() {
+    this.connect();
+  }
 
   public connect(): Observable<MessageData> {
     if (!this.socket$ || this.socket$.closed) {
@@ -31,6 +34,19 @@ export class WebsocketService {
       const wsUrl = `${wsProtocol}//${hostname}${port}/ws/${client_id}`;
 
       this.socket$ = webSocket(wsUrl);
+
+      // Subscribe to the WebSocket and handle incoming messages
+      this.websocketSubscription = this.socket$.subscribe({
+        next: (data: MessageData) => {
+          this.toastMessage.next(data);
+        },
+        error: (error) => {
+          console.error('WebSocket error:', error);
+        },
+        complete: () => {
+          console.log('WebSocket connection closed');
+        }
+      });
     }
     return this.socket$.asObservable();
   }
@@ -40,6 +56,9 @@ export class WebsocketService {
   }
 
   close() {
+    if (this.websocketSubscription) {
+      this.websocketSubscription.unsubscribe();
+    }
     this.socket$.complete();
   }
 }
