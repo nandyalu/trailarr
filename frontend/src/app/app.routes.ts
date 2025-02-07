@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
 import { LogsComponent } from './logs/logs.component';
 import { MediaDetailsComponent } from './media/media-details/media-details.component';
-import { MediaComponent } from './media/media.component';
+import { Media2Component } from './media2/media2.component';
 import { AboutComponent } from './settings/about/about.component';
 import { AddConnectionComponent } from './settings/connections/add-connection/add-connection.component';
 import { ConnectionsComponent } from './settings/connections/connections.component';
@@ -24,7 +25,7 @@ export const routes: Routes = [
     },
     {
         path: 'home',
-        component: MediaComponent
+        component: HomeComponent
     },
     {
         path: 'media/:id',
@@ -32,11 +33,11 @@ export const routes: Routes = [
     },
     {
         path: 'movies',
-        component: MediaComponent
+        component: Media2Component
     },
     {
         path: 'series',
-        component: MediaComponent
+        component: Media2Component
     },
     // {
     //     path: 'series/:id',
@@ -52,7 +53,7 @@ export const routes: Routes = [
     },
     {
         path: 'settings',
-        component: SettingsComponent,
+        component: SettingsComponent, 
         children: [
             { path: '', redirectTo: 'trailer', pathMatch: 'full' },
             {
@@ -67,6 +68,6 @@ export const routes: Routes = [
             { path: 'trailer', component: TrailerComponent },
             { path: 'about', component: AboutComponent }
         ]
-    }
+     }
 
 ];
