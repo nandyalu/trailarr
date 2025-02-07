@@ -1,70 +1,182 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { firstValueFrom, Observable } from 'rxjs';
 import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
-import { Media } from '../models/media';
+import { mapMedia, Media } from '../models/media';
 import { MediaService } from '../services/media.service';
+import { WebsocketService } from '../services/websocket.service';
 
 @Component({
-    selector: 'app-media',
-    imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective],
-    templateUrl: './media.component.html',
-    styleUrl: './media.component.css'
+  selector: 'app-media2',
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective],
+  templateUrl: './media.component.html',
+  styleUrl: './media.component.css'
 })
 export class MediaComponent {
-  title = 'Media';
-  pageType = 'Media';
-  moviesOnly: boolean | null = true;
-  displayCount = 50;
-  displayMediaList: Media[] = [];
-  filteredMediaList: Media[] = [];
-  allMedia: Media[] = [];
-  isLoading = true;
-  selectedSort: keyof Media = 'added_at';
-  sortAscending = true;
-  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
-  selectedFilter = 'missing';
-  filterOptions: string[] = ['all', 'monitored', 'unmonitored', 'downloaded', 'missing'];
-  inEditMode = false;
-  filteredMediaMap: { [key: string]: Media[] } = {};
-  monitoredMedia: Media[] = [];
-  unmonitoredMedia: Media[] = [];
-  downloadedMedia: Media[] = [];
-  missingMedia: Media[] = [];
-  selectedMedia: number[] = [];
 
   constructor(
+    private route: ActivatedRoute,
     private mediaService: MediaService,
-    private route: ActivatedRoute
+    private webSocketService: WebsocketService
   ) { }
 
+  moviesOnly = signal<boolean | null>(null);
+  isLoading = signal<boolean>(true);
+
+  inEditMode: boolean = false;
+  selectedMedia: number[] = [];
+
+  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
+  filterOptions: string[] = ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored'];
+  selectedSort = signal<keyof Media>('added_at');
+  sortAscending = signal<boolean>(true);
+  selectedFilter = signal<string>('all');
+
+  defaultDisplayCount = 50;
+  displayCount = signal<number>(this.defaultDisplayCount);
+
+  allMedia = signal<Media[]>([]);
+  filteredSortedMedia = computed(() => this.computeFilteredNSortedMedia());
+  displayMedia = computed(() => {
+    console.log("C: Displaying media");
+    return this.filteredSortedMedia().slice(0, this.displayCount())
+  });
+
+  private lastUpdateTime: number = 0;
+  private readonly UPDATE_INTERVAL: number = 3; // 3 seconds in seconds
+
   ngOnInit(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     let type = this.route.snapshot.url[0].path;
-    if (type === 'movies') {
-      this.title = 'Movies';
-      this.pageType = 'Movies';
-      this.moviesOnly = true;
-    } else if (type === 'series') {
-      this.title = 'Series';
-      this.pageType = 'Series';
-      this.moviesOnly = false;
-    } else {
-      this.title = 'All Media';
-      this.pageType = 'AllMedia';
-      this.moviesOnly = null;
+    switch (type) {
+      case 'movies':
+        this.moviesOnly.set(true);
+        break;
+      case 'series':
+        this.moviesOnly.set(false);
+        break;
+      default:
+        this.moviesOnly.set(null);
+        this.filterOptions = ['all', 'movies', 'series']
+        this.selectedFilter.set('all');
+        this.selectedSort.set('updated_at');
+        this.sortAscending.set(false);
     }
-    this.retrieveFilterOption();
-    this.retrieveSortOption();
-    this.getAndDisplayMedia();
+    this.retrieveSortNFilterOptions();
+    // this.mediaService.fetchAllMedia(this.moviesOnly());
+    // Get all media for Movies or Series, downloaded only for Home
+    let filterBy = this.moviesOnly() == null ? 'downloaded' : 'all';
+    this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe(
+      (mediaList) => {
+        console.log("C: Media fetched");
+        this.allMedia.set(mediaList.map(media => mapMedia(media)));
+        this.isLoading.set(false);
+      }
+    )
+
+    // Subscribe to WebSocket updates
+    this.webSocketService.toastMessage.subscribe(() => {
+      this.fetchUpdatedMedia();
+    });
   }
 
+  /**
+   * Filters and sorts the media list based on the selected filter and sort options.
+   * 
+   * @returns {Media[]} The filtered and sorted media list.
+   */
+  computeFilteredNSortedMedia(): Media[] {
+    // Filter the media list by the selected filter option
+    this.lastUpdateTime = Date.now();
+    let mediaList = this.allMedia().filter(media => {
+      switch (this.selectedFilter()) {
+        case 'all':
+          return true;
+        case 'downloaded':
+          return media.trailer_exists;
+        case 'downloading':
+          return media.status.toLowerCase() === 'downloading';
+        case 'missing':
+          return !media.trailer_exists;
+        case 'monitored':
+          return media.monitor;
+        case 'unmonitored':
+          return !media.monitor && !media.trailer_exists;
+        case 'movies':
+          return media.is_movie && media.trailer_exists;
+        case 'series':
+          return !media.is_movie && media.trailer_exists;
+        default:
+          return true;
+      }
+    });
+    // Sort the media list by the selected sort option
+    // Sorts the list in place. If sortAscending is false, reverses the list
+    mediaList.sort((a, b) => {
+      if (this.sortAscending()) {
+        return a[this.selectedSort()].toString().localeCompare(b[this.selectedSort()].toString());
+      }
+      return b[this.selectedSort()].toString().localeCompare(a[this.selectedSort()].toString());
+    });
+    return mediaList;
+  }
+
+  /**
+   * Fetches updated media items from the server and updates the allMedia signal.
+   * 
+   * @param {boolean} forceUpdate - Whether to force an update regardless of 
+   * the time interval.
+   *
+   * @returns {void}
+   */
+  fetchUpdatedMedia(forceUpdate: boolean = false): void {
+    // Fetch updated media items from the server and update the allMedia signal
+    const currentTime = Date.now();
+    const delta = Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000);
+    if (delta > this.UPDATE_INTERVAL || forceUpdate) {
+      // Fetch updated media items
+      this.mediaService.fetchUpdatedMedia(delta).subscribe(
+        (mediaList) => {
+          let updatedMedia = mediaList.map(media => mapMedia(media));
+          this.allMedia.update((existingMedia) => {
+            return existingMedia.map(media => {
+              let updated = updatedMedia.find(m => m.id === media.id);
+              if (updated) {
+                return updated;
+              }
+              return media;
+            });
+          });
+        }
+      );
+      // this.mediaService.fetchAllMedia(this.moviesOnly());
+      this.lastUpdateTime = currentTime;
+    }
+  }
+
+  /**
+   * Toggles the edit mode for the media list.
+   * 
+   * @param {boolean} enabled - Whether to enable or disable edit mode.
+   * @returns {void}
+   */
   toggleEditMode(enabled: boolean): void {
     this.inEditMode = enabled;
   }
 
+  selectAll(): void {
+    this.selectedMedia = this.filteredSortedMedia().map(media => media.id);
+  }
+
+  /**
+   * Handles the event when a media item is selected, either by checking or unchecking a checkbox.
+   * Adds or removes the media item from the selectedMedia array based on the checkbox state.
+   * 
+   * @param {Media} media - The media item that was selected.
+   * @param {Event} event - The event that triggered the selection.
+   * @returns {void}
+   */
   onMediaSelected(media: Media, event: Event): void {
     // Navigate to the media details page
     const inputElement = event.target as HTMLInputElement;
@@ -77,165 +189,24 @@ export class MediaComponent {
   }
 
   /**
-   *  Get and display media
-   * - Gets the selected sort and filter options media list first and displays it
-   * - Gets the rest of the filter options media lists and stores them in the filteredMediaMap
-   */
-  async getAndDisplayMedia(): Promise<void> {
-    // Get the selected sort and filter options media list first and display it
-    let selectedFilterMediaList = this.filteredMediaMap[this.selectedFilter];
-    if (!selectedFilterMediaList) {
-      selectedFilterMediaList = await this.getFilteredMedia(this.selectedFilter);
-      this.filteredMediaMap[this.selectedFilter] = selectedFilterMediaList;
-      this.displayMedia();
-    } else {
-      this.displayMedia();
-    }
-
-    // Get the rest of the filter options media lists
-    for (let filter of this.filterOptions) {
-      if (filter === this.selectedFilter) {
-        continue;
-      }
-      let filterMediaList = this.filteredMediaMap[filter];
-      if (!filterMediaList) {
-        filterMediaList = await this.getFilteredMedia(filter);
-        this.filteredMediaMap[filter] = filterMediaList;
-      }
-    }
-  }
-
-  /**
-   * Retrieves a filtered list of media items based on the provided filter criteria.
-   *
-   * @param filterBy - The criteria to filter the media items by. 
-   * - Can be `all`, `downloaded`, `monitored`, `unmonitored`, or `missing`.
-   * @returns An array of filtered media items.
-   */
-  async getFilteredMedia(filterBy: string): Promise<Media[]> {
-    const mediaObservable: Observable<Media[]> = this.mediaService.getAllMedia(
-      this.moviesOnly,
-      filterBy,
-      this.selectedSort.toString(),
-      this.sortAscending
-    );
-    const mediaList = await firstValueFrom(mediaObservable);
-    return mediaList;
-  }
-
-  /**
-   * Saves the current sort option and sort order to the local storage.
-   * The sort option is saved with a key that includes the page type.
-   * The sort order (ascending or descending) is also saved as a string.
-   *
-   * @remarks
-   * This method uses `localStorage` to persist the sort option and order.
-   * The keys used for storage are dynamically generated based on the `pageType`.
-   *
-   * @example
-   * // Assuming `pageType` is 'Movies' and `selectedSort` is 'Title':
-   * saveSortOption();
-   * // This will store the following in localStorage:
-   * // Key: 'TrailarrMoviesSort', Value: 'Title'
-   * // Key: 'TrailarrMoviesSortAscending', Value: 'true' or 'false'
-   */
-  saveSortOption(): void {
-    // Save the sort option to the local session
-    localStorage.setItem(`Trailarr${this.pageType}Sort`, this.selectedSort);
-    localStorage.setItem(`Trailarr${this.pageType}SortAscending`, this.sortAscending.toString());
-  }
-
-  /**
-   * Saves the currently selected filter option to the local storage.
-   * The filter option is stored with a key that combines a prefix 'Trailarr'
-   * and the current page type.
-   *
-   * @remarks
-   * This method uses the `localStorage` API to persist the filter option
-   * across sessions.
-   *
-   * @example
-   * // If the `pageType` is 'Movies' and the `selectedFilter` is 'Genre',
-   * // the filter option will be saved with the key 'TrailarrMoviesFilter'.
-   */
-  saveFilterOption(): void {
-    // Save the filter option to the local session
-    localStorage.setItem(`Trailarr${this.pageType}Filter`, this.selectedFilter);
-  }
-
-  /**
-   * Retrieves the sort option and sort order from the local storage.
+   * Handles the batch update action for the selected media items.
    * 
-   * This method fetches the sort option and sort order for the current page type
-   * from the local storage. It updates the `selectedSort` and `sortAscending` 
-   * properties of the component based on the retrieved values.
-   * 
-   * - The sort option is stored with the key `Trailarr{pageType}Sort`.
-   * - The sort order is stored with the key `Trailarr{pageType}SortAscending`.
-   * 
-   * If the sort option is found, it is cast to a key of the `Media` type and 
-   * assigned to `selectedSort`. 
-   * If the sort order is found, it is converted to 
-   * a boolean and assigned to `sortAscending`.
-   * 
+   * @param {string} action
+   * The action to perform on the selected media items. Available actions are:
+   * - `monitor`: Monitor the selected media items.
+   * - `unmonitor`: Unmonitor the selected media items.
+   * - `delete`: Delete the trailers for the selected media items.
+   * - `download`: Download the trailers for the selected media items.
    * @returns {void}
    */
-  retrieveSortOption(): void {
-    // Retrieve the sort option from the local session
-    let sortOption = localStorage.getItem(`Trailarr${this.pageType}Sort`);
-    let sortAscending = localStorage.getItem(`Trailarr${this.pageType}SortAscending`);
-    if (sortOption) {
-      this.selectedSort = sortOption as keyof Media;
-    }
-    if (sortAscending) {
-      this.sortAscending = sortAscending === 'true';
-    }
-  }
-
-  /**
-   * Retrieves the filter option from the local storage for the current page type.
-   * If a filter option is found, it sets the `selectedFilter` property to the retrieved value.
-   * The filter option is stored in local storage with a key in the format `Trailarr{pageType}Filter`.
-   */
-  retrieveFilterOption(): void {
-    // Retrieve the filter option from the local session
-    let filterOption = localStorage.getItem(`Trailarr${this.pageType}Filter`);
-    if (filterOption) {
-      this.selectedFilter = filterOption;
-    }
-  }
-
-  /**
-   * Displays the media items based on the selected filter and sort options.
-   * 
-   * This method performs the following actions:
-   * 1. Shows a loading screen.
-   * 2. Clears the current display and filtered media lists.
-   * 3. Sets the initial display count to 50.
-   * 4. Retrieves the media list based on the selected filter.
-   * 5. Sorts the filtered media list based on the selected sort option.
-   * 6. After a delay to avoid flickering, hides the loading screen and displays the first 50 items from the sorted media list.
-   * 
-   * @returns {void}
-   */
-  displayMedia(): void {
-    // Show loading screen
-    this.isLoading = true;
-    // Clear the display and filtered media lists
-    this.displayMediaList = [];
-    this.filteredMediaList = [];
-    this.displayCount = 50;
-    // debugger;
-    // Get the selected filter media list
-    this.filteredMediaList = this.filteredMediaMap[this.selectedFilter];
-    // Sort the selected filter media list
-    this.sortMediaList(this.selectedSort, this.filteredMediaList);
-    setTimeout(() => {
-      // Clear the loading screen and display the media list [first 50 items]
-      // Added a delay to avoid flickering
-      this.isLoading = false;
-      this.displayMediaList = this.filteredMediaList.slice(0, this.displayCount);
-    }, 1000);
+  batchUpdate(action: string): void {
+    // console.log("Batch update:", action, "Selected media:", this.selectedMedia);
+    this.webSocketService.showToast(`Batch update: ${action} ${this.selectedMedia.length} items`);
+    this.mediaService.batchUpdate(this.selectedMedia, action).subscribe(() => {
+      console.log("C: Batch update successful");
+      this.fetchUpdatedMedia(true); // Fetch updated media items
+    });
+    this.selectedMedia = [];
   }
 
   /**
@@ -250,63 +221,77 @@ export class MediaComponent {
   }
 
   /**
-   * Sorts the media list by the selected sort option.
+   * Retrieves the sort and filter options from the local session.
+   * If no options are found, sets the default sort option to 'added_at' and the default filter option to 'all'.
    * 
-   * @param sortBy - The key of the Media object to sort by.
-   * @param mediaList - The list of Media objects to be sorted.
+   * - The sort option is stored with the key `Trailarr{pageType}Sort`.
+   * - The sort order is stored with the key `Trailarr{pageType}SortAscending`.
+   * - The filter option is stored with the key `Trailarr{pageType}Filter`.
    * 
-   * @remarks
-   * This method sorts the media list in place. If `sortAscending` is false, 
-   * the sorted list will be reversed.
+   * @returns {void} This method does not return a value.
    */
-  sortMediaList(sortBy: keyof Media, mediaList: Media[]): void {
-    // Sort the media list by the selected sort option
-    // Sorts the list in place. If sortAscending is false, reverses the list
-    mediaList.sort((a, b) => (a[sortBy].toString().localeCompare(b[sortBy].toString())));
-    if (!this.sortAscending) {
-      mediaList.reverse();
+  retrieveSortNFilterOptions(): void {
+    const moviesOnly = this.moviesOnly();
+    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    // Retrieve the filter option from the local session
+    let filterOption = localStorage.getItem(`Trailarr${pageType}Filter`);
+    if (filterOption) {
+      this.selectedFilter.set(filterOption);
+    }
+    // Retrieve the sort option from the local session
+    let sortOption = localStorage.getItem(`Trailarr${pageType}Sort`);
+    let sortAscending = localStorage.getItem(`Trailarr${pageType}SortAscending`);
+    if (sortOption) {
+      this.selectedSort.set(sortOption as keyof Media);
+    }
+    if (sortAscending) {
+      this.sortAscending.set(sortAscending == 'true');
     }
   }
-
+  
   /**
-   * Sets the sorting criteria for the media list.
+   * Sets the media sort option and resets the display count to the default.
+   * Also, saves the sort option to the local session.
+   * If the same sort option is selected, toggles the sort direction.
    * 
-   * This method updates the sorting criteria based on the provided key. If the 
-   * provided key is the same as the current sorting key, it toggles the sorting 
-   * order between ascending and descending. If the provided key is different, 
-   * it sets the sorting order to ascending. It then sorts the media list 
-   * accordingly, updates the display list to show the top 50 items, and saves 
-   * the sorting option.
-   * 
-   * @param sortBy - The key of the Media object to sort by.
-   * @returns void
-   */
+   * @param sortBy - The sort option to set.
+   * @returns {void} This method does not return a value.
+  */
   setMediaSort(sortBy: keyof Media): void {
-    this.displayCount = 50;
-    if (this.selectedSort === sortBy) {
-      this.sortAscending = !this.sortAscending;
+    this.selectedMedia = []; // Clear the selected media items
+    this.displayCount.set(this.defaultDisplayCount); // Reset the display count to the default
+    if (this.selectedSort() === sortBy) {
+      // If the same sort option is selected, toggle the sort direction
+      this.sortAscending.set(!this.sortAscending());
     } else {
-      this.selectedSort = sortBy;
-      this.sortAscending = true;
+      // If a new sort option is selected, set the sort option and direction
+      this.selectedSort.set(sortBy);
+      this.sortAscending.set(true);
     }
-    this.sortMediaList(sortBy, this.filteredMediaList);
-    this.displayMediaList = this.filteredMediaList.slice(0, this.displayCount);
-    this.saveSortOption();
+    // Save the sort option to the local session
+    const moviesOnly = this.moviesOnly();
+    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    localStorage.setItem(`Trailarr${pageType}Sort`, this.selectedSort());
+    localStorage.setItem(`Trailarr${pageType}SortAscending`, this.sortAscending().toString());
     return;
   }
 
   /**
-   * Sets the media filter based on the provided filter string.
-   * Updates the selected filter, displays the media according to the new filter,
-   * and saves the filter option.
-   *
-   * @param filterBy - The filter string to set for media filtering.
-   * @returns void
+   * Sets the media filter option and resets the display count to the default.
+   * 
+   * @param filterBy - The filter option to set.
+   * @returns {void} This method does not return a value.
    */
   setMediaFilter(filterBy: string): void {
-    this.selectedFilter = filterBy;
-    this.displayMedia();
-    this.saveFilterOption();
+    this.selectedMedia = []; // Clear the selected media items
+    // Reset the display count to the default
+    this.displayCount.set(this.defaultDisplayCount);
+    // Set the filter option
+    this.selectedFilter.set(filterBy);
+    // Save the filter option to the local session
+    const moviesOnly = this.moviesOnly();
+    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    localStorage.setItem(`Trailarr${pageType}Filter`, this.selectedFilter());
     return;
   }
 
@@ -319,12 +304,10 @@ export class MediaComponent {
   onNearEndScroll(): void {
     // Load more media when near the end of the scroll
     // console.log('Near end of scroll');
-    if (this.displayCount >= this.filteredMediaList.length) {
+    if (this.displayCount() >= this.filteredSortedMedia().length) {
       return;
     }
-    this.displayMediaList.push(
-      ...this.filteredMediaList.slice(this.displayCount, this.displayCount + 20)
-    );
-    this.displayCount += 20;
+    this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
+
 }

@@ -170,7 +170,7 @@ class _Config:
 
     def __init__(self):
         # Some generic attributes for server
-        self.version = getenv_str("VERSION", "0.0.0")
+        self.version = getenv_str("APP_VERSION", "0.0.0")
         self.update_available = False
         _now = datetime.now(timezone.utc)
         self.server_start_time = getenv_str("SERVER_START_TIME", f"{_now}")

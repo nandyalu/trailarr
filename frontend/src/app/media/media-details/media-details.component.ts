@@ -22,8 +22,6 @@ export class MediaDetailsComponent {
   isLoadingMonitor = false;
   isLoadingDownload = false;
   trailer_url: string = '';
-  // status = 'Missing';
-  // private mediaService: MovieService | SeriesService = this.seriesService;
   private webSocketSubscription?: Subscription;
 
   constructor(
@@ -74,29 +72,14 @@ export class MediaDetailsComponent {
   ngOnInit(): void {
     this.isLoading = true;
     this.route.params.subscribe(params => {
-      // let type = this.route.snapshot.url[0].path;
-      // if (type === 'movies') {
-      //   this.moviesOnly = true;
-      // } else {
-      //   this.moviesOnly = false;
-      // }
       this.mediaId = params['id'];
       this.getMediaData();
     });
 
-    // Subscribe to the WebSocket events and refresh data
-    // Calling this.getMediaData() directly in subscription fails, so we use a handler
-    const handleWebSocketEvent = () => {
-      this.getMediaData(true);
-    };
-
-    // Subscribe to the WebSocket events with the simplified handler
-    this.webSocketSubscription = this.websocketService.connect().subscribe({
-      next: handleWebSocketEvent,
-      error: handleWebSocketEvent,
-      complete: handleWebSocketEvent
+    // Subscribe to WebSocket updates and refresh media data
+    this.webSocketSubscription = this.websocketService.toastMessage.subscribe(() => {
+      this.getMediaData();
     });
-    // Subscribe to websocket events to refresh data
 
   }
 
@@ -106,23 +89,13 @@ export class MediaDetailsComponent {
   }
 
   /**
-   * Fetches media data and media files based on the current media ID.
-   * 
-   * This method performs two asynchronous operations:
-   * 1. Retrieves media data from the media service and assigns it to the `media` property.
-   *    - Sets the `trailer_url` property using the `youtube_trailer_id` from the media response.
-   *    - Sets the `isLoading` flag to `false` once the media data is retrieved.
-   * 2. Retrieves media files from the media service and assigns them to the `mediaFiles` property.
-   *    - If the response is a string, assigns it to the `mediaFilesResponse` property.
-   *    - Sets the `filesLoading` flag to `false` once the media files are retrieved.
-   * 
-   * @param forceUpdate - A boolean flag indicating whether to force an update of the media data. 
-   *  - Defaults to `false`.
+   * Fetches media data based on the current media ID. \
+   * Also sets the `trailer_url` property to the YouTube trailer ID of the media.
    * @returns {void}
    */
-  getMediaData(forceUpdate: boolean = false): void {
+  getMediaData(): void {
     // Get Media Data
-    this.mediaService.getMediaById(this.mediaId, forceUpdate).subscribe((media_res: Media) => {
+    this.mediaService.getMediaByID(this.mediaId).subscribe((media_res: Media) => {
       this.media = media_res;
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
