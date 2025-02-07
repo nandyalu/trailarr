@@ -41,7 +41,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.
 - Option to download desired video as trailer for any movie/series.
-- Converts audio, video and subtitles to desired formats.
+- Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for NVIDIA GPUs.
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 
@@ -78,6 +78,24 @@ If you like the project, please consider giving us a star on [GitHub](https://gi
 ## Issues
 
 If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues) or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ) (recommended).
+
+## Roadmap
+
+There are some changes that are planned for the future. These changes are not guaranteed to be implemented, but they are on the roadmap.
+
+- [ ] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
+- [ ] Add custom filters to Media pages in frontend
+- [ ] Add a new method for making path mappings easier
+- [ ] Add options to disable conversion of downloaded videos
+- [ ] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
+- [ ] Add Plex integration to send notifications to Plex and scan media signals
+- [ ] Add support for some fields with translated values
+- [ ] Update docs for Windows path mappings
+- [ ] Improve task logging
+- [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
+
+
+If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are always looking for ways to improve the project.
 
 ## Contributing
 
