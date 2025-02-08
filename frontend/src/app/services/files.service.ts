@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../environment';
 import { VideoInfo } from '../models/files';
+import { mapFolderInfo } from '../models/media';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,28 @@ export class FilesService {
   constructor(
     private httpClient: HttpClient
   ) { }
+
+  getFolderInfo(path: string): Observable<any | null> {
+    const url = this.files_url + 'files';
+    const params = new HttpParams()
+      .set('path', path);
+    return this.httpClient.get(url, {params: params}).pipe(
+      map(response => {
+        if (typeof response == null) {
+          // Handle the empty response
+          return response;
+        } else {
+          // Map the FolderInfo object
+          return mapFolderInfo(response);
+        }
+      }),
+      catchError(error => {
+        // Handle error appropriately
+        console.error('Error fetching media files:', error);
+        return of(null);
+      })
+    );
+  }
 
   getTextFile(file_path: string): Observable<string> {
     const params1 = new HttpParams()
