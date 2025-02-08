@@ -23,9 +23,6 @@ class SonarrManager(AsyncBaseArrManager):
     async def get_system_status(self) -> str:
         """Get the system status of the Sonarr API
 
-        Args:
-            None
-
         Returns:
             str: The status of the Sonarr API with version.
 
@@ -41,11 +38,8 @@ class SonarrManager(AsyncBaseArrManager):
     async def get_all_series(self) -> list[dict[str, Any]]:
         """Get all series from the Sonarr API
 
-        Args:
-            None
-
         Returns:
-            list[dict[str, Any]: List of series from the Sonarr API
+            list[dict[str, Any]]: List of series from the Sonarr API
 
         Raises:
             ConnectionError: If the connection is refused / response is not 200

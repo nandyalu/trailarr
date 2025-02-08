@@ -290,6 +290,8 @@ class BaseConnectionManager(ABC):
 
     def remove_deleted_media(self) -> None:
         """Remove the media from the database that are not present in the Arr application."""
+        if len(self.media_ids) == 0:
+            return
         logger.debug("Removing media not present in Arr application")
         MediaDatabaseManager().delete_except(self.connection_id, self.media_ids)
         return

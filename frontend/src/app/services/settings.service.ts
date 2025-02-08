@@ -100,6 +100,40 @@ export class SettingsService {
     );
   }
 
+  testConnection(connection: ConnectionCreate): Observable<string> {
+    var testConnectionUrl = this.connectionsUrl + 'test';
+    return this.http.post<string>(testConnectionUrl, connection).pipe(
+      catchError((error: any) => {
+        let errorMessage = '';
+        if (error.error instanceof ErrorEvent) {
+          // client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // server-side error
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        return of(errorMessage);
+      })
+    );
+  }
+
+  getRootFolders(connection: ConnectionCreate): Observable<string[] | string> {
+    var rootFoldersUrl = this.connectionsUrl + 'rootfolders';
+    return this.http.post<string[]>(rootFoldersUrl, connection).pipe(
+      catchError((error: any) => {
+        let errorMessage = '';
+        if (error.error instanceof ErrorEvent) {
+          // client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // server-side error
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        return of(errorMessage);
+      })
+    );
+  }
+
   updateConnection(connection: ConnectionUpdate): Observable<string> {
     var connectionIdUrl = this.connectionsUrl + connection.id;
     return this.http.put<string>(connectionIdUrl, connection).pipe(

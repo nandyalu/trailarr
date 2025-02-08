@@ -2,7 +2,11 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
-from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.manager.connection import (
+    ConnectionDatabaseManager,
+    validate_connection,
+    get_connection_rootfolders,
+)
 from core.base.database.models.connection import (
     ConnectionCreate,
     ConnectionRead,
@@ -21,12 +25,54 @@ async def get_connections() -> list[ConnectionRead]:
 
 
 @connections_router.post(
+    "/test",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Radarr Connection Successful Version: 3.x.x.x",
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "model": ErrorResponse,
+            "description": "Connection Failed",
+        },
+    },
+)
+async def test_connection(connection: ConnectionCreate) -> str:
+    try:
+        result = await validate_connection(connection)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return result
+
+
+@connections_router.post(
+    "/rootfolders",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Root Folders Retrieved Successfully!",
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "model": ErrorResponse,
+            "description": "Root Folders Not Retrieved",
+        },
+    },
+)
+async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
+    try:
+        result = await get_connection_rootfolders(connection)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return result
+
+
+@connections_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {
             "description": "Connection Created Successfully! "
-            "Radarr Connection Successful Version: 3.0.1.4252"
+            "Radarr Connection Successful Version: 3.x.x.x",
         },
         status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,

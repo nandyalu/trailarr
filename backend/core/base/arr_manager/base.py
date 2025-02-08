@@ -97,8 +97,6 @@ class AsyncBaseArrManager(AsyncRequestManager):
 
     async def get_rootfolders(self) -> list[str]:
         """Get the root folders from the Arr API. \n
-        Args:
-            None \n
         Returns:
             list[str]: The root folders list from the Arr API \n
         Raises:

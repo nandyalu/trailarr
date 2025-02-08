@@ -95,7 +95,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
 
-If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are always looking for ways to improve the project.
+If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ). We are always looking for ways to improve the project.
 
 ## Contributing
 

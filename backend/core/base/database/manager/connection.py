@@ -326,3 +326,28 @@ async def validate_connection(connection: ConnectionBase) -> str:
         status_message = await arr_connection.get_system_status()
 
     return status_message
+
+
+async def get_connection_rootfolders(connection: ConnectionBase) -> list[str]:
+    """Get the root folders of a connection \n
+    Args:
+        connection (ConnectionBase): The connection to get root folders from \n
+    Raises:
+        ConnectionError: If the connection is refused / response is not 200
+        ConnectionTimeoutError: If the connection times out
+        InvalidResponseError: If the API response is invalid \n
+    Returns:
+        list[str]: The list of root folders
+    """
+    if not connection:
+        raise ItemNotFoundError("Connection", 0)
+
+    root_folders: list[str] = []
+    if connection.arr_type == ArrType.RADARR:
+        arr_connection = RadarrManager(connection.url, connection.api_key)
+        root_folders = await arr_connection.get_rootfolders()
+    if connection.arr_type == ArrType.SONARR:
+        arr_connection = SonarrManager(connection.url, connection.api_key)
+        root_folders = await arr_connection.get_rootfolders()
+
+    return root_folders
