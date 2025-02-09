@@ -33,8 +33,12 @@ class MediaBase(SQLModel):
     arr_id: int = Field(index=True)
     is_movie: bool = Field(default=True, index=True)
     title: str = Field(index=True)
+    clean_title: str = Field(index=True, default="")
     year: int = Field(default_factory=get_current_year, index=True)
     language: str = Field(default="en", index=True)
+    studio: str = Field(default="")
+    media_exists: bool = Field(default=False)
+    media_filename: str = Field(default="")
     overview: str | None = None
     runtime: int = 0
     # website: str | None = None
@@ -42,6 +46,7 @@ class MediaBase(SQLModel):
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
     txdb_id: str = Field(index=True)
+    title_slug: str = Field(index=True, default="")
     poster_url: str | None = None
     fanart_url: str | None = None
     poster_path: str | None = None

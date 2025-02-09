@@ -12,18 +12,27 @@ class RadarrDataParser(BaseModel):
     arr_id: int = Field(validation_alias="id")
     is_movie: bool = Field(default=True)
     title: str = Field()
+    clean_title: str = Field(validation_alias="cleanTitle", default="")
     year: int = Field()
     language: str = Field(
-        validation_alias=AliasPath("originalLanguage", "name"), default="en"
+        validation_alias=AliasPath("originalLanguage", "name"), default="English"
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
     youtube_trailer_id: str | None = Field(
         validation_alias="youTubeTrailerId", default=None
     )
+    studio: str = Field(default="")
+    media_exists: bool = Field(
+        default=False, validation_alias=AliasPath("statistics", "movieFileCount")
+    )
+    media_filename: str = Field(
+        validation_alias=AliasPath("movieFile", "relativePath"), default=""
+    )
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tmdbId")
+    title_slug: str = Field(validation_alias="titleSlug", default="")
     poster_url: str | None = None
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
