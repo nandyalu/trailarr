@@ -204,10 +204,16 @@ Enter a search query to use when searching for trailers on YouTube. Wrap a suppo
 
 Available options are:
 
-- `title`: Title of the media. Eg: 'The Matrix'
-- `year`: Year of the media. Eg: '1999'
+- `clean_title`: Cleaned title of the media. Eg: 'thematrix'
+- `imdb_id`: IMDB ID of the media. Eg: 'tt0133093'
 - `is_movie`: 'movie' if the media is a movie, 'series' if the media is a series.
-- `language`: Language of the media. Eg: 'English'
+- `language`: Language of the media in Radarr/Sonarr. Eg: 'English'
+- `media_filename`: Filename of the media, Movies only, Series will empty. Eg: 'The.Matrix.1999.1080p.BluRay.x264.DTS-FGT'
+- `studio`: Studio of the media. Eg: 'Village Roadshow Pictures'
+- `title`: Title of the media. Eg: 'The Matrix'
+- `title_slug`: TMDB ID for Movies and a hash seperated title for Series. Eg: '603' (movie) or 'the-big-bang-theory' (series)
+- `txdb_id`: TMDB ID for Movies, TVDB ID for Series. Eg: '603'
+- `year`: Year of the media. Eg: '1999'
 
 ### Trailer File Name
 
@@ -215,13 +221,16 @@ Available options are:
 
 Select the file name format for the trailers. Wrap a supported variable in `{}` like `{title}` and it will be replaced in the actual file name. Supports [Python string formatting options](https://docs.python.org/3/library/string.html#formatstrings). 
 
-Available options are:
+All the available options in `Youtube Search Query`, and the below options are available:
 
-- `title`: Title of the media. Eg: 'The Matrix'
-- `year`: Year of the media. Eg: '1999'
+- `acodec`: Audio codec of the trailer. Eg: 'aac'
 - `resolution`: Resolution of the trailer. Eg: '1080p'
 - `vcodec`: Video codec of the trailer. Eg: 'h264'
-- `acodec`: Audio codec of the trailer. Eg: 'aac'
+- `youtube_id`: YouTube trailer ID of the trailer. Eg: 'KbWtUJjMj3Y'
+
+!!! info
+    Filename will be cleaned to remove restricted characters `<>:"/\\|?*\x00-\x1F` to ensure compatibility with filesystems. And `-trailer` will be added to the end of filename before the extension, if not present.
+
 
 ### Yt-dlp Cookies Path
 

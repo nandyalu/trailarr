@@ -63,7 +63,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     Args:
         file_path (str): Path to the media file. \n
     Returns:
-        VideoInfo | None: VideoInfo object if successful, None otherwise.
+        VideoInfo|None: VideoInfo object if successful, None otherwise.
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate : "
@@ -180,8 +180,8 @@ def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
     Args:
         file_path (str): Path to the video file. \n
     Returns:
-        tuple[float | None, float | None]: Silence start and end timestamps if found, \
-            None otherwise.
+        timestamps (tuple[float|None, float|None]): Silence start and end timestamps \
+            if found, None otherwise.
     """
     # time = datetime.now()
     logger.debug(f"Getting silence timestamps for: {file_path}")

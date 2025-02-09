@@ -1,6 +1,7 @@
 # Extract youtube video id from url
 from datetime import datetime, timezone
 from functools import partial
+import os
 import re
 from threading import Semaphore
 
@@ -10,11 +11,10 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import (
-    MediaTrailer,
     MediaUpdateDC,
     language_names,
 )
-from core.base.database.models.media import MonitorStatus
+from core.base.database.models.media import MediaRead, MonitorStatus
 from core.download.video import download_video
 from core.download.video_v2 import download_video as download_video2
 from core.download import trailer_file, video_analysis
@@ -28,7 +28,7 @@ def extract_youtube_id(url: str) -> str | None:
     Args:
         url (str): URL of the youtube video. \n
     Returns:
-        str | None: Youtube video id / None if invalid URL."""
+        str|None: Youtube video id / None if invalid URL."""
     regex = re.compile(
         r"^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*"
     )
@@ -80,12 +80,12 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
 
 
 def search_yt_for_trailer(
-    media: MediaTrailer,
+    media: MediaRead,
     exclude: list[str] | None = None,
 ) -> str | None:
     """Search for trailer on youtube. \n
     Args:
-        media (MediaTrailer): Media object.
+        media (MediaRead): MediaRead object.
         exclude (list[str], Optional): List of video ids to exclude. \n
     Returns:
         str | None: Youtube video id / None if not found."""
@@ -98,9 +98,6 @@ def search_yt_for_trailer(
         "noplaylist": True,
         "extract_flat": "discard_in_playlist",
         "fragment_retries": 10,
-        # Fix issue with youtube-dl not being able to download some videos
-        # See https://github.com/yt-dlp/yt-dlp/issues/9554
-        # "extractor_args": {"youtube": {"player_client": ["ios", "web"]}},
         "noprogress": True,
         "no_warnings": True,
         "quiet": True,
@@ -110,11 +107,15 @@ def search_yt_for_trailer(
         options["cookiefile"] = f"{app_settings.yt_cookies_path}"
     # Construct search query with keywords for 5 search results
     search_query_format = app_settings.trailer_search_query
-    format_opts = media.to_dict()  # Convert media object to dictionary for formatting
+    # Convert media object to dictionary for formatting
+    format_opts = media.model_dump()
     format_opts["is_movie"] = "movie" if media.is_movie else "series"
     # Remove year from search query if 0
     if media.year == 0:
         format_opts["year"] = ""
+    # Replace the media filename with the filename without extension
+    _filename_wo_ext, _ = os.path.splitext(media.media_filename)
+    format_opts["media_filename"] = _filename_wo_ext
     # Replace language code with language name
     format_opts["language"] = language_names.get(media.language, media.language)
     # Get search query by replacing supplied options
@@ -122,16 +123,11 @@ def search_yt_for_trailer(
     # Remove extra spaces and trailing spaces
     search_query = search_query.replace("  ", " ").strip()
     # Add ytsearch5: prefix to search query
-    search_query = f"ytsearch5: {search_query}"
+    search_query = f"ytsearch10: {search_query}"
     # Append "trailer" to search query if not already present
     if "trailers" not in search_query:
         search_query += " trailer"
-    # search_query = f"ytsearch5: {media.title}"
-    # if media.year:
-    #     search_query += f" ({media.year})"
-    # search_query += " movie" if media.is_movie else " series"
-    # search_query += " trailer"
-
+    logger.debug(f"Using Search query: {search_query}")
     # Search for video
     with YoutubeDL(options) as ydl:
         search_results = ydl.extract_info(search_query, download=False, process=True)
@@ -155,20 +151,20 @@ def search_yt_for_trailer(
         return str(result["id"])
 
 
-def _get_yt_id(media: MediaTrailer, exclude: list[str] | None = None) -> str | None:
+def _get_yt_id(media: MediaRead, exclude: list[str] | None = None) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
     Args:
-        media (MediaTrailer): Media object.
+        media (MediaRead): Media object.
         exclude (list[str], Optional=None): List of video ids to exclude. \n
     Returns:
-        str | None: Youtube video id / None if not found."""
+        str|None: Youtube video id / None if not found."""
     video_id = ""
-    if media.yt_id:
-        if "youtu" in media.yt_id:
-            video_id = extract_youtube_id(media.yt_id)
+    if media.youtube_trailer_id:
+        if "youtu" in media.youtube_trailer_id:
+            video_id = extract_youtube_id(media.youtube_trailer_id)
         else:
-            video_id = media.yt_id
+            video_id = media.youtube_trailer_id
     if video_id:
         return video_id
     # Search for trailer on youtube
@@ -177,15 +173,16 @@ def _get_yt_id(media: MediaTrailer, exclude: list[str] | None = None) -> str | N
 
 
 def download_trailer(
-    media: MediaTrailer,
+    media: MediaRead,
     trailer_folder: bool | None = None,
     # is_movie: bool,
     retry_count: int = 2,
     exclude: list[str] | None = None,
 ) -> bool:
     """Download trailer for a media object. \n
+    Also updates the database with status, monitor and youtube video id. \n
     Args:
-        media (MediaTrailer): Media object.
+        media (MediaRead): Media object.
         trailer_folder (bool, Optional): Whether to move the trailer to a separate folder.
         retry_count (int, Optional=2): Number of retries to download the trailer.
         exclude (list[str], Optional=None): List of video ids to exclude. \n
@@ -210,7 +207,7 @@ def download_trailer(
                 id=media.id,
                 monitor=True,
                 status=MonitorStatus.DOWNLOADING,
-                yt_id=media.yt_id,
+                yt_id=media.youtube_trailer_id,
             )
         )
         # Download the trailer
@@ -240,13 +237,13 @@ def download_trailer(
                 f"Trailer download failed for {media.title} from {trailer_url}, "
                 f"trying again... [{3 - retry_count}/3]"
             )
-            media.yt_id = None
+            media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
             return download_trailer(media, trailer_folder, retry_count - 1, exclude)
         raise DownloadFailedError(f"Failed to download trailer for {media.title}")
     logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
-    media.yt_id = video_id  # Update the youtube video id
+    media.youtube_trailer_id = video_id  # Update the youtube video id
 
     # Move the trailer to the specified folder
     try:
@@ -262,7 +259,7 @@ def download_trailer(
                 status=MonitorStatus.DOWNLOADED,
                 trailer_exists=True,
                 downloaded_at=media.downloaded_at,
-                yt_id=media.yt_id,
+                yt_id=media.youtube_trailer_id,
             )
         )
         return True
@@ -279,15 +276,13 @@ def download_trailer(
         raise DownloadFailedError(f"Failed to move trailer to folder: {_move_res_msg}")
 
 
-def download_trailers(
-    media_list: list[MediaTrailer], is_movie: bool | None
-) -> list[MediaTrailer]:
+def download_trailers(media_list: list[MediaRead], is_movie: bool | None) -> None:
     """Download trailers for a list of media objects. \n
     Args:
-        media_list (list[MediaTrailer]): List of media objects.
+        media_list (list[MediaRead]): List of media objects.
         is_movie (bool, None): Whether the media type is movie or show. \n
     Returns:
-        list[MediaTrailer]: List of media objects for which trailers are downloaded."""
+        None"""
     if is_movie is None:
         media_type = "Media"
         trailer_folder = None
@@ -296,7 +291,7 @@ def download_trailers(
         trailer_folder = trailer_file.trailer_folder_needed(is_movie)
     logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
     sem = Semaphore(2)
-    download_list = []
+    download_list: list[MediaRead] = []
     for media in media_list:
         sem.acquire()
         logger.info(f"Downloading trailer for '[{media.id}]{media.title}'...")
@@ -305,7 +300,8 @@ def download_trailers(
                 media.downloaded_at = datetime.now(timezone.utc)
                 download_list.append(media)
                 logger.info(
-                    f"Trailer downloaded for '[{media.id}]{media.title}' from [{media.yt_id}]"
+                    f"Trailer downloaded for '[{media.id}]{media.title}'"
+                    f" from [{media.youtube_trailer_id}]"
                 )
             else:
                 logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
@@ -314,19 +310,8 @@ def download_trailers(
                 f"Failed to download trailer for '[{media.id}]{media.title}': {e}"
             )
         sem.release()
+    if len(download_list) == 0:
+        logger.info(f"No trailers downloaded for {len(media_list)} {media_type}")
+        return None
     logger.info(f"Downloaded trailers for {len(download_list)} {media_type}")
-    return download_list
-
-
-# Uncomment below for testing, change logging level to DEBUG for additional logs
-# if __name__ == "__main__":
-#     mediaT = MediaTrailer(
-#         id=1,
-#         title="The Matrix",
-#         year=1999,
-#         yt_id="pLWda_RrQn4",
-#         folder_path="/tmp/The Matrix (1999)",
-#     )
-#     res = download_trailer(mediaT, False, True)
-#     if res:
-#         print(res)
+    return None

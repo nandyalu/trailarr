@@ -4,7 +4,7 @@ import shutil
 import unicodedata
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.models.helpers import MediaTrailer
+from core.base.database.models.media import MediaRead
 from core.download import video_analysis
 
 logger = ModuleLogger("TrailersDownloader")
@@ -63,10 +63,10 @@ def normalize_filename(filename: str) -> str:
     return filename
 
 
-def get_trailer_filename(media: MediaTrailer, ext: str, increment_index: int) -> str:
+def get_trailer_filename(media: MediaRead, ext: str, increment_index: int) -> str:
     """Get the trailer filename based on app settings. \n
     Args:
-        media (MediaTrailer): MediaTrailer object.
+        media (MediaRead): MediaRead object.
         ext (str): Extension of the trailer file.
         increment_index (int): Index to increment the trailer number. \n
     Returns:
@@ -77,7 +77,11 @@ def get_trailer_filename(media: MediaTrailer, ext: str, increment_index: int) ->
     if title_format.count("{") != title_format.count("}"):
         logger.error("Invalid title format, setting to default file name format")
         title_format = app_settings._DEFAULT_FILE_NAME
-    title_opts = media.to_dict()  # Convert media object to dictionary for formatting
+    title_opts = media.model_dump()  # Convert media object to dictionary for formatting
+    # Replace the media filename with the filename without extension
+    _filename_wo_ext, _ = os.path.splitext(media.media_filename)
+    title_opts["media_filename"] = _filename_wo_ext
+    title_opts["youtube_id"] = media.youtube_trailer_id
     title_opts["resolution"] = f"{app_settings.trailer_resolution}p"
     title_opts["vcodec"] = app_settings.trailer_video_format
     title_opts["acodec"] = app_settings.trailer_audio_format
@@ -111,7 +115,7 @@ def get_trailer_filename(media: MediaTrailer, ext: str, increment_index: int) ->
 
 
 def get_trailer_path(
-    src_path: str, dst_folder_path: str, media: MediaTrailer, increment_index: int = 1
+    src_path: str, dst_folder_path: str, media: MediaRead, increment_index: int = 1
 ) -> str:
     """Get the destination path for the trailer file. \n
     Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
@@ -124,7 +128,7 @@ def get_trailer_path(
     Args:
         src_path (str): Source path of the trailer file.
         dst_folder_path (str): Destination folder path.
-        media (MediaTitle): MediaTitle object.
+        media (MediaRead): MediaRead object.
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Destination path for the trailer file."""
@@ -149,12 +153,12 @@ def get_trailer_path(
 
 
 def move_trailer_to_folder(
-    src_path: str, media: MediaTrailer, trailer_folder: bool | None = None
+    src_path: str, media: MediaRead, trailer_folder: bool | None = None
 ) -> bool:
     """Move the trailer file to the specified folder. \n
     Args:
         src_path (str): Source path of the trailer file.
-        media (MediaTitle): MediaTitle object.
+        media (MediaRead): MediaRead object.
         trailer_folder (bool, Optional=None): Whether to move the trailer to a separate folder. \n
     Raises:
         FileNotFoundError: If the trailer file is not found at the source path.
@@ -166,6 +170,13 @@ def move_trailer_to_folder(
     if not os.path.exists(src_path):
         logger.debug(f"Trailer file not found at: {src_path}")
         raise FileNotFoundError(f"Trailer file not found at: {src_path}")
+    # Check if media folder path exists
+    if not media.folder_path:
+        logger.debug(f"Media folder path is empty: {media.title}")
+        raise FileNotFoundError(f"Media folder path is empty: {media.title}")
+    if not os.path.exists(media.folder_path):
+        logger.debug(f"Media folder does not exist: {media.folder_path}")
+        raise FileNotFoundError(f"Media folder does not exist: {media.folder_path}")
     # Get the destination path
     if trailer_folder is None:
         # Check if trailer folder is needed based on app settings
