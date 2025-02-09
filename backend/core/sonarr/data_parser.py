@@ -42,6 +42,11 @@ class SonarrDataParser(BaseModel):
     def parse_txdb_id(cls, v):
         return str(v)
 
+    @field_validator("media_exists", mode="before")
+    @classmethod
+    def parse_media_exists(cls, v):
+        return bool(v)
+
 
 def parse_series(connection_id: int, series_data: dict[str, Any]) -> MediaCreate:
     """Parse the series data from Sonarr to a SeriesCreate object.\n

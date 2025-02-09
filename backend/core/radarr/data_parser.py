@@ -42,6 +42,11 @@ class RadarrDataParser(BaseModel):
     def parse_txdb_id(cls, v):
         return str(v)
 
+    @field_validator("media_exists", mode="before")
+    @classmethod
+    def parse_media_exists(cls, v):
+        return bool(v)
+
 
 def parse_movie(connection_id: int, movie_data: dict[str, Any]) -> MediaCreate:
     """Parse the movie data from Radarr to a MovieCreate object.\n
