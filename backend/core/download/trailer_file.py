@@ -51,14 +51,10 @@ def normalize_filename(filename: str) -> str:
         str: Normalized filename."""
     # Normalize the filename to handle Unicode characters
     logger.debug(f"Normalizing filename: {filename}")
-    filename = (
-        unicodedata.normalize("NFKD", filename)
-        .encode("ascii", "ignore")
-        .decode("ascii")
-    )
+    filename = unicodedata.normalize("NFKD", filename)
 
-    # Remove any character that is not alphanumeric, underscore, hyphen, comma, dot or space
-    filename = re.sub(r"[^a-zA-Z0-9_,. -]", "_", filename)
+    # Remove any character that is not supported by Unix or Windows file systems
+    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', " ", filename)
     # Replace multiple spaces with a single space
     filename = re.sub(r"\s+", " ", filename)
     # Remove leading and trailing special characters
