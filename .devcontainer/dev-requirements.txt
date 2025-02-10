@@ -18,7 +18,7 @@ sqlmodel==0.0.22
 yt-dlp[default]==2025.1.26
 
 # Testing
-aioresponses==0.7.6
+aioresponses==0.7.8
 hypothesis==6.112.1
 schemathesis==3.39.9
 pytest==8.3.4
