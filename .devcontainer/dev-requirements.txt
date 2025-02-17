@@ -23,4 +23,4 @@ hypothesis==6.112.1
 schemathesis==3.39.9
 pytest==8.3.4
 pytest-asyncio==0.24.0
-pytest-cov==5.0.0
+pytest-cov==6.0.0
