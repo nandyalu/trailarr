@@ -1,5 +1,5 @@
 # Backend
-aiohttp==3.11.11
+aiohttp==3.11.12
 aiofiles==24.1.0
 alembic==1.14.1
 apscheduler==3.11.0
