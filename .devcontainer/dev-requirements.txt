@@ -13,7 +13,7 @@ apscheduler==3.11.0
 async-lru==2.0.4
 fastapi[standard]==0.115.8
 bcrypt==4.2.1
-pillow==11.0.0
+pillow==11.1.0
 sqlmodel==0.0.23
 yt-dlp[default]==2025.1.26
 
