@@ -17,17 +17,23 @@ class FileInfo(BaseModel):
         - type (str): Type of the entry (file).
         - name (str): Name of the file.
         - size (str): Size of the file in human-readable format (e.g. "10 KB").
-        - created (str): Creation time of the file in "YYYY-MM-DD HH:MM:SS" format."""
+        - created (str): Creation time of the file in "YYYY-MM-DD HH:MM:SS"
+            format.
+    """
 
     type: str = Field(default="file", description="Type of the entry (file).")
     name: str = Field(..., description="Name of the file.")
     size: str = Field(
         "0 KB",
-        description="Size of the file in human-readable format (e.g. '10 KB').",
+        description=(
+            "Size of the file in human-readable format (e.g. '10 KB')."
+        ),
     )
     created: str = Field(
         ...,
-        description="Creation time of the file in 'YYYY-MM-DD HH:MM:SS' format.",
+        description=(
+            "Creation time of the file in 'YYYY-MM-DD HH:MM:SS' format."
+        ),
     )
 
 
@@ -36,16 +42,21 @@ class FolderInfo(BaseModel):
     Attrs:
         - type (str): Type of the entry (folder).
         - name (str): Name of the folder.
-        - files (list[FileInfo | FolderInfo]): List of FileInfo or FolderInfo objects
-            representing files and folders inside a given folder.
-        - created (str): Creation time of the folder in "YYYY-MM-DD HH:MM:SS" format.
+        - files (list[FileInfo | FolderInfo]): List of FileInfo or FolderInfo
+            objects representing files and folders inside a given folder.
+        - created (str): Creation time of the folder in "YYYY-MM-DD HH:MM:SS"
+            format.
     """
 
-    type: str = Field(default="folder", description="Type of the entry (file/folder).")
+    type: str = Field(
+        default="folder", description="Type of the entry (file/folder)."
+    )
     name: str = Field(..., description="Name of the file/folder.")
     size: str = Field(
         default="0 KB",
-        description="Size of the file/folder in human-readable format (e.g. '10 KB').",
+        description=(
+            "Size of the file/folder in human-readable format (e.g. '10 KB')."
+        ),
     )
     path: str = Field(
         ...,
@@ -53,12 +64,16 @@ class FolderInfo(BaseModel):
     )
     files: list["FolderInfo"] = Field(
         default=[],
-        description="List of FileInfo or FolderInfo objects representing files and folders \
-        inside a given folder.",
+        description=(
+            "List of FileInfo or FolderInfo objects representing files and"
+            " folders         inside a given folder."
+        ),
     )
     created: str = Field(
         ...,
-        description="Creation time of the folder in 'YYYY-MM-DD HH:MM:SS' format.",
+        description=(
+            "Creation time of the folder in 'YYYY-MM-DD HH:MM:SS' format."
+        ),
     )
 
 
@@ -69,7 +84,7 @@ class FilesHandler:
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
-        """Converts the size of the file to human-readable format (e.g. "10 KB") \n
+        """Converts the size of the file to human-readable format (e.g. "10 KB")
         Args:
             size_in_bytes (int): The size of the file in bytes.
         Returns:
@@ -100,7 +115,9 @@ class FilesHandler:
             name=unicodedata.normalize("NFKD", entry.name),
             size=FilesHandler._convert_file_size(info.st_size),
             path=entry.path,
-            created=dt.fromtimestamp(info.st_ctime).strftime("%Y-%m-%d %H:%M:%S"),
+            created=dt.fromtimestamp(info.st_ctime).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
         )
 
     # @staticmethod
@@ -115,12 +132,15 @@ class FilesHandler:
 
     @staticmethod
     async def get_folder_files(folder_path: str) -> FolderInfo | None:
-        """Get information about all files and [sub]folders in a given folder (recursively).\n
+        """Get information about all files and [sub]folders in a given \
+            folder (recursively).\n
         Args:
             folder_path (str): Path of the folder to search.
         Returns:
-            - FolderInfo: FolderInfo object representing files and folders inside a given folder.
-            - None: If the folder is empty or does not exist."""
+            FolderInfo|None:
+                - FolderInfo object representing files and folders \
+                    inside a given folder.
+                - None: If the folder is empty or does not exist."""
         _is_dir = await aiofiles.os.path.isdir(folder_path)
         if not _is_dir:
             return None
@@ -129,11 +149,14 @@ class FilesHandler:
             if entry.is_file():
                 dir_info.append(await FilesHandler._get_file_info(entry))
             elif entry.is_dir():
-                child_dir_info = await FilesHandler.get_folder_files(entry.path)
+                child_dir_info = await FilesHandler.get_folder_files(
+                    entry.path
+                )
                 if child_dir_info:
                     dir_info.append(child_dir_info)
                 # dir_info.append(await FilesHandler.get_folder_files(entry.path))
-        # Sort the list of files and folders by name, folders first and then files
+        # Sort the list of files and folders by name, folders first and \
+        # then files
         dir_info.sort(key=lambda x: (x.type, x.name))
         # return dir_info
         dir_size = sum(p.stat().st_size for p in Path(folder_path).rglob("*"))
@@ -158,7 +181,8 @@ class FilesHandler:
         Args:
             path (str): Folder path to check for a media file.\n
         Returns:
-            bool: True if a media file exists in the folder, False otherwise."""
+            bool: True if a media file exists in the folder, False otherwise.
+        """
         _is_dir = os.path.isdir(path)
         if not _is_dir:
             return False
@@ -202,7 +226,8 @@ class FilesHandler:
         Args:
             path (str): Folder path to check for a trailer file.\n
         Returns:
-            bool: True if a trailer file exists in the folder, False otherwise."""
+            bool: True if a trailer file exists in the folder, False otherwise.
+        """
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
@@ -290,7 +315,9 @@ class FilesHandler:
         return None
 
     @staticmethod
-    async def get_trailer_path(folder_path: str, check_inline_file=False) -> str | None:
+    async def get_trailer_path(
+        folder_path: str, check_inline_file=False
+    ) -> str | None:
         """Get the path to the trailer file in the specified folder.\n
         Args:
             folder_path (str): Path to the folder containing the trailer file.\n
@@ -312,7 +339,9 @@ class FilesHandler:
 
         # Check for trailer as an inline file, if specified
         if check_inline_file:
-            trailer_path = await FilesHandler._get_inline_trailer_path(folder_path)
+            trailer_path = await FilesHandler._get_inline_trailer_path(
+                folder_path
+            )
             if trailer_path:
                 return trailer_path
         return None
@@ -348,7 +377,11 @@ class FilesHandler:
         Returns:
             bool: True if the folder is deleted successfully, False otherwise."""
         # Make sure we are not deleting the root folder or a top level folder
-        if folder_path == "/" or folder_path == "" or folder_path.count("/") < 3:
+        if (
+            folder_path == "/"
+            or folder_path == ""
+            or folder_path.count("/") < 3
+        ):
             logger.error(f"Cannot delete root folder: {folder_path}")
             return False
         # Make sure the path is at least 3 levels deep from the root
@@ -363,7 +396,9 @@ class FilesHandler:
             logger.error(f"Folder not found: {folder_path}")
             return False
         except Exception as e:
-            logger.error(f"Failed to delete folder: {folder_path}. Exception: {e}")
+            logger.error(
+                f"Failed to delete folder: {folder_path}. Exception: {e}"
+            )
             return False
 
     @staticmethod
@@ -372,7 +407,8 @@ class FilesHandler:
         Args:
             folder_path (str): Path to the folder containing the trailer file.\n
         Returns:
-            bool: True if the trailer is deleted successfully, False otherwise."""
+            bool: True if the trailer is deleted successfully, False otherwise.
+        """
         logger.debug(f"Deleting trailer from folder: {folder_path}")
         if await FilesHandler._check_trailer_as_file(folder_path):
             for entry in await aiofiles.os.scandir(folder_path):
@@ -408,7 +444,9 @@ class FilesHandler:
             logger.debug("Temporary directory cleaned up.")
             return True
         except Exception as e:
-            logger.error(f"Failed to cleanup temporary directory. Exception: {e}")
+            logger.error(
+                f"Failed to cleanup temporary directory. Exception: {e}"
+            )
             return False
 
     @staticmethod
@@ -433,7 +471,10 @@ class FilesHandler:
                     if "trailer" in file.lower():
                         trailer_folders_inline.add(root)
                         break  # No need to check more files in this folder
-        msg = f"Scanned {count} media folders. Found {len(trailer_folders)} (folders) "
+        msg = (
+            f"Scanned {count} media folders. Found"
+            f" {len(trailer_folders)} (folders) "
+        )
         msg += f"and {len(trailer_folders_inline)} (inline) trailers."
         logger.debug(msg)
         return trailer_folders_inline.union(trailer_folders)
@@ -445,7 +486,8 @@ class FilesHandler:
             old_path (str): Path of the file/folder to rename.
             new_path (str): New path of the file/folder.
         Returns:
-            bool: True if the file/folder is renamed successfully, False otherwise."""
+            bool: True if the file/folder is renamed successfully, False otherwise.
+        """
         try:
             await aiofiles.os.rename(old_path, new_path)
             logger.debug(f"File/Folder renamed: {old_path} -> {new_path}")
@@ -454,7 +496,9 @@ class FilesHandler:
             logger.error(f"File/Folder not found: {old_path}")
             return False
         except Exception as e:
-            logger.error(f"Failed to rename file/folder: {old_path}. Exception: {e}")
+            logger.error(
+                f"Failed to rename file/folder: {old_path}. Exception: {e}"
+            )
             return False
 
     @staticmethod
@@ -463,7 +507,8 @@ class FilesHandler:
         Args:
             path (str): Path to the file/folder to delete.\n
         Returns:
-            bool: True if the file/folder is deleted successfully, False otherwise."""
+            bool: True if the file/folder is deleted successfully, False otherwise.
+        """
         # Check if the path is a file or folder
         _is_dir = await aiofiles.os.path.isdir(path)
         if _is_dir:
