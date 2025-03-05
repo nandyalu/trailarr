@@ -17,6 +17,11 @@ RESOLUTION_DICT = {
     "UHD": 2160,
 }
 
+if os.getcwd().startswith("/app/backend"):
+    APP_MODE = "Docker"
+else:
+    APP_MODE = "Standalone"
+
 
 def _save_to_env(key: str, value: str | int | bool) -> None:
     """Save the given key-value pair to the environment variables. \n
@@ -107,12 +112,14 @@ def int_property(
     return property(getter, setter)
 
 
-def str_property(name: str, *, default: str, valid_values: list[str] = []) -> property:
+def str_property(
+    name: str, *, default: str, valid_values: list[str] = []
+) -> property:
     """Creates a string property with getter and setter methods. \n
     Args:
         name (str): Name of the property.
         default (str): Default value for the property.
-        valid_values (list[str], Optional): list of valid values if applicable.\n
+        valid_values (list[str], Optional): list of valid values if applicable.
     Returns:
         property: Getter and Setter methods for the property."""
 
@@ -132,12 +139,13 @@ def str_property(name: str, *, default: str, valid_values: list[str] = []) -> pr
 class _Config:
     """Class to hold configuration settings for the application. \n
     Reads environment variables to set properties. \n
-    Default values are used if environment variables are not provided/invalid. \n
+    Default values are used if environment variables are not provided/invalid.
     \n
     **DO NOT USE THIS CLASS DIRECTLY. USE `app_settings` OBJECT INSTEAD!** \n
     \n
     **Environment variables set in the system will take precedence. \
-        Changing class values doesn't have any effect if relevant env variable is set!** \n
+        Changing class values doesn't have any effect if relevant \
+        env variable is set!** \n
     """
 
     _instance = None
@@ -177,7 +185,8 @@ class _Config:
         self.timezone = getenv_str("TZ", "UTC")
         self.app_data_dir = APP_DATA_DIR
 
-        # Read properties from ENV variables or set default values if not present
+        # Read properties from ENV variables or set default values \
+        # if not present
         self.api_key = getenv_str("API_KEY", "")
         self.log_level = getenv_str("LOG_LEVEL", "INFO")
         self.testing = getenv_bool("TESTING", False)
@@ -191,11 +200,15 @@ class _Config:
         self.trailer_audio_format = getenv_str(
             "TRAILER_AUDIO_FORMAT", self._DEFAULT_AUDIO_FORMAT
         )
-        self.trailer_audio_volume_level = getenv_int("TRAILER_AUDIO_VOLUME_LEVEL", 100)
+        self.trailer_audio_volume_level = getenv_int(
+            "TRAILER_AUDIO_VOLUME_LEVEL", 100
+        )
         self.trailer_video_format = getenv_str(
             "TRAILER_VIDEO_FORMAT", self._DEFAULT_VIDEO_FORMAT
         )
-        self.trailer_subtitles_enabled = getenv_bool("TRAILER_SUBTITLES_ENABLED", True)
+        self.trailer_subtitles_enabled = getenv_bool(
+            "TRAILER_SUBTITLES_ENABLED", True
+        )
         self.trailer_subtitles_format = getenv_str(
             "TRAILER_SUBTITLES_FORMAT", self._DEFAULT_SUBTITLES_FORMAT
         )
@@ -217,8 +230,12 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "True",
         ).lower() in ["true", "1"]
-        self.trailer_file_name = os.getenv("TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME)
-        self.webui_password = os.getenv("WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD)
+        self.trailer_file_name = os.getenv(
+            "TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME
+        )
+        self.webui_password = os.getenv(
+            "WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD
+        )
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
         self.exclude_words = os.getenv("EXCLUDE_WORDS", "")
         self.trailer_min_duration = int(os.getenv("TRAILER_MIN_DURATION", 30))
@@ -236,13 +253,16 @@ class _Config:
             "TRAILER_HARDWARE_ACCELERATION", True
         )
         # Experimental settings
-        self.trailer_remove_silence = getenv_bool("TRAILER_REMOVE_SILENCE", False)
+        self.trailer_remove_silence = getenv_bool(
+            "TRAILER_REMOVE_SILENCE", False
+        )
         self.new_download_method = getenv_bool("NEW_DOWNLOAD_METHOD", False)
 
     def as_dict(self):
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
+            "app_mode": APP_MODE,
             "exclude_words": self.exclude_words,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
@@ -315,6 +335,14 @@ class _Config:
         pass
 
     @property
+    def app_mode(self) -> str:
+        """App Running Mode:
+        - Docker
+        - Standalone
+        """
+        return APP_MODE
+
+    @property
     def log_level(self):
         """Log level for the application. \n
         Default is INFO. \n
@@ -358,7 +386,8 @@ class _Config:
     # def database_url(self, value: str):
     #     if not value:
     #         value = self._DEFAULT_DB_URL
-    #     # If APP_DATA_DIR has updated, and database_url is default, update it to new path
+    #     # If APP_DATA_DIR has updated, and database_url is default,
+    #     #    update it to new path
     #     # If ENV DATABASE_URL is modified by user, don't update it
     #     _untouched_db_url = "sqlite:////data/trailarr.db"
     #     # TODO: Change this to /data/trailarr.db in next update!
@@ -429,9 +458,12 @@ class _Config:
     # @trailer_always_search.setter
     # def trailer_always_search(self, value: bool):
     #     self._trailer_always_search = value
-    #     self._save_to_env("TRAILER_ALWAYS_SEARCH", self._trailer_always_search)
+    #     self._save_to_env("TRAILER_ALWAYS_SEARCH",
+    #         self._trailer_always_search)
 
-    trailer_always_search = bool_property("TRAILER_ALWAYS_SEARCH", default=False)
+    trailer_always_search = bool_property(
+        "TRAILER_ALWAYS_SEARCH", default=False
+    )
     """Always search for trailers.
         - Default is False.
         - Valid values are True/False."""
@@ -501,9 +533,12 @@ class _Config:
     # @trailer_folder_series.setter
     # def trailer_folder_series(self, value: bool):
     #     self._trailer_folder_series = value
-    #     self._save_to_env("TRAILER_FOLDER_SERIES", self._trailer_folder_series)
+    #     self._save_to_env("TRAILER_FOLDER_SERIES",
+    #         self._trailer_folder_series)
 
-    trailer_folder_series = bool_property("TRAILER_FOLDER_SERIES", default=True)
+    trailer_folder_series = bool_property(
+        "TRAILER_FOLDER_SERIES", default=True
+    )
     """Trailer folder for series.
         - Default is True.
         - Valid values are True/False."""
@@ -522,7 +557,9 @@ class _Config:
     #     self._trailer_min_duration = value
     #     self._save_to_env("TRAILER_MIN_DURATION", self._trailer_min_duration)
 
-    trailer_min_duration = int_property("TRAILER_MIN_DURATION", default=30, min_=30)
+    trailer_min_duration = int_property(
+        "TRAILER_MIN_DURATION", default=30, min_=30
+    )
     """Minimum duration for trailers.
         - Minimum is 30 seconds.
         - Default is 30 seconds.
@@ -555,9 +592,12 @@ class _Config:
     # @trailer_subtitles_enabled.setter
     # def trailer_subtitles_enabled(self, value: bool):
     #     self._trailer_subtitles_enabled = value
-    #     self._save_to_env("TRAILER_SUBTITLES_ENABLED", self._trailer_subtitles_enabled)
+    #     self._save_to_env("TRAILER_SUBTITLES_ENABLED",
+    #         self._trailer_subtitles_enabled)
 
-    trailer_subtitles_enabled = bool_property("TRAILER_SUBTITLES_ENABLED", default=True)
+    trailer_subtitles_enabled = bool_property(
+        "TRAILER_SUBTITLES_ENABLED", default=True
+    )
     """Subtitles enabled for trailers.
         - Default is True.
         - Valid values are True/False."""
@@ -572,7 +612,8 @@ class _Config:
     # @trailer_subtitles_language.setter
     # def trailer_subtitles_language(self, value: str):
     #     self._trailer_language = value
-    #     self._save_to_env("TRAILER_SUBTITLES_LANGUAGE", self._trailer_language)
+    #     self._save_to_env("TRAILER_SUBTITLES_LANGUAGE",
+    #         self._trailer_language)
 
     trailer_subtitles_language = str_property(
         "TRAILER_SUBTITLES_LANGUAGE", default=_DEFAULT_LANGUAGE
@@ -585,8 +626,8 @@ class _Config:
     def trailer_resolution(self) -> int:
         """Resolution for trailers. \n
         Default is 1080. \n
-        Valid input values are '240', '360', '480', '720', '1080', '1440', '2160',
-        'SD', 'FSD', 'HD', 'FHD', 'QHD', 'UHD'.
+        Valid input values are '240', '360', '480', '720', '1080', '1440',
+        '2160', 'SD', 'FSD', 'HD', 'FHD', 'QHD', 'UHD'.
         Always stored as a number. Ex: '1080'.
         """
         return self._trailer_resolution
@@ -601,13 +642,14 @@ class _Config:
     # def trailer_audio_format(self):
     #     """Audio format for trailers. \n
     #     Default is 'aac'. \n
-    #     Valid values are 'aac', 'ac3', 'eac3', 'mp3', 'flac', 'vorbis', 'opus'."""
+    #     Valid values are 'aac', 'ac3', 'eac3', 'mp3', 'vorbis', 'opus'."""
     #     return self._trailer_audio_format
 
     # @trailer_audio_format.setter
     # def trailer_audio_format(self, value: str):
     #     self._trailer_audio_format = value
-    #     if self._trailer_audio_format.lower() not in self._VALID_AUDIO_FORMATS:
+    #     if self._trailer_audio_format.lower() not in
+    #         self._VALID_AUDIO_FORMATS:
     #         self._trailer_audio_format = self._DEFAULT_AUDIO_FORMAT
     #     self._save_to_env("TRAILER_AUDIO_FORMAT", self._trailer_audio_format)
 
@@ -618,7 +660,7 @@ class _Config:
     )
     """Audio format for trailers.
         - Default is 'aac'.
-        - Valid values are 'aac', 'ac3', 'eac3', 'mp3', 'flac', 'vorbis', 'opus'."""
+        - Valid values are 'aac', 'ac3', 'eac3', 'mp3', 'vorbis', 'opus'."""
 
     # @property
     # def trailer_audio_volume_level(self):
@@ -653,7 +695,8 @@ class _Config:
     # @trailer_video_format.setter
     # def trailer_video_format(self, value: str):
     #     self._trailer_video_format = value
-    #     if self._trailer_video_format.lower() not in self._VALID_VIDEO_FORMATS:
+    #     if self._trailer_video_format.lower() not in
+    #             self._VALID_VIDEO_FORMATS:
     #         self._trailer_video_format = self._DEFAULT_VIDEO_FORMAT
     #     self._save_to_env("TRAILER_VIDEO_FORMAT", self._trailer_video_format)
 
@@ -676,9 +719,11 @@ class _Config:
     # @trailer_subtitles_format.setter
     # def trailer_subtitles_format(self, value: str):
     #     self._trailer_subtitles_format = value
-    #     if self._trailer_subtitles_format.lower() not in self._VALID_SUBTITLES_FORMATS:
+    #     if self._trailer_subtitles_format.lower() not in
+    #             self._VALID_SUBTITLES_FORMATS:
     #         self._trailer_subtitles_format = self._DEFAULT_SUBTITLES_FORMAT
-    #     self._save_to_env("TRAILER_SUBTITLES_FORMAT", self._trailer_subtitles_format)
+    #     self._save_to_env("TRAILER_SUBTITLES_FORMAT",
+    #         self._trailer_subtitles_format)
 
     trailer_subtitles_format = str_property(
         "TRAILER_SUBTITLES_FORMAT",
@@ -722,9 +767,12 @@ class _Config:
     # @trailer_embed_metadata.setter
     # def trailer_embed_metadata(self, value: bool):
     #     self._trailer_embed_metadata = value
-    #     self._save_to_env("TRAILER_EMBED_METADATA", self._trailer_embed_metadata)
+    #     self._save_to_env("TRAILER_EMBED_METADATA",
+    #         self._trailer_embed_metadata)
 
-    trailer_embed_metadata = bool_property("TRAILER_EMBED_METADATA", default=True)
+    trailer_embed_metadata = bool_property(
+        "TRAILER_EMBED_METADATA", default=True
+    )
     """Embed metadata for trailers.
         - Default is True.
         - Valid values are True/False."""
@@ -760,9 +808,12 @@ class _Config:
     # @trailer_web_optimized.setter
     # def trailer_web_optimized(self, value: bool):
     #     self._trailer_web_optimized = value
-    #     self._save_to_env("TRAILER_WEB_OPTIMIZED", self._trailer_web_optimized)
+    #     self._save_to_env("TRAILER_WEB_OPTIMIZED",
+    #         self._trailer_web_optimized)
 
-    trailer_web_optimized = bool_property("TRAILER_WEB_OPTIMIZED", default=True)
+    trailer_web_optimized = bool_property(
+        "TRAILER_WEB_OPTIMIZED", default=True
+    )
     """Web optimized for trailers.
         - Default is True.
         - Valid values are True/False."""
@@ -781,7 +832,9 @@ class _Config:
     #     self._webui_password = value
     #     self._save_to_env("WEBUI_PASSWORD", value)
 
-    webui_password = str_property("WEBUI_PASSWORD", default=_DEFAULT_WEBUI_PASSWORD)
+    webui_password = str_property(
+        "WEBUI_PASSWORD", default=_DEFAULT_WEBUI_PASSWORD
+    )
     """Password for the WebUI (hashed and stored).
         - Default is 'trailarr'.
         - Valid values are any hashed string of password."""
@@ -830,7 +883,8 @@ class _Config:
     # @trailer_remove_silence.setter
     # def trailer_remove_silence(self, value: bool):
     #     self._trailer_remove_silence = value
-    #     self._save_to_env("TRAILER_REMOVE_SILENCE", self._trailer_remove_silence)
+    #     self._save_to_env("TRAILER_REMOVE_SILENCE",
+    #         self._trailer_remove_silence)
 
     nvidia_gpu_available = bool_property("NVIDIA_GPU_AVAILABLE", default=False)
     """NVIDIA GPU available for hardware acceleration.
@@ -850,7 +904,9 @@ class _Config:
         - Default is False.
         - Valid values are True/False"""
 
-    trailer_remove_silence = bool_property("TRAILER_REMOVE_SILENCE", default=False)
+    trailer_remove_silence = bool_property(
+        "TRAILER_REMOVE_SILENCE", default=False
+    )
     """Remove silence from the trailers.
         - Default is False.
         - Valid values are True/False."""
@@ -863,7 +919,8 @@ class _Config:
     url_base = str_property("URL_BASE", default="")
     """URL Base for the application for use with reverse proxy.
         - Default is empty string.
-        - If a value is provided, app will start with that url_base as root path."""
+        - If a value is provided, app will start with that url_base as \
+            root path."""
 
     def _save_to_env(self, key: str, value: str | int | bool):
         """Save the given key-value pair to the environment variables."""
@@ -884,7 +941,8 @@ class _Config:
                 value = str(value)
             except ValueError:
                 return self._DEFAULT_RESOLUTION
-                # raise TypeError(f"Expected str or int, got {type(value).__name__}")
+                # raise TypeError(f"Expected str or int,
+                # got {type(value).__name__}")
 
         resolution = 1080
         if isinstance(value, int):
