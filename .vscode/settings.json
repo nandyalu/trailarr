@@ -30,7 +30,7 @@
         "--line-length=79",
     ],
     "flake8.args": [
-        "--ignore=W293,E203,E704",
+        "--ignore=W293,E203,E704,E501,W503",
         "--max-line-length=80",
     ],
     "python.testing.pytestArgs": [
