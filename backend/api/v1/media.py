@@ -8,7 +8,10 @@ from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
 from core.download import trailer
 from core.files_handler import FilesHandler, FolderInfo
-from core.tasks.download_trailers import batch_download_trailers, download_trailer_by_id
+from core.tasks.download_trailers import (
+    batch_download_trailers,
+    download_trailer_by_id,
+)
 
 media_router = APIRouter(prefix="/media", tags=["Media"])
 
@@ -86,7 +89,9 @@ async def get_updated_after(seconds: int) -> list[MediaRead]:
 
 
 @media_router.get("/downloaded")
-async def get_recently_downloaded(limit: int = 30, offset: int = 0) -> list[MediaRead]:
+async def get_recently_downloaded(
+    limit: int = 30, offset: int = 0
+) -> list[MediaRead]:
     """Get recently downloaded media from the database. \n
     Args:
         limit (int, Optional=30): Number of items to return.
@@ -138,7 +143,9 @@ async def get_media_by_id(media_id: int) -> MediaRead:
     try:
         media = db_handler.read(media_id)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
     return media
 
 
@@ -163,14 +170,16 @@ async def get_media_files(media_id: int) -> FolderInfo | str:
     try:
         media = db_handler.read(media_id)
         if not media.folder_path:
-            return "Media has no folder path!"
+            raise Exception("Media has no folder path!")
         files_handler = FilesHandler()
         files = await files_handler.get_folder_files(media.folder_path)
         if not files:
-            return "No files found in media folder!"
+            raise Exception("No files found in media folder!")
         return files
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @media_router.post(
@@ -221,11 +230,17 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     try:
         msg, is_success = db_handler.update_monitoring(media_id, monitor)
         logging.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success" if is_success else "Error")
+        await websockets.ws_manager.broadcast(
+            msg, "Success" if is_success else "Error"
+        )
         return msg
     except Exception as e:
-        await websockets.ws_manager.broadcast("Error changing Monitor status!", "Error")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        await websockets.ws_manager.broadcast(
+            "Error changing Monitor status!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @media_router.post(
@@ -265,7 +280,8 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     # If id is not empty, check if it is valid (length > 11)
     if yt_id and len(yt_id) < 11:
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Invalid YouTube ID!"
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Invalid YouTube ID!",
         )
     db_handler = MediaDatabaseManager()
     try:
@@ -275,7 +291,9 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
         await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @media_router.post(
@@ -309,7 +327,10 @@ async def search_for_trailer(media_id: int) -> str:
     # )
     if yt_id := trailer.search_yt_for_trailer(media):
         db_handler.update_ytid(media_id, yt_id)
-        msg = f"Trailer found for media '{media.title}' [{media.id}] as [{yt_id}]"
+        msg = (
+            f"Trailer found for media '{media.title}' [{media.id}] as"
+            f" [{yt_id}]"
+        )
         logging.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
         return yt_id
@@ -341,7 +362,9 @@ async def delete_media_trailer(media_id: int) -> str:
     try:
         media = db_handler.read(media_id)
         if not media.trailer_exists:
-            msg = f"Media '{media.title}' [{media.id}] has no trailer to delete"
+            msg = (
+                f"Media '{media.title}' [{media.id}] has no trailer to delete"
+            )
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
         if not media.folder_path:
@@ -351,17 +374,26 @@ async def delete_media_trailer(media_id: int) -> str:
         files_handler = FilesHandler()
         res = await files_handler.delete_trailer(media.folder_path)
         if not res:
-            msg = f"Failed to delete trailer for media '{media.title}' [{media.id}]"
+            msg = (
+                f"Failed to delete trailer for media '{media.title}'"
+                f" [{media.id}]"
+            )
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
         db_handler.update_trailer_exists(media_id, False)
-        msg = f"Trailer for media '{media.title}' [{media.id}] has been deleted."
+        msg = (
+            f"Trailer for media '{media.title}' [{media.id}] has been deleted."
+        )
         logging.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
-        await websockets.ws_manager.broadcast("Error deleting trailer!", "Error")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        await websockets.ws_manager.broadcast(
+            "Error deleting trailer!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @media_router.post(
@@ -382,7 +414,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
     - delete: Delete media items. \n
     - download: Download trailers for media items. \n
     Args:
-        update (BulkUpdate): Bulk update object with media ids and update type. \n
+        update (BulkUpdate): Bulk update object with media ids and update type.
     Returns:
         str: Monitoring message.
     """
@@ -408,4 +440,6 @@ async def batch_update_media(update: BatchUpdate) -> None:
     except Exception as e:
         await websockets.ws_manager.broadcast("Error updating Media!", "Error")
         logging.error(e)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
