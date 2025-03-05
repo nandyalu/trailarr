@@ -1,8 +1,10 @@
 from sqlmodel import Session
 
 from core.base.database.models.customfilter import CustomFilter
+from core.base.database.utils.engine import manage_session
 
 
+@manage_session
 def delete_customfilter(
     id: int, *, _session: Session = None  # type: ignore
 ) -> bool:
