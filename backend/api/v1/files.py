@@ -8,13 +8,33 @@ from core.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFiles")
 
-files_router = APIRouter(prefix="/files", tags=["Files", "media"])
+files_router = APIRouter(prefix="/files", tags=["Files", "Media"])
 
 CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
 
-UNSAFE_PATHS = [".", "/app", "/bin", "/boot", "/etc", "/lib", "/sbin", "/usr", "/var"]
+UNSAFE_PATHS = [
+    ".",
+    "/app",
+    "/bin",
+    "/boot",
+    "/etc",
+    "/lib",
+    "/sbin",
+    "/usr",
+    "/var",
+]
 
-UNSAFE_PATHS = [".", "/app", "/bin", "/boot", "/etc", "/lib", "/sbin", "/usr", "/var"]
+UNSAFE_PATHS = [
+    ".",
+    "/app",
+    "/bin",
+    "/boot",
+    "/etc",
+    "/lib",
+    "/sbin",
+    "/usr",
+    "/var",
+]
 
 
 def _is_path_safe(path: str) -> bool:
@@ -48,7 +68,9 @@ async def get_files(path: str) -> FolderInfo | None:
         files_handler = FilesHandler()
         return await files_handler.get_folder_files(path)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @files_router.get("/video")
@@ -56,7 +78,7 @@ async def video_endpoint(file_path: str, range: str = Header(None)):
     """Stream video files.\n
     Args:
         file_path (str): Path to the video file.
-        range (str, optional): Range of bytes to stream. Defaults to Header(None). \n
+        range (str, optional=None): Range of bytes to stream. \n
     Raises:
         HTTPException (400): If the file path is invalid.
         HTTPException (404): If the file is not found.
@@ -65,7 +87,8 @@ async def video_endpoint(file_path: str, range: str = Header(None)):
         Response: Video stream response."""
     if not _is_path_safe(file_path):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file path."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
         )
     if not os.path.exists(file_path):
         raise HTTPException(
@@ -90,7 +113,9 @@ async def video_endpoint(file_path: str, range: str = Header(None)):
             "Content-Range": f"bytes {str(start)}-{str(end - 1)}/{filesize}",
             "Accept-Ranges": "bytes",
         }
-        return Response(data, status_code=206, headers=headers, media_type="video/mp4")
+        return Response(
+            data, status_code=206, headers=headers, media_type="video/mp4"
+        )
 
 
 @files_router.get(
@@ -108,13 +133,15 @@ async def read_file(file_path: str) -> str:
         str: Contents of the file."""
     if not _is_path_safe(file_path):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file path."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
         )
     file_ext = os.path.splitext(file_path)[1]
     VALID_FILE_TYPES = [".txt", ".srt", ".log", ".json", ".py", ".sh"]
     if file_ext not in VALID_FILE_TYPES:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type.",
         )
     with open(file_path, "r") as file:
         return file.read().strip()
@@ -132,11 +159,13 @@ def get_video_info(file_path: str) -> video_analysis.VideoInfo | None:
     Raises:
         HTTPException (400): If the file path is invalid. \n
     Returns:
-        VideoInfo|None: VideoInfo object containing information about the video file.
+        VideoInfo|None: VideoInfo object containing information about \
+            the video file.
     """
     if not _is_path_safe(file_path):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file path."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
         )
     return video_analysis.get_media_info(file_path)
 
@@ -172,10 +201,13 @@ async def rename_file_fol(old_path: str, new_path: str) -> bool:
     Raises:
         HTTPException (400): If the file path is invalid. \n
     Returns:
-        bool: True if the file/folder was renamed successfully, False otherwise."""
+        bool: True if the file/folder was renamed successfully, \
+            False otherwise.
+    """
     if not _is_path_safe(old_path) or not _is_path_safe(new_path):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file path."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
         )
     return await FilesHandler.rename_file_fol(old_path, new_path)
 
@@ -189,14 +221,17 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
     """Delete a file/folder from the filesystem.\n
     Args:
         path (str): Path to the file/folder to delete.
-        media_id (int, optional): Media ID to delete. Defaults to -1. \n
+        media_id (int, optional=-1): Media ID to delete. \n
     Raises:
         HTTPException (400): If the file path is invalid. \n
     Returns:
-        bool: True if the file/folder was deleted successfully, False otherwise."""
+        bool: True if the file/folder was deleted successfully, \
+            False otherwise.
+    """
     if not _is_path_safe(path):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file path."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
         )
     deleted_status = await FilesHandler.delete_file_fol(path)
     if media_id != -1 and deleted_status:
