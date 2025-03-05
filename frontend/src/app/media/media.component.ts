@@ -1,9 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
+import { booleanFilterKeys, CustomFilter, DateFilterCondition, dateFilterKeys, Filter, NumberFilterCondition, numberFilterKeys, StringFilterCondition, stringFilterKeys } from '../models/customfilter';
 import { mapMedia, Media } from '../models/media';
+import { CustomfilterService } from '../services/customfilter.service';
 import { MediaService } from '../services/media.service';
 import { WebsocketService } from '../services/websocket.service';
 import { AddCustomFilterDialogComponent } from "./add-filter-dialog/add-filter-dialog.component";
@@ -22,6 +24,8 @@ export class MediaComponent {
     private webSocketService: WebsocketService
   ) { }
 
+  customfilterService = inject(CustomfilterService);
+
   moviesOnly = signal<boolean | null>(null);
   isLoading = signal<boolean>(true);
 
@@ -30,6 +34,7 @@ export class MediaComponent {
 
   sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
   filterOptions: string[] = ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored'];
+  customFilters: CustomFilter[] = [];
   selectedSort = signal<keyof Media>('added_at');
   sortAscending = signal<boolean>(true);
   selectedFilter = signal<string>('all');
@@ -88,6 +93,106 @@ export class MediaComponent {
     }, 10000);
   }
 
+  applyFilter(filter: Filter, media: Media): boolean {
+    let filterValue = filter.filter_value;
+    let filterBy = filter.filter_by;
+    // Boolean filters
+    if (booleanFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as boolean;
+      let filterValueBool = filterValue.toLowerCase() === 'true';
+      return origValue === filterValueBool;
+    }
+    // Date filters
+    if (dateFilterKeys.includes(filterBy)) {
+      let mediaDate = new Date(media[filterBy] as string);
+      let filterDate = new Date(filterValue);
+      switch (filter.filter_condition) {
+        case DateFilterCondition.IS_AFTER:
+          return mediaDate > filterDate;
+        case DateFilterCondition.IS_BEFORE:
+          return mediaDate < filterDate;
+        case DateFilterCondition.IN_THE_LAST:
+          let last = new Date();
+          last.setDate(last.getDate() - parseInt(filterValue));
+          return mediaDate > last;
+        case DateFilterCondition.NOT_IN_THE_LAST:
+          let last2 = new Date();
+          last2.setDate(last2.getDate() - parseInt(filterValue));
+          return mediaDate < last2;
+        case DateFilterCondition.EQUALS:
+          return mediaDate.getDate() === filterDate.getDate();
+        case DateFilterCondition.NOT_EQUALS:
+          return mediaDate.getDate() !== filterDate.getDate();
+        default:
+          return true;
+      }
+    }
+    // Number filters
+    if (numberFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as number;
+      let filterValueNum = parseInt(filterValue);
+      switch (filter.filter_condition) {
+        case NumberFilterCondition.GREATER_THAN:
+          return origValue > filterValueNum;
+        case NumberFilterCondition.GREATER_THAN_EQUAL:
+          return origValue >= filterValueNum;
+        case NumberFilterCondition.LESS_THAN:
+          return origValue < filterValueNum;
+        case NumberFilterCondition.LESS_THAN_EQUAL:
+          return origValue <= filterValueNum;
+        case NumberFilterCondition.EQUALS:
+          return origValue === filterValueNum;
+        case NumberFilterCondition.NOT_EQUALS:
+          return origValue !== filterValueNum;
+        default:
+          return true
+      }
+    }
+    // String filters
+    if (stringFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as string;
+      switch (filter.filter_condition) {
+        case StringFilterCondition.CONTAINS:
+          return origValue.includes(filterValue);
+        case StringFilterCondition.NOT_CONTAINS:
+          return !origValue.includes(filterValue);
+        case StringFilterCondition.EQUALS:
+          return origValue === filterValue;
+        case StringFilterCondition.NOT_EQUALS:
+          return origValue !== filterValue;
+        case StringFilterCondition.STARTS_WITH:
+          return origValue.startsWith(filterValue);
+        case StringFilterCondition.NOT_STARTS_WITH:
+          return !origValue.startsWith(filterValue);
+        case StringFilterCondition.ENDS_WITH:
+          return origValue.endsWith(filterValue);
+        case StringFilterCondition.NOT_ENDS_WITH:
+          return !origValue.endsWith(filterValue);
+        case StringFilterCondition.IS_EMPTY:
+          return origValue === '';
+        case StringFilterCondition.IS_NOT_EMPTY:
+          return origValue !== '';
+        default:
+          return true;
+      }
+    }
+    return true;
+  }
+
+  filterDisplayed = false;
+  applyCustomFilter(filter_name: string, media: Media): boolean {
+    let customFilter = this.customFilters.find(f => f.filter_name === filter_name);
+    if (!this.filterDisplayed) {
+      console.log("Custom filter:", customFilter);
+      this.filterDisplayed = true;
+    }
+    if (!customFilter) {
+      return true;
+    }
+    // Apply filters until one of them returns false or all are applied 
+    return customFilter.filters.every(filter => this.applyFilter(filter, media));
+  }
+
   /**
    * Filters and sorts the media list based on the selected filter and sort options.
    * 
@@ -115,7 +220,8 @@ export class MediaComponent {
         case 'series':
           return !media.is_movie && media.trailer_exists;
         default:
-          return true;
+          // console.log("Applying custom filter:", this.selectedFilter());
+          return this.applyCustomFilter(this.selectedFilter(), media);
       }
     });
     // Sort the media list by the selected sort option
@@ -154,7 +260,7 @@ export class MediaComponent {
   fetchUpdatedMedia(forceUpdate: boolean = false): void {
     // Fetch updated media items from the server and update the allMedia signal
     const currentTime = Date.now();
-    const delta = Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000);
+    const delta = Math.min(Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000), 1000);
     if (delta > this.UPDATE_INTERVAL || forceUpdate) {
       // Fetch updated media items
       this.mediaService.fetchUpdatedMedia(delta).subscribe(
@@ -254,6 +360,15 @@ export class MediaComponent {
   retrieveSortNFilterOptions(): void {
     const moviesOnlyValue = this.moviesOnly();
     const pageType = moviesOnlyValue == null ? 'AllMedia' : (moviesOnlyValue ? 'Movies' : 'Series');
+    // Retrieve custom filters for the view from the server
+    this.customfilterService.getViewFilters(moviesOnlyValue).subscribe(
+      (filters) => {
+        this.customFilters = filters;
+        filters.forEach(filter => {
+          this.filterOptions.push(filter.filter_name);
+        });
+      }
+    );
     // Retrieve the filter option from the local session
     let filterOption = localStorage.getItem(`Trailarr${pageType}Filter`);
     if (filterOption) {

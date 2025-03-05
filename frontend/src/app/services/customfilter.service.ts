@@ -29,18 +29,9 @@ export class CustomfilterService {
     return this.httpClient.delete<boolean>(url);
   }
 
-  getHomeFilters(): Observable<CustomFilter[]> {
-    const url = this.cp_url + 'home';
-    return this.httpClient.get<CustomFilter[]>(url);
-  }
-
-  getMovieFilters(): Observable<CustomFilter[]> {
-    const url = this.cp_url + 'movie';
-    return this.httpClient.get<CustomFilter[]>(url);
-  }
-
-  getSeriesFilters(): Observable<CustomFilter[]> {
-    const url = this.cp_url + 'series';
+  getViewFilters(moviesOnly: boolean | null): Observable<CustomFilter[]> {
+    const view = moviesOnly == null ? 'home' : (moviesOnly ? 'movie' : 'series');
+    const url = this.cp_url + view;
     return this.httpClient.get<CustomFilter[]>(url);
   }
 }
