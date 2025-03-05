@@ -8,11 +8,13 @@ from fastapi.responses import FileResponse, HTMLResponse
 
 from api.v1.authentication import validate_api_key
 from api.v1.connections import connections_router
+from api.v1.customfilters import customfilters_router
 from api.v1.files import files_router
 from api.v1.media import media_router
 from api.v1.settings import settings_router
 from api.v1.logs import logs_router
 from api.v1.tasks import tasks_router
+from api.v1.trailerprofiles import trailerprofiles_router
 
 from app_logger import ModuleLogger
 
@@ -20,7 +22,8 @@ logging = ModuleLogger("APIRoutes")
 
 logging.info("Creating API v1 Routes")
 
-# Create an authenticated router and add all API routes that need authenentication to it
+# Create an authenticated router and add all API routes that
+# need authenentication to it
 authenticated_router = APIRouter(
     dependencies=[Depends(validate_api_key)],
     responses={
@@ -30,11 +33,13 @@ authenticated_router = APIRouter(
     },
 )
 authenticated_router.include_router(connections_router)
+authenticated_router.include_router(customfilters_router)
 authenticated_router.include_router(files_router)
 authenticated_router.include_router(media_router)
 authenticated_router.include_router(settings_router)
 authenticated_router.include_router(logs_router)
 authenticated_router.include_router(tasks_router)
+authenticated_router.include_router(trailerprofiles_router)
 
 # Now create API router and add the authenticated router to it
 api_v1_router = APIRouter()
@@ -52,7 +57,8 @@ SWAGGER_URL = "docs"
 static_dir = os.path.abspath("/app/assets")
 if not os.path.exists(static_dir):
     logging.info(
-        "API Documentation folder does not exist! API Documentation will not be available."
+        "API Documentation folder does not exist! API Documentation will not "
+        "be available."
     )
 else:
     logging.info("Mounting API Documentation static directory")

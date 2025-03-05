@@ -1,4 +1,12 @@
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from core.base.database.models.customfilter import (
+        CustomFilter,
+        CustomFilterCreate,
+        CustomFilterRead,
+    )
 
 
 class _TrailerProfileBase(SQLModel):
@@ -11,6 +19,7 @@ class _TrailerProfileBase(SQLModel):
     👉Use :class:`TrailerProfileRead` to read the data.👈
     """
 
+    enabled: bool = True
     # File settings
     file_format: str = "mkv"
     file_name: str = "{title} ({year})-trailer.{ext}"
@@ -35,7 +44,6 @@ class _TrailerProfileBase(SQLModel):
     remove_silence: bool = False
     search_query: str = "{title} {year} {is_movie} trailer"
     # Filter id to apply to select this profile
-    viewfilter_id: int
 
 
 class TrailerProfile(_TrailerProfileBase, table=True):
@@ -48,6 +56,12 @@ class TrailerProfile(_TrailerProfileBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
+    customfilter_id: int | None = Field(
+        default=None, foreign_key="customfilter.id"
+    )
+    customfilter: "CustomFilter" = Relationship(
+        back_populates="trailerprofile"
+    )
 
 
 class TrailerProfileCreate(_TrailerProfileBase):
@@ -56,6 +70,8 @@ class TrailerProfileCreate(_TrailerProfileBase):
     """
 
     id: int | None = None
+    customfilter_id: int | None = None
+    customfilter: "CustomFilterCreate"
 
 
 class TrailerProfileRead(_TrailerProfileBase):
@@ -64,3 +80,5 @@ class TrailerProfileRead(_TrailerProfileBase):
     """
 
     id: int
+    customfilter_id: int
+    viewfilter: "CustomFilterRead"
