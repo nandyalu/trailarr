@@ -40,7 +40,7 @@ export class MediaComponent {
   allMedia = signal<Media[]>([]);
   filteredSortedMedia = computed(() => this.computeFilteredNSortedMedia());
   displayMedia = computed(() => {
-    console.log("C: Displaying media");
+    // console.log("C: Displaying media");
     return this.filteredSortedMedia().slice(0, this.displayCount())
   });
   isCustomFilterDialogOpen = false;
@@ -71,7 +71,7 @@ export class MediaComponent {
     let filterBy = this.moviesOnly() == null ? 'downloaded' : 'all';
     this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe(
       (mediaList) => {
-        console.log("C: Media fetched");
+        // console.log("C: Media fetched");
         this.allMedia.set(mediaList.map(media => mapMedia(media)));
         this.isLoading.set(false);
       }
@@ -81,6 +81,11 @@ export class MediaComponent {
     this.webSocketService.toastMessage.subscribe(() => {
       this.fetchUpdatedMedia();
     });
+
+    // Fetch updated media items every 10 seconds
+    setTimeout(() => {
+      this.fetchUpdatedMedia();
+    }, 10000);
   }
 
   /**
@@ -116,6 +121,20 @@ export class MediaComponent {
     // Sort the media list by the selected sort option
     // Sorts the list in place. If sortAscending is false, reverses the list
     mediaList.sort((a, b) => {
+      let aVal = a[this.selectedSort()];
+      let bVal = b[this.selectedSort()];
+      if (aVal instanceof Date && bVal instanceof Date) {
+        if (this.sortAscending()) {
+          return aVal.getTime() - bVal.getTime();
+        }
+        return bVal.getTime() - aVal.getTime();
+      }
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        if (this.sortAscending()) {
+          return aVal - bVal;
+        }
+        return bVal - aVal;
+      }
       if (this.sortAscending()) {
         return a[this.selectedSort()].toString().localeCompare(b[this.selectedSort()].toString());
       }
@@ -205,7 +224,7 @@ export class MediaComponent {
     // console.log("Batch update:", action, "Selected media:", this.selectedMedia);
     this.webSocketService.showToast(`Batch update: ${action} ${this.selectedMedia.length} items`);
     this.mediaService.batchUpdate(this.selectedMedia, action).subscribe(() => {
-      console.log("C: Batch update successful");
+      // console.log("C: Batch update successful");
       this.fetchUpdatedMedia(true); // Fetch updated media items
     });
     this.selectedMedia = [];
@@ -233,8 +252,8 @@ export class MediaComponent {
    * @returns {void} This method does not return a value.
    */
   retrieveSortNFilterOptions(): void {
-    const moviesOnly = this.moviesOnly();
-    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    const moviesOnlyValue = this.moviesOnly();
+    const pageType = moviesOnlyValue == null ? 'AllMedia' : (moviesOnlyValue ? 'Movies' : 'Series');
     // Retrieve the filter option from the local session
     let filterOption = localStorage.getItem(`Trailarr${pageType}Filter`);
     if (filterOption) {
@@ -250,7 +269,7 @@ export class MediaComponent {
       this.sortAscending.set(sortAscending == 'true');
     }
   }
-  
+
   /**
    * Sets the media sort option and resets the display count to the default.
    * Also, saves the sort option to the local session.
