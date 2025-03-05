@@ -148,7 +148,8 @@
               <div class="labeled-input">
                 <span class="text-md sm-none">https://www.youtube.com/watch?v=</span>
                 <span class="text-md sm-show">Youtube ID/URL:</span>
-                <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL">
+                <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url"
+                  placeholder="Youtube Video ID / URL">
               </div>
               @if (media.youtube_trailer_id == "" && trailer_url == "" && !isLoadingDownload) {
               <span class="search-button icon-link" title="Search Trailer" (click)="searchTrailer()">
@@ -163,22 +164,24 @@
               <span class="loading-search icon-link" title="Searching for Trailer">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
                   <circle stroke-width="14" r="15" cx="40" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
-                      repeatCount="indefinite" begin="-.4"></animate>
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;"
+                      keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate>
                   </circle>
                   <circle stroke-width="14" r="15" cx="100" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
-                      repeatCount="indefinite" begin="-.2"></animate>
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;"
+                      keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate>
                   </circle>
                   <circle stroke-width="14" r="15" cx="160" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
-                      repeatCount="indefinite" begin="0"></animate>
+                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;"
+                      keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate>
                   </circle>
                 </svg>
               </span>
               }
               @if (trailer_url != media.youtube_trailer_id && !isLoadingDownload) {
-              <button *ngIf="trailer_url != media.youtube_trailer_id" class="primary icononly-button save-button success" id="update_trailer_search_query" tabindex="24" (click)="saveYtId()">
+              <button *ngIf="trailer_url != media.youtube_trailer_id"
+                class="primary icononly-button save-button success" id="update_trailer_search_query" tabindex="24"
+                (click)="saveYtId()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
                 </svg>
@@ -211,7 +214,7 @@
       </div>
     </div>
     <!-- Show Media Files -->
-    <media-files [mediaId]="media?.id || 0"></media-files>
+    <media-files [mediaId]="mediaId()"></media-files>
   </ng-template>
 </div>
 
