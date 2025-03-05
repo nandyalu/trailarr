@@ -1,0 +1,105 @@
+@if (isLoading) {
+<div class="loading-wave center">
+  <div class="loading-bar"></div>
+  <div class="loading-bar"></div>
+  <div class="loading-bar"></div>
+  <div class="loading-bar"></div>
+</div>
+} @else {
+<form [formGroup]="customFilterForm" (ngSubmit)="onSubmit()" (click)="$event.stopPropagation()">
+  <!-- View Name -->
+  <div class="form-group">
+    <label for="filter_name">Label</label>
+    <input id="filter_name" type="text" maxlength="15" formControlName="filter_name" />
+  </div>
+
+  <!-- Filters FormArray -->
+  <div formArrayName="filters" class="filters-container">
+    <!-- <h3>Filters</h3> -->
+    @for (filterGroup of filters.controls; track filterGroup; let i = $index) {
+    <div [formGroupName]="i" class="filter-group">
+      <!-- Filter By -->
+      <div class="form-group">
+        <!-- <label for="filter_by_{{ i }}">Filter By</label> -->
+        <select id="filter_by_{{ i }}" formControlName="filter_by" (change)="onFilterByChange($event, i)">
+          <option value="" disabled>Select Filter By</option>
+          @for (filter of filterKeys; track filter) {
+          <option [value]="filter">
+            {{ displayTitle(filter) }}
+          </option>
+          }
+        </select>
+        <!-- <input id="filter_by_{{ i }}" type="text" formControlName="filter_by" /> -->
+        <!-- @if (filters.get('filter_by')?.touched && filterGroup.get('filter_by')?.invalid) {
+              <div class="error">
+                Filter By is required.
+              </div>
+            } -->
+      </div>
+
+      <!-- Filter Condition -->
+      <div class="form-group">
+        <!-- <label for="filter_condition_{{ i }}">Filter Condition</label> -->
+        <select id="filter_condition_{{ i }}" formControlName="filter_condition"
+          (change)="onFilterConditionChange($event, i)">
+          <option value="" disabled>Select Condition</option>
+          @for (condition of filterConditions[i]; track condition) {
+          <option [value]="condition">
+            {{ displayTitle(condition) }}
+          </option>
+          }
+        </select>
+        <!-- @if (filterGroup.get('filter_condition')?.touched && filterGroup.get('filter_condition')?.invalid) {
+              <div class="error">
+                Filter Condition is required.
+              </div>
+            } -->
+      </div>
+
+      <!-- Filter Value -->
+      <div class="form-group">
+        <!-- <label for="filter_value_{{ i }}">Filter Value</label> -->
+        @if (filterValueTypes[i] === 'string') {
+        <input id="filter_value_{{ i }}" type="text" formControlName="filter_value" />
+        } @else if (filterValueTypes[i] === 'number') {
+        <input id="filter_value_{{ i }}" type="number" formControlName="filter_value" />
+        } @else if (filterValueTypes[i] === 'number_days') {
+        <input id="filter_value_{{ i }}" type="number" placeholder="days" formControlName="filter_value" />
+        <span> days</span>
+        } @else if (filterValueTypes[i] === 'date') {
+        <input id="filter_value_{{ i }}" type="date" formControlName="filter_value" />
+        } @else if (filterValueTypes[i] === 'boolean') {
+        <select id="filter_value_{{ i }}" formControlName="filter_value">
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select>
+        }
+        <!-- @if (filterGroup.get('filter_value')?.touched && filterGroup.get('filter_value')?.invalid) {
+            <div class="error">
+              Filter Value must be a number.
+            </div>
+            } -->
+      </div>
+
+      <!-- Remove Filter Button -->
+      <button type="button" class="danger icononly-button" (click)="removeFilter(i)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+            d="M253-99q-38.21 0-65.11-26.6Q161-152.2 161-190v-552h-58v-91h228v-47h297v47h228v91h-58v552q0 37.18-27.21 64.09Q743.59-99 706-99H253Zm453-643H253v552h453v-552ZM357-268h74v-398h-74v398Zm173 0h75v-398h-75v398ZM253-742v552-552Z" />
+        </svg>
+      </button>
+    </div>
+    }
+    <!-- Button to add a new filter -->
+    <button type="button" class="secondary" (click)="addFilter()">Add Filter</button>
+  </div>
+  <div class="buttons-row">
+    <!-- Button to Cancel Dialog -->
+    <button type="button" class="danger" (click)="closeDialog()">Cancel</button>
+
+    <!-- Submit button -->
+    <button type="submit" class="primary"
+      [disabled]="customFilterForm.pristine || customFilterForm.invalid">Submit</button>
+  </div>
+</form>
+}
