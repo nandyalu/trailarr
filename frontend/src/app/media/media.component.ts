@@ -1,15 +1,16 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, ElementRef, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
 import { mapMedia, Media } from '../models/media';
 import { MediaService } from '../services/media.service';
 import { WebsocketService } from '../services/websocket.service';
+import { AddCustomFilterDialogComponent } from "./add-filter-dialog/add-filter-dialog.component";
 
 @Component({
   selector: 'app-media2',
-  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective, AddCustomFilterDialogComponent],
   templateUrl: './media.component.html',
   styleUrl: './media.component.css'
 })
@@ -42,6 +43,7 @@ export class MediaComponent {
     console.log("C: Displaying media");
     return this.filteredSortedMedia().slice(0, this.displayCount())
   });
+  isCustomFilterDialogOpen = false;
 
   private lastUpdateTime: number = 0;
   private readonly UPDATE_INTERVAL: number = 3; // 3 seconds in seconds
@@ -309,5 +311,20 @@ export class MediaComponent {
     }
     this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
+
+  @ViewChild('addFilterDialog') addFilterDialog!: ElementRef<HTMLDialogElement>;
+  openAddFilterDialog(): void {
+    this.addFilterDialog.nativeElement.showModal();
+    this.isCustomFilterDialogOpen = true;
+  }
+
+  closeAddFilterDialog(): void {
+    this.addFilterDialog.nativeElement.close();
+    // Delay closing the dialog to prevent content disappearing immediately
+    setTimeout(() => {
+      this.isCustomFilterDialogOpen = false;
+    }, 1000);
+  }
+
 
 }

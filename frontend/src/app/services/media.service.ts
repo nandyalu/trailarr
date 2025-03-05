@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, firstValueFrom, map, Observable, of } from 'rxjs';
 import { environment } from '../../environment';
-import { mapFolderInfo, mapMedia, Media, SearchMedia } from '../models/media';
+import { FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia } from '../models/media';
 
 @Injectable({
   providedIn: 'root'
@@ -238,6 +238,12 @@ export class MediaService {
         return of(`Error: ${error.message}`);
       })
     );
+  }
+
+  async fetchMediaFiles(mediaID: number): Promise<FolderInfo> {
+    const url = `${this.mediaUrl}${mediaID}/files`;
+    const files = await firstValueFrom(this.httpClient.get<FolderInfo>(url));
+    return mapFolderInfo(files);
   }
 
   /**

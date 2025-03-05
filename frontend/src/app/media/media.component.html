@@ -58,6 +58,13 @@
         }
       </div>
       }
+      <div class="media-header-button" (click)="openAddFilterDialog()" aria-label="Edit" title="Edit">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
+          <path
+            d="M421-97v-248h83v83h353v83H504v82h-83Zm-318-82v-83h270v83H103Zm187-178v-82H103v-82h187v-84h83v248h-83Zm131-82v-82h436v82H421Zm166-176v-248h83v82h187v83H670v83h-83Zm-484-83v-83h436v83H103Z" />
+        </svg>
+        <span>Custom Filters</span>
+      </div>
     </div>
   </div>
 </div>
@@ -160,14 +167,14 @@
     <!-- <div class="media-card" [routerLink]="['/media', media.id]"> -->
     @if (inEditMode){
     <!-- Edit Mode - Show Checkboxes -->
-    <div class="media-card">
+    <div class="media-card" [title]="media.title">
       <input type="checkbox" [id]="media.id" class="media-card-checkbox" (click)="$event.stopPropagation()"
         (change)="onMediaSelected(media, $event)" [checked]="selectedMedia.includes(media.id)">
       <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
     </div>
     } @else {
     <!-- Normal Mode - Show Media Card -->
-    <div class="media-card" [routerLink]="['/media', media.id]">
+    <div class="media-card" [routerLink]="['/media', media.id]" [title]="media.title" [id]="media.id">
       <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
     </div>
     }
@@ -209,3 +216,11 @@
   </svg>
   }
 </ng-template>
+
+<!-- Add Filter Dialog -->
+<dialog #addFilterDialog (close)="closeAddFilterDialog()">
+  @if (isCustomFilterDialogOpen) {
+  <app-add-filter-dialog [filterType]="moviesOnly() == null ? 'HOME' : (moviesOnly() ? 'MOVIES' : 'SERIES')"
+    [customFilter]="null" (dialogClosed)="closeAddFilterDialog()"></app-add-filter-dialog>
+  }
+</dialog>
