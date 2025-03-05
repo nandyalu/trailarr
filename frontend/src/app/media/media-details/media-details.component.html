@@ -127,9 +127,9 @@
                 <span class="tooltiptext">
                   <p>Monitored: {{media.monitor}}</p>
                   <p>Downloaded: {{media.trailer_exists}}</p>
-                  <p>Added: {{media.added_at}}</p>
-                  <p>Updated: {{media.updated_at}}</p>
-                  <p>Downloaded: {{media.downloaded_at}}
+                  <p>Added: {{media.added_at.toLocaleString()}}</p>
+                  <p>Updated: {{media.updated_at.toLocaleString()}}</p>
+                  <p>Downloaded: {{media.downloaded_at.toLocaleString() || ''}}</p>
                 </span>
               </span>
             </div>
