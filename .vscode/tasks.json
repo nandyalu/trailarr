@@ -151,7 +151,16 @@
 			},
 			"type": "shell",
 			"isBackground": true,
-			"command": "uvicorn backend.main:trailarr_api --host 0.0.0.0 --port 7888",
+			"options": {
+				"cwd": "${workspaceFolder}/backend",
+				"env": {
+					"PYTHONPATH": "${workspaceFolder}/backend",
+					"TZ": "UTC",
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1"
+				}
+			},
+			"command": "uvicorn main:trailarr_api --host 0.0.0.0 --port 7888",
 			"problemMatcher": []
 		}
 	]

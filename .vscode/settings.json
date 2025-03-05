@@ -5,10 +5,33 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
+        "editor.rulers": [
+            {
+                // Comments / Docstrings
+                "column": 72,
+                "color": "#744f19",
+            },
+            {
+                // PEP 8 Line Length
+                "column": 79,
+                "color": "#008000",
+            },
+            {
+                // Max Line Length
+                "column": 90,
+                "color": "#ff0000",
+            }
+        ]
     },
+    "black-formatter.args": [
+        "--preview",
+        "--enable-unstable-feature",
+        "string_processing",
+        "--line-length=79",
+    ],
     "flake8.args": [
         "--ignore=W293,E203,E704",
-        "--max-line-length=100",
+        "--max-line-length=80",
     ],
     "python.testing.pytestArgs": [
         "."

@@ -8,9 +8,10 @@
             "name": "Python: FastAPI",
             "type": "debugpy",
             "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
             "module": "uvicorn",
             "args": [
-                "backend.main:trailarr_api",
+                "main:trailarr_api",
                 "--reload",
                 "--port=7888"
             ], 
