@@ -84,12 +84,12 @@ If you encounter any bugs/issues, please create an issue on the [GitHub reposito
 There are some changes that are planned for the future. These changes are not guaranteed to be implemented, but they are on the roadmap.
 
 - [ ] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
-- [ ] Add custom filters to Media pages in frontend
+- [x] Add custom filters to Media pages in frontend
 - [ ] Add a new method for making path mappings easier
 - [ ] Add options to disable conversion of downloaded videos
-- [ ] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
+- [x] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
-- [ ] Add support for some fields with translated values
+- [x] Add support for some fields with translated values
 - [ ] Update docs for Windows path mappings
 - [ ] Improve task logging
 - [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
