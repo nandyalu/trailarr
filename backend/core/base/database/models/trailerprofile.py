@@ -1,12 +1,11 @@
-from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
-if TYPE_CHECKING:
-    from core.base.database.models.customfilter import (
-        CustomFilter,
-        CustomFilterCreate,
-        CustomFilterRead,
-    )
+# if TYPE_CHECKING:
+from core.base.database.models.customfilter import (
+    CustomFilter,
+    CustomFilterCreate,
+    CustomFilterRead,
+)
 
 
 class _TrailerProfileBase(SQLModel):
@@ -59,8 +58,8 @@ class TrailerProfile(_TrailerProfileBase, table=True):
     customfilter_id: int | None = Field(
         default=None, foreign_key="customfilter.id"
     )
-    customfilter: "CustomFilter" = Relationship(
-        back_populates="trailerprofile"
+    customfilter: CustomFilter = Relationship(
+        # back_populates="trailerprofile"
     )
 
 
@@ -71,7 +70,7 @@ class TrailerProfileCreate(_TrailerProfileBase):
 
     id: int | None = None
     customfilter_id: int | None = None
-    customfilter: "CustomFilterCreate"
+    customfilter: CustomFilterCreate
 
 
 class TrailerProfileRead(_TrailerProfileBase):
@@ -81,4 +80,4 @@ class TrailerProfileRead(_TrailerProfileBase):
 
     id: int
     customfilter_id: int
-    viewfilter: "CustomFilterRead"
+    viewfilter: CustomFilterRead

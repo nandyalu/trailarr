@@ -318,3 +318,36 @@
 .media-card:hover {
   box-shadow: 0px 0px 10px 5px var(--color-outline);
 }
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  min-width: max(25vw, min(300px, 80vw));
+
+  > * {
+    border-bottom: 1px solid var(--color-outline);
+  }
+}
+
+.dialog-title {
+  font-size: larger;
+  font-weight: 700;
+  border-bottom: none !important;
+  padding-bottom: 0.5rem;
+  margin: 1rem;
+}
+
+.delete-icon {
+  fill: var(--color-error);
+  width: 2rem;
+  height: 2rem;
+}
+
+.buttons-row {
+  display: block flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 1rem 0;
+}

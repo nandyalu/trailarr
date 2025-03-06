@@ -73,6 +73,7 @@ export type FilterCondition = BooleanFilterCondition | StringFilterCondition | N
 export const booleanFilterKeys: (keyof Media)[] = [
   'arr_monitored',
   'is_movie',
+  'media_exists',
   'monitor',
   'trailer_exists',
 ];
@@ -92,12 +93,16 @@ export const numberFilterKeys: (keyof Media)[] = [
 ];
 
 export const stringFilterKeys: (keyof Media)[] = [
+  'clean_title',
   'folder_path',
   'imdb_id',
   'language',
+  'media_filename',
   'overview',
   'status',
+  'studio',
   'title',
+  'title_slug',
   'txdb_id',
   'youtube_trailer_id',
 ];

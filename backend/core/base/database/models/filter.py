@@ -1,12 +1,13 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
-from sqlmodel import Field, Relationship, SQLModel
 
-if TYPE_CHECKING:
-    from core.base.database.models.customfilter import (
-        CustomFilter,
-        CustomFilterCreate,
-    )
+# from typing import TYPE_CHECKING, Optional
+from sqlmodel import Field, SQLModel
+
+# if TYPE_CHECKING:
+# from core.base.database.models.customfilter import (
+#     CustomFilter,
+#     CustomFilterCreate,
+# )
 
 
 class FilterCondition(Enum):
@@ -76,7 +77,7 @@ class Filter(_FilterBase, table=True):
     customfilter_id: int | None = Field(
         default=None, foreign_key="customfilter.id"
     )
-    customfilter: "CustomFilter" = Relationship(back_populates="filters")
+    # customfilter: "CustomFilter" = Relationship(back_populates="filters")
 
 
 class FilterCreate(_FilterBase):
@@ -86,7 +87,7 @@ class FilterCreate(_FilterBase):
 
     id: int | None = None
     customfilter_id: int | None = None
-    customfilter: Optional["CustomFilterCreate"] = None
+    # customfilter: Optional["CustomFilterCreate"] = None
 
 
 class FilterRead(_FilterBase):

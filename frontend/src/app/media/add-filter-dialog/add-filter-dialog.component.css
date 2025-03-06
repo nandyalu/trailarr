@@ -79,3 +79,9 @@ option {
   align-items: center;
   justify-content: space-around;
 }
+
+.icon-loading {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: var(--color-on-surface);
+}

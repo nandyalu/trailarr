@@ -97,9 +97,32 @@
     <!-- Button to Cancel Dialog -->
     <button type="button" class="danger" (click)="closeDialog()">Cancel</button>
 
+
+    @if (!submitting) {
     <!-- Submit button -->
     <button type="submit" class="primary"
-      [disabled]="customFilterForm.pristine || customFilterForm.invalid">Submit</button>
+    [disabled]="customFilterForm.pristine || customFilterForm.invalid || submitting">
+      Submit
+    </button>
+    } @else {
+    <!-- Show loading icon -->
+    <div title="Submitting form data">
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon-loading" viewBox="0 0 200 200">
+        <circle stroke-width="14" r="15" cx="40" cy="65">
+          <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+          repeatCount="indefinite" begin="-.4"></animate>
+        </circle>
+        <circle stroke-width="14" r="15" cx="100" cy="65">
+          <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+          repeatCount="indefinite" begin="-.2"></animate>
+        </circle>
+        <circle stroke-width="14" r="15" cx="160" cy="65">
+          <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1"
+          repeatCount="indefinite" begin="0"></animate>
+        </circle>
+      </svg>
+    </div>
+    } 
   </div>
 </form>
 }

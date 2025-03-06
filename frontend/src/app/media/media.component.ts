@@ -9,10 +9,18 @@ import { CustomfilterService } from '../services/customfilter.service';
 import { MediaService } from '../services/media.service';
 import { WebsocketService } from '../services/websocket.service';
 import { AddCustomFilterDialogComponent } from "./add-filter-dialog/add-filter-dialog.component";
+import { DisplayTitlePipe } from "./pipes/display-title.pipe";
 
 @Component({
   selector: 'app-media2',
-  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective, AddCustomFilterDialogComponent],
+  imports: [
+    FormsModule,
+    NgTemplateOutlet,
+    RouterLink,
+    ScrollNearEndDirective,
+    AddCustomFilterDialogComponent,
+    DisplayTitlePipe
+  ],
   templateUrl: './media.component.html',
   styleUrl: './media.component.css'
 })
@@ -34,7 +42,10 @@ export class MediaComponent {
 
   sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
   filterOptions: string[] = ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored'];
-  customFilters: CustomFilter[] = [];
+  customFilters = signal<CustomFilter[]>([]);
+  allFilters = computed(() => {
+    return this.filterOptions.concat(this.customFilters().map(f => f.filter_name));
+  });
   selectedSort = signal<keyof Media>('added_at');
   sortAscending = signal<boolean>(true);
   selectedFilter = signal<string>('all');
@@ -181,7 +192,7 @@ export class MediaComponent {
 
   filterDisplayed = false;
   applyCustomFilter(filter_name: string, media: Media): boolean {
-    let customFilter = this.customFilters.find(f => f.filter_name === filter_name);
+    let customFilter = this.customFilters().find(f => f.filter_name === filter_name);
     if (!this.filterDisplayed) {
       console.log("Custom filter:", customFilter);
       this.filterDisplayed = true;
@@ -337,17 +348,6 @@ export class MediaComponent {
   }
 
   /**
-   * Formats the given option string by removing the substring '_at' and capitalizing the first letter.
-   *
-   * @param option - The option string to be formatted.
-   * @returns The formatted option string with '_at' removed and the first letter capitalized.
-   */
-  displayOptionTitle(option: string): string {
-    option = option.replace('_at', '');
-    return option.charAt(0).toUpperCase() + option.slice(1);
-  }
-
-  /**
    * Retrieves the sort and filter options from the local session.
    * If no options are found, sets the default sort option to 'added_at' and the default filter option to 'all'.
    * 
@@ -363,10 +363,7 @@ export class MediaComponent {
     // Retrieve custom filters for the view from the server
     this.customfilterService.getViewFilters(moviesOnlyValue).subscribe(
       (filters) => {
-        this.customFilters = filters;
-        filters.forEach(filter => {
-          this.filterOptions.push(filter.filter_name);
-        });
+        this.customFilters.set(filters);
       }
     );
     // Retrieve the filter option from the local session
@@ -447,13 +444,31 @@ export class MediaComponent {
   }
 
   @ViewChild('addFilterDialog') addFilterDialog!: ElementRef<HTMLDialogElement>;
-  openAddFilterDialog(): void {
+  openFilterDialog(): void {
     this.addFilterDialog.nativeElement.showModal();
+    if (this.customFilters().length === 0) {
+      this.openFilterEditDialog(null);
+    }
+    // this.isCustomFilterDialogOpen = true;
+  }
+  editFilter: CustomFilter | null = null;
+  openFilterEditDialog(filter: CustomFilter | null): void {
+    // console.log("Edit filter:", filter);
+    this.editFilter = filter;
     this.isCustomFilterDialogOpen = true;
   }
 
-  closeAddFilterDialog(): void {
+  deleteFilter(filter_id: number): void {
+    this.customfilterService.delete(filter_id).subscribe(() => {
+      this.customFilters.update((filters) => {
+        return filters.filter(f => f.id !== filter_id);
+      });
+    });
+  }
+
+  closeFilterDialog(): void {
     this.addFilterDialog.nativeElement.close();
+    this.retrieveSortNFilterOptions(); // Retrieve custom filters
     // Delay closing the dialog to prevent content disappearing immediately
     setTimeout(() => {
       this.isCustomFilterDialogOpen = false;

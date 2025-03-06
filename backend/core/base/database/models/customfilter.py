@@ -1,18 +1,18 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 
-if TYPE_CHECKING:
-    from core.base.database.models.filter import (
-        Filter,
-        FilterCreate,
-        FilterRead,
-    )
-    from core.base.database.models.trailerprofile import (
-        TrailerProfile,
-        TrailerProfileCreate,
-    )
+# if TYPE_CHECKING:
+from core.base.database.models.filter import (
+    Filter,
+    FilterCreate,
+    FilterRead,
+)
+
+# from core.base.database.models.trailerprofile import (
+#     TrailerProfile,
+#     TrailerProfileCreate,
+# )
 
 
 class FilterType(Enum):
@@ -53,11 +53,12 @@ class CustomFilter(_CustomFilterBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    filters: list["Filter"] = Relationship(back_populates="customfilter")
+    # filters: list["Filter"] = Relationship(back_populates="customfilter")
+    filters: list[Filter] = Relationship()
     """List of filters for the view"""
-    trailerprofile: Optional["TrailerProfile"] = Relationship(
-        back_populates="customfilter"
-    )
+    # trailerprofile: Optional["TrailerProfile"] = Relationship(
+    #     back_populates="customfilter"
+    # )
 
 
 class CustomFilterCreate(_CustomFilterBase):
@@ -67,9 +68,9 @@ class CustomFilterCreate(_CustomFilterBase):
         view filters.
     """
 
-    filters: list["FilterCreate"] = []
+    filters: list[FilterCreate] = []
     """List of filters for the view"""
-    trailerprofile: Optional["TrailerProfileCreate"] = None
+    # trailerprofile: Optional["TrailerProfileCreate"] = None
 
 
 class CustomFilterRead(_CustomFilterBase):
@@ -78,5 +79,5 @@ class CustomFilterRead(_CustomFilterBase):
     """
 
     id: int
-    filters: list["FilterRead"]
+    filters: list[FilterRead]
     """List of filters for the view"""

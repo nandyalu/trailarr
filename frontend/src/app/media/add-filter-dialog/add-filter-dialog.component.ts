@@ -187,6 +187,9 @@ export class AddCustomFilterDialogComponent implements OnInit {
     this.filterValueTypes[index] = this.getFilterValueType(filterByControl, '');
     // Reset the filter_condition and filter_value controls.
     this.filters.at(index).get('filter_condition')?.setValue('');
+    if (booleanFilterKeys.includes(filterByControl)) {
+      this.filters.at(index).get('filter_condition')?.setValue(BooleanFilterCondition.EQUALS);
+    }
     this.filters.at(index).get('filter_value')?.reset();
   }
 
@@ -204,19 +207,30 @@ export class AddCustomFilterDialogComponent implements OnInit {
   }
 
   // Called when the form is submitted.
+  submitting: boolean = false;
   onSubmit(): void {
+    if (this.submitting) {
+      return;
+    }
+    this.submitting = true;
     if (this.customFilterForm.valid) {
-      // Here you could call a service to save the data.
-      console.log('Submitted Custom Filter:', this.customFilterForm.value);
+      // console.log('Submitted Custom Filter:', this.customFilterForm.value);
+      // Convert all filter values to strings.
+      let formData = this.customFilterForm.value;
+      formData.filters.forEach((filter: FilterCreate) => {
+        filter.filter_value = filter.filter_value.toString();
+      });
       if (this.customFilter()?.id) {
         // If id exists, update it
-        this.customfilterService.update(this.customFilterForm.value).subscribe(() => {
+        this.customfilterService.update(formData).subscribe(() => {
           this.closeDialog();
+          this.submitting = false;
         });
       } else {
         // Otherwise, create a new CustomFilter.
-        this.customfilterService.create(this.customFilterForm.value).subscribe(() => {
+        this.customfilterService.create(formData).subscribe(() => {
           this.closeDialog();
+          this.submitting = false;
         });
       }
     } else {
@@ -242,6 +256,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
       console.log('Form is invalid');
       // Optionally mark all fields as touched to show validation errors.
       this.customFilterForm.markAllAsTouched();
+      this.submitting = false;
     }
   }
 }
