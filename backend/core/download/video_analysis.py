@@ -6,6 +6,7 @@ import json
 
 from pydantic import BaseModel
 
+from config.settings import app_settings
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("VideoAnalysis")
@@ -66,9 +67,9 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         VideoInfo|None: VideoInfo object if successful, None otherwise.
     """
     entries_required = (
-        "format=format_name,duration,size,bit_rate : "
-        "stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate : "
-        "stream_tags=language,duration,name"
+        "format=format_name,duration,size,bit_rate :"
+        " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
+        " : stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
         "/usr/local/bin/ffprobe",
@@ -152,6 +153,19 @@ def verify_trailer_streams(trailer_path: str):
     if media_info is None:
         logger.debug(f"No media info found for the trailer: {trailer_path}")
         return False
+    # Varify the trailer duration is within the limits
+    if media_info.duration_seconds < app_settings.trailer_min_duration:
+        logger.debug(
+            "Trailer duration less than 10 seconds:"
+            f" {media_info.duration_seconds}"
+        )
+        return False
+    if media_info.duration_seconds > app_settings.trailer_max_duration:
+        logger.debug(
+            "Trailer duration more than 60 seconds:"
+            f" {media_info.duration_seconds}"
+        )
+        return False
     # Verify the trailer has audio and video streams
     streams = media_info.streams
     if len(streams) == 0:
@@ -174,7 +188,9 @@ def verify_trailer_streams(trailer_path: str):
     return True
 
 
-def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
+def get_silence_timestamps(
+    file_path: str,
+) -> tuple[float | None, float | None]:
     """
     Get silence timestamps using ffmpeg silencedetect filter. \n
     Args:
@@ -224,10 +240,14 @@ def get_silence_timestamps(file_path: str) -> tuple[float | None, float | None]:
                 )
                 break
         # Add 2 seconds to silence start to avoid cutting the audio abruptly
-        silence_start = silence_start + 2.0 if silence_start is not None else None
+        silence_start = (
+            silence_start + 2.0 if silence_start is not None else None
+        )
         return silence_start, silence_end
     except Exception as e:
-        logger.exception(f"Exception while detecting silence in video: {str(e)}")
+        logger.exception(
+            f"Exception while detecting silence in video: {str(e)}"
+        )
     # timeTook = datetime.now() - time
     # print(f"Time took: {timeTook}")
     return None, None
@@ -266,14 +286,18 @@ def trim_video_at_end(
             output_file,
         ]
         remove_result = subprocess.run(
-            remove_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            remove_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
         if remove_result.returncode == 0:
             # print("STDERR:")
             # print(remove_result.stderr)
             timeTook = datetime.now() - time
             logger.debug(
-                f"Video trimmed successfully in {timeTook} and saved to: {output_file}"
+                f"Video trimmed successfully in {timeTook} and saved to:"
+                f" {output_file}"
             )
             return True
         else:
@@ -306,14 +330,19 @@ def remove_silence_at_end(file_path: str) -> str:
     # output_srt = f"/app/tmp/trimmed_{os.path.basename(file_name)}.srt"
     try:
         logger.info(
-            f"Silence detected at end of video. Trimming video at {silence_start}"
+            "Silence detected at end of video. Trimming video at"
+            f" {silence_start}"
         )
         trim_video_at_end(file_path, output_file, silence_start)
     except Exception as e:
-        logger.exception(f"Exception while removing silence from video: {str(e)}")
+        logger.exception(
+            f"Exception while removing silence from video: {str(e)}"
+        )
         return file_path
     silence_time = silence_end - silence_start
-    logger.info(f"Silence removed ({silence_time:.2f}s) from end of video: {file_path}")
+    logger.info(
+        f"Silence removed ({silence_time:.2f}s) from end of video: {file_path}"
+    )
     return output_file
 
 
