@@ -2,8 +2,10 @@
 from datetime import datetime, timezone
 from functools import partial
 import os
+from random import randint
 import re
 from threading import Semaphore
+import time
 
 from yt_dlp import YoutubeDL
 
@@ -69,12 +71,15 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
             for word in exclude_words:
                 word = word.strip()
                 if word in title.lower():
-                    logger.debug(f"Skipping video with excluded word '{word}': {id}")
+                    logger.debug(
+                        f"Skipping video with excluded word '{word}': {id}"
+                    )
                     return "The video contains an excluded word"
         else:
             if exclude_words in title.lower():
                 logger.debug(
-                    f"Skipping video with excluded word '{exclude_words}': {id}"
+                    f"Skipping video with excluded word '{exclude_words}':"
+                    f" {id}"
                 )
                 return "The video contains an excluded word"
 
@@ -117,7 +122,9 @@ def search_yt_for_trailer(
     _filename_wo_ext, _ = os.path.splitext(media.media_filename)
     format_opts["media_filename"] = _filename_wo_ext
     # Replace language code with language name
-    format_opts["language"] = language_names.get(media.language, media.language)
+    format_opts["language"] = language_names.get(
+        media.language, media.language
+    )
     # Get search query by replacing supplied options
     search_query = search_query_format.format(**format_opts)
     # Remove extra spaces and trailing spaces
@@ -130,7 +137,9 @@ def search_yt_for_trailer(
     logger.debug(f"Using Search query: {search_query}")
     # Search for video
     with YoutubeDL(options) as ydl:
-        search_results = ydl.extract_info(search_query, download=False, process=True)
+        search_results = ydl.extract_info(
+            search_query, download=False, process=True
+        )
 
     # If results are invalid, return None
     if not search_results:
@@ -151,7 +160,9 @@ def search_yt_for_trailer(
         return str(result["id"])
 
 
-def _get_yt_id(media: MediaRead, exclude: list[str] | None = None) -> str | None:
+def _get_yt_id(
+    media: MediaRead, exclude: list[str] | None = None
+) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
     Args:
@@ -212,7 +223,9 @@ def download_trailer(
         )
         # Download the trailer
         trailer_url = f"https://www.youtube.com/watch?v={video_id}"
-        logger.info(f"Downloading trailer for {media.title} from {trailer_url}")
+        logger.info(
+            f"Downloading trailer for {media.title} from {trailer_url}"
+        )
         tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
         if app_settings.new_download_method:
             logger.info("Using new download method for trailers")
@@ -234,14 +247,18 @@ def download_trailer(
     if not trailer_downloaded:
         if retry_count > 0:
             logger.info(
-                f"Trailer download failed for {media.title} from {trailer_url}, "
-                f"trying again... [{3 - retry_count}/3]"
+                f"Trailer download failed for {media.title} from"
+                f" {trailer_url}, trying again... [{3 - retry_count}/3]"
             )
             media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
-            return download_trailer(media, trailer_folder, retry_count - 1, exclude)
-        raise DownloadFailedError(f"Failed to download trailer for {media.title}")
+            return download_trailer(
+                media, trailer_folder, retry_count - 1, exclude
+            )
+        raise DownloadFailedError(
+            f"Failed to download trailer for {media.title}"
+        )
     logger.info(f"Trailer downloaded for {media.title}, Moving to folder...")
     media.youtube_trailer_id = video_id  # Update the youtube video id
 
@@ -250,7 +267,8 @@ def download_trailer(
         trailer_file.move_trailer_to_folder(output_file, media, trailer_folder)
         media.downloaded_at = datetime.now(timezone.utc)
         logger.info(
-            f"Trailer Downloaded successfully for {media.title} from {trailer_url}"
+            f"Trailer Downloaded successfully for {media.title} from"
+            f" {trailer_url}"
         )
         db_manager.update_media_status(
             MediaUpdateDC(
@@ -273,10 +291,14 @@ def download_trailer(
                 status=MonitorStatus.MISSING,
             )
         )
-        raise DownloadFailedError(f"Failed to move trailer to folder: {_move_res_msg}")
+        raise DownloadFailedError(
+            f"Failed to move trailer to folder: {_move_res_msg}"
+        )
 
 
-def download_trailers(media_list: list[MediaRead], is_movie: bool | None) -> None:
+def download_trailers(
+    media_list: list[MediaRead], is_movie: bool | None
+) -> None:
     """Download trailers for a list of media objects. \n
     Args:
         media_list (list[MediaRead]): List of media objects.
@@ -289,7 +311,9 @@ def download_trailers(media_list: list[MediaRead], is_movie: bool | None) -> Non
     else:
         media_type = "movies" if is_movie else "series"
         trailer_folder = trailer_file.trailer_folder_needed(is_movie)
-    logger.info(f"Downloading trailers for {len(media_list)} monitored {media_type}...")
+    logger.info(
+        f"Downloading trailers for {len(media_list)} monitored {media_type}..."
+    )
     sem = Semaphore(2)
     download_list: list[MediaRead] = []
     for media in media_list:
@@ -303,15 +327,26 @@ def download_trailers(media_list: list[MediaRead], is_movie: bool | None) -> Non
                     f"Trailer downloaded for '[{media.id}]{media.title}'"
                     f" from [{media.youtube_trailer_id}]"
                 )
+                _sleep_for = 100 + randint(0, 50)
+                logger.debug(
+                    f"Sleeping for {_sleep_for} seconds before next"
+                    " download..."
+                )
+                time.sleep(_sleep_for)
             else:
-                logger.info(f"Trailer download failed for '[{media.id}]{media.title}'")
+                logger.info(
+                    f"Trailer download failed for '[{media.id}]{media.title}'"
+                )
         except Exception as e:
             logger.error(
-                f"Failed to download trailer for '[{media.id}]{media.title}': {e}"
+                "Failed to download trailer for"
+                f" '[{media.id}]{media.title}': {e}"
             )
         sem.release()
     if len(download_list) == 0:
-        logger.info(f"No trailers downloaded for {len(media_list)} {media_type}")
+        logger.info(
+            f"No trailers downloaded for {len(media_list)} {media_type}"
+        )
         return None
     logger.info(f"Downloaded trailers for {len(download_list)} {media_type}")
     return None
