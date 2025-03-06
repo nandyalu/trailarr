@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # Install the xz-utils package
 RUN apt-get update && apt-get install -y curl xz-utils tzdata \
-    git gnupg2 pciutils \
+    git pciutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +15,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 RUN npm install -g npm@11.1.0
 
 # Install specific version of Angular CLI
-RUN npm install -g @angular/cli@19.1.4
+RUN npm install -g @angular/cli@19.2.1
 
 # Set the working directory
 WORKDIR /app
@@ -48,12 +48,6 @@ ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
 # Copy startup script
 COPY dev-start.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
-
-# For GPG signing
-RUN echo 'export GPG_TTY=$(tty)' >> /root/.bashrc
-RUN echo 'export GPG_TTY=$(tty)' >> /home/vscode/.bashrc
-RUN echo 'gpg-connect-agent updatestartuptty /bye >/dev/null' >> /root/.bashrc
-RUN echo 'gpg-connect-agent updatestartuptty /bye >/dev/null' >> /home/vscode/.bashrc
 
 # Expose the port the app runs on
 EXPOSE 7888
