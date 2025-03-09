@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
@@ -8,15 +8,13 @@ import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
       // withInterceptors([authInterceptor]),
     ),
-    { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { timezone: 'UTC' } },
+    { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { dateFormat: 'medium', timezone: 'UTC' } },
     importProvidersFrom(
       TimeagoModule.forRoot()
     )
   ]
 };
-
-

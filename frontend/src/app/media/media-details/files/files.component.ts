@@ -1,5 +1,5 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { Component, ElementRef, input, ViewChild } from '@angular/core';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { Component, computed, ElementRef, input, resource, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VideoInfo } from '../../../models/files';
 import { FolderInfo } from '../../../models/media';
@@ -7,9 +7,15 @@ import { FilesService } from '../../../services/files.service';
 import { MediaService } from '../../../services/media.service';
 import { WebsocketService } from '../../../services/websocket.service';
 
+interface ErrorMessage {
+  error: {
+    detail: string;
+  }
+}
+
 @Component({
   selector: 'media-files',
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [DatePipe, FormsModule, NgTemplateOutlet],
   templateUrl: './files.component.html',
   styleUrl: './files.component.css'
 })
@@ -19,8 +25,8 @@ export class FilesComponent {
   filesLoading = true;
   textFileLoading = true;
   videoInfoLoading = true;
-  mediaFilesResponse: string = 'No files found';
-  mediaFiles: FolderInfo | undefined = undefined;
+  // mediaFilesResponse: string = 'No files found';
+  // mediaFiles: FolderInfo | undefined = undefined;
 
   selectedFilePath: string = '';
   selectedFileName: string = '';
@@ -33,21 +39,36 @@ export class FilesComponent {
     private webSocketService: WebsocketService
   ) { }
 
-  ngOnInit(): void {
-    this.getMediaFiles();
-  }
-  
-  getMediaFiles(): void {
-    // Get Media Files
-    this.mediaService.getMediaFiles(this.mediaId()).subscribe((files: FolderInfo | string) => {
-      if (typeof files === 'string') {
-        this.mediaFilesResponse = files;
-      } else {
-        this.mediaFiles = files;
-      }
-      this.filesLoading = false;
-    });
-  }
+  // Refresh the files list when the mediaId changes
+  filesResource = resource({
+    request: this.mediaId,
+    loader: async ({ request: mediaId }) => {
+      this.filesLoading = true;
+      return await this.mediaService.fetchMediaFiles(mediaId);
+    },
+  });
+
+  filesError = computed(() => {
+    const _error = this.filesResource.error() as ErrorMessage;
+    // console.log('Files Error:', _error);
+    return _error.error.detail;
+  })
+
+  // ngOnInit(): void {
+  //   this.getMediaFiles();
+  // }
+
+  // getMediaFiles(): void {
+  //   // Get Media Files
+  //   this.mediaService.getMediaFiles(this.mediaId() + 1000).subscribe((files: FolderInfo | string) => {
+  //     if (typeof files === 'string') {
+  //       this.mediaFilesResponse = files;
+  //     } else {
+  //       this.mediaFiles = files;
+  //     }
+  //     this.filesLoading = false;
+  //   });
+  // }
 
   asFolderInfo(folder: FolderInfo): FolderInfo {
     // For use in ng-template for type checking
@@ -88,7 +109,7 @@ export class FilesComponent {
       }
       this.webSocketService.showToast(msg, renamed ? 'success' : 'error');
       // Refresh the files list
-      this.getMediaFiles();
+      this.filesResource.reload();
     });
   }
 
@@ -104,7 +125,7 @@ export class FilesComponent {
       }
       this.webSocketService.showToast(msg, deleted ? 'success' : 'error');
       // Refresh the files list
-      this.getMediaFiles();
+      this.filesResource.reload();
     });
   }
 

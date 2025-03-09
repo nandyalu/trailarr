@@ -1,18 +1,22 @@
-import { DatePipe } from "@angular/common";
 
 export interface Media {
     is_movie: boolean;
     connection_id: number;
     arr_id: number;
     title: string;
+    clean_title: string;
     year: number;
     language: string;
+    studio: string;
+    media_exists: boolean;
+    media_filename: string;
     overview: string;
     runtime: number;
     youtube_trailer_id: string;
     folder_path: string;
     imdb_id: string;
     txdb_id: string;
+    title_slug: string;
     poster_url: string;
     fanart_url: string;
     poster_path: string;
@@ -33,9 +37,9 @@ export interface Media {
 export function mapMedia(media: any): Media {
     return {
         ...media,
-        added_at: new DatePipe('en-US').transform(media.added_at, 'medium'),
-        updated_at: new DatePipe('en-US').transform(media.updated_at, 'medium'),
-        downloaded_at: new DatePipe('en-US').transform(media.downloaded_at, 'medium'),
+        added_at: new Date(`${media.added_at}Z`),
+        updated_at: new Date(`${media.updated_at}Z`),
+        downloaded_at: new Date(`${media.downloaded_at}Z`),
         isImageLoaded: false
     };
 }
@@ -72,7 +76,7 @@ export function mapFolderInfo(folder: any): FolderInfo {
     return {
         ...folder,
         isExpanded: false,
-        modified: new DatePipe('en-US').transform(folder.created, 'medium'),
+        modified: new Date(`${folder.created}Z`),
         files: _files
     };
 }
@@ -81,7 +85,7 @@ function mapFileInfo(file: any): FolderInfo {
     return {
         ...file,
         isExpanded: false,
-        modified: new DatePipe('en-US').transform(file.created, 'medium')
+        modified: new Date(`${file.created}Z`),
     };
 }
 

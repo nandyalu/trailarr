@@ -58,22 +58,26 @@ class AsyncBaseArrManager(AsyncRequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If API response is invalid
         """
-        status: str | dict[str, Any] | list[dict[str, Any]] = await self._request(
-            "GET", f"/api/{self.version}/system/status"
+        status: str | dict[str, Any] | list[dict[str, Any]] = (
+            await self._request("GET", f"/api/{self.version}/system/status")
         )
         if isinstance(status, str):
             raise InvalidResponseError(status)
         if not isinstance(status, dict):
             raise InvalidResponseError("Unknown Error")
 
-        # Now status is a dict, check if the app_name and version is in the response
+        # Now status is a dict, check if the app_name and version \
+        #     is in the response
         result_app_name = status.get("appName")
         version = status.get("version")
         if result_app_name and version:
             result_app_name = str.lower(result_app_name)
             version = str(version)
             if result_app_name == app_name.lower():
-                return f"{app_name} Connection Successful! Version: {status.get('version')}"
+                return (
+                    f"{app_name} Connection Successful! Version:"
+                    f" {status.get('version')}"
+                )
         raise InvalidResponseError(
             f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
             f"not a {app_name} instance."
@@ -86,7 +90,8 @@ class AsyncBaseArrManager(AsyncRequestManager):
             None
 
         Returns:
-            str | dict[str, str] | list[dict[str, Any]]: The response from the Arr API
+            str | dict[str, str] | list[dict[str, Any]]: The response from the\
+                Arr API
 
         Raises:
             ConnectionError: If the connection is refused / response is not 200
@@ -104,8 +109,8 @@ class AsyncBaseArrManager(AsyncRequestManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If the API response is invalid
         """
-        response: str | dict[str, Any] | list[dict[str, Any]] = await self._request(
-            "GET", f"/api/{self.version}/rootfolder"
+        response: str | dict[str, Any] | list[dict[str, Any]] = (
+            await self._request("GET", f"/api/{self.version}/rootfolder")
         )
         if isinstance(response, str):
             raise InvalidResponseError(response)
@@ -121,5 +126,5 @@ class AsyncBaseArrManager(AsyncRequestManager):
                 raise InvalidResponseError("Response in not a dict")
             if "path" not in rootfolder:
                 raise InvalidResponseError("Path not found in response")
-            rootfolders.append(f"{rootfolder["path"]}")
+            rootfolders.append(f"{rootfolder['path']}")
         return rootfolders

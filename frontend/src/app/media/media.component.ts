@@ -1,15 +1,26 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
+import { booleanFilterKeys, CustomFilter, DateFilterCondition, dateFilterKeys, Filter, NumberFilterCondition, numberFilterKeys, StringFilterCondition, stringFilterKeys } from '../models/customfilter';
 import { mapMedia, Media } from '../models/media';
+import { CustomfilterService } from '../services/customfilter.service';
 import { MediaService } from '../services/media.service';
 import { WebsocketService } from '../services/websocket.service';
+import { AddCustomFilterDialogComponent } from "./add-filter-dialog/add-filter-dialog.component";
+import { DisplayTitlePipe } from "./pipes/display-title.pipe";
 
 @Component({
   selector: 'app-media2',
-  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective],
+  imports: [
+    FormsModule,
+    NgTemplateOutlet,
+    RouterLink,
+    ScrollNearEndDirective,
+    AddCustomFilterDialogComponent,
+    DisplayTitlePipe
+  ],
   templateUrl: './media.component.html',
   styleUrl: './media.component.css'
 })
@@ -21,6 +32,8 @@ export class MediaComponent {
     private webSocketService: WebsocketService
   ) { }
 
+  customfilterService = inject(CustomfilterService);
+
   moviesOnly = signal<boolean | null>(null);
   isLoading = signal<boolean>(true);
 
@@ -29,6 +42,10 @@ export class MediaComponent {
 
   sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
   filterOptions: string[] = ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored'];
+  customFilters = signal<CustomFilter[]>([]);
+  allFilters = computed(() => {
+    return this.filterOptions.concat(this.customFilters().map(f => f.filter_name));
+  });
   selectedSort = signal<keyof Media>('added_at');
   sortAscending = signal<boolean>(true);
   selectedFilter = signal<string>('all');
@@ -39,9 +56,10 @@ export class MediaComponent {
   allMedia = signal<Media[]>([]);
   filteredSortedMedia = computed(() => this.computeFilteredNSortedMedia());
   displayMedia = computed(() => {
-    console.log("C: Displaying media");
+    // console.log("C: Displaying media");
     return this.filteredSortedMedia().slice(0, this.displayCount())
   });
+  isCustomFilterDialogOpen = false;
 
   private lastUpdateTime: number = 0;
   private readonly UPDATE_INTERVAL: number = 3; // 3 seconds in seconds
@@ -69,7 +87,7 @@ export class MediaComponent {
     let filterBy = this.moviesOnly() == null ? 'downloaded' : 'all';
     this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe(
       (mediaList) => {
-        console.log("C: Media fetched");
+        // console.log("C: Media fetched");
         this.allMedia.set(mediaList.map(media => mapMedia(media)));
         this.isLoading.set(false);
       }
@@ -79,6 +97,111 @@ export class MediaComponent {
     this.webSocketService.toastMessage.subscribe(() => {
       this.fetchUpdatedMedia();
     });
+
+    // Fetch updated media items every 10 seconds
+    setTimeout(() => {
+      this.fetchUpdatedMedia();
+    }, 10000);
+  }
+
+  applyFilter(filter: Filter, media: Media): boolean {
+    let filterValue = filter.filter_value;
+    let filterBy = filter.filter_by;
+    // Boolean filters
+    if (booleanFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as boolean;
+      let filterValueBool = filterValue.toLowerCase() === 'true';
+      return origValue === filterValueBool;
+    }
+    // Date filters
+    if (dateFilterKeys.includes(filterBy)) {
+      let mediaDate = new Date(media[filterBy] as string);
+      let filterDate = new Date(filterValue);
+      switch (filter.filter_condition) {
+        case DateFilterCondition.IS_AFTER:
+          return mediaDate > filterDate;
+        case DateFilterCondition.IS_BEFORE:
+          return mediaDate < filterDate;
+        case DateFilterCondition.IN_THE_LAST:
+          let last = new Date();
+          last.setDate(last.getDate() - parseInt(filterValue));
+          return mediaDate > last;
+        case DateFilterCondition.NOT_IN_THE_LAST:
+          let last2 = new Date();
+          last2.setDate(last2.getDate() - parseInt(filterValue));
+          return mediaDate < last2;
+        case DateFilterCondition.EQUALS:
+          return mediaDate.getDate() === filterDate.getDate();
+        case DateFilterCondition.NOT_EQUALS:
+          return mediaDate.getDate() !== filterDate.getDate();
+        default:
+          return true;
+      }
+    }
+    // Number filters
+    if (numberFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as number;
+      let filterValueNum = parseInt(filterValue);
+      switch (filter.filter_condition) {
+        case NumberFilterCondition.GREATER_THAN:
+          return origValue > filterValueNum;
+        case NumberFilterCondition.GREATER_THAN_EQUAL:
+          return origValue >= filterValueNum;
+        case NumberFilterCondition.LESS_THAN:
+          return origValue < filterValueNum;
+        case NumberFilterCondition.LESS_THAN_EQUAL:
+          return origValue <= filterValueNum;
+        case NumberFilterCondition.EQUALS:
+          return origValue === filterValueNum;
+        case NumberFilterCondition.NOT_EQUALS:
+          return origValue !== filterValueNum;
+        default:
+          return true
+      }
+    }
+    // String filters
+    if (stringFilterKeys.includes(filterBy)) {
+      let origValue = media[filterBy] as string;
+      switch (filter.filter_condition) {
+        case StringFilterCondition.CONTAINS:
+          return origValue.includes(filterValue);
+        case StringFilterCondition.NOT_CONTAINS:
+          return !origValue.includes(filterValue);
+        case StringFilterCondition.EQUALS:
+          return origValue === filterValue;
+        case StringFilterCondition.NOT_EQUALS:
+          return origValue !== filterValue;
+        case StringFilterCondition.STARTS_WITH:
+          return origValue.startsWith(filterValue);
+        case StringFilterCondition.NOT_STARTS_WITH:
+          return !origValue.startsWith(filterValue);
+        case StringFilterCondition.ENDS_WITH:
+          return origValue.endsWith(filterValue);
+        case StringFilterCondition.NOT_ENDS_WITH:
+          return !origValue.endsWith(filterValue);
+        case StringFilterCondition.IS_EMPTY:
+          return origValue === '';
+        case StringFilterCondition.IS_NOT_EMPTY:
+          return origValue !== '';
+        default:
+          return true;
+      }
+    }
+    return true;
+  }
+
+  filterDisplayed = false;
+  applyCustomFilter(filter_name: string, media: Media): boolean {
+    let customFilter = this.customFilters().find(f => f.filter_name === filter_name);
+    if (!this.filterDisplayed) {
+      console.log("Custom filter:", customFilter);
+      this.filterDisplayed = true;
+    }
+    if (!customFilter) {
+      return true;
+    }
+    // Apply filters until one of them returns false or all are applied 
+    return customFilter.filters.every(filter => this.applyFilter(filter, media));
   }
 
   /**
@@ -108,12 +231,27 @@ export class MediaComponent {
         case 'series':
           return !media.is_movie && media.trailer_exists;
         default:
-          return true;
+          // console.log("Applying custom filter:", this.selectedFilter());
+          return this.applyCustomFilter(this.selectedFilter(), media);
       }
     });
     // Sort the media list by the selected sort option
     // Sorts the list in place. If sortAscending is false, reverses the list
     mediaList.sort((a, b) => {
+      let aVal = a[this.selectedSort()];
+      let bVal = b[this.selectedSort()];
+      if (aVal instanceof Date && bVal instanceof Date) {
+        if (this.sortAscending()) {
+          return aVal.getTime() - bVal.getTime();
+        }
+        return bVal.getTime() - aVal.getTime();
+      }
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        if (this.sortAscending()) {
+          return aVal - bVal;
+        }
+        return bVal - aVal;
+      }
       if (this.sortAscending()) {
         return a[this.selectedSort()].toString().localeCompare(b[this.selectedSort()].toString());
       }
@@ -133,7 +271,7 @@ export class MediaComponent {
   fetchUpdatedMedia(forceUpdate: boolean = false): void {
     // Fetch updated media items from the server and update the allMedia signal
     const currentTime = Date.now();
-    const delta = Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000);
+    const delta = Math.min(Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000), 1000);
     if (delta > this.UPDATE_INTERVAL || forceUpdate) {
       // Fetch updated media items
       this.mediaService.fetchUpdatedMedia(delta).subscribe(
@@ -203,21 +341,10 @@ export class MediaComponent {
     // console.log("Batch update:", action, "Selected media:", this.selectedMedia);
     this.webSocketService.showToast(`Batch update: ${action} ${this.selectedMedia.length} items`);
     this.mediaService.batchUpdate(this.selectedMedia, action).subscribe(() => {
-      console.log("C: Batch update successful");
+      // console.log("C: Batch update successful");
       this.fetchUpdatedMedia(true); // Fetch updated media items
     });
     this.selectedMedia = [];
-  }
-
-  /**
-   * Formats the given option string by removing the substring '_at' and capitalizing the first letter.
-   *
-   * @param option - The option string to be formatted.
-   * @returns The formatted option string with '_at' removed and the first letter capitalized.
-   */
-  displayOptionTitle(option: string): string {
-    option = option.replace('_at', '');
-    return option.charAt(0).toUpperCase() + option.slice(1);
   }
 
   /**
@@ -231,8 +358,14 @@ export class MediaComponent {
    * @returns {void} This method does not return a value.
    */
   retrieveSortNFilterOptions(): void {
-    const moviesOnly = this.moviesOnly();
-    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    const moviesOnlyValue = this.moviesOnly();
+    const pageType = moviesOnlyValue == null ? 'AllMedia' : (moviesOnlyValue ? 'Movies' : 'Series');
+    // Retrieve custom filters for the view from the server
+    this.customfilterService.getViewFilters(moviesOnlyValue).subscribe(
+      (filters) => {
+        this.customFilters.set(filters);
+      }
+    );
     // Retrieve the filter option from the local session
     let filterOption = localStorage.getItem(`Trailarr${pageType}Filter`);
     if (filterOption) {
@@ -248,7 +381,7 @@ export class MediaComponent {
       this.sortAscending.set(sortAscending == 'true');
     }
   }
-  
+
   /**
    * Sets the media sort option and resets the display count to the default.
    * Also, saves the sort option to the local session.
@@ -309,5 +442,38 @@ export class MediaComponent {
     }
     this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
+
+  @ViewChild('addFilterDialog') addFilterDialog!: ElementRef<HTMLDialogElement>;
+  openFilterDialog(): void {
+    this.addFilterDialog.nativeElement.showModal();
+    if (this.customFilters().length === 0) {
+      this.openFilterEditDialog(null);
+    }
+    // this.isCustomFilterDialogOpen = true;
+  }
+  editFilter: CustomFilter | null = null;
+  openFilterEditDialog(filter: CustomFilter | null): void {
+    // console.log("Edit filter:", filter);
+    this.editFilter = filter;
+    this.isCustomFilterDialogOpen = true;
+  }
+
+  deleteFilter(filter_id: number): void {
+    this.customfilterService.delete(filter_id).subscribe(() => {
+      this.customFilters.update((filters) => {
+        return filters.filter(f => f.id !== filter_id);
+      });
+    });
+  }
+
+  closeFilterDialog(): void {
+    this.addFilterDialog.nativeElement.close();
+    this.retrieveSortNFilterOptions(); // Retrieve custom filters
+    // Delay closing the dialog to prevent content disappearing immediately
+    setTimeout(() => {
+      this.isCustomFilterDialogOpen = false;
+    }, 1000);
+  }
+
 
 }

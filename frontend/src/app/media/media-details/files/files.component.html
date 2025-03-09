@@ -1,29 +1,32 @@
 <div class="media-files-container">
   <p class="text-md files-title">Files</p>
   <hr>
-  @if (filesLoading) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+  @if (filesResource.isLoading()) {
+  <div class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
   } @else {
-    <div class="media-files">
+  <div class="media-files">
+    @if (filesResource.error()) {
+    <p class="text-sm text-center">Error: {{ filesError() }}</p>
+    <!-- }
       @if (mediaFiles === undefined) {
-        <p class="text-sm text-center">{{mediaFilesResponse}}</p>
-      } @else {
-        <!-- Header -->
-        <div class="files-header sm-none text-sm">
-          <div></div> <!-- Empty Col for Icons -->
-          <div>Name</div>
-          <div>Size</div>
-          <div>Modified</div>
-        </div>
-        <!-- Content -->
-        <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: mediaFiles }"></ng-container>
-      }
+        <p class="text-sm text-center">{{mediaFilesResponse}}</p> -->
+    } @else {
+    <!-- Header -->
+    <div class="files-header sm-none text-sm">
+      <div></div> <!-- Empty Col for Icons -->
+      <div>Name</div>
+      <div>Size</div>
+      <div>Modified</div>
     </div>
+    <!-- Content -->
+    <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: filesResource.value() }"></ng-container>
+    }
+  </div>
   }
 </div>
 
@@ -33,42 +36,42 @@
     <div class="files-header" (click)="openFolderOrOptions(folder)" [class.parent]="folder.type == 'folder'">
       <div class="files-icon">
         @if (folder.type === 'folder') {
-          <!-- Show Folder Icon -->
-          @if (folder.isExpanded) {
-            <!-- Folder Open Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-              <path
-                d="M146.67-160q-26.34 0-46.5-20.17Q80-200.33 80-226.67v-506.66q0-26.34 20.17-46.5Q120.33-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67H146.67v440l100-373.33H940L834.33-209.67q-6.66 24.67-24.5 37.17Q792-160 766.67-160h-620Z" />
-            </svg>
-          } @else {
-            <!-- Folder Closed Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-              <path
-                d="M146.67-160q-27 0-46.84-20.17Q80-200.33 80-226.67v-506.66q0-26.34 19.83-46.5Q119.67-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67v440q0 26.34-20.17 46.5Q839.67-160 813.33-160H146.67Z" />
-            </svg>
-          }
+        <!-- Show Folder Icon -->
+        @if (folder.isExpanded) {
+        <!-- Folder Open Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+            d="M146.67-160q-26.34 0-46.5-20.17Q80-200.33 80-226.67v-506.66q0-26.34 20.17-46.5Q120.33-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67H146.67v440l100-373.33H940L834.33-209.67q-6.66 24.67-24.5 37.17Q792-160 766.67-160h-620Z" />
+        </svg>
         } @else {
-          <!-- File Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-            <path
-              d="M319.33-246.67h321.34v-66.66H319.33v66.66Zm0-166.66h321.34V-480H319.33v66.67ZM226.67-80q-27 0-46.84-19.83Q160-119.67 160-146.67v-666.66q0-27 19.83-46.84Q199.67-880 226.67-880H574l226 226v507.33q0 27-19.83 46.84Q760.33-80 733.33-80H226.67Zm314-542.67h192.66L540.67-813.33v190.66Z" />
-          </svg>
+        <!-- Folder Closed Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+            d="M146.67-160q-27 0-46.84-20.17Q80-200.33 80-226.67v-506.66q0-26.34 19.83-46.5Q119.67-800 146.67-800H414l66.67 66.67h332.66q26.34 0 46.5 20.16Q880-693 880-666.67v440q0 26.34-20.17 46.5Q839.67-160 813.33-160H146.67Z" />
+        </svg>
+        }
+        } @else {
+        <!-- File Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+            d="M319.33-246.67h321.34v-66.66H319.33v66.66Zm0-166.66h321.34V-480H319.33v66.67ZM226.67-80q-27 0-46.84-19.83Q160-119.67 160-146.67v-666.66q0-27 19.83-46.84Q199.67-880 226.67-880H574l226 226v507.33q0 27-19.83 46.84Q760.33-80 733.33-80H226.67Zm314-542.67h192.66L540.67-813.33v190.66Z" />
+        </svg>
         }
       </div>
       <div class="files-name">{{folder.name}}</div>
       <div class="files-size">{{folder.size}}</div>
-      <div class="files-modified">{{folder.modified}}</div>
+      <div class="files-modified">{{folder.modified | date}}</div>
     </div>
     @if (folder.type === 'folder') {
-      <div class="child">
-        <!-- Child Folders -->
-        @if (folder.isExpanded) {
-          <!-- Recursive call for child folders -->
-          @for (childFolder of folder.files; track childFolder) {
-            <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: childFolder }"></ng-container>
-          }
-        }
-      </div>
+    <div class="child">
+      <!-- Child Folders -->
+      @if (folder.isExpanded) {
+      <!-- Recursive call for child folders -->
+      @for (childFolder of folder.files; track childFolder) {
+      <ng-container *ngTemplateOutlet="folFileTemplate; context:{ folderUntyped: childFolder }"></ng-container>
+      }
+      }
+    </div>
     }
   </div>
 </ng-template>
@@ -147,12 +150,12 @@
 <!-- Text Dialog -->
 <dialog #textDialog (click)="closeTextDialog()">
   @if (textFileLoading) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+  <div class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
   } @else {
   <div class="text-dialog" (click)="$event.stopPropagation()">
     <h2>{{selectedFileName}}</h2>
@@ -185,12 +188,12 @@
 <!-- Video Info Dialog -->
 <dialog #videoInfoDialog (click)="closeVideoInfoDialog()">
   @if (videoInfoLoading) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+  <div class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
   } @else {
   <div class="info-dialog">
     <h1>Video Properties</h1>

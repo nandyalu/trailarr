@@ -12,9 +12,10 @@ class SonarrDataParser(BaseModel):
     arr_id: int = Field(validation_alias="id")
     is_movie: bool = Field(default=False)
     title: str = Field()
+    clean_title: str = Field(validation_alias="cleanTitle", default="")
     year: int = Field()
     language: str = Field(
-        validation_alias=AliasPath("originalLanguage", "name"), default="en"
+        validation_alias=AliasPath("originalLanguage", "name"), default="English"
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
@@ -22,9 +23,16 @@ class SonarrDataParser(BaseModel):
     youtube_trailer_id: str | None = Field(
         validation_alias="youTubeTrailerId", default=""
     )
+    studio: str = Field(default="", validation_alias="network")
+    media_exists: bool = Field(
+        default=False, validation_alias=AliasPath("statistics", "episodeFileCount")
+    )
+    # Sonarr does not have mediaFile name - since it's a series, multiple files
+    media_filename: str = Field(default="")
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tvdbId")
+    title_slug: str = Field(validation_alias="titleSlug", default="")
     poster_url: str | None = None
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
@@ -33,6 +41,11 @@ class SonarrDataParser(BaseModel):
     @classmethod
     def parse_txdb_id(cls, v):
         return str(v)
+
+    @field_validator("media_exists", mode="before")
+    @classmethod
+    def parse_media_exists(cls, v):
+        return bool(v)
 
 
 def parse_series(connection_id: int, series_data: dict[str, Any]) -> MediaCreate:

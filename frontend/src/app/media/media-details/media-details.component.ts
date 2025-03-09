@@ -1,5 +1,5 @@
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, input, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of, Subscription } from 'rxjs';
@@ -10,13 +10,13 @@ import { WebsocketService } from '../../services/websocket.service';
 import { FilesComponent } from "./files/files.component";
 
 @Component({
-    selector: 'app-media-details',
-    imports: [NgIf, FormsModule, DurationConvertPipe, TitleCasePipe, FilesComponent],
-    templateUrl: './media-details.component.html',
-    styleUrl: './media-details.component.css'
+  selector: 'app-media-details',
+  imports: [NgIf, FormsModule, DurationConvertPipe, TitleCasePipe, FilesComponent],
+  templateUrl: './media-details.component.html',
+  styleUrl: './media-details.component.css'
 })
 export class MediaDetailsComponent {
-  mediaId: number = 0;
+  mediaId = input(0, { transform: Number });
   media?: Media = undefined;
   isLoading = true;
   isLoadingMonitor = false;
@@ -69,12 +69,18 @@ export class MediaDetailsComponent {
     return;
   }
 
+  // Load media data when the media ID changes
+  mediaEffect = effect(() => {
+    this.isLoading = true;
+    this.getMediaData();
+  });
+
   ngOnInit(): void {
     this.isLoading = true;
-    this.route.params.subscribe(params => {
-      this.mediaId = params['id'];
-      this.getMediaData();
-    });
+    // this.route.params.subscribe(params => {
+    //   this.mediaId.set(parseInt(params['id']));
+    //   this.getMediaData();
+    // });
 
     // Subscribe to WebSocket updates and refresh media data
     this.webSocketSubscription = this.websocketService.toastMessage.subscribe(() => {
@@ -95,7 +101,7 @@ export class MediaDetailsComponent {
    */
   getMediaData(): void {
     // Get Media Data
-    this.mediaService.getMediaByID(this.mediaId).subscribe((media_res: Media) => {
+    this.mediaService.getMediaByID(this.mediaId()).subscribe((media_res: Media) => {
       this.media = media_res;
       this.trailer_url = media_res.youtube_trailer_id
       this.isLoading = false;
@@ -120,7 +126,7 @@ export class MediaDetailsComponent {
     }
     this.isLoadingDownload = true;
     // console.log('Downloading trailer');
-    this.mediaService.downloadMediaTrailer(this.mediaId, this.trailer_url).subscribe((res: string) => {
+    this.mediaService.downloadMediaTrailer(this.mediaId(), this.trailer_url).subscribe((res: string) => {
       console.log(res);
     });
   }
@@ -137,7 +143,7 @@ export class MediaDetailsComponent {
     // console.log('Toggling Media Monitoring');
     this.isLoadingMonitor = true;
     const monitor = !this.media?.monitor;
-    this.mediaService.monitorMedia(this.mediaId, monitor).subscribe((res: string) => {
+    this.mediaService.monitorMedia(this.mediaId(), monitor).subscribe((res: string) => {
       console.log(res);
       this.media!.monitor = monitor;
       this.isLoadingMonitor = false;
@@ -148,7 +154,7 @@ export class MediaDetailsComponent {
     // console.log('Searching for trailer');
     this.websocketService.showToast("Searching for trailer...");
     this.isLoadingDownload = true;
-    this.mediaService.searchMediaTrailer(this.mediaId).pipe(
+    this.mediaService.searchMediaTrailer(this.mediaId()).pipe(
       catchError((error) => {
         console.error('Error searching trailer:', error.error.detail);
         this.websocketService.showToast(error.error.detail, "Error");
@@ -168,7 +174,7 @@ export class MediaDetailsComponent {
     // console.log('Saving youtube id');
     this.websocketService.showToast("Saving youtube id...");
     this.isLoadingDownload = true;
-    this.mediaService.saveMediaTrailer(this.mediaId, this.trailer_url).pipe(
+    this.mediaService.saveMediaTrailer(this.mediaId(), this.trailer_url).pipe(
       catchError((error) => {
         console.error('Error searching trailer:', error.error.detail);
         this.websocketService.showToast(error.error.detail, "Error");
@@ -229,7 +235,7 @@ export class MediaDetailsComponent {
   onConfirmDelete() {
     // console.log('Deleting trailer');
     this.closeDeleteDialog();
-    this.mediaService.deleteMediaTrailer(this.mediaId).subscribe((res: string) => {
+    this.mediaService.deleteMediaTrailer(this.mediaId()).subscribe((res: string) => {
       console.log(res);
       this.media!.trailer_exists = false;
     });

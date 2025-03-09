@@ -175,16 +175,27 @@ def _copy_from_media_table(table_name: str) -> None:
 
 
 def _drop_table(table_name: str) -> None:
+    if not _check_table_exists(table_name):
+        logging.info(f"{table_name.title()} table does not exist")
+        return
     logging.info(f"Dropping {table_name} table and it's indexes")
     # Get all indexes for the table
     indexes = sa.inspect(op.get_bind()).get_indexes(table_name)
 
     # Drop all indexes for the table
     for index in indexes:
-        if not index["name"]:
-            continue
-        logging.info(f"Dropping index {index['name']} from {table_name} table")
-        op.drop_index(index["name"], table_name=table_name)
+        if index["name"]:
+            logging.info(f"Dropping index {index['name']} from {table_name} table")
+            op.drop_index(index["name"], table_name=table_name)
+
+    # Drop foreign key constraints if any
+    foreign_keys = sa.inspect(op.get_bind()).get_foreign_keys(table_name)
+    for fk in foreign_keys:
+        if fk["name"]:
+            logging.info(
+                f"Dropping foreign key constraint {fk['name']} from {table_name} table"
+            )
+            op.drop_constraint(fk["name"], table_name, type_="foreignkey")
 
     # Drop the table
     logging.info(f"Dropping {table_name} table")

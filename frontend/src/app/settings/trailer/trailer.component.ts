@@ -51,6 +51,7 @@ export class TrailerComponent {
       this.minDuration = settings.trailer_min_duration;
       this.maxDuration = settings.trailer_max_duration;
       this.trailerSearchQuery = settings.trailer_search_query;
+      this.urlBase = settings.url_base;
       this.isLoading = false;
     });
   }

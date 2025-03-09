@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from core.base.database.utils import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie, validate_login
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
@@ -16,7 +17,8 @@ from core.tasks.schedules import schedule_all_tasks
 logging = ModuleLogger("Main")
 # from web.routes import web_router
 # TODO: Move these to main() function later and setup docker to run main.py
-# No need to setup the logger and it's config, importing the logger from app_logger.py will do setup
+# No need to setup the logger and it's config, importing the logger from \
+#    app_logger.py will do setup
 
 
 @asynccontextmanager
@@ -94,7 +96,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_text()
-            await ws_manager.send_personal_message(f"You wrote: {data}", websocket)
+            await ws_manager.send_personal_message(
+                f"You wrote: {data}", websocket
+            )
             await ws_manager.broadcast(f"Client #{client_id} says: {data}")
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
@@ -109,16 +113,22 @@ images_dir = os.path.join(app_settings.app_data_dir, "web", "images")
 if not os.path.exists(images_dir):
     logging.debug("Creating images directory")
     os.makedirs(images_dir)
-    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
+    trailarr_api.mount(
+        images_dir, StaticFiles(directory=images_dir), name="images"
+    )
 else:
     logging.debug("Mounting images directory for frontend!")
-    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
+    trailarr_api.mount(
+        images_dir, StaticFiles(directory=images_dir), name="images"
+    )
 
 
 # Mount Frontend 'assets/manifest.json' without authorization
 @trailarr_api.get("/assets/manifest.json", include_in_schema=False)
 async def serve_manifest():
-    file_path = os.path.normpath(os.path.join(static_dir, "assets", "manifest.json"))
+    file_path = os.path.normpath(
+        os.path.join(static_dir, "assets", "manifest.json")
+    )
     if os.path.isfile(file_path):
         # If the path corresponds to a static file, return the file
         return FileResponse(file_path)
@@ -142,7 +152,8 @@ if login_enabled:
 else:
     # Authentication is disabled - Serve frontend without authentication
     logging.info(
-        "WebUI Authentication is disabled - Frontend will be served without authentication"
+        "WebUI Authentication is disabled - Frontend will be served without"
+        " authentication"
     )
 
     @trailarr_api.get("/{rest_of_path:path}", include_in_schema=False)
@@ -152,7 +163,8 @@ else:
 
 async def get_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
-        # If the path starts with "api", it's an API request and not meant for the frontend
+        # If the path starts with "api", it's an API request and not \
+        # meant for the frontend
         return HTMLResponse(status_code=404)
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
@@ -164,13 +176,18 @@ async def get_frontend(rest_of_path: str = ""):
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
         else:
-            # If the path corresponds to a directory, return the index.html file in the directory
+            # If the path corresponds to a directory, return the \
+            # index.html file in the directory
             # headers = {"X-API-KEY": app_settings.api_key}
             headers = {
-                "Set-Cookie": f"trailarr_api_key={app_settings.api_key}; SameSite=Strict; Path=/"
+                "Set-Cookie": (
+                    f"trailarr_api_key={app_settings.api_key};"
+                    " SameSite=Strict; Path=/"
+                )
             }
             return HTMLResponse(
-                content=open(f"{static_dir}/index.html").read(), headers=headers
+                content=open(f"{static_dir}/index.html").read(),
+                headers=headers,
             )
 
 

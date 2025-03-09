@@ -37,6 +37,11 @@ YouTube rotates cookies frequently on open YouTube browser tabs as a security me
 !!! note
     This is a hack to bypass YouTube restrictions and it might not always work. There is nothing Trailarr can do in those situations.
 
+!!! warning "Do NOT use cookies with New Installations"
+    If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.
+    
+    Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
+
 ### Export YouTube Cookies.txt file
 
 The suggested way to get the cookies file is:
