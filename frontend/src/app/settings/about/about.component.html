@@ -89,7 +89,7 @@
 </div>
 
 <dialog #passwordUpdateDialog (click)="closePwUpdateDialog()">
-    <div class="dialog-content" (click)="$event.stopPropagation()">
+    <form class="dialog-content" (click)="$event.stopPropagation()">
         <h2>Update Password</h2>
         <!-- <p>This will Delete the trailer file on disk for this Media</p>
         <p>Are you sure?</p> -->
@@ -97,7 +97,7 @@
             <label for="trailarr_current_password">Current Password</label>
             <div class="password-input">
                 <input id="trailarr_current_password" type="password" [(ngModel)]="currentPassword"
-                    placeholder="Current Password" autocomplete="off" tabindex="1" #currentPasswordInput>
+                    placeholder="Current Password" autocomplete="current-password" tabindex="1" #currentPasswordInput>
                 <i
                     (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
                     <ng-container
@@ -109,7 +109,7 @@
             <label for="trailer_new_password">New Password </label>
             <div class="password-input">
                 <input id="trailer_new_password" type="password" [(ngModel)]="newPassword" placeholder="New Password"
-                    autocomplete="off" minlength="5" tabindex="1" #newPasswordInput>
+                    autocomplete="new-password" minlength="5" tabindex="1" #newPasswordInput>
                 <i (click)="togglePasswordVisibility(newPasswordInput); newPasswordVisible = !newPasswordVisible">
                     <ng-container *ngIf="newPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
                 </i>
@@ -118,10 +118,10 @@
         <p class="update-error" *ngIf="updateError">{{updateError}}</p>
         <p class="update-success" *ngIf="updateSuccess">{{updateSuccess}}</p>
         <button class="primary" (click)="onConfirmUpdate()" tabindex="1"
-            [disabled]="!currentPassword || !newPassword">Update</button>
-        <button class="secondary" (click)="closePwUpdateDialog()" tabindex="2">Cancel</button>
+            type="submit" [disabled]="!currentPassword || !newPassword">Update</button>
+        <button class="secondary" (click)="closePwUpdateDialog()" type="reset" tabindex="2">Cancel</button>
         <div class="close-progress" *ngIf="updateSuccess"></div>
-    </div>
+    </form>
 </dialog>
 
 <ng-template #passwordVisible>
