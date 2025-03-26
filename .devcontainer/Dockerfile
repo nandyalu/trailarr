@@ -12,10 +12,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install specific version of npm
-RUN npm install -g npm@11.1.0
+RUN npm install -g npm@11.2.0
 
 # Install specific version of Angular CLI
-RUN npm install -g @angular/cli@19.2.1
+RUN npm install -g @angular/cli@19.2.5
 
 # Set the working directory
 WORKDIR /app
