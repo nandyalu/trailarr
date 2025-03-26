@@ -10,7 +10,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/.devcontainer"
     schedule:
-      interval: weekly
+      interval: daily
     target-branch: "dev"
     open-pull-requests-limit: 5 # Limit the number of open PRs
     reviewers: # Add reviewers
