@@ -39,8 +39,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_NAME="Trailarr" \
     APP_VERSION="0.3.1-beta" \
     NVIDIA_VISIBLE_DEVICES="all" \
-    NVIDIA_DRIVER_CAPABILITIES="all" \
-    NEW_DOWNLOAD_METHOD="false"
+    NVIDIA_DRIVER_CAPABILITIES="all"
 
 # Set the python path
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
