@@ -43,10 +43,11 @@ export class SettingsService {
     );
   }
 
-  updatePassword(currentPassword: string, newPassword: string): Observable<string> {
-    const updatePasswordUrl = this.settingsUrl + 'updatepassword';
+  updatePassword(currentPassword: string, newUsername: string, newPassword: string): Observable<string> {
+    const updatePasswordUrl = this.settingsUrl + 'updatelogin';
     const update_obj = {
       current_password: currentPassword,
+      new_username: newUsername,
       new_password: newPassword
     }
     return this.http.put<string>(updatePasswordUrl, update_obj).pipe(

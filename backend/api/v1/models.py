@@ -78,6 +78,7 @@ class UpdateSetting(BaseModel):
     value: int | str | bool
 
 
-class UpdatePassword(BaseModel):
+class UpdateLogin(BaseModel):
     current_password: str
-    new_password: str
+    new_username: str | None
+    new_password: str | None

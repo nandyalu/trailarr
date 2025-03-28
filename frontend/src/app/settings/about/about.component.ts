@@ -16,6 +16,7 @@ export class AboutComponent {
   settings?: Settings;
   serverStats?: ServerStats;
   currentPassword = '';
+  newUsername = '';
   newPassword = '';
   updateError = '';
   updateSuccess = '';
@@ -61,6 +62,7 @@ export class AboutComponent {
 
   // Reference to the dialog element
   @ViewChild('passwordUpdateDialog') passwordUpdateDialog!: ElementRef<HTMLDialogElement>;
+  dialogOpen = false;
 
   clearPwUpdateFields(): void {
     this.currentPassword = '';
@@ -73,21 +75,37 @@ export class AboutComponent {
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
+  getSubmitButtonState(): boolean {
+    if (!this.currentPassword) {
+      return true; // Disable the button if current password is empty
+    }
+    let newLoginValid = false;
+    if (this.newUsername.length > 0) {
+      newLoginValid = true;
+    }
+    if (this.newPassword.length > 4) {
+      newLoginValid = true;
+    }
+    return !newLoginValid; // Enable the button if new username or password is filled
+  }
+
   showPwUpdateDialog(): void {
     this.clearPwUpdateFields();
+    this.dialogOpen = true;
     this.passwordUpdateDialog.nativeElement.showModal(); // Open the dialog
   }
 
   closePwUpdateDialog(): void {
     this.clearPwUpdateFields();
     this.passwordUpdateDialog.nativeElement.close(); // Close the dialog
+    this.dialogOpen = false;
   }
 
   onConfirmUpdate() {
     console.log('Updating password');
     this.updateError = '';
     this.updateSuccess = '';
-    this.settingsService.updatePassword(this.currentPassword, this.newPassword).subscribe((res: string) => {
+    this.settingsService.updatePassword(this.currentPassword, this.newUsername, this.newPassword).subscribe((res: string) => {
       console.log(res);
       if (res.includes('Error')) {
         this.updateError = res;

@@ -1,8 +1,12 @@
-import secrets
 from typing import Annotated
 import bcrypt
 from fastapi import Cookie, Depends, HTTPException, status
-from fastapi.security import APIKeyHeader, APIKeyQuery, HTTPBasic, HTTPBasicCredentials
+from fastapi.security import (
+    APIKeyHeader,
+    APIKeyQuery,
+    HTTPBasic,
+    HTTPBasicCredentials,
+)
 
 from config.settings import app_settings
 
@@ -10,17 +14,27 @@ from config.settings import app_settings
 browser_security = HTTPBasic()
 
 
-# Hash a password using bcrypt
-def get_password_hash(password: str) -> bytes:
-    """Converts the password to bytes and hashes it using bcrypt \n
+# Hash a string using bcrypt
+def get_string_hash(str_to_hash: str) -> bytes:
+    """Converts the given string to bytes and hashes it using bcrypt \n
     Args:
-        password (str): The password to hash \n
+        str_to_hash (str): The string to hash \n
     Returns:
-        bytes: The hashed password as bytes"""
-    pwd_bytes = password.encode("utf-8")
+        bytes: The hashed string as bytes"""
+    pwd_bytes = str_to_hash.encode("utf-8")
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
     return hashed_password
+
+
+def set_username(new_username: str) -> str:
+    """Sets the new username for the webui \n
+    Args:
+        new_username (str): The new username to set \n
+    Returns:
+        str: The result message"""
+    app_settings.webui_username = new_username
+    return "Username updated successfully"
 
 
 def set_password(new_password: str) -> str:
@@ -29,8 +43,22 @@ def set_password(new_password: str) -> str:
         new_password (str): The new password to set \n
     Returns:
         str: The result message"""
-    app_settings.webui_password = get_password_hash(new_password).decode("utf-8")
+    app_settings.webui_password = get_string_hash(new_password).decode("utf-8")
     return "Password updated successfully"
+
+
+# Check if the provided username matches the stored username (hashed)
+def verify_username(plain_username: str) -> bool:
+    """Checks if the provided username matches the stored username \n
+    Args:
+        plain_username (str): The username to check \n
+    Returns:
+        bool: True if the username matches, False otherwise"""
+    username_byte_enc = plain_username.encode("utf-8")
+    curr_username_hashed = get_string_hash(app_settings.webui_username)
+    return bcrypt.checkpw(
+        password=username_byte_enc, hashed_password=curr_username_hashed
+    )
 
 
 # Check if the provided password matches the stored password (hashed)
@@ -42,7 +70,9 @@ def verify_password(plain_password: str) -> bool:
         bool: True if the password matches, False otherwise"""
     password_byte_enc = plain_password.encode("utf-8")
     hashed_password = app_settings.webui_password.encode("utf-8")
-    return bcrypt.checkpw(password=password_byte_enc, hashed_password=hashed_password)
+    return bcrypt.checkpw(
+        password=password_byte_enc, hashed_password=hashed_password
+    )
 
 
 def validate_login(
@@ -53,11 +83,12 @@ def validate_login(
         credentials (HTTPBasicCredentials): The login credentials \n
     Raises:
         HTTPException: If the username or password is incorrect"""
-    current_username_bytes = credentials.username.encode("utf8")
-    correct_username_bytes = b"admin"
-    is_correct_username = secrets.compare_digest(
-        current_username_bytes, correct_username_bytes
-    )
+    # current_username_bytes = credentials.username.encode("utf8")
+    # correct_username_bytes = b"admin"
+    # is_correct_username = secrets.compare_digest(
+    #     current_username_bytes, correct_username_bytes
+    # )
+    is_correct_username = verify_username(credentials.username)
     is_correct_password = verify_password(credentials.password)
     if not (is_correct_username and is_correct_password):
         raise HTTPException(
