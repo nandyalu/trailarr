@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v032-beta-mar-09-2025" class="md-skip">
+        <a href="#v033-beta-march-28-2025" class="md-skip">
           Skip to content
         </a>
       
@@ -831,9 +831,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v032-beta-mar-09-2025" class="md-nav__link">
+  <a href="#v033-beta-march-28-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.3.2-beta - Mar 09, 2025
+      v0.3.3-beta - March 28, 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v032-beta-march-09-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.2-beta - March 09, 2025
     </span>
   </a>
   
@@ -950,9 +959,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v032-beta-mar-09-2025" class="md-nav__link">
+  <a href="#v033-beta-march-28-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.3.2-beta - Mar 09, 2025
+      v0.3.3-beta - March 28, 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v032-beta-march-09-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.2-beta - March 09, 2025
     </span>
   </a>
   
@@ -997,7 +1015,26 @@
 
   <h1>2025</h1>
 
-<h2 id="v032-beta-mar-09-2025"><strong>v0.3.2-beta</strong> - <em>Mar 09, 2025</em></h2>
+<h2 id="v033-beta-march-28-2025"><strong>v0.3.3-beta</strong> - <em>March 28, 2025</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Updated yt-dlp to latest version 2025.03.27. 🔄</li>
+<li>Added option to change the default username. Fixes <a href="https://github.com/nandyalu/trailarr/issues/160">#160</a>. 🔑</li>
+<li>Updated internal field options so that browsers can detect them as password fields for <code>Current Password</code> and <code>New Password</code> in Password Update Dialog under <code>Settings &gt; About</code>. 🔑</li>
+<li><code>Settings &gt; About</code> page will now show the current version of <code>yt-dlp</code> used by the app. 🔍</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue with <code>yt-dlp</code> not updating on restart even if <code>Update Yt-dlp</code> is enabled. 🔄</li>
+<li>Fixed a bug that reset the <code>New Download Method</code> setting to <code>false</code> on restart. 🔄</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated FastAPI from 0.115.11 to 0.115.12, npm from 11.1.0 to 11.2.0, Angular from 19.2.1 to 19.2.5 and various other python and npm dependencies.</li>
+<li>Refactored Dockerfile to remove <code>gosu</code> package and use <code>su</code> command instead for switching to non-root user. This fixes many CVEs related to <code>gosu</code> package, improving security. 🐳</li>
+<li>Moved scripts inside docker image from <code>/app</code> to <code>/app/scripts</code> to avoid conflicts with app files. 🗂️</li>
+</ul>
+<h2 id="v032-beta-march-09-2025"><strong>v0.3.2-beta</strong> - <em>March 09, 2025</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li>Trailer filenames now support titles with non-ASCII characters. Restricted characters are <code>&lt;&gt;:"/\\|?*\x00-\x1F</code>. Fixes <a href="https://github.com/nandyalu/trailarr/issues/106">#106</a>, <a href="https://github.com/nandyalu/trailarr/issues/141">#141</a> 🌍</li>
@@ -1088,7 +1125,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 9, 2025 10:53:03">March 9, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 28, 2025 21:06:21">March 28, 2025</span>
   </span>
 
     
