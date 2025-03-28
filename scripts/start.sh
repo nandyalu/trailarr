@@ -1,38 +1,51 @@
-#!/bin/sh
+#!/bin/bash
 
 # THIS SCRIPT WILL BE RUN AS THE NON-ROOT USER 'appuser' IN THE CONTAINER
 
-echo "Running application as user: $(whoami)"
+# Source the box_echo function
+source /app/scripts/box_echo.sh
 
+box_echo "Running application as user: $(whoami)"
+
+box_echo "--------------------------------------------------------------------------";
 # Run Alembic migrations
-echo "Backing up database before running migrations..."
+box_echo "Backing up database before running migrations..."
 BACKUPS_DIR="${APP_DATA_DIR}/backups"
 NEW_DB="${BACKUPS_DIR}/trailarr_$(date +%Y%m%d%H%M%S).db"
 OLD_DB="${APP_DATA_DIR}/trailarr.db"
-mkdir -p "${BACKUPS_DIR}" && cp $OLD_DB $NEW_DB && echo "Database backup created successfully!"
+mkdir -p "${BACKUPS_DIR}" && cp $OLD_DB $NEW_DB && box_echo "Database backup created successfully!"
+box_echo "--------------------------------------------------------------------------";
 
 # Keep only the most recent 30 backups and delete the rest
-echo "Deleting older backups if more than 30 exist..."
+box_echo "Deleting older backups if more than 30 exist..."
 BACKUP_COUNT=$(find "$BACKUPS_DIR" -type f -name "trailarr_*.db" | wc -l)
 if [ "$BACKUP_COUNT" -gt 30 ]; then
     ls -t "$BACKUPS_DIR"/trailarr_*.db | tail -n +31 | xargs rm -f
-    echo "Old backups deleted successfully!"
+    DEL_COUNT=$((BACKUP_COUNT - 30))
+    box_echo "$DEL_COUNT Old backups deleted successfully!"
 else
-    echo "Less than 30 backups exist, no backups deleted."
+    box_echo "Less than 30 backups exist ($BACKUP_COUNT), no backups deleted."
 fi
+box_echo "--------------------------------------------------------------------------";
 
-echo "Running database migrations with Alembic"
+box_echo "Running database migrations with Alembic"
+box_echo "  "
 cd /app/backend
 if alembic upgrade head; then
-    echo "Database migrations ran successfully!"
+    box_echo "  "
+    box_echo "Database migrations ran successfully!"
 else
-    echo "Database migrations failed! Restoring backup!"
+    box_echo "  "
+    box_echo "Database migrations failed! Restoring backup!"
     cp $NEW_DB $OLD_DB
-    echo "Backup restored successfully! Sleeping indefinitely to prevent container exit"
+    box_echo "Backup restored successfully! Sleeping indefinitely to prevent container exit"
     while :; do sleep 10000000; done
 fi
+box_echo "--------------------------------------------------------------------------";
 
 # Start FastAPI application
-echo "Starting Trailarr application"
+box_echo "Starting Trailarr application..."
+echo "+==============================================================================+";
+echo ""
 cd /app
 exec uvicorn backend.main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889}

@@ -62,16 +62,9 @@ COPY --from=python-deps /usr/local/ /usr/local/
 # Set the python path
 ENV PYTHONPATH=/app/backend
 
-# Copy the entrypoint script and make it executable
-COPY ./scripts/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# Copy startup script and make it executable
-COPY ./scripts/start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
-# Copy healthcheck script
-COPY ./scripts/healthcheck.py /app/healthcheck.py
+# Copy the scripts folder, and make all scripts executable
+COPY ./scripts /app/scripts
+RUN chmod +x /app/scripts/*.sh
 
 # Expose the port the app runs on
 EXPOSE ${APP_PORT}
@@ -81,8 +74,8 @@ RUN chmod -R 750 /app
 
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD python /app/healthcheck.py ${APP_PORT}
+    CMD python /app/scripts/healthcheck.py ${APP_PORT}
 
 # Run entrypoint script to create directories, set permissions and timezone \
 # and start the application as appuser
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]
