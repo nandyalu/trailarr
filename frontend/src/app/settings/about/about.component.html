@@ -10,6 +10,10 @@
                 "Update Available" : "Latest" }}</a>
         </div>
         <div class="about-content">
+            <span>Yt-dlp Version</span>
+            <code>{{settings?.ytdlp_version}}</code>
+        </div>
+        <div class="about-content">
             <span>API Key</span>
             <code class="copy" (click)="copyToClipboard(settings!.api_key)">{{settings?.api_key}}</code>
         </div>
@@ -102,7 +106,7 @@
                 <i
                     (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
                     <ng-container
-                        *ngIf="currentPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
+                    *ngIf="currentPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
                 </i>
             </div>
             <h3>New Login</h3>
@@ -110,7 +114,7 @@
                 <input id="trailarr_new_username" type="text" [(ngModel)]="newUsername"
                     autocomplete="username" required tabindex="1" #newUsernameInput>
                 <label for="trailarr_new_username">New Username</label>
-        </div>
+            </div>
             <div class="password-input">
                 <input id="trailer_new_password" type="password" [(ngModel)]="newPassword"
                 autocomplete="new-password" required minlength="5" tabindex="1" #newPasswordInput>

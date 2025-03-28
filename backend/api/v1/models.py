@@ -65,6 +65,7 @@ class Settings(BaseModel):
     update_available: bool
     wait_for_media: bool
     yt_cookies_path: str
+    ytdlp_version: str
     trailer_remove_silence: bool
     nvidia_gpu_available: bool
     trailer_hardware_acceleration: bool
