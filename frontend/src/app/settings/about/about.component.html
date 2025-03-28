@@ -10,6 +10,10 @@
                 "Update Available" : "Latest" }}</a>
         </div>
         <div class="about-content">
+            <span>Yt-dlp Version</span>
+            <code>{{settings?.ytdlp_version}}</code>
+        </div>
+        <div class="about-content">
             <span>API Key</span>
             <code class="copy" (click)="copyToClipboard(settings!.api_key)">{{settings?.api_key}}</code>
         </div>
@@ -55,10 +59,10 @@
         </div>
     </section>
     <section class="about-section">
-        <h1>Password</h1>
+        <h1>Login Credentials</h1>
         <hr>
         <div class="about-content">
-            <button class="update-password" (click)="showPwUpdateDialog()">Update Password</button>
+            <button class="update-login" (click)="showPwUpdateDialog()">Update Login</button>
         </div>
     </section>
     <section class="about-section">
@@ -89,39 +93,45 @@
 </div>
 
 <dialog #passwordUpdateDialog (click)="closePwUpdateDialog()">
+    @if (dialogOpen) {
     <form class="dialog-content" (click)="$event.stopPropagation()">
-        <h2>Update Password</h2>
-        <!-- <p>This will Delete the trailer file on disk for this Media</p>
-        <p>Are you sure?</p> -->
+        <h2>Update Login Credentials</h2>
         <div class="text-input">
-            <label for="trailarr_current_password">Current Password</label>
+            <!-- <h3>Current Login Password</h3> -->
             <div class="password-input">
                 <input id="trailarr_current_password" type="password" [(ngModel)]="currentPassword"
-                    placeholder="Current Password" autocomplete="current-password" tabindex="1" #currentPasswordInput>
+                autocomplete="current-password" required tabindex="1" #currentPasswordInput>
+                <label for="trailarr_current_password">Current Password</label>
                 <i
                     (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
                     <ng-container
-                        *ngIf="currentPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
+                    *ngIf="currentPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
                 </i>
             </div>
-        </div>
-        <div class="text-input">
-            <label for="trailer_new_password">New Password </label>
+            <h3>New Login</h3>
             <div class="password-input">
-                <input id="trailer_new_password" type="password" [(ngModel)]="newPassword" placeholder="New Password"
-                    autocomplete="new-password" minlength="5" tabindex="1" #newPasswordInput>
+                <input id="trailarr_new_username" type="text" [(ngModel)]="newUsername"
+                    autocomplete="username" required tabindex="1" #newUsernameInput>
+                <label for="trailarr_new_username">New Username</label>
+            </div>
+            <div class="password-input">
+                <input id="trailer_new_password" type="password" [(ngModel)]="newPassword"
+                autocomplete="new-password" required minlength="5" tabindex="1" #newPasswordInput>
+                <label for="trailer_new_password">New Password </label>
                 <i (click)="togglePasswordVisibility(newPasswordInput); newPasswordVisible = !newPasswordVisible">
                     <ng-container *ngIf="newPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
                 </i>
             </div>
+            <span>For updating only username/password, leave the other blank</span>
         </div>
         <p class="update-error" *ngIf="updateError">{{updateError}}</p>
         <p class="update-success" *ngIf="updateSuccess">{{updateSuccess}}</p>
         <button class="primary" (click)="onConfirmUpdate()" tabindex="1"
-            type="submit" [disabled]="!currentPassword || !newPassword">Update</button>
+            type="submit" [disabled]="getSubmitButtonState()">Update</button>
         <button class="secondary" (click)="closePwUpdateDialog()" type="reset" tabindex="2">Cancel</button>
         <div class="close-progress" *ngIf="updateSuccess"></div>
     </form>
+    }
 </dialog>
 
 <ng-template #passwordVisible>

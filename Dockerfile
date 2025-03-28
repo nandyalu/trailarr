@@ -36,11 +36,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PGID=1000 \
     APP_VERSION=${APP_VERSION} \
     NVIDIA_VISIBLE_DEVICES="all" \
-    NVIDIA_DRIVER_CAPABILITIES="all" \
-    NEW_DOWNLOAD_METHOD="false"
+    NVIDIA_DRIVER_CAPABILITIES="all"
 
-# Install tzdata, gosu and set timezone
-RUN apt-get update && apt-get install -y tzdata gosu curl pciutils && \
+# Install tzdata, pciutils and set timezone
+RUN apt-get update && apt-get install -y tzdata pciutils && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
@@ -63,13 +62,9 @@ COPY --from=python-deps /usr/local/ /usr/local/
 # Set the python path
 ENV PYTHONPATH=/app/backend
 
-# Copy the entrypoint script and make it executable
-COPY ./scripts/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# Copy startup script and make it executable
-COPY ./scripts/start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Copy the scripts folder, and make all scripts executable
+COPY ./scripts /app/scripts
+RUN chmod +x /app/scripts/*.sh
 
 # Expose the port the app runs on
 EXPOSE ${APP_PORT}
@@ -79,8 +74,8 @@ RUN chmod -R 750 /app
 
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD curl -f http://localhost:${APP_PORT}/status || exit 1
+    CMD python /app/scripts/healthcheck.py ${APP_PORT}
 
 # Run entrypoint script to create directories, set permissions and timezone \
 # and start the application as appuser
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]

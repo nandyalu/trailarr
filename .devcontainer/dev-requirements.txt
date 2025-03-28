@@ -1,26 +1,26 @@
 # DevContainer requirements
 # Docs
-mkdocs-material==9.6.7
-mkdocs-git-revision-date-localized-plugin==1.4.1
+mkdocs-material==9.6.9
+mkdocs-git-revision-date-localized-plugin==1.4.5
 mkdocs_github_changelog==0.1.0
 # mkdocs-swagger-ui-tag==0.6.11
 
 # Backend
-aiohttp==3.11.13
+aiohttp==3.11.14
 aiofiles==24.1.0
-alembic==1.15.1
+alembic==1.15.2
 apscheduler==3.11.0
-async-lru==2.0.4
-fastapi[standard]==0.115.11
+async-lru==2.0.5
+fastapi[standard]==0.115.12
 bcrypt==4.3.0
 pillow==11.1.0
-sqlmodel==0.0.23
-yt-dlp[default]==2025.2.19
+sqlmodel==0.0.24
+yt-dlp[default]==2025.3.27
 
 # Testing
 aioresponses==0.7.8
-hypothesis==6.112.1
-schemathesis==3.39.9
-pytest==8.3.4
-pytest-asyncio==0.25.3
+hypothesis==6.130.5
+schemathesis==3.39.14
+pytest==8.3.5
+pytest-asyncio==0.26.0
 pytest-cov==6.0.0

@@ -40,6 +40,10 @@ else
     echo "Intel QSV is not available. /dev/dri does not exist."
 fi
 
+# Check the version of yt-dlp and store it in a global environment variable
+YTDLP_VERSION=$(yt-dlp --version)
+export YTDLP_VERSION
+
 # Run Alembic migrations
 echo "Running Alembic migrations"
 cd backend
