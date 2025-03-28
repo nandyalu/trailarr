@@ -36,8 +36,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PGID=1000 \
     APP_VERSION=${APP_VERSION} \
     NVIDIA_VISIBLE_DEVICES="all" \
-    NVIDIA_DRIVER_CAPABILITIES="all" \
-    NEW_DOWNLOAD_METHOD="false"
+    NVIDIA_DRIVER_CAPABILITIES="all"
 
 # Install tzdata, pciutils and set timezone
 RUN apt-get update && apt-get install -y tzdata pciutils && \
