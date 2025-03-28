@@ -249,9 +249,9 @@ class _Config:
             "TRAILER_WEB_OPTIMIZED",
             "True",
         ).lower() in ["true", "1"]
-        # self.trailer_file_name = os.getenv(
-        #     "TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME
-        # )
+        self.trailer_file_name = os.getenv(
+            "TRAILER_FILE_NAME", self._DEFAULT_FILE_NAME
+        )
         self.webui_password = os.getenv(
             "WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD
         )
