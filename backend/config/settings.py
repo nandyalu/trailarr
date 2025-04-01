@@ -136,6 +136,24 @@ def str_property(
     return property(getter, setter)
 
 
+def get_ytdlp_version() -> str:
+    """Get the version of yt-dlp. \n
+    Returns:
+        str: Version of yt-dlp."""
+    _ver = getenv_str("YTDLP_VERSION", "")
+    if _ver:
+        return _ver
+    # If version is not set, try to get it from yt-dlp --version command
+    try:
+        from subprocess import check_output
+
+        _ver = check_output(["yt-dlp", "--version"]).decode("utf-8").strip()
+    except Exception:
+        _ver = "0.0.0"
+    _save_to_env("YTDLP_VERSION", _ver)
+    return _ver
+
+
 class _Config:
     """Class to hold configuration settings for the application. \n
     Reads environment variables to set properties. \n
@@ -181,7 +199,7 @@ class _Config:
     def __init__(self):
         # Some generic attributes for server
         self.version = getenv_str("APP_VERSION", "0.0.0")
-        self.ytdlp_version = getenv_str("YTDLP_VERSION", "0.0.0")
+        self.ytdlp_version = get_ytdlp_version()
         self.update_available = False
         _now = datetime.now(timezone.utc)
         self.server_start_time = getenv_str("SERVER_START_TIME", f"{_now}")
