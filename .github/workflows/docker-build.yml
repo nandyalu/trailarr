@@ -38,6 +38,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-        # Build the Docker image
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag trailarr:${{env.VER}} --build-arg APP_VERSION=${{ env.VER }}
+      # # Build the Docker image
+      # - name: Build the Docker image
+      #   run: docker build . --file Dockerfile --tag trailarr:${{env.VER}} --build-arg APP_VERSION=${{ env.VER }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
