@@ -1,9 +1,9 @@
-import { Media } from "./media";
+import {Media} from './media';
 
 export enum BooleanFilterCondition {
   // IS_TRUE = 'IS_TRUE',
   // IS_FALSE = 'IS_FALSE',
-  EQUALS = 'EQUALS'
+  EQUALS = 'EQUALS',
 }
 
 export enum DateFilterCondition {
@@ -70,27 +70,11 @@ export enum StringFilterCondition {
 
 export type FilterCondition = BooleanFilterCondition | StringFilterCondition | NumberFilterCondition | DateFilterCondition;
 
-export const booleanFilterKeys: (keyof Media)[] = [
-  'arr_monitored',
-  'is_movie',
-  'media_exists',
-  'monitor',
-  'trailer_exists',
-];
+export const booleanFilterKeys: (keyof Media)[] = ['arr_monitored', 'is_movie', 'media_exists', 'monitor', 'trailer_exists'];
 
-export const dateFilterKeys: (keyof Media)[] = [
-  'added_at',
-  'downloaded_at',
-  'updated_at',
-];
+export const dateFilterKeys: (keyof Media)[] = ['added_at', 'downloaded_at', 'updated_at'];
 
-export const numberFilterKeys: (keyof Media)[] = [
-  'arr_id',
-  'connection_id',
-  'id',
-  'runtime',
-  'year',
-];
+export const numberFilterKeys: (keyof Media)[] = ['arr_id', 'connection_id', 'id', 'runtime', 'year'];
 
 export const stringFilterKeys: (keyof Media)[] = [
   'clean_title',

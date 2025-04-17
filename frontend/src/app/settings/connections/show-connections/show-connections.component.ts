@@ -1,14 +1,14 @@
-import { DatePipe, Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Connection } from '../../../models/connection';
-import { SettingsService } from '../../../services/settings.service';
+import {DatePipe, Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import {Component, ElementRef, ViewChild} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {Connection} from '../../../models/connection';
+import {SettingsService} from '../../../services/settings.service';
 
 @Component({
-    selector: 'app-show-connections',
-    imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
-    templateUrl: './show-connections.component.html',
-    styleUrl: './show-connections.component.css'
+  selector: 'app-show-connections',
+  imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
+  templateUrl: './show-connections.component.html',
+  styleUrl: './show-connections.component.css',
 })
 export class ShowConnectionsComponent {
   connectionList: Connection[] = [];
@@ -16,12 +16,15 @@ export class ShowConnectionsComponent {
   resultMessage = '';
   resultType = '';
 
-  constructor(private _location: Location, private settingsService: SettingsService) { }
+  constructor(
+    private _location: Location,
+    private settingsService: SettingsService,
+  ) {}
 
   ngOnInit() {
     this.getConnections();
   }
-    
+
   getConnections() {
     this.isLoading = true;
     this.settingsService.getConnections().subscribe((connections: Connection[]) => {
@@ -54,8 +57,8 @@ export class ShowConnectionsComponent {
       this.resultMessage = res;
       this.getConnections();
       setTimeout(() => {
-          this.resultMessage = '';
-        }, 3000);
-    })
+        this.resultMessage = '';
+      }, 3000);
+    });
   }
 }

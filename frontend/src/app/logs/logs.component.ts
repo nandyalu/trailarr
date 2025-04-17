@@ -1,19 +1,18 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TimeagoModule } from 'ngx-timeago';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Logs } from '../models/logs';
-import { LogsService } from '../services/logs.service';
+import {NgFor, NgIf} from '@angular/common';
+import {Component} from '@angular/core';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {TimeagoModule} from 'ngx-timeago';
+import {debounceTime, distinctUntilChanged} from 'rxjs';
+import {Logs} from '../models/logs';
+import {LogsService} from '../services/logs.service';
 
 @Component({
-    selector: 'app-logs',
-    imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
-    templateUrl: './logs.component.html',
-    styleUrl: './logs.component.css'
+  selector: 'app-logs',
+  imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
+  templateUrl: './logs.component.html',
+  styleUrl: './logs.component.css',
 })
 export class LogsComponent {
-
   title = 'Logs';
   isLoading = true;
   isUpdating = false;
@@ -23,14 +22,9 @@ export class LogsComponent {
   filtered_logs: Logs[] = [];
 
   constructor(private logsService: LogsService) {
-    this.searchForm.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((value) => {
-        this.onSearch(value);
-      });
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged()).subscribe((value) => {
+      this.onSearch(value);
+    });
   }
 
   ngOnInit(): void {

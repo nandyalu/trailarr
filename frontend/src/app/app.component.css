@@ -37,7 +37,6 @@
   }
 }
 
-
 .sidebar {
   width: auto;
   z-index: 100;
@@ -55,7 +54,7 @@
     bottom: 0;
     top: auto;
     left: 0;
-    order: 2
+    order: 2;
   }
 }
 
@@ -167,19 +166,19 @@
 .seconde {
   transform-origin: center right;
   animation: spin2 3s linear infinite;
-  animation-delay: .2s;
+  animation-delay: 0.2s;
 }
 
 .third {
   transform-origin: center right;
   animation: spin3 3s linear infinite;
-  animation-delay: .3s;
+  animation-delay: 0.3s;
 }
 
 .fourth {
   transform-origin: center right;
   animation: spin4 3s linear infinite;
-  animation-delay: .4s;
+  animation-delay: 0.4s;
 }
 
 @keyframes spin {

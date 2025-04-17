@@ -9,8 +9,8 @@
   border-radius: 16px;
   background-color: var(--color-surface-container);
   transition-property: opacity;
-  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
-  transition-duration: .15s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
 }
 
 .form-container form {
@@ -71,7 +71,8 @@ input.ng-touched.ng-invalid {
   margin-bottom: 1rem 0 0 0;
 }
 
-.option-container label, .option-container span {
+.option-container label,
+.option-container span {
   padding: 10px;
   padding-left: 0;
   display: block;
@@ -90,7 +91,7 @@ input.ng-touched.ng-invalid {
   padding: 10px;
   cursor: pointer;
   border-radius: 10px;
-  transition: .3s ease;
+  transition: 0.3s ease;
 }
 
 .option-container .selected {
