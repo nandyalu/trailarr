@@ -1,36 +1,38 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
-import { booleanFilterKeys, CustomFilter, DateFilterCondition, dateFilterKeys, Filter, NumberFilterCondition, numberFilterKeys, StringFilterCondition, stringFilterKeys } from '../models/customfilter';
-import { mapMedia, Media } from '../models/media';
-import { CustomfilterService } from '../services/customfilter.service';
-import { MediaService } from '../services/media.service';
-import { WebsocketService } from '../services/websocket.service';
-import { AddCustomFilterDialogComponent } from "./add-filter-dialog/add-filter-dialog.component";
-import { DisplayTitlePipe } from "./pipes/display-title.pipe";
+import {NgTemplateOutlet} from '@angular/common';
+import {Component, computed, ElementRef, inject, signal, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {ActivatedRoute, RouterLink} from '@angular/router';
+import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
+import {
+  booleanFilterKeys,
+  CustomFilter,
+  DateFilterCondition,
+  dateFilterKeys,
+  Filter,
+  NumberFilterCondition,
+  numberFilterKeys,
+  StringFilterCondition,
+  stringFilterKeys,
+} from '../models/customfilter';
+import {mapMedia, Media} from '../models/media';
+import {CustomfilterService} from '../services/customfilter.service';
+import {MediaService} from '../services/media.service';
+import {WebsocketService} from '../services/websocket.service';
+import {AddCustomFilterDialogComponent} from './add-filter-dialog/add-filter-dialog.component';
+import {DisplayTitlePipe} from './pipes/display-title.pipe';
 
 @Component({
   selector: 'app-media2',
-  imports: [
-    FormsModule,
-    NgTemplateOutlet,
-    RouterLink,
-    ScrollNearEndDirective,
-    AddCustomFilterDialogComponent,
-    DisplayTitlePipe
-  ],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective, AddCustomFilterDialogComponent, DisplayTitlePipe],
   templateUrl: './media.component.html',
-  styleUrl: './media.component.css'
+  styleUrl: './media.component.css',
 })
 export class MediaComponent {
-
   constructor(
     private route: ActivatedRoute,
     private mediaService: MediaService,
-    private webSocketService: WebsocketService
-  ) { }
+    private webSocketService: WebsocketService,
+  ) {}
 
   customfilterService = inject(CustomfilterService);
 
@@ -44,7 +46,7 @@ export class MediaComponent {
   filterOptions: string[] = ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored'];
   customFilters = signal<CustomFilter[]>([]);
   allFilters = computed(() => {
-    return this.filterOptions.concat(this.customFilters().map(f => f.filter_name));
+    return this.filterOptions.concat(this.customFilters().map((f) => f.filter_name));
   });
   selectedSort = signal<keyof Media>('added_at');
   sortAscending = signal<boolean>(true);
@@ -57,7 +59,7 @@ export class MediaComponent {
   filteredSortedMedia = computed(() => this.computeFilteredNSortedMedia());
   displayMedia = computed(() => {
     // console.log("C: Displaying media");
-    return this.filteredSortedMedia().slice(0, this.displayCount())
+    return this.filteredSortedMedia().slice(0, this.displayCount());
   });
   isCustomFilterDialogOpen = false;
 
@@ -76,7 +78,7 @@ export class MediaComponent {
         break;
       default:
         this.moviesOnly.set(null);
-        this.filterOptions = ['all', 'movies', 'series']
+        this.filterOptions = ['all', 'movies', 'series'];
         this.selectedFilter.set('all');
         this.selectedSort.set('updated_at');
         this.sortAscending.set(false);
@@ -85,13 +87,11 @@ export class MediaComponent {
     // this.mediaService.fetchAllMedia(this.moviesOnly());
     // Get all media for Movies or Series, downloaded only for Home
     let filterBy = this.moviesOnly() == null ? 'downloaded' : 'all';
-    this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe(
-      (mediaList) => {
-        // console.log("C: Media fetched");
-        this.allMedia.set(mediaList.map(media => mapMedia(media)));
-        this.isLoading.set(false);
-      }
-    )
+    this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe((mediaList) => {
+      // console.log("C: Media fetched");
+      this.allMedia.set(mediaList.map((media) => mapMedia(media)));
+      this.isLoading.set(false);
+    });
 
     // Subscribe to WebSocket updates
     this.webSocketService.toastMessage.subscribe(() => {
@@ -156,7 +156,7 @@ export class MediaComponent {
         case NumberFilterCondition.NOT_EQUALS:
           return origValue !== filterValueNum;
         default:
-          return true
+          return true;
       }
     }
     // String filters
@@ -192,27 +192,27 @@ export class MediaComponent {
 
   filterDisplayed = false;
   applyCustomFilter(filter_name: string, media: Media): boolean {
-    let customFilter = this.customFilters().find(f => f.filter_name === filter_name);
+    let customFilter = this.customFilters().find((f) => f.filter_name === filter_name);
     if (!this.filterDisplayed) {
-      console.log("Custom filter:", customFilter);
+      console.log('Custom filter:', customFilter);
       this.filterDisplayed = true;
     }
     if (!customFilter) {
       return true;
     }
-    // Apply filters until one of them returns false or all are applied 
-    return customFilter.filters.every(filter => this.applyFilter(filter, media));
+    // Apply filters until one of them returns false or all are applied
+    return customFilter.filters.every((filter) => this.applyFilter(filter, media));
   }
 
   /**
    * Filters and sorts the media list based on the selected filter and sort options.
-   * 
+   *
    * @returns {Media[]} The filtered and sorted media list.
    */
   computeFilteredNSortedMedia(): Media[] {
     // Filter the media list by the selected filter option
     this.lastUpdateTime = Date.now();
-    let mediaList = this.allMedia().filter(media => {
+    let mediaList = this.allMedia().filter((media) => {
       switch (this.selectedFilter()) {
         case 'all':
           return true;
@@ -262,8 +262,8 @@ export class MediaComponent {
 
   /**
    * Fetches updated media items from the server and updates the allMedia signal.
-   * 
-   * @param {boolean} forceUpdate - Whether to force an update regardless of 
+   *
+   * @param {boolean} forceUpdate - Whether to force an update regardless of
    * the time interval.
    *
    * @returns {void}
@@ -274,20 +274,18 @@ export class MediaComponent {
     const delta = Math.min(Math.floor(Math.abs(currentTime - this.lastUpdateTime) / 1000), 1000);
     if (delta > this.UPDATE_INTERVAL || forceUpdate) {
       // Fetch updated media items
-      this.mediaService.fetchUpdatedMedia(delta).subscribe(
-        (mediaList) => {
-          let updatedMedia = mediaList.map(media => mapMedia(media));
-          this.allMedia.update((existingMedia) => {
-            return existingMedia.map(media => {
-              let updated = updatedMedia.find(m => m.id === media.id);
-              if (updated) {
-                return updated;
-              }
-              return media;
-            });
+      this.mediaService.fetchUpdatedMedia(delta).subscribe((mediaList) => {
+        let updatedMedia = mediaList.map((media) => mapMedia(media));
+        this.allMedia.update((existingMedia) => {
+          return existingMedia.map((media) => {
+            let updated = updatedMedia.find((m) => m.id === media.id);
+            if (updated) {
+              return updated;
+            }
+            return media;
           });
-        }
-      );
+        });
+      });
       // this.mediaService.fetchAllMedia(this.moviesOnly());
       this.lastUpdateTime = currentTime;
     }
@@ -295,7 +293,7 @@ export class MediaComponent {
 
   /**
    * Toggles the edit mode for the media list.
-   * 
+   *
    * @param {boolean} enabled - Whether to enable or disable edit mode.
    * @returns {void}
    */
@@ -304,13 +302,13 @@ export class MediaComponent {
   }
 
   selectAll(): void {
-    this.selectedMedia = this.filteredSortedMedia().map(media => media.id);
+    this.selectedMedia = this.filteredSortedMedia().map((media) => media.id);
   }
 
   /**
    * Handles the event when a media item is selected, either by checking or unchecking a checkbox.
    * Adds or removes the media item from the selectedMedia array based on the checkbox state.
-   * 
+   *
    * @param {Media} media - The media item that was selected.
    * @param {Event} event - The event that triggered the selection.
    * @returns {void}
@@ -328,7 +326,7 @@ export class MediaComponent {
 
   /**
    * Handles the batch update action for the selected media items.
-   * 
+   *
    * @param {string} action
    * The action to perform on the selected media items. Available actions are:
    * - `monitor`: Monitor the selected media items.
@@ -350,22 +348,20 @@ export class MediaComponent {
   /**
    * Retrieves the sort and filter options from the local session.
    * If no options are found, sets the default sort option to 'added_at' and the default filter option to 'all'.
-   * 
+   *
    * - The sort option is stored with the key `Trailarr{pageType}Sort`.
    * - The sort order is stored with the key `Trailarr{pageType}SortAscending`.
    * - The filter option is stored with the key `Trailarr{pageType}Filter`.
-   * 
+   *
    * @returns {void} This method does not return a value.
    */
   retrieveSortNFilterOptions(): void {
     const moviesOnlyValue = this.moviesOnly();
-    const pageType = moviesOnlyValue == null ? 'AllMedia' : (moviesOnlyValue ? 'Movies' : 'Series');
+    const pageType = moviesOnlyValue == null ? 'AllMedia' : moviesOnlyValue ? 'Movies' : 'Series';
     // Retrieve custom filters for the view from the server
-    this.customfilterService.getViewFilters(moviesOnlyValue).subscribe(
-      (filters) => {
-        this.customFilters.set(filters);
-      }
-    );
+    this.customfilterService.getViewFilters(moviesOnlyValue).subscribe((filters) => {
+      this.customFilters.set(filters);
+    });
     // Retrieve the filter option from the local session
     let filterOption = localStorage.getItem(`Trailarr${pageType}Filter`);
     if (filterOption) {
@@ -386,10 +382,10 @@ export class MediaComponent {
    * Sets the media sort option and resets the display count to the default.
    * Also, saves the sort option to the local session.
    * If the same sort option is selected, toggles the sort direction.
-   * 
+   *
    * @param sortBy - The sort option to set.
    * @returns {void} This method does not return a value.
-  */
+   */
   setMediaSort(sortBy: keyof Media): void {
     this.selectedMedia = []; // Clear the selected media items
     this.displayCount.set(this.defaultDisplayCount); // Reset the display count to the default
@@ -403,7 +399,7 @@ export class MediaComponent {
     }
     // Save the sort option to the local session
     const moviesOnly = this.moviesOnly();
-    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    const pageType = moviesOnly == null ? 'AllMedia' : moviesOnly ? 'Movies' : 'Series';
     localStorage.setItem(`Trailarr${pageType}Sort`, this.selectedSort());
     localStorage.setItem(`Trailarr${pageType}SortAscending`, this.sortAscending().toString());
     return;
@@ -411,7 +407,7 @@ export class MediaComponent {
 
   /**
    * Sets the media filter option and resets the display count to the default.
-   * 
+   *
    * @param filterBy - The filter option to set.
    * @returns {void} This method does not return a value.
    */
@@ -423,7 +419,7 @@ export class MediaComponent {
     this.selectedFilter.set(filterBy);
     // Save the filter option to the local session
     const moviesOnly = this.moviesOnly();
-    const pageType = moviesOnly == null ? 'AllMedia' : (moviesOnly ? 'Movies' : 'Series');
+    const pageType = moviesOnly == null ? 'AllMedia' : moviesOnly ? 'Movies' : 'Series';
     localStorage.setItem(`Trailarr${pageType}Filter`, this.selectedFilter());
     return;
   }
@@ -431,7 +427,7 @@ export class MediaComponent {
   /**
    * Handles the event when the user scrolls near the end of the media list.
    * Loads more media items into the display list if there are more items to show.
-   * 
+   *
    * @returns {void} This method does not return a value.
    */
   onNearEndScroll(): void {
@@ -461,7 +457,7 @@ export class MediaComponent {
   deleteFilter(filter_id: number): void {
     this.customfilterService.delete(filter_id).subscribe(() => {
       this.customFilters.update((filters) => {
-        return filters.filter(f => f.id !== filter_id);
+        return filters.filter((f) => f.id !== filter_id);
       });
     });
   }
@@ -474,6 +470,4 @@ export class MediaComponent {
       this.isCustomFilterDialogOpen = false;
     }, 1000);
   }
-
-
 }

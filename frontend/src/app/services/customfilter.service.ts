@@ -1,19 +1,16 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { environment } from '../../environment';
-import { CustomFilter, CustomFilterCreate } from '../models/customfilter';
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {environment} from '../../environment';
+import {CustomFilter, CustomFilterCreate} from '../models/customfilter';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CustomfilterService {
-
   private cp_url = environment.apiUrl + environment.customfilters;
 
-  constructor(
-    private httpClient: HttpClient
-  ) { }
+  constructor(private httpClient: HttpClient) {}
 
   create(customFilter: CustomFilterCreate): Observable<CustomFilter> {
     return this.httpClient.post<CustomFilter>(this.cp_url, customFilter);
@@ -30,7 +27,7 @@ export class CustomfilterService {
   }
 
   getViewFilters(moviesOnly: boolean | null): Observable<CustomFilter[]> {
-    const view = moviesOnly == null ? 'home' : (moviesOnly ? 'movie' : 'series');
+    const view = moviesOnly == null ? 'home' : moviesOnly ? 'movie' : 'series';
     const url = this.cp_url + view;
     return this.httpClient.get<CustomFilter[]>(url);
   }

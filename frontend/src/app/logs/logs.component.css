@@ -38,7 +38,7 @@
   top: 145px;
   /* 76px topnav + 69px logs title */
   z-index: 2;
-  gap: .5rem;
+  gap: 0.5rem;
 
   @media (width < 765px) {
     padding: 0.5rem;

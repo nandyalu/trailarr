@@ -1,18 +1,20 @@
-import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConnectionCreate } from '../../../models/connection';
-import { SettingsService } from '../../../services/settings.service';
+import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import {Component, ElementRef, ViewChild} from '@angular/core';
+import {FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ConnectionCreate} from '../../../models/connection';
+import {SettingsService} from '../../../services/settings.service';
 
 @Component({
-    selector: 'app-add-connection',
-    imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
-    templateUrl: './add-connection.component.html',
-    styleUrl: './add-connection.component.css'
+  selector: 'app-add-connection',
+  imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
+  templateUrl: './add-connection.component.html',
+  styleUrl: './add-connection.component.css',
 })
 export class AddConnectionComponent {
-
-  constructor(private _location: Location, private settingsService: SettingsService) { }
+  constructor(
+    private _location: Location,
+    private settingsService: SettingsService,
+  ) {}
   arrOptions = ['radarr', 'sonarr'];
   monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
@@ -21,7 +23,7 @@ export class AddConnectionComponent {
     Validators.required,
     Validators.pattern('^[a-zA-Z0-9]*$'),
     Validators.minLength(32),
-    Validators.maxLength(50)
+    Validators.maxLength(50),
   ]);
   addConnectionForm = new FormGroup({
     name: this.name,
@@ -29,16 +31,16 @@ export class AddConnectionComponent {
     monitorType: new FormControl('new'),
     url: this.url,
     apiKey: this.apiKey,
-    path_mappings: new FormArray([])
+    path_mappings: new FormArray([]),
   });
 
   setArrType(selectedArrType: string) {
-    this.addConnectionForm.patchValue({ arrType: selectedArrType });
+    this.addConnectionForm.patchValue({arrType: selectedArrType});
     this.addConnectionForm.markAsTouched();
     this.addConnectionForm.markAsDirty();
   }
   setMonitorType(selectedMonitorType: string) {
-    this.addConnectionForm.patchValue({ monitorType: selectedMonitorType });
+    this.addConnectionForm.patchValue({monitorType: selectedMonitorType});
     this.addConnectionForm.markAsTouched();
     this.addConnectionForm.markAsDirty();
   }
@@ -50,7 +52,7 @@ export class AddConnectionComponent {
   addPathMapping() {
     const pathMappingGroup = new FormGroup({
       path_from: new FormControl('', Validators.required),
-      path_to: new FormControl('', Validators.required)
+      path_to: new FormControl('', Validators.required),
     });
     this.pathMappings.push(pathMappingGroup);
     this.addConnectionForm.markAsTouched();
@@ -80,8 +82,7 @@ export class AddConnectionComponent {
     // Check if form is dirty before showing the dialog, if not go back
     if (this.addConnectionForm.dirty) {
       this.showCancelDialog();
-    }
-    else {
+    } else {
       this._location.back();
     }
   }
@@ -104,12 +105,12 @@ export class AddConnectionComponent {
       url: this.addConnectionForm.value.url || '',
       api_key: this.addConnectionForm.value.apiKey || '',
       monitor: this.addConnectionForm.value.monitorType || '',
-      path_mappings: this.addConnectionForm.value.path_mappings || []
+      path_mappings: this.addConnectionForm.value.path_mappings || [],
     };
     this.settingsService.addConnection(newConnection).subscribe((result: string) => {
       this.addConnResult = result;
       //check if result contains version in it
-      if (result.toLowerCase().includes("version")) {
+      if (result.toLowerCase().includes('version')) {
         // wait 3 seconds and go back
         setTimeout(() => {
           this._location.back();
@@ -117,7 +118,4 @@ export class AddConnectionComponent {
       }
     });
   }
-
-
-
 }

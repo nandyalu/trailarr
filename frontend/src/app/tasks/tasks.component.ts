@@ -1,17 +1,17 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { TimeagoModule } from 'ngx-timeago';
-import { Subscription } from 'rxjs';
-import { QueuedTask, ScheduledTask } from '../models/tasks';
-import { TasksService } from '../services/tasks.service';
-import { WebsocketService } from '../services/websocket.service';
+import {NgFor, NgIf} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {TimeagoModule} from 'ngx-timeago';
+import {Subscription} from 'rxjs';
+import {QueuedTask, ScheduledTask} from '../models/tasks';
+import {TasksService} from '../services/tasks.service';
+import {WebsocketService} from '../services/websocket.service';
 
 @Component({
-    selector: 'app-tasks',
-    imports: [NgIf, NgFor, TimeagoModule],
-    providers: [],
-    templateUrl: './tasks.component.html',
-    styleUrl: './tasks.component.css'
+  selector: 'app-tasks',
+  imports: [NgIf, NgFor, TimeagoModule],
+  providers: [],
+  templateUrl: './tasks.component.html',
+  styleUrl: './tasks.component.css',
 })
 export class TasksComponent implements OnInit, OnDestroy {
   scheduledTasks: ScheduledTask[] = [];
@@ -19,7 +19,10 @@ export class TasksComponent implements OnInit, OnDestroy {
   isLoading1 = true;
   isLoading2 = true;
 
-  constructor(private tasksService: TasksService, private websocketService: WebsocketService) { }
+  constructor(
+    private tasksService: TasksService,
+    private websocketService: WebsocketService,
+  ) {}
 
   private timeoutRef: any;
   private webSocketSubscription?: Subscription;
@@ -38,13 +41,13 @@ export class TasksComponent implements OnInit, OnDestroy {
       clearTimeout(this.timeoutRef);
       // Unsubscribe from the WebSocket events
       this.webSocketSubscription?.unsubscribe();
-    }
+    };
 
     // Subscribe to the WebSocket events with the simplified handler
     this.webSocketSubscription = this.websocketService.connect().subscribe({
       next: handleWebSocketEvent,
       error: handleCloseEvent,
-      complete: handleCloseEvent
+      complete: handleCloseEvent,
     });
   }
 
@@ -114,5 +117,4 @@ export class TasksComponent implements OnInit, OnDestroy {
       console.log(res);
     });
   }
-
 }

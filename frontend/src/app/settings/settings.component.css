@@ -60,7 +60,7 @@
 }
 
 .setnav-btn.active {
-  background-color: var(--color-secondary-container); 
+  background-color: var(--color-secondary-container);
   opacity: 1;
   font-weight: 600;
   color: var(--color-on-secondary-container);
@@ -68,7 +68,7 @@
 }
 
 .setnav-btn:not(.active):hover {
-  background-color: var(--color-secondary-container); 
+  background-color: var(--color-secondary-container);
   opacity: 0.6;
   font-weight: 500;
   color: var(--color-on-secondary-container);

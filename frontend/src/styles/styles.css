@@ -24,7 +24,6 @@
     scrollbar-width: thin !important;
     scrollbar-color: var(--color-secondary) transparent;
   }
-  
 }
 
 /* *::-webkit-scrollbar {
@@ -55,9 +54,11 @@ body {
   background-color: var(--color-surface);
   color: var(--color-on-surface);
   /* Add a transition on the background-color and color properties */
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
   /* overflow: hidden; */
-  
+
   @media (width < 765px) {
     overflow-y: auto;
   }
@@ -69,7 +70,7 @@ body {
 
 @media (max-width: 765px) {
   .sm-none {
-    display: none !important; 
+    display: none !important;
   }
 
   .sm-show {
@@ -292,13 +293,13 @@ button > svg {
   align-items: center;
   /* To add a different size button, set it's class to override --size in css */
   --size: 12px;
-  padding: var(--size) calc(var(--size)*2);
-  border: calc(var(--size)*0.25) solid;
+  padding: var(--size) calc(var(--size) * 2);
+  border: calc(var(--size) * 0.25) solid;
   border-color: transparent;
   font-size: var(--size);
   color: var(--color-on-secondary);
   background-color: var(--color-secondary);
-  border-radius: calc(var(--size)*6);
+  border-radius: calc(var(--size) * 6);
   font-weight: 600;
   cursor: pointer;
   position: relative;
@@ -308,7 +309,7 @@ button > svg {
 
 .animated-button svg {
   position: absolute;
-  width: calc(var(--size)*1.5);
+  width: calc(var(--size) * 1.5);
   fill: var(--color-on-secondary);
   z-index: 9;
   right: var(--size);
@@ -319,7 +320,7 @@ button > svg {
   position: relative;
   text-transform: uppercase;
   z-index: 1;
-  transform: translateX(calc(var(--size)*-0.75));
+  transform: translateX(calc(var(--size) * -0.75));
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -336,7 +337,7 @@ button > svg {
 .animated-button:hover:not(:disabled) {
   box-shadow: 0 0 0 var(--size) transparent;
   background-color: var(--color-tertiary);
-  border-radius: calc(var(--size)*0.75);
+  border-radius: calc(var(--size) * 0.75);
 }
 
 .animated-button:hover:not(:disabled) svg {
@@ -344,21 +345,28 @@ button > svg {
 }
 
 @keyframes anim-btn-move {
-  0% { right: var(--size); }
-  50% { right: calc(var(--size)*-1.25); }
-  51% { left: calc(var(--size)*-1.5); }
-  100% { left: var(--size); }
+  0% {
+    right: var(--size);
+  }
+  50% {
+    right: calc(var(--size) * -1.25);
+  }
+  51% {
+    left: calc(var(--size) * -1.5);
+  }
+  100% {
+    left: var(--size);
+  }
 }
 
 .animated-button:hover:not(:disabled) .text {
-  transform: translateX(calc(var(--size)*0.75));
+  transform: translateX(calc(var(--size) * 0.75));
 }
 
 .animated-button:active {
   scale: 0.95;
-  box-shadow: 0 0 0 calc(var(--size)*0.25) var(--color-outline-variant);
+  box-shadow: 0 0 0 calc(var(--size) * 0.25) var(--color-outline-variant);
 }
-
 
 /* Animated Loading Bars */
 .loading-wave {
@@ -421,7 +429,10 @@ button > svg {
 
 .copy {
   /* cursor: copy; Displays cursor as copy */
-  cursor: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23e8eaed"%3E%3Cpath d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"%2F%3E%3C%2Fsvg%3E') 16 0, auto;
+  cursor:
+    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23e8eaed"%3E%3Cpath d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"%2F%3E%3C%2Fsvg%3E')
+      16 0,
+    auto;
 }
 
 .tooltip .tooltiptext {
@@ -479,7 +490,7 @@ dialog {
 dialog[open] {
   display: block;
   opacity: 1;
-  translate: 0 0; 
+  translate: 0 0;
   text-align: center;
   background-color: var(--color-surface-container-highest);
   color: var(--color-on-surface);
@@ -500,7 +511,7 @@ dialog::backdrop {
 }
 
 dialog[open]::backdrop {
-  opacity: .75;
+  opacity: 0.75;
 }
 
 /* stylelint-disable-next-line at-rule-no-unknown */

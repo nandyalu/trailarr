@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import {Injectable} from '@angular/core';
+import {Observable, Subject, Subscription} from 'rxjs';
+import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 
 export interface MessageData {
   message: string;
@@ -8,10 +8,9 @@ export interface MessageData {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebsocketService {
-
   private socket$!: WebSocketSubject<any>;
   websocketSubscription?: Subscription;
   toastMessage = new Subject<MessageData>();
@@ -45,14 +44,14 @@ export class WebsocketService {
         },
         complete: () => {
           console.log('WebSocket connection closed');
-        }
+        },
       });
     }
     return this.socket$.asObservable();
   }
 
-  public showToast(message: string, type: string = "Success"): void {
-    this.toastMessage.next({ message, type });
+  public showToast(message: string, type: string = 'Success'): void {
+    this.toastMessage.next({message, type});
   }
 
   close() {
