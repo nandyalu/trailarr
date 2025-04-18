@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 
-import { MediaService } from './media.service';
+import {MediaService} from './media.service';
 
 describe('Media2Service', () => {
   let service: MediaService;

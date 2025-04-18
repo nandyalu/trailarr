@@ -1,0 +1,20 @@
+{
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.rulers": [140],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.rulers": [140],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.rulers": [140],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+  }
+}

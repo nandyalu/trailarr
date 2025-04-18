@@ -1,16 +1,16 @@
-import { NgClass, NgFor } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { SidenavComponent } from './nav/sidenav/sidenav.component';
-import { TopnavComponent } from './nav/topnav/topnav.component';
-import { MessageData, WebsocketService } from './services/websocket.service';
+import {NgClass, NgFor} from '@angular/common';
+import {Component, ElementRef, HostListener, ViewChild} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {Subscription} from 'rxjs';
+import {SidenavComponent} from './nav/sidenav/sidenav.component';
+import {TopnavComponent} from './nav/topnav/topnav.component';
+import {MessageData, WebsocketService} from './services/websocket.service';
 
 @Component({
-    selector: 'app-root',
-    imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.css'
+  selector: 'app-root',
+  imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   messages: MessageData[] = [];
@@ -19,7 +19,7 @@ export class AppComponent {
   private timeoutId: any;
   private readonly IDLE_LIMIT: number = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-  constructor(private websocketService: WebsocketService) { }
+  constructor(private websocketService: WebsocketService) {}
 
   ngOnInit() {
     // Reset the idle timer
@@ -32,12 +32,12 @@ export class AppComponent {
         setTimeout(() => {
           this.messages.pop();
         }, 3000);
-      }
+      },
     });
   }
 
   // Uncomment the below code to enable mouse movement detection too!
-  // @HostListener('document:mousemove', ['$event']) 
+  // @HostListener('document:mousemove', ['$event'])
   @HostListener('document:click', ['$event'])
   @HostListener('document:keypress', ['$event'])
   resetIdleTimer(): void {

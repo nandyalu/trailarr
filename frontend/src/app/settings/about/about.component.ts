@@ -1,16 +1,16 @@
-import { NgIf } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { TimeagoModule } from 'ngx-timeago';
-import { ServerStats, Settings } from '../../models/settings';
-import { SettingsService } from '../../services/settings.service';
-import { WebsocketService } from '../../services/websocket.service';
+import {NgIf} from '@angular/common';
+import {Component, ElementRef, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {TimeagoModule} from 'ngx-timeago';
+import {ServerStats, Settings} from '../../models/settings';
+import {SettingsService} from '../../services/settings.service';
+import {WebsocketService} from '../../services/websocket.service';
 
 @Component({
-    selector: 'app-about',
-    imports: [TimeagoModule, NgIf, FormsModule],
-    templateUrl: './about.component.html',
-    styleUrl: './about.component.css'
+  selector: 'app-about',
+  imports: [TimeagoModule, NgIf, FormsModule],
+  templateUrl: './about.component.html',
+  styleUrl: './about.component.css',
 })
 export class AboutComponent {
   settings?: Settings;
@@ -23,15 +23,14 @@ export class AboutComponent {
   currentPasswordVisible = false;
   newPasswordVisible = false;
 
-
   constructor(
     private settingsService: SettingsService,
-    private websocketService: WebsocketService
+    private websocketService: WebsocketService,
   ) {}
 
   ngOnInit() {
-    this.settingsService.getSettings().subscribe(settings => this.settings = settings);
-    this.settingsService.getServerStats().subscribe(serverStats => this.serverStats = serverStats);
+    this.settingsService.getSettings().subscribe((settings) => (this.settings = settings));
+    this.settingsService.getServerStats().subscribe((serverStats) => (this.serverStats = serverStats));
   }
 
   updatePassword() {
@@ -41,19 +40,19 @@ export class AboutComponent {
   async copyToClipboard(textToCopy: string) {
     if (!navigator.clipboard) {
       // Fallback to the old execCommand() way (for wider browser coverage)
-      const tempInput = document.createElement("input");
+      const tempInput = document.createElement('input');
       tempInput.value = textToCopy;
       document.body.appendChild(tempInput);
       tempInput.select();
-      document.execCommand("copy");
+      document.execCommand('copy');
       document.body.removeChild(tempInput);
-      this.websocketService.showToast("Copied to clipboard!");
+      this.websocketService.showToast('Copied to clipboard!');
     } else {
       try {
         await navigator.clipboard.writeText(textToCopy);
-        this.websocketService.showToast("Copied to clipboard!");
+        this.websocketService.showToast('Copied to clipboard!');
       } catch (err) {
-        this.websocketService.showToast("Error copying text to clipboard.", "Error");
+        this.websocketService.showToast('Error copying text to clipboard.', 'Error');
         console.error('Failed to copy: ', err);
       }
     }

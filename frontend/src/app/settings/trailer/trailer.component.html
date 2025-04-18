@@ -1,510 +1,706 @@
 <div class="message-container">
-    <div *ngFor="let message of updateResults" class="update-message"
-        [class.error]="message.toLowerCase().includes('error')"> {{message}} </div>
+  <div *ngFor="let message of updateResults" class="update-message" [class.error]="message.toLowerCase().includes('error')">
+    {{ message }}
+  </div>
 </div>
 <div class="trailer-container">
-    <div *ngIf="isLoading; else settingsLoaded" class="loading-wave center">
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-    </div>
+  <div *ngIf="isLoading; else settingsLoaded" class="loading-wave center">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
 </div>
 
 <ng-template #settingsLoaded>
-    <div *ngIf="settings?.log_level == 'DEBUG'" class="update-message error">
-        <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
+  <div *ngIf="settings?.log_level == 'DEBUG'" class="update-message error">
+    <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
+  </div>
+  <section class="section">
+    <h1>General</h1>
+    <hr />
+    <div class="trailer-content">
+      <div class="content-label">
+        <span>Monitor Trailers</span>
+        <small>Monitor media from Radarr/Sonarr to download trailers.</small>
+      </div>
+      <div id="monitor_enabled" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="2"
+          [class.selected]="option === settings?.monitor_enabled"
+          (click)="updateSetting('monitor_enabled', option)"
+          (keydown.enter)="updateSetting('monitor_enabled', option)"
+          (keydown.space)="updateSetting('monitor_enabled', option)"
+        >
+          {{ option }}
+        </div>
+      </div>
     </div>
-    <section class="section">
-        <h1>General</h1>
-        <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span>Monitor Trailers</span>
-                <small>Monitor media from Radarr/Sonarr to download trailers.</small>
-            </div>
-            <div id="monitor_enabled" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="2"
-                    [class.selected]="option === settings?.monitor_enabled"
-                    (click)="updateSetting('monitor_enabled', option)"
-                    (keydown.enter)="updateSetting('monitor_enabled', option)"
-                    (keydown.space)="updateSetting('monitor_enabled', option)">
-                    {{option}}
-                </div>
-            </div>
+    <div *ngIf="settings?.monitor_enabled" class="trailer-content">
+      <div class="content-label">
+        <label for="monitor_interval">Monitor Interval</label>
+        <small>Frequency (in minutes) to get new media data from Radarr/Sonarr.</small>
+        <small>Default is 60. Minuimum is 10. Container restart required to apply new interval.</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="monitor_interval"
+          type="number"
+          [(ngModel)]="monitorInterval"
+          maxlength="6"
+          placeholder="Monitor Interval"
+          autocomplete="off"
+          tabindex="3"
+        />
+        <button
+          *ngIf="settings?.monitor_interval != monitorInterval"
+          class="primary icononly-button"
+          id="update_monitor_interval"
+          tabindex="4"
+          (click)="updateSetting('monitor_interval', monitorInterval)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="settings?.monitor_enabled" class="section">
+    <h1>Files</h1>
+    <hr />
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="wait_for_media">Wait for Media</span>
+        <small>Wait for media to be imported into Radarr/Sonarr before downloading trailers.</small>
+      </div>
+      <div id="wait_for_media" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="5"
+          [class.selected]="option === settings?.wait_for_media"
+          (click)="updateSetting('wait_for_media', option)"
+          (keydown.enter)="updateSetting('wait_for_media', option)"
+          (keydown.space)="updateSetting('wait_for_media', option)"
+        >
+          {{ option }}
         </div>
-        <div *ngIf="settings?.monitor_enabled" class="trailer-content">
-            <div class="content-label">
-                <label for="monitor_interval">Monitor Interval</label>
-                <small>Frequency (in minutes) to get new media data from Radarr/Sonarr.</small>
-                <small>Default is 60. Minuimum is 10. Container restart required to apply new interval.</small>
-            </div>
-            <div class="text-input">
-                <input id="monitor_interval" type="number" [(ngModel)]="monitorInterval" maxlength="6"
-                    placeholder="Monitor Interval" autocomplete="off" tabindex="3">
-                <button *ngIf="settings?.monitor_interval != monitorInterval" class="primary icononly-button"
-                    id="update_monitor_interval" tabindex="4"
-                    (click)="updateSetting('monitor_interval', monitorInterval)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_folder_movie">Trailer Folder Movie</span>
+        <small>Save trailer file in a 'Trailers' folder inside Movie folder.</small>
+      </div>
+      <div id="trailer_folder_movie" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="5"
+          [class.selected]="option === settings?.trailer_folder_movie"
+          (click)="updateSetting('trailer_folder_movie', option)"
+          (keydown.enter)="updateSetting('trailer_folder_movie', option)"
+          (keydown.space)="updateSetting('trailer_folder_movie', option)"
+        >
+          {{ option }}
         </div>
-    </section>
-    <section *ngIf="settings?.monitor_enabled" class="section">
-        <h1>Files</h1>
-        <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="wait_for_media">Wait for Media</span>
-                <small>Wait for media to be imported into Radarr/Sonarr before downloading trailers.</small>
-            </div>
-            <div id="wait_for_media" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="5"
-                    [class.selected]="option === settings?.wait_for_media"
-                    (click)="updateSetting('wait_for_media', option)"
-                    (keydown.enter)="updateSetting('wait_for_media', option)"
-                    (keydown.space)="updateSetting('wait_for_media', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_folder_series">Trailer Folder Series</span>
+        <small>Save trailer file in a 'Trailers' folder inside Series folder.</small>
+      </div>
+      <div id="trailer_folder_series" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="6"
+          [class.selected]="option === settings?.trailer_folder_series"
+          (click)="updateSetting('trailer_folder_series', option)"
+          (keydown.enter)="updateSetting('trailer_folder_series', option)"
+          (keydown.space)="updateSetting('trailer_folder_series', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_folder_movie">Trailer Folder Movie</span>
-                <small>Save trailer file in a 'Trailers' folder inside Movie folder.</small>
-            </div>
-            <div id="trailer_folder_movie" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="5"
-                    [class.selected]="option === settings?.trailer_folder_movie"
-                    (click)="updateSetting('trailer_folder_movie', option)"
-                    (keydown.enter)="updateSetting('trailer_folder_movie', option)"
-                    (keydown.space)="updateSetting('trailer_folder_movie', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="settings?.monitor_enabled" class="section">
+    <h1>Trailer</h1>
+    <hr />
+    <div *ngIf="settings?.monitor_enabled" class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_min_duration">Miminum Trailer Duration</label>
+        <small>Minimum trailer duration (in seconds) to consider while searching.</small>
+        <small>Default is 30. Minuimum is 30.</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="trailer_min_duration"
+          type="number"
+          [(ngModel)]="minDuration"
+          maxlength="6"
+          placeholder="60"
+          autocomplete="off"
+          tabindex="6"
+        />
+        <button
+          *ngIf="settings?.trailer_min_duration != minDuration"
+          class="primary icononly-button"
+          id="update_trailer_min_duration"
+          tabindex="6"
+          (click)="updateSetting('trailer_min_duration', minDuration)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_max_duration">Maximum Trailer Duration</label>
+        <small>Maximum trailer duration (in seconds) to consider while searching.</small>
+        <small>Default is 600. Should be atleast `Minimum Duration + 60`. Maximum is 600.</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="trailer_max_duration"
+          type="number"
+          [(ngModel)]="maxDuration"
+          maxlength="6"
+          placeholder="300"
+          autocomplete="off"
+          tabindex="7"
+        />
+        <button
+          *ngIf="settings?.trailer_max_duration != maxDuration"
+          class="primary icononly-button"
+          id="update_trailer_max_duration"
+          tabindex="7"
+          (click)="updateSetting('trailer_max_duration', maxDuration)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_resolution">Trailer Resolution</label>
+        <small>Resolution of the trailer video file.</small>
+        <small>Valid values: 240, 360, 480, 720, 1080, 1440, 2160</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="trailer_resolution"
+          type="number"
+          [(ngModel)]="resolution"
+          maxlength="4"
+          placeholder="Trailer Resolution"
+          autocomplete="off"
+          tabindex="8"
+        />
+        <button
+          *ngIf="settings?.trailer_resolution != resolution"
+          class="primary icononly-button"
+          id="update_trailer_resolution"
+          tabindex="8"
+          (click)="updateSetting('trailer_resolution', resolution)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_file_format">Trailer File Format</span>
+        <small>Final file format(extension) of the trailer file.</small>
+      </div>
+      <div id="trailer_file_format" class="options-bar">
+        <div
+          *ngFor="let option of fileFormats"
+          class="option"
+          tabindex="9"
+          [class.selected]="option === settings?.trailer_file_format"
+          (click)="updateSetting('trailer_file_format', option)"
+          (keydown.enter)="updateSetting('trailer_file_format', option)"
+          (keydown.space)="updateSetting('trailer_file_format', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_folder_series">Trailer Folder Series</span>
-                <small>Save trailer file in a 'Trailers' folder inside Series folder.</small>
-            </div>
-            <div id="trailer_folder_series" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="6"
-                    [class.selected]="option === settings?.trailer_folder_series"
-                    (click)="updateSetting('trailer_folder_series', option)"
-                    (keydown.enter)="updateSetting('trailer_folder_series', option)"
-                    (keydown.space)="updateSetting('trailer_folder_series', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_video_format">Trailer Video Format</span>
+        <small>Final video format(codec) of the trailer file.</small>
+      </div>
+      <div id="trailer_video_format" class="options-bar">
+        <div
+          *ngFor="let option of videoFormats"
+          class="option"
+          tabindex="10"
+          [class.selected]="option === settings?.trailer_video_format"
+          (click)="updateSetting('trailer_video_format', option)"
+          (keydown.enter)="updateSetting('trailer_video_format', option)"
+          (keydown.space)="updateSetting('trailer_video_format', option)"
+        >
+          {{ option }}
         </div>
-    </section>
-    <section *ngIf="settings?.monitor_enabled" class="section">
-        <h1>Trailer</h1>
-        <hr>
-        <div *ngIf="settings?.monitor_enabled" class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_min_duration">Miminum Trailer Duration</label>
-                <small>Minimum trailer duration (in seconds) to consider while searching.</small>
-                <small>Default is 30. Minuimum is 30.</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_min_duration" type="number" [(ngModel)]="minDuration" maxlength="6"
-                    placeholder="60" autocomplete="off" tabindex="6">
-                <button *ngIf="settings?.trailer_min_duration != minDuration" class="primary icononly-button"
-                    id="update_trailer_min_duration" tabindex="6" (click)="updateSetting('trailer_min_duration', minDuration)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_audio_format">Trailer Audio Format</span>
+        <small>Final audio format(codec) of the trailer file.</small>
+      </div>
+      <div id="trailer_audio_format" class="options-bar">
+        <div
+          *ngFor="let option of audioFormats"
+          class="option"
+          tabindex="11"
+          [class.selected]="option === settings?.trailer_audio_format"
+          (click)="updateSetting('trailer_audio_format', option)"
+          (keydown.enter)="updateSetting('trailer_audio_format', option)"
+          (keydown.space)="updateSetting('trailer_audio_format', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_max_duration">Maximum Trailer Duration</label>
-                <small>Maximum trailer duration (in seconds) to consider while searching.</small>
-                <small>Default is 600. Should be atleast `Minimum Duration + 60`. Maximum is 600.</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_max_duration" type="number" [(ngModel)]="maxDuration" maxlength="6"
-                    placeholder="300" autocomplete="off" tabindex="7">
-                <button *ngIf="settings?.trailer_max_duration != maxDuration" class="primary icononly-button"
-                    id="update_trailer_max_duration" tabindex="7" (click)="updateSetting('trailer_max_duration', maxDuration)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_subtitles_enabled">Trailer Subtitles Enabled</span>
+        <small>Download subtitles and added them to trailer file, if available.</small>
+      </div>
+      <div id="trailer_subtitles_enabled" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="12"
+          [class.selected]="option === settings?.trailer_subtitles_enabled"
+          (click)="updateSetting('trailer_subtitles_enabled', option)"
+          (keydown.enter)="updateSetting('trailer_subtitles_enabled', option)"
+          (keydown.space)="updateSetting('trailer_subtitles_enabled', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_resolution">Trailer Resolution</label>
-                <small>Resolution of the trailer video file.</small>
-                <small>Valid values: 240, 360, 480, 720, 1080, 1440, 2160</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_resolution" type="number" [(ngModel)]="resolution" maxlength="4"
-                    placeholder="Trailer Resolution" autocomplete="off" tabindex="8">
-                <button *ngIf="settings?.trailer_resolution != resolution" class="primary icononly-button"
-                    id="update_trailer_resolution" tabindex="8"
-                    (click)="updateSetting('trailer_resolution', resolution)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
+      </div>
+    </div>
+    <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_subtitles_format">Trailer Subtitles Format</span>
+        <small>Final subtitles format in the trailer file.</small>
+      </div>
+      <div id="trailer_subtitles_format" class="options-bar">
+        <div
+          *ngFor="let option of subtitleFormats"
+          class="option"
+          tabindex="13"
+          [class.selected]="option === settings?.trailer_subtitles_format"
+          (click)="updateSetting('trailer_subtitles_format', option)"
+          (keydown.enter)="updateSetting('trailer_subtitles_format', option)"
+          (keydown.space)="updateSetting('trailer_subtitles_format', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_file_format">Trailer File Format</span>
-                <small>Final file format(extension) of the trailer file.</small>
-            </div>
-            <div id="trailer_file_format" class="options-bar">
-                <div *ngFor="let option of fileFormats" class="option" tabindex="9"
-                    [class.selected]="option === settings?.trailer_file_format"
-                    (click)="updateSetting('trailer_file_format', option)"
-                    (keydown.enter)="updateSetting('trailer_file_format', option)"
-                    (keydown.space)="updateSetting('trailer_file_format', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_subtitles_language">Trailer Subtitles Language</label>
+        <small>Subtitles language of the trailer file. 2-letter ISO language code.</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="trailer_subtitles_language"
+          type="text"
+          [(ngModel)]="subtitleLanguage"
+          placeholder="Trailer Subtitles Language"
+          autocomplete="off"
+          tabindex="14"
+        />
+        <button
+          *ngIf="subtitleLanguage != settings?.trailer_subtitles_language"
+          class="primary icononly-button"
+          id="update_trailer_subtitles_language"
+          tabindex="15"
+          (click)="updateSetting('trailer_subtitles_language', subtitleLanguage)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="settings?.monitor_enabled" class="section">
+    <h1>Other Options</h1>
+    <hr />
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_embed_metadata">Trailer Embed Metadata</span>
+        <small>Embed info from youtube video into the trailer file.</small>
+      </div>
+      <div id="trailer_embed_metadata" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="16"
+          [class.selected]="option === settings?.trailer_embed_metadata"
+          (click)="updateSetting('trailer_embed_metadata', option)"
+          (keydown.enter)="updateSetting('trailer_embed_metadata', option)"
+          (keydown.space)="updateSetting('trailer_embed_metadata', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_video_format">Trailer Video Format</span>
-                <small>Final video format(codec) of the trailer file.</small>
-            </div>
-            <div id="trailer_video_format" class="options-bar">
-                <div *ngFor="let option of videoFormats" class="option" tabindex="10"
-                    [class.selected]="option === settings?.trailer_video_format"
-                    (click)="updateSetting('trailer_video_format', option)"
-                    (keydown.enter)="updateSetting('trailer_video_format', option)"
-                    (keydown.space)="updateSetting('trailer_video_format', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_remove_sponsorblocks">Trailer Remove SponsorBlocks</span>
+        <small>Remove Sponsor Blocks like intro, outro blocks from youtube video if available.</small>
+      </div>
+      <div id="trailer_remove_sponsorblocks" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="17"
+          [class.selected]="option === settings?.trailer_remove_sponsorblocks"
+          (click)="updateSetting('trailer_remove_sponsorblocks', option)"
+          (keydown.enter)="updateSetting('trailer_remove_sponsorblocks', option)"
+          (keydown.space)="updateSetting('trailer_remove_sponsorblocks', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_audio_format">Trailer Audio Format</span>
-                <small>Final audio format(codec) of the trailer file.</small>
-            </div>
-            <div id="trailer_audio_format" class="options-bar">
-                <div *ngFor="let option of audioFormats" class="option" tabindex="11"
-                    [class.selected]="option === settings?.trailer_audio_format"
-                    (click)="updateSetting('trailer_audio_format', option)"
-                    (keydown.enter)="updateSetting('trailer_audio_format', option)"
-                    (keydown.space)="updateSetting('trailer_audio_format', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_web_optimized">Trailer Web Optimized</span>
+        <small
+          >Enabling this will convert the video to a web optimized video, useful for streaming video over network, might slightly increase
+          file size.</small
+        >
+      </div>
+      <div id="trailer_web_optimized" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="18"
+          [class.selected]="option === settings?.trailer_web_optimized"
+          (click)="updateSetting('trailer_web_optimized', option)"
+          (keydown.enter)="updateSetting('trailer_web_optimized', option)"
+          (keydown.space)="updateSetting('trailer_web_optimized', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_subtitles_enabled">Trailer Subtitles Enabled</span>
-                <small>Download subtitles and added them to trailer file, if available.</small>
-            </div>
-            <div id="trailer_subtitles_enabled" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="12"
-                    [class.selected]="option === settings?.trailer_subtitles_enabled"
-                    (click)="updateSetting('trailer_subtitles_enabled', option)"
-                    (keydown.enter)="updateSetting('trailer_subtitles_enabled', option)"
-                    (keydown.space)="updateSetting('trailer_subtitles_enabled', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="settings?.monitor_enabled" class="section">
+    <h1>Advanced Options</h1>
+    <hr />
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="log_level">Log Level</span>
+        <small>Set logging level for the app!</small>
+        <!-- <small>Container restart needed to take effect!</small> -->
+        <!-- <small>Set this to Debug if you're having issues!!!</small> -->
+      </div>
+      <div id="log_level" class="options-bar">
+        <div
+          *ngFor="let option of loggingOptions"
+          class="option"
+          tabindex="19"
+          [class.selected]="option.toLowerCase() == settings?.log_level?.toLowerCase()"
+          (click)="updateSetting('log_level', option)"
+          (keydown.enter)="updateSetting('log_level', option)"
+          (keydown.space)="updateSetting('log_level', option)"
+        >
+          {{ option }}
         </div>
-        <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_subtitles_format">Trailer Subtitles Format</span>
-                <small>Final subtitles format in the trailer file.</small>
-            </div>
-            <div id="trailer_subtitles_format" class="options-bar">
-                <div *ngFor="let option of subtitleFormats" class="option" tabindex="13"
-                    [class.selected]="option === settings?.trailer_subtitles_format"
-                    (click)="updateSetting('trailer_subtitles_format', option)"
-                    (keydown.enter)="updateSetting('trailer_subtitles_format', option)"
-                    (keydown.space)="updateSetting('trailer_subtitles_format', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_audio_volume_level">Trailer Audio Volume Level</label>
+        <small>Volume level of the trailer audio. Value less than 100 will reduce loudness, and viceversa!</small>
+        <small>Default is 100. Minuimum is 1. Maximum is 200.</small>
+      </div>
+      <div class="text-input">
+        <input
+          id="trailer_audio_volume_level"
+          class="input-range"
+          type="range"
+          min="1"
+          max="200"
+          [(ngModel)]="audioVolumeLevel"
+          autocomplete="off"
+          tabindex="20"
+        />
+        <span class="input-range-value">{{ audioVolumeLevel }}</span>
+        <button
+          *ngIf="settings?.trailer_audio_volume_level != audioVolumeLevel"
+          class="primary icononly-button"
+          id="update_trailer_audio_volume_level"
+          tabindex="20"
+          (click)="updateSetting('trailer_audio_volume_level', audioVolumeLevel)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="exclude_words">Exclude Words in Title</label>
+        <small>Exclude downloading a video if it contains certain words in video title. Seperate words with a comma (,)</small>
+        <small>Example: 'comment,teaser,untitled'</small>
+      </div>
+      <div class="text-input">
+        <input
+          class="input-path"
+          id="exclude_words"
+          type="text"
+          [(ngModel)]="excludeWords"
+          placeholder="comment,teaser"
+          autocomplete="off"
+          tabindex="21"
+        />
+        <button
+          *ngIf="excludeWords != settings?.exclude_words"
+          class="primary icononly-button"
+          id="update_exclude_words"
+          tabindex="21"
+          (click)="updateSetting('exclude_words', excludeWords)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_file_name">Trailer File Name</label>
+        <small
+          >Customize trailer file name to use for downloaded trailers. Available options: title, year, resolution, vcodec, acodec</small
+        >
+      </div>
+      <div class="text-input">
+        <input
+          class="input-path"
+          id="trailer_file_name"
+          type="text"
+          [(ngModel)]="trailerFileName"
+          placeholder="Trailer File Name Format"
+          autocomplete="off"
+          tabindex="22"
+        />
+        <button
+          *ngIf="trailerFileName != settings?.trailer_file_name"
+          class="primary icononly-button"
+          id="update_trailer_file_name"
+          tabindex="22"
+          (click)="updateSetting('trailer_file_name', trailerFileName)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_always_search">Trailer Always Search</span>
+        <small>Enable this setting to always search YouTube for trailers.</small>
+      </div>
+      <div class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="23"
+          [class.selected]="option === settings?.trailer_always_search"
+          (click)="updateSetting('trailer_always_search', option)"
+          (keydown.enter)="updateSetting('trailer_always_search', option)"
+          (keydown.space)="updateSetting('trailer_always_search', option)"
+        >
+          {{ option }}
         </div>
-        <div *ngIf="settings?.trailer_subtitles_enabled" class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_subtitles_language">Trailer Subtitles Language</label>
-                <small>Subtitles language of the trailer file. 2-letter ISO language code.</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_subtitles_language" type="text" [(ngModel)]="subtitleLanguage"
-                    placeholder="Trailer Subtitles Language" autocomplete="off" tabindex="14">
-                <button *ngIf="subtitleLanguage != settings?.trailer_subtitles_language" class="primary icononly-button"
-                    id="update_trailer_subtitles_language" tabindex="15"
-                    (click)="updateSetting('trailer_subtitles_language', subtitleLanguage)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="trailer_search_query">Trailer Search Query</label>
+        <small>query to use when searching for trailers on YouTube</small>
+      </div>
+      <div class="text-input">
+        <input
+          class="input-path"
+          id="trailer_search_query"
+          type="text"
+          [(ngModel)]="trailerSearchQuery"
+          placeholder="Trailer Search Query"
+          autocomplete="off"
+          tabindex="24"
+        />
+        <button
+          *ngIf="trailerSearchQuery != settings?.trailer_search_query"
+          class="primary icononly-button"
+          id="update_trailer_search_query"
+          tabindex="24"
+          (click)="updateSetting('trailer_search_query', trailerSearchQuery)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="yt_cookies_path">Yt-dlp Cookies Path</label>
+        <small>Use cookies from a file for downloading trailers with yt-dlp.</small>
+      </div>
+      <div class="text-input">
+        <input
+          class="input-path"
+          id="yt_cookies_path"
+          type="text"
+          [(ngModel)]="ytCookiesPath"
+          placeholder="/config/cookies.txt"
+          autocomplete="off"
+          tabindex="25"
+        />
+        <button
+          *ngIf="ytCookiesPath != settings?.yt_cookies_path"
+          class="primary icononly-button"
+          id="update_yt_cookies_path"
+          tabindex="25"
+          (click)="updateSetting('yt_cookies_path', ytCookiesPath)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="settings?.monitor_enabled" class="section">
+    <h1>Experimental Options</h1>
+    <p>These are experimental options, might not work as expected!</p>
+    <hr />
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="trailer_remove_silence">Remove Silence</span>
+        <small>Detect and remove silence (3s+, below 30dB) at end of trailer</small>
+      </div>
+      <div id="trailer_remove_silence" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="26"
+          [class.selected]="option === settings?.trailer_remove_silence"
+          (click)="updateSetting('trailer_remove_silence', option)"
+          (keydown.enter)="updateSetting('trailer_remove_silence', option)"
+          (keydown.space)="updateSetting('trailer_remove_silence', option)"
+        >
+          {{ option }}
         </div>
-    </section>
-    <section *ngIf="settings?.monitor_enabled" class="section">
-        <h1>Other Options</h1>
-        <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_embed_metadata">Trailer Embed Metadata</span>
-                <small>Embed info from youtube video into the trailer file.</small>
-            </div>
-            <div id="trailer_embed_metadata" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="16"
-                    [class.selected]="option === settings?.trailer_embed_metadata"
-                    (click)="updateSetting('trailer_embed_metadata', option)"
-                    (keydown.enter)="updateSetting('trailer_embed_metadata', option)"
-                    (keydown.space)="updateSetting('trailer_embed_metadata', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="new_download_method">New Download Method</span>
+        <small>Use the new download and conversion method for trailers</small>
+        <small>HW Acceleration is available only when this is enabled.</small>
+      </div>
+      <div id="new_download_method" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="27"
+          [class.selected]="option === settings?.new_download_method"
+          (click)="updateSetting('new_download_method', option)"
+          (keydown.enter)="updateSetting('new_download_method', option)"
+          (keydown.space)="updateSetting('new_download_method', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_remove_sponsorblocks">Trailer Remove SponsorBlocks</span>
-                <small>Remove Sponsor Blocks like intro, outro blocks from youtube video if available.</small>
-            </div>
-            <div id="trailer_remove_sponsorblocks" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="17"
-                    [class.selected]="option === settings?.trailer_remove_sponsorblocks"
-                    (click)="updateSetting('trailer_remove_sponsorblocks', option)"
-                    (keydown.enter)="updateSetting('trailer_remove_sponsorblocks', option)"
-                    (keydown.space)="updateSetting('trailer_remove_sponsorblocks', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    </div>
+    @if (settings?.new_download_method && settings?.nvidia_gpu_available) {
+      <div class="trailer-content">
+        <div class="content-label">
+          <span for="trailer_hardware_acceleration">Hardware Acceleration</span>
+          <small>Use Hardware Acceleration to convert trailers to specified format.</small>
+          <small>Only applies to 'h264' and 'h265' video codecs</small>
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_web_optimized">Trailer Web Optimized</span>
-                <small>Enabling this will convert the video to a web optimized video, useful for streaming video over
-                    network, might slightly increase file size.</small>
-            </div>
-            <div id="trailer_web_optimized" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="18"
-                    [class.selected]="option === settings?.trailer_web_optimized"
-                    (click)="updateSetting('trailer_web_optimized', option)"
-                    (keydown.enter)="updateSetting('trailer_web_optimized', option)"
-                    (keydown.space)="updateSetting('trailer_web_optimized', option)">
-                    {{option}}
-                </div>
-            </div>
+        <div id="trailer_hardware_acceleration" class="options-bar">
+          <div
+            *ngFor="let option of trueFalseOptions"
+            class="option"
+            tabindex="28"
+            [class.selected]="option === settings?.trailer_hardware_acceleration"
+            (click)="updateSetting('trailer_hardware_acceleration', option)"
+            (keydown.enter)="updateSetting('trailer_hardware_acceleration', option)"
+            (keydown.space)="updateSetting('trailer_hardware_acceleration', option)"
+          >
+            {{ option }}
+          </div>
         </div>
-    </section>
-    <section *ngIf="settings?.monitor_enabled" class="section">
-        <h1>Advanced Options</h1>
-        <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="log_level">Log Level</span>
-                <small>Set logging level for the app!</small>
-                <!-- <small>Container restart needed to take effect!</small> -->
-                <!-- <small>Set this to Debug if you're having issues!!!</small> -->
-            </div>
-            <div id="log_level" class="options-bar">
-                <div *ngFor="let option of loggingOptions" class="option" tabindex="19"
-                    [class.selected]="option.toLowerCase() == settings?.log_level?.toLowerCase()" (click)="updateSetting('log_level', option)"
-                    (keydown.enter)="updateSetting('log_level', option)" (keydown.space)="updateSetting('log_level', option)">
-                    {{option}}
-                </div>
-            </div>
+      </div>
+    }
+    <div class="trailer-content">
+      <div class="content-label">
+        <span for="update_ytdlp">Update Yt-dlp</span>
+        <small>Update yt-dlp to latest version during container startup</small>
+        <small>You need to restart the container to update</small>
+      </div>
+      <div id="update_ytdlp" class="options-bar">
+        <div
+          *ngFor="let option of trueFalseOptions"
+          class="option"
+          tabindex="29"
+          [class.selected]="option === settings?.update_ytdlp"
+          (click)="updateSetting('update_ytdlp', option)"
+          (keydown.enter)="updateSetting('update_ytdlp', option)"
+          (keydown.space)="updateSetting('update_ytdlp', option)"
+        >
+          {{ option }}
         </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_audio_volume_level">Trailer Audio Volume Level</label>
-                <small>Volume level of the trailer audio. Value less than 100 will reduce loudness, and viceversa!</small>
-                <small>Default is 100. Minuimum is 1. Maximum is 200.</small>
-            </div>
-            <div class="text-input">
-                <input id="trailer_audio_volume_level" class="input-range" type="range" min="1" max="200"
-                    [(ngModel)]="audioVolumeLevel" autocomplete="off" tabindex="20">
-                <span class="input-range-value">{{audioVolumeLevel}}</span>
-                <button *ngIf="settings?.trailer_audio_volume_level != audioVolumeLevel" class="primary icononly-button"
-                    id="update_trailer_audio_volume_level" tabindex="20"
-                    (click)="updateSetting('trailer_audio_volume_level', audioVolumeLevel)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="exclude_words">Exclude Words in Title</label>
-                <small>Exclude downloading a video if it contains certain words in video title. Seperate words with a comma (,)</small>
-                <small>Example: 'comment,teaser,untitled'</small>
-            </div>
-            <div class="text-input">
-                <input class="input-path" id="exclude_words" type="text" [(ngModel)]="excludeWords"
-                    placeholder="comment,teaser" autocomplete="off" tabindex="21">
-                <button *ngIf="excludeWords != settings?.exclude_words" class="primary icononly-button"
-                    id="update_exclude_words" tabindex="21" (click)="updateSetting('exclude_words', excludeWords)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_file_name">Trailer File Name</label>
-                <small>Customize trailer file name to use for downloaded trailers. Available options: title, year, resolution, vcodec, acodec</small>
-            </div>
-            <div class="text-input">
-                <input class="input-path" id="trailer_file_name" type="text" [(ngModel)]="trailerFileName"
-                    placeholder="Trailer File Name Format" autocomplete="off" tabindex="22">
-                <button *ngIf="trailerFileName != settings?.trailer_file_name" class="primary icononly-button"
-                    id="update_trailer_file_name" tabindex="22" (click)="updateSetting('trailer_file_name', trailerFileName)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_always_search">Trailer Always Search</span>
-                <small>Enable this setting to always search YouTube for trailers.</small>
-            </div>
-            <div class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="23"
-                    [class.selected]="option === settings?.trailer_always_search"
-                    (click)="updateSetting('trailer_always_search', option)"
-                    (keydown.enter)="updateSetting('trailer_always_search', option)"
-                    (keydown.space)="updateSetting('trailer_always_search', option)">
-                    {{option}}
-                </div>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="trailer_search_query">Trailer Search Query</label>
-                <small>query to use when searching for trailers on YouTube</small>
-            </div>
-            <div class="text-input">
-                <input class="input-path" id="trailer_search_query" type="text" [(ngModel)]="trailerSearchQuery"
-                    placeholder="Trailer Search Query" autocomplete="off" tabindex="24">
-                <button *ngIf="trailerSearchQuery != settings?.trailer_search_query" class="primary icononly-button"
-                    id="update_trailer_search_query" tabindex="24"
-                    (click)="updateSetting('trailer_search_query', trailerSearchQuery)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="yt_cookies_path">Yt-dlp Cookies Path</label>
-                <small>Use cookies from a file for downloading trailers with yt-dlp.</small>
-            </div>
-            <div class="text-input">
-                <input class="input-path" id="yt_cookies_path" type="text" [(ngModel)]="ytCookiesPath"
-                    placeholder="/config/cookies.txt" autocomplete="off" tabindex="25">
-                <button *ngIf="ytCookiesPath != settings?.yt_cookies_path" class="primary icononly-button"
-                    id="update_yt_cookies_path" tabindex="25"
-                    (click)="updateSetting('yt_cookies_path', ytCookiesPath)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    
-    </section>
-    <section *ngIf="settings?.monitor_enabled" class="section">
-        <h1>Experimental Options</h1>
-        <p>These are experimental options, might not work as expected!</p>
-        <hr>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="trailer_remove_silence">Remove Silence</span>
-                <small>Detect and remove silence (3s+, below 30dB) at end of trailer</small>
-            </div>
-            <div id="trailer_remove_silence" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="26"
-                    [class.selected]="option === settings?.trailer_remove_silence"
-                    (click)="updateSetting('trailer_remove_silence', option)"
-                    (keydown.enter)="updateSetting('trailer_remove_silence', option)"
-                    (keydown.space)="updateSetting('trailer_remove_silence', option)">
-                    {{option}}
-                </div>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="new_download_method">New Download Method</span>
-                <small>Use the new download and conversion method for trailers</small>
-                <small>HW Acceleration is available only when this is enabled.</small>
-            </div>
-            <div id="new_download_method" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="27"
-                    [class.selected]="option === settings?.new_download_method"
-                    (click)="updateSetting('new_download_method', option)"
-                    (keydown.enter)="updateSetting('new_download_method', option)"
-                    (keydown.space)="updateSetting('new_download_method', option)">
-                    {{option}}
-                </div>
-            </div>
-        </div>
-        @if (settings?.new_download_method && settings?.nvidia_gpu_available) {
-            <div class="trailer-content">
-                <div class="content-label">
-                    <span for="trailer_hardware_acceleration">Hardware Acceleration</span>
-                    <small>Use Hardware Acceleration to convert trailers to specified format.</small>
-                    <small>Only applies to 'h264' and 'h265' video codecs</small>
-                </div>
-                <div id="trailer_hardware_acceleration" class="options-bar">
-                    <div *ngFor="let option of trueFalseOptions" class="option" tabindex="28"
-                    [class.selected]="option === settings?.trailer_hardware_acceleration"
-                    (click)="updateSetting('trailer_hardware_acceleration', option)"
-                    (keydown.enter)="updateSetting('trailer_hardware_acceleration', option)"
-                    (keydown.space)="updateSetting('trailer_hardware_acceleration', option)">
-                    {{option}}
-                    </div>
-                </div>
-            </div>
-        }
-        <div class="trailer-content">
-            <div class="content-label">
-                <span for="update_ytdlp">Update Yt-dlp</span>
-                <small>Update yt-dlp to latest version during container startup</small>
-                <small>You need to restart the container to update</small>
-            </div>
-            <div id="update_ytdlp" class="options-bar">
-                <div *ngFor="let option of trueFalseOptions" class="option" tabindex="29"
-                [class.selected]="option === settings?.update_ytdlp"
-                (click)="updateSetting('update_ytdlp', option)"
-                (keydown.enter)="updateSetting('update_ytdlp', option)"
-                (keydown.space)="updateSetting('update_ytdlp', option)">
-                {{option}}
-                </div>
-            </div>
-        </div>
-        <div class="trailer-content">
-            <div class="content-label">
-                <label for="url_base">URL Base</label>
-                <small>URL Base for use with reverse proxy configuration</small>
-                <small>Restart required to take effect!</small>
-            </div>
-            <div class="text-input">
-                <input class="input-path" id="url_base" type="text" [(ngModel)]="urlBase"
-                    placeholder="trailarr" autocomplete="off" tabindex="30">
-                <button *ngIf="urlBase != settings?.url_base" class="primary icononly-button"
-                    id="url_base" tabindex="30" (click)="updateSetting('url_base', urlBase)">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </section>
+      </div>
+    </div>
+    <div class="trailer-content">
+      <div class="content-label">
+        <label for="url_base">URL Base</label>
+        <small>URL Base for use with reverse proxy configuration</small>
+        <small>Restart required to take effect!</small>
+      </div>
+      <div class="text-input">
+        <input class="input-path" id="url_base" type="text" [(ngModel)]="urlBase" placeholder="trailarr" autocomplete="off" tabindex="30" />
+        <button
+          *ngIf="urlBase != settings?.url_base"
+          class="primary icononly-button"
+          id="url_base"
+          tabindex="30"
+          (click)="updateSetting('url_base', urlBase)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
 </ng-template>

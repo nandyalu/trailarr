@@ -1,4 +1,4 @@
-import { DisplayTitlePipe } from './display-title.pipe';
+import {DisplayTitlePipe} from './display-title.pipe';
 
 describe('DisplayTitlePipe', () => {
   it('create an instance', () => {

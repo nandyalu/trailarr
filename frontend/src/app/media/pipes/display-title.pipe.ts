@@ -1,10 +1,9 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 
 @Pipe({
-  name: 'displayTitle'
+  name: 'displayTitle',
 })
 export class DisplayTitlePipe implements PipeTransform {
-
   /**
    * Formats the given title string by removing the substring '_at' and capitalizing the first letter.
    *
@@ -15,5 +14,4 @@ export class DisplayTitlePipe implements PipeTransform {
     title = title.replace('_at', '');
     return title.charAt(0).toUpperCase() + title.slice(1);
   }
-
 }

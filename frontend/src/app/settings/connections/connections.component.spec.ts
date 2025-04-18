@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ConnectionsComponent } from './connections.component';
+import {ConnectionsComponent} from './connections.component';
 
 describe('ConnectionsComponent', () => {
   let component: ConnectionsComponent;
@@ -8,10 +8,9 @@ describe('ConnectionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConnectionsComponent]
-    })
-    .compileComponents();
-    
+      imports: [ConnectionsComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ConnectionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ShowConnectionsComponent } from './show-connections.component';
+import {ShowConnectionsComponent} from './show-connections.component';
 
 describe('ShowConnectionsComponent', () => {
   let component: ShowConnectionsComponent;
@@ -8,10 +8,9 @@ describe('ShowConnectionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ShowConnectionsComponent]
-    })
-    .compileComponents();
-    
+      imports: [ShowConnectionsComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ShowConnectionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

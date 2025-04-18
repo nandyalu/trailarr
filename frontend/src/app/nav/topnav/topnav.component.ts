@@ -1,16 +1,16 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, HostListener, Renderer2 } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { SearchMedia } from '../../models/media';
-import { MediaService } from '../../services/media.service';
+import {NgFor, NgIf} from '@angular/common';
+import {Component, ElementRef, HostListener, Renderer2} from '@angular/core';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {Router, RouterLink} from '@angular/router';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {SearchMedia} from '../../models/media';
+import {MediaService} from '../../services/media.service';
 
 @Component({
-    selector: 'app-topnav',
-    imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
-    templateUrl: './topnav.component.html',
-    styleUrl: './topnav.component.css'
+  selector: 'app-topnav',
+  imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
+  templateUrl: './topnav.component.html',
+  styleUrl: './topnav.component.css',
 })
 export class TopnavComponent {
   isDarkModeEnabled = true;
@@ -25,15 +25,10 @@ export class TopnavComponent {
     private elementRef: ElementRef,
     private router: Router,
   ) {
-    this.searchForm.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((value) => {
-        // console.log('Search query: %s', value);
-        this.onSearch(value);
-      });
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged()).subscribe((value) => {
+      // console.log('Search query: %s', value);
+      this.onSearch(value);
+    });
   }
 
   @HostListener('document:click', ['$event'])
@@ -58,16 +53,14 @@ export class TopnavComponent {
     const activeElement = document.activeElement as HTMLElement;
 
     // Check if the active element is an input, textarea, or contenteditable element
-    const isInputField = activeElement.tagName === 'INPUT' ||
-      activeElement.tagName === 'TEXTAREA' ||
-      activeElement.isContentEditable;
+    const isInputField = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
 
     // Only handle the 'f' key if the active element is not an input field
     if (!isInputField && event.key === 'f') {
-    // if (event.ctrlKey && event.key === 'f') {
-      event.preventDefault();  // Prevent the browser's default behavior
+      // if (event.ctrlKey && event.key === 'f') {
+      event.preventDefault(); // Prevent the browser's default behavior
       const searchInput = document.getElementById('searchForm')?.querySelector('input');
-      searchInput?.focus();  // Focus the search input field
+      searchInput?.focus(); // Focus the search input field
       return;
     }
     if (this.searchResults.length > 0) {
@@ -79,7 +72,7 @@ export class TopnavComponent {
       }
       let firstId = this.searchResults[0].id;
       let lastId = this.searchResults[this.searchResults.length - 1].id;
-      if (event.key === 'ArrowDown' || event.key === 'Tab' && !event.shiftKey) {
+      if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {
         event.preventDefault();
         // If the last item is selected, loop back to the first item
         if (this.selectedId === lastId) {
@@ -166,7 +159,7 @@ export class TopnavComponent {
     year: 0,
     youtube_trailer_id: '',
     is_movie: true,
-  }
+  };
   onSearch(query: string = '') {
     if (query.length < 3) {
       this.searchResults = [];

@@ -54,7 +54,7 @@
 }
 
 .files-header::before {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   top: 50%;
@@ -121,7 +121,6 @@
 }
 
 @media (max-width: 765px) {
-
   .files-header .files-size {
     grid-row: 2;
     grid-column: 2;
@@ -242,7 +241,7 @@ dialog .loading-wave {
   overflow-y: auto;
   border: 1px solid var(--color-outline);
   border-radius: 1rem;
-  margin: .25rem;
+  margin: 0.25rem;
 
   pre {
     padding: 1rem;
@@ -264,7 +263,7 @@ dialog .loading-wave {
     }
 
     code::before {
-      content: counter(listing) ". ";
+      content: counter(listing) '. ';
       display: inline-block;
       width: var(--indent);
       padding-left: auto;
@@ -365,7 +364,7 @@ section {
   }
 }
 
-.info-content> :nth-child(2) {
+.info-content > :nth-child(2) {
   text-decoration: none;
   text-align: left;
   margin: 0;

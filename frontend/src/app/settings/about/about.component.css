@@ -12,13 +12,14 @@
   gap: 1rem;
 }
 
-.about-content label, .about-content span {
+.about-content label,
+.about-content span {
   font-weight: bold;
   text-align: left;
   width: 40%;
 }
 
-.about-content> :nth-child(2) {
+.about-content > :nth-child(2) {
   text-decoration: none;
   text-align: left;
   margin: 0;
@@ -90,7 +91,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin: .25rem;
+  margin: 0.25rem;
   align-items: center;
   position: relative;
 }
@@ -103,14 +104,14 @@
   font-size: 1rem;
   pointer-events: none;
   color: var(--color-on-surface);
-  padding: 0 .5rem;
-  transition: .5s;
+  padding: 0 0.5rem;
+  transition: 0.5s;
 }
 
 .password-input input {
   min-width: 15rem;
   height: 3rem;
-  padding: .25rem .5rem;
+  padding: 0.25rem 0.5rem;
   font-family: inherit;
   font-size: 1.25rem;
   background-color: var(--color-surface-container-high);
@@ -119,18 +120,18 @@
   border-radius: 0.5rem;
 }
 
-.password-input input:focus~label,
-.password-input input:valid~label {
+.password-input input:focus ~ label,
+.password-input input:valid ~ label {
   top: 0;
   background: var(--color-surface-container-high);
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 i {
   position: absolute;
   right: 0.5rem;
   /* font-size: 0 -> helps center the svg vertically */
-  font-size: 0; 
+  font-size: 0;
 }
 
 svg {
