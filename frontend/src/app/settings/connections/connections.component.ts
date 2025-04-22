@@ -5,7 +5,6 @@ import {RouterOutlet} from '@angular/router';
   selector: 'app-connections',
   imports: [RouterOutlet],
   templateUrl: './connections.component.html',
-  styleUrl: './connections.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConnectionsComponent {}

@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConnectionsComponent renders 1`] = `
+<mock-render>
+  <app-connections>
+    <router-outlet />
+  </app-connections>
+</mock-render>
+`;
