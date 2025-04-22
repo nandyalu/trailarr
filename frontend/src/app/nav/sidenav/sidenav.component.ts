@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
+import {RouteHome, RouteLogs, RouteMovies, RouteSeries, RouteSettings, RouteTasks} from 'src/routing';
 
 @Component({
   selector: 'app-sidenav',
@@ -8,6 +9,13 @@ import {RouterLink, RouterLinkActive} from '@angular/router';
   styleUrl: './sidenav.component.scss',
 })
 export class SidenavComponent {
+  protected readonly RouteHome = RouteHome;
+  protected readonly RouteLogs = RouteLogs;
+  protected readonly RouteMovies = RouteMovies;
+  protected readonly RouteSeries = RouteSeries;
+  protected readonly RouteSettings = RouteSettings;
+  protected readonly RouteTasks = RouteTasks;
+
   // isMenuCollapsed = true;
   // activeNavId = 1;
   // @ViewChildren('navLink') navLinks: QueryList<ElementRef> = new QueryList();

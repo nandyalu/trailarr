@@ -2,6 +2,7 @@ import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
+import {RouteParamConnectionId} from 'src/routing';
 import {Connection, ConnectionUpdate, PathMapping} from '../../../models/connection';
 import {SettingsService} from '../../../services/settings.service';
 
@@ -21,7 +22,7 @@ export class EditConnectionComponent {
   connectionId: number = 0;
   ngOnInit() {
     this.route.params.subscribe((params) => {
-      this.connectionId = params['id'];
+      this.connectionId = params[RouteParamConnectionId];
       this.settingsService.getConnection(this.connectionId).subscribe((conn: Connection) => {
         this.editConnectionForm.patchValue({
           name: conn.name,
