@@ -8,7 +8,7 @@ import {SettingsService} from '../../../services/settings.service';
   selector: 'app-show-connections',
   imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
   templateUrl: './show-connections.component.html',
-  styleUrl: './show-connections.component.css',
+  styleUrl: './show-connections.component.scss',
 })
 export class ShowConnectionsComponent {
   connectionList: Connection[] = [];

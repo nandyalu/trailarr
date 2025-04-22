@@ -11,7 +11,7 @@ import {WebsocketService} from '../services/websocket.service';
   imports: [NgIf, NgFor, TimeagoModule],
   providers: [],
   templateUrl: './tasks.component.html',
-  styleUrl: './tasks.component.css',
+  styleUrl: './tasks.component.scss',
 })
 export class TasksComponent implements OnInit, OnDestroy {
   scheduledTasks: ScheduledTask[] = [];

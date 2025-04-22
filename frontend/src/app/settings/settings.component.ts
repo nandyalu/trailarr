@@ -5,6 +5,6 @@ import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
   selector: 'app-settings',
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './settings.component.html',
-  styleUrl: './settings.component.css',
+  styleUrl: './settings.component.scss',
 })
 export class SettingsComponent {}

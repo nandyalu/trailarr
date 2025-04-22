@@ -10,7 +10,7 @@ import {LogsService} from '../services/logs.service';
   selector: 'app-logs',
   imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
   templateUrl: './logs.component.html',
-  styleUrl: './logs.component.css',
+  styleUrl: './logs.component.scss',
 })
 export class LogsComponent {
   title = 'Logs';
