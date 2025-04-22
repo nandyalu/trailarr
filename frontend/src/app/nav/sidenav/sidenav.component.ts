@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {RouteHome, RouteLogs, RouteMovies, RouteSeries, RouteSettings, RouteTasks} from 'src/routing';
 
@@ -7,6 +7,7 @@ import {RouteHome, RouteLogs, RouteMovies, RouteSeries, RouteSettings, RouteTask
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidenav.component.html',
   styleUrl: './sidenav.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidenavComponent {
   protected readonly RouteHome = RouteHome;
