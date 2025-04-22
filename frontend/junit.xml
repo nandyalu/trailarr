@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="3" failures="0" errors="0" time="0.974">
+  <testsuite name="utils" errors="0" failures="0" skipped="0" timestamp="2025-04-22T10:34:08" time="0.47" tests="3">
+    <testcase classname="utils durationString hours only" name="utils durationString hours only" time="0.002">
+    </testcase>
+    <testcase classname="utils durationString minutes only" name="utils durationString minutes only" time="0">
+    </testcase>
+    <testcase classname="utils durationString hours and minutes" name="utils durationString hours and minutes" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
