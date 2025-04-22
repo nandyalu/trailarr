@@ -6,7 +6,7 @@ mkdocs_github_changelog==0.1.0
 # mkdocs-swagger-ui-tag==0.6.11
 
 # Backend
-aiohttp==3.11.16
+aiohttp==3.11.18
 aiofiles==24.1.0
 alembic==1.15.2
 apscheduler==3.11.0
