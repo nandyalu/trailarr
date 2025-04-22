@@ -1,5 +1,5 @@
 import {NgFor, NgIf} from '@angular/common';
-import {Component} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Settings} from '../../models/settings';
 import {SettingsService} from '../../services/settings.service';
@@ -10,7 +10,9 @@ import {SettingsService} from '../../services/settings.service';
   templateUrl: './trailer.component.html',
   styleUrl: './trailer.component.scss',
 })
-export class TrailerComponent {
+export class TrailerComponent implements OnInit {
+  private readonly settingsService = inject(SettingsService);
+
   isLoading: boolean = false;
   settings?: Settings;
   updateResults: String[] = [];
@@ -31,8 +33,6 @@ export class TrailerComponent {
   maxDuration = 600;
   trailerSearchQuery = '';
   urlBase = '';
-
-  constructor(private settingsService: SettingsService) {}
 
   ngOnInit() {
     this.isLoading = true;

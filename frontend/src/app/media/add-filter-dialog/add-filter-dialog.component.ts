@@ -24,6 +24,8 @@ import {CustomfilterService} from '../../services/customfilter.service';
   styleUrl: './add-filter-dialog.component.scss',
 })
 export class AddCustomFilterDialogComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+
   filterType = input.required<string>();
   filterTypeValue = computed(() => {
     let _filterType = this.filterType().toUpperCase();
@@ -68,9 +70,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
 
   viewForOptions = Object.values(FilterType);
 
-  constructor(private fb: FormBuilder) {}
-
-  ngOnInit(): void {
+  ngOnInit() {
     this.initForm(this.customFilter());
   }
 

@@ -1,5 +1,5 @@
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
 import {VideoInfo} from '../models/files';
@@ -9,9 +9,9 @@ import {mapFolderInfo} from '../models/media';
   providedIn: 'root',
 })
 export class FilesService {
-  private files_url = environment.apiUrl + environment.files;
+  private readonly httpClient = inject(HttpClient);
 
-  constructor(private httpClient: HttpClient) {}
+  private files_url = environment.apiUrl + environment.files;
 
   getFolderInfo(path: string): Observable<any | null> {
     const url = this.files_url + 'files';

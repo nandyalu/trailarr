@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {Observable, catchError, map, of} from 'rxjs';
+import {inject, Injectable} from '@angular/core';
+import {catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
 import {Connection, ConnectionCreate, ConnectionUpdate} from '../models/connection';
 import {ServerStats, Settings} from '../models/settings';
@@ -9,9 +9,9 @@ import {ServerStats, Settings} from '../models/settings';
   providedIn: 'root',
 })
 export class SettingsService {
-  private settingsUrl = environment.apiUrl + environment.settings;
+  private readonly http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private settingsUrl = environment.apiUrl + environment.settings;
 
   getSettings(): Observable<Settings> {
     return this.http.get<any>(this.settingsUrl);

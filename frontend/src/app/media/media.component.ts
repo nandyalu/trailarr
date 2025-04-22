@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, signal, ViewChild} from '@angular/core';
+import {Component, computed, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
@@ -27,12 +27,10 @@ import {DisplayTitlePipe} from './pipes/display-title.pipe';
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
 })
-export class MediaComponent {
-  constructor(
-    private route: ActivatedRoute,
-    private mediaService: MediaService,
-    private webSocketService: WebsocketService,
-  ) {}
+export class MediaComponent implements OnInit {
+  private readonly mediaService = inject(MediaService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly webSocketService = inject(WebsocketService);
 
   customfilterService = inject(CustomfilterService);
 
@@ -66,7 +64,7 @@ export class MediaComponent {
   private lastUpdateTime: number = 0;
   private readonly UPDATE_INTERVAL: number = 3; // 3 seconds in seconds
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.isLoading.set(true);
     let type = this.route.snapshot.url[0].path;
     switch (type) {

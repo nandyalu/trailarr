@@ -1,5 +1,6 @@
 import {NgFor, NgIf} from '@angular/common';
-import {Component, ElementRef, HostListener, Renderer2} from '@angular/core';
+import {Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
@@ -13,24 +14,19 @@ import {MediaService} from '../../services/media.service';
   templateUrl: './topnav.component.html',
   styleUrl: './topnav.component.scss',
 })
-export class TopnavComponent {
+export class TopnavComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly elementRef = inject(ElementRef);
+  private readonly mediaService = inject(MediaService);
+  private readonly renderer = inject(Renderer2);
+  private readonly router = inject(Router);
+
   isDarkModeEnabled = true;
   searchQuery = '';
   searchForm = new FormControl();
   searchResults: SearchMedia[] = [];
   selectedIndex = -1;
   selectedId = -1;
-  constructor(
-    private renderer: Renderer2,
-    private mediaService: MediaService,
-    private elementRef: ElementRef,
-    private router: Router,
-  ) {
-    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged()).subscribe((value) => {
-      // console.log('Search query: %s', value);
-      this.onSearch(value);
-    });
-  }
 
   protected readonly RouteHome = RouteHome;
 
@@ -110,6 +106,11 @@ export class TopnavComponent {
 
   // Check theme preference on page load and apply it
   ngOnInit() {
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      // console.log('Search query: %s', value);
+      this.onSearch(value);
+    });
+
     // Check if theme is already set in local storage
     const theme = localStorage.getItem('theme');
     if (theme) {
