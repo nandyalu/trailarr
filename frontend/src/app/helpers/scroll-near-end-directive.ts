@@ -1,10 +1,12 @@
-import {Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output} from '@angular/core';
+import {Directive, ElementRef, EventEmitter, HostListener, inject, Input, OnInit, Output} from '@angular/core';
 
 @Directive({
   selector: '[appScrollNearEnd]',
   standalone: true,
 })
 export class ScrollNearEndDirective implements OnInit {
+  private readonly el = inject(ElementRef);
+
   @Output() nearEnd: EventEmitter<void> = new EventEmitter<void>();
 
   /**
@@ -14,9 +16,7 @@ export class ScrollNearEndDirective implements OnInit {
 
   private window!: Window;
 
-  constructor(private el: ElementRef) {}
-
-  ngOnInit(): void {
+  ngOnInit() {
     // save window object for type safety
     this.window = window;
     // console.log('Scroll near end directive initialized');

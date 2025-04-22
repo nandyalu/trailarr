@@ -1,5 +1,5 @@
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {catchError, firstValueFrom, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
 import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
@@ -8,11 +8,11 @@ import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models
   providedIn: 'root',
 })
 export class MediaService {
+  private readonly httpClient = inject(HttpClient);
+
   private mediaUrl = environment.apiUrl + environment.media;
 
   // allMedia = signal<Media[]>([]);
-
-  constructor(private httpClient: HttpClient) {}
 
   // Add a getter for the allMedia signal
   // getAllMedia() {

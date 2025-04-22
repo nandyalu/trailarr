@@ -1,5 +1,5 @@
 import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {CustomFilter, CustomFilterCreate} from '../models/customfilter';
@@ -8,9 +8,9 @@ import {CustomFilter, CustomFilterCreate} from '../models/customfilter';
   providedIn: 'root',
 })
 export class CustomfilterService {
-  private cp_url = environment.apiUrl + environment.customfilters;
+  private readonly httpClient = inject(HttpClient);
 
-  constructor(private httpClient: HttpClient) {}
+  private cp_url = environment.apiUrl + environment.customfilters;
 
   create(customFilter: CustomFilterCreate): Observable<CustomFilter> {
     return this.httpClient.post<CustomFilter>(this.cp_url, customFilter);

@@ -1,5 +1,5 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, input, resource, ViewChild} from '@angular/core';
+import {Component, computed, ElementRef, inject, input, resource, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {VideoInfo} from '../../../models/files';
 import {FolderInfo} from '../../../models/media';
@@ -20,6 +20,10 @@ interface ErrorMessage {
   styleUrl: './files.component.scss',
 })
 export class FilesComponent {
+  private readonly filesService = inject(FilesService);
+  private readonly mediaService = inject(MediaService);
+  private readonly webSocketService = inject(WebsocketService);
+
   mediaId = input.required<number>();
   filesLoading = true;
   textFileLoading = true;
@@ -31,12 +35,6 @@ export class FilesComponent {
   selectedFileName: string = '';
   videoInfo: VideoInfo | undefined = undefined;
   selectedFileText: string[] = [];
-
-  constructor(
-    private mediaService: MediaService,
-    private filesService: FilesService,
-    private webSocketService: WebsocketService,
-  ) {}
 
   // Refresh the files list when the mediaId changes
   filesResource = resource({
@@ -53,7 +51,7 @@ export class FilesComponent {
     return _error.error.detail;
   });
 
-  // ngOnInit(): void {
+  // ngOnInit() {
   //   this.getMediaFiles();
   // }
 

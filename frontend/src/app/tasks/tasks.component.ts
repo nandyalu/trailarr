@@ -1,5 +1,5 @@
 import {NgFor, NgIf} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {TimeagoModule} from 'ngx-timeago';
 import {Subscription} from 'rxjs';
 import {QueuedTask, ScheduledTask} from '../models/tasks';
@@ -14,15 +14,13 @@ import {WebsocketService} from '../services/websocket.service';
   styleUrl: './tasks.component.scss',
 })
 export class TasksComponent implements OnInit, OnDestroy {
+  private readonly tasksService = inject(TasksService);
+  private readonly websocketService = inject(WebsocketService);
+
   scheduledTasks: ScheduledTask[] = [];
   queuedTasks: QueuedTask[] = [];
   isLoading1 = true;
   isLoading2 = true;
-
-  constructor(
-    private tasksService: TasksService,
-    private websocketService: WebsocketService,
-  ) {}
 
   private timeoutRef: any;
   private webSocketSubscription?: Subscription;
@@ -104,7 +102,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     }, secondsToNextEvent * 1000);
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     // Unsubscribe from the refresh interval
     clearTimeout(this.timeoutRef);
     // Unsubscribe from the WebSocket events

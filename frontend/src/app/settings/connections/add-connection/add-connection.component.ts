@@ -1,5 +1,5 @@
 import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, ViewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConnectionCreate} from '../../../models/connection';
 import {SettingsService} from '../../../services/settings.service';
@@ -11,10 +11,9 @@ import {SettingsService} from '../../../services/settings.service';
   styleUrl: './add-connection.component.scss',
 })
 export class AddConnectionComponent {
-  constructor(
-    private _location: Location,
-    private settingsService: SettingsService,
-  ) {}
+  private readonly _location = inject(Location);
+  private readonly settingsService = inject(SettingsService);
+
   arrOptions = ['radarr', 'sonarr'];
   monitorOptions = ['missing', 'new', 'none', 'sync'];
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);

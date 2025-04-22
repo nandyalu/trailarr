@@ -1,5 +1,5 @@
 import {NgIf} from '@angular/common';
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TimeagoModule} from 'ngx-timeago';
 import {ServerStats, Settings} from '../../models/settings';
@@ -12,7 +12,10 @@ import {WebsocketService} from '../../services/websocket.service';
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss',
 })
-export class AboutComponent {
+export class AboutComponent implements OnInit {
+  private readonly settingsService = inject(SettingsService);
+  private readonly websocketService = inject(WebsocketService);
+
   settings?: Settings;
   serverStats?: ServerStats;
   currentPassword = '';
@@ -22,11 +25,6 @@ export class AboutComponent {
   updateSuccess = '';
   currentPasswordVisible = false;
   newPasswordVisible = false;
-
-  constructor(
-    private settingsService: SettingsService,
-    private websocketService: WebsocketService,
-  ) {}
 
   ngOnInit() {
     this.settingsService.getSettings().subscribe((settings) => (this.settings = settings));

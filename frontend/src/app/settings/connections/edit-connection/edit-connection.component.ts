@@ -1,5 +1,5 @@
 import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {RouteParamConnectionId} from 'src/routing';
@@ -12,14 +12,13 @@ import {SettingsService} from '../../../services/settings.service';
   templateUrl: './edit-connection.component.html',
   styleUrl: './edit-connection.component.scss',
 })
-export class EditConnectionComponent {
-  constructor(
-    private _location: Location,
-    private settingsService: SettingsService,
-    private route: ActivatedRoute,
-  ) {}
+export class EditConnectionComponent implements OnInit {
+  private readonly _location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
+  private readonly settingsService = inject(SettingsService);
 
   connectionId: number = 0;
+
   ngOnInit() {
     this.route.params.subscribe((params) => {
       this.connectionId = params[RouteParamConnectionId];

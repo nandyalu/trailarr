@@ -1,5 +1,6 @@
 import {NgFor, NgIf} from '@angular/common';
-import {Component} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TimeagoModule} from 'ngx-timeago';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
@@ -12,7 +13,10 @@ import {LogsService} from '../services/logs.service';
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss',
 })
-export class LogsComponent {
+export class LogsComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly logsService = inject(LogsService);
+
   title = 'Logs';
   isLoading = true;
   isUpdating = false;
@@ -21,13 +25,11 @@ export class LogsComponent {
   searchForm = new FormControl();
   filtered_logs: Logs[] = [];
 
-  constructor(private logsService: LogsService) {
-    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged()).subscribe((value) => {
+  ngOnInit() {
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       this.onSearch(value);
     });
-  }
 
-  ngOnInit(): void {
     this.isLoading = true;
     this.getLogs();
   }

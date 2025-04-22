@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {Observable, map} from 'rxjs';
+import {inject, Injectable} from '@angular/core';
+import {map, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {QueuedTask, ScheduledTask} from '../models/tasks';
 
@@ -8,9 +8,9 @@ import {QueuedTask, ScheduledTask} from '../models/tasks';
   providedIn: 'root',
 })
 export class TasksService {
-  private tasksUrl = environment.apiUrl + environment.tasks;
+  private readonly http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private tasksUrl = environment.apiUrl + environment.tasks;
 
   convertTime(seconds: number): string {
     const timeUnits = [

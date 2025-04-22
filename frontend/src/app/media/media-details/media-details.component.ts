@@ -1,5 +1,5 @@
 import {NgIf, TitleCasePipe} from '@angular/common';
-import {Component, effect, ElementRef, input, ViewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {catchError, of, Subscription} from 'rxjs';
@@ -15,7 +15,11 @@ import {FilesComponent} from './files/files.component';
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
 })
-export class MediaDetailsComponent {
+export class MediaDetailsComponent implements OnDestroy, OnInit {
+  private readonly mediaService = inject(MediaService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly websocketService = inject(WebsocketService);
+
   mediaId = input(0, {transform: Number});
   media?: Media = undefined;
   isLoading = true;
@@ -23,12 +27,6 @@ export class MediaDetailsComponent {
   isLoadingDownload = false;
   trailer_url: string = '';
   private webSocketSubscription?: Subscription;
-
-  constructor(
-    private mediaService: MediaService,
-    private route: ActivatedRoute,
-    private websocketService: WebsocketService,
-  ) {}
 
   /**
    * Copies the provided text to the clipboard. If the Clipboard API is not available,
@@ -75,7 +73,7 @@ export class MediaDetailsComponent {
     this.getMediaData();
   });
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.isLoading = true;
     // this.route.params.subscribe(params => {
     //   this.mediaId.set(parseInt(params['id']));
