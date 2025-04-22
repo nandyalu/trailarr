@@ -8,7 +8,7 @@ import {SettingsService} from '../../../services/settings.service';
   selector: 'app-add-connection',
   imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
   templateUrl: './add-connection.component.html',
-  styleUrl: './add-connection.component.css',
+  styleUrl: './add-connection.component.scss',
 })
 export class AddConnectionComponent {
   constructor(

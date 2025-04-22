@@ -10,7 +10,7 @@ import {MediaService} from '../../services/media.service';
   selector: 'app-topnav',
   imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
   templateUrl: './topnav.component.html',
-  styleUrl: './topnav.component.css',
+  styleUrl: './topnav.component.scss',
 })
 export class TopnavComponent {
   isDarkModeEnabled = true;

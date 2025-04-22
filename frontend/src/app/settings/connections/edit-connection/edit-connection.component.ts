@@ -9,7 +9,7 @@ import {SettingsService} from '../../../services/settings.service';
   selector: 'app-edit-connection',
   imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
   templateUrl: './edit-connection.component.html',
-  styleUrl: './edit-connection.component.css',
+  styleUrl: './edit-connection.component.scss',
 })
 export class EditConnectionComponent {
   constructor(

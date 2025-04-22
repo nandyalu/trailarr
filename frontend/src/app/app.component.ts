@@ -10,7 +10,7 @@ import {MessageData, WebsocketService} from './services/websocket.service';
   selector: 'app-root',
   imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   messages: MessageData[] = [];

@@ -21,7 +21,7 @@ import {CustomfilterService} from '../../services/customfilter.service';
   selector: 'app-add-filter-dialog',
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './add-filter-dialog.component.html',
-  styleUrl: './add-filter-dialog.component.css',
+  styleUrl: './add-filter-dialog.component.scss',
 })
 export class AddCustomFilterDialogComponent implements OnInit {
   filterType = input.required<string>();

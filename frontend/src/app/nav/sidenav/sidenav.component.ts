@@ -5,7 +5,7 @@ import {RouterLink, RouterLinkActive} from '@angular/router';
   selector: 'app-sidenav',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidenav.component.html',
-  styleUrl: './sidenav.component.css',
+  styleUrl: './sidenav.component.scss',
 })
 export class SidenavComponent {
   // isMenuCollapsed = true;

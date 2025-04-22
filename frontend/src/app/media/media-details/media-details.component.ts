@@ -13,7 +13,7 @@ import {FilesComponent} from './files/files.component';
   selector: 'app-media-details',
   imports: [NgIf, FormsModule, DurationConvertPipe, TitleCasePipe, FilesComponent],
   templateUrl: './media-details.component.html',
-  styleUrl: './media-details.component.css',
+  styleUrl: './media-details.component.scss',
 })
 export class MediaDetailsComponent {
   mediaId = input(0, {transform: Number});

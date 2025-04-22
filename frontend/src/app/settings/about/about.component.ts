@@ -10,7 +10,7 @@ import {WebsocketService} from '../../services/websocket.service';
   selector: 'app-about',
   imports: [TimeagoModule, NgIf, FormsModule],
   templateUrl: './about.component.html',
-  styleUrl: './about.component.css',
+  styleUrl: './about.component.scss',
 })
 export class AboutComponent {
   settings?: Settings;

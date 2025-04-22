@@ -8,7 +8,7 @@ import {SettingsService} from '../../services/settings.service';
   selector: 'app-trailer',
   imports: [NgIf, NgFor, FormsModule],
   templateUrl: './trailer.component.html',
-  styleUrl: './trailer.component.css',
+  styleUrl: './trailer.component.scss',
 })
 export class TrailerComponent {
   isLoading: boolean = false;

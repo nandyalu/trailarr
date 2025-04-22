@@ -5,7 +5,11 @@
   "projects": {
     "frontend": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -19,7 +23,8 @@
             "polyfills": ["zone.js", "@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
-            "styles": ["src/styles/styles.css"],
+            "styles": ["src/styles/styles.scss"],
+            "inlineStyleLanguage": "scss",
             "scripts": []
           },
           "configurations": {
@@ -75,7 +80,8 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "assets": ["src/assets"],
-            "styles": ["src/styles/styles.css"],
+            "styles": ["src/styles/styles.scss"],
+            "inlineStyleLanguage": "scss",
             "scripts": []
           }
         }

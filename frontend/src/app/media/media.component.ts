@@ -25,7 +25,7 @@ import {DisplayTitlePipe} from './pipes/display-title.pipe';
   selector: 'app-media2',
   imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective, AddCustomFilterDialogComponent, DisplayTitlePipe],
   templateUrl: './media.component.html',
-  styleUrl: './media.component.css',
+  styleUrl: './media.component.scss',
 })
 export class MediaComponent {
   constructor(

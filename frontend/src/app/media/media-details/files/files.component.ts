@@ -17,7 +17,7 @@ interface ErrorMessage {
   selector: 'media-files',
   imports: [DatePipe, FormsModule, NgTemplateOutlet],
   templateUrl: './files.component.html',
-  styleUrl: './files.component.css',
+  styleUrl: './files.component.scss',
 })
 export class FilesComponent {
   mediaId = input.required<number>();
