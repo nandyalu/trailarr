@@ -1,6 +1,7 @@
 import {DatePipe, Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {RouterLink} from '@angular/router';
+import {RouteAdd, RouteConnections, RouteEdit, RouteSettings} from 'src/routing';
 import {Connection} from '../../../models/connection';
 import {SettingsService} from '../../../services/settings.service';
 
@@ -20,6 +21,11 @@ export class ShowConnectionsComponent {
     private _location: Location,
     private settingsService: SettingsService,
   ) {}
+
+  protected readonly RouteAdd = RouteAdd;
+  protected readonly RouteConnections = RouteConnections;
+  protected readonly RouteEdit = RouteEdit;
+  protected readonly RouteSettings = RouteSettings;
 
   ngOnInit() {
     this.getConnections();

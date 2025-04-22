@@ -3,6 +3,7 @@ import {Component, ElementRef, HostListener, Renderer2} from '@angular/core';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {RouteHome, RouteMedia} from 'src/routing';
 import {SearchMedia} from '../../models/media';
 import {MediaService} from '../../services/media.service';
 
@@ -30,6 +31,8 @@ export class TopnavComponent {
       this.onSearch(value);
     });
   }
+
+  protected readonly RouteHome = RouteHome;
 
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
@@ -98,7 +101,7 @@ export class TopnavComponent {
         return;
       } else if (event.key === 'Enter') {
         // const selectedResult = this.searchResults[this.selectedIndex];
-        this.router.navigate(['media', this.selectedId]);
+        this.router.navigate([RouteMedia, this.selectedId]);
         this.searchResults = [];
         return;
       }
