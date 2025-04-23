@@ -49,6 +49,24 @@
             "preLaunchTask": "npm: test",
             "cwd": "${workspaceFolder}/frontend", // Added this line
             "url": "http://localhost:9876/debug.html"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Current File",
+            "program": "${workspaceFolder}/frontend/node_modules/.bin/jest",
+            "args": [
+                "--updateSnapshot",
+                "--runInBand",
+                "--runTestsByPath",
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "windows": {
+                "program": "${workspaceFolder}/frontend/node_modules/jest/bin/jest"
+            }
         }
     ]
 }
