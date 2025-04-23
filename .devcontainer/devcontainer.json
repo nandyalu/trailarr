@@ -51,7 +51,8 @@
 				"qwtel.sqlite-viewer",
 				"oderwat.indent-rainbow",
 				"redhat.vscode-yaml",
-				"GitHub.copilot-chat"
+				"GitHub.copilot-chat",
+				"esbenp.prettier-vscode"
 			]
 		}
 	},
