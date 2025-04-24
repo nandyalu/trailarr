@@ -1,8 +1,8 @@
-import {NgFor, NgIf} from '@angular/common';
-import {Component, inject, OnInit} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {Settings} from '../../models/settings';
-import {SettingsService} from '../../services/settings.service';
+import { NgFor, NgIf } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Settings } from '../../models/settings';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-trailer',
