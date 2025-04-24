@@ -32,6 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VER: ${{ github.sha }}-test
+    # Explicitly specify permissions
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: Checkout repository
