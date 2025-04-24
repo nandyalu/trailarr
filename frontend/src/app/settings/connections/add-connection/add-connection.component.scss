@@ -1,0 +1,116 @@
+.form-container {
+  width: 100%;
+  border: 2px solid var(--color-outline);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 16px;
+  background-color: var(--color-surface-container);
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
+}
+
+.form-container form {
+  display: block;
+  padding: 0;
+  border: var(--color-outline);
+  border-radius: 8px;
+}
+
+.input-group {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  margin-right: 10px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: auto;
+  padding: 12px;
+  font-family: inherit;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  border: 2px solid var(--color-outline);
+  border-radius: 8px;
+}
+
+input.ng-touched.ng-invalid {
+  border: 2px solid var(--color-error);
+  opacity: 0.6;
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+  font-weight: 700;
+}
+
+.input-group .invalid-text {
+  color: var(--color-error);
+}
+
+.d-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.option-container {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0 0;
+}
+
+.option-container label,
+.option-container span {
+  padding: 10px;
+  padding-left: 0;
+  display: block;
+  margin-right: 10px;
+  background-color: var(--color-surface-container);
+}
+
+.option-container .options-bar {
+  display: flex;
+  background-color: var(--color-surface-container-high);
+  border-radius: 10px;
+  border: 0.5px solid var(--color-outline);
+}
+
+.option-container .option {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}
+
+.option-container .selected {
+  background-color: var(--color-tertiary-container);
+  font-weight: 600;
+  color: var(--color-on-tertiary-container);
+}
+
+.dialog-content {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
+  text-align: center;
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
+.dialog-content button {
+  margin: 10px;
+}

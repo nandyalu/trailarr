@@ -1,25 +1,28 @@
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { Component, computed, ElementRef, input, resource, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { VideoInfo } from '../../../models/files';
-import { FolderInfo } from '../../../models/media';
-import { FilesService } from '../../../services/files.service';
-import { MediaService } from '../../../services/media.service';
-import { WebsocketService } from '../../../services/websocket.service';
+import {DatePipe, NgTemplateOutlet} from '@angular/common';
+import {Component, computed, ElementRef, inject, input, resource, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {VideoInfo} from '../../../models/files';
+import {FolderInfo} from '../../../models/media';
+import {FilesService} from '../../../services/files.service';
+import {MediaService} from '../../../services/media.service';
+import {WebsocketService} from '../../../services/websocket.service';
 
 interface ErrorMessage {
   error: {
     detail: string;
-  }
+  };
 }
 
 @Component({
   selector: 'media-files',
   imports: [DatePipe, FormsModule, NgTemplateOutlet],
   templateUrl: './files.component.html',
-  styleUrl: './files.component.css'
+  styleUrl: './files.component.scss',
 })
 export class FilesComponent {
+  private readonly filesService = inject(FilesService);
+  private readonly mediaService = inject(MediaService);
+  private readonly webSocketService = inject(WebsocketService);
 
   mediaId = input.required<number>();
   filesLoading = true;
@@ -33,16 +36,10 @@ export class FilesComponent {
   videoInfo: VideoInfo | undefined = undefined;
   selectedFileText: string[] = [];
 
-  constructor(
-    private mediaService: MediaService,
-    private filesService: FilesService,
-    private webSocketService: WebsocketService
-  ) { }
-
   // Refresh the files list when the mediaId changes
   filesResource = resource({
     request: this.mediaId,
-    loader: async ({ request: mediaId }) => {
+    loader: async ({request: mediaId}) => {
       this.filesLoading = true;
       return await this.mediaService.fetchMediaFiles(mediaId);
     },
@@ -52,9 +49,9 @@ export class FilesComponent {
     const _error = this.filesResource.error() as ErrorMessage;
     // console.log('Files Error:', _error);
     return _error.error.detail;
-  })
+  });
 
-  // ngOnInit(): void {
+  // ngOnInit() {
   //   this.getMediaFiles();
   // }
 
@@ -77,12 +74,12 @@ export class FilesComponent {
 
   isTextFile(): boolean {
     const textFileExtensions = ['.txt', '.srt', '.log', '.json', '.py', '.sh'];
-    return textFileExtensions.some(ext => this.selectedFileName.endsWith(ext));
+    return textFileExtensions.some((ext) => this.selectedFileName.endsWith(ext));
   }
 
   isVideoFile(): boolean {
     const videoFileExtensions = ['.mp4', '.mkv', '.avi', '.webm'];
-    return videoFileExtensions.some(ext => this.selectedFileName.endsWith(ext));
+    return videoFileExtensions.some((ext) => this.selectedFileName.endsWith(ext));
   }
 
   openFolderOrOptions(folder: FolderInfo): void {
@@ -131,11 +128,11 @@ export class FilesComponent {
 
   @ViewChild('optionsDialog') optionsDialog!: ElementRef<HTMLDialogElement>;
   openOptionsDialog(): void {
-    this.optionsDialog.nativeElement.showModal();  // Display the dialog
+    this.optionsDialog.nativeElement.showModal(); // Display the dialog
   }
 
   closeOptionsDialog(): void {
-    this.optionsDialog.nativeElement.close();  // Close the dialog
+    this.optionsDialog.nativeElement.close(); // Close the dialog
   }
 
   @ViewChild('textDialog') textDialog!: ElementRef<HTMLDialogElement>;
@@ -196,7 +193,7 @@ export class FilesComponent {
     this.audioTracks = '';
     this.subtitleTracks = '';
     this.videoInfoDialog.nativeElement.showModal();
-    this.filesService.getVideoInfo(this.selectedFilePath).subscribe(videoInfo => {
+    this.filesService.getVideoInfo(this.selectedFilePath).subscribe((videoInfo) => {
       // let jsonString = JSON.stringify(videoInfo, null, 2);
       // this.videoInfo = jsonString.replace(/,/g, ',\n'); // Add new lines between keys
       let audioTracksList: string[] = [];
@@ -240,7 +237,7 @@ export class FilesComponent {
   @ViewChild('deleteFileDialog') deleteFileDialog!: ElementRef<HTMLDialogElement>;
   openDeleteFileDialog(): void {
     this.closeOptionsDialog();
-    // Display the delete confirmation dialog 
+    // Display the delete confirmation dialog
     this.deleteFileDialog.nativeElement.showModal();
   }
 

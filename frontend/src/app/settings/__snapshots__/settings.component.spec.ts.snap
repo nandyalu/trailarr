@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SettingsComponent renders 1`] = `
+<mock-render>
+  <app-settings>
+    <div
+      class="settingsnav"
+    >
+      <a
+        class="setnav-btn"
+        ng-reflect-router-link="connections"
+        ng-reflect-router-link-active="active"
+        routerlinkactive="active"
+      >
+        Connections
+      </a>
+      <a
+        class="setnav-btn"
+        ng-reflect-router-link="trailer"
+        ng-reflect-router-link-active="active"
+        routerlinkactive="active"
+      >
+        Trailer
+      </a>
+      <a
+        class="setnav-btn"
+        ng-reflect-router-link="about"
+        ng-reflect-router-link-active="active"
+        routerlinkactive="active"
+      >
+        About
+      </a>
+    </div>
+    <div
+      class="settings-container"
+    >
+      <div
+        class="settings-content"
+      >
+        <router-outlet />
+      </div>
+    </div>
+  </app-settings>
+</mock-render>
+`;

@@ -1,18 +1,21 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TimeagoModule } from 'ngx-timeago';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Logs } from '../models/logs';
-import { LogsService } from '../services/logs.service';
+import {NgFor, NgIf} from '@angular/common';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {TimeagoModule} from 'ngx-timeago';
+import {debounceTime, distinctUntilChanged} from 'rxjs';
+import {Logs} from '../models/logs';
+import {LogsService} from '../services/logs.service';
 
 @Component({
-    selector: 'app-logs',
-    imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
-    templateUrl: './logs.component.html',
-    styleUrl: './logs.component.css'
+  selector: 'app-logs',
+  imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
+  templateUrl: './logs.component.html',
+  styleUrl: './logs.component.scss',
 })
-export class LogsComponent {
+export class LogsComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly logsService = inject(LogsService);
 
   title = 'Logs';
   isLoading = true;
@@ -22,18 +25,11 @@ export class LogsComponent {
   searchForm = new FormControl();
   filtered_logs: Logs[] = [];
 
-  constructor(private logsService: LogsService) {
-    this.searchForm.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((value) => {
-        this.onSearch(value);
-      });
-  }
+  ngOnInit() {
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      this.onSearch(value);
+    });
 
-  ngOnInit(): void {
     this.isLoading = true;
     this.getLogs();
   }

@@ -1,151 +1,176 @@
 <!-- File: about.component.html -->
 <div class="about-container">
-    <section class="about-section">
-        <h1>About Trailarr</h1>
-        <hr>
-        <div class="about-content">
-            <span>Version</span>
-            <code>{{settings?.version}}</code>
-            <a class="update-available" [class.latest]="!settings?.update_available" href="https://hub.docker.com/r/nandyalu/trailarr" target="_blank">{{ settings?.update_available ?
-                "Update Available" : "Latest" }}</a>
-        </div>
-        <div class="about-content">
-            <span>Yt-dlp Version</span>
-            <code>{{settings?.ytdlp_version}}</code>
-        </div>
-        <div class="about-content">
-            <span>API Key</span>
-            <code class="copy" (click)="copyToClipboard(settings!.api_key)">{{settings?.api_key}}</code>
-        </div>
-        <div class="about-content">
-            <span>Appdata Folder</span>
-            <code>{{settings?.app_data_dir}}</code>
-        </div>
-        <div class="about-content">
-            <span>Server Started</span>
-            <code>{{settings?.server_start_time ? (settings?.server_start_time | timeago) : 'Unknwon'}}</code>
-        </div>
-        <div class="about-content">
-            <span>Timezone</span>
-            <code>{{settings?.timezone}}</code>
-        </div>
-    </section>
-    <section class="about-section">
-        <h1>Statistics</h1>
-        <hr>
-        <div class="about-content">
-            <span>Movies</span>
-            <code>{{serverStats?.movies_count}}</code>
-        </div>
-        <div class="about-content">
-            <span>Movies Monitored</span>
-            <code>{{serverStats?.movies_monitored}}</code>
-        </div>
-        <div class="about-content">
-            <span>Series</span>
-            <code>{{serverStats?.series_count}}</code>
-        </div>
-        <div class="about-content">
-            <span>Series Monitored</span>
-            <code>{{serverStats?.series_monitored}}</code>
-        </div>
-        <div class="about-content">
-            <span>Trailers Downloaded</span>
-            <code>{{serverStats?.trailers_downloaded}}</code>
-        </div>
-        <div class="about-content">
-            <span>Trailers Detected</span>
-            <code>{{serverStats?.trailers_detected}}</code>
-        </div>
-    </section>
-    <section class="about-section">
-        <h1>Login Credentials</h1>
-        <hr>
-        <div class="about-content">
-            <button class="update-login" (click)="showPwUpdateDialog()">Update Login</button>
-        </div>
-    </section>
-    <section class="about-section">
-        <h1>Getting Support</h1>
-        <hr>
-        <div class="about-content">
-            <span>Documentation</span>
-            <a href="https://nandyalu.github.io/trailarr" target="_blank">https://nandyalu.github.io/trailarr</a>
-        </div>
-        <div class="about-content">
-            <span>Discord</span>
-            <a href="https://discord.gg/KKPr5kQEzQ" target="_blank">https://discord.gg/KKPr5kQEzQ</a>
-        </div>
-        <div class="about-content">
-            <span>Github</span>
-            <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
-        </div>
-        <div class="about-content">
-            <span>Issues</span>
-            <a href="https://github.com/nandyalu/trailarr/issues"
-                target="_blank">https://github.com/nandyalu/trailarr/issues</a>
-        </div>
-        <div class="about-content">
-            <span>Reddit</span>
-            <a href="https://www.reddit.com/r/trailarr" target="_blank">https://www.reddit.com/r/trailarr</a>
-        </div>
-    </section>
+  <section class="about-section">
+    <h1>About Trailarr</h1>
+    <hr />
+    <div class="about-content">
+      <span>Version</span>
+      <code>{{ settings?.version }}</code>
+      <a
+        class="update-available"
+        [class.latest]="!settings?.update_available"
+        href="https://hub.docker.com/r/nandyalu/trailarr"
+        target="_blank"
+        >{{ settings?.update_available ? 'Update Available' : 'Latest' }}</a
+      >
+    </div>
+    <div class="about-content">
+      <span>Yt-dlp Version</span>
+      <code>{{ settings?.ytdlp_version }}</code>
+    </div>
+    <div class="about-content">
+      <span>API Key</span>
+      <code class="copy" (click)="copyToClipboard(settings!.api_key)">{{ settings?.api_key }}</code>
+    </div>
+    <div class="about-content">
+      <span>Appdata Folder</span>
+      <code>{{ settings?.app_data_dir }}</code>
+    </div>
+    <div class="about-content">
+      <span>Server Started</span>
+      <code>{{ settings?.server_start_time ? (settings?.server_start_time | timeago) : 'Unknwon' }}</code>
+    </div>
+    <div class="about-content">
+      <span>Timezone</span>
+      <code>{{ settings?.timezone }}</code>
+    </div>
+  </section>
+  <section class="about-section">
+    <h1>Statistics</h1>
+    <hr />
+    <div class="about-content">
+      <span>Movies</span>
+      <code>{{ serverStats?.movies_count }}</code>
+    </div>
+    <div class="about-content">
+      <span>Movies Monitored</span>
+      <code>{{ serverStats?.movies_monitored }}</code>
+    </div>
+    <div class="about-content">
+      <span>Series</span>
+      <code>{{ serverStats?.series_count }}</code>
+    </div>
+    <div class="about-content">
+      <span>Series Monitored</span>
+      <code>{{ serverStats?.series_monitored }}</code>
+    </div>
+    <div class="about-content">
+      <span>Trailers Downloaded</span>
+      <code>{{ serverStats?.trailers_downloaded }}</code>
+    </div>
+    <div class="about-content">
+      <span>Trailers Detected</span>
+      <code>{{ serverStats?.trailers_detected }}</code>
+    </div>
+  </section>
+  <section class="about-section">
+    <h1>Login Credentials</h1>
+    <hr />
+    <div class="about-content">
+      <button class="update-login" (click)="showPwUpdateDialog()">Update Login</button>
+    </div>
+  </section>
+  <section class="about-section">
+    <h1>Getting Support</h1>
+    <hr />
+    <div class="about-content">
+      <span>Documentation</span>
+      <a href="https://nandyalu.github.io/trailarr" target="_blank">https://nandyalu.github.io/trailarr</a>
+    </div>
+    <div class="about-content">
+      <span>Discord</span>
+      <a href="https://discord.gg/KKPr5kQEzQ" target="_blank">https://discord.gg/KKPr5kQEzQ</a>
+    </div>
+    <div class="about-content">
+      <span>Github</span>
+      <a href="https://github.com/nandyalu/trailarr" target="_blank">https://github.com/nandyalu/trailarr</a>
+    </div>
+    <div class="about-content">
+      <span>Issues</span>
+      <a href="https://github.com/nandyalu/trailarr/issues" target="_blank">https://github.com/nandyalu/trailarr/issues</a>
+    </div>
+    <div class="about-content">
+      <span>Reddit</span>
+      <a href="https://www.reddit.com/r/trailarr" target="_blank">https://www.reddit.com/r/trailarr</a>
+    </div>
+  </section>
 </div>
 
 <dialog #passwordUpdateDialog (click)="closePwUpdateDialog()">
-    @if (dialogOpen) {
+  @if (dialogOpen) {
     <form class="dialog-content" (click)="$event.stopPropagation()">
-        <h2>Update Login Credentials</h2>
-        <div class="text-input">
-            <!-- <h3>Current Login Password</h3> -->
-            <div class="password-input">
-                <input id="trailarr_current_password" type="password" [(ngModel)]="currentPassword"
-                autocomplete="current-password" required tabindex="1" #currentPasswordInput>
-                <label for="trailarr_current_password">Current Password</label>
-                <i
-                    (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
-                    <ng-container
-                    *ngIf="currentPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
-                </i>
-            </div>
-            <h3>New Login</h3>
-            <div class="password-input">
-                <input id="trailarr_new_username" type="text" [(ngModel)]="newUsername"
-                    autocomplete="username" required tabindex="1" #newUsernameInput>
-                <label for="trailarr_new_username">New Username</label>
-            </div>
-            <div class="password-input">
-                <input id="trailer_new_password" type="password" [(ngModel)]="newPassword"
-                autocomplete="new-password" required minlength="5" tabindex="1" #newPasswordInput>
-                <label for="trailer_new_password">New Password </label>
-                <i (click)="togglePasswordVisibility(newPasswordInput); newPasswordVisible = !newPasswordVisible">
-                    <ng-container *ngIf="newPasswordVisible then passwordVisible; else passwordHidden"></ng-container>
-                </i>
-            </div>
-            <span>For updating only username/password, leave the other blank</span>
+      <h2>Update Login Credentials</h2>
+      <div class="text-input">
+        <!-- <h3>Current Login Password</h3> -->
+        <div class="password-input">
+          <input
+            id="trailarr_current_password"
+            type="password"
+            [(ngModel)]="currentPassword"
+            autocomplete="current-password"
+            required
+            tabindex="1"
+            #currentPasswordInput
+          />
+          <label for="trailarr_current_password">Current Password</label>
+          <i (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
+            <ng-container *ngIf="currentPasswordVisible; then passwordVisible; else passwordHidden"></ng-container>
+          </i>
         </div>
-        <p class="update-error" *ngIf="updateError">{{updateError}}</p>
-        <p class="update-success" *ngIf="updateSuccess">{{updateSuccess}}</p>
-        <button class="primary" (click)="onConfirmUpdate()" tabindex="1"
-            type="submit" [disabled]="getSubmitButtonState()">Update</button>
-        <button class="secondary" (click)="closePwUpdateDialog()" type="reset" tabindex="2">Cancel</button>
-        <div class="close-progress" *ngIf="updateSuccess"></div>
+        <h3>New Login</h3>
+        <div class="password-input">
+          <input
+            id="trailarr_new_username"
+            type="text"
+            [(ngModel)]="newUsername"
+            autocomplete="username"
+            required
+            tabindex="1"
+            #newUsernameInput
+          />
+          <label for="trailarr_new_username">New Username</label>
+        </div>
+        <div class="password-input">
+          <input
+            id="trailer_new_password"
+            type="password"
+            [(ngModel)]="newPassword"
+            autocomplete="new-password"
+            required
+            minlength="5"
+            tabindex="1"
+            #newPasswordInput
+          />
+          <label for="trailer_new_password">New Password </label>
+          <i (click)="togglePasswordVisibility(newPasswordInput); newPasswordVisible = !newPasswordVisible">
+            <ng-container *ngIf="newPasswordVisible; then passwordVisible; else passwordHidden"></ng-container>
+          </i>
+        </div>
+        <span>For updating only username/password, leave the other blank</span>
+      </div>
+      <p class="update-error" *ngIf="updateError">{{ updateError }}</p>
+      <p class="update-success" *ngIf="updateSuccess">{{ updateSuccess }}</p>
+      <button class="primary" (click)="onConfirmUpdate()" tabindex="1" type="submit" [disabled]="getSubmitButtonState()">Update</button>
+      <button class="secondary" (click)="closePwUpdateDialog()" type="reset" tabindex="2">Cancel</button>
+      <div class="close-progress" *ngIf="updateSuccess"></div>
     </form>
-    }
+  }
 </dialog>
 
 <ng-template #passwordVisible>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
-        <!-- Visible Icon -->
-        <path
-            d="M480.12-330q70.88 0 120.38-49.62t49.5-120.5q0-70.88-49.62-120.38T479.88-670Q409-670 359.5-620.38T310-499.88q0 70.88 49.62 120.38t120.5 49.5Zm-.36-58q-46.76 0-79.26-32.74-32.5-32.73-32.5-79.5 0-46.76 32.74-79.26 32.73-32.5 79.5-32.5 46.76 0 79.26 32.74 32.5 32.73 32.5 79.5 0 46.76-32.74 79.26-32.73 32.5-79.5 32.5Zm.24 188q-146 0-264-83T40-500q58-134 176-217t264-83q146 0 264 83t176 217q-58 134-176 217t-264 83Zm0-300Zm-.17 240Q601-260 702.5-325.5 804-391 857-500q-53-109-154.33-174.5Q601.34-740 480.17-740T257.5-674.5Q156-609 102-500q54 109 155.33 174.5Q358.66-260 479.83-260Z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
+    <!-- Visible Icon -->
+    <path
+      d="M480.12-330q70.88 0 120.38-49.62t49.5-120.5q0-70.88-49.62-120.38T479.88-670Q409-670 359.5-620.38T310-499.88q0 70.88 49.62 120.38t120.5 49.5Zm-.36-58q-46.76 0-79.26-32.74-32.5-32.73-32.5-79.5 0-46.76 32.74-79.26 32.73-32.5 79.5-32.5 46.76 0 79.26 32.74 32.5 32.73 32.5 79.5 0 46.76-32.74 79.26-32.73 32.5-79.5 32.5Zm.24 188q-146 0-264-83T40-500q58-134 176-217t264-83q146 0 264 83t176 217q-58 134-176 217t-264 83Zm0-300Zm-.17 240Q601-260 702.5-325.5 804-391 857-500q-53-109-154.33-174.5Q601.34-740 480.17-740T257.5-674.5Q156-609 102-500q54 109 155.33 174.5Q358.66-260 479.83-260Z"
+    />
+  </svg>
 </ng-template>
 
 <ng-template #passwordHidden>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
-        <!-- Hidden Icon -->
-        <path
-            d="m629-419-44-44q26-71-27-118t-115-24l-44-44q17-11 38-16t43-5q71 0 120.5 49.5T650-500q0 22-5.5 43.5T629-419Zm129 129-40-40q49-36 85.5-80.5T857-500q-50-111-150-175.5T490-740q-42 0-86 8t-69 19l-46-47q35-16 89.5-28T485-800q143 0 261.5 81.5T920-500q-26 64-67 117t-95 93Zm58 226L648-229q-35 14-79 21.5t-89 7.5q-146 0-265-81.5T40-500q20-52 55.5-101.5T182-696L56-822l42-43 757 757-39 44ZM223-654q-37 27-71.5 71T102-500q51 111 153.5 175.5T488-260q33 0 65-4t48-12l-64-64q-11 5-27 7.5t-30 2.5q-70 0-120-49t-50-121q0-15 2.5-30t7.5-27l-97-97Zm305 142Zm-116 58Z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
+    <!-- Hidden Icon -->
+    <path
+      d="m629-419-44-44q26-71-27-118t-115-24l-44-44q17-11 38-16t43-5q71 0 120.5 49.5T650-500q0 22-5.5 43.5T629-419Zm129 129-40-40q49-36 85.5-80.5T857-500q-50-111-150-175.5T490-740q-42 0-86 8t-69 19l-46-47q35-16 89.5-28T485-800q143 0 261.5 81.5T920-500q-26 64-67 117t-95 93Zm58 226L648-229q-35 14-79 21.5t-89 7.5q-146 0-265-81.5T40-500q20-52 55.5-101.5T182-696L56-822l42-43 757 757-39 44ZM223-654q-37 27-71.5 71T102-500q51 111 153.5 175.5T488-260q33 0 65-4t48-12l-64-64q-11 5-27 7.5t-30 2.5q-70 0-120-49t-50-121q0-15 2.5-30t7.5-27l-97-97Zm305 142Zm-116 58Z"
+    />
+  </svg>
 </ng-template>

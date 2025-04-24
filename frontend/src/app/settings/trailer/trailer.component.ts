@@ -1,16 +1,18 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Settings } from '../../models/settings';
 import { SettingsService } from '../../services/settings.service';
 
 @Component({
-    selector: 'app-trailer',
-    imports: [NgIf, NgFor, FormsModule],
-    templateUrl: './trailer.component.html',
-    styleUrl: './trailer.component.css'
+  selector: 'app-trailer',
+  imports: [NgIf, NgFor, FormsModule],
+  templateUrl: './trailer.component.html',
+  styleUrl: './trailer.component.scss',
 })
-export class TrailerComponent {
+export class TrailerComponent implements OnInit {
+  private readonly settingsService = inject(SettingsService);
+
   isLoading: boolean = false;
   settings?: Settings;
   updateResults: String[] = [];
@@ -18,21 +20,19 @@ export class TrailerComponent {
   resolution = 1080;
   audioVolumeLevel = 100;
   subtitleLanguage = 'en';
-  loggingOptions = ["Debug", "Info", "Warning", "Error"];
+  loggingOptions = ['Debug', 'Info', 'Warning', 'Error'];
   trueFalseOptions = [true, false];
-  fileFormats = ["mkv", "mp4", "webm"];
-  audioFormats = ["aac", "ac3", "eac3", "flac", "opus"];
-  videoFormats = ["h264", "h265", "vp8", "vp9", "av1"];
-  subtitleFormats = ["srt", "vtt"];
-  trailerFileName = "";
-  ytCookiesPath = "";
-  excludeWords = "";
+  fileFormats = ['mkv', 'mp4', 'webm'];
+  audioFormats = ['aac', 'ac3', 'eac3', 'flac', 'opus'];
+  videoFormats = ['h264', 'h265', 'vp8', 'vp9', 'av1'];
+  subtitleFormats = ['srt', 'vtt'];
+  trailerFileName = '';
+  ytCookiesPath = '';
+  excludeWords = '';
   minDuration = 30;
   maxDuration = 600;
-  trailerSearchQuery = "";
-  urlBase = "";
-
-  constructor(private settingsService: SettingsService) { }
+  trailerSearchQuery = '';
+  urlBase = '';
 
   ngOnInit() {
     this.isLoading = true;
@@ -40,7 +40,7 @@ export class TrailerComponent {
   }
 
   getSettings() {
-    this.settingsService.getSettings().subscribe(settings => {
+    this.settingsService.getSettings().subscribe((settings) => {
       this.settings = settings;
       this.monitorInterval = settings.monitor_interval;
       this.resolution = settings.trailer_resolution;
@@ -80,7 +80,7 @@ export class TrailerComponent {
         }
       }
     }
-    this.settingsService.updateSetting(key, value).subscribe(msg => {
+    this.settingsService.updateSetting(key, value).subscribe((msg) => {
       // Add update result message to end of list
       this.updateResults.push(msg);
       // Update the settings after the change

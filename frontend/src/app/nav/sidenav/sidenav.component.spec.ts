@@ -1,23 +1,17 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { SidenavComponent } from './sidenav.component';
+import {MockBuilder, MockedComponentFixture, MockRender} from 'ng-mocks';
+import {SidenavComponent} from './sidenav.component';
 
 describe('SidenavComponent', () => {
-  let component: SidenavComponent;
-  let fixture: ComponentFixture<SidenavComponent>;
+  let fixture: MockedComponentFixture<SidenavComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [SidenavComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(SidenavComponent);
-    component = fixture.componentInstance;
+  beforeEach(() => MockBuilder(SidenavComponent));
+
+  beforeEach(() => {
+    fixture = MockRender(SidenavComponent);
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('has instance', () => expect(fixture.componentInstance).toBeTruthy());
+
+  it('renders', () => expect(fixture).toMatchSnapshot());
 });

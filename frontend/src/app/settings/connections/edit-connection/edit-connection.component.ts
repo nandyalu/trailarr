@@ -1,40 +1,40 @@
-import { Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { Connection, ConnectionUpdate, PathMapping } from '../../../models/connection';
-import { SettingsService } from '../../../services/settings.service';
+import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {RouteParamConnectionId} from 'src/routing';
+import {Connection, ConnectionUpdate, PathMapping} from '../../../models/connection';
+import {SettingsService} from '../../../services/settings.service';
 
 @Component({
-    selector: 'app-edit-connection',
-    imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
-    templateUrl: './edit-connection.component.html',
-    styleUrl: './edit-connection.component.css'
+  selector: 'app-edit-connection',
+  imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
+  templateUrl: './edit-connection.component.html',
+  styleUrl: './edit-connection.component.scss',
 })
-export class EditConnectionComponent {
-  constructor(
-    private _location: Location,
-    private settingsService: SettingsService,
-    private route: ActivatedRoute
-  ) { }
+export class EditConnectionComponent implements OnInit {
+  private readonly _location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
+  private readonly settingsService = inject(SettingsService);
 
   connectionId: number = 0;
+
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      this.connectionId = params['id'];
+    this.route.params.subscribe((params) => {
+      this.connectionId = params[RouteParamConnectionId];
       this.settingsService.getConnection(this.connectionId).subscribe((conn: Connection) => {
         this.editConnectionForm.patchValue({
           name: conn.name,
           arrType: conn.arr_type,
           monitorType: conn.monitor,
           url: conn.url,
-          apiKey: conn.api_key
+          apiKey: conn.api_key,
         });
         // Clear existing path_mappings
         this.pathMappings.clear();
 
         // Add path_mappings from the connection
-        conn.path_mappings.forEach(mapping => {
+        conn.path_mappings.forEach((mapping) => {
           this.addPathMapping(mapping, false);
         });
       });
@@ -52,16 +52,16 @@ export class EditConnectionComponent {
     monitorType: new FormControl('new'),
     url: this.url,
     apiKey: this.apiKey,
-    path_mappings: new FormArray([])
+    path_mappings: new FormArray([]),
   });
 
   setArrType(selectedArrType: string) {
-    this.editConnectionForm.patchValue({ arrType: selectedArrType });
+    this.editConnectionForm.patchValue({arrType: selectedArrType});
     this.editConnectionForm.markAsTouched();
     this.editConnectionForm.markAsDirty();
   }
   setMonitorType(selectedMonitorType: string) {
-    this.editConnectionForm.patchValue({ monitorType: selectedMonitorType });
+    this.editConnectionForm.patchValue({monitorType: selectedMonitorType});
     this.editConnectionForm.markAsTouched();
     this.editConnectionForm.markAsDirty();
   }
@@ -72,13 +72,13 @@ export class EditConnectionComponent {
 
   addPathMapping(path_mapping: PathMapping | null = null, markAsTouched = true) {
     if (!path_mapping) {
-      path_mapping = { id: null, connection_id: null, path_from: '', path_to: '' };
+      path_mapping = {id: null, connection_id: null, path_from: '', path_to: ''};
     }
     const pathMappingGroup = new FormGroup({
       id: new FormControl(path_mapping.id),
       connection_id: new FormControl(path_mapping.connection_id),
       path_from: new FormControl(path_mapping.path_from, Validators.required),
-      path_to: new FormControl(path_mapping.path_to, Validators.required)
+      path_to: new FormControl(path_mapping.path_to, Validators.required),
     });
     this.pathMappings.push(pathMappingGroup);
     if (markAsTouched) {
@@ -92,7 +92,7 @@ export class EditConnectionComponent {
     this.editConnectionForm.markAsTouched();
     this.editConnectionForm.markAsDirty();
   }
-  
+
   // Reference to the dialog element
   @ViewChild('cancelDialog') cancelDialog!: ElementRef<HTMLDialogElement>;
 
@@ -110,12 +110,11 @@ export class EditConnectionComponent {
     // Check if form is dirty before showing the dialog, if not go back
     if (this.editConnectionForm.dirty) {
       this.showCancelDialog();
-    }
-    else {
+    } else {
       this._location.back();
     }
   }
-  
+
   onConfirmCancel() {
     // Close the dialog and go back
     this.showCancelDialog();
@@ -135,12 +134,12 @@ export class EditConnectionComponent {
       url: this.editConnectionForm.value.url || '',
       api_key: this.editConnectionForm.value.apiKey || '',
       monitor: this.editConnectionForm.value.monitorType || '',
-      path_mappings: this.editConnectionForm.value.path_mappings || []
+      path_mappings: this.editConnectionForm.value.path_mappings || [],
     };
     this.settingsService.updateConnection(updatedConnection).subscribe((result: string) => {
       this.addConnResult = result;
       //check if result contains version in it
-      if (result.toLowerCase().includes("success")) {
+      if (result.toLowerCase().includes('success')) {
         // wait 3 seconds and go back
         setTimeout(() => {
           this._location.back();

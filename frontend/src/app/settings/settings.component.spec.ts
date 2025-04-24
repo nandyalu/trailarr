@@ -1,23 +1,17 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { SettingsComponent } from './settings.component';
+import {MockBuilder, MockedComponentFixture, MockRender} from 'ng-mocks';
+import {SettingsComponent} from './settings.component';
 
 describe('SettingsComponent', () => {
-  let component: SettingsComponent;
-  let fixture: ComponentFixture<SettingsComponent>;
+  let fixture: MockedComponentFixture<SettingsComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [SettingsComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(SettingsComponent);
-    component = fixture.componentInstance;
+  beforeEach(() => MockBuilder(SettingsComponent));
+
+  beforeEach(() => {
+    fixture = MockRender(SettingsComponent);
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('has instance', () => expect(fixture.componentInstance).toBeTruthy());
+
+  it('renders', () => expect(fixture).toMatchSnapshot());
 });

@@ -1,40 +1,34 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, HostListener, Renderer2 } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { SearchMedia } from '../../models/media';
-import { MediaService } from '../../services/media.service';
+import {NgFor, NgIf} from '@angular/common';
+import {Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {Router, RouterLink} from '@angular/router';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {RouteHome, RouteMedia} from 'src/routing';
+import {SearchMedia} from '../../models/media';
+import {MediaService} from '../../services/media.service';
 
 @Component({
-    selector: 'app-topnav',
-    imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
-    templateUrl: './topnav.component.html',
-    styleUrl: './topnav.component.css'
+  selector: 'app-topnav',
+  imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
+  templateUrl: './topnav.component.html',
+  styleUrl: './topnav.component.scss',
 })
-export class TopnavComponent {
+export class TopnavComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly elementRef = inject(ElementRef);
+  private readonly mediaService = inject(MediaService);
+  private readonly renderer = inject(Renderer2);
+  private readonly router = inject(Router);
+
   isDarkModeEnabled = true;
   searchQuery = '';
   searchForm = new FormControl();
   searchResults: SearchMedia[] = [];
   selectedIndex = -1;
   selectedId = -1;
-  constructor(
-    private renderer: Renderer2,
-    private mediaService: MediaService,
-    private elementRef: ElementRef,
-    private router: Router,
-  ) {
-    this.searchForm.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((value) => {
-        // console.log('Search query: %s', value);
-        this.onSearch(value);
-      });
-  }
+
+  protected readonly RouteHome = RouteHome;
 
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
@@ -58,16 +52,14 @@ export class TopnavComponent {
     const activeElement = document.activeElement as HTMLElement;
 
     // Check if the active element is an input, textarea, or contenteditable element
-    const isInputField = activeElement.tagName === 'INPUT' ||
-      activeElement.tagName === 'TEXTAREA' ||
-      activeElement.isContentEditable;
+    const isInputField = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
 
     // Only handle the 'f' key if the active element is not an input field
     if (!isInputField && event.key === 'f') {
-    // if (event.ctrlKey && event.key === 'f') {
-      event.preventDefault();  // Prevent the browser's default behavior
+      // if (event.ctrlKey && event.key === 'f') {
+      event.preventDefault(); // Prevent the browser's default behavior
       const searchInput = document.getElementById('searchForm')?.querySelector('input');
-      searchInput?.focus();  // Focus the search input field
+      searchInput?.focus(); // Focus the search input field
       return;
     }
     if (this.searchResults.length > 0) {
@@ -79,7 +71,7 @@ export class TopnavComponent {
       }
       let firstId = this.searchResults[0].id;
       let lastId = this.searchResults[this.searchResults.length - 1].id;
-      if (event.key === 'ArrowDown' || event.key === 'Tab' && !event.shiftKey) {
+      if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {
         event.preventDefault();
         // If the last item is selected, loop back to the first item
         if (this.selectedId === lastId) {
@@ -105,7 +97,7 @@ export class TopnavComponent {
         return;
       } else if (event.key === 'Enter') {
         // const selectedResult = this.searchResults[this.selectedIndex];
-        this.router.navigate(['media', this.selectedId]);
+        this.router.navigate([RouteMedia, this.selectedId]);
         this.searchResults = [];
         return;
       }
@@ -114,6 +106,11 @@ export class TopnavComponent {
 
   // Check theme preference on page load and apply it
   ngOnInit() {
+    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      // console.log('Search query: %s', value);
+      this.onSearch(value);
+    });
+
     // Check if theme is already set in local storage
     const theme = localStorage.getItem('theme');
     if (theme) {
@@ -166,7 +163,7 @@ export class TopnavComponent {
     year: 0,
     youtube_trailer_id: '',
     is_movie: true,
-  }
+  };
   onSearch(query: string = '') {
     if (query.length < 3) {
       this.searchResults = [];

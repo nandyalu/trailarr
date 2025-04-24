@@ -1,0 +1,104 @@
+/* File: sidenav.component.scss */
+.navmenu {
+  overflow: auto;
+  width: 210px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-items: stretch;
+}
+
+.sidenav-button {
+  margin: 0;
+  padding: 1rem 1rem 1rem 2rem;
+  box-sizing: border-box;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  text-align: start;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+  cursor: pointer;
+  border-radius: 0; /* Remove border radius */
+  border-bottom: 2px solid transparent; /* Add a transparent bottom border */
+}
+
+.sidenav-button.active {
+  background-color: var(--color-secondary-container);
+  opacity: 1;
+  font-weight: 600;
+  color: var(--color-on-secondary-container);
+  border-bottom: 2px solid var(--color-primary); /* Add a bottom border on hover */
+}
+
+.sidenav-button:not(.active):hover {
+  background-color: var(--color-secondary-container);
+  opacity: 0.6;
+  font-weight: 500;
+  color: var(--color-on-secondary-container);
+  border-bottom: 2px solid var(--color-primary); /* Add a bottom border on hover */
+}
+
+.sidenav-button:last-child {
+  margin-bottom: auto;
+}
+
+.sidenav-button .icon {
+  margin: 0;
+  margin-right: 0.5rem; /* Add space between the icon and the text */
+  height: 1.75rem;
+  width: 1.75rem;
+  padding: 0.25rem;
+}
+
+@media (max-width: 1100px) {
+  .navmenu {
+    width: auto;
+  }
+  .sidenav-button {
+    padding: 1rem;
+  }
+  .sidenav-button .btntext {
+    display: none;
+  }
+  .sidenav-button .icon {
+    margin: auto;
+  }
+}
+
+@media (max-width: 765px) {
+  .navmenu {
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+
+  .sidenav-button {
+    padding: 0; /* Remove padding from the right */
+    width: auto; /* Allow the button to take only the necessary width */
+    border-radius: 0; /* Remove border radius */
+    border-bottom: 2px solid transparent; /* Add a transparent bottom border */
+  }
+
+  .sidenav-button .icon {
+    margin: 0.5rem;
+    height: 1.75rem;
+    width: 1.75rem;
+  }
+
+  .sidenav-button:last-child {
+    margin-bottom: 0;
+  }
+}

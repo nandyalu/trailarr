@@ -1,27 +1,34 @@
-import { DatePipe, Location, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Connection } from '../../../models/connection';
-import { SettingsService } from '../../../services/settings.service';
+import {DatePipe, Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {RouteAdd, RouteConnections, RouteEdit, RouteSettings} from 'src/routing';
+import {Connection} from '../../../models/connection';
+import {SettingsService} from '../../../services/settings.service';
 
 @Component({
-    selector: 'app-show-connections',
-    imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
-    templateUrl: './show-connections.component.html',
-    styleUrl: './show-connections.component.css'
+  selector: 'app-show-connections',
+  imports: [DatePipe, NgIf, NgFor, RouterLink, UpperCasePipe],
+  templateUrl: './show-connections.component.html',
+  styleUrl: './show-connections.component.scss',
 })
-export class ShowConnectionsComponent {
+export class ShowConnectionsComponent implements OnInit {
+  private readonly _location = inject(Location);
+  private readonly settingsService = inject(SettingsService);
+
   connectionList: Connection[] = [];
   isLoading = false;
   resultMessage = '';
   resultType = '';
 
-  constructor(private _location: Location, private settingsService: SettingsService) { }
+  protected readonly RouteAdd = RouteAdd;
+  protected readonly RouteConnections = RouteConnections;
+  protected readonly RouteEdit = RouteEdit;
+  protected readonly RouteSettings = RouteSettings;
 
   ngOnInit() {
     this.getConnections();
   }
-    
+
   getConnections() {
     this.isLoading = true;
     this.settingsService.getConnections().subscribe((connections: Connection[]) => {
@@ -54,8 +61,8 @@ export class ShowConnectionsComponent {
       this.resultMessage = res;
       this.getConnections();
       setTimeout(() => {
-          this.resultMessage = '';
-        }, 3000);
-    })
+        this.resultMessage = '';
+      }, 3000);
+    });
   }
 }

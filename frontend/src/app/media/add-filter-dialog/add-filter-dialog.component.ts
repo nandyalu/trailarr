@@ -1,5 +1,5 @@
-import { Component, computed, EventEmitter, inject, input, OnInit, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {Component, computed, EventEmitter, inject, input, OnInit, Output} from '@angular/core';
+import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {
   BooleanFilterCondition,
@@ -12,18 +12,20 @@ import {
   NumberFilterCondition,
   numberFilterKeys,
   StringFilterCondition,
-  stringFilterKeys
+  stringFilterKeys,
 } from '../../models/customfilter'; // adjust the path as necessary
-import { Media } from '../../models/media';
-import { CustomfilterService } from '../../services/customfilter.service';
+import {Media} from '../../models/media';
+import {CustomfilterService} from '../../services/customfilter.service';
 
 @Component({
   selector: 'app-add-filter-dialog',
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './add-filter-dialog.component.html',
-  styleUrl: './add-filter-dialog.component.css'
+  styleUrl: './add-filter-dialog.component.scss',
 })
 export class AddCustomFilterDialogComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+
   filterType = input.required<string>();
   filterTypeValue = computed(() => {
     let _filterType = this.filterType().toUpperCase();
@@ -68,9 +70,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
 
   viewForOptions = Object.values(FilterType);
 
-  constructor(private fb: FormBuilder) { }
-
-  ngOnInit(): void {
+  ngOnInit() {
     this.initForm(this.customFilter());
   }
 
@@ -86,7 +86,10 @@ export class AddCustomFilterDialogComponent implements OnInit {
   }
 
   displayTitle(value: string): string {
-    return value.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return value
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   initForm(customFilterData: CustomFilterCreate | null): FormGroup {
@@ -95,13 +98,13 @@ export class AddCustomFilterDialogComponent implements OnInit {
       id: [customFilterData ? customFilterData.id : null],
       filter_type: [customFilterData ? customFilterData.filter_type : this.filterTypeValue(), Validators.required],
       filter_name: [customFilterData ? customFilterData.filter_name : '', [Validators.required, Validators.maxLength(15)]],
-      filters: this.fb.array([], Validators.required) // Will hold an array of filters.
+      filters: this.fb.array([], Validators.required), // Will hold an array of filters.
     });
     this.customFilterForm = _form;
 
     // If updating an existing CustomFilter, populate the filters FormArray.
     if (customFilterData && customFilterData.filters && customFilterData.filters.length) {
-      customFilterData.filters.forEach(filter => {
+      customFilterData.filters.forEach((filter) => {
         this.addFilter(filter);
       });
     } else {
@@ -124,7 +127,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
       filter_by: [filter ? filter.filter_by : '', Validators.required],
       filter_condition: [filter ? filter.filter_condition : '', Validators.required],
       filter_value: [filter ? filter.filter_value : '', Validators.required],
-      customfilter_id: [filter ? filter.customfilter_id : null]
+      customfilter_id: [filter ? filter.customfilter_id : null],
     });
   }
 
@@ -147,8 +150,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
     if (booleanFilterKeys.includes(filterKey)) {
       return 'boolean';
     } else if (dateFilterKeys.includes(filterKey)) {
-      if (filterCondition === DateFilterCondition.IN_THE_LAST
-        || filterCondition === DateFilterCondition.NOT_IN_THE_LAST) {
+      if (filterCondition === DateFilterCondition.IN_THE_LAST || filterCondition === DateFilterCondition.NOT_IN_THE_LAST) {
         return 'number_days';
       }
       return 'date';

@@ -1,25 +1,26 @@
-import { NgClass, NgFor } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { SidenavComponent } from './nav/sidenav/sidenav.component';
-import { TopnavComponent } from './nav/topnav/topnav.component';
-import { MessageData, WebsocketService } from './services/websocket.service';
+import {NgClass, NgFor} from '@angular/common';
+import {Component, ElementRef, HostListener, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {Subscription} from 'rxjs';
+import {msMinute} from 'src/util';
+import {SidenavComponent} from './nav/sidenav/sidenav.component';
+import {TopnavComponent} from './nav/topnav/topnav.component';
+import {MessageData, WebsocketService} from './services/websocket.service';
 
 @Component({
-    selector: 'app-root',
-    imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.css'
+  selector: 'app-root',
+  imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy, OnInit {
+  private readonly websocketService = inject(WebsocketService);
+
   messages: MessageData[] = [];
   private toastSubscription?: Subscription;
 
   private timeoutId: any;
-  private readonly IDLE_LIMIT: number = 10 * 60 * 1000; // 10 minutes in milliseconds
-
-  constructor(private websocketService: WebsocketService) { }
+  private readonly IDLE_LIMIT: number = 10 * msMinute;
 
   ngOnInit() {
     // Reset the idle timer
@@ -32,12 +33,12 @@ export class AppComponent {
         setTimeout(() => {
           this.messages.pop();
         }, 3000);
-      }
+      },
     });
   }
 
   // Uncomment the below code to enable mouse movement detection too!
-  // @HostListener('document:mousemove', ['$event']) 
+  // @HostListener('document:mousemove', ['$event'])
   @HostListener('document:click', ['$event'])
   @HostListener('document:keypress', ['$event'])
   resetIdleTimer(): void {

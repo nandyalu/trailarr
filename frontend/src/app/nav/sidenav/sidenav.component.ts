@@ -1,13 +1,22 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {RouterLink, RouterLinkActive} from '@angular/router';
+import {RouteHome, RouteLogs, RouteMovies, RouteSeries, RouteSettings, RouteTasks} from 'src/routing';
 
 @Component({
-    selector: 'app-sidenav',
-    imports: [RouterLink, RouterLinkActive],
-    templateUrl: './sidenav.component.html',
-    styleUrl: './sidenav.component.css'
+  selector: 'app-sidenav',
+  imports: [RouterLink, RouterLinkActive],
+  templateUrl: './sidenav.component.html',
+  styleUrl: './sidenav.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidenavComponent {
+  protected readonly RouteHome = RouteHome;
+  protected readonly RouteLogs = RouteLogs;
+  protected readonly RouteMovies = RouteMovies;
+  protected readonly RouteSeries = RouteSeries;
+  protected readonly RouteSettings = RouteSettings;
+  protected readonly RouteTasks = RouteTasks;
+
   // isMenuCollapsed = true;
   // activeNavId = 1;
   // @ViewChildren('navLink') navLinks: QueryList<ElementRef> = new QueryList();
@@ -19,11 +28,9 @@ export class SidenavComponent {
   //     this.updateActiveLink();
   //   });
   // }
-
   // ngAfterViewInit() {
   //   this.updateActiveLink();
   // }
-  
   // updateActiveLink() {
   //   const URLpath = this.router.url.split('/')[1] || '/';
   //   this.navLinks.forEach((navLink) => {
@@ -46,7 +53,6 @@ export class SidenavComponent {
   //   }
   //   this.renderer.addClass(selectedNavLink, 'active');
   //   this.selectedButton = selectedNavLink;
-
   //   // Get href and navigate to route
   //   const href = (event.currentTarget as HTMLAnchorElement).href;
   //   const path = new URL(href).pathname;

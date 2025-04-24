@@ -1,49 +1,16 @@
-import { Routes } from '@angular/router';
-import { LogsComponent } from './logs/logs.component';
-import { MediaComponent } from './media/media.component';
-import { TasksComponent } from './tasks/tasks.component';
+import {Routes} from '@angular/router';
+import {RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteParamMediaId, RouteSeries, RouteSettings, RouteTasks} from '../routing';
 
 export const routes: Routes = [
-    {
-        path: '',
-        redirectTo: 'home',
-        pathMatch: 'full'
-    },
-    {
-        path: 'media',
-        redirectTo: 'home',
-        pathMatch: 'full'
-    },
-    {
-        path: 'home',
-        component: MediaComponent
-    },
-    {
-        path: 'media/:mediaId',
-        loadChildren: () => import('./media/media-details/media-details.routes').then(m => m.mediaDetailsRoutes)
-    },
-    {
-        path: 'movies',
-        component: MediaComponent
-    },
-    {
-        path: 'series',
-        component: MediaComponent
-    },
-    // {
-    //     path: 'series/:id',
-    //     component: MediaDetailsComponent
-    // },
-    {
-        path: 'tasks',
-        component: TasksComponent
-    },
-    {
-        path: 'logs',
-        component: LogsComponent
-    },
-    {
-        path: 'settings',
-        loadChildren: () => import('./settings/settings.routes').then(m => m.settingsRoutes)
-    }
+  {path: RouteMedia, redirectTo: RouteHome, pathMatch: 'full'},
+  {path: RouteHome, loadChildren: () => import('./media/routes')},
+  {path: `${RouteMedia}/:${RouteParamMediaId}`, loadChildren: () => import('./media/media-details/routes')},
+  {path: RouteMovies, loadChildren: () => import('./media/routes')},
+  {path: RouteSeries, loadChildren: () => import('./media/routes')},
+  // {path: 'series/:id', loadChildren: () => import('./media/media-details/routes')},
+  {path: RouteTasks, loadChildren: () => import('./tasks/routes')},
+  {path: RouteLogs, loadChildren: () => import('./logs/routes')},
+  {path: RouteSettings, loadChildren: () => import('./settings/routes')},
+  {path: '', redirectTo: RouteHome, pathMatch: 'full'},
+  {path: '**', redirectTo: ''},
 ];

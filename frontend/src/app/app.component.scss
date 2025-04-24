@@ -1,0 +1,310 @@
+/* File: app.component.css */
+.mainroot {
+  height: 100%; /* scroll doesn't work on desktop without this */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  position: relative;
+
+  @media (width < 765px) {
+    /* min-height: 100%; */
+    height: auto; /* Browser toolbars doesn't hide on mobile without this */
+  }
+}
+
+.topnavbar {
+  width: 100%;
+  height: auto;
+  z-index: 100;
+  position: sticky;
+  top: 0;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.mainbody {
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  /* overflow-y: auto; */
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+
+  @media (width < 765px) {
+    flex-direction: column;
+  }
+}
+
+.sidebar {
+  width: auto;
+  z-index: 100;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  order: 1;
+  position: sticky;
+  top: 76px;
+  height: calc(100vh - 76px);
+
+  @media (width < 765px) {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    order: 2;
+  }
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  /* overflow-x: hidden;
+  overflow-y: auto; */
+  order: 2;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+
+  @media (width < 765px) {
+    order: 1;
+    margin: 0.5rem;
+    margin-bottom: 80px;
+  }
+}
+
+.toast-container {
+  position: fixed;
+  top: 5rem;
+  right: 3rem;
+  z-index: 999;
+  max-width: 25%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (width < 765px) {
+    max-width: 80%;
+    right: 1rem;
+    padding: 0.5rem;
+  }
+}
+
+.toast {
+  text-wrap: wrap;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.info {
+  background-color: var(--color-info);
+  color: var(--color-info-text);
+}
+
+.success {
+  background-color: var(--color-success);
+  color: var(--color-success-text);
+}
+
+.error {
+  background-color: var(--color-warning);
+  color: var(--color-warning-text);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.dialog-content {
+  padding: 1rem;
+}
+
+/* Loading Animation */
+.loading-container {
+  position: relative;
+  height: 6rem;
+  margin: 1rem;
+}
+
+.loading-container-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+}
+
+.dash {
+  margin: 0 15px;
+  width: 35px;
+  height: 15px;
+  border-radius: 8px;
+  background: var(--color-primary);
+  box-shadow: var(--color-surface-tint) 0 0 15px 0;
+}
+
+.first {
+  margin-right: -18px;
+  transform-origin: center left;
+  animation: spin 3s linear infinite;
+}
+
+.seconde {
+  transform-origin: center right;
+  animation: spin2 3s linear infinite;
+  animation-delay: 0.2s;
+}
+
+.third {
+  transform-origin: center right;
+  animation: spin3 3s linear infinite;
+  animation-delay: 0.3s;
+}
+
+.fourth {
+  transform-origin: center right;
+  animation: spin4 3s linear infinite;
+  animation-delay: 0.4s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(360deg);
+  }
+
+  30% {
+    transform: rotate(370deg);
+  }
+
+  35% {
+    transform: rotate(360deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin2 {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  20% {
+    transform: rotate(0deg);
+  }
+
+  30% {
+    transform: rotate(-180deg);
+  }
+
+  35% {
+    transform: rotate(-190deg);
+  }
+
+  40% {
+    transform: rotate(-180deg);
+  }
+
+  78% {
+    transform: rotate(-180deg);
+  }
+
+  95% {
+    transform: rotate(-360deg);
+  }
+
+  98% {
+    transform: rotate(-370deg);
+  }
+
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes spin3 {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  27% {
+    transform: rotate(0deg);
+  }
+
+  40% {
+    transform: rotate(180deg);
+  }
+
+  45% {
+    transform: rotate(190deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  62% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(360deg);
+  }
+
+  80% {
+    transform: rotate(370deg);
+  }
+
+  85% {
+    transform: rotate(360deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin4 {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  38% {
+    transform: rotate(0deg);
+  }
+
+  60% {
+    transform: rotate(-360deg);
+  }
+
+  65% {
+    transform: rotate(-370deg);
+  }
+
+  75% {
+    transform: rotate(-360deg);
+  }
+
+  100% {
+    transform: rotate(-360deg);
+  }
+}

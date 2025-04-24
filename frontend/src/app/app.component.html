@@ -15,8 +15,8 @@
   </div>
   <!-- Container to show Websocket messages received from server -->
   <div class="toast-container">
-    <div *ngFor=" let msg of messages" class="toast" [ngClass]="msg.type.toLowerCase()">
-      <span>{{msg.message}}</span>
+    <div *ngFor="let msg of messages" class="toast" [ngClass]="msg.type.toLowerCase()">
+      <span>{{ msg.message }}</span>
     </div>
   </div>
 </div>

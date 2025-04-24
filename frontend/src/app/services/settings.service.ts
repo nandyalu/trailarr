@@ -1,17 +1,17 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
-import { environment } from '../../environment';
-import { Connection, ConnectionCreate, ConnectionUpdate } from '../models/connection';
-import { ServerStats, Settings } from '../models/settings';
+import {HttpClient} from '@angular/common/http';
+import {inject, Injectable} from '@angular/core';
+import {catchError, map, Observable, of} from 'rxjs';
+import {environment} from '../../environment';
+import {Connection, ConnectionCreate, ConnectionUpdate} from '../models/connection';
+import {ServerStats, Settings} from '../models/settings';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SettingsService {
-  private settingsUrl = environment.apiUrl + environment.settings;
+  private readonly http = inject(HttpClient);
 
-  constructor(private http: HttpClient) { }
+  private settingsUrl = environment.apiUrl + environment.settings;
 
   getSettings(): Observable<Settings> {
     return this.http.get<any>(this.settingsUrl);
@@ -26,8 +26,8 @@ export class SettingsService {
     const updateSettingUrl = this.settingsUrl + 'update';
     const update_obj = {
       key: key,
-      value: value
-    }
+      value: value,
+    };
     return this.http.put<string>(updateSettingUrl, update_obj).pipe(
       catchError((error: any) => {
         let errorMessage = '';
@@ -39,7 +39,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
@@ -48,8 +48,8 @@ export class SettingsService {
     const update_obj = {
       current_password: currentPassword,
       new_username: newUsername,
-      new_password: newPassword
-    }
+      new_password: newPassword,
+    };
     return this.http.put<string>(updatePasswordUrl, update_obj).pipe(
       catchError((error: any) => {
         let errorMessage = '';
@@ -61,17 +61,19 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
   private connectionsUrl = environment.apiUrl + environment.connections;
   getConnections(): Observable<Connection[]> {
     return this.http.get<Connection[]>(this.connectionsUrl).pipe(
-      map((connections: any[]) => connections.map(connection => ({
-        ...connection,
-        added_at: new Date(connection.added_at)
-      })))
+      map((connections: any[]) =>
+        connections.map((connection) => ({
+          ...connection,
+          added_at: new Date(connection.added_at),
+        })),
+      ),
     );
   }
 
@@ -80,8 +82,8 @@ export class SettingsService {
     return this.http.get<Connection>(connectionIdUrl).pipe(
       map((connection: any) => ({
         ...connection,
-        added_at: new Date(connection.added_at)
-      }))
+        added_at: new Date(connection.added_at),
+      })),
     );
   }
 
@@ -97,7 +99,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
@@ -114,7 +116,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
@@ -131,7 +133,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
@@ -148,7 +150,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 
@@ -165,7 +167,7 @@ export class SettingsService {
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         return of(errorMessage);
-      })
+      }),
     );
   }
 }

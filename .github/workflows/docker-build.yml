@@ -32,6 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VER: ${{ github.sha }}-test
+    # Explicitly specify permissions
+    permissions:
+      contents: read
+      actions: write
 
     # steps:
       # Checkout the repository
@@ -48,6 +52,9 @@ jobs:
 
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Ensure cache directory exists
+        run: mkdir -p /tmp/.buildx-cache
 
       - name: Cache Docker layers
         uses: actions/cache@v3

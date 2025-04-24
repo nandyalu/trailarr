@@ -1,0 +1,212 @@
+.navbar {
+  padding: 1rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+}
+
+.navlogo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-on-surface);
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
+  width: 210px;
+}
+
+.trailarr .logo-text {
+  fill: var(--color-on-surface);
+}
+
+.trailarr:hover .logo-text {
+  fill: var(--color-primary);
+}
+
+.navlogotext {
+  margin-left: 0.5rem;
+}
+
+.navsearch {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  flex-grow: 1;
+  padding: 0.25rem;
+  position: relative;
+}
+
+.navsearch-form {
+  width: 100%;
+}
+
+.navsearch-form input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  margin: 0;
+  font-size: 1rem;
+  background-color: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
+
+  &:focus {
+    outline: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+}
+
+/* navsearch-form input:focus { For custom focus color
+  color: rgb(0, 255, 255);
+  background-color: #212121;
+  outline-color: rgb(0, 255, 255);
+  box-shadow: -3px -3px 15px rgb(0, 255, 255);
+  transition: .1s;
+  transition-property: box-shadow;
+} */
+
+.navsearch-results {
+  position: absolute;
+  top: 100%;
+  left: 2%;
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-highest);
+  border: 0.5px solid var(--color-outline);
+  border-radius: 5px;
+  visibility: hidden;
+  opacity: 0;
+  display: none;
+  z-index: 10;
+}
+
+.active {
+  visibility: visible;
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 40vh;
+  max-width: 60vw;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.5rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  transition: 0.25s;
+
+  @media (width < 765px) {
+    max-width: 75vw;
+  }
+}
+
+.navsearch-results .title {
+  display: flex;
+  min-width: 300px;
+  width: auto;
+  padding: 0.5rem;
+  text-align: left;
+  text-wrap: pretty;
+  cursor: pointer;
+}
+
+.search-poster {
+  width: 3rem;
+}
+
+.search-title {
+  margin: auto 0.5rem;
+  text-align: left;
+}
+
+.navsearch-results .title:hover,
+.navsearch-results .title:focus,
+.navsearch-results .selected {
+  background-color: var(--color-surface-variant);
+  outline: none;
+}
+
+.navsearch-results .title:focus,
+.navsearch-results .selected {
+  scroll-snap-align: center;
+}
+
+@media (max-width: 900px) {
+  .navlogo {
+    width: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .navlogotext {
+    display: none;
+  }
+}
+
+/* Switch2 */
+/* The switch - the box around the slider */
+.switch2 {
+  margin: 0 1rem;
+  display: block;
+  --width-of-switch: 3.5em;
+  --height-of-switch: 2em;
+  /* size of sliding icon -- sun and moon */
+  --size-of-icon: 1.4em;
+  /* it is like a inline-padding of switch */
+  --slider-offset: 0.3em;
+  position: relative;
+  width: var(--width-of-switch);
+  height: var(--height-of-switch);
+}
+
+/* Hide default HTML checkbox */
+.switch2 input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider2 {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  transition: 0.5s;
+  border-radius: 30px;
+}
+
+.slider2:before {
+  position: absolute;
+  content: '';
+  height: var(--size-of-icon, 1.4em);
+  width: var(--size-of-icon, 1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset, 0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg, #775651, #904b40 70%);
+  transition: 0.5s;
+}
+
+input:checked + .slider2 {
+  background-color: #140c0b;
+}
+
+input:checked + .slider2:before {
+  left: calc(100% - (var(--size-of-icon, 1.4em) + var(--slider-offset, 0.3em)));
+  background: #140c0b;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow:
+    inset -3px -2px 5px -2px #e7bdb6,
+    inset -10px -4px 0 0 #ffb4a8;
+}

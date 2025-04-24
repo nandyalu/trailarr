@@ -90,5 +90,50 @@
             "icon": "terminal-powershell"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "bash"
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+            {
+                // Max Line Length
+                "column": 140,
+                "color": "#ff0000",
+            }
+        ]
+    },
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+            {
+                // Max Line Length
+                "column": 140,
+                "color": "#ff0000",
+            }
+        ]
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+            {
+                // Max Line Length
+                "column": 140,
+                "color": "#ff0000",
+            }
+        ]
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+            {
+                // Max Line Length
+                "column": 140,
+                "color": "#ff0000",
+            }
+        ],
+        "typescript.tsdk": "node_modules\\typescript\\lib"
+    }
 }

@@ -1,0 +1,95 @@
+.sett-conn-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 12px;
+}
+
+.top-left-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+}
+
+.center {
+  margin: auto;
+}
+
+.result-success {
+  padding: 10px;
+  display: block;
+  border-radius: 4px;
+  color: var(--color-success-text);
+  background-color: var(--color-success);
+}
+
+.result-error {
+  padding: 10px;
+  display: block;
+  border-radius: 4px;
+  color: var(--color-error-text);
+  background-color: var(--color-error);
+}
+
+.connection-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.connection-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  max-width: 500px;
+  padding: 12px;
+  border: 2px solid var(--color-outline);
+  border-radius: 8px;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.connection-card .title {
+  grid-row: 1;
+  grid-column: 1 / span 2;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.connection-card .content {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.connection-card .link-image {
+  grid-row: 2;
+  grid-column: 2;
+  width: auto;
+}
+
+.connection-card .buttons {
+  grid-row: 3;
+  grid-column: 1 / span 2;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-content {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
+  text-align: center;
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
+.dialog-content button {
+  margin: 10px;
+}
