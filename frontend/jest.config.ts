@@ -14,6 +14,7 @@ const jestConfig: Config = {
   reporters: ['default', 'jest-junit'],
   moduleNameMapper: {
     'src/(.*)': '<rootDir>/src/$1',
+    'generated-sources/(.*)': '<rootDir>/generated-sources/$1',
   },
 };
 
