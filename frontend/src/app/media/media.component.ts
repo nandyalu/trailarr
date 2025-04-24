@@ -1,8 +1,8 @@
-import {NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {ActivatedRoute, RouterLink} from '@angular/router';
-import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink, RouterState } from '@angular/router';
+import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
 import {
   booleanFilterKeys,
   CustomFilter,
@@ -14,12 +14,12 @@ import {
   StringFilterCondition,
   stringFilterKeys,
 } from '../models/customfilter';
-import {mapMedia, Media} from '../models/media';
-import {CustomfilterService} from '../services/customfilter.service';
-import {MediaService} from '../services/media.service';
-import {WebsocketService} from '../services/websocket.service';
-import {AddCustomFilterDialogComponent} from './add-filter-dialog/add-filter-dialog.component';
-import {DisplayTitlePipe} from './pipes/display-title.pipe';
+import { mapMedia, Media } from '../models/media';
+import { CustomfilterService } from '../services/customfilter.service';
+import { MediaService } from '../services/media.service';
+import { WebsocketService } from '../services/websocket.service';
+import { AddCustomFilterDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
+import { DisplayTitlePipe } from './pipes/display-title.pipe';
 
 @Component({
   selector: 'app-media2',
@@ -29,7 +29,7 @@ import {DisplayTitlePipe} from './pipes/display-title.pipe';
 })
 export class MediaComponent implements OnInit {
   private readonly mediaService = inject(MediaService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly webSocketService = inject(WebsocketService);
 
   customfilterService = inject(CustomfilterService);
@@ -66,12 +66,14 @@ export class MediaComponent implements OnInit {
 
   ngOnInit() {
     this.isLoading.set(true);
-    let type = this.route.snapshot.url[0].path;
-    switch (type) {
-      case 'movies':
+    const state: RouterState = this.router.routerState;
+    const currentRoute = state.snapshot.url.toLowerCase();
+    // let type = this.route.snapshot.url[0].path;
+    switch (currentRoute) {
+      case '/movies':
         this.moviesOnly.set(true);
         break;
-      case 'series':
+      case '/series':
         this.moviesOnly.set(false);
         break;
       default:
