@@ -46,5 +46,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
