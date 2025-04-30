@@ -35,6 +35,7 @@ class _TrailerProfileBase(SQLModel):
     subtitles_format: str = "srt"
     subtitles_language: str = "en"
     # General settings
+    always_search: bool = False
     embed_metadata: bool = True
     exclude_words: str = ""
     include_words: str = ""
@@ -80,4 +81,4 @@ class TrailerProfileRead(_TrailerProfileBase):
 
     id: int
     customfilter_id: int
-    viewfilter: CustomFilterRead
+    customfilter: CustomFilterRead

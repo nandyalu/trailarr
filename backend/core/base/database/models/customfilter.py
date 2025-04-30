@@ -1,7 +1,6 @@
 from enum import Enum
 from sqlmodel import Field, Relationship, SQLModel
 
-
 # if TYPE_CHECKING:
 from core.base.database.models.filter import (
     Filter,
@@ -68,6 +67,7 @@ class CustomFilterCreate(_CustomFilterBase):
         view filters.
     """
 
+    id: int | None = None
     filters: list[FilterCreate] = []
     """List of filters for the view"""
     # trailerprofile: Optional["TrailerProfileCreate"] = None
