@@ -73,7 +73,8 @@ def _get_video_options_cpu(
     _vcodec = app_settings.trailer_video_format
     if _vcodec not in _VIDEO_CODECS:
         logger.error(
-            f"Video codec '{_vcodec}' not implemented in Trailer, using h265 codec"
+            f"Video codec '{_vcodec}' not implemented in Trailer, using h265"
+            " codec"
         )
         _vcodec = "h265"
     _vencoder = _VIDEO_CODECS[_vcodec]
@@ -89,7 +90,8 @@ def _get_video_options_cpu(
         ffmpeg_cmd.append("copy" if video_stream else _vencoder)
     else:
         logger.debug(
-            f"Converting video from {video_stream.codec_name} to {_vcodec} codec"
+            f"Converting video from {video_stream.codec_name} to"
+            f" {_vcodec} codec"
         )
         ffmpeg_cmd.append(_vencoder)
         ffmpeg_cmd.extend(["-preset", "veryfast", "-crf", "22"])
@@ -109,7 +111,8 @@ def _get_video_options_nvidia(
     vcodec = app_settings.trailer_video_format
     if vcodec not in _VIDEO_CODECS_NVIDIA:
         logger.error(
-            f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder, using CPU"
+            f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder,"
+            " using CPU"
         )
         return _get_video_options_cpu(input_file, video_stream)
 
@@ -138,7 +141,8 @@ def _get_video_options_nvidia(
         video_options.append("copy")
     else:
         logger.debug(
-            f"Converting video from {video_stream.codec_name} to {vcodec} codec"
+            f"Converting video from {video_stream.codec_name} to"
+            f" {vcodec} codec"
         )
         video_options.append(vencoder)
         video_options.extend(["-preset", "fast", "-cq", "22"])
@@ -167,7 +171,9 @@ def _get_audio_options(audio_stream: StreamInfo | None = None) -> list[str]:
     # Apply audio volume level filter if enabled
     volume_level = app_settings.trailer_audio_volume_level * 0.01
     if volume_level != 1:
-        logger.debug(f"Applying audio volume level filter: '-af volume={volume_level}'")
+        logger.debug(
+            f"Applying audio volume level filter: '-af volume={volume_level}'"
+        )
         ffmpeg_cmd.extend(["-af", f"volume={volume_level}"])
 
     if audio_stream is None:
@@ -184,7 +190,8 @@ def _get_audio_options(audio_stream: StreamInfo | None = None) -> list[str]:
         ffmpeg_cmd.append("copy")
     else:
         logger.debug(
-            f"Converting audio from {audio_stream.codec_name} to {_acodec} codec"
+            f"Converting audio from {audio_stream.codec_name} to"
+            f" {_acodec} codec"
         )
         ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
 
@@ -205,7 +212,7 @@ def _get_subtitle_options(stream: StreamInfo | None = None) -> list[str]:
         logger.debug(f"Converting subtitles to {scodec} format")
     else:
         logger.debug(
-            f"Converting subtitles from {stream.codec_name} to " f"{scodec} format"
+            f"Converting subtitles from {stream.codec_name} to {scodec} format"
         )
     ffmpeg_cmd.append("-c:s")
     ffmpeg_cmd.append(scodec)
@@ -231,17 +238,25 @@ def _get_web_optimized_options() -> list[str]:
     return ffmpeg_cmd
 
 
-def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
+def get_ffmpeg_cmd(
+    input_file: str, output_file: str, fallback=False
+) -> list[str]:
     """Generate the ffmpeg command based on the app settings and media streams.
     Args:
         input_file (str): Input video file path.
         output_file (str): Output video file path.
+        fallback (bool): If True, hardware acceleration is not used.
     Returns:
         list[str]: FFMPEG command list."""
     # Check if NVIDIA hardware acceleration is enabled
-    use_nvidia = (
-        app_settings.nvidia_gpu_available and app_settings.trailer_hardware_acceleration
-    )
+    if fallback:
+        logger.debug("Fallback mode enabled, using CPU for conversion")
+        use_nvidia = False
+    else:
+        use_nvidia = (
+            app_settings.nvidia_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        )
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
     _subtitle_stream: StreamInfo | None = None
@@ -262,7 +277,9 @@ def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
         # "repeat+level+warning",
     ]
     # Set video specific options
-    ffmpeg_cmd.extend(_get_video_options(input_file, use_nvidia, _video_stream))
+    ffmpeg_cmd.extend(
+        _get_video_options(input_file, use_nvidia, _video_stream)
+    )
     # Set audio specific options
     ffmpeg_cmd.extend(_get_audio_options(_audio_stream))
     # Set subtitle specific options

@@ -6,7 +6,6 @@ from config.settings import app_settings
 from core.download.video_analysis import VideoInfo
 from core.download.video_conversion import get_ffmpeg_cmd
 
-
 logger = ModuleLogger("TrailersDownloader2")
 # ffmpeg -i output1.mkv -c:v libx264 -c:a aac -c:s srt output1-converted3-264-aac-srt-cpu.mkv
 # 3m44.35s - 53.29MB
@@ -150,7 +149,9 @@ def _download_with_ytdlp(url: str, file_path: str) -> str:
                 if "age restricted" in line.lower():
                     msg = "Video is age restricted, sign in to download"
                 if "not a bot" in line.lower():
-                    msg = "Youtube bot detection kicked in, sign in to download"
+                    msg = (
+                        "Youtube bot detection kicked in, sign in to download"
+                    )
                 logger.error(msg)
                 raise Exception(msg)
             logger.debug(line.strip())
@@ -199,7 +200,9 @@ def _get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
     #     ffmpeg_cmd.append("-qp")
     #     ffmpeg_cmd.append("22")
     # else:
-    logger.debug(f"Converting video to {app_settings.trailer_video_format} codec")
+    logger.debug(
+        f"Converting video to {app_settings.trailer_video_format} codec"
+    )
     ffmpeg_cmd.append(_VIDEO_CODECS[app_settings.trailer_video_format])
     ffmpeg_cmd.append("-preset")
     ffmpeg_cmd.append("veryfast")
@@ -216,7 +219,9 @@ def _get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
         ffmpeg_cmd.append("-af")
         ffmpeg_cmd.append(f"volume={volume_level}")
     # Set audio specific options
-    logger.debug(f"Converting audio to {app_settings.trailer_audio_format} codec")
+    logger.debug(
+        f"Converting audio to {app_settings.trailer_audio_format} codec"
+    )
     ffmpeg_cmd.append("-c:a")
     ffmpeg_cmd.append(_AUDIO_CODECS[app_settings.trailer_audio_format])
     ffmpeg_cmd.append("-b:a")
@@ -224,7 +229,8 @@ def _get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
     # Set subtitle specific options
     if app_settings.trailer_subtitles_enabled:
         logger.debug(
-            f"Converting subtitles to {app_settings.trailer_subtitles_format} format"
+            "Converting subtitles to"
+            f" {app_settings.trailer_subtitles_format} format"
         )
         ffmpeg_cmd.append("-c:s")
         ffmpeg_cmd.append(app_settings.trailer_subtitles_format)
@@ -267,8 +273,8 @@ def _get_ffmpeg_cmd_smart(
             ffmpeg_cmd.append("-c:v")
             if stream.codec_name == _vcodec:
                 logger.debug(
-                    f"Downloaded video is already in required codec: {_vcodec}, "
-                    "copying stream without converting"
+                    "Downloaded video is already in required codec:"
+                    f" {_vcodec}, copying stream without converting"
                 )
                 ffmpeg_cmd.append("copy")
                 continue
@@ -294,7 +300,8 @@ def _get_ffmpeg_cmd_smart(
                 ffmpeg_cmd.append("-af")
                 ffmpeg_cmd.append(f"volume={volume_level}")
                 logger.debug(
-                    f"Converting audio from {stream.codec_name} to {_acodec} codec"
+                    f"Converting audio from {stream.codec_name} to"
+                    f" {_acodec} codec"
                 )
                 ffmpeg_cmd.append("-c:a")
                 ffmpeg_cmd.append(_aencoder)
@@ -305,14 +312,15 @@ def _get_ffmpeg_cmd_smart(
             ffmpeg_cmd.append("-c:a")
             if stream.codec_name == _acodec:
                 logger.debug(
-                    f"Downloaded audio is already in required codec: {_acodec}, "
-                    "copying stream without converting"
+                    "Downloaded audio is already in required codec:"
+                    f" {_acodec}, copying stream without converting"
                 )
                 ffmpeg_cmd.append("copy")
                 continue
             else:
                 logger.debug(
-                    f"Converting audio from {stream.codec_name} to {_acodec} codec"
+                    f"Converting audio from {stream.codec_name} to"
+                    f" {_acodec} codec"
                 )
                 ffmpeg_cmd.append(_aencoder)
                 ffmpeg_cmd.append("-b:a")
@@ -340,11 +348,13 @@ def _get_ffmpeg_cmd_smart(
     return ffmpeg_cmd
 
 
-def _convert_video(input_file: str, output_file: str) -> str:
+def _convert_video(input_file: str, output_file: str, retry=True) -> str:
     """Convert the video to the desired format
     Args:
         input_file (str): Input video file path
         output_file (str): Output video file path
+        retry (bool, Optional=True): Retry the conversion without hardware acceleration. \
+            If conversion fails, retry without hardware acceleration once
     Raises:
         Exception: Error converting video
     Returns:
@@ -357,7 +367,7 @@ def _convert_video(input_file: str, output_file: str) -> str:
     #     ffmpeg_cmd = _get_ffmpeg_cmd(input_file, output_file)
     # else:
     #     ffmpeg_cmd = _get_ffmpeg_cmd_smart(media_info, input_file, output_file)
-    ffmpeg_cmd = get_ffmpeg_cmd(input_file, output_file)
+    ffmpeg_cmd = get_ffmpeg_cmd(input_file, output_file, fallback=not retry)
     # Convert the video
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
     with subprocess.Popen(
@@ -372,6 +382,15 @@ def _convert_video(input_file: str, output_file: str) -> str:
             logger.debug(line.strip())
 
     if process.returncode != 0:
+        # If the conversion fails, retry without hardware acceleration
+        if retry:
+            logger.warning(
+                "FFmpeg conversion failed with exit code"
+                f" {process.returncode}, retrying with default options"
+            )
+            # Retry the conversion with fallback
+            return _convert_video(input_file, output_file, retry=False)
+        # If the conversion fails again, log the error and raise an exception
         logger.error(f"Command failed with exit code {process.returncode}")
         raise Exception("Error converting video")
     logger.info("Video converted successfully")
@@ -423,13 +442,15 @@ def download_video(url: str, file_path: str) -> str:
     # except Exception as e:
     #     logger.error(f"Error downloading video: {e}")
     #     return ""
-    logger.info("Video downloaded successfully")
+    logger.info("Video download and conversion completed successfully")
     return converted_file_path
 
 
 if __name__ == "__main__":
     app_settings.log_level = "DEBUG"
-    _convert_video("/app/tmp/tmp_2782-trailer.webm", "/app/tmp/output1-converted.mkv")
+    _convert_video(
+        "/app/tmp/tmp_2782-trailer.webm", "/app/tmp/output1-converted.mkv"
+    )
     # download_video("https://www.youtube.com/watch?v=WHXq62VCaCM", "output.mkv")
     # Age restricted video
     # download_video("https://www.youtube.com/watch?v=pLWda_RrQn4", "output2.mkv")
