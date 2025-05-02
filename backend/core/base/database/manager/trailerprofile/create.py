@@ -1,5 +1,6 @@
 from sqlmodel import Session
 
+from app_logger import ModuleLogger
 from core.base.database.manager.trailerprofile.base import convert_to_read_item
 from core.base.database.models.filter import Filter
 from core.base.database.models.trailerprofile import (
@@ -8,6 +9,8 @@ from core.base.database.models.trailerprofile import (
     TrailerProfileRead,
 )
 from core.base.database.utils.engine import manage_session
+
+logger = ModuleLogger("TrailerProfileManager")
 
 
 @manage_session
@@ -24,6 +27,8 @@ def create_trailerprofile(
             database connection. A new session is created if not provided.
     Returns:
         TrailerProfileRead: TrailerProfileRead object
+    Raises:
+        ValidationError: If the input data is not valid.
     """
     # Extract filters from the trailer profile create object
     # and create db Filter objects from them
@@ -40,4 +45,8 @@ def create_trailerprofile(
     _session.add(db_trailerprofile)
     _session.commit()
     _session.refresh(db_trailerprofile)
+    logger.info(
+        "Created trailer profile:"
+        f" {db_trailerprofile.customfilter.filter_name}"
+    )
     return convert_to_read_item(db_trailerprofile)

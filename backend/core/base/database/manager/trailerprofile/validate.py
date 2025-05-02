@@ -3,9 +3,9 @@ from core.base.database.models.trailerprofile import (
     TrailerProfileCreate,
 )
 
-VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus"]
+VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus", "copy"]
 VALID_FILE_FORMATS = ["mkv", "mp4", "webm"]
-VALID_VIDEO_FORMATS = ["h264", "hevc", "vp8", "vp9", "av1"]
+VALID_VIDEO_FORMATS = ["h264", "hevc", "vp8", "vp9", "av1", "copy"]
 VALID_VIDEO_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
 VALID_SUBTITLES_FORMATS = ["srt", "vtt"]
 

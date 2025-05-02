@@ -6,11 +6,11 @@ For future releases/migrations if any changes were made to database models, run 
     >>>> mv /config/trailarr.db /config/trailarr_old.db
 
 2. Run alembic upgrade head command to create a new database file `/config/trailarr.db` with all existing migrations.
-    >>>> cd backend
+    >>>> cd /app/backend
     >>>> alembic upgrade head
 
 3. Run alembic create migration command to create a new migration.
-    >>>> cd backend
+    >>>> cd /app/backend
     >>>> alembic revision --autogenerate -m "With an appropriate message"
 
 4. Delte the `/config/trailarr.db` file that was created in step 2.

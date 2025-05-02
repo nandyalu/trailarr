@@ -1,9 +1,8 @@
-import logging
-
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
+from app_logger import ModuleLogger
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
@@ -12,6 +11,8 @@ from core.tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
 )
+
+logger = ModuleLogger("MediaAPI")
 
 media_router = APIRouter(prefix="/media", tags=["Media"])
 
@@ -206,7 +207,7 @@ async def download_media_trailer(
     msg = f"Downloading trailer for media with ID: [{media_id}]"
     if yt_id:
         msg += f" from ({yt_id})"
-    logging.info(msg)
+    logger.info(msg)
     return download_trailer_by_id(media_id, profile_id, yt_id)
 
 
@@ -228,11 +229,11 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     Returns:
         str: Monitoring message.
     """
-    logging.info(f"Monitoring media with ID: {media_id}")
+    logger.info(f"Monitoring media with ID: {media_id}")
     db_handler = MediaDatabaseManager()
     try:
         msg, is_success = db_handler.update_monitoring(media_id, monitor)
-        logging.info(msg)
+        logger.info(msg)
         await websockets.ws_manager.broadcast(
             msg, "Success" if is_success else "Error"
         )
@@ -268,7 +269,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     Returns:
         str: Updating YouTube ID message.
     """
-    logging.info(f"Updating YouTube ID for media with ID: {media_id}")
+    logger.info(f"Updating YouTube ID for media with ID: {media_id}")
     # Check if yt_id is a URL and extract the ID
     if yt_id and yt_id.startswith("http"):
         _yt_id = trailer_search.extract_youtube_id(yt_id)
@@ -290,7 +291,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     try:
         db_handler.update_ytid(media_id, yt_id)
         msg = f"YouTube ID for media with ID: {media_id} has been updated."
-        logging.info(msg)
+        logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
@@ -316,7 +317,7 @@ async def search_for_trailer(media_id: int) -> str:
     Returns:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
-    logging.info(f"Searching for trailer for media with ID: {media_id}")
+    logger.info(f"Searching for trailer for media with ID: {media_id}")
     db_handler = MediaDatabaseManager()
     media = db_handler.read(media_id)
     # mediaT = MediaTrailer(
@@ -334,11 +335,11 @@ async def search_for_trailer(media_id: int) -> str:
             f"Trailer found for media '{media.title}' [{media.id}] as"
             f" ({yt_id})"
         )
-        logging.info(msg)
+        logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
         return yt_id
     msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
-    logging.info(msg)
+    logger.info(msg)
     await websockets.ws_manager.broadcast(msg, "Error")
     return ""
 
@@ -360,7 +361,7 @@ async def delete_media_trailer(media_id: int) -> str:
     Returns:
         str: Deleting trailer message.
     """
-    logging.info(f"Deleting trailer for media with ID: {media_id}")
+    logger.info(f"Deleting trailer for media with ID: {media_id}")
     db_handler = MediaDatabaseManager()
     try:
         media = db_handler.read(media_id)
@@ -387,7 +388,7 @@ async def delete_media_trailer(media_id: int) -> str:
         msg = (
             f"Trailer for media '{media.title}' [{media.id}] has been deleted."
         )
-        logging.info(msg)
+        logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
         return msg
     except Exception as e:
@@ -421,7 +422,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
     Returns:
         str: Monitoring message.
     """
-    logging.info(f"Monitoring media with IDs: {update.media_ids}")
+    logger.info(f"Monitoring media with IDs: {update.media_ids}")
     db_handler = MediaDatabaseManager()
     try:
         msg = ""
@@ -441,14 +442,14 @@ async def batch_update_media(update: BatchUpdate) -> None:
                 return
             batch_download_trailers(update.profile_id, update.media_ids)
         if msg:
-            logging.info(msg)
+            logger.info(msg)
             await websockets.ws_manager.broadcast(msg, "Success")
             return
     except Exception as e:
         await websockets.ws_manager.broadcast(
             f"Error updating Media! {e}", "Error"
         )
-        logging.error(e)
+        logger.error(e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )

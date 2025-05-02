@@ -93,7 +93,7 @@ def _get_video_options_cpu(
             f"Downloaded video is already in required codec: {vcodec}, "
             "copying stream without converting"
         )
-        ffmpeg_cmd.append("copy" if video_stream else _vencoder)
+        ffmpeg_cmd.append("copy")
 
     return ffmpeg_cmd
 
@@ -155,6 +155,10 @@ def _get_video_options(
     use_nvidia: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
+    if vcodec == "copy":
+        ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
+        logger.debug("Copying video stream without converting")
+        return ffmpeg_cmd
     if use_nvidia:
         return _get_video_options_nvidia(vcodec, input_file, video_stream)
     return _get_video_options_cpu(vcodec, input_file, video_stream)
@@ -185,6 +189,20 @@ def _get_audio_options(
         logger.debug(f"Converting audio to {acodec} codec")
         ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
         return ffmpeg_cmd
+
+    if acodec == "copy":
+        if _volume_level == 1:
+            logger.debug("Copying audio stream without converting")
+            ffmpeg_cmd.append("-c:a")
+            ffmpeg_cmd.append("copy")
+            return ffmpeg_cmd
+        else:
+            logger.debug(
+                "Cannot apply volume level filter to copied audio stream, "
+                f"converting audio to {acodec} codec"
+            )
+            ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
+            return ffmpeg_cmd
 
     if audio_stream.codec_name == acodec and _volume_level == 1:
         logger.debug(

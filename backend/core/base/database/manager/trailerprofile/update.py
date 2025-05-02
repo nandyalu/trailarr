@@ -1,5 +1,6 @@
 from sqlmodel import Session
 
+from app_logger import ModuleLogger
 from core.base.database.manager.customfilter.update import __update_filters
 from core.base.database.manager.trailerprofile.base import (
     convert_to_read_item,
@@ -14,6 +15,8 @@ from core.base.database.models.trailerprofile import (
 )
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
+
+logger = ModuleLogger("TrailerProfileManager")
 
 
 @manage_session
@@ -59,7 +62,10 @@ def update_trailerprofile(
     _session.add(trailerprofile_db)
     _session.commit()
     _session.refresh(trailerprofile_db)
-
+    logger.info(
+        "Updated trailer profile:"
+        f" {trailerprofile_db.customfilter.filter_name}"
+    )
     return convert_to_read_item(trailerprofile_db)
 
 
@@ -99,5 +105,8 @@ def update_trailerprofile_setting(
     _session.add(trailerprofile_db)
     _session.commit()
     _session.refresh(trailerprofile_db)
-
+    logger.info(
+        "Updated trailer profile setting:"
+        f" {trailerprofile_db.customfilter.filter_name} - {setting}: {value}"
+    )
     return convert_to_read_item(trailerprofile_db)

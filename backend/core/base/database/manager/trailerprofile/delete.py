@@ -1,7 +1,10 @@
 from sqlmodel import Session
 
+from app_logger import ModuleLogger
 from core.base.database.models.trailerprofile import TrailerProfile
 from core.base.database.utils.engine import manage_session
+
+logger = ModuleLogger("TrailerProfileManager")
 
 
 @manage_session
@@ -29,4 +32,8 @@ def delete_trailerprofile(
     # Delete the trailer profile
     _session.delete(db_trailerprofile)
     _session.commit()
+    logger.info(
+        "Deleted trailer profile:"
+        f" {db_trailerprofile.customfilter.filter_name}"
+    )
     return True
