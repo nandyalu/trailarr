@@ -515,3 +515,24 @@ class FilesHandler:
             return await FilesHandler.delete_folder(path)
         else:
             return await FilesHandler.delete_file(path)
+
+    @staticmethod
+    def compute_file_hash(file_path) -> str:
+        """Compute the SHA-256 hash of a file.\n
+        Args:
+            file_path (str): Path to the file to compute the hash for.\n
+        Returns:
+            str: SHA-256 hash of the file as a hexadecimal string.
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            PermissionError: If the file is not readable.
+        """
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        if not os.access(file_path, os.R_OK):
+            raise PermissionError(f"Permission denied: {file_path}")
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
