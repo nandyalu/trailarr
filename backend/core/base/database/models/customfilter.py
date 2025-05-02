@@ -63,8 +63,6 @@ class CustomFilter(_CustomFilterBase, table=True):
 class CustomFilterCreate(_CustomFilterBase):
     """
     Model for creating/updating CustomFilter.
-    - Leave `trailerprofile_id` and `trailerprofile` as `None` for page\
-        view filters.
     """
 
     id: int | None = None

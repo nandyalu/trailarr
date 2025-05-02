@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import re
 from typing import Protocol, Sequence
-from sqlmodel import Session, col, desc, select
+from sqlmodel import Session, col, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from core.base.database.manager.connection import ConnectionDatabaseManager
@@ -66,7 +66,9 @@ class MediaDatabaseManager:
         new_count: int = 0
         updated_count: int = 0
         for media_create in media_create_list:
-            db_media, created, updated = self._create_or_update(media_create, _session)
+            db_media, created, updated = self._create_or_update(
+                media_create, _session
+            )
             db_media_list.append((db_media, created, updated))
             if created:
                 new_count += 1
@@ -163,8 +165,8 @@ class MediaDatabaseManager:
             self._check_connection_exists(connection_id, session=_session)
         except ItemNotFoundError:
             logger.debug(
-                f"Connection with id {connection_id} doesn't exist in the database."
-                " Returning empty list."
+                f"Connection with id {connection_id} doesn't exist in the"
+                " database. Returning empty list."
             )
             return []
         statement = select(Media).where(Media.connection_id == connection_id)
@@ -197,7 +199,11 @@ class MediaDatabaseManager:
         statement = select(Media)
         if movies_only is not None:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
-        statement = statement.order_by(desc(Media.added_at)).offset(offset).limit(limit)
+        statement = (
+            statement.order_by(desc(Media.added_at))
+            .offset(offset)
+            .limit(limit)
+        )
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
@@ -248,7 +254,13 @@ class MediaDatabaseManager:
         seconds = max(1, seconds + 1)  # Add 1 second to avoid missing items
         seconds = min(seconds, 86400)  # Max 1 day
         updated_at = datetime.now(timezone.utc) - timedelta(seconds=seconds)
-        statement = select(Media).where(Media.updated_at > updated_at)
+        statement = select(Media).where(
+            or_(
+                Media.updated_at > updated_at,
+                Media.added_at > updated_at,
+                Media.downloaded_at > updated_at,  # type: ignore
+            )
+        )
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
@@ -312,6 +324,8 @@ class MediaDatabaseManager:
             exclude={"youtube_trailer_id", "downloaded_at"},
         )
         db_media.sqlmodel_update(media_update_data)
+        if _session.is_modified(db_media):
+            db_media.updated_at = datetime.now(timezone.utc)
         _session.add(db_media)
         if _commit:
             _session.commit()
@@ -336,7 +350,9 @@ class MediaDatabaseManager:
             ItemNotFoundError: If any of the media items with provided id's don't exist.
         """
         for media_id, media_update in media_updates:
-            self.update(media_id, media_update, _session=_session, _commit=False)
+            self.update(
+                media_id, media_update, _session=_session, _commit=False
+            )
         _session.commit()
         return
 
@@ -410,7 +426,9 @@ class MediaDatabaseManager:
             ItemNotFoundError: If any of the media items with provided id's don't exist.
         """
         for media_update in media_update_list:
-            self.update_media_status(media_update, _session=_session, _commit=False)
+            self.update_media_status(
+                media_update, _session=_session, _commit=False
+            )
         _session.commit()
         return
 
@@ -447,7 +465,10 @@ class MediaDatabaseManager:
         if monitor:
             # If trailer exists, change nothing!
             if db_media.trailer_exists:
-                msg = f"Media '{db_media.title}' [{db_media.id}] already has a trailer!"
+                msg = (
+                    f"Media '{db_media.title}' [{db_media.id}] already has a"
+                    " trailer!"
+                )
                 return msg, False
             # Trailer doesn't exist, set monitor status
             db_media.monitor = monitor
@@ -466,7 +487,9 @@ class MediaDatabaseManager:
         else:
             db_media.status = MonitorStatus.MISSING
         db_media.updated_at = datetime.now(timezone.utc)
-        msg = f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
+        msg = (
+            f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
+        )
         _session.add(db_media)
         if _commit:
             _session.commit()
@@ -492,7 +515,9 @@ class MediaDatabaseManager:
             ItemNotFoundError: If any of the media items with provided id's don't exist.
         """
         for media_id in media_ids:
-            self.update_monitoring(media_id, monitor, _session=_session, _commit=False)
+            self.update_monitoring(
+                media_id, monitor, _session=_session, _commit=False
+            )
         _session.commit()
         return
 
@@ -633,8 +658,8 @@ class MediaDatabaseManager:
                 _session.delete(media_db)
             except ItemNotFoundError:
                 logger.debug(
-                    f"{self.__model_name} with id {media_id} doesn't exist in the database. "
-                    "Skipping!"
+                    f"{self.__model_name} with id {media_id} doesn't exist in"
+                    " the database. Skipping!"
                 )
         _session.commit()
         return
@@ -737,7 +762,9 @@ class MediaDatabaseManager:
             session.add(db_media)
             return db_media, True, False
 
-    def _check_connection_exists(self, connection_id: int, session: Session) -> None:
+    def _check_connection_exists(
+        self, connection_id: int, session: Session
+    ) -> None:
         """🚨This is a private method🚨 \n
         Check if a connection exists in the database.\n
         Args:
@@ -768,7 +795,9 @@ class MediaDatabaseManager:
             self._check_connection_exists(connection_id, session=session)
         return
 
-    def _convert_to_read_list(self, db_media_list: Sequence[Media]) -> list[MediaRead]:
+    def _convert_to_read_list(
+        self, db_media_list: Sequence[Media]
+    ) -> list[MediaRead]:
         """🚨This is a private method🚨 \n
         Convert a list of Media objects to a list of MediaRead objects.\n"""
         if not db_media_list or len(db_media_list) == 0:

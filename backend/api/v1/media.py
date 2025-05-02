@@ -6,7 +6,7 @@ from api.v1 import websockets
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
-from core.download import trailer
+from core.download import trailer_search
 from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import (
     batch_download_trailers,
@@ -79,7 +79,7 @@ async def get_recent_media(
 async def get_updated_after(seconds: int) -> list[MediaRead]:
     """Get media updated after a certain datetime. \n
     Args:
-        timestamp (datetime): Timestamp to filter by. \n
+        seconds (int): Seconds since epoch to filter media.
     Returns:
         list[MediaRead]: List of media objects. \n
     """
@@ -192,19 +192,22 @@ async def get_media_files(media_id: int) -> FolderInfo | str:
         }
     },
 )
-async def download_media_trailer(media_id: int, yt_id: str = "") -> str:
+async def download_media_trailer(
+    media_id: int, profile_id: int, yt_id: str = ""
+) -> str:
     """Download trailer for media by ID. \n
     Args:
         media_id (int): ID of the media item.
+        profile_id (int): ID of the trailer profile to use for downloading.
         yt_id (str, Optional=""): YouTube ID of the trailer.\n
     Returns:
         str: Downloading trailer message.
     """
-    msg = f"Downloading trailer for media with ID: {media_id}"
+    msg = f"Downloading trailer for media with ID: [{media_id}]"
     if yt_id:
-        msg += f" from [{yt_id}]"
+        msg += f" from ({yt_id})"
     logging.info(msg)
-    return download_trailer_by_id(media_id, yt_id)
+    return download_trailer_by_id(media_id, profile_id, yt_id)
 
 
 @media_router.post(
@@ -268,7 +271,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     logging.info(f"Updating YouTube ID for media with ID: {media_id}")
     # Check if yt_id is a URL and extract the ID
     if yt_id and yt_id.startswith("http"):
-        _yt_id = trailer.extract_youtube_id(yt_id)
+        _yt_id = trailer_search.extract_youtube_id(yt_id)
         if not _yt_id:
             msg = "Invalid YouTube URL/ID!"
             await websockets.ws_manager.broadcast(msg, "Error")
@@ -325,11 +328,11 @@ async def search_for_trailer(media_id: int) -> str:
     #     yt_id=media.youtube_trailer_id,
     #     folder_path=media.folder_path or "",
     # )
-    if yt_id := trailer.search_yt_for_trailer(media):
+    if yt_id := trailer_search.search_yt_for_trailer(media):
         db_handler.update_ytid(media_id, yt_id)
         msg = (
             f"Trailer found for media '{media.title}' [{media.id}] as"
-            f" [{yt_id}]"
+            f" ({yt_id})"
         )
         logging.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
@@ -432,13 +435,19 @@ async def batch_update_media(update: BatchUpdate) -> None:
             for media_id in update.media_ids:
                 await delete_media_trailer(media_id)
         elif update.action == "download":
-            batch_download_trailers(update.media_ids)
+            if not update.profile_id:
+                msg = "No trailer profile ID provided!"
+                await websockets.ws_manager.broadcast(msg, "Error")
+                return
+            batch_download_trailers(update.profile_id, update.media_ids)
         if msg:
             logging.info(msg)
             await websockets.ws_manager.broadcast(msg, "Success")
             return
     except Exception as e:
-        await websockets.ws_manager.broadcast("Error updating Media!", "Error")
+        await websockets.ws_manager.broadcast(
+            f"Error updating Media! {e}", "Error"
+        )
         logging.error(e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)

@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -7,6 +8,7 @@ from pydantic import BaseModel, Field
 import unicodedata
 
 from app_logger import ModuleLogger
+from core.base.database.manager import trailerprofile
 
 logger = ModuleLogger("FilesHandler")
 
@@ -91,21 +93,12 @@ class FilesHandler:
             str: The size of the file in human-readable format.
                 Ex: '10 KB', '5.5 MB', '2.1 GB' etc."""
         units = ["B", "KB", "MB", "GB", "TB", "PB"]
+        unit = "B"
         for unit in units:
             if size_in_bytes < 1024:
                 break
             size_in_bytes /= 1024
         return f"{size_in_bytes:.2f} {unit}"
-        # kb = size_in_bytes / 1024
-        # mb = kb / 1024
-        # gb = mb / 1024
-
-        # if gb >= 1:
-        #     return "{:.2f} GB".format(gb)
-        # elif mb >= 1:
-        #     return "{:.2f} MB".format(mb)
-        # else:
-        #     return "{:.2f} KB".format(kb)
 
     @staticmethod
     async def _get_file_info(entry: os.DirEntry[str]) -> FolderInfo:
@@ -119,16 +112,6 @@ class FilesHandler:
                 "%Y-%m-%d %H:%M:%S"
             ),
         )
-
-    # @staticmethod
-    # async def _get_folder_info(entry: os.DirEntry[str]) -> FolderInfo:
-    #     return FolderInfo(
-    #         name=unicodedata.normalize("NFKD", entry.name),
-    #         files=await FilesHandler.get_folder_files(entry.path),
-    #         created=dt.fromtimestamp(entry.stat().st_ctime).strftime(
-    #             "%Y-%m-%d %H:%M:%S"
-    #         ),
-    #     )
 
     @staticmethod
     async def get_folder_files(folder_path: str) -> FolderInfo | None:
@@ -154,7 +137,7 @@ class FilesHandler:
                 )
                 if child_dir_info:
                     dir_info.append(child_dir_info)
-                # dir_info.append(await FilesHandler.get_folder_files(entry.path))
+
         # Sort the list of files and folders by name, folders first and \
         # then files
         dir_info.sort(key=lambda x: (x.type, x.name))
@@ -206,17 +189,24 @@ class FilesHandler:
             path (str): Folder path to check for a 'trailers' folder with a trailer file.\n
         Returns:
             bool: True if a trailer exists in the folder, False otherwise."""
+        trailer_folders = trailerprofile.get_trailer_folders()
+        trailer_folders.add("trailer")
+        trailer_folders.add("trailers")
         for entry in await aiofiles.os.scandir(path):
             # Check if the directory is named 'Trailers' (case-insensitive)
             if not entry.is_dir():
                 continue
-            if not entry.name.lower() == "trailers":
+            if entry.name.lower().strip() not in trailer_folders:
                 continue
             # Check if any video files exist in the 'trailers' directory
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
+                if not sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
+                    continue
+                if "trailer" in sub_entry.name.lower():
+                    return True
+                if "trailer" in entry.name.lower():
                     return True
         return False
 
@@ -301,16 +291,25 @@ class FilesHandler:
         if not await aiofiles.os.path.isdir(folder_path):
             return None
 
+        # Get trailer folder names
+        trailer_folders = trailerprofile.get_trailer_folders()
+        trailer_folders.add("trailer")
+        trailer_folders.add("trailers")
+
         # Check for trailer as a folder
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_dir():
                 continue
-            if not entry.name.lower() == "trailers":
+            if entry.name.lower().strip() not in trailer_folders:
                 continue
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
+                if not sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
+                    continue
+                if "trailer" in sub_entry.name.lower():
+                    return sub_entry.path
+                if "trailer" in entry.name.lower():
                     return sub_entry.path
         return None
 
