@@ -33,6 +33,7 @@ def config_logging():
     queue = multiprocessing.Queue(-1)
     parent_path = pathlib.Path(__file__).parent
     config_file = pathlib.Path(parent_path, "config", "logger_config.json")
+    config = {}
     if config_file.exists():
         with open(config_file) as f_in:
             config = json.load(f_in)
@@ -54,6 +55,10 @@ def get_logger():
     return logging.getLogger("trailarr")  # __name__ is a common choice
 
 
+TRACE_LEVEL = 5
+logging.addLevelName(TRACE_LEVEL, "TRACE")
+
+
 class ModuleLogger(logging.LoggerAdapter):
     """A custom logger adapter to add a prefix to log messages."""
 
@@ -64,6 +69,10 @@ class ModuleLogger(logging.LoggerAdapter):
         self.log_prefix = log_prefix
         logger = logging.getLogger(__name__)
         super(ModuleLogger, self).__init__(logger, {})
+
+    def trace(self, message, *args, **kwargs):
+        if self.isEnabledFor(TRACE_LEVEL):
+            self._log(TRACE_LEVEL, message, args, **kwargs)
 
     def process(self, msg, kwargs):
         return "%s: %s" % (self.log_prefix, msg), kwargs
