@@ -11,7 +11,7 @@ First off, thank you for considering contributing to Trailarr. It's people like 
 - Open `.devcontainer > devcontainer.json` and change the `mounts` to your desired folders.
 ```json
 "mounts": [
-		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
+		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
 	],
 ```
@@ -58,6 +58,19 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 - All features or bug fixes **must be tested** by one or more specs (unit tests).
 - Your code should follow the syntax style of the existing code (PEP-8 for Python code, formatted using black formatter, and the Angular Style Guide for Angular code).
+
+### Python / Backend Code Style
+
+Python code should follow the below guidelines:
+
+- Use [black formatter](https://github.com/psf/black) for formatting the code. Formatting styles are already set up in the devcontainer.
+- Follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for Python code style.
+- Set `type checking` to `standard`.
+- Do not raise generice exceptions. Use specific exceptions instead. If an appropriate exception is not already available, contact a dev and create a new one after discussing.
+- When raising an exception, always include a message that describes the error. This is important for debugging and understanding what went wrong.
+- Log the error message where it's caught, NOT at the source when raising the exception.
+- When logging a message related to a media item, include the media item ID in square brackets. Frontend will detect this and add a link to the media details page.
+- Use `f-strings` for string formatting, use `str.format()` only when you want to replace from a dictionary.
 
 ## Commit Message Guidelines
 
