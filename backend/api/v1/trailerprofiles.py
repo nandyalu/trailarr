@@ -50,7 +50,7 @@ async def create_trailer_profile(
         return trailerprofile.create_trailerprofile(trailerprofile_create)
     except Exception as e:
         logger.error(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @trailerprofiles_router.get(
