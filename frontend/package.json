@@ -9,7 +9,10 @@
     "test": "jest --ci --logHeapUsage",
     "test:dev": "jest --updateSnapshot --bail --runInBand",
     "test:watch": "npm run test:dev -- --watchAll",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "openapi": "ng-openapi-gen",
+    "postinstall": "npm run openapi",
+    "postopenapi": "prettier --write generated-sources --ignore-path=.prettierignore"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +40,7 @@
     "jest-junit": "^16.0.0",
     "jest-preset-angular": "^14.5.5",
     "ng-mocks": "^14.13.4",
+    "ng-openapi-gen": "^0.53.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "ts-mockery": "^1.2.0",
