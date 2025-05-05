@@ -81,6 +81,23 @@ class _FilterBase(SQLModel):
     filter_value: str
     """Value to filter by"""
 
+
+class Filter(_FilterBase, table=True):
+    """
+    Database model for Filter.\n
+    Note: \n
+        🚨DO NOT USE THIS CLASS OUTSIDE OF DATABASE MANAGER.🚨 \n
+    👉Use :class:`FilterCreate` to create/update filters.👈 \n
+    👉Use :class:`FilterRead` to read the data.👈
+    """
+
+    id: int | None = Field(default=None, primary_key=True)
+
+    customfilter_id: int | None = Field(
+        default=None, foreign_key="customfilter.id"
+    )
+    # customfilter: "CustomFilter" = Relationship(back_populates="filters")
+
     @field_validator("filter_by", mode="after")
     @classmethod
     def validate_filter_by(cls, value: str):
@@ -217,23 +234,6 @@ class _FilterBase(SQLModel):
                     "Must be a date string in YYYY-MM-DD format."
                 )
         return self
-
-
-class Filter(_FilterBase, table=True):
-    """
-    Database model for Filter.\n
-    Note: \n
-        🚨DO NOT USE THIS CLASS OUTSIDE OF DATABASE MANAGER.🚨 \n
-    👉Use :class:`FilterCreate` to create/update filters.👈 \n
-    👉Use :class:`FilterRead` to read the data.👈
-    """
-
-    id: int | None = Field(default=None, primary_key=True)
-
-    customfilter_id: int | None = Field(
-        default=None, foreign_key="customfilter.id"
-    )
-    # customfilter: "CustomFilter" = Relationship(back_populates="filters")
 
 
 class FilterCreate(_FilterBase):
