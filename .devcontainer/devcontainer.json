@@ -15,7 +15,8 @@
 	// Mount appdata folder for persistent storage
 	"mounts": [
 		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
-		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
+		"source=/media/all/Media,target=/media,type=bind,consistency=cached",
+		"source=/home/kr/.gnupg,target=/home/vscode/.gnupg,type=bind,consistency=cached"
 	],
 
 	// Set workspace folder to /app so that the project is in the right place
@@ -58,8 +59,8 @@
 	},
 	
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sudo startup.sh",
+	"postCreateCommand": "sudo startup.sh"
 
 	// Run container as a non-root user. 'vscode' is the default user. To run as root, set this to 'root'.
-	"remoteUser": "vscode"
+	// "remoteUser": "vscode"
 }
