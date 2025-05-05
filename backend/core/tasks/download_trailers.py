@@ -180,9 +180,10 @@ def download_missing_trailers() -> None:
         "media_not_found": [],
     }
 
+    profile_map = {profile.id: profile for profile in trailer_profiles}
     # Group media items by TrailerProfile
-    profile_to_media_map: dict[TrailerProfileRead, list[MediaRead]] = {
-        profile: [] for profile in trailer_profiles
+    profile_to_media_map: dict[int, list[MediaRead]] = {
+        profile.id: [] for profile in trailer_profiles
     }
 
     _download_count = 0
@@ -212,7 +213,7 @@ def download_missing_trailers() -> None:
                 continue
 
         _download_count += 1
-        profile_to_media_map[matched_profile].append(db_media)
+        profile_to_media_map[matched_profile.id].append(db_media)
 
     # Log skipped media titles
     for skip_reason, skip_titles in skipped_titles.items():
@@ -226,7 +227,8 @@ def download_missing_trailers() -> None:
 
     # Call download_trailers for each profile with its media list
     _downloading_count = 1
-    for profile, media_list in profile_to_media_map.items():
+    for profile_id, media_list in profile_to_media_map.items():
+        profile = profile_map[profile_id]
         if not media_list:
             continue
         logger.info(
