@@ -5,9 +5,6 @@ from core.base.database.manager.customfilter.update import __update_filters
 from core.base.database.manager.trailerprofile.base import (
     convert_to_read_item,
 )
-from core.base.database.manager.trailerprofile.validate import (
-    validate_trailerprofile,
-)
 from core.base.database.models.trailerprofile import (
     TrailerProfile,
     TrailerProfileCreate,
@@ -56,7 +53,7 @@ def update_trailerprofile(
     )
 
     # Validate the updated trailer profile
-    validate_trailerprofile(trailerprofile_db)
+    trailerprofile_db.model_validate(trailerprofile_db.model_dump())
 
     # Commit the changes to the database
     _session.add(trailerprofile_db)
@@ -99,7 +96,7 @@ def update_trailerprofile_setting(
     setattr(trailerprofile_db, setting, value)
 
     # Validate the updated trailer profile
-    validate_trailerprofile(trailerprofile_db)
+    TrailerProfile.model_validate(trailerprofile_db.model_dump())
 
     # Commit the changes to the database
     _session.add(trailerprofile_db)

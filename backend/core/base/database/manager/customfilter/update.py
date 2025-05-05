@@ -17,7 +17,7 @@ def __update_filters(
     Update the filters of a custom filter. Modifies the filters in place.
     Args:
         cf_db (CustomFilter): CustomFilter Database object
-        cf_create (CustomFilterCreate): CustomFilterCreate object
+        cf_create (CustomFilterCreate): CustomFilter update object
         _session (Session): A session to use for the database connection
     """
     # Get new filters as db objects
