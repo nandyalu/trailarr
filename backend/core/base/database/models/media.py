@@ -28,7 +28,8 @@ class MediaBase(SQLModel):
     """
 
     connection_id: int = Field(
-        foreign_key=ForeignKey("connection.id", on_delete="CASCADE"), index=True
+        foreign_key=ForeignKey("connection.id", on_delete="CASCADE"),
+        index=True,
     )
     arr_id: int = Field(index=True)
     is_movie: bool = Field(default=True, index=True)
@@ -105,16 +106,16 @@ class MediaUpdate(MediaBase):
     - updated_at: current time [if any field is updated]
     """
 
-    connection_id: int | None = None
-    arr_id: int | None = None
-    title: str | None = None
-    year: int | None = None
-    language: str | None = None
-    runtime: int | None = None
-    txdb_id: str | None = None
-    trailer_exists: bool | None = None
-    monitor: bool | None = None
-    arr_monitored: bool | None = None
+    connection_id: int | None = None  # type: ignore
+    arr_id: int | None = None  # type: ignore
+    title: str | None = None  # type: ignore
+    year: int | None = None  # type: ignore
+    language: str | None = None  # type: ignore
+    runtime: int | None = None  # type: ignore
+    txdb_id: str | None = None  # type: ignore
+    trailer_exists: bool | None = None  # type: ignore
+    monitor: bool | None = None  # type: ignore
+    arr_monitored: bool | None = None  # type: ignore
 
     downloaded_at: datetime | None = None
     updated_at: datetime = Field(default_factory=get_current_time)
