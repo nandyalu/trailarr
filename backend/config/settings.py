@@ -147,7 +147,8 @@ def get_ytdlp_version() -> str:
     try:
         from subprocess import check_output
 
-        _ver = check_output(["yt-dlp", "--version"]).decode("utf-8").strip()
+        _ytdlp = "/usr/local/bin/yt-dlp"
+        _ver = check_output([_ytdlp, "--version"]).decode("utf-8").strip()
     except Exception:
         _ver = "0.0.0"
     _save_to_env("YTDLP_VERSION", _ver)

@@ -64,6 +64,150 @@ DATE_COLS = ["added_at", "updated_at", "downloaded_at"]
 ALL_COLS = BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS
 
 
+def _validate_bool_filter(filter: "Filter") -> None:
+    """
+    Validate boolean filter.
+    """
+    if filter.filter_condition != FilterCondition.EQUALS:
+        raise ValueError(
+            f"Invalid filter_condition for {filter.filter_by}:"
+            f" {filter.filter_condition}. Valid value: EQUALS"
+        )
+    if filter.filter_value.lower() not in ["true", "false"]:
+        raise ValueError(
+            f"Invalid filter_value for {filter.filter_by}:"
+            f" {filter.filter_value}. Valid values are: true, false"
+        )
+
+
+def _validate_int_filter(filter: "Filter") -> None:
+    """
+    Validate integer filter.
+    """
+    if filter.filter_condition not in [
+        FilterCondition.GREATER_THAN,
+        FilterCondition.GREATER_THAN_EQUAL,
+        FilterCondition.LESS_THAN,
+        FilterCondition.LESS_THAN_EQUAL,
+        FilterCondition.EQUALS,
+        FilterCondition.NOT_EQUALS,
+    ]:
+        raise ValueError(
+            f"Invalid filter_condition for {filter.filter_by}:"
+            f" {filter.filter_condition}. Valid values: "
+            "GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, "
+            "LESS_THAN_EQUAL, EQUALS, NOT_EQUALS"
+        )
+    try:
+        int(filter.filter_value)
+    except ValueError:
+        raise ValueError(
+            f"Invalid filter_value for {filter.filter_by}:"
+            f" {filter.filter_value}. Must be an integer."
+        )
+
+
+def _validate_str_filter(filter: "Filter") -> None:
+    """
+    Validate string filter.
+    """
+    if filter.filter_condition not in [
+        FilterCondition.EQUALS,
+        FilterCondition.NOT_EQUALS,
+        FilterCondition.CONTAINS,
+        FilterCondition.NOT_CONTAINS,
+        FilterCondition.STARTS_WITH,
+        FilterCondition.NOT_STARTS_WITH,
+        FilterCondition.ENDS_WITH,
+        FilterCondition.NOT_ENDS_WITH,
+        FilterCondition.IS_EMPTY,
+        FilterCondition.IS_NOT_EMPTY,
+    ]:
+        raise ValueError(
+            f"Invalid filter_condition for {filter.filter_by}:"
+            f" {filter.filter_condition}. Valid values: "
+            "EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS, "
+            "STARTS_WITH, NOT_STARTS_WITH, ENDS_WITH, "
+            "NOT_ENDS_WITH, IS_EMPTY, IS_NOT_EMPTY"
+        )
+    if filter.filter_condition not in [
+        FilterCondition.IS_EMPTY,
+        FilterCondition.IS_NOT_EMPTY,
+    ]:
+        if not isinstance(filter.filter_value, str):
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a string."
+            )
+        if not filter.filter_value:
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a non-empty string."
+            )
+
+
+def _validate_date_filter(filter: "Filter") -> None:
+    """
+    Validate date filter.
+    """
+    if filter.filter_condition not in [
+        FilterCondition.IS_AFTER,
+        FilterCondition.IS_BEFORE,
+        FilterCondition.IN_THE_LAST,
+        FilterCondition.NOT_IN_THE_LAST,
+        FilterCondition.EQUALS,
+        FilterCondition.NOT_EQUALS,
+    ]:
+        raise ValueError(
+            f"Invalid filter_condition for {filter.filter_by}:"
+            f" {filter.filter_condition}. Valid values: "
+            "IS_AFTER, IS_BEFORE, IN_THE_LAST, NOT_IN_THE_LAST"
+        )
+    if filter.filter_condition in [
+        FilterCondition.IN_THE_LAST,
+        FilterCondition.NOT_IN_THE_LAST,
+    ]:
+        try:
+            int(filter.filter_value)
+        except ValueError:
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be an integer."
+            )
+        if int(filter.filter_value) < 0:
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a positive integer."
+            )
+    if filter.filter_condition in [
+        FilterCondition.IS_AFTER,
+        FilterCondition.IS_BEFORE,
+        FilterCondition.EQUALS,
+        FilterCondition.NOT_EQUALS,
+    ]:
+        if not isinstance(filter.filter_value, str):
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a date string."
+            )
+        if not filter.filter_value:
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a non-empty date string."
+            )
+        try:
+            # Assuming filter_value is a date string
+            from datetime import datetime
+
+            datetime.strptime(filter.filter_value, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(
+                f"Invalid filter_value for {filter.filter_by}:"
+                f" {filter.filter_value}. Must be a date string in YYYY-MM-DD"
+                " format."
+            )
+
+
 class _FilterBase(SQLModel):
     """
     Base model for Filter.\n
@@ -114,125 +258,22 @@ class Filter(_FilterBase, table=True):
     @model_validator(mode="after")
     def validate_filter_condition_for_filter_by(self) -> Self:
         filter_by = self.filter_by
-        filter_condition = self.filter_condition
-        filter_value = self.filter_value
         # Boolean conditions
         if filter_by in BOOL_COLS:
-            if filter_condition != FilterCondition.EQUALS:
-                raise ValueError(
-                    f"Invalid filter_condition for {filter_by}:"
-                    f" {filter_condition}. Valid value: EQUALS"
-                )
-            if filter_value.lower() not in ["true", "false"]:
-                raise ValueError(
-                    f"Invalid filter_value for {filter_by}: {filter_value}. "
-                    "Valid values are: true, false"
-                )
+            _validate_bool_filter(self)
             return self
         # Integer conditions
         if filter_by in INT_COLS:
-            if filter_condition not in [
-                FilterCondition.GREATER_THAN,
-                FilterCondition.GREATER_THAN_EQUAL,
-                FilterCondition.LESS_THAN,
-                FilterCondition.LESS_THAN_EQUAL,
-                FilterCondition.EQUALS,
-                FilterCondition.NOT_EQUALS,
-            ]:
-                raise ValueError(
-                    f"Invalid filter_condition for {filter_by}:"
-                    f" {filter_condition}. Valid values: "
-                    "GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, "
-                    "LESS_THAN_EQUAL, EQUALS, NOT_EQUALS"
-                )
-            try:
-                int(filter_value)
-            except ValueError:
-                raise ValueError(
-                    f"Invalid filter_value for {filter_by}: {filter_value}. "
-                    "Must be an integer."
-                )
+            _validate_int_filter(self)
             return self
         # String conditions
         if filter_by in STR_COLS:
-            if filter_condition not in [
-                FilterCondition.EQUALS,
-                FilterCondition.NOT_EQUALS,
-                FilterCondition.CONTAINS,
-                FilterCondition.NOT_CONTAINS,
-                FilterCondition.STARTS_WITH,
-                FilterCondition.NOT_STARTS_WITH,
-                FilterCondition.ENDS_WITH,
-                FilterCondition.NOT_ENDS_WITH,
-                FilterCondition.IS_EMPTY,
-                FilterCondition.IS_NOT_EMPTY,
-            ]:
-                raise ValueError(
-                    f"Invalid filter_condition for {filter_by}:"
-                    f" {filter_condition}. Valid values: "
-                    "EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS, "
-                    "STARTS_WITH, NOT_STARTS_WITH, ENDS_WITH, "
-                    "NOT_ENDS_WITH, IS_EMPTY, IS_NOT_EMPTY"
-                )
+            _validate_str_filter(self)
             return self
         # Date conditions
         if filter_by in DATE_COLS:
-            if filter_condition not in [
-                FilterCondition.IS_AFTER,
-                FilterCondition.IS_BEFORE,
-                FilterCondition.IN_THE_LAST,
-                FilterCondition.NOT_IN_THE_LAST,
-                FilterCondition.EQUALS,
-                FilterCondition.NOT_EQUALS,
-            ]:
-                raise ValueError(
-                    f"Invalid filter_condition for {filter_by}:"
-                    f" {filter_condition}. Valid values: "
-                    "IS_AFTER, IS_BEFORE, IN_THE_LAST, NOT_IN_THE_LAST"
-                )
-            if filter_condition in [
-                FilterCondition.IN_THE_LAST,
-                FilterCondition.NOT_IN_THE_LAST,
-            ]:
-                try:
-                    int(filter_value)
-                except ValueError:
-                    raise ValueError(
-                        f"Invalid filter_value for {filter_by}:"
-                        f" {filter_value}. Must be an integer."
-                    )
-                if int(filter_value) <= 0:
-                    raise ValueError(
-                        f"Invalid filter_value for {filter_by}:"
-                        f" {filter_value}. Must be a positive integer."
-                    )
-                return self
-            if filter_condition in [
-                FilterCondition.IS_AFTER,
-                FilterCondition.IS_BEFORE,
-                FilterCondition.EQUALS,
-                FilterCondition.NOT_EQUALS,
-            ]:
-                if not isinstance(filter_value, str):
-                    raise ValueError(
-                        f"Invalid filter_value for {filter_by}:"
-                        f" {filter_value}. Must be a date string."
-                    )
-                if not filter_value:
-                    raise ValueError(
-                        f"Invalid filter_value for {filter_by}:"
-                        f" {filter_value}. Must be a non-empty date string."
-                    )
-            try:
-                # Assuming filter_value is a date string
-                from datetime import datetime
-
-                datetime.strptime(filter_value, "%Y-%m-%d")
-            except ValueError:
-                raise ValueError(
-                    f"Invalid filter_value for {filter_by}: {filter_value}. "
-                    "Must be a date string in YYYY-MM-DD format."
-                )
+            _validate_date_filter(self)
+            return self
         return self
 
 
