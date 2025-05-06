@@ -7,8 +7,21 @@
         "dockerfile": "Dockerfile"
     },
 	"runArgs": [
+		// Uncomment to use NVIDIA runtime for GPU support
+		// "--runtime=nvidia",
 		"-p=7888:7888",
 		"-p=7887:8000"
+	],
+
+	// Mount appdata folder for persistent storage
+	// Update these paths to match your local setup
+	"mounts": [
+		// Mount appdata folder for persistent storage
+		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
+		// Mount media folder for app to detect the media library
+		"source=/media/all/Media,target=/media,type=bind,consistency=cached",
+		// Mount local GPG keys for signing
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gnupg,target=/home/vscode/.gnupg,type=bind,consistency=cached"
 	],
 
 	// Set workspace folder to /app so that the project is in the right place
@@ -32,6 +45,7 @@
 				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"ms-python.debugpy",
+				"GitHub.copilot",
 				"ms-python.black-formatter",
 				"ms-python.flake8",
 				"Gruntfuggly.todo-tree",
@@ -42,6 +56,7 @@
 				"qwtel.sqlite-viewer",
 				"oderwat.indent-rainbow",
 				"redhat.vscode-yaml",
+				"GitHub.copilot-chat",
 				"esbenp.prettier-vscode"
 			]
 		}

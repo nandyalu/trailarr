@@ -8,16 +8,7 @@ First off, thank you for considering contributing to Trailarr. It's people like 
 - Fork the repository on GitHub.
 - Clone the project to your own machine.
 - Open the project in Visual Studio Code.
-- Create a new file `devcontainer.local.json` in the `.devcontainer` folder. This file will override the default `devcontainer.json` file and allow you to set up your local environment.
-    You can add mounts [optional] to the `devcontainer.local.json` file. This will allow you to mount your local folders to the devcontainer.
-	```json
-	{
-		"mounts": [
-			"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
-			"source=/media/all/Media,target=/media,type=bind,consistency=cached"
-		]
-	}
-	```
+- Open `.devcontainer > devcontainer.json` and uncomment / change the options as needed (especially the `mounts` section).
 	> See [devcontainer.json](https://code.visualstudio.com/docs/devcontainers/devcontainerjson-reference) for more information on how to set up the devcontainer.
 
 - VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. If not, open the command palette (Ctrl+Shift+P) and select `Remote-Containers: Reopen in Container`.
@@ -78,6 +69,63 @@ The commit message:
 - is kept short, while concisely explaining what the commit does.
 - is clear about what part of the code is affected -- often by prefixing with the name of the subsystem and a colon, like "express: ..." or "docs: ...".
 - is a complete sentence, ending with a period.
+
+### Commit Signing Error
+
+If you get an error like `gpg: signing failed: Inappropriate ioctl for device` while committing, you can test signing by running the following command:
+
+```bash
+echo "This is a test message for GPG signing." | gpg --clearsign
+```
+
+Commit signing is not required, but it is recommended for security purposes. If you are not familiar with GPG signing, you can find more information on how to set it up [here](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+
+It took me a while to figure out how to set it up inside devcontainer, so I thought it would be helpful to include it here.
+
+- My development machine is an Ubuntu server, so I installed `gnupg2`, `gpg-agent`, and `pinentry-curses` using the following command:
+	```bash
+	sudo apt-get install gnupg2 gpg-agent pinentry-curses
+	```
+- I then created a new GPG key using the following command:
+	```bash
+	gpg --full-generate-key
+	```
+- I followed the prompts to create a new key, and then I added the key to my GitHub account, and follow the steps to enable commit signing in vscode. See [this](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) for more information.
+- I then added the following lines to my `~/.bashrc` file:
+	```bash
+	export GPG_TTY=$(tty)
+	gpg-connect-agent updatestartuptty /bye >/dev/null
+	```
+- Set the following configuration:
+	- `gpg.conf` file which is located in `~/.gnupg/gpg.conf`:
+	```bash
+	pinentry-mode loopback
+	```
+	- `gpg-agent.conf` file which is located in `~/.gnupg/gpg-agent.conf`:
+	```bash
+	default-cache-ttl 360000
+	max-cache-ttl 720000
+	default-cache-ttl-ssh 60480000
+	max-cache-ttl-ssh 60480000
+	allow-loopback-pinentry
+	pinentry-program /usr/bin/pinentry-curses
+	```
+	> I guess the cache values are not necessary if you don't want your passphrase to be cached!
+- I then restarted the `gpg-agent` using the following command:
+	```bash
+	gpgconf --kill gpg-agent
+	```
+- devcontainer will automatically forward your GPG agent to the container, however it does not forward your GPG configuration files. So you need to mount your `~/.gnupg` folder to the container, by adding / uncommenting the following line in your `devcontainer.json` file:
+	```json
+	"mounts": [
+		"source=${localEnv:HOME}/.gnupg,target=/root/.gnupg,type=bind,consistency=cached"
+	]
+	```
+- Restart the devcontainer and you should be able to sign your commits now.
+- If you are using a different operating system, you can find more information on how to set up GPG signing [here](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+- If you are using a different terminal, you may need to set the `pinentry-program` to the appropriate program for your terminal. For example, if you are using `zsh`, you can set it to `pinentry-mac` or `pinentry-gtk-2` depending on your setup.
+- Hope this helps!
+
 
 ## License
 

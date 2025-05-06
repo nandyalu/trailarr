@@ -220,3 +220,4 @@ frontend/typings
 # System files
 .DS_Store
 Thumbs.db
+.devcontainer/devcontainer.local.jsonc
