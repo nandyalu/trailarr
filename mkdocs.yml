@@ -108,6 +108,7 @@ nav:
     - Settings: setup/settings.md
   - Help:
     - Common: help/common.md
+    - API Docs: help/swagger/swagger.html
     - Docker Builder: help/docker-builder/builder.html
     - FAQ: help/faq.md
     - Release Notes:
