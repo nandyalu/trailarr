@@ -75,7 +75,7 @@ async def get_trailer_profile(
         return trailerprofile.get_trailerprofile(trailerprofile_id)
     except Exception as e:
         logger.error(e)
-        raise HTTPException(status_code=404, detail=e)
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @trailerprofiles_router.put(
@@ -102,7 +102,7 @@ async def update_trailer_profile(
         )
     except Exception as e:
         logger.error(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @trailerprofiles_router.post(
@@ -131,7 +131,7 @@ async def update_trailer_profile_setting(
         )
     except Exception as e:
         logger.error(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @trailerprofiles_router.delete(
@@ -154,4 +154,4 @@ async def delete_trailer_profile(
         return trailerprofile.delete_trailerprofile(trailerprofile_id)
     except Exception as e:
         logger.error(e)
-        raise HTTPException(status_code=404, detail=e)
+        raise HTTPException(status_code=404, detail=str(e))
