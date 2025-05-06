@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import trailer_cleanup
-from core.tasks.download_trailers import download_missing_trailers
 from core.tasks.files_scan import scan_disk_for_trailers
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_update

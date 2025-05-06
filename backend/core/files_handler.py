@@ -156,6 +156,16 @@ class FilesHandler:
         )
 
     @staticmethod
+    def check_folder_exists(path: str) -> bool:
+        """Check if a folder exists in the specified path.\n
+        Args:
+            path (str): Path to the folder to check.\n
+        Returns:
+            bool: True if the folder exists, False otherwise.
+        """
+        return os.path.isdir(path)
+
+    @staticmethod
     def check_media_exists(path: str) -> bool:
         """Check if a media file exists in the specified folder.\n
         Media files are checked based on the following criteria:
