@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadIndicatorComponent renders 1`] = `
+<mock-render>
+  <app-load-indicator
+    class="loading-wave"
+  >
+    <div
+      class="loading-bar"
+    />
+    <div
+      class="loading-bar"
+    />
+    <div
+      class="loading-bar"
+    />
+    <div
+      class="loading-bar"
+    />
+  </app-load-indicator>
+</mock-render>
+`;
