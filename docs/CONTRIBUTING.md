@@ -8,27 +8,25 @@ First off, thank you for considering contributing to Trailarr. It's people like 
 - Fork the repository on GitHub.
 - Clone the project to your own machine.
 - Open the project in Visual Studio Code.
-- Open `.devcontainer > devcontainer.json` and change the `mounts` to your desired folders.
-```json
-"mounts": [
-		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
-		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
-	],
-```
-> Note: Below steps are optional, if you don't want to test any changes that would require connecting to `Radarr` and/or `Sonarr`, you can simply remove the `mounts` section from the `devcontainer.json` file.
-> 1. `source` is the path on your host machine.
-> 2. `target` is the path inside the devcontainer.
-> 3. Change the `mount` for `/data` to a folder where you want to store the data. Do not use the same folder as your production data.
-> 4. Change the `mount` for `/media` to the your media folder mapping as set in `Radarr` and/or `Sonarr`.
+- Create a new file `devcontainer.local.json` in the `.devcontainer` folder. This file will override the default `devcontainer.json` file and allow you to set up your local environment.
+    You can add mounts [optional] to the `devcontainer.local.json` file. This will allow you to mount your local folders to the devcontainer.
+	```json
+	{
+		"mounts": [
+			"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
+			"source=/media/all/Media,target=/media,type=bind,consistency=cached"
+		]
+	}
+	```
+	> See [devcontainer.json](https://code.visualstudio.com/docs/devcontainers/devcontainerjson-reference) for more information on how to set up the devcontainer.
 
-
-- VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. This will start the build of the Docker container and place you inside it.
-- Make your changes inside the devcontainer. The devcontainer is a fully configured development environment with all the tools you need.
+- VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. If not, open the command palette (Ctrl+Shift+P) and select `Remote-Containers: Reopen in Container`.
+- Wait for the container to build. This may take a few minutes.
+- Once the container is built, you will be inside the devcontainer. It should already have all the dependencies installed.
 - Commit changes to your own branch.
 - Push your work back up to your fork.
 - Submit a Pull Request so that we can review your changes.
-
-
+- If you are working on a new feature, please create a new branch for your changes. This will make it easier for us to review your changes and merge them into the main branch.
 > NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 ## Code of Conduct

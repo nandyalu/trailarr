@@ -8,15 +8,7 @@
     },
 	"runArgs": [
 		"-p=7888:7888",
-		"-p=7887:8000",
-		"--runtime=nvidia"
-	],
-
-	// Mount appdata folder for persistent storage
-	"mounts": [
-		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
-		"source=/media/all/Media,target=/media,type=bind,consistency=cached",
-		"source=/home/kr/.gnupg,target=/home/vscode/.gnupg,type=bind,consistency=cached"
+		"-p=7887:8000"
 	],
 
 	// Set workspace folder to /app so that the project is in the right place
@@ -40,8 +32,6 @@
 				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"ms-python.debugpy",
-				"ms-azuretools.vscode-docker",
-				"GitHub.copilot",
 				"ms-python.black-formatter",
 				"ms-python.flake8",
 				"Gruntfuggly.todo-tree",
@@ -52,7 +42,6 @@
 				"qwtel.sqlite-viewer",
 				"oderwat.indent-rainbow",
 				"redhat.vscode-yaml",
-				"GitHub.copilot-chat",
 				"esbenp.prettier-vscode"
 			]
 		}

@@ -199,6 +199,7 @@ frontend/yarn-error.log
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+.devcontainer/devcontainer.local.json
 
 # Miscellaneous
 /.angular/cache
