@@ -1,6 +1,5 @@
 import collections
 from datetime import datetime, timezone
-import logging
 import re
 import aiofiles
 from aiofiles import os as async_os
@@ -9,8 +8,10 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
 from api.v1.models import Log
+from app_logger import ModuleLogger
 from config.settings import app_settings
 
+logger = ModuleLogger("LogsAPI")
 
 logs_router = APIRouter(prefix="/logs", tags=["Logs"])
 
@@ -22,9 +23,13 @@ def download_file():
     file_location = f"{logs_dir}/trailarr.log"
     if not os.path.exists(file_location):
         return {"message": "Logs file not found"}
-    file_name = f"trailarr_logs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    file_name = (
+        f"trailarr_logs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    )
     return FileResponse(
-        file_location, media_type="application/octet-stream", filename=file_name
+        file_location,
+        media_type="application/octet-stream",
+        filename=file_name,
     )
 
 
@@ -35,7 +40,7 @@ async def get_logs(page: int = 0, limit: int = 1000) -> list[Log]:
     # logs: list[str] = []
     logs: collections.deque = collections.deque(maxlen=limit)
     if not await async_os.path.exists(logs_dir):
-        logging.info("Logs directory does not exist")
+        logger.info("Logs directory does not exist")
         return [
             Log(
                 datetime=f"{datetime.now(timezone.utc)}",

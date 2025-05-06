@@ -71,5 +71,3 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max

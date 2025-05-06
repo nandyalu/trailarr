@@ -162,6 +162,27 @@
 			},
 			"command": "uvicorn main:trailarr_api --host 0.0.0.0 --port 7888",
 			"problemMatcher": []
+		},
+		{
+			"label": "GPG: Test Signing",
+			"detail": "Sign a test message using GPG to cache the passphrase used for signing Git commits",
+			"type": "shell",
+			"command": "echo",
+			"icon": {
+				"id": "shield",
+				"color": "terminal.ansiYellow"
+			},
+			"args": [
+				"\"This is a test message for GPG signing.\"",
+				"|",
+				"gpg",
+				"--clearsign"
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
 		}
 	]
 }

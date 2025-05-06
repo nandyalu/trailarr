@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class BatchUpdate(BaseModel):
     media_ids: list[int]
     action: str
+    profile_id: int | None = None
 
 
 class ErrorResponse(BaseModel):
