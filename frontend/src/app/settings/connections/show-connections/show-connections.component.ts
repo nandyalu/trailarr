@@ -2,9 +2,10 @@ import {CommonModule} from '@angular/common';
 import {Component, ElementRef, inject, OnDestroy, signal, viewChild} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {ConnectionRead, ConnectionsService} from 'generated-sources/openapi';
-import {catchError, of, shareReplay, startWith, Subject, switchMap, tap} from 'rxjs';
+import {catchError, distinctUntilChanged, of, shareReplay, startWith, Subject, switchMap, tap} from 'rxjs';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {RouteAdd, RouteConnections, RouteEdit, RouteSettings} from 'src/routing';
+import {jsonEqual} from 'src/util';
 
 @Component({
   selector: 'app-show-connections',
@@ -42,6 +43,7 @@ export class ShowConnectionsComponent implements OnDestroy {
       ),
     ),
     tap(() => this.isLoading.set(false)),
+    distinctUntilChanged(jsonEqual),
     shareReplay({refCount: true, bufferSize: 1}),
   );
 
