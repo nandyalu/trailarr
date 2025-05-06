@@ -718,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../help/swagger/swagger.html" class="md-nav__link">
+      <a href="../help/api/docs.html" class="md-nav__link">
         
   
   
@@ -974,6 +974,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Code Style">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-backend-code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python / Backend Code Style
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -982,6 +997,21 @@
       Commit Message Guidelines
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Commit Message Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commit-signing-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commit Signing Error
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1022,31 +1052,22 @@
 <li>Clone the project to your own machine.</li>
 <li>Open the project in Visual Studio Code.</li>
 <li>
-<p>Open <code>.devcontainer &gt; devcontainer.json</code> and change the <code>mounts</code> to your desired folders.
-<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;mounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">        </span><span class="s2">&quot;source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached&quot;</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="s2">&quot;source=/media/all/Media,target=/media,type=bind,consistency=cached&quot;</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">],</span>
-</span></code></pre></div></p>
-<blockquote>
-<p>Note: Below steps are optional, if you don't want to test any changes that would require connecting to <code>Radarr</code> and/or <code>Sonarr</code>, you can simply remove the <code>mounts</code> section from the <code>devcontainer.json</code> file.
-1. <code>source</code> is the path on your host machine.
-2. <code>target</code> is the path inside the devcontainer.
-3. Change the <code>mount</code> for <code>/data</code> to a folder where you want to store the data. Do not use the same folder as your production data.
-4. Change the <code>mount</code> for <code>/media</code> to the your media folder mapping as set in <code>Radarr</code> and/or <code>Sonarr</code>.</p>
-</blockquote>
+<p>Open <code>.devcontainer &gt; devcontainer.json</code> and uncomment / change the options as needed (especially the <code>mounts</code> section).
+    &gt; See <a href="https://code.visualstudio.com/docs/devcontainers/devcontainerjson-reference">devcontainer.json</a> for more information on how to set up the devcontainer.</p>
 </li>
 <li>
-<p>VS Code will automatically detect the devcontainer configuration. Click on <code>Reopen in Container</code>. This will start the build of the Docker container and place you inside it.</p>
+<p>VS Code will automatically detect the devcontainer configuration. Click on <code>Reopen in Container</code>. If not, open the command palette (Ctrl+Shift+P) and select <code>Remote-Containers: Reopen in Container</code>.</p>
 </li>
-<li>Make your changes inside the devcontainer. The devcontainer is a fully configured development environment with all the tools you need.</li>
+<li>Wait for the container to build. This may take a few minutes.</li>
+<li>Once the container is built, you will be inside the devcontainer. It should already have all the dependencies installed.</li>
 <li>Commit changes to your own branch.</li>
 <li>Push your work back up to your fork.</li>
 <li>Submit a Pull Request so that we can review your changes.</li>
-</ul>
-<blockquote>
+<li>If you are working on a new feature, please create a new branch for your changes. This will make it easier for us to review your changes and merge them into the main branch.<blockquote>
 <p>NOTE: Be sure to merge the latest from "upstream" before making a pull request!</p>
 </blockquote>
+</li>
+</ul>
 <h2 id="code-of-conduct">Code of Conduct</h2>
 <p>This project and everyone participating in it is governed by the <a href="https://github.com/nandyalu/trailarr?tab=coc-ov-file">Code of Conduct</a>. By participating, you are expected to uphold this code.</p>
 <h2 id="issue-process">Issue Process</h2>
@@ -1070,6 +1091,18 @@
 <li>All features or bug fixes <strong>must be tested</strong> by one or more specs (unit tests).</li>
 <li>Your code should follow the syntax style of the existing code (PEP-8 for Python code, formatted using black formatter, and the Angular Style Guide for Angular code).</li>
 </ul>
+<h3 id="python-backend-code-style">Python / Backend Code Style</h3>
+<p>Python code should follow the below guidelines:</p>
+<ul>
+<li>Use <a href="https://github.com/psf/black">black formatter</a> for formatting the code. Formatting styles are already set up in the devcontainer.</li>
+<li>Follow <a href="https://www.python.org/dev/peps/pep-0008/">PEP-8</a> for Python code style.</li>
+<li>Set <code>type checking</code> to <code>standard</code>.</li>
+<li>Do not raise generice exceptions. Use specific exceptions instead. If an appropriate exception is not already available, contact a dev and create a new one after discussing.</li>
+<li>When raising an exception, always include a message that describes the error. This is important for debugging and understanding what went wrong.</li>
+<li>Log the error message where it's caught, NOT at the source when raising the exception.</li>
+<li>When logging a message related to a media item, include the media item ID in square brackets. Frontend will detect this and add a link to the media details page.</li>
+<li>Use <code>f-strings</code> for string formatting, use <code>str.format()</code> only when you want to replace from a dictionary.</li>
+</ul>
 <h2 id="commit-message-guidelines">Commit Message Guidelines</h2>
 <p>The commit message:</p>
 <ul>
@@ -1077,6 +1110,54 @@
 <li>is kept short, while concisely explaining what the commit does.</li>
 <li>is clear about what part of the code is affected -- often by prefixing with the name of the subsystem and a colon, like "express: ..." or "docs: ...".</li>
 <li>is a complete sentence, ending with a period.</li>
+</ul>
+<h3 id="commit-signing-error">Commit Signing Error</h3>
+<p>If you get an error like <code>gpg: signing failed: Inappropriate ioctl for device</code> while committing, you can test signing by running the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;This is a test message for GPG signing.&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gpg<span class="w"> </span>--clearsign
+</span></code></pre></div>
+<p>Commit signing is not required, but it is recommended for security purposes. If you are not familiar with GPG signing, you can find more information on how to set it up <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits">here</a>.</p>
+<p>It took me a while to figure out how to set it up inside devcontainer, so I thought it would be helpful to include it here.</p>
+<ul>
+<li>My development machine is an Ubuntu server, so I installed <code>gnupg2</code>, <code>gpg-agent</code>, and <code>pinentry-curses</code> using the following command:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>gnupg2<span class="w"> </span>gpg-agent<span class="w"> </span>pinentry-curses
+</span></code></pre></div></li>
+<li>I then created a new GPG key using the following command:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gpg<span class="w"> </span>--full-generate-key
+</span></code></pre></div></li>
+<li>I followed the prompts to create a new key, and then I added the key to my GitHub account, and follow the steps to enable commit signing in vscode. See <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key">this</a> for more information.</li>
+<li>I then added the following lines to my <code>~/.bashrc</code> file:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GPG_TTY</span><span class="o">=</span><span class="k">$(</span>tty<span class="k">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>gpg-connect-agent<span class="w"> </span>updatestartuptty<span class="w"> </span>/bye<span class="w"> </span>&gt;/dev/null
+</span></code></pre></div></li>
+<li>Set the following configuration:<ul>
+<li><code>gpg.conf</code> file which is located in <code>~/.gnupg/gpg.conf</code>:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pinentry-mode<span class="w"> </span>loopback
+</span></code></pre></div></li>
+<li><code>gpg-agent.conf</code> file which is located in <code>~/.gnupg/gpg-agent.conf</code>:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>default-cache-ttl<span class="w"> </span><span class="m">360000</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>max-cache-ttl<span class="w"> </span><span class="m">720000</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>default-cache-ttl-ssh<span class="w"> </span><span class="m">60480000</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>max-cache-ttl-ssh<span class="w"> </span><span class="m">60480000</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>allow-loopback-pinentry
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>pinentry-program<span class="w"> </span>/usr/bin/pinentry-curses
+</span></code></pre></div><blockquote>
+<p>I guess the cache values are not necessary if you don't want your passphrase to be cached!</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>I then restarted the <code>gpg-agent</code> using the following command:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>gpgconf<span class="w"> </span>--kill<span class="w"> </span>gpg-agent
+</span></code></pre></div></li>
+<li>devcontainer will automatically forward your GPG agent to the container, however it does not forward your GPG configuration files. So you need to mount your <code>~/.gnupg</code> folder to the container, by adding / uncommenting the following line in your <code>devcontainer.json</code> file:
+    <div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">&quot;mounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="s2">&quot;source=${localEnv:HOME}/.gnupg,target=/root/.gnupg,type=bind,consistency=cached&quot;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">]</span>
+</span></code></pre></div></li>
+<li>Restart the devcontainer and you should be able to sign your commits now.</li>
+<li>If you are using a different operating system, you can find more information on how to set up GPG signing <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits">here</a>.</li>
+<li>If you are using a different terminal, you may need to set the <code>pinentry-program</code> to the appropriate program for your terminal. For example, if you are using <code>zsh</code>, you can set it to <code>pinentry-mac</code> or <code>pinentry-gtk-2</code> depending on your setup.</li>
+<li>Hope this helps!</li>
 </ul>
 <h2 id="license">License</h2>
 <p>By contributing, you agree that your contributions will be licensed under its <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file">GPL-3.0 license</a>.</p>
@@ -1100,7 +1181,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 23, 2024 21:52:46">August 23, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 6, 2025 15:43:49">May 6, 2025</span>
   </span>
 
     
