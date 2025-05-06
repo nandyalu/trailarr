@@ -9,17 +9,22 @@ def delete_customfilter(
     id: int, *, _session: Session = None  # type: ignore
 ) -> bool:
     """
-    Delete a view filter by id.
+    Delete a Custom filter by id.
     Args:
         id (int): The id of the view filter to delete.
         _session (Session, optional=None): A session to use for the \
             database connection. A new session is created if not provided.
     Returns:
-        bool: True if the view filter was deleted successfully.
+        bool: True if the Custom filter was deleted successfully.
     """
     db_customfilter = _session.get(CustomFilter, id)
     if not db_customfilter:
         return False
+
+    # Delete all filters associated with the custom filter
+    for filter in db_customfilter.filters:
+        _session.delete(filter)
+    # Delete the custom filter
     _session.delete(db_customfilter)
     _session.commit()
     return True

@@ -3,7 +3,7 @@ import {inject, Injectable} from '@angular/core';
 import {catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
 import {VideoInfo} from '../models/files';
-import {mapFolderInfo} from '../models/media';
+import {FolderInfo, mapFolderInfo} from '../models/media';
 
 @Injectable({
   providedIn: 'root',
@@ -13,12 +13,12 @@ export class FilesService {
 
   private files_url = environment.apiUrl + environment.files;
 
-  getFolderInfo(path: string): Observable<any | null> {
+  getFolderInfo(path: string): Observable<FolderInfo | null> {
     const url = this.files_url + 'files';
     const params = new HttpParams().set('path', path);
     return this.httpClient.get(url, {params: params}).pipe(
       map((response) => {
-        if (typeof response == null) {
+        if (response === null) {
           // Handle the empty response
           return response;
         } else {

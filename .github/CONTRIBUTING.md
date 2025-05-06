@@ -8,27 +8,16 @@ First off, thank you for considering contributing to Trailarr. It's people like 
 - Fork the repository on GitHub.
 - Clone the project to your own machine.
 - Open the project in Visual Studio Code.
-- Open `.devcontainer > devcontainer.json` and change the `mounts` to your desired folders.
-```json
-"mounts": [
-		"source=/var/appdata/trailarr-dev,target=/data,type=bind,consistency=cached",
-		"source=/media/all/Media,target=/media,type=bind,consistency=cached"
-	],
-```
-> Note: Below steps are optional, if you don't want to test any changes that would require connecting to `Radarr` and/or `Sonarr`, you can simply remove the `mounts` section from the `devcontainer.json` file.
-> 1. `source` is the path on your host machine.
-> 2. `target` is the path inside the devcontainer.
-> 3. Change the `mount` for `/data` to a folder where you want to store the data. Do not use the same folder as your production data.
-> 4. Change the `mount` for `/media` to the your media folder mapping as set in `Radarr` and/or `Sonarr`.
+- Open `.devcontainer > devcontainer.json` and uncomment / change the options as needed (especially the `mounts` section).
+	> See [devcontainer.json](https://code.visualstudio.com/docs/devcontainers/devcontainerjson-reference) for more information on how to set up the devcontainer.
 
-
-- VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. This will start the build of the Docker container and place you inside it.
-- Make your changes inside the devcontainer. The devcontainer is a fully configured development environment with all the tools you need.
+- VS Code will automatically detect the devcontainer configuration. Click on `Reopen in Container`. If not, open the command palette (Ctrl+Shift+P) and select `Remote-Containers: Reopen in Container`.
+- Wait for the container to build. This may take a few minutes.
+- Once the container is built, you will be inside the devcontainer. It should already have all the dependencies installed.
 - Commit changes to your own branch.
 - Push your work back up to your fork.
 - Submit a Pull Request so that we can review your changes.
-
-
+- If you are working on a new feature, please create a new branch for your changes. This will make it easier for us to review your changes and merge them into the main branch.
 > NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 ## Code of Conduct
@@ -59,6 +48,19 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 - All features or bug fixes **must be tested** by one or more specs (unit tests).
 - Your code should follow the syntax style of the existing code (PEP-8 for Python code, formatted using black formatter, and the Angular Style Guide for Angular code).
 
+### Python / Backend Code Style
+
+Python code should follow the below guidelines:
+
+- Use [black formatter](https://github.com/psf/black) for formatting the code. Formatting styles are already set up in the devcontainer.
+- Follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for Python code style.
+- Set `type checking` to `standard`.
+- Do not raise generice exceptions. Use specific exceptions instead. If an appropriate exception is not already available, contact a dev and create a new one after discussing.
+- When raising an exception, always include a message that describes the error. This is important for debugging and understanding what went wrong.
+- Log the error message where it's caught, NOT at the source when raising the exception.
+- When logging a message related to a media item, include the media item ID in square brackets. Frontend will detect this and add a link to the media details page.
+- Use `f-strings` for string formatting, use `str.format()` only when you want to replace from a dictionary.
+
 ## Commit Message Guidelines
 
 The commit message:
@@ -75,6 +77,55 @@ If you get an error like `gpg: signing failed: Inappropriate ioctl for device` w
 ```bash
 echo "This is a test message for GPG signing." | gpg --clearsign
 ```
+
+Commit signing is not required, but it is recommended for security purposes. If you are not familiar with GPG signing, you can find more information on how to set it up [here](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+
+It took me a while to figure out how to set it up inside devcontainer, so I thought it would be helpful to include it here.
+
+- My development machine is an Ubuntu server, so I installed `gnupg2`, `gpg-agent`, and `pinentry-curses` using the following command:
+	```bash
+	sudo apt-get install gnupg2 gpg-agent pinentry-curses
+	```
+- I then created a new GPG key using the following command:
+	```bash
+	gpg --full-generate-key
+	```
+- I followed the prompts to create a new key, and then I added the key to my GitHub account, and follow the steps to enable commit signing in vscode. See [this](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) for more information.
+- I then added the following lines to my `~/.bashrc` file:
+	```bash
+	export GPG_TTY=$(tty)
+	gpg-connect-agent updatestartuptty /bye >/dev/null
+	```
+- Set the following configuration:
+	- `gpg.conf` file which is located in `~/.gnupg/gpg.conf`:
+	```bash
+	pinentry-mode loopback
+	```
+	- `gpg-agent.conf` file which is located in `~/.gnupg/gpg-agent.conf`:
+	```bash
+	default-cache-ttl 360000
+	max-cache-ttl 720000
+	default-cache-ttl-ssh 60480000
+	max-cache-ttl-ssh 60480000
+	allow-loopback-pinentry
+	pinentry-program /usr/bin/pinentry-curses
+	```
+	> I guess the cache values are not necessary if you don't want your passphrase to be cached!
+- I then restarted the `gpg-agent` using the following command:
+	```bash
+	gpgconf --kill gpg-agent
+	```
+- devcontainer will automatically forward your GPG agent to the container, however it does not forward your GPG configuration files. So you need to mount your `~/.gnupg` folder to the container, by adding / uncommenting the following line in your `devcontainer.json` file:
+	```json
+	"mounts": [
+		"source=${localEnv:HOME}/.gnupg,target=/root/.gnupg,type=bind,consistency=cached"
+	]
+	```
+- Restart the devcontainer and you should be able to sign your commits now.
+- If you are using a different operating system, you can find more information on how to set up GPG signing [here](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+- If you are using a different terminal, you may need to set the `pinentry-program` to the appropriate program for your terminal. For example, if you are using `zsh`, you can set it to `pinentry-mac` or `pinentry-gtk-2` depending on your setup.
+- Hope this helps!
+
 
 ## License
 

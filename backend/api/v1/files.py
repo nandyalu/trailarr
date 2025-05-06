@@ -6,7 +6,7 @@ from core.base.database.manager.base import MediaDatabaseManager
 from core.download import video_analysis
 from core.files_handler import FilesHandler, FolderInfo
 
-logger = ModuleLogger("MediaFiles")
+logger = ModuleLogger("MediaFilesAPI")
 
 files_router = APIRouter(prefix="/files", tags=["Files", "Media"])
 
