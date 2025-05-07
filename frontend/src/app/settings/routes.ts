@@ -13,15 +13,9 @@ export default [
     path: '',
     loadComponent: () => SettingsComponent,
     children: [
-      {
-        path: RouteConnections,
-        component: ConnectionsComponent,
-        children: [
-          {path: RouteAdd, component: AddConnectionComponent},
-          {path: `${RouteEdit}/:${RouteParamConnectionId}`, component: EditConnectionComponent},
-          {path: '', component: ShowConnectionsComponent},
-        ],
-      },
+      {path: RouteConnections, component: ShowConnectionsComponent},
+      {path: `${RouteConnections}/${RouteAdd}`, component: AddConnectionComponent},
+      {path: `${RouteConnections}/${RouteEdit}/:${RouteParamConnectionId}`, component: EditConnectionComponent},
       {path: RouteTrailer, component: TrailerComponent},
       {path: RouteAbout, component: AboutComponent},
       {path: '**', redirectTo: RouteTrailer, pathMatch: 'prefix'},
