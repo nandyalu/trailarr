@@ -14,10 +14,10 @@ def __update_filters(
     cf_db: CustomFilter, cf_create: CustomFilterCreate, *, _session: Session
 ) -> None:
     """
-    Update the filters of a custom filter.
+    Update the filters of a custom filter. Modifies the filters in place.
     Args:
         cf_db (CustomFilter): CustomFilter Database object
-        cf_create (CustomFilterCreate): CustomFilterCreate model
+        cf_create (CustomFilterCreate): CustomFilter update object
         _session (Session): A session to use for the database connection
     """
     # Get new filters as db objects
@@ -73,6 +73,8 @@ def update_customfilter(
             database connection. A new session is created if not provided.
     Returns:
         CustomFilterRead: CustomFilterRead object
+    Raises:
+        ItemNotFoundError: If the custom filter with the given ID is not found.
     """
 
     db_filter = _session.get(CustomFilter, filter_id)

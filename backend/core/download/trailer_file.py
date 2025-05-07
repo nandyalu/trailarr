@@ -5,24 +5,11 @@ import unicodedata
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.media import MediaRead
+from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download import video_analysis
+from exceptions import FolderNotFoundError, FolderPathEmptyError
 
 logger = ModuleLogger("TrailersDownloader")
-
-
-def trailer_folder_needed(is_movie: bool) -> bool:
-    """Check if trailer folder is needed based on app settings. \n
-    Args:
-        is_movie (bool): Whether the media type is movie or show. \n
-    Returns:
-        bool: True if trailer folder is needed, False otherwise."""
-    if is_movie:
-        if app_settings.trailer_folder_movie:
-            return True
-    else:
-        if app_settings.trailer_folder_series:
-            return True
-    return False
 
 
 def get_folder_permissions(path: str) -> int:
@@ -63,7 +50,9 @@ def normalize_filename(filename: str) -> str:
     return filename
 
 
-def get_trailer_filename(media: MediaRead, ext: str, increment_index: int) -> str:
+def get_trailer_filename(
+    media: MediaRead, ext: str, increment_index: int
+) -> str:
     """Get the trailer filename based on app settings. \n
     Args:
         media (MediaRead): MediaRead object.
@@ -75,9 +64,12 @@ def get_trailer_filename(media: MediaRead, ext: str, increment_index: int) -> st
     # Get trailer file name format from settings
     title_format = app_settings.trailer_file_name
     if title_format.count("{") != title_format.count("}"):
-        logger.error("Invalid title format, setting to default file name format")
+        logger.error(
+            "Invalid title format, setting to default file name format"
+        )
         title_format = app_settings._DEFAULT_FILE_NAME
-    title_opts = media.model_dump()  # Convert media object to dictionary for formatting
+    # Convert media object to dictionary for formatting
+    title_opts = media.model_dump()
     # Replace the media filename with the filename without extension
     _filename_wo_ext, _ = os.path.splitext(media.media_filename)
     title_opts["media_filename"] = _filename_wo_ext
@@ -115,7 +107,10 @@ def get_trailer_filename(media: MediaRead, ext: str, increment_index: int) -> st
 
 
 def get_trailer_path(
-    src_path: str, dst_folder_path: str, media: MediaRead, increment_index: int = 1
+    src_path: str,
+    dst_folder_path: str,
+    media: MediaRead,
+    increment_index: int = 1,
 ) -> str:
     """Get the destination path for the trailer file. \n
     Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
@@ -146,44 +141,54 @@ def get_trailer_path(
     dst_file_path = os.path.join(dst_folder_path, filename)
     # If file exists in destination, increment the index, else return path
     if os.path.exists(dst_file_path):
-        logger.debug(f"File already exists at: {dst_file_path}, incrementing index...")
-        return get_trailer_path(src_path, dst_folder_path, media, increment_index + 1)
+        logger.debug(
+            f"File already exists at: {dst_file_path}, incrementing index..."
+        )
+        return get_trailer_path(
+            src_path, dst_folder_path, media, increment_index + 1
+        )
     logger.debug(f"Trailer path: {dst_file_path}")
     return dst_file_path
 
 
 def move_trailer_to_folder(
-    src_path: str, media: MediaRead, trailer_folder: bool | None = None
+    src_path: str, media: MediaRead, profile: TrailerProfileRead
 ) -> bool:
-    """Move the trailer file to the specified folder. \n
+    """Move the trailer file to the specified folder.
     Args:
         src_path (str): Source path of the trailer file.
         media (MediaRead): MediaRead object.
-        trailer_folder (bool, Optional=None): Whether to move the trailer to a separate folder. \n
+        profile (TrailerProfileRead): Trailer Profile used to download.
     Raises:
         FileNotFoundError: If the trailer file is not found at the source path.
-        Exception: Any other exceptions raised while moving file.\n
+        FolderPathEmptyError: If the media folder path is empty.
+        FolderNotFoundError: If the media folder does not exist.
+        Exception: Any other exceptions raised while moving file.
     Returns:
         bool: True if trailer is moved successfully, False otherwise."""
     logger.debug(f"Moving trailer to media folder: '{media.folder_path}'")
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
-        logger.debug(f"Trailer file not found at: {src_path}")
         raise FileNotFoundError(f"Trailer file not found at: {src_path}")
     # Check if media folder path exists
     if not media.folder_path:
-        logger.debug(f"Media folder path is empty: {media.title}")
-        raise FileNotFoundError(f"Media folder path is empty: {media.title}")
+        raise FolderPathEmptyError(
+            "Folder path is empty or not set for media:"
+            f" {media.title} [{media.id}]"
+        )
     if not os.path.exists(media.folder_path):
-        logger.debug(f"Media folder does not exist: {media.folder_path}")
-        raise FileNotFoundError(f"Media folder does not exist: {media.folder_path}")
-    # Get the destination path
-    if trailer_folder is None:
-        # Check if trailer folder is needed based on app settings
-        trailer_folder = trailer_folder_needed(media.is_movie)
-    if trailer_folder:
+        raise FolderNotFoundError(folder_path=media.folder_path)
+
+    # Get the destination path, create subfolder if enabled
+    if profile.folder_enabled:
+        folder_name = profile.folder_name.strip()
+        if not folder_name:
+            logger.debug(
+                "Folder name is empty, using default folder name: 'Trailers'"
+            )
+            folder_name = "Trailers"
         # Create a separate folder for trailers if enabled
-        dst_folder_path = os.path.join(media.folder_path, "Trailers")
+        dst_folder_path = os.path.join(media.folder_path, folder_name)
     else:
         # Else, move the trailer to the media folder
         dst_folder_path = media.folder_path
@@ -193,12 +198,14 @@ def move_trailer_to_folder(
     # Check if destination exists, else create it
     if not os.path.exists(dst_folder_path):
         logger.debug(
-            f"Destination folder does not exist! Creating folder: '{dst_folder_path}'"
+            "Destination folder does not exist! Creating folder:"
+            f" '{dst_folder_path}'"
         )
         os.makedirs(dst_folder_path, mode=dst_permissions)
         # Explicitly set the permissions for the folder
         logger.debug(
-            f"Setting permissions for folder: '{dst_folder_path}' to '{oct(dst_permissions)}'"
+            f"Setting permissions for folder: '{dst_folder_path}' to"
+            f" '{oct(dst_permissions)}'"
         )
         os.chmod(dst_folder_path, dst_permissions)
 
@@ -209,14 +216,17 @@ def move_trailer_to_folder(
 
     # Set the moved file's permissions to match the destination folder's permissions
     logger.debug(
-        f"Setting permissions for file: '{dst_file_path}' to '{oct(dst_permissions)}'"
+        f"Setting permissions for file: '{dst_file_path}' to"
+        f" '{oct(dst_permissions)}'"
     )
     os.chmod(dst_file_path, dst_permissions)
     logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
     return True
 
 
-def verify_download(tmp_output_file: str, output_file: str, title: str) -> bool:
+def verify_download(
+    tmp_output_file: str, output_file: str, title: str
+) -> bool:
     """Verify if the trailer is downloaded successfully. \n
     Also checks if the trailer has audio and video streams. \n
     Args:
@@ -235,7 +245,9 @@ def verify_download(tmp_output_file: str, output_file: str, title: str) -> bool:
         # Verify the trailer has audio and video streams
         trailer_downloaded = video_analysis.verify_trailer_streams(output_file)
         if not trailer_downloaded:
-            logger.debug(f"Trailer has either no audio or video streams: {title}")
+            logger.debug(
+                f"Trailer has either no audio or video streams: {title}"
+            )
             logger.debug(f"Deleting failed trailer file: {output_file}")
             try:
                 os.remove(output_file)

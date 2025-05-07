@@ -1,5 +1,7 @@
 from app_logger import ModuleLogger
+
 from config.settings import app_settings
+from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.video_analysis import StreamInfo, get_media_info
 
 logger = ModuleLogger("VideoConversion")
@@ -57,61 +59,61 @@ _VIDEO_CODECS_NVIDIA = {
 
 
 def _get_video_options_cpu(
-    input_file: str, video_stream: StreamInfo | None = None
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
 ) -> list[str]:
     """Generate the ffmpeg video options for CPU. \n
     Args:
+        vcodec (str): Video codec to convert to
         input_file (str): Input video file path
         video_stream (StreamInfo, Optional=None): Video stream info
     Returns:
         list[str]: FFMPEG command list."""
-    ffmpeg_cmd: list[str] = [
-        "-i",
-        input_file,
-        "-c:v",
-    ]
-    _vcodec = app_settings.trailer_video_format
-    if _vcodec not in _VIDEO_CODECS:
+    ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v"]
+    if vcodec not in _VIDEO_CODECS:
         logger.error(
-            f"Video codec '{_vcodec}' not implemented in Trailer, using h265 codec"
+            f"Video codec '{vcodec}' not implemented in Trailer, using h265"
+            " codec"
         )
-        _vcodec = "h265"
-    _vencoder = _VIDEO_CODECS[_vcodec]
+        vcodec = "h265"
+    _vencoder = _VIDEO_CODECS[vcodec]
 
-    if video_stream is None or video_stream.codec_name == _vcodec:
+    # Convert video if current codec is not detected or different
+    if video_stream is None or video_stream.codec_name != vcodec:
         if video_stream is None:
-            logger.debug(f"Converting video to {_vcodec} codec")
+            logger.debug(f"Converting video to {vcodec} codec")
         else:
             logger.debug(
-                f"Downloaded video is already in required codec: {_vcodec}, "
-                "copying stream without converting"
+                f"Converting video from {video_stream.codec_name} to"
+                f" {vcodec} codec"
             )
-        ffmpeg_cmd.append("copy" if video_stream else _vencoder)
-    else:
-        logger.debug(
-            f"Converting video from {video_stream.codec_name} to {_vcodec} codec"
-        )
         ffmpeg_cmd.append(_vencoder)
         ffmpeg_cmd.extend(["-preset", "veryfast", "-crf", "22"])
+    else:
+        logger.debug(
+            f"Downloaded video is already in required codec: {vcodec}, "
+            "copying stream without converting"
+        )
+        ffmpeg_cmd.append("copy")
 
     return ffmpeg_cmd
 
 
 def _get_video_options_nvidia(
-    input_file: str, video_stream: StreamInfo | None = None
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
 ) -> list[str]:
     """Generate the ffmpeg video options for NVIDIA.
     Args:
+        vcodec (str): Video codec to convert to
         input_file (str): Input video file path
         video_stream (StreamInfo, Optional=None): Video stream info
     Returns:
         list[str]: FFMPEG command list."""
-    vcodec = app_settings.trailer_video_format
     if vcodec not in _VIDEO_CODECS_NVIDIA:
         logger.error(
-            f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder, using CPU"
+            f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder,"
+            " using CPU"
         )
-        return _get_video_options_cpu(input_file, video_stream)
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
 
     vencoder = _VIDEO_CODECS_NVIDIA[vcodec]
     video_options: list[str] = [
@@ -138,7 +140,8 @@ def _get_video_options_nvidia(
         video_options.append("copy")
     else:
         logger.debug(
-            f"Converting video from {video_stream.codec_name} to {vcodec} codec"
+            f"Converting video from {video_stream.codec_name} to"
+            f" {vcodec} codec"
         )
         video_options.append(vencoder)
         video_options.extend(["-preset", "fast", "-cq", "22"])
@@ -147,101 +150,140 @@ def _get_video_options_nvidia(
 
 
 def _get_video_options(
-    input_file: str, use_nvidia: bool, video_stream: StreamInfo | None = None
+    vcodec: str,
+    input_file: str,
+    use_nvidia: bool,
+    video_stream: StreamInfo | None = None,
 ) -> list[str]:
+    if vcodec == "copy":
+        ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
+        logger.debug("Copying video stream without converting")
+        return ffmpeg_cmd
     if use_nvidia:
-        return _get_video_options_nvidia(input_file, video_stream)
-    return _get_video_options_cpu(input_file, video_stream)
+        return _get_video_options_nvidia(vcodec, input_file, video_stream)
+    return _get_video_options_cpu(vcodec, input_file, video_stream)
 
 
-def _get_audio_options(audio_stream: StreamInfo | None = None) -> list[str]:
+def _get_audio_options(
+    acodec: str, volume_level: int, audio_stream: StreamInfo | None = None
+) -> list[str]:
     """Get the audio options for the ffmpeg command.
     Args:
+        acodec (str): Audio codec to convert to.
+        volume_level (int): Audio volume level.
         audio_stream (StreamInfo, Optional=None): Audio stream info.
     Returns:
         list[str]: FFMPEG command list for audio."""
     ffmpeg_cmd: list[str] = []
-    _acodec = app_settings.trailer_audio_format
-    _aencoder = _AUDIO_CODECS[_acodec]
+    _aencoder = _AUDIO_CODECS[acodec]
 
     # Apply audio volume level filter if enabled
-    volume_level = app_settings.trailer_audio_volume_level * 0.01
-    if volume_level != 1:
-        logger.debug(f"Applying audio volume level filter: '-af volume={volume_level}'")
-        ffmpeg_cmd.extend(["-af", f"volume={volume_level}"])
+    _volume_level = volume_level * 0.01
+    if _volume_level != 1:
+        logger.debug(
+            f"Applying audio volume level filter: '-af volume={_volume_level}'"
+        )
+        ffmpeg_cmd.extend(["-af", f"volume={_volume_level}"])
 
     if audio_stream is None:
-        logger.debug(f"Converting audio to {_acodec} codec")
+        logger.debug(f"Converting audio to {acodec} codec")
         ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
         return ffmpeg_cmd
 
-    if audio_stream.codec_name == _acodec and volume_level == 1:
+    if acodec == "copy":
+        if _volume_level == 1:
+            logger.debug("Copying audio stream without converting")
+            ffmpeg_cmd.append("-c:a")
+            ffmpeg_cmd.append("copy")
+            return ffmpeg_cmd
+        else:
+            logger.debug(
+                "Cannot apply volume level filter to copied audio stream, "
+                f"converting audio to {acodec} codec"
+            )
+            ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
+            return ffmpeg_cmd
+
+    if audio_stream.codec_name == acodec and _volume_level == 1:
         logger.debug(
-            f"Downloaded audio is already in required codec: {_acodec}, "
+            f"Downloaded audio is already in required codec: {acodec}, "
             "copying stream without converting"
         )
         ffmpeg_cmd.append("-c:a")
         ffmpeg_cmd.append("copy")
     else:
         logger.debug(
-            f"Converting audio from {audio_stream.codec_name} to {_acodec} codec"
+            f"Converting audio from {audio_stream.codec_name} to"
+            f" {acodec} codec"
         )
         ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
 
     return ffmpeg_cmd
 
 
-def _get_subtitle_options(stream: StreamInfo | None = None) -> list[str]:
+def _get_subtitle_options(
+    scodec: str, stream: StreamInfo | None = None
+) -> list[str]:
     """Get the subtitle options for the ffmpeg command.
     Args:
+        scodec (str): Subtitle codec to convert to.
         stream (StreamInfo, Optional=None): Subtitle stream info.
     Returns:
         list[str]: FFMPEG command list for subtitles."""
-    if not app_settings.trailer_subtitles_enabled:
-        return []
     ffmpeg_cmd: list[str] = []
-    scodec = app_settings.trailer_subtitles_format
     if stream is None:
         logger.debug(f"Converting subtitles to {scodec} format")
     else:
         logger.debug(
-            f"Converting subtitles from {stream.codec_name} to " f"{scodec} format"
+            f"Converting subtitles from {stream.codec_name} to {scodec} format"
         )
     ffmpeg_cmd.append("-c:s")
     ffmpeg_cmd.append(scodec)
     return ffmpeg_cmd
 
 
-def _get_web_optimized_options() -> list[str]:
-    """Get the web optimized options for the ffmpeg command."""
-    ffmpeg_cmd: list[str] = []
-    # Add web optimized options if enabled
-    if not app_settings.trailer_web_optimized:
-        return ffmpeg_cmd
-    # Web optimized options are only applicable to mp4 containers
-    if app_settings.trailer_file_format != "mp4":
-        logger.warning(
-            "Web optimized options are only applicable to mp4 containers, "
-            "skipping web optimization"
-        )
-        return ffmpeg_cmd
-    logger.debug("Converting to a web optimized format")
-    ffmpeg_cmd.append("-movflags")
-    ffmpeg_cmd.append("+faststart")
-    return ffmpeg_cmd
+# def _get_web_optimized_options() -> list[str]:
+#     """Get the web optimized options for the ffmpeg command."""
+#     ffmpeg_cmd: list[str] = []
+#     # Add web optimized options if enabled
+#     if not app_settings.trailer_web_optimized:
+#         return ffmpeg_cmd
+#     # Web optimized options are only applicable to mp4 containers
+#     if app_settings.trailer_file_format != "mp4":
+#         logger.warning(
+#             "Web optimized options are only applicable to mp4 containers, "
+#             "skipping web optimization"
+#         )
+#         return ffmpeg_cmd
+#     logger.debug("Converting to a web optimized format")
+#     ffmpeg_cmd.append("-movflags")
+#     ffmpeg_cmd.append("+faststart")
+#     return ffmpeg_cmd
 
 
-def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
+def get_ffmpeg_cmd(
+    profile: TrailerProfileRead,
+    input_file: str,
+    output_file: str,
+    fallback=False,
+) -> list[str]:
     """Generate the ffmpeg command based on the app settings and media streams.
     Args:
+        profile (TrailerProfileRead): Trailer profile to use.
         input_file (str): Input video file path.
         output_file (str): Output video file path.
+        fallback (bool): If True, hardware acceleration is not used.
     Returns:
         list[str]: FFMPEG command list."""
     # Check if NVIDIA hardware acceleration is enabled
-    use_nvidia = (
-        app_settings.nvidia_gpu_available and app_settings.trailer_hardware_acceleration
-    )
+    if fallback:
+        logger.debug("Fallback mode enabled, using CPU for conversion")
+        use_nvidia = False
+    else:
+        use_nvidia = (
+            app_settings.nvidia_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        )
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
     _subtitle_stream: StreamInfo | None = None
@@ -262,13 +304,24 @@ def get_ffmpeg_cmd(input_file: str, output_file: str) -> list[str]:
         # "repeat+level+warning",
     ]
     # Set video specific options
-    ffmpeg_cmd.extend(_get_video_options(input_file, use_nvidia, _video_stream))
+    ffmpeg_cmd.extend(
+        _get_video_options(
+            profile.video_format, input_file, use_nvidia, _video_stream
+        )
+    )
     # Set audio specific options
-    ffmpeg_cmd.extend(_get_audio_options(_audio_stream))
+    ffmpeg_cmd.extend(
+        _get_audio_options(
+            profile.audio_format, profile.audio_volume_level, _audio_stream
+        )
+    )
     # Set subtitle specific options
-    ffmpeg_cmd.extend(_get_subtitle_options(_subtitle_stream))
-    # Add web optimized options if enabled
-    ffmpeg_cmd.extend(_get_web_optimized_options())
+    if profile.subtitles_enabled:
+        ffmpeg_cmd.extend(
+            _get_subtitle_options(profile.subtitles_format, _subtitle_stream)
+        )
+    # # Add web optimized options if enabled
+    # ffmpeg_cmd.extend(_get_web_optimized_options())
     # Add output file
     ffmpeg_cmd.append(output_file)
 

@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
+FROM mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
 # Install the xz-utils package
 RUN apt-get update && apt-get install -y curl xz-utils tzdata \
-    git gnupg2 pciutils \
+    git gnupg2 pciutils pinentry-curses \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -12,10 +12,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install specific version of npm
-RUN npm install -g npm@11.2.0
+RUN npm install -g npm@11.3.0
 
 # Install specific version of Angular CLI
-RUN npm install -g @angular/cli@19.2.5
+RUN npm install -g @angular/cli@19.2.10
 
 # Set the working directory
 WORKDIR /app
