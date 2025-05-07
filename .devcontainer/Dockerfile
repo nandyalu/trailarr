@@ -37,7 +37,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.3.1-beta" \
+    APP_VERSION="0.4.0" \
     NVIDIA_VISIBLE_DEVICES="all" \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
