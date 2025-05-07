@@ -58,12 +58,22 @@ trailarr_api = FastAPI(
     redoc_url=None,
     terms_of_service="https://github.com/nandyalu/trailarr",
     contact={
+        "name": "Trailarr - Github",
         "url": "https://github.com/nandyalu/trailarr",
     },
     license_info={
         "name": "GNU GPL 3.0",
         "url": "https://github.com/nandyalu/trailarr/blob/main/LICENSE",
     },
+    servers=[
+        {
+            "url": "{protocol}://{hostpath}",
+            "variables": {
+                "protocol": {"default": "http", "enum": ["http", "https"]},
+                "hostpath": {"default": "127.0.0.1:7889"},
+            },
+        }
+    ],
 )
 
 trailarr_api.add_middleware(

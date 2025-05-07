@@ -8,3 +8,5 @@ export function durationString(durationInMinutes: number) {
 
   return hours === 0 ? `${minutes}m` : minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
+
+export const jsonEqual = <T>(left: T, right: T): boolean => left === right || JSON.stringify(left) === JSON.stringify(right);

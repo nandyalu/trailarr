@@ -12,6 +12,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     // withInterceptors([authInterceptor]),
     {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium', timezone: 'UTC'}},
-    importProvidersFrom(ApiModule.forRoot({}), TimeagoModule.forRoot()),
+    importProvidersFrom(ApiModule.forRoot({rootUrl: ''}), TimeagoModule.forRoot()),
   ],
 };

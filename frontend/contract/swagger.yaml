@@ -5,23 +5,24 @@ info:
   description: API for Trailarr application.
   termsOfService: https://github.com/nandyalu/trailarr
   contact:
+    name: Trailarr - Github
     url: https://github.com/nandyalu/trailarr
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.3.3-beta
+  version: 0.3.1-beta
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
       protocol:
-        default: http
         enum:
           - http
           - https
+        default: http
       hostpath:
         default: 127.0.0.1:7889
 paths:
-  '/status':
+  /status:
     get:
       tags:
         - Health Check
@@ -33,7 +34,7 @@ paths:
           content:
             application/json:
               schema: {}
-  '/api/v1/connections/':
+  /api/v1/connections/:
     get:
       tags:
         - Connections
@@ -59,7 +60,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/ConnectionRead'
+                  $ref: '#/components/schemas/ConnectionRead'
                 title: Response Get Connections Api V1 Connections  Get
         '401':
           description: API key is missing
@@ -68,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
         - Connections
@@ -91,7 +92,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/ConnectionCreate'
+              $ref: '#/components/schemas/ConnectionCreate'
       responses:
         '201':
           description: 'Connection Created Successfully! Radarr Connection Successful
@@ -101,21 +102,21 @@ paths:
               schema:
                 type: string
                 title: Response Create Connection Api V1 Connections  Post
+        '401':
+          description: API key is missing
         '400':
           description: Connection Not Created
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
-        '401':
-          description: API key is missing
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/connections/test':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/connections/test:
     post:
       tags:
         - Connections
@@ -138,7 +139,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/ConnectionCreate'
+              $ref: '#/components/schemas/ConnectionCreate'
       responses:
         '200':
           description: 'Radarr Connection Successful Version: 3.x.x.x'
@@ -147,21 +148,21 @@ paths:
               schema:
                 type: string
                 title: Response Test Connection Api V1 Connections Test Post
+        '401':
+          description: API key is missing
         '400':
           description: Connection Failed
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
-        '401':
-          description: API key is missing
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/connections/rootfolders':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/connections/rootfolders:
     post:
       tags:
         - Connections
@@ -184,7 +185,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/ConnectionCreate'
+              $ref: '#/components/schemas/ConnectionCreate'
       responses:
         '200':
           description: Root Folders Retrieved Successfully!
@@ -195,21 +196,21 @@ paths:
                 items:
                   type: string
                 title: Response Get Rootfolders Api V1 Connections Rootfolders Post
+        '401':
+          description: API key is missing
         '400':
           description: Root Folders Not Retrieved
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
-        '401':
-          description: API key is missing
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/connections/{connection_id}':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/connections/{connection_id}:
     get:
       tags:
         - Connections
@@ -239,7 +240,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ConnectionRead'
+                $ref: '#/components/schemas/ConnectionRead'
         '401':
           description: API key is missing
         '404':
@@ -247,13 +248,13 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPValidationError'
     put:
       tags:
         - Connections
@@ -282,7 +283,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/ConnectionUpdate'
+              $ref: '#/components/schemas/ConnectionUpdate'
       responses:
         '201':
           description: Connection Updated Successfully!
@@ -298,13 +299,13 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPValidationError'
     delete:
       tags:
         - Connections
@@ -343,14 +344,14 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/connections/{connection_id}/refresh':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/connections/{connection_id}/refresh:
     get:
       tags:
         - Connections
@@ -390,14 +391,14 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/customfilters/':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customfilters/:
     post:
       tags:
         - Custom Filters
@@ -420,14 +421,14 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/CustomFilterCreate'
+              $ref: '#/components/schemas/CustomFilterCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/CustomFilterRead'
+                $ref: '#/components/schemas/CustomFilterRead'
         '401':
           description: API key is missing
         '422':
@@ -435,8 +436,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/customfilters/{id}':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customfilters/{id}:
     put:
       tags:
         - Custom Filters
@@ -465,14 +466,14 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/CustomFilterCreate'
+              $ref: '#/components/schemas/CustomFilterCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/CustomFilterRead'
+                $ref: '#/components/schemas/CustomFilterRead'
         '401':
           description: API key is missing
         '422':
@@ -480,7 +481,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPValidationError'
     delete:
       tags:
         - Custom Filters
@@ -519,8 +520,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/customfilters/home':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customfilters/home:
     get:
       tags:
         - Custom Filters
@@ -546,7 +547,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/CustomFilterRead'
+                  $ref: '#/components/schemas/CustomFilterRead'
                 title: Response Get Home Customfilters Api V1 Customfilters Home Get
         '401':
           description: API key is missing
@@ -555,8 +556,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/customfilters/movie':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customfilters/movie:
     get:
       tags:
         - Custom Filters
@@ -582,7 +583,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/CustomFilterRead'
+                  $ref: '#/components/schemas/CustomFilterRead'
                 title: Response Get Movie Customfilters Api V1 Customfilters Movie
                   Get
         '401':
@@ -592,8 +593,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/customfilters/series':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customfilters/series:
     get:
       tags:
         - Custom Filters
@@ -619,7 +620,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/CustomFilterRead'
+                  $ref: '#/components/schemas/CustomFilterRead'
                 title: Response Get Series Customfilters Api V1 Customfilters Series
                   Get
         '401':
@@ -629,17 +630,17 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/files':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/files:
     get:
       tags:
         - Files
         - Media
       summary: Get Files
-      description: "Get files in a directory.\n\nArgs:\n    path (str): Path to the
-        directory.\nReturns:\n    FolderInfo|None: Folder information or None if folder
-        doesn't exist. \n\nRaises:\n    HTTPException (404): If the folder is not
-        found."
+      description: "Get files in a directory.\n\nArgs:\n    path (str): Path to the\
+        \ directory.\nReturns:\n    FolderInfo|None: Folder information or None if\
+        \ folder doesn't exist. \n\nRaises:\n    HTTPException (404): If the folder\
+        \ is not found."
       operationId: get_files_api_v1_files_files_get
       security:
         - APIKeyQuery: []
@@ -666,7 +667,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - '$ref': '#/components/schemas/FolderInfo'
+                  - $ref: '#/components/schemas/FolderInfo'
                   - type: 'null'
                 title: Response Get Files Api V1 Files Files Get
         '401':
@@ -676,18 +677,18 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/video':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/video:
     get:
       tags:
         - Files
         - Media
       summary: Video Endpoint
-      description: "Stream video files.\n\nArgs:\n    file_path (str): Path to the
-        video file.\n    range (str, optional=None): Range of bytes to stream. \n\nRaises:\n
-        \   HTTPException (400): If the file path is invalid.\n    HTTPException (404):
-        If the file is not found.\n    HTTPException (400): If the file is not a video
-        file. \n\nReturns:\n    Response: Video stream response."
+      description: "Stream video files.\n\nArgs:\n    file_path (str): Path to the\
+        \ video file.\n    range (str, optional=None): Range of bytes to stream. \n\
+        \nRaises:\n    HTTPException (400): If the file path is invalid.\n    HTTPException\
+        \ (404): If the file is not found.\n    HTTPException (400): If the file is\
+        \ not a video file. \n\nReturns:\n    Response: Video stream response."
       operationId: video_endpoint_api_v1_files_video_get
       security:
         - APIKeyQuery: []
@@ -726,8 +727,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/read':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/read:
     get:
       tags:
         - Files
@@ -768,8 +769,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/video_info':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/video_info:
     get:
       tags:
         - Files
@@ -802,7 +803,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - '$ref': '#/components/schemas/VideoInfo'
+                  - $ref: '#/components/schemas/VideoInfo'
                   - type: 'null'
                 title: Response Get Video Info Api V1 Files Video Info Get
         '401':
@@ -812,8 +813,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/rename':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/rename:
     post:
       tags:
         - Files
@@ -860,8 +861,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/files/delete':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/delete:
     delete:
       tags:
         - Files
@@ -909,23 +910,23 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/all':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/all:
     get:
       tags:
         - Media
       summary: Get All Media
-      description: "Get all media from the database. \n\nOptionally apply filters
-        and sorting. \n\nArgs:\n    movies_only (bool, Optional=None):\n        Flag
-        to get only movies.\n        - If `True`, it will return only `movies`.\n
-        \       - If `False`, it will return only `series`.\n        - If `None`,
-        it will return all media items. \n\n    filter_by (str, Optional=`all`):\n
-        \       Filter the media items by a column value. Available filters are\n
-        \       - `all`\n        - `downloaded`\n        - `monitored`\n        -
-        `missing`\n        - `unmonitored`. \n\n    sort_by (str, Optional=None):
-        Sort the media items by `title`, `year`,             `added_at`, or `updated_at`.
-        \n\n    sort_asc (bool, Optional=True): Flag to sort in ascending order. \n\nReturns:\n
-        \   list[MediaRead]: List of media objects."
+      description: "Get all media from the database. \n\nOptionally apply filters\
+        \ and sorting. \n\nArgs:\n    movies_only (bool, Optional=None):\n       \
+        \ Flag to get only movies.\n        - If `True`, it will return only `movies`.\n\
+        \        - If `False`, it will return only `series`.\n        - If `None`,\
+        \ it will return all media items. \n\n    filter_by (str, Optional=`all`):\n\
+        \        Filter the media items by a column value. Available filters are\n\
+        \        - `all`\n        - `downloaded`\n        - `monitored`\n        -\
+        \ `missing`\n        - `unmonitored`. \n\n    sort_by (str, Optional=None):\
+        \ Sort the media items by `title`, `year`,             `added_at`, or `updated_at`.\
+        \ \n\n    sort_asc (bool, Optional=True): Flag to sort in ascending order.\
+        \ \n\nReturns:\n    list[MediaRead]: List of media objects."
       operationId: get_all_media_api_v1_media_all_get
       security:
         - APIKeyQuery: []
@@ -979,7 +980,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/MediaRead'
+                  $ref: '#/components/schemas/MediaRead'
                 title: Response Get All Media Api V1 Media All Get
         '401':
           description: API key is missing
@@ -988,18 +989,19 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/:
     get:
       tags:
         - Media
       summary: Get Recent Media
-      description: "Get recent media from the database. \n\nArgs:\n    limit (int,
-        Optional=30): Number of items to return.\n    offset (int, Optional=0): Number
-        of items to skip.\n    movies_only (bool, Optional=None):\n        Flag to
-        get only movies.\n        - If `True`, it will return only `movies`.\n        -
-        If `False`, it will return only `series`.\n        - If `None`, it will return
-        all media items. \n\nReturns:\n- list[MediaRead]: List of media objects."
+      description: "Get recent media from the database. \n\nArgs:\n    limit (int,\
+        \ Optional=30): Number of items to return.\n    offset (int, Optional=0):\
+        \ Number of items to skip.\n    movies_only (bool, Optional=None):\n     \
+        \   Flag to get only movies.\n        - If `True`, it will return only `movies`.\n\
+        \        - If `False`, it will return only `series`.\n        - If `None`,\
+        \ it will return all media items. \n\nReturns:\n- list[MediaRead]: List of\
+        \ media objects."
       operationId: get_recent_media_api_v1_media__get
       security:
         - APIKeyQuery: []
@@ -1043,7 +1045,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/MediaRead'
+                  $ref: '#/components/schemas/MediaRead'
                 title: Response Get Recent Media Api V1 Media  Get
         '401':
           description: API key is missing
@@ -1052,15 +1054,15 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/updated':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/updated:
     get:
       tags:
         - Media
       summary: Get Updated After
-      description: "Get media updated after a certain datetime. \n\nArgs:\n    timestamp
-        (datetime): Timestamp to filter by. \n\nReturns:\n    list[MediaRead]: List
-        of media objects."
+      description: "Get media updated after a certain datetime. \n\nArgs:\n    seconds\
+        \ (int): Seconds since epoch to filter media.\nReturns:\n    list[MediaRead]:\
+        \ List of media objects."
       operationId: get_updated_after_api_v1_media_updated_get
       security:
         - APIKeyQuery: []
@@ -1088,7 +1090,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/MediaRead'
+                  $ref: '#/components/schemas/MediaRead'
                 title: Response Get Updated After Api V1 Media Updated Get
         '401':
           description: API key is missing
@@ -1097,16 +1099,16 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/downloaded':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/downloaded:
     get:
       tags:
         - Media
       summary: Get Recently Downloaded
-      description: "Get recently downloaded media from the database. \n\nArgs:\n    limit
-        (int, Optional=30): Number of items to return.\n    offset (int, Optional=0):
-        Number of items to skip. \n\nReturns:\n    list[MediaRead]: List of media
-        objects."
+      description: "Get recently downloaded media from the database. \n\nArgs:\n \
+        \   limit (int, Optional=30): Number of items to return.\n    offset (int,\
+        \ Optional=0): Number of items to skip. \n\nReturns:\n    list[MediaRead]:\
+        \ List of media objects."
       operationId: get_recently_downloaded_api_v1_media_downloaded_get
       security:
         - APIKeyQuery: []
@@ -1142,7 +1144,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/MediaRead'
+                  $ref: '#/components/schemas/MediaRead'
                 title: Response Get Recently Downloaded Api V1 Media Downloaded Get
         '401':
           description: API key is missing
@@ -1151,15 +1153,15 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/search':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/search:
     get:
       tags:
         - Media
         - Search
       summary: Search Media
-      description: "Search media by query. \n\nArgs:\n    query (str): Search query.
-        \n\nReturns:\n    list[SearchMedia]: List of search media objects."
+      description: "Search media by query. \n\nArgs:\n    query (str): Search query.\
+        \ \n\nReturns:\n    list[SearchMedia]: List of search media objects."
       operationId: search_media_api_v1_media_search_get
       security:
         - APIKeyQuery: []
@@ -1187,7 +1189,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/SearchMedia'
+                  $ref: '#/components/schemas/SearchMedia'
                 title: Response Search Media Api V1 Media Search Get
         '401':
           description: API key is missing
@@ -1196,14 +1198,14 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}:
     get:
       tags:
         - Media
       summary: Get Media By Id
-      description: "Get media by ID. \n\nArgs:\n    media_id (int): ID of the media
-        item. \n\nReturns:\n    MediaRead: Media object."
+      description: "Get media by ID. \n\nArgs:\n    media_id (int): ID of the media\
+        \ item. \n\nReturns:\n    MediaRead: Media object."
       operationId: get_media_by_id_api_v1_media__media_id__get
       security:
         - APIKeyQuery: []
@@ -1229,7 +1231,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/MediaRead'
+                $ref: '#/components/schemas/MediaRead'
         '401':
           description: API key is missing
         '404':
@@ -1237,21 +1239,21 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/files':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/files:
     get:
       tags:
         - Media
       summary: Get Media Files
-      description: "Get media files by ID. \n\nArgs:\n    media_id (int): ID of the
-        media item. \n\nReturns:\n    FolderInfo|str: Folder information or error
-        message."
+      description: "Get media files by ID. \n\nArgs:\n    media_id (int): ID of the\
+        \ media item. \n\nReturns:\n    FolderInfo|str: Folder information or error\
+        \ message."
       operationId: get_media_files_api_v1_media__media_id__files_get
       security:
         - APIKeyQuery: []
@@ -1278,7 +1280,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - '$ref': '#/components/schemas/FolderInfo'
+                  - $ref: '#/components/schemas/FolderInfo'
                   - type: string
                 title: Response Get Media Files Api V1 Media  Media Id  Files Get
         '401':
@@ -1288,21 +1290,22 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/download':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/download:
     post:
       tags:
         - Media
       summary: Download Media Trailer
-      description: "Download trailer for media by ID. \n\nArgs:\n    media_id (int):
-        ID of the media item.\n    yt_id (str, Optional=\"\"): YouTube ID of the trailer.\n\nReturns:\n
-        \   str: Downloading trailer message."
+      description: "Download trailer for media by ID. \n\nArgs:\n    media_id (int):\
+        \ ID of the media item.\n    profile_id (int): ID of the trailer profile to\
+        \ use for downloading.\n    yt_id (str, Optional=\"\"): YouTube ID of the\
+        \ trailer.\n\nReturns:\n    str: Downloading trailer message."
       operationId: download_media_trailer_api_v1_media__media_id__download_post
       security:
         - APIKeyQuery: []
@@ -1314,6 +1317,12 @@ paths:
           schema:
             type: integer
             title: Media Id
+        - name: profile_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            title: Profile Id
         - name: yt_id
           in: query
           required: false
@@ -1345,21 +1354,21 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/monitor':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/monitor:
     post:
       tags:
         - Media
       summary: Monitor Media
-      description: "Monitor media by ID. \n\nArgs:\n    media_id (int): ID of the
-        media item.\n    monitor (bool, Optional=True): Monitor status. \n\nReturns:\n
-        \   str: Monitoring message."
+      description: "Monitor media by ID. \n\nArgs:\n    media_id (int): ID of the\
+        \ media item.\n    monitor (bool, Optional=True): Monitor status. \n\nReturns:\n\
+        \    str: Monitoring message."
       operationId: monitor_media_api_v1_media__media_id__monitor_post
       security:
         - APIKeyQuery: []
@@ -1401,21 +1410,21 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/update':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/update:
     post:
       tags:
         - Media
       summary: Update Yt Id
-      description: "Update YouTube ID for media by ID. \n\nArgs:\n    media_id (int):
-        ID of the media item.\n    yt_id (str): YouTube ID of the trailer. \n\nReturns:\n
-        \   str: Updating YouTube ID message."
+      description: "Update YouTube ID for media by ID. \n\nArgs:\n    media_id (int):\
+        \ ID of the media item.\n    yt_id (str): YouTube ID of the trailer. \n\n\
+        Returns:\n    str: Updating YouTube ID message."
       operationId: update_yt_id_api_v1_media__media_id__update_post
       security:
         - APIKeyQuery: []
@@ -1456,27 +1465,27 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '406':
           description: Invalid YouTube URL/ID
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/search':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/search:
     post:
       tags:
         - Media
       summary: Search For Trailer
-      description: "Search for trailer for media by ID. \n\nArgs:\n    media_id (int):
-        ID of the media item. \n\nReturns:\n    str: Youtube ID of the trailer if
-        found, else empty string."
+      description: "Search for trailer for media by ID. \n\nArgs:\n    media_id (int):\
+        \ ID of the media item. \n\nReturns:\n    str: Youtube ID of the trailer if\
+        \ found, else empty string."
       operationId: search_for_trailer_api_v1_media__media_id__search_post
       security:
         - APIKeyQuery: []
@@ -1512,20 +1521,20 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/{media_id}/trailer':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/trailer:
     delete:
       tags:
         - Media
       summary: Delete Media Trailer
-      description: "Delete trailer for media by ID. \n\nArgs:\n    media_id (int):
-        ID of the media item. \n\nReturns:\n    str: Deleting trailer message."
+      description: "Delete trailer for media by ID. \n\nArgs:\n    media_id (int):\
+        \ ID of the media item. \n\nReturns:\n    str: Deleting trailer message."
       operationId: delete_media_trailer_api_v1_media__media_id__trailer_delete
       security:
         - APIKeyQuery: []
@@ -1561,23 +1570,23 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/media/batch_update':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/batch_update:
     post:
       tags:
         - Media
       summary: Batch Update Media
-      description: "Batch update media by their IDs. \n\nAvailable update types are:
-        \n\n- monitor: Monitor media items. \n\n- unmonitor: Unmonitor media items.
-        \n\n- delete: Delete media items. \n\n- download: Download trailers for media
-        items. \n\nArgs:\n    update (BulkUpdate): Bulk update object with media ids
-        and update type.\nReturns:\n    str: Monitoring message."
+      description: "Batch update media by their IDs. \n\nAvailable update types are:\
+        \ \n\n- monitor: Monitor media items. \n\n- unmonitor: Unmonitor media items.\
+        \ \n\n- delete: Delete media items. \n\n- download: Download trailers for\
+        \ media items. \n\nArgs:\n    update (BulkUpdate): Bulk update object with\
+        \ media ids and update type.\nReturns:\n    str: Monitoring message."
       operationId: batch_update_media_api_v1_media_batch_update_post
       security:
         - APIKeyQuery: []
@@ -1596,7 +1605,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/BatchUpdate'
+              $ref: '#/components/schemas/BatchUpdate'
       responses:
         '200':
           description: Successful Response
@@ -1610,14 +1619,14 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/settings/':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/settings/:
     get:
       tags:
         - Settings
@@ -1641,7 +1650,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/Settings'
+                $ref: '#/components/schemas/Settings'
         '401':
           description: API key is missing
         '422':
@@ -1649,8 +1658,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/settings/stats':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/settings/stats:
     get:
       tags:
         - Settings
@@ -1674,7 +1683,7 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/ServerStats'
+                $ref: '#/components/schemas/ServerStats'
         '401':
           description: API key is missing
         '422':
@@ -1682,8 +1691,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/settings/update':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/settings/update:
     put:
       tags:
         - Settings
@@ -1706,7 +1715,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/UpdateSetting'
+              $ref: '#/components/schemas/UpdateSetting'
       responses:
         '200':
           description: Successful Response
@@ -1722,8 +1731,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/settings/updatelogin':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/settings/updatelogin:
     put:
       tags:
         - Settings
@@ -1746,7 +1755,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/UpdateLogin'
+              $ref: '#/components/schemas/UpdateLogin'
       responses:
         '200':
           description: Successful Response
@@ -1762,8 +1771,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/logs/download':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/download:
     get:
       tags:
         - Logs
@@ -1794,8 +1803,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/logs/':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/:
     get:
       tags:
         - Logs
@@ -1835,7 +1844,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/Log'
+                  $ref: '#/components/schemas/Log'
                 title: Response Get Logs Api V1 Logs  Get
         '401':
           description: API key is missing
@@ -1844,8 +1853,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/tasks/schedules':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/schedules:
     get:
       tags:
         - Tasks
@@ -1871,7 +1880,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/TaskInfo'
+                  $ref: '#/components/schemas/TaskInfo'
                 title: Response Get Scheduled Tasks Api V1 Tasks Schedules Get
         '401':
           description: API key is missing
@@ -1880,8 +1889,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/tasks/queue':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/queue:
     get:
       tags:
         - Tasks
@@ -1907,7 +1916,7 @@ paths:
               schema:
                 type: array
                 items:
-                  '$ref': '#/components/schemas/QueueInfo'
+                  $ref: '#/components/schemas/QueueInfo'
                 title: Response Get Task Queue Api V1 Tasks Queue Get
         '401':
           description: API key is missing
@@ -1916,8 +1925,8 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
-  '/api/v1/tasks/run/{task_id}':
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/run/{task_id}:
     get:
       tags:
         - Tasks
@@ -1956,7 +1965,264 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/trailerprofiles/:
+    get:
+      tags:
+        - Trailer Profiles
+      summary: Get all trailer profiles
+      description: Get all trailer profiles
+      operationId: get_trailer_profiles_api_v1_trailerprofiles__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrailerProfileRead'
+                title: Response Get Trailer Profiles Api V1 Trailerprofiles  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - Trailer Profiles
+      summary: Create a new trailer profile
+      description: Create a new trailer profile
+      operationId: create_trailer_profile_api_v1_trailerprofiles__post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrailerProfileCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrailerProfileRead'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/trailerprofiles/{trailerprofile_id}:
+    get:
+      tags:
+        - Trailer Profiles
+      summary: Get a trailer profile by ID
+      description: Get a trailer profile by ID
+      operationId: get_trailer_profile_api_v1_trailerprofiles__trailerprofile_id__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailerprofile_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Trailerprofile Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrailerProfileRead'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+        - Trailer Profiles
+      summary: Update a trailer profile
+      description: Update a trailer profile
+      operationId: update_trailer_profile_api_v1_trailerprofiles__trailerprofile_id__put
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailerprofile_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Trailerprofile Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrailerProfileCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrailerProfileRead'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - Trailer Profiles
+      summary: Delete a trailer profile
+      description: Delete a trailer profile
+      operationId: delete_trailer_profile_api_v1_trailerprofiles__trailerprofile_id__delete
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailerprofile_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Trailerprofile Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                title: Response Delete Trailer Profile Api V1 Trailerprofiles  Trailerprofile
+                  Id  Delete
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/trailerprofiles/{trailerprofile_id}/setting:
+    post:
+      tags:
+        - Trailer Profiles
+      summary: Update a trailer profile setting
+      description: Update a trailer profile setting
+      operationId: update_trailer_profile_setting_api_v1_trailerprofiles__trailerprofile_id__setting_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailerprofile_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Trailerprofile Id
+        - name: setting
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Setting
+        - name: value
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - type: integer
+              - type: boolean
+            title: Value
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrailerProfileRead'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     ArrType:
@@ -1975,6 +2241,11 @@ components:
         action:
           type: string
           title: Action
+        profile_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Profile Id
       type: object
       required:
         - media_ids
@@ -1986,7 +2257,7 @@ components:
           type: string
           title: Name
         arr_type:
-          '$ref': '#/components/schemas/ArrType'
+          $ref: '#/components/schemas/ArrType'
         url:
           type: string
           title: Url
@@ -1994,10 +2265,10 @@ components:
           type: string
           title: Api Key
         monitor:
-          '$ref': '#/components/schemas/MonitorType'
+          $ref: '#/components/schemas/MonitorType'
         path_mappings:
           items:
-            '$ref': '#/components/schemas/PathMappingCRU'
+            $ref: '#/components/schemas/PathMappingCRU'
           type: array
           title: Path Mappings
       type: object
@@ -2017,7 +2288,7 @@ components:
           type: string
           title: Name
         arr_type:
-          '$ref': '#/components/schemas/ArrType'
+          $ref: '#/components/schemas/ArrType'
         url:
           type: string
           title: Url
@@ -2025,7 +2296,7 @@ components:
           type: string
           title: Api Key
         monitor:
-          '$ref': '#/components/schemas/MonitorType'
+          $ref: '#/components/schemas/MonitorType'
         id:
           type: integer
           title: Id
@@ -2035,7 +2306,7 @@ components:
           title: Added At
         path_mappings:
           items:
-            '$ref': '#/components/schemas/PathMappingCRU'
+            $ref: '#/components/schemas/PathMappingCRU'
           type: array
           title: Path Mappings
       type: object
@@ -2060,7 +2331,7 @@ components:
           title: Name
         arr_type:
           anyOf:
-            - '$ref': '#/components/schemas/ArrType'
+            - $ref: '#/components/schemas/ArrType'
             - type: 'null'
         url:
           anyOf:
@@ -2074,11 +2345,11 @@ components:
           title: Api Key
         monitor:
           anyOf:
-            - '$ref': '#/components/schemas/MonitorType'
+            - $ref: '#/components/schemas/MonitorType'
             - type: 'null'
         path_mappings:
           items:
-            '$ref': '#/components/schemas/PathMappingCRU'
+            $ref: '#/components/schemas/PathMappingCRU'
           type: array
           title: Path Mappings
       type: object
@@ -2093,11 +2364,16 @@ components:
           type: string
           title: Filter Name
         filter_type:
-          '$ref': '#/components/schemas/FilterType'
+          $ref: '#/components/schemas/FilterType'
           default: TRAILER
+        id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Id
         filters:
           items:
-            '$ref': '#/components/schemas/FilterCreate'
+            $ref: '#/components/schemas/FilterCreate'
           type: array
           title: Filters
           default: []
@@ -2105,23 +2381,21 @@ components:
       required:
         - filter_name
       title: CustomFilterCreate
-      description: |-
-        Model for creating/updating CustomFilter.
-        - Leave `trailerprofile_id` and `trailerprofile` as `None` for page        view filters.
+      description: Model for creating/updating CustomFilter.
     CustomFilterRead:
       properties:
         filter_name:
           type: string
           title: Filter Name
         filter_type:
-          '$ref': '#/components/schemas/FilterType'
+          $ref: '#/components/schemas/FilterType'
           default: TRAILER
         id:
           type: integer
           title: Id
         filters:
           items:
-            '$ref': '#/components/schemas/FilterRead'
+            $ref: '#/components/schemas/FilterRead'
           type: array
           title: Filters
       type: object
@@ -2168,7 +2442,7 @@ components:
           type: string
           title: Filter By
         filter_condition:
-          '$ref': '#/components/schemas/FilterCondition'
+          $ref: '#/components/schemas/FilterCondition'
         filter_value:
           type: string
           title: Filter Value
@@ -2195,7 +2469,7 @@ components:
           type: string
           title: Filter By
         filter_condition:
-          '$ref': '#/components/schemas/FilterCondition'
+          $ref: '#/components/schemas/FilterCondition'
         filter_value:
           type: string
           title: Filter Value
@@ -2245,7 +2519,7 @@ components:
           description: Path of the file/folder.
         files:
           items:
-            '$ref': '#/components/schemas/FolderInfo'
+            $ref: '#/components/schemas/FolderInfo'
           type: array
           title: Files
           description: List of FileInfo or FolderInfo objects representing files and
@@ -2261,17 +2535,17 @@ components:
         - path
         - created
       title: FolderInfo
-      description: "Contains information about files and (sub)folders in a given folder.
-        \n\nAttrs:\n    - type (str): Type of the entry (folder).\n    - name (str):
-        Name of the folder.\n    - files (list[FileInfo | FolderInfo]): List of FileInfo
-        or FolderInfo\n        objects representing files and folders inside a given
-        folder.\n    - created (str): Creation time of the folder in \"YYYY-MM-DD
-        HH:MM:SS\"\n        format."
+      description: "Contains information about files and (sub)folders in a given folder.\
+        \ \n\nAttrs:\n    - type (str): Type of the entry (folder).\n    - name (str):\
+        \ Name of the folder.\n    - files (list[FileInfo | FolderInfo]): List of\
+        \ FileInfo or FolderInfo\n        objects representing files and folders inside\
+        \ a given folder.\n    - created (str): Creation time of the folder in \"\
+        YYYY-MM-DD HH:MM:SS\"\n        format."
     HTTPValidationError:
       properties:
         detail:
           items:
-            '$ref': '#/components/schemas/ValidationError'
+            $ref: '#/components/schemas/ValidationError'
           type: array
           title: Detail
       type: object
@@ -2411,7 +2685,7 @@ components:
           title: Arr Monitored
           default: false
         status:
-          '$ref': '#/components/schemas/MonitorStatus'
+          $ref: '#/components/schemas/MonitorStatus'
           default: missing
         id:
           type: integer
@@ -2821,6 +3095,202 @@ components:
         - name
         - task_id
       title: TaskInfo
+    TrailerProfileCreate:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+        file_format:
+          type: string
+          title: File Format
+          default: mkv
+        file_name:
+          type: string
+          title: File Name
+          default: '{title} ({year})-trailer.{ext}'
+        folder_enabled:
+          type: boolean
+          title: Folder Enabled
+          default: false
+        folder_name:
+          type: string
+          title: Folder Name
+          default: Trailers
+        audio_format:
+          type: string
+          title: Audio Format
+          default: aac
+        audio_volume_level:
+          type: integer
+          title: Audio Volume Level
+          default: 100
+        video_resolution:
+          type: integer
+          title: Video Resolution
+          default: 1080
+        video_format:
+          type: string
+          title: Video Format
+          default: h264
+        subtitles_enabled:
+          type: boolean
+          title: Subtitles Enabled
+          default: true
+        subtitles_format:
+          type: string
+          title: Subtitles Format
+          default: srt
+        subtitles_language:
+          type: string
+          title: Subtitles Language
+          default: en
+        always_search:
+          type: boolean
+          title: Always Search
+          default: false
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        exclude_words:
+          type: string
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
+        min_duration:
+          type: integer
+          title: Min Duration
+          default: 60
+        max_duration:
+          type: integer
+          title: Max Duration
+          default: 600
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
+        search_query:
+          type: string
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
+        id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Id
+        customfilter_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Customfilter Id
+        customfilter:
+          $ref: '#/components/schemas/CustomFilterCreate'
+      type: object
+      required:
+        - customfilter
+      title: TrailerProfileCreate
+      description: Model for creating/updating TrailerProfile.
+    TrailerProfileRead:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+        file_format:
+          type: string
+          title: File Format
+          default: mkv
+        file_name:
+          type: string
+          title: File Name
+          default: '{title} ({year})-trailer.{ext}'
+        folder_enabled:
+          type: boolean
+          title: Folder Enabled
+          default: false
+        folder_name:
+          type: string
+          title: Folder Name
+          default: Trailers
+        audio_format:
+          type: string
+          title: Audio Format
+          default: aac
+        audio_volume_level:
+          type: integer
+          title: Audio Volume Level
+          default: 100
+        video_resolution:
+          type: integer
+          title: Video Resolution
+          default: 1080
+        video_format:
+          type: string
+          title: Video Format
+          default: h264
+        subtitles_enabled:
+          type: boolean
+          title: Subtitles Enabled
+          default: true
+        subtitles_format:
+          type: string
+          title: Subtitles Format
+          default: srt
+        subtitles_language:
+          type: string
+          title: Subtitles Language
+          default: en
+        always_search:
+          type: boolean
+          title: Always Search
+          default: false
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        exclude_words:
+          type: string
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
+        min_duration:
+          type: integer
+          title: Min Duration
+          default: 60
+        max_duration:
+          type: integer
+          title: Max Duration
+          default: 600
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
+        search_query:
+          type: string
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
+        id:
+          type: integer
+          title: Id
+        customfilter_id:
+          type: integer
+          title: Customfilter Id
+        customfilter:
+          $ref: '#/components/schemas/CustomFilterRead'
+      type: object
+      required:
+        - id
+        - customfilter_id
+        - customfilter
+      title: TrailerProfileRead
+      description: Model for reading TrailerProfile.
     UpdateLogin:
       properties:
         current_password:
@@ -2894,7 +3364,7 @@ components:
         duration:
           type: string
           title: Duration
-          default: '0:00:00'
+          default: 0:00:00
         size:
           type: integer
           title: Size
@@ -2905,7 +3375,7 @@ components:
           default: 0 bps
         streams:
           items:
-            '$ref': '#/components/schemas/StreamInfo'
+            $ref: '#/components/schemas/StreamInfo'
           type: array
           title: Streams
       type: object
