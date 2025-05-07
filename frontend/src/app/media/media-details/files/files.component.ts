@@ -1,9 +1,8 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
 import {Component, computed, ElementRef, inject, input, resource, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {VideoInfo} from '../../../models/files';
+import {FilesService, VideoInfo} from 'generated-sources/openapi';
 import {FolderInfo} from '../../../models/media';
-import {FilesService} from '../../../services/files.service';
 import {MediaService} from '../../../services/media.service';
 import {WebsocketService} from '../../../services/websocket.service';
 
@@ -96,7 +95,7 @@ export class FilesComponent {
     this.closeRenameDialog();
     let selectedFileBasePath = this.selectedFilePath.split('/').slice(0, -1).join('/');
     let newName = selectedFileBasePath + '/' + this.selectedFileName;
-    this.filesService.renameFileFolder(this.selectedFilePath, newName).subscribe((renamed) => {
+    this.filesService.renameFileFolApiV1FilesRenamePost({old_path: this.selectedFilePath, new_path: newName}).subscribe((renamed) => {
       // Display the return message
       let msg: string = '';
       if (renamed) {
@@ -112,7 +111,7 @@ export class FilesComponent {
 
   deleteFile(): void {
     this.closeDeleteFileDialog();
-    this.filesService.deleteFileFolder(this.selectedFilePath, this.mediaId()).subscribe((deleted) => {
+    this.filesService.deleteFileFolApiV1FilesDeleteDelete({path: this.selectedFilePath, media_id: this.mediaId()}).subscribe((deleted) => {
       // Display the return message
       let msg: string = '';
       if (deleted) {
@@ -141,7 +140,7 @@ export class FilesComponent {
     this.textFileLoading = true;
     this.selectedFileText = [];
     this.textDialog.nativeElement.showModal();
-    this.filesService.getTextFile(this.selectedFilePath).subscribe((content) => {
+    this.filesService.readFileApiV1FilesReadGet({file_path: this.selectedFilePath}).subscribe((content) => {
       for (let line of content.split('\n')) {
         this.selectedFileText.push(line);
       }
@@ -193,12 +192,12 @@ export class FilesComponent {
     this.audioTracks = '';
     this.subtitleTracks = '';
     this.videoInfoDialog.nativeElement.showModal();
-    this.filesService.getVideoInfo(this.selectedFilePath).subscribe((videoInfo) => {
+    this.filesService.getVideoInfoApiV1FilesVideoInfoGet({file_path: this.selectedFilePath}).subscribe((videoInfo) => {
       // let jsonString = JSON.stringify(videoInfo, null, 2);
       // this.videoInfo = jsonString.replace(/,/g, ',\n'); // Add new lines between keys
       let audioTracksList: string[] = [];
       let subtitleTracksList: string[] = [];
-      for (let stream of videoInfo.streams) {
+      for (let stream of videoInfo?.streams ?? []) {
         if (stream.codec_type.includes('audio')) {
           let _audioTrack = stream.language ? stream.language : 'unk';
           _audioTrack = _audioTrack + ' (' + stream.codec_name + ')';
@@ -213,7 +212,7 @@ export class FilesComponent {
       this.subtitleTracks = subtitleTracksList.join(', ');
       // console.log('Audio Tracks: ', this.audioTracks);
       // console.log('Subtitle Tracks: ', this.subtitleTracks);
-      this.videoInfo = videoInfo;
+      this.videoInfo = videoInfo ?? undefined;
       this.videoInfoLoading = false;
     });
   }

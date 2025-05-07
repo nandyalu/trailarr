@@ -3,7 +3,6 @@ export const environment = {
   apiUrl: '/api/v1/',
   customfilters: 'customfilters/',
   connections: 'connections/',
-  files: 'files/',
   logs: 'logs/',
   media: 'media/',
   settings: 'settings/',
