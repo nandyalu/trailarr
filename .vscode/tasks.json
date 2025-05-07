@@ -154,7 +154,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}/backend",
 				"env": {
-					"PYTHONPATH": "${workspaceFolder}/backend",
+					"PYTHON_PATH": "${workspaceFolder}/backend",
 					"TZ": "UTC",
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1"
@@ -183,6 +183,33 @@
 				"kind": "build",
 				"isDefault": false
 			}
+		},
+		{
+			"label": "Generate OpenAPI Files",
+			"detail": "Run export_openapi.py to generate openapi.json and openapi.yaml",
+			"type": "shell",
+			"command": "python3 ./export_openapi.py",
+			"icon": {
+				"id": "export",
+				"color": "terminal.ansiMagenta"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/backend",
+				"env": {
+					"PYTHON_PATH": "${workspaceFolder}/backend",
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1",
+					"LOG_LEVEL": "ERROR"
+				}
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
 		}
 	]
 }
