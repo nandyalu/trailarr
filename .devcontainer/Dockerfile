@@ -5,18 +5,6 @@ RUN apt-get update && apt-get install -y curl xz-utils tzdata \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install specific version of npm
-RUN npm install -g npm@11.3.0
-
-# Install specific version of Angular CLI
-RUN npm install -g @angular/cli@19.2.10
-
 # Set the working directory
 WORKDIR /app
 
@@ -42,7 +30,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
 # Set the python path
-ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
+ENV PYTHON_PATH="${PYTHON_PATH}:/app/backend"
 
 # Copy startup script
 COPY dev-start.sh /usr/local/bin/startup.sh

@@ -30,12 +30,17 @@
 
 
 	"containerEnv": {
-		"PYTHONPATH": "${containerWorkspaceFolder}/backend",
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
 		"APP_DATA_DIR": "/config",
 		"NEW_DOWNLOAD_METHOD": "True"
+	},
+
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "latest"
+		}
 	},
 
 	"customizations": {
