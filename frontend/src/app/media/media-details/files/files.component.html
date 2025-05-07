@@ -157,7 +157,7 @@
 
 <!-- Text Dialog -->
 <dialog #textDialog (click)="closeTextDialog()">
-  @if (textFileLoading) {
+  @if (textFileLoading()) {
     <div class="loading-wave center">
       <div class="loading-bar"></div>
       <div class="loading-bar"></div>
@@ -166,10 +166,10 @@
     </div>
   } @else {
     <div class="text-dialog" (click)="$event.stopPropagation()">
-      <h2>{{ selectedFileName }}</h2>
+      <h2>{{ selectedFileName() }}</h2>
       <div class="text-content">
         <pre>
-        @for (line of selectedFileText; track line) {
+        @for (line of selectedFileText(); track $index) {
           <!-- <span class="line">{{line}}</span> -->
           <code>{{line}}</code>
         }
@@ -195,7 +195,7 @@
 
 <!-- Video Info Dialog -->
 <dialog #videoInfoDialog (click)="closeVideoInfoDialog()">
-  @if (videoInfoLoading) {
+  @if (videoInfoLoading()) {
     <div class="loading-wave center">
       <div class="loading-bar"></div>
       <div class="loading-bar"></div>
@@ -206,44 +206,40 @@
     <div class="info-dialog">
       <h1>Video Properties</h1>
       <div class="info-container" (click)="$event.stopPropagation()">
-        @if (!videoInfo) {
-          <h2>Video Info</h2>
-          <hr />
-          <code class="video-info"> Unable to fetch video info. </code>
-        } @else {
+        @if (videoInfo(); as info) {
           <section open>
             <h2>File Info</h2>
             <hr />
             <div class="info-content">
               <span>File Name</span>
-              <code>{{ videoInfo.name }}</code>
+              <code>{{ info.name }}</code>
             </div>
             <div class="info-content">
               <span>Format</span>
-              <code>{{ videoInfo.format_name }}</code>
+              <code>{{ info.format_name }}</code>
             </div>
             <div class="info-content">
               <span>Bitrate</span>
-              <code>{{ videoInfo.bitrate }}</code>
+              <code>{{ info.bitrate }}</code>
             </div>
             <div class="info-content">
               <span>Duration</span>
-              <code>{{ videoInfo.duration }}</code>
+              <code>{{ info.duration }}</code>
             </div>
-            @if (audioTracks.length > 0) {
+            @if (audioTracks().length > 0) {
               <div class="info-content">
                 <span>Audio Tracks</span>
-                <code>{{ audioTracks }}</code>
+                <code>{{ audioTracks() }}</code>
               </div>
             }
-            @if (subtitleTracks.length > 0) {
+            @if (subtitleTracks().length > 0) {
               <div class="info-content">
                 <span>Subtitles</span>
-                <code>{{ subtitleTracks }}</code>
+                <code>{{ subtitleTracks() }}</code>
               </div>
             }
           </section>
-          @for (stream of videoInfo.streams; track stream.index) {
+          @for (stream of info.streams; track stream.index) {
             <section>
               <h2>Track {{ stream.index }}: {{ stream.codec_type }}</h2>
               <hr />
@@ -279,6 +275,10 @@
               }
             </section>
           }
+        } @else {
+          <h2>Video Info</h2>
+          <hr />
+          <code class="video-info"> Unable to fetch video info. </code>
         }
       </div>
       <div class="buttons-row">
@@ -292,7 +292,14 @@
 <dialog #renameDialog (click)="closeRenameDialog()">
   <div class="rename-dialog" (click)="$event.stopPropagation()">
     <h2>Rename</h2>
-    <input id="rename-file" class="rename-input" type="text" [(ngModel)]="selectedFileName" placeholder="New Name" />
+    <input
+      id="rename-file"
+      class="rename-input"
+      type="text"
+      [ngModel]="selectedFileName()"
+      (ngModelChange)="selectedFileName.set($event)"
+      placeholder="New Name"
+    />
     <div class="buttons-row">
       <button class="primary" (click)="renameFile()">Rename</button>
       <button class="tertiary" (click)="closeRenameDialog()">Cancel</button>
@@ -304,7 +311,7 @@
 <dialog #deleteFileDialog id="deleteFileDialog" (click)="closeDeleteFileDialog()">
   <div class="delete-dialog" (click)="$event.stopPropagation()">
     <h3>Confirm Delete</h3>
-    <code>{{ selectedFileName }}</code>
+    <code>{{ selectedFileName() }}</code>
     <p>Are you sure you want to delete this file?</p>
     <div class="buttons-row">
       <button class="danger" (click)="deleteFile()">Confirm</button>
