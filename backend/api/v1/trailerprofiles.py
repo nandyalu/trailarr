@@ -148,7 +148,8 @@ async def delete_trailer_profile(
     Args:
         trailerprofile_id (int): ID of the trailer profile.
     Returns:
-        bool: True if the trailer profile was deleted successfully, False otherwise.
+        bool: True if the trailer profile was deleted successfully. \
+            Raises HTTPException otherwise.
     """
     try:
         return trailerprofile.delete_trailerprofile(trailerprofile_id)
