@@ -10520,7 +10520,6 @@ body * {
 .swagger-ui input[disabled],
 .swagger-ui select[disabled],
 .swagger-ui textarea[disabled] {
-  color: #888;
   cursor: not-allowed;
   background-color: var(--color-surface-container-low);
   color: var(--color-surface-container-low);
@@ -11883,5 +11882,3 @@ body * {
   .json-schema-2020-12__title:first-of-type {
   font-size: 16px;
 }
-
-/*# sourceMappingURL=swagger-dark-ui.css.map*/
