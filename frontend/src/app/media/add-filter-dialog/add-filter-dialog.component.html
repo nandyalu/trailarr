@@ -24,12 +24,6 @@
                 </option>
               }
             </select>
-            <!-- <input id="filter_by_{{ i }}" type="text" formControlName="filter_by" /> -->
-            <!-- @if (filters.get('filter_by')?.touched && filterGroup.get('filter_by')?.invalid) {
-              <div class="error">
-                Filter By is required.
-              </div>
-            } -->
           </div>
 
           <!-- Filter Condition -->
@@ -43,11 +37,6 @@
                 </option>
               }
             </select>
-            <!-- @if (filterGroup.get('filter_condition')?.touched && filterGroup.get('filter_condition')?.invalid) {
-              <div class="error">
-                Filter Condition is required.
-              </div>
-            } -->
           </div>
 
           <!-- Filter Value -->
@@ -68,11 +57,6 @@
                 <option value="false">False</option>
               </select>
             }
-            <!-- @if (filterGroup.get('filter_value')?.touched && filterGroup.get('filter_value')?.invalid) {
-            <div class="error">
-              Filter Value must be a number.
-            </div>
-            } -->
           </div>
 
           <!-- Remove Filter Button -->
@@ -95,7 +79,7 @@
       @if (!submitting) {
         <!-- Submit button -->
         <button type="submit" class="primary" [disabled]="customFilterForm.pristine || customFilterForm.invalid || submitting">
-          Submit
+          {{ customFilter() ? 'Update' : 'Create' }}
         </button>
       } @else {
         <!-- Show loading icon -->
