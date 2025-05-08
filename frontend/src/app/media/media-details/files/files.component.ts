@@ -1,9 +1,9 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, input, resource, ViewChild} from '@angular/core';
+import {Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {VideoInfo} from '../../../models/files';
+import {FilesService, VideoInfo} from 'generated-sources/openapi';
+import {jsonEqual} from 'src/util';
 import {FolderInfo} from '../../../models/media';
-import {FilesService} from '../../../services/files.service';
 import {MediaService} from '../../../services/media.service';
 import {WebsocketService} from '../../../services/websocket.service';
 
@@ -24,32 +24,49 @@ export class FilesComponent {
   private readonly mediaService = inject(MediaService);
   private readonly webSocketService = inject(WebsocketService);
 
-  mediaId = input.required<number>();
-  filesLoading = true;
-  textFileLoading = true;
-  videoInfoLoading = true;
+  readonly mediaId = input.required<number>();
+
+  protected readonly textFileLoading = signal(true);
+  protected readonly videoInfoLoading = signal(true);
   // mediaFilesResponse: string = 'No files found';
   // mediaFiles: FolderInfo | undefined = undefined;
 
   selectedFilePath: string = '';
-  selectedFileName: string = '';
-  videoInfo: VideoInfo | undefined = undefined;
-  selectedFileText: string[] = [];
+  protected readonly selectedFileName = signal('');
+  protected readonly videoInfo = signal<VideoInfo | null>(null);
+  protected readonly selectedFileText = signal<string[]>([], {equal: jsonEqual});
+
+  protected readonly audioTracks = computed(() =>
+    (this.videoInfo()?.streams ?? [])
+      .filter((stream) => stream.codec_type.includes('audio'))
+      .map((stream) => `${stream.language || 'unk'} (${stream.codec_name})`)
+      .join(', '),
+  );
+
+  protected readonly subtitleTracks = computed(() =>
+    (this.videoInfo()?.streams ?? [])
+      .filter((stream) => stream.codec_type.includes('subtitle'))
+      .map((stream) => `${stream.language || 'unk'} (${stream.codec_name})`)
+      .join(', '),
+  );
 
   // Refresh the files list when the mediaId changes
-  filesResource = resource({
+  protected readonly filesResource = resource({
     request: this.mediaId,
-    loader: async ({request: mediaId}) => {
-      this.filesLoading = true;
-      return await this.mediaService.fetchMediaFiles(mediaId);
-    },
+    loader: ({request: mediaId}) => this.mediaService.fetchMediaFiles(mediaId),
   });
 
-  filesError = computed(() => {
+  protected readonly filesError = computed(() => {
     const _error = this.filesResource.error() as ErrorMessage;
     // console.log('Files Error:', _error);
     return _error.error.detail;
   });
+
+  protected readonly isTextFile = computed(() =>
+    ['.txt', '.srt', '.log', '.json', '.py', '.sh'].some((ext) => this.selectedFileName().endsWith(ext)),
+  );
+
+  protected readonly isVideoFile = computed(() => ['.mp4', '.mkv', '.avi', '.webm'].some((ext) => this.selectedFileName().endsWith(ext)));
 
   // ngOnInit() {
   //   this.getMediaFiles();
@@ -72,22 +89,12 @@ export class FilesComponent {
     return folder;
   }
 
-  isTextFile(): boolean {
-    const textFileExtensions = ['.txt', '.srt', '.log', '.json', '.py', '.sh'];
-    return textFileExtensions.some((ext) => this.selectedFileName.endsWith(ext));
-  }
-
-  isVideoFile(): boolean {
-    const videoFileExtensions = ['.mp4', '.mkv', '.avi', '.webm'];
-    return videoFileExtensions.some((ext) => this.selectedFileName.endsWith(ext));
-  }
-
   openFolderOrOptions(folder: FolderInfo): void {
     if (folder.type === 'folder') {
       folder.isExpanded = !folder.isExpanded;
     } else {
       this.selectedFilePath = folder.path;
-      this.selectedFileName = folder.name;
+      this.selectedFileName.set(folder.name);
       this.openOptionsDialog();
     }
   }
@@ -95,8 +102,8 @@ export class FilesComponent {
   renameFile(): void {
     this.closeRenameDialog();
     let selectedFileBasePath = this.selectedFilePath.split('/').slice(0, -1).join('/');
-    let newName = selectedFileBasePath + '/' + this.selectedFileName;
-    this.filesService.renameFileFolder(this.selectedFilePath, newName).subscribe((renamed) => {
+    let newName = selectedFileBasePath + '/' + this.selectedFileName();
+    this.filesService.renameFileFolApiV1FilesRenamePost({old_path: this.selectedFilePath, new_path: newName}).subscribe((renamed) => {
       // Display the return message
       let msg: string = '';
       if (renamed) {
@@ -112,7 +119,7 @@ export class FilesComponent {
 
   deleteFile(): void {
     this.closeDeleteFileDialog();
-    this.filesService.deleteFileFolder(this.selectedFilePath, this.mediaId()).subscribe((deleted) => {
+    this.filesService.deleteFileFolApiV1FilesDeleteDelete({path: this.selectedFilePath, media_id: this.mediaId()}).subscribe((deleted) => {
       // Display the return message
       let msg: string = '';
       if (deleted) {
@@ -138,14 +145,13 @@ export class FilesComponent {
   @ViewChild('textDialog') textDialog!: ElementRef<HTMLDialogElement>;
   openTextDialog(): void {
     this.closeOptionsDialog();
-    this.textFileLoading = true;
-    this.selectedFileText = [];
+    this.textFileLoading.set(true);
+    this.selectedFileText.set([]);
     this.textDialog.nativeElement.showModal();
-    this.filesService.getTextFile(this.selectedFilePath).subscribe((content) => {
-      for (let line of content.split('\n')) {
-        this.selectedFileText.push(line);
-      }
-      this.textFileLoading = false;
+    this.filesService.readFileApiV1FilesReadGet({file_path: this.selectedFilePath}).subscribe({
+      next: (content) => this.selectedFileText.set(content.split('\n')),
+      complete: () => this.textFileLoading.set(false),
+      error: () => this.textFileLoading.set(false),
     });
   }
 
@@ -185,42 +191,26 @@ export class FilesComponent {
   }
 
   @ViewChild('videoInfoDialog') videoInfoDialog!: ElementRef<HTMLDialogElement>;
-  audioTracks: string = '';
-  subtitleTracks: string = '';
   openVideoInfoDialog(): void {
     // Display the dialog by passing the file path and title
-    this.videoInfoLoading = true;
-    this.audioTracks = '';
-    this.subtitleTracks = '';
+    this.videoInfoLoading.set(true);
     this.videoInfoDialog.nativeElement.showModal();
-    this.filesService.getVideoInfo(this.selectedFilePath).subscribe((videoInfo) => {
-      // let jsonString = JSON.stringify(videoInfo, null, 2);
-      // this.videoInfo = jsonString.replace(/,/g, ',\n'); // Add new lines between keys
-      let audioTracksList: string[] = [];
-      let subtitleTracksList: string[] = [];
-      for (let stream of videoInfo.streams) {
-        if (stream.codec_type.includes('audio')) {
-          let _audioTrack = stream.language ? stream.language : 'unk';
-          _audioTrack = _audioTrack + ' (' + stream.codec_name + ')';
-          audioTracksList.push(_audioTrack);
-        } else if (stream.codec_type.includes('subtitle')) {
-          let _subtitleTrack = stream.language ? stream.language : 'unk';
-          _subtitleTrack = _subtitleTrack + ' (' + stream.codec_name + ')';
-          subtitleTracksList.push(_subtitleTrack);
-        }
-      }
-      this.audioTracks = audioTracksList.join(', ');
-      this.subtitleTracks = subtitleTracksList.join(', ');
-      // console.log('Audio Tracks: ', this.audioTracks);
-      // console.log('Subtitle Tracks: ', this.subtitleTracks);
-      this.videoInfo = videoInfo;
-      this.videoInfoLoading = false;
+    this.filesService.getVideoInfoApiV1FilesVideoInfoGet({file_path: this.selectedFilePath}).subscribe({
+      next: (videoInfo) => {
+        // let jsonString = JSON.stringify(videoInfo, null, 2);
+        // this.videoInfo = jsonString.replace(/,/g, ',\n'); // Add new lines between keys
+        // console.log('Audio Tracks: ', this.audioTracks);
+        // console.log('Subtitle Tracks: ', this.subtitleTracks);
+        this.videoInfo.set(videoInfo);
+      },
+      complete: () => this.videoInfoLoading.set(false),
+      error: () => this.videoInfoLoading.set(false),
     });
   }
 
   closeVideoInfoDialog(): void {
     this.videoInfoDialog.nativeElement.close(); // Close the dialog
-    this.videoInfo = undefined; // Clear the video info
+    this.videoInfo.set(null); // Clear the video info
   }
 
   @ViewChild('renameDialog') renameDialog!: ElementRef<HTMLDialogElement>;
