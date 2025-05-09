@@ -5,10 +5,11 @@ import {Subscription} from 'rxjs';
 import {QueuedTask, ScheduledTask} from '../models/tasks';
 import {TasksService} from '../services/tasks.service';
 import {WebsocketService} from '../services/websocket.service';
+import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-tasks',
-  imports: [NgIf, NgFor, TimeagoModule],
+  imports: [NgIf, NgFor, LoadIndicatorComponent, TimeagoModule],
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',

@@ -1,12 +1,13 @@
 import {NgFor, NgIf} from '@angular/common';
 import {Component, inject, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {Settings} from '../../models/settings';
 import {SettingsService} from '../../services/settings.service';
 
 @Component({
   selector: 'app-trailer',
-  imports: [NgIf, NgFor, FormsModule],
+  imports: [NgIf, NgFor, FormsModule, LoadIndicatorComponent],
   templateUrl: './trailer.component.html',
   styleUrl: './trailer.component.scss',
 })

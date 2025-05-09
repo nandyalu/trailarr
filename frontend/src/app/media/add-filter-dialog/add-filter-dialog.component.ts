@@ -1,6 +1,7 @@
 import {Component, computed, EventEmitter, inject, input, OnInit, Output} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 
+import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {
   BooleanFilterCondition,
   booleanFilterKeys,
@@ -19,7 +20,7 @@ import {CustomfilterService} from '../../services/customfilter.service';
 
 @Component({
   selector: 'app-add-filter-dialog',
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, LoadIndicatorComponent, ReactiveFormsModule],
   templateUrl: './add-filter-dialog.component.html',
   styleUrl: './add-filter-dialog.component.scss',
 })

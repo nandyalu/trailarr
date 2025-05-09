@@ -2,6 +2,7 @@ import {DatePipe, NgTemplateOutlet} from '@angular/common';
 import {Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
+import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {jsonEqual} from 'src/util';
 import {FolderInfo} from '../../../models/media';
 import {MediaService} from '../../../services/media.service';
@@ -15,7 +16,7 @@ interface ErrorMessage {
 
 @Component({
   selector: 'media-files',
-  imports: [DatePipe, FormsModule, NgTemplateOutlet],
+  imports: [DatePipe, FormsModule, LoadIndicatorComponent, NgTemplateOutlet],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
 })

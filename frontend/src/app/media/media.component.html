@@ -145,14 +145,7 @@
 <div class="media-container">
   <!-- <h1 class="text-center">{{title}}</h1> -->
   @if (isLoading()) {
-    <div class="center">
-      <div class="loading-wave">
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-      </div>
-    </div>
+    <app-load-indicator class="center" />
   } @else {
     @if (filteredSortedMedia().length === 0) {
       <!-- No media items found -->

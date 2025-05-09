@@ -1,11 +1,6 @@
 <div class="logs-container">
   <h1 class="logs-title text-center">{{ title }}</h1>
-  <div *ngIf="isLoading; else logsLoaded" class="loading-wave center">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-  </div>
+  <app-load-indicator *ngIf="isLoading; else logsLoaded" class="center" />
   <ng-template #logsLoaded>
     <div class="logssearch">
       <i class="icononly-button" [class.loading]="isUpdating" title="Refresh" (click)="getLogs()">
