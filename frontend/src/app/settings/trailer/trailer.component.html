@@ -4,12 +4,7 @@
   </div>
 </div>
 <div class="trailer-container">
-  <div *ngIf="isLoading; else settingsLoaded" class="loading-wave center">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-  </div>
+  <app-load-indicator *ngIf="isLoading; else settingsLoaded" class="center" />
 </div>
 
 <ng-template #settingsLoaded>

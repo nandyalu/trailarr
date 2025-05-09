@@ -1,12 +1,7 @@
 <div class="tasks-container">
   <div class="text-heading">Scheduled</div>
   <hr />
-  <div *ngIf="isLoading1; else schedulesLoaded" class="loading-wave center">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-  </div>
+  <app-load-indicator *ngIf="isLoading1; else schedulesLoaded" class="center" />
   <ng-template #schedulesLoaded>
     <div class="table-container">
       <table class="tasks-table">
@@ -52,12 +47,7 @@
   </ng-template>
   <div class="text-heading">Queue</div>
   <hr />
-  <div *ngIf="isLoading1; else queueLoaded" class="loading-wave center">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-  </div>
+  <app-load-indicator *ngIf="isLoading1; else queueLoaded" class="center" />
   <ng-template #queueLoaded>
     <div class="table-container last-table">
       <table class="tasks-table">

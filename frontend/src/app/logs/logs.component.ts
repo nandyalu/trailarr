@@ -6,10 +6,11 @@ import {TimeagoModule} from 'ngx-timeago';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
 import {Logs} from '../models/logs';
 import {LogsService} from '../services/logs.service';
+import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-logs',
-  imports: [NgIf, NgFor, FormsModule, ReactiveFormsModule, TimeagoModule],
+  imports: [NgIf, NgFor, FormsModule, LoadIndicatorComponent, ReactiveFormsModule, TimeagoModule],
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss',
 })

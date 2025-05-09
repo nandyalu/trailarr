@@ -1,8 +1,8 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterState } from '@angular/router';
-import { ScrollNearEndDirective } from '../helpers/scroll-near-end-directive';
+import {NgTemplateOutlet} from '@angular/common';
+import {Component, computed, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {Router, RouterLink, RouterState} from '@angular/router';
+import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {
   booleanFilterKeys,
   CustomFilter,
@@ -14,16 +14,25 @@ import {
   StringFilterCondition,
   stringFilterKeys,
 } from '../models/customfilter';
-import { mapMedia, Media } from '../models/media';
-import { CustomfilterService } from '../services/customfilter.service';
-import { MediaService } from '../services/media.service';
-import { WebsocketService } from '../services/websocket.service';
-import { AddCustomFilterDialogComponent } from './add-filter-dialog/add-filter-dialog.component';
-import { DisplayTitlePipe } from './pipes/display-title.pipe';
+import {mapMedia, Media} from '../models/media';
+import {CustomfilterService} from '../services/customfilter.service';
+import {MediaService} from '../services/media.service';
+import {WebsocketService} from '../services/websocket.service';
+import {LoadIndicatorComponent} from '../shared/load-indicator';
+import {AddCustomFilterDialogComponent} from './add-filter-dialog/add-filter-dialog.component';
+import {DisplayTitlePipe} from './pipes/display-title.pipe';
 
 @Component({
   selector: 'app-media2',
-  imports: [FormsModule, NgTemplateOutlet, RouterLink, ScrollNearEndDirective, AddCustomFilterDialogComponent, DisplayTitlePipe],
+  imports: [
+    FormsModule,
+    NgTemplateOutlet,
+    LoadIndicatorComponent,
+    RouterLink,
+    ScrollNearEndDirective,
+    AddCustomFilterDialogComponent,
+    DisplayTitlePipe,
+  ],
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
 })

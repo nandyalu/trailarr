@@ -1,10 +1,5 @@
 <div class="media-details-container">
-  <div *ngIf="isLoading; else mediaLoaded" class="loading-wave center">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-  </div>
+  <app-load-indicator *ngIf="isLoading; else mediaLoaded" class="center" />
   <ng-template #mediaLoaded>
     <div *ngIf="media" class="media-details-card">
       <div class="media-fanart-overlay" style="background-image: url({{ media.fanart_path }});"></div>

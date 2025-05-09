@@ -2,12 +2,7 @@
   <p class="text-md files-title">Files</p>
   <hr />
   @if (filesResource.isLoading()) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+    <app-load-indicator class="center" />
   } @else {
     <div class="media-files">
       @if (filesResource.error()) {
@@ -158,12 +153,7 @@
 <!-- Text Dialog -->
 <dialog #textDialog (click)="closeTextDialog()">
   @if (textFileLoading()) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+    <app-load-indicator class="center" />
   } @else {
     <div class="text-dialog" (click)="$event.stopPropagation()">
       <h2>{{ selectedFileName() }}</h2>
@@ -196,12 +186,7 @@
 <!-- Video Info Dialog -->
 <dialog #videoInfoDialog (click)="closeVideoInfoDialog()">
   @if (videoInfoLoading()) {
-    <div class="loading-wave center">
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-      <div class="loading-bar"></div>
-    </div>
+    <app-load-indicator class="center" />
   } @else {
     <div class="info-dialog">
       <h1>Video Properties</h1>

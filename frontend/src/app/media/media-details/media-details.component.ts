@@ -3,6 +3,7 @@ import {Component, effect, ElementRef, inject, input, OnDestroy, OnInit, ViewChi
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {catchError, of, Subscription} from 'rxjs';
+import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {DurationConvertPipe} from '../../helpers/duration-pipe';
 import {Media} from '../../models/media';
 import {MediaService} from '../../services/media.service';
@@ -11,7 +12,7 @@ import {FilesComponent} from './files/files.component';
 
 @Component({
   selector: 'app-media-details',
-  imports: [NgIf, FormsModule, DurationConvertPipe, TitleCasePipe, FilesComponent],
+  imports: [NgIf, FormsModule, DurationConvertPipe, LoadIndicatorComponent, TitleCasePipe, FilesComponent],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
 })
