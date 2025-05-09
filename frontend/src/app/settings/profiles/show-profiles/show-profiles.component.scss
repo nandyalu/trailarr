@@ -7,6 +7,23 @@
   gap: 12px;
 }
 
+.title-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.refresh-icon {
+  cursor: pointer;
+  fill: var(--color-on-surface);
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
+}
+
 .top-left-button {
   position: absolute;
   top: 0;
@@ -36,6 +53,7 @@
   border-radius: 8px;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
+  cursor: pointer;
 
   @media (max-width: 765px) {
     margin: auto;
