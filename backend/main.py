@@ -2,9 +2,11 @@ from contextlib import asynccontextmanager
 import os
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie, validate_login
 from app_logger import ModuleLogger
@@ -83,6 +85,9 @@ trailarr_api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+trailarr_api.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=7)
+setup_timing_middleware(trailarr_api)
 
 
 # Health check route

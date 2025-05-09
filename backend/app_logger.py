@@ -30,6 +30,12 @@ def config_logging():
     """Setup the logging configuration using the config file.
     This will setup the root logger configuration and start the queue handler listener.
     """
+    # Disable uvicorn access logger
+    uvicorn_access = logging.getLogger("uvicorn.access")
+    uvicorn_access.handlers = []
+    uvicorn_access.disabled = True
+
+    # FastAPI logger
     queue = multiprocessing.Queue(-1)
     parent_path = pathlib.Path(__file__).parent
     config_file = pathlib.Path(parent_path, "config", "logger_config.json")
@@ -82,3 +88,6 @@ if not _is_logging_setup:
     config_logging()
     _is_logging_setup = True
 logger = get_logger()
+
+uvicorn_logger = logging.getLogger("uvicorn")
+uvicorn_logger.setLevel(logging.getLevelName(logging.DEBUG))
