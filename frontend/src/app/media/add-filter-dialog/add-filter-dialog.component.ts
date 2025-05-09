@@ -20,7 +20,7 @@ import {CustomfilterService} from '../../services/customfilter.service';
 
 @Component({
   selector: 'app-add-filter-dialog',
-  imports: [FormsModule, ReactiveFormsModule, LoadIndicatorComponent],
+  imports: [FormsModule, LoadIndicatorComponent, ReactiveFormsModule],
   templateUrl: './add-filter-dialog.component.html',
   styleUrl: './add-filter-dialog.component.scss',
 })
