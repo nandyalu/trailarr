@@ -95,7 +95,7 @@ def download_trailer(
         media.youtube_trailer_id = None
 
     # Get the video ID, search if needed
-    video_id = trailer_search.get_video_id(media, exclude)
+    video_id = trailer_search.get_video_id(media, profile, exclude)
 
     if not video_id:
         raise DownloadFailedError(f"No trailer found for {media.title}")

@@ -7,9 +7,8 @@ from yt_dlp import YoutubeDL
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.media import MediaRead
-from core.base.database.models.helpers import (
-    language_names,
-)
+from core.base.database.models.helpers import language_names
+from core.base.database.models.trailerprofile import TrailerProfileRead
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -30,7 +29,13 @@ def extract_youtube_id(url: str) -> str | None:
         return None
 
 
-def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
+def _yt_search_filter(
+    info: dict,
+    *,
+    incomplete,
+    profile: TrailerProfileRead,
+    exclude: list[str] | None,
+):
     """Filter for videos shorter than 10 minutes and not a review."""
     id = info.get("id")
     if not id:
@@ -41,11 +46,11 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
         logger.debug(f"Skipping video in excluded list: {id}")
         return "Video in excluded list"
     duration = int(info.get("duration", 0))
-    min_duration = app_settings.trailer_min_duration
+    min_duration = profile.min_duration
     if duration and duration < min_duration:
         logger.debug(f"Skipping short video (<{min_duration}): {id}")
         return f"The video is shorter than {min_duration} seconds"
-    max_duration = app_settings.trailer_max_duration
+    max_duration = profile.max_duration
     if duration and duration > max_duration:
         logger.debug(f"Skipping long video (>{max_duration}): {id}")
         return f"The video is longer than {max_duration} seconds"
@@ -53,7 +58,7 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
-    exclude_words = app_settings.exclude_words
+    exclude_words = profile.exclude_words
     if exclude_words:
         if "," in exclude_words:
             exclude_words = exclude_words.split(",")
@@ -75,17 +80,19 @@ def _yt_search_filter(info: dict, *, incomplete, exclude: list[str] | None):
 
 def search_yt_for_trailer(
     media: MediaRead,
+    profile: TrailerProfileRead,
     exclude: list[str] | None = None,
 ) -> str | None:
     """Search for trailer on youtube. \n
     Args:
         media (MediaRead): MediaRead object.
+        profile (TrailerProfileRead): The trailer profile to use.
         exclude (list[str], Optional): List of video ids to exclude. \n
     Returns:
         str | None: Youtube video id / None if not found."""
     logger.debug(f"Searching youtube for trailer for '{media.title}'...")
     # Set options
-    filter_func = partial(_yt_search_filter, exclude=exclude)
+    filter_func = partial(_yt_search_filter, profile=profile, exclude=exclude)
     options = {
         "format": "bestvideo[height<=?1080]+bestaudio",
         "match_filter": filter_func,
@@ -100,7 +107,7 @@ def search_yt_for_trailer(
         logger.debug(f"Using cookies file: {app_settings.yt_cookies_path}")
         options["cookiefile"] = f"{app_settings.yt_cookies_path}"
     # Construct search query with keywords for 5 search results
-    search_query_format = app_settings.trailer_search_query
+    search_query_format = profile.search_query
     # Convert media object to dictionary for formatting
     format_opts = media.model_dump()
     format_opts["is_movie"] = "movie" if media.is_movie else "series"
@@ -150,12 +157,15 @@ def search_yt_for_trailer(
 
 
 def get_video_id(
-    media: MediaRead, exclude: list[str] | None = None
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    exclude: list[str] | None = None,
 ) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
     Args:
         media (MediaRead): Media object.
+        profile (TrailerProfileRead): The trailer profile to use.
         exclude (list[str], Optional=None): List of video ids to exclude. \n
     Returns:
         str|None: Youtube video id / None if not found."""
@@ -168,5 +178,5 @@ def get_video_id(
     if video_id:
         return video_id
     # Search for trailer on youtube
-    video_id = search_yt_for_trailer(media, exclude)
+    video_id = search_yt_for_trailer(media, profile, exclude)
     return video_id
