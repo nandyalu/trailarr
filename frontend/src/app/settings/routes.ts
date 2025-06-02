@@ -13,7 +13,6 @@ import {AboutComponent} from './about/about.component';
 import {AddConnectionComponent} from './connections/add-connection/add-connection.component';
 import {EditConnectionComponent} from './connections/edit-connection/edit-connection.component';
 import {ShowConnectionsComponent} from './connections/show-connections/show-connections.component';
-import {AddProfileComponent} from './profiles/add-profile/add-profile.component';
 import {EditProfileComponent} from './profiles/edit-profile/edit-profile.component';
 import {ShowProfilesComponent} from './profiles/show-profiles/show-profiles.component';
 import {SettingsComponent} from './settings.component';
@@ -28,7 +27,6 @@ export default [
       {path: `${RouteConnections}/${RouteAdd}`, component: AddConnectionComponent},
       {path: `${RouteConnections}/${RouteEdit}/:${RouteParamConnectionId}`, component: EditConnectionComponent},
       {path: RouteProfiles, component: ShowProfilesComponent},
-      {path: `${RouteProfiles}/${RouteAdd}`, component: AddProfileComponent},
       {path: `${RouteProfiles}/${RouteEdit}/:${RouteParamProfileId}`, component: EditProfileComponent},
       {path: RouteTrailer, component: TrailerComponent},
       {path: RouteAbout, component: AboutComponent},

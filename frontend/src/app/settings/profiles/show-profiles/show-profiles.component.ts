@@ -1,8 +1,7 @@
 import {CommonModule} from '@angular/common';
-import {Component, inject, signal} from '@angular/core';
-import {RouterLink} from '@angular/router';
-import {TrailerProfilesService} from 'generated-sources/openapi';
-import {Subject} from 'rxjs';
+import {Component, inject, signal, ViewContainerRef} from '@angular/core';
+import {Router, RouterLink} from '@angular/router';
+import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
 import {ProfileService} from 'src/app/services/profile.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
@@ -14,34 +13,30 @@ import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
   styleUrl: './show-profiles.component.scss',
 })
 export class ShowProfilesComponent {
-  private readonly profilesService = inject(TrailerProfilesService);
   protected readonly profileService = inject(ProfileService);
+  private readonly router = inject(Router);
+  private viewContainerRef = inject(ViewContainerRef);
 
   protected readonly isLoading = signal(true);
-  private readonly triggerReload$ = new Subject<void>();
 
   protected readonly RouteAdd = RouteAdd;
   protected readonly RouteProfiles = RouteProfiles;
   protected readonly RouteEdit = RouteEdit;
   protected readonly RouteSettings = RouteSettings;
 
-  // protected readonly profiles$ = this.triggerReload$.pipe(
-  //   startWith('meh'),
-  //   tap(() => this.isLoading.set(true)),
-  //   switchMap(() =>
-  //     this.profilesService.getTrailerProfilesApiV1TrailerprofilesGet().pipe(
-  //       catchError((err) => {
-  //         console.log('Failed to load profiles.', err);
-  //         return of<TrailerProfileRead[]>([]);
-  //       }),
-  //     ),
-  //   ),
-  //   tap(() => this.isLoading.set(false)),
-  //   distinctUntilChanged(jsonEqual),
-  //   shareReplay({refCount: true, bufferSize: 1}),
-  // );
-
-  // ngOnDestroy() {
-  //   this.triggerReload$.complete();
-  // }
+  openFilterDialog(): void {
+    // Open the dialog for adding or editing a custom filter
+    const dialogRef = this.viewContainerRef.createComponent(AddCustomFilterDialogComponent);
+    dialogRef.setInput('customFilter', null); // Set to null to Create a new one
+    dialogRef.setInput('filterType', 'TRAILER');
+    dialogRef.instance.dialogClosed.subscribe((emitValue: number) => {
+      if (emitValue >= 0) {
+        // Reload the filters and open profile edit page
+        this.profileService.allProfiles.reload();
+        this.router.navigate(['/settings/profiles/edit', emitValue]);
+      }
+      // Else, Filter dialog closed without submission, do nothing
+      dialogRef.destroy(); // Destroy the dialog component after use
+    });
+  }
 }

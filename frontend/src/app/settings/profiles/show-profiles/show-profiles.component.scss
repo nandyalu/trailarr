@@ -1,4 +1,4 @@
-.component-container {
+:host {
   height: 100%;
   width: 100%;
   display: flex;
@@ -24,7 +24,7 @@
   animation: spin-animation 2s linear infinite;
 }
 
-.top-left-button {
+.top-right-button {
   position: absolute;
   top: 0;
   right: 0;
