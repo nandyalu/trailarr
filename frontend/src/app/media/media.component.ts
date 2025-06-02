@@ -20,6 +20,7 @@ import {MediaService} from '../services/media.service';
 import {WebsocketService} from '../services/websocket.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 import {AddCustomFilterDialogComponent} from './add-filter-dialog/add-filter-dialog.component';
+import {ProfileSelectDialogComponent} from './dialogs/profile-select-dialog/profile-select-dialog.component';
 import {DisplayTitlePipe} from './pipes/display-title.pipe';
 
 @Component({
@@ -40,6 +41,7 @@ export class MediaComponent implements OnInit {
   private readonly mediaService = inject(MediaService);
   private readonly router = inject(Router);
   private readonly webSocketService = inject(WebsocketService);
+  private viewContainerRef = inject(ViewContainerRef);
 
   customfilterService = inject(CustomfilterService);
 
@@ -333,6 +335,20 @@ export class MediaComponent implements OnInit {
     }
   }
 
+  openProfileSelectDialog(): void {
+    // Open the dialog for selecting a profile
+    const dialogRef = this.viewContainerRef.createComponent(ProfileSelectDialogComponent);
+    dialogRef.instance.onSubmit.subscribe((profileId: number) => {
+      // Handle the profile selection
+      this.batchUpdate('download', profileId); // Perform the batch update action
+      dialogRef.destroy(); // Destroy the dialog after use
+    });
+    dialogRef.instance.onClosed.subscribe(() => {
+      // Handle dialog close
+      dialogRef.destroy(); // Destroy the dialog when closed
+    });
+  }
+
   /**
    * Handles the batch update action for the selected media items.
    *
@@ -342,13 +358,15 @@ export class MediaComponent implements OnInit {
    * - `unmonitor`: Unmonitor the selected media items.
    * - `delete`: Delete the trailers for the selected media items.
    * - `download`: Download the trailers for the selected media items.
+   * @param {number} profileID
+   * The ID of the profile to use for the download action. \
+   * Defaults to `-1` if not provided. \
+   * Only required for `download` action.
    * @returns {void}
    */
-  batchUpdate(action: string): void {
-    // console.log("Batch update:", action, "Selected media:", this.selectedMedia);
+  batchUpdate(action: string, profileID: number = -1): void {
     this.webSocketService.showToast(`Batch update: ${action} ${this.selectedMedia.length} items`);
-    this.mediaService.batchUpdate(this.selectedMedia, action).subscribe(() => {
-      // console.log("C: Batch update successful");
+    this.mediaService.batchUpdate(this.selectedMedia, action, profileID).subscribe(() => {
       this.fetchUpdatedMedia(true); // Fetch updated media items
     });
     this.selectedMedia = [];

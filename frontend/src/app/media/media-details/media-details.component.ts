@@ -1,5 +1,5 @@
 import {NgIf, TitleCasePipe} from '@angular/common';
-import {Component, effect, ElementRef, inject, input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {catchError, of, Subscription} from 'rxjs';
@@ -8,6 +8,7 @@ import {DurationConvertPipe} from '../../helpers/duration-pipe';
 import {Media} from '../../models/media';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
+import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';
 import {FilesComponent} from './files/files.component';
 
 @Component({
@@ -20,6 +21,7 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
   private readonly mediaService = inject(MediaService);
   private readonly route = inject(ActivatedRoute);
   private readonly websocketService = inject(WebsocketService);
+  private readonly viewContainerRef = inject(ViewContainerRef);
 
   mediaId = input(0, {transform: Number});
   media?: Media = undefined;
@@ -106,6 +108,24 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
     });
   }
 
+  openProfileSelectDialog(isNextActionSearch: boolean): void {
+    // Open the dialog for selecting a profile
+    const dialogRef = this.viewContainerRef.createComponent(ProfileSelectDialogComponent);
+    dialogRef.instance.onSubmit.subscribe((profileId: number) => {
+      // Handle the profile selection
+      if (isNextActionSearch) {
+        this.searchTrailer(profileId);
+      } else {
+        this.downloadTrailer(profileId);
+      }
+      dialogRef.destroy(); // Destroy the dialog after use
+    });
+    dialogRef.instance.onClosed.subscribe(() => {
+      // Handle dialog close
+      dialogRef.destroy(); // Destroy the dialog when closed
+    });
+  }
+
   /**
    * Downloads the trailer for the current media if the trailer ID has changed.
    *
@@ -113,9 +133,11 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
    * If the trailer ID is the same and the trailer exists, it does not proceed with the download.
    * Otherwise, it sets the loading state to true and initiates the download process via the media service.
    *
+   * @param {number} profileId - The ID of the profile to use for downloading the trailer.
+   *
    * @returns {void}
    */
-  downloadTrailer() {
+  downloadTrailer(profileId: number): void {
     const old_id = this.media?.youtube_trailer_id?.toLowerCase() || '';
     const new_id = this.trailer_url.toLowerCase();
     if (new_id.includes(old_id) && this.media?.trailer_exists) {
@@ -124,7 +146,7 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
     }
     this.isLoadingDownload = true;
     // console.log('Downloading trailer');
-    this.mediaService.downloadMediaTrailer(this.mediaId(), this.trailer_url).subscribe((res: string) => {
+    this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {
       console.log(res);
     });
   }
@@ -148,12 +170,12 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
     });
   }
 
-  searchTrailer() {
+  searchTrailer(profileID: number) {
     // console.log('Searching for trailer');
     this.websocketService.showToast('Searching for trailer...');
     this.isLoadingDownload = true;
     this.mediaService
-      .searchMediaTrailer(this.mediaId())
+      .searchMediaTrailer(this.mediaId(), profileID)
       .pipe(
         catchError((error) => {
           console.error('Error searching trailer:', error.error.detail);
