@@ -2,7 +2,8 @@ import {HttpClient} from '@angular/common/http';
 import {inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from '../../environment';
-import {CustomFilter, CustomFilterCreate} from '../models/customfilter';
+import {CustomFilter, CustomFilterCreate, FilterType} from '../models/customfilter';
+import { TrailerProfileCreate } from 'generated-sources/openapi';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,13 @@ export class CustomfilterService {
   private cf_url = environment.apiUrl + environment.customfilters;
 
   create(customFilter: CustomFilterCreate): Observable<CustomFilter> {
+    if (customFilter.filter_type === FilterType.TRAILER) {
+      const profileUrl = environment.apiUrl + environment.profiles;
+      const profileCreate = {
+        customfilter: customFilter,
+      } as unknown as TrailerProfileCreate;
+      return this.httpClient.post<CustomFilter>(profileUrl, profileCreate);
+    }
     return this.httpClient.post<CustomFilter>(this.cf_url, customFilter);
   }
 
