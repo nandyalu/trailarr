@@ -1,0 +1,93 @@
+:host {
+  position: relative;
+}
+
+.top-right-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+}
+
+details {
+  margin: 0.5rem 0;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-container);
+}
+
+summary {
+  padding: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100vw - 260px);
+
+  @media (width < 1100px) {
+    max-width: calc(100vw - 100px);
+  }
+  @media (width < 765px) {
+    max-width: calc(100vw - 50px);
+  }
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0.5rem;
+  container-type: inline-size;
+}
+
+table {
+  text-align: center;
+  margin: 1.5rem auto 1rem;
+  padding: 1rem;
+  width: clamp(300px, 50vw, 800px);
+  border-collapse: collapse;
+  border: 2px solid var(--color-outline);
+  font-family: sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+thead,
+tfoot {
+  background-color: var(--color-secondary-container);
+}
+
+th,
+td {
+  border: 1px solid var(--color-outline);
+  padding: 8px 10px;
+}
+
+td:last-of-type {
+  text-align: center;
+}
+
+tbody > tr:nth-of-type(even) {
+  background-color: var(--color-surface-container-high);
+}
+
+.filters-button {
+  width: auto;
+  margin: 1rem auto;
+}
+
+.dialog-content {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
+  text-align: center;
+}
+
+dialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
+.dialog-content button {
+  margin: 10px;
+}
