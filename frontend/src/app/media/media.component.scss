@@ -150,6 +150,11 @@
   font-weight: 400;
   height: 2.75rem;
   padding: 0.5rem 0.25rem 0.5rem 0.75rem;
+
+  span {
+    text-align: left;
+    flex: 1;
+  }
 }
 
 .sortitem-dropdown-option:hover,

@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {Component, computed, ElementRef, inject, OnInit, signal, viewChild, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink, RouterState} from '@angular/router';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
@@ -25,15 +25,7 @@ import {DisplayTitlePipe} from './pipes/display-title.pipe';
 
 @Component({
   selector: 'app-media2',
-  imports: [
-    FormsModule,
-    NgTemplateOutlet,
-    LoadIndicatorComponent,
-    RouterLink,
-    ScrollNearEndDirective,
-    AddCustomFilterDialogComponent,
-    DisplayTitlePipe,
-  ],
+  imports: [FormsModule, NgTemplateOutlet, LoadIndicatorComponent, RouterLink, ScrollNearEndDirective, DisplayTitlePipe],
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
 })
@@ -66,11 +58,7 @@ export class MediaComponent implements OnInit {
 
   allMedia = signal<Media[]>([]);
   filteredSortedMedia = computed(() => this.computeFilteredNSortedMedia());
-  displayMedia = computed(() => {
-    // console.log("C: Displaying media");
-    return this.filteredSortedMedia().slice(0, this.displayCount());
-  });
-  isCustomFilterDialogOpen = false;
+  displayMedia = computed(() => this.filteredSortedMedia().slice(0, this.displayCount()));
 
   private lastUpdateTime: number = 0;
   private readonly UPDATE_INTERVAL: number = 3; // 3 seconds in seconds
@@ -95,11 +83,9 @@ export class MediaComponent implements OnInit {
         this.sortAscending.set(false);
     }
     this.retrieveSortNFilterOptions();
-    // this.mediaService.fetchAllMedia(this.moviesOnly());
     // Get all media for Movies or Series, downloaded only for Home
     let filterBy = this.moviesOnly() == null ? 'downloaded' : 'all';
     this.mediaService.fetchAllMedia(this.moviesOnly(), filterBy).subscribe((mediaList) => {
-      // console.log("C: Media fetched");
       this.allMedia.set(mediaList.map((media) => mapMedia(media)));
       this.isLoading.set(false);
     });
@@ -205,7 +191,6 @@ export class MediaComponent implements OnInit {
   applyCustomFilter(filter_name: string, media: Media): boolean {
     let customFilter = this.customFilters().find((f) => f.filter_name === filter_name);
     if (!this.filterDisplayed) {
-      console.log('Custom filter:', customFilter);
       this.filterDisplayed = true;
     }
     if (!customFilter) {
@@ -242,7 +227,6 @@ export class MediaComponent implements OnInit {
         case 'series':
           return !media.is_movie && media.trailer_exists;
         default:
-          // console.log("Applying custom filter:", this.selectedFilter());
           return this.applyCustomFilter(this.selectedFilter(), media);
       }
     });
@@ -327,7 +311,6 @@ export class MediaComponent implements OnInit {
   onMediaSelected(media: Media, event: Event): void {
     // Navigate to the media details page
     const inputElement = event.target as HTMLInputElement;
-    // console.log("Media selected:", media.id, "Checked:", inputElement.checked);
     if (inputElement.checked) {
       this.selectedMedia.push(media.id);
     } else {
@@ -459,26 +442,34 @@ export class MediaComponent implements OnInit {
    */
   onNearEndScroll(): void {
     // Load more media when near the end of the scroll
-    // console.log('Near end of scroll');
     if (this.displayCount() >= this.filteredSortedMedia().length) {
       return;
     }
     this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
 
-  @ViewChild('addFilterDialog') addFilterDialog!: ElementRef<HTMLDialogElement>;
+  readonly showFiltersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('showFiltersDialog');
+
   openFilterDialog(): void {
-    this.addFilterDialog.nativeElement.showModal();
     if (this.customFilters().length === 0) {
       this.openFilterEditDialog(null);
+    } else {
+      this.showFiltersDialog().nativeElement.showModal();
     }
     // this.isCustomFilterDialogOpen = true;
   }
-  editFilter: CustomFilter | null = null;
+
   openFilterEditDialog(filter: CustomFilter | null): void {
-    // console.log("Edit filter:", filter);
-    this.editFilter = filter;
-    this.isCustomFilterDialogOpen = true;
+    this.showFiltersDialog().nativeElement.close();
+    // Open the dialog for adding or editing a custom filter
+    const dialogRef = this.viewContainerRef.createComponent(AddCustomFilterDialogComponent);
+    dialogRef.setInput('customFilter', filter);
+    dialogRef.setInput('filterType', this.moviesOnly() == null ? 'HOME' : this.moviesOnly() ? 'MOVIES' : 'SERIES');
+    dialogRef.instance.dialogClosed.subscribe(() => {
+      // Filter dialog closed, reload filters
+      this.retrieveSortNFilterOptions();
+      dialogRef.destroy();
+    });
   }
 
   deleteFilter(filter_id: number): void {
@@ -490,11 +481,7 @@ export class MediaComponent implements OnInit {
   }
 
   closeFilterDialog(): void {
-    this.addFilterDialog.nativeElement.close();
+    this.showFiltersDialog().nativeElement.close();
     this.retrieveSortNFilterOptions(); // Retrieve custom filters
-    // Delay closing the dialog to prevent content disappearing immediately
-    setTimeout(() => {
-      this.isCustomFilterDialogOpen = false;
-    }, 1000);
   }
 }
