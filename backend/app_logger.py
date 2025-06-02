@@ -80,6 +80,20 @@ class ModuleLogger(logging.LoggerAdapter):
         if self.isEnabledFor(TRACE_LEVEL):
             self._log(TRACE_LEVEL, message, args, **kwargs)
 
+    def log_errors(self, message, *args, **kwargs):
+        if app_settings.log_level == "DEBUG":
+            # If log level is debug, use the exception method to log errors
+            super().exception(message, *args, **kwargs)
+        else:
+            # In production mode, use the error method to log errors
+            super().error(message, *args, **kwargs)
+
+    def error(self, message, *args, **kwargs):
+        self.log_errors(message, *args, **kwargs)
+
+    def exception(self, message, *args, **kwargs):
+        self.log_errors(message, *args, **kwargs)
+
     def process(self, msg, kwargs):
         return "%s: %s" % (self.log_prefix, msg), kwargs
 
