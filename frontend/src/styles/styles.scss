@@ -231,6 +231,10 @@ hr {
   fill: var(--color-on-surface);
 }
 
+.ng-touched.ng-invalid:not(form):not(div) {
+  border: 2px solid var(--color-danger);
+}
+
 /* Button Styles */
 button {
   padding: 0.5rem 1rem;
@@ -252,21 +256,46 @@ button:disabled {
 button.primary {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+  svg {
+    fill: var(--color-on-primary);
+  }
 }
 
 button.secondary {
   background-color: var(--color-secondary);
   color: var(--color-on-secondary);
+  svg {
+    fill: var(--color-on-secondary);
+  }
 }
 
 button.tertiary {
   background-color: var(--color-tertiary);
   color: var(--color-on-tertiary);
+  svg {
+    fill: var(--color-on-tertiary);
+  }
 }
 
 button.danger {
   background-color: var(--color-danger);
   color: var(--color-danger-text);
+  svg {
+    fill: var(--color-danger-text);
+  }
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-secondary);
+  color: var(--color-on-secondary);
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
 }
 
 .icononly-button {
@@ -366,6 +395,12 @@ button > svg {
 .animated-button:active {
   scale: 0.95;
   box-shadow: 0 0 0 calc(var(--size) * 0.25) var(--color-outline-variant);
+}
+
+.buttons-row {
+  display: block flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
 /* Animated Loading Bars */
