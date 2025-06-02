@@ -1,4 +1,4 @@
-import {Component, computed, EventEmitter, inject, input, OnInit, Output} from '@angular/core';
+import {Component, computed, effect, ElementRef, EventEmitter, inject, input, Output, viewChild} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -24,7 +24,7 @@ import {CustomfilterService} from '../../services/customfilter.service';
   templateUrl: './add-filter-dialog.component.html',
   styleUrl: './add-filter-dialog.component.scss',
 })
-export class AddCustomFilterDialogComponent implements OnInit {
+export class AddCustomFilterDialogComponent {
   private readonly fb = inject(FormBuilder);
 
   filterType = input.required<string>();
@@ -45,7 +45,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
   // otherwise it is assumed you are creating a new one.
   customFilter = input<CustomFilterCreate | null>(null);
 
-  @Output() dialogClosed = new EventEmitter<void>();
+  @Output() dialogClosed = new EventEmitter<number>();
 
   isLoading = true;
 
@@ -70,15 +70,21 @@ export class AddCustomFilterDialogComponent implements OnInit {
   filterKeys = booleanFilterKeys.concat(dateFilterKeys, numberFilterKeys, stringFilterKeys).sort();
 
   viewForOptions = Object.values(FilterType);
+  readonly customFilterDialog = viewChild.required<ElementRef<HTMLDialogElement>>('customFilterDialog');
 
-  ngOnInit() {
-    this.initForm(this.customFilter());
+  constructor() {
+    effect(() => {
+      this.initForm(this.customFilter());
+    });
   }
 
-  // @ViewChild('customFilterDialog') customFilterDialog!: ElementRef<HTMLDialogElement>;
-  closeDialog(): void {
-    // this.customFilterDialog.nativeElement.close();
-    this.dialogClosed.emit();
+  ngAfterViewInit() {
+    this.customFilterDialog().nativeElement.showModal();
+  }
+
+  closeDialog(emitValue: number): void {
+    this.customFilterDialog().nativeElement.close();
+    this.dialogClosed.emit(emitValue);
     // setTimeout(() => {
     // }, 2000);
     this.filters.clear();
@@ -98,7 +104,7 @@ export class AddCustomFilterDialogComponent implements OnInit {
     let _form = this.fb.group({
       id: [customFilterData ? customFilterData.id : null],
       filter_type: [customFilterData ? customFilterData.filter_type : this.filterTypeValue(), Validators.required],
-      filter_name: [customFilterData ? customFilterData.filter_name : '', [Validators.required, Validators.maxLength(15)]],
+      filter_name: [customFilterData ? customFilterData.filter_name : '', [Validators.required, Validators.maxLength(30)]],
       filters: this.fb.array([], Validators.required), // Will hold an array of filters.
     });
     this.customFilterForm = _form;
@@ -217,7 +223,6 @@ export class AddCustomFilterDialogComponent implements OnInit {
     }
     this.submitting = true;
     if (this.customFilterForm.valid) {
-      // console.log('Submitted Custom Filter:', this.customFilterForm.value);
       // Convert all filter values to strings.
       let formData = this.customFilterForm.value;
       formData.filters.forEach((filter: FilterCreate) => {
@@ -225,14 +230,14 @@ export class AddCustomFilterDialogComponent implements OnInit {
       });
       if (this.customFilter()?.id) {
         // If id exists, update it
-        this.customfilterService.update(formData).subscribe(() => {
-          this.closeDialog();
+        this.customfilterService.update(formData).subscribe((value) => {
+          this.closeDialog(value.id);
           this.submitting = false;
         });
       } else {
         // Otherwise, create a new CustomFilter.
-        this.customfilterService.create(formData).subscribe(() => {
-          this.closeDialog();
+        this.customfilterService.create(formData).subscribe((value) => {
+          this.closeDialog(value.id);
           this.submitting = false;
         });
       }
