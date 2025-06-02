@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.3.1-beta
+  version: 0.4.0
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -1484,8 +1484,9 @@ paths:
         - Media
       summary: Search For Trailer
       description: "Search for trailer for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item. \n\nReturns:\n    str: Youtube ID of the trailer if\
-        \ found, else empty string."
+        \ ID of the media item.\n    profile_id (int): ID of the trailer profile to\
+        \ use.\n\nReturns:\n    str: Youtube ID of the trailer if found, else empty\
+        \ string."
       operationId: search_for_trailer_api_v1_media__media_id__search_post
       security:
         - APIKeyQuery: []
@@ -1497,6 +1498,12 @@ paths:
           schema:
             type: integer
             title: Media Id
+        - name: profile_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            title: Profile Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2185,21 +2192,6 @@ paths:
           schema:
             type: integer
             title: Trailerprofile Id
-        - name: setting
-          in: query
-          required: true
-          schema:
-            type: string
-            title: Setting
-        - name: value
-          in: query
-          required: true
-          schema:
-            anyOf:
-              - type: string
-              - type: integer
-              - type: boolean
-            title: Value
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2208,6 +2200,12 @@ paths:
               - type: string
               - type: 'null'
             title: Trailarr Api Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSetting'
       responses:
         '200':
           description: Successful Response
@@ -3117,6 +3115,14 @@ components:
           type: string
           title: Folder Name
           default: Trailers
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
         audio_format:
           type: string
           title: Audio Format
@@ -3125,14 +3131,14 @@ components:
           type: integer
           title: Audio Volume Level
           default: 100
-        video_resolution:
-          type: integer
-          title: Video Resolution
-          default: 1080
         video_format:
           type: string
           title: Video Format
           default: h264
+        video_resolution:
+          type: integer
+          title: Video Resolution
+          default: 1080
         subtitles_enabled:
           type: boolean
           title: Subtitles Enabled
@@ -3145,22 +3151,10 @@ components:
           type: string
           title: Subtitles Language
           default: en
-        always_search:
-          type: boolean
-          title: Always Search
-          default: false
-        embed_metadata:
-          type: boolean
-          title: Embed Metadata
-          default: true
-        exclude_words:
+        search_query:
           type: string
-          title: Exclude Words
-          default: ''
-        include_words:
-          type: string
-          title: Include Words
-          default: ''
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
         min_duration:
           type: integer
           title: Min Duration
@@ -3169,14 +3163,18 @@ components:
           type: integer
           title: Max Duration
           default: 600
-        remove_silence:
+        always_search:
           type: boolean
-          title: Remove Silence
+          title: Always Search
           default: false
-        search_query:
+        exclude_words:
           type: string
-          title: Search Query
-          default: '{title} {year} {is_movie} trailer'
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
         id:
           anyOf:
             - type: integer
@@ -3216,6 +3214,14 @@ components:
           type: string
           title: Folder Name
           default: Trailers
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
         audio_format:
           type: string
           title: Audio Format
@@ -3224,14 +3230,14 @@ components:
           type: integer
           title: Audio Volume Level
           default: 100
-        video_resolution:
-          type: integer
-          title: Video Resolution
-          default: 1080
         video_format:
           type: string
           title: Video Format
           default: h264
+        video_resolution:
+          type: integer
+          title: Video Resolution
+          default: 1080
         subtitles_enabled:
           type: boolean
           title: Subtitles Enabled
@@ -3244,22 +3250,10 @@ components:
           type: string
           title: Subtitles Language
           default: en
-        always_search:
-          type: boolean
-          title: Always Search
-          default: false
-        embed_metadata:
-          type: boolean
-          title: Embed Metadata
-          default: true
-        exclude_words:
+        search_query:
           type: string
-          title: Exclude Words
-          default: ''
-        include_words:
-          type: string
-          title: Include Words
-          default: ''
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
         min_duration:
           type: integer
           title: Min Duration
@@ -3268,14 +3262,18 @@ components:
           type: integer
           title: Max Duration
           default: 600
-        remove_silence:
+        always_search:
           type: boolean
-          title: Remove Silence
+          title: Always Search
           default: false
-        search_query:
+        exclude_words:
           type: string
-          title: Search Query
-          default: '{title} {year} {is_movie} trailer'
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
         id:
           type: integer
           title: Id
