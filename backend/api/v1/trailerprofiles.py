@@ -1,5 +1,7 @@
+import functools
 from fastapi import APIRouter, HTTPException
 
+from api.v1.models import UpdateSetting
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 from core.base.database.models.trailerprofile import (
@@ -30,12 +32,35 @@ async def get_trailer_profiles() -> list[TrailerProfileRead]:
     return trailerprofile.get_trailerprofiles()
 
 
+def handle_exceptions(func):
+    """
+    Decorator to handle exceptions for trailer profile endpoints.
+    Logs the exception and raises HTTPException with a cleaned-up message.
+    """
+
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            logger.exception(e)
+            # Try to extract a user-friendly message, fallback to str(e)
+            try:
+                _msg = str(e).split("Value error, ")[1].split(" [")[0].strip()
+            except Exception:
+                _msg = str(e)
+            raise HTTPException(status_code=400, detail=_msg)
+
+    return wrapper
+
+
 @trailerprofiles_router.post(
     "/",
     response_model=TrailerProfileRead,
     summary="Create a new trailer profile",
     description="Create a new trailer profile",
 )
+@handle_exceptions
 async def create_trailer_profile(
     trailerprofile_create: TrailerProfileCreate,
 ) -> TrailerProfileRead:
@@ -46,11 +71,7 @@ async def create_trailer_profile(
     Returns:
         TrailerProfileRead: Created trailer profile.
     """
-    try:
-        return trailerprofile.create_trailerprofile(trailerprofile_create)
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=400, detail=str(e))
+    return trailerprofile.create_trailerprofile(trailerprofile_create)
 
 
 @trailerprofiles_router.get(
@@ -59,6 +80,7 @@ async def create_trailer_profile(
     summary="Get a trailer profile by ID",
     description="Get a trailer profile by ID",
 )
+@handle_exceptions
 async def get_trailer_profile(
     trailerprofile_id: int,
 ) -> TrailerProfileRead:
@@ -71,11 +93,7 @@ async def get_trailer_profile(
     Returns:
         TrailerProfileRead: Trailer profile.
     """
-    try:
-        return trailerprofile.get_trailerprofile(trailerprofile_id)
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=404, detail=str(e))
+    return trailerprofile.get_trailerprofile(trailerprofile_id)
 
 
 @trailerprofiles_router.put(
@@ -84,6 +102,7 @@ async def get_trailer_profile(
     summary="Update a trailer profile",
     description="Update a trailer profile",
 )
+@handle_exceptions
 async def update_trailer_profile(
     trailerprofile_id: int,
     trailerprofile_update: TrailerProfileCreate,
@@ -96,13 +115,9 @@ async def update_trailer_profile(
     Returns:
         TrailerProfileRead: Updated trailer profile.
     """
-    try:
-        return trailerprofile.update_trailerprofile(
-            trailerprofile_id, trailerprofile_update
-        )
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=400, detail=str(e))
+    return trailerprofile.update_trailerprofile(
+        trailerprofile_id, trailerprofile_update
+    )
 
 
 @trailerprofiles_router.post(
@@ -111,6 +126,7 @@ async def update_trailer_profile(
     summary="Update a trailer profile setting",
     description="Update a trailer profile setting",
 )
+@handle_exceptions
 async def update_trailer_profile_setting(
     trailerprofile_id: int, update: UpdateSetting
 ) -> TrailerProfileRead:
@@ -122,13 +138,9 @@ async def update_trailer_profile_setting(
     Returns:
         TrailerProfileRead: Updated trailer profile.
     """
-    try:
-        return trailerprofile.update_trailerprofile_setting(
-            trailerprofile_id, setting, value
-        )
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=400, detail=str(e))
+    return trailerprofile.update_trailerprofile_setting(
+        trailerprofile_id, update.key, update.value
+    )
 
 
 @trailerprofiles_router.delete(
@@ -137,6 +149,7 @@ async def update_trailer_profile_setting(
     summary="Delete a trailer profile",
     description="Delete a trailer profile",
 )
+@handle_exceptions
 async def delete_trailer_profile(
     trailerprofile_id: int,
 ) -> bool:
@@ -148,8 +161,4 @@ async def delete_trailer_profile(
         bool: True if the trailer profile was deleted successfully. \
             Raises HTTPException otherwise.
     """
-    try:
-        return trailerprofile.delete_trailerprofile(trailerprofile_id)
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=404, detail=str(e))
+    return trailerprofile.delete_trailerprofile(trailerprofile_id)
