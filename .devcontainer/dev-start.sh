@@ -58,6 +58,7 @@ alembic upgrade head && echo "Alembic migrations ran successfully"
 echo "Installing Angular and it's dependencies"
 npm install -g @angular/cli@19.2.10
 cd ../frontend && npm install
+ng completion
 
 # Start Angular application
 # echo "Building Angular application"
