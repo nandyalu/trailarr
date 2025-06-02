@@ -1,0 +1,87 @@
+:host {
+  display: contents;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  justify-items: start;
+  align-items: center;
+  margin: 1.5rem 0.5rem;
+  gap: 1rem;
+
+  @container (width < 40rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content-label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+label,
+span {
+  font-weight: bold;
+  text-wrap: nowrap;
+}
+
+svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+button {
+  width: 2.5rem;
+  height: 2.5rem;
+  @container (width < 40rem) {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.content-input {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+input {
+  width: 5rem;
+  height: 3rem;
+  padding: 0.25rem;
+  text-align: center;
+  font-family: inherit;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+}
+
+.input__long {
+  width: auto;
+  min-width: 15rem;
+  max-width: calc(100% - 7rem);
+  field-sizing: content;
+  font-size: larger;
+  @container (width < 40rem) {
+    flex: 1;
+    width: auto;
+    max-width: none;
+  }
+}
+
+.input__disabled {
+  background-color: var(--color-surface-container-low);
+  // background-image: repeating-linear-gradient(45deg, transparent, transparent 20px, var(--color-outline) 20px, var(--color-outline) 24px);
+  cursor: not-allowed;
+  text-decoration: line-through 2px var(--color-danger);
+}

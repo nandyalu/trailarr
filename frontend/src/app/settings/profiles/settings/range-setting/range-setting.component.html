@@ -1,0 +1,34 @@
+<div class="content-label">
+  <label [for]="inputId">{{ name() }}</label>
+  <small>{{ description() }}</small>
+  @if (descriptionExtra()) {
+    <small>{{ descriptionExtra() }}</small>
+  }
+</div>
+<div class="content-input">
+  <input
+    [id]="inputId"
+    type="range"
+    [class.input__disabled]="disabled()"
+    [disabled]="disabled()"
+    [(ngModel)]="value"
+    [min]="minValue()"
+    [max]="maxValue()"
+    [step]="stepValue()"
+  />
+  <span class="content-input__value">{{ value() }}</span>
+  @if (value() != oldValue() && !disabled()) {
+    <button class="secondary icononly-button" [id]="inputId + 'reset'" [title]="'Reset ' + name()" (click)="resetValue()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+          d="M263-179.67v-84h317.67q65 0 110.83-45.5t45.83-110.5q0-64.33-45.83-110.16-45.83-45.84-110.83-45.84H297.33l104 104-58.66 57.34-204-203 204-204 58.66 57.66-104 104H580q99.67 0 170.5 70.17t70.83 169.83q0 100.34-70.83 170.17-70.83 69.83-170.5 69.83H263Z"
+        />
+      </svg>
+    </button>
+    <button class="primary icononly-button" [id]="inputId + 'update'" [title]="'Update ' + name()" (click)="onSubmitValue()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="M378-235 142-471l52-52 184 184 388-388 52 52-440 440Z" />
+      </svg>
+    </button>
+  }
+</div>
