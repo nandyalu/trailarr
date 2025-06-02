@@ -37,6 +37,13 @@ def __update_media_status(media: MediaRead, type: MonitorStatus):
             monitor=True,
             status=MonitorStatus.MISSING,
         )
+        if media.trailer_exists:
+            # If trailer exists but download failed, it should be marked as DOWNLOADED
+            update = MediaUpdateDC(
+                id=media.id,
+                monitor=False,
+                status=MonitorStatus.DOWNLOADED,
+            )
     else:
         # Handle other statuses if needed
         return None
