@@ -112,16 +112,13 @@ async def update_trailer_profile(
     description="Update a trailer profile setting",
 )
 async def update_trailer_profile_setting(
-    trailerprofile_id: int,
-    setting: str,
-    value: str | int | bool,
+    trailerprofile_id: int, update: UpdateSetting
 ) -> TrailerProfileRead:
     """
     Update a trailer profile setting by ID.
     Args:
         trailerprofile_id (int): ID of the trailer profile.
-        setting (str): Setting name to update.
-        value (str | int | bool): New value for the setting.
+        update (UpdateSetting): UpdateSetting model containing the key and value to update.
     Returns:
         TrailerProfileRead: Updated trailer profile.
     """
