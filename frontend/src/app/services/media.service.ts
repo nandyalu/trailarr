@@ -150,13 +150,17 @@ export class MediaService {
    * - `unmonitor`: Unmonitor the specified media items.
    * - `delete`: Delete the trailers for specified media items.
    * - `download`: Download the trailers specified media items.
+   * @param profileID - The ID of the profile to use for the batch update. \
+   * If not provided, defaults to -1. \
+   * Only required for `download` action.
    * @returns An Observable that emits the response from the server.
    */
-  batchUpdate(mediaIDs: number[], action: string): Observable<any> {
+  batchUpdate(mediaIDs: number[], action: string, profileID: number = -1): Observable<any> {
     const url = `${this.mediaUrl}batch_update`;
     return this.httpClient.post(url, {
       media_ids: mediaIDs,
       action: action.toLowerCase(),
+      profile_id: profileID,
     });
   }
 
@@ -164,12 +168,13 @@ export class MediaService {
    * Downloads a trailer for a Media item.
    *
    * @param mediaID - The ID of the Media item to download the trailer for.
+   * @param profileID - The ID of the profile to use for downloading the trailer.
    * @param ytID - The YouTube ID of the trailer to download. Can be an empty string.
    * @returns - An Observable that emits the response from the server.
    * - If an error occurs during the request, the Observable will emit an error.
    */
-  downloadMediaTrailer(mediaID: number, ytID: string): Observable<any> {
-    const params = new HttpParams().set('yt_id', ytID);
+  downloadMediaTrailer(mediaID: number, profileID: number, ytID: string): Observable<any> {
+    const params = new HttpParams().set('profile_id', profileID).set('yt_id', ytID);
     const url = `${this.mediaUrl}${mediaID}/download`;
     return this.httpClient.post(url, {}, {params: params});
   }
@@ -239,11 +244,13 @@ export class MediaService {
    * Searches for a media trailer by its ID.
    *
    * @param {number} mediaID - The ID of the media to search for.
+   * @param {number} profileID - The ID of the profile to use for the search.
    * @returns {Observable<any>} An observable containing the search results.
    */
-  searchMediaTrailer(mediaID: number): Observable<any> {
+  searchMediaTrailer(mediaID: number, profileID: number): Observable<any> {
+    const params = new HttpParams().set('profile_id', profileID);
     const url = `${this.mediaUrl}${mediaID}/search`;
-    return this.httpClient.post(url, {});
+    return this.httpClient.post(url, {}, {params: params});
   }
 
   /**
