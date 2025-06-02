@@ -1,3 +1,4 @@
+from typing import Any
 from pydantic import field_validator, model_validator
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -10,7 +11,7 @@ from core.base.database.models.customfilter import (
 
 VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus", "copy"]
 VALID_FILE_FORMATS = ["mkv", "mp4", "webm"]
-VALID_VIDEO_FORMATS = ["h264", "hevc", "vp8", "vp9", "av1", "copy"]
+VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1", "copy"]
 VALID_VIDEO_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
 VALID_SUBTITLES_FORMATS = ["srt", "vtt"]
 
@@ -28,6 +29,7 @@ VALID_YT_DICT = {
 }
 
 VALID_FILE_DICT = {
+    "ext": "ext",
     "clean_title": "clean_title",
     "imdb_id": "imdb_id",
     "is_movie": "is_movie",
@@ -61,25 +63,25 @@ class _TrailerProfileBase(SQLModel):
     file_name: str = "{title} ({year})-trailer.{ext}"
     folder_enabled: bool = False
     folder_name: str = "Trailers"
+    embed_metadata: bool = True
+    remove_silence: bool = False
     # Audio settings
     audio_format: str = "aac"
     audio_volume_level: int = 100
     # Video settings
-    video_resolution: int = 1080
     video_format: str = "h264"
+    video_resolution: int = 1080
     # Subtitle settings
     subtitles_enabled: bool = True
     subtitles_format: str = "srt"
     subtitles_language: str = "en"
     # General settings
-    always_search: bool = False
-    embed_metadata: bool = True
-    exclude_words: str = ""
-    include_words: str = ""
+    search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60
     max_duration: int = 600
-    remove_silence: bool = False
-    search_query: str = "{title} {year} {is_movie} trailer"
+    always_search: bool = False
+    exclude_words: str = ""
+    include_words: str = ""
     # Filter id to apply to select this profile
 
 
@@ -99,6 +101,105 @@ class TrailerProfile(_TrailerProfileBase, table=True):
     customfilter: CustomFilter = Relationship(
         # back_populates="trailerprofile"
     )
+
+    # @classmethod
+    # def from_create(cls, obj: "TrailerProfileCreate") -> "TrailerProfile":
+    #     """
+    #     Create a TrailerProfile instance from a TrailerProfileCreate instance.
+    #     """
+    #     _customfilter = CustomFilter.from_create(obj.customfilter)
+    #     obj.customfilter = _customfilter  # type: ignore[assignment]
+    #     _validated_obj = cls.model_validate(obj.model_dump())
+    #     _validated_obj.customfilter = _customfilter
+    #     return _validated_obj
+
+    # Overriding the model_validate method to ensure
+    # that the CustomFilter is validated correctly.
+    # This is necessary because the CustomFilter is a nested model.
+    @classmethod
+    def model_validate(
+        cls,
+        obj: "TrailerProfile | TrailerProfileCreate | TrailerProfileRead | dict[str, Any]",
+        *,
+        strict: bool | None = None,
+        from_attributes: bool | None = None,
+        context: dict[str, Any] | None = None,
+        update: dict[str, Any] | None = None,
+    ) -> "TrailerProfile":
+        """
+        Validate the TrailerProfile model. \n
+        This method ensures that the nested models are validated
+        correctly before validating the TrailerProfile itself.
+        """
+        if isinstance(obj, dict):
+            # If obj is a dict, convert it to TrailerProfileCreate
+            obj = TrailerProfileCreate.model_validate(obj)
+        if isinstance(obj, cls):
+            # If obj is already a TrailerProfile instance, return it
+            db_customfilter = obj.customfilter
+        else:
+            db_customfilter = CustomFilter.model_validate(obj.customfilter)
+        _validated_obj = super().model_validate(
+            obj.model_dump(),
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            update=update,
+        )
+        _validated_obj.customfilter = db_customfilter
+        return _validated_obj
+
+    @classmethod
+    def is_bool_field(cls, field_name: str) -> bool:
+        """
+        Check if the field is a boolean field.
+        """
+        return field_name in [
+            "enabled",
+            "folder_enabled",
+            "subtitles_enabled",
+            "always_search",
+            "embed_metadata",
+            "remove_silence",
+        ]
+
+    @classmethod
+    def is_int_field(cls, field_name: str) -> bool:
+        """
+        Check if the field is an integer field.
+        """
+        return field_name in [
+            "audio_volume_level",
+            "video_resolution",
+            "min_duration",
+            "max_duration",
+        ]
+
+    @field_validator(
+        "enabled",
+        "folder_enabled",
+        "subtitles_enabled",
+        "always_search",
+        "embed_metadata",
+        "remove_silence",
+        mode="before",
+    )
+    @classmethod
+    def validate_bool(cls, v: bool | str | int) -> bool:
+        if isinstance(v, str):
+            v = v.lower()
+            if v in ["true", "1", "yes"]:
+                return True
+            elif v in ["false", "0", "no"]:
+                return False
+        if isinstance(v, int):
+            return bool(v)
+        if isinstance(v, bool):
+            return v
+        raise ValueError(
+            f"Invalid boolean value: {v}. Valid values are: True/False, 1/0,"
+            " 'yes'/'no'"
+        )
 
     @field_validator("file_format", mode="after")
     @classmethod
@@ -198,7 +299,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
                         "WebM container does not support H264/H265 video"
                         " codecs."
                     )
-                if self.audio_format == "opus":
+                if self.audio_format != "opus":
                     raise ValueError(
                         "WebM container ONLY supports 'OPUS' audio codec."
                     )

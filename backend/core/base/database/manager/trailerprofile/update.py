@@ -93,13 +93,21 @@ def update_trailerprofile_setting(
         raise ItemNotFoundError(model_name="TrailerProfile", id=id)
 
     # Update the specified setting
+    if not hasattr(trailerprofile_db, setting):
+        raise ValueError(f"Invalid setting '{setting}' for trailer profile.")
+    if TrailerProfile.is_bool_field(setting):
+        # Convert the value to a boolean if the setting is a boolean field
+        value = trailerprofile_db.validate_bool(value)
+    if TrailerProfile.is_int_field(setting):
+        # Convert the value to an integer if the setting is an integer field
+        value = int(value)
     setattr(trailerprofile_db, setting, value)
 
     # Validate the updated trailer profile
-    TrailerProfile.model_validate(trailerprofile_db.model_dump())
+    TrailerProfile.model_validate(trailerprofile_db)
 
     # Commit the changes to the database
-    _session.add(trailerprofile_db)
+    # _session.add(new_profile)
     _session.commit()
     _session.refresh(trailerprofile_db)
     logger.info(

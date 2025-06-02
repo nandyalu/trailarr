@@ -28,10 +28,14 @@ def delete_trailerprofile(
         raise ItemNotFoundError("TrailerProfile", id)
 
     # Delete all filters associated with the custom filter
-    for filter in db_trailerprofile.customfilter.filters:
-        _session.delete(filter)
-    # Delete the custom filter associated with the trailer profile
-    _session.delete(db_trailerprofile.customfilter)
+    try:
+        for filter in db_trailerprofile.customfilter.filters:
+            _session.delete(filter)
+        # Delete the custom filter associated with the trailer profile
+        _session.delete(db_trailerprofile.customfilter)
+    except Exception as e:
+        logger.error(f"Error deleting filters for trailer profile {id}: {e}")
+
     # Delete the trailer profile
     _session.delete(db_trailerprofile)
     _session.commit()

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Self
+from typing import Any, Self
 
 from pydantic import field_validator, model_validator
 from sqlmodel import Field, SQLModel
@@ -241,6 +241,32 @@ class Filter(_FilterBase, table=True):
         default=None, foreign_key="customfilter.id"
     )
     # customfilter: "CustomFilter" = Relationship(back_populates="filters")
+
+    @classmethod
+    def model_validate(
+        cls,
+        obj: "Filter | FilterCreate | FilterRead | dict[str, Any]",
+        *,
+        strict: bool | None = None,
+        from_attributes: bool | None = None,
+        context: dict[str, Any] | None = None,
+        update: dict[str, Any] | None = None,
+    ) -> "Filter":
+        """
+        Validate the Filter model. \n
+        This method ensures that the nested models are validated
+        correctly before validating the Filter itself.
+        """
+        if isinstance(obj, cls):
+            # If obj is already a Filter instance, return it
+            return obj
+        return super().model_validate(
+            obj,
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            update=update,
+        )
 
     @field_validator("filter_by", mode="after")
     @classmethod

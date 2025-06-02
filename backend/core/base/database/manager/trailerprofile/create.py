@@ -2,7 +2,9 @@ from sqlmodel import Session
 
 from app_logger import ModuleLogger
 from core.base.database.manager.trailerprofile.base import convert_to_read_item
-from core.base.database.models.filter import Filter
+
+# from core.base.database.models.customfilter import CustomFilter
+# from core.base.database.models.filter import Filter
 from core.base.database.models.trailerprofile import (
     TrailerProfile,
     TrailerProfileCreate,
@@ -30,18 +32,9 @@ def create_trailerprofile(
     Raises:
         ValidationError: If the input data is not valid.
     """
-    # Extract filters from the trailer profile create object
-    # and create db Filter objects from them
-    filter_create = trailerprofile_create.customfilter
-    db_filters: list[Filter] = []
-    for filter in filter_create.filters:
-        db_filters.append(Filter.model_validate(filter))
-    # Clear the filters from the trailer profile create object
-    trailerprofile_create.customfilter.filters = []
     # Create a db TrailerProfile object
     db_trailerprofile = TrailerProfile.model_validate(trailerprofile_create)
-    # Assign the filters to the db TrailerProfile object
-    db_trailerprofile.customfilter.filters = db_filters
+    # Save to database
     _session.add(db_trailerprofile)
     _session.commit()
     _session.refresh(db_trailerprofile)
