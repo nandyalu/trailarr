@@ -1,6 +1,13 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
+import shutil
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
@@ -93,7 +100,22 @@ setup_timing_middleware(trailarr_api)
 # Health check route
 @trailarr_api.get("/status", tags=["Health Check"])
 async def health_check():
-    return {"status": "healthy"}
+    """
+    Health check endpoint.
+    Runs 'nvidia-smi' to check for NVIDIA GPU availability.
+    Returns 'unhealthy' if the command fails.
+    """
+    try:
+        # Run nvidia-smi to check for NVIDIA GPU presence
+        if app_settings.trailer_hardware_acceleration:
+            logging.debug("Checking NVIDIA GPU availability")
+            # Check if nvidia-smi is available
+            if not shutil.which("nvidia-smi"):
+                raise EnvironmentError("nvidia-smi command not found")
+        return {"status": "healthy"}
+    except Exception as e:
+        logging.error(f"Health check failed: {e}")
+        raise HTTPException(404, detail=f"unhealthy. Error: {e}")
 
 
 # Register API routes
