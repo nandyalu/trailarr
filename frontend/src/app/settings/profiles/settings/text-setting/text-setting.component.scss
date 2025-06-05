@@ -68,12 +68,13 @@ input {
 
 .input__long {
   width: auto;
-  min-width: 15rem;
-  max-width: calc(100% - 7rem);
+  // min-width: 15rem;
+  flex: 1;
+  max-width: calc(100% - 6rem);
   field-sizing: content;
   font-size: larger;
   @container (width < 40rem) {
-    flex: 1;
+    // flex: 1;
     width: auto;
     max-width: none;
   }

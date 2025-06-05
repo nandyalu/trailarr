@@ -1,4 +1,4 @@
-import {Component, input, model, OnInit, output, signal} from '@angular/core';
+import {Component, input, model, OnChanges, output, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
 @Component({
@@ -7,7 +7,7 @@ import {FormsModule} from '@angular/forms';
   templateUrl: './text-setting.component.html',
   styleUrl: './text-setting.component.scss',
 })
-export class TextSettingComponent implements OnInit {
+export class TextSettingComponent implements OnChanges {
   // Setting a unique ID for the input element, setting a signal value gives a browser warning
   // so we generate a random string for the ID
   readonly inputId = 'text-setting-' + Math.random().toString(36).substring(2, 10);
@@ -28,7 +28,11 @@ export class TextSettingComponent implements OnInit {
   oldValue = signal<string | number>('');
   onSubmit = output<string>();
 
-  ngOnInit() {
+  // ngOnInit() {
+  //   this.oldValue.set(this.value());
+  // }
+
+  ngOnChanges() {
     this.oldValue.set(this.value());
   }
 
