@@ -78,6 +78,18 @@ class FolderInfo(BaseModel):
         ),
     )
 
+    def __lt__(self, other: "FileInfo"):
+        if self.type == other.type:
+            # If both are of the same type, sort by name
+            return self.name < other.name
+        type_values = {"file": 2, "folder": 1, "symlink": 1}
+        if self.type not in type_values or other.type not in type_values:
+            # If either type is not in the type_values, fallback to name comparison
+            return self.name < other.name
+        # Different types, sort by type
+        # 'folder' < 'symlink' < 'file'
+        return type_values[self.type] < type_values[other.type]
+
 
 class FilesHandler:
     """Utility class to handle files and folders."""
@@ -140,7 +152,7 @@ class FilesHandler:
 
         # Sort the list of files and folders by name, folders first and \
         # then files
-        dir_info.sort(key=lambda x: (x.type, x.name))
+        dir_info.sort(key=lambda x: x)
         # return dir_info
         dir_size = sum(p.stat().st_size for p in Path(folder_path).rglob("*"))
         dir_size_str = FilesHandler._convert_file_size(dir_size)
@@ -154,6 +166,52 @@ class FilesHandler:
                 "%Y-%m-%d %H:%M:%S"
             ),
         )
+
+    @staticmethod
+    async def _get_file_fol_info(entry: os.DirEntry[str]) -> FolderInfo:
+        """Get information about a file or folder.\n
+        Args:
+            entry (os.DirEntry): An entry from the filesystem. \n
+        Returns:
+            FolderInfo: FolderInfo object representing the file or folder."""
+        info = await aiofiles.os.stat(entry.path)
+        _type = "folder"
+        _size = 0
+        if entry.is_dir():
+            _type = "folder"
+        elif entry.is_file():
+            _type = "file"
+            _size = info.st_size
+        elif entry.is_symlink():
+            _type = "symlink"
+        return FolderInfo(
+            created=dt.fromtimestamp(info.st_ctime).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+            name=unicodedata.normalize("NFKD", entry.name),
+            path=entry.path,
+            size=FilesHandler._convert_file_size(_size),
+            type=_type,
+        )
+
+    @staticmethod
+    async def get_folder_files_simple(folder_path: str) -> list[FolderInfo]:
+        """Get information about all files and folders in a given \
+            folder (non-recursive).\n
+        Args:
+            folder_path (str): Path of the folder to search.
+        Returns:
+            list[FolderInfo]: List of FolderInfo objects representing files and folders \
+                inside a given folder."""
+        _is_dir = await aiofiles.os.path.isdir(folder_path)
+        if not _is_dir:
+            return []
+        dir_info: list[FolderInfo] = []
+        for entry in await aiofiles.os.scandir(folder_path):
+            dir_info.append(await FilesHandler._get_file_fol_info(entry))
+        # Sort the list of files and folders by created, folders first and then files
+        dir_info.sort(key=lambda x: x)
+        return dir_info
 
     @staticmethod
     def check_folder_exists(path: str) -> bool:
