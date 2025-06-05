@@ -29,6 +29,38 @@ def extract_youtube_id(url: str) -> str | None:
         return None
 
 
+def __has_included_words(include_words: str, title: str) -> bool:
+    """Check if the title contains all of the included words."""
+    if not include_words:
+        return True
+    # Split and filter out empty/whitespace-only words
+    include_list = [w.strip() for w in include_words.split(",") if w.strip()]
+    if not include_list:
+        return True
+    for word in include_list:
+        if word.lower() not in title.lower():
+            logger.debug(
+                f"Included word '{word}' not found in title '{title}'"
+            )
+            return False
+    return True
+
+
+def __has_excluded_words(exclude_words: str, title: str) -> bool:
+    """Check if the title contains any of the excluded words."""
+    if not exclude_words:
+        return False
+    # Split and filter out empty/whitespace-only words
+    exclude_list = [w.strip() for w in exclude_words.split(",") if w.strip()]
+    if not exclude_list:
+        return False
+    for word in exclude_list:
+        if word.lower() in title.lower():
+            logger.debug(f"Excluded word '{word}' found in title '{title}'")
+            return True
+    return False
+
+
 def _yt_search_filter(
     info: dict,
     *,
@@ -58,24 +90,12 @@ def _yt_search_filter(
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
-    exclude_words = profile.exclude_words
-    if exclude_words:
-        if "," in exclude_words:
-            exclude_words = exclude_words.split(",")
-            for word in exclude_words:
-                word = word.strip()
-                if word in title.lower():
-                    logger.debug(
-                        f"Skipping video with excluded word '{word}': {id}"
-                    )
-                    return "The video contains an excluded word"
-        else:
-            if exclude_words in title.lower():
-                logger.debug(
-                    f"Skipping video with excluded word '{exclude_words}':"
-                    f" {id}"
-                )
-                return "The video contains an excluded word"
+    # Check if the title contains all of the included words
+    if not __has_included_words(profile.include_words, title):
+        return "The video does not contain all of the included words"
+    # Filter out videos with excluded words
+    if __has_excluded_words(profile.exclude_words, title):
+        return "The video contains an excluded word"
 
 
 def search_yt_for_trailer(
