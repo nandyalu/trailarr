@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/load-indicator/load-indicator.component.ts"],
+  "sourcesContent": ["import {ChangeDetectionStrategy, Component, HostBinding} from '@angular/core';\n\n@Component({\n  selector: 'app-load-indicator',\n  template: `<div class=\"loading-bar\"></div>\n    <div class=\"loading-bar\"></div>\n    <div class=\"loading-bar\"></div>\n    <div class=\"loading-bar\"></div>`,\n  changeDetection: ChangeDetectionStrategy.OnPush,\n  imports: [],\n})\nexport class LoadIndicatorComponent {\n  @HostBinding('class') hostClass = 'loading-wave';\n}\n"],
+  "mappings": ";;;;;;;;;;;;AAWM,IAAO,yBAAP,MAAO,wBAAsB;EATnC,cAAA;AAUwB,SAAA,YAAY;;;;uCADvB,yBAAsB;IAAA;EAAA;;yEAAtB,yBAAsB,WAAA,CAAA,CAAA,oBAAA,CAAA,GAAA,UAAA,GAAA,cAAA,SAAA,oCAAA,IAAA,KAAA;AAAA,UAAA,KAAA,GAAA;AAAtB,QAAA,qBAAA,IAAA,SAAA;;;;AAPA,QAAA,oBAAA,GAAA,OAAA,CAAA,EAA+B,GAAA,OAAA,CAAA,EACT,GAAA,OAAA,CAAA,EACA,GAAA,OAAA,CAAA;;;;;;sEAKtB,wBAAsB,CAAA;UATlC;WAAU;MACT,UAAU;MACV,UAAU;;;;MAIV,iBAAiB,wBAAwB;MACzC,SAAS,CAAA;KACV;cAEuB,WAAS,CAAA;UAA9B;WAAY,OAAO;;;;6EADT,wBAAsB,EAAA,WAAA,0BAAA,UAAA,6DAAA,YAAA,GAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}

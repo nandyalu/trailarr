@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/routing.ts"],
+  "sourcesContent": ["export const RouteAbout = 'about';\nexport const RouteAdd = 'add';\nexport const RouteConnections = 'connections';\nexport const RouteEdit = 'edit';\nexport const RouteHome = 'home';\nexport const RouteLogs = 'logs';\nexport const RouteMedia = 'media';\nexport const RouteMovies = 'movies';\nexport const RouteProfiles = 'profiles';\nexport const RouteSeries = 'series';\nexport const RouteSettings = 'settings';\nexport const RouteTasks = 'tasks';\nexport const RouteTrailer = 'trailer';\n\nexport const RouteParamConnectionId = 'connectionId';\nexport const RouteParamMediaId = 'mediaId';\nexport const RouteParamProfileId = 'profileId';\n"],
+  "mappings": ";AAAO,IAAM,aAAa;AACnB,IAAM,WAAW;AACjB,IAAM,mBAAmB;AACzB,IAAM,YAAY;AAClB,IAAM,YAAY;AAClB,IAAM,YAAY;AAClB,IAAM,aAAa;AACnB,IAAM,cAAc;AACpB,IAAM,gBAAgB;AACtB,IAAM,cAAc;AACpB,IAAM,gBAAgB;AACtB,IAAM,aAAa;AACnB,IAAM,eAAe;AAErB,IAAM,yBAAyB;AAC/B,IAAM,oBAAoB;AAC1B,IAAM,sBAAsB;",
+  "names": []
+}

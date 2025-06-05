@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/media/dialogs/profile-select-dialog/profile-select-dialog.component.scss"],
+  "sourcesContent": [".dialog-content {\n  display: flex;\n  flex-direction: column;\n  gap: 0.5rem;\n  padding: 1rem;\n  min-width: max(25vw, min(300px, 80vw));\n}\n\nh3 {\n  font-size: larger;\n  font-weight: 700;\n  margin: 1rem;\n}\n\nlabel {\n  font-size: 1rem;\n  color: var(--color-on-surface);\n  padding: 0 0.5rem;\n  transition: 0.5s;\n}\n\nselect {\n  min-width: 15rem;\n  height: 3rem;\n  margin: auto;\n  padding: 0.25rem 0.5rem;\n  font-family: inherit;\n  font-size: 1.25rem;\n  background-color: var(--color-surface-container-high);\n  color: var(--color-tertiary);\n  border: 1px solid var(--color-outline);\n  border-radius: 0.5rem;\n}\n\n.ng-touched.ng-invalid:not(form):not(div) {\n  border: 2px solid var(--color-danger);\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;AACA,WAAA;AACA,aAAA,IAAA,IAAA,EAAA,IAAA,KAAA,EAAA;;AAGF;AACE,aAAA;AACA,eAAA;AACA,UAAA;;AAGF;AACE,aAAA;AACA,SAAA,IAAA;AACA,WAAA,EAAA;AACA,cAAA;;AAGF;AACE,aAAA;AACA,UAAA;AACA,UAAA;AACA,WAAA,QAAA;AACA,eAAA;AACA,aAAA;AACA,oBAAA,IAAA;AACA,SAAA,IAAA;AACA,UAAA,IAAA,MAAA,IAAA;AACA,iBAAA;;AAGF,CAAA,UAAA,CAAA,UAAA,KAAA,KAAA,KAAA;AACE,UAAA,IAAA,MAAA,IAAA;;",
+  "names": []
+}
