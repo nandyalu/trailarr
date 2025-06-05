@@ -1,4 +1,4 @@
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, httpResource} from '@angular/common/http';
 import {inject, Injectable} from '@angular/core';
 import {catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
@@ -13,6 +13,8 @@ export class SettingsService {
 
   private settingsUrl = environment.apiUrl + environment.settings;
 
+  readonly settingsResource = httpResource<Settings>(() => this.settingsUrl);
+
   getSettings(): Observable<Settings> {
     return this.http.get<any>(this.settingsUrl);
   }
@@ -24,6 +26,8 @@ export class SettingsService {
 
   updateSetting(key: string, value: any): Observable<string> {
     const updateSettingUrl = this.settingsUrl + 'update';
+    // Ensure empty strings are sent as a single space to avoid issues with empty values
+    if (typeof value === 'string' && value === '') value = ' ';
     const update_obj = {
       key: key,
       value: value,
