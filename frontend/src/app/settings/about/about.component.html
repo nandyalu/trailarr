@@ -105,8 +105,21 @@
         <!-- <h3>Current Login Password</h3> -->
         <div class="password-input">
           <input
+            id="trailarr_current_username"
+            name="Current Username"
+            type="text"
+            [value]="settings?.webui_username"
+            autocomplete="current-username"
+            disabled="true"
+            #currentUsernameInput
+          />
+          <label for="trailarr_current_username">Current Username</label>
+        </div>
+        <div class="password-input">
+          <input
             id="trailarr_current_password"
-            type="password"
+            name="Current Password"
+            [type]="currentPasswordVisible ? 'text' : 'password'"
             [(ngModel)]="currentPassword"
             autocomplete="current-password"
             required
@@ -114,14 +127,15 @@
             #currentPasswordInput
           />
           <label for="trailarr_current_password">Current Password</label>
-          <i (click)="togglePasswordVisibility(currentPasswordInput); currentPasswordVisible = !currentPasswordVisible">
-            <ng-container *ngTemplateOutlet="passwordVisibilityIcon; context: currentPasswordVisible"></ng-container>
+          <i (click)="currentPasswordVisible = !currentPasswordVisible">
+            <ng-container *ngTemplateOutlet="passwordVisibilityIcon; context: {$implicit: currentPasswordVisible}"></ng-container>
           </i>
         </div>
         <h3>New Login</h3>
         <div class="password-input">
           <input
             id="trailarr_new_username"
+            name="New Username"
             type="text"
             [(ngModel)]="newUsername"
             autocomplete="username"
@@ -134,7 +148,8 @@
         <div class="password-input">
           <input
             id="trailer_new_password"
-            type="password"
+            name="New Password"
+            [type]="newPasswordVisible ? 'text' : 'password'"
             [(ngModel)]="newPassword"
             autocomplete="new-password"
             required
@@ -143,8 +158,8 @@
             #newPasswordInput
           />
           <label for="trailer_new_password">New Password </label>
-          <i (click)="togglePasswordVisibility(newPasswordInput); newPasswordVisible = !newPasswordVisible">
-            <ng-container *ngTemplateOutlet="passwordVisibilityIcon; context: newPasswordVisible"></ng-container>
+          <i (click)="newPasswordVisible = !newPasswordVisible">
+            <ng-container *ngTemplateOutlet="passwordVisibilityIcon; context: {$implicit: newPasswordVisible}"></ng-container>
           </i>
         </div>
         <span>For updating only username/password, leave the other blank</span>
@@ -166,6 +181,7 @@
 
 <ng-template #passwordVisibilityIcon let-visible>
   @if (visible) {
+    <!-- Eye Icon for Visible Password -->
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
       <!-- Visible Icon -->
       <path
@@ -173,6 +189,7 @@
       />
     </svg>
   } @else {
+    <!-- Eye Slash Icon for Hidden Password -->
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#e8eaed">
       <!-- Hidden Icon -->
       <path

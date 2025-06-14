@@ -120,8 +120,14 @@
   border-radius: 0.5rem;
 }
 
+input:disabled {
+  background-color: var(--color-surface-container-low);
+  cursor: not-allowed;
+}
+
 .password-input input:focus ~ label,
-.password-input input:valid ~ label {
+.password-input input.ng-touched ~ label,
+.password-input input:disabled ~ label {
   top: 0;
   background: var(--color-surface-container-high);
   font-size: 0.8rem;

@@ -73,6 +73,7 @@ class Settings(BaseModel):
     new_download_method: bool
     update_ytdlp: bool
     url_base: str
+    webui_username: str
 
 
 class UpdateSetting(BaseModel):
