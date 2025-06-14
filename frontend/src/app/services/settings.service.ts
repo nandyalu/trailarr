@@ -1,5 +1,6 @@
 import {HttpClient, httpResource} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
+import {FolderInfo} from 'generated-sources/openapi';
 import {catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../environment';
 import {Connection, ConnectionCreate, ConnectionUpdate} from '../models/connection';
@@ -11,13 +12,28 @@ import {ServerStats, Settings} from '../models/settings';
 export class SettingsService {
   private readonly http = inject(HttpClient);
 
+  private connectionsUrl = environment.apiUrl + environment.connections;
   private settingsUrl = environment.apiUrl + environment.settings;
+  private filesUrl = environment.apiUrl + environment.files;
 
   readonly settingsResource = httpResource<Settings>(() => this.settingsUrl);
-
-  getSettings(): Observable<Settings> {
-    return this.http.get<any>(this.settingsUrl);
-  }
+  readonly filesPath = signal<string>('');
+  readonly filesResource = httpResource<FolderInfo[]>(
+    () => {
+      return {
+        url: this.filesUrl + 'files_simple',
+        params: {
+          path: this.filesPath(),
+        },
+      };
+    },
+    {
+      defaultValue: [],
+    },
+  );
+  readonly connectionsResource = httpResource<Connection[]>(() => ({url: this.connectionsUrl}), {
+    defaultValue: [],
+  });
 
   getServerStats(): Observable<ServerStats> {
     var serverStatsUrl = this.settingsUrl + 'stats';
@@ -68,8 +84,6 @@ export class SettingsService {
       }),
     );
   }
-
-  private connectionsUrl = environment.apiUrl + environment.connections;
 
   getConnection(id: number): Observable<Connection> {
     var connectionIdUrl = this.connectionsUrl + id;
