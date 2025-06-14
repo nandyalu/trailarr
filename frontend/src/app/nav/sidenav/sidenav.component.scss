@@ -29,7 +29,8 @@
   border-bottom: 2px solid transparent; /* Add a transparent bottom border */
 }
 
-.sidenav-button.active {
+.sidenav-button.active,
+.sidenav-button.active2 {
   background-color: var(--color-secondary-container);
   opacity: 1;
   font-weight: 600;
@@ -37,7 +38,7 @@
   border-bottom: 2px solid var(--color-primary); /* Add a bottom border on hover */
 }
 
-.sidenav-button:not(.active):hover {
+.sidenav-button:not(.active, .active2):hover {
   background-color: var(--color-secondary-container);
   opacity: 0.6;
   font-weight: 500;
@@ -76,7 +77,7 @@
   .navmenu {
     flex-direction: row;
     width: 100%;
-    height: auto;
+    height: 78px;
     margin: 0;
     padding: 0;
     padding-top: 1rem;
