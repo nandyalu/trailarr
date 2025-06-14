@@ -1,10 +1,11 @@
-import {Component, input, output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, input, output} from '@angular/core';
 
 @Component({
   selector: 'app-options-setting',
   imports: [],
   templateUrl: './options-setting.component.html',
   styleUrl: './options-setting.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OptionsSettingComponent {
   // Setting a unique ID for the input element, setting a signal value gives a browser warning

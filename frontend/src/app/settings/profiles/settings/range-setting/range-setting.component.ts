@@ -1,4 +1,4 @@
-import {Component, input, model, output, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, input, model, output, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
 @Component({
@@ -6,6 +6,7 @@ import {FormsModule} from '@angular/forms';
   imports: [FormsModule],
   templateUrl: './range-setting.component.html',
   styleUrl: './range-setting.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RangeSettingComponent {
   // Setting a unique ID for the input element, setting a signal value gives a browser warning
