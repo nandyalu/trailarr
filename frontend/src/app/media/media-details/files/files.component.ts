@@ -1,5 +1,5 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -19,6 +19,7 @@ interface ErrorMessage {
   imports: [DatePipe, FormsModule, LoadIndicatorComponent, NgTemplateOutlet],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilesComponent {
   private readonly filesService = inject(FilesService);
