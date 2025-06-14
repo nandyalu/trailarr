@@ -1,3 +1,7 @@
+@if (profileService.allProfiles.isLoading()) {
+  <app-load-indicator class="center" />
+}
+
 <h2>Profile: {{ profile()?.customfilter?.filter_name }}</h2>
 <button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
@@ -286,13 +290,65 @@
     </div>
   </details>
 </section>
+<div class="buttons-row">
+  <button class="icon-button secondary" (click)="showCopyProfileDialog()">
+    <!-- Shadow Add - Google Fonts Icon - W: 400, G: 200, S: 48px-->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M524-407v-117H407v-73h117v-116h73v116h116v73H597v117h-73ZM137-64q-28.72 0-50.86-22.14T64-137v-512q0-28.72 22.14-50.86T137-722h106v-101q0-28.72 22.14-50.86Q287.27-896 316-896h507q28.72 0 50.86 22.14T896-823v507q0 28.73-22.14 50.86Q851.72-243 823-243H722v106q0 28.72-22.14 50.86T649-64H137Zm179-252h507v-507H316v507Z"
+      />
+    </svg>
+    <span class="text">Duplicate Profile</span>
+  </button>
+  <button class="icon-button secondary" (click)="showJsonEditDialog()">
+    <!-- Data Object - Google Fonts Icon - W: 400, G: 200, S: 48px-->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M590-144v-73h97q24 0 40.5-15.88Q744-248.75 744-273v-91q0-40 23.5-71.5T830-479v-7q-39-7-62.5-38.5T744-596v-91q0-24.25-16.37-40.63Q711.25-744 687-744h-97v-72h108q49 0 83.5 34.58Q816-746.83 816-697v91q0 24.25 15.88 40.12Q847.75-550 871-550h25v139h-25q-23.25 0-39.12 16.37Q816-378.25 816-354v91q0 49.83-34.58 84.42Q746.83-144 698-144H590Zm-327 0q-50 0-84.5-34.58Q144-213.17 144-263v-91q0-24.25-16.37-40.63Q111.25-411 87-411H64v-139h23q24.25 0 40.63-15.88Q144-581.75 144-606v-91q0-49.83 34.58-84.42Q213.17-816 263-816h108v72h-98q-24 0-40 16.37-16 16.38-16 40.63v91q0 40-24 71.5T131-486v7q38 12 62 43.5t24 71.5v91q0 24.25 15.88 40.12Q248.75-217 273-217h98v73H263Z"
+      />
+    </svg>
+    <span class="text">Advanced Editor</span>
+  </button>
+</div>
 
-<dialog #deleteProfileDialog (click)="closeDeleteDialog()">
+<dialog #deleteProfileDialog class="error" (click)="closeDeleteDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">
     <h2>Delete Profile</h2>
     <p>This will Delete the profile and no longer use it for downloads</p>
     <p>Delete the profile?</p>
-    <button class="danger" (click)="onConfirmDelete()" tabindex="2">Delete</button>
-    <button class="secondary" (click)="closeDeleteDialog()" tabindex="1">Cancel</button>
+    <div class="buttons-row">
+      <button class="danger" (click)="onConfirmDelete()">Delete</button>
+      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog #copyProfileDialog (click)="closeCopyProfileDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Duplicate Profile</h2>
+    <p>This will create a copy of the current profile.</p>
+    <div class="input-wrapper">
+      <label for="new-profile-name">New Profile Name</label>
+      <input type="text" id="new-profile-name" class="new-profile-name" [(ngModel)]="newProfileName" placeholder="New Profile Name" />
+    </div>
+    <div class="buttons-row">
+      <button class="primary" [disabled]="!newProfileName()" (click)="onConfirmCopy()">Duplicate</button>
+      <button class="secondary" (click)="closeCopyProfileDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog #jsonEditDialog (click)="closeJsonEditDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Edit Profile JSON</h2>
+    <p>This will allow you to edit the profile JSON directly.</p>
+    <div class="input-wrapper">
+      <label for="profile-json">Profile JSON</label>
+      <textarea id="profile-json" class="json-editor" [(ngModel)]="profileJSON" #jsonEditor></textarea>
+    </div>
+    <div class="buttons-row">
+      <button class="primary" [disabled]="!profileJSON()" (click)="onJsonEditSave()">Save</button>
+      <button class="secondary" (click)="closeJsonEditDialog()">Cancel</button>
+    </div>
   </div>
 </dialog>

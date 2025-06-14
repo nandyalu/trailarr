@@ -2,6 +2,13 @@
   position: relative;
 }
 
+.center {
+  position: fixed;
+  top: 50vh;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .top-right-button {
   position: absolute;
   top: 0;
@@ -78,14 +85,53 @@ tbody > tr:nth-of-type(even) {
 }
 
 .dialog-content {
-  background-color: var(--color-on-error-container);
-  color: var(--color-on-error);
+  display: flex;
+  flex-direction: column;
   padding: 1rem;
   text-align: center;
 }
 
-dialog::backdrop {
-  background-image: linear-gradient(0deg, grey, #690005);
+.input-wrapper {
+  position: relative;
+  margin: 1rem;
+
+  label {
+    position: absolute;
+    top: 0;
+    left: 1rem;
+    transform: translate(0, -50%);
+    transform-origin: left top;
+    transition: all 0.2s ease-in-out;
+    color: var(--color-secondary);
+    background: var(--color-surface-container-highest);
+    padding: 0 0.25rem;
+    font-size: small;
+    pointer-events: none;
+  }
+}
+
+.new-profile-name {
+  height: 3rem;
+  min-width: 25vw;
+  width: 100%;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  font-size: large;
+  color: var(--color-tertiary);
+}
+
+.json-editor {
+  max-width: 85vw;
+  min-width: 50vw;
+  min-height: 40vh;
+  max-height: 75vh;
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  color: var(--color-tertiary);
+  overscroll-behavior: contain;
 }
 
 .dialog-content button {
