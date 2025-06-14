@@ -54,6 +54,7 @@
   height: auto;
   object-fit: contain;
   margin-bottom: auto;
+  view-transition-class: mediaimage;
 }
 
 .media-details-col {
@@ -75,6 +76,7 @@
   display: inline-block;
   overflow: hidden;
   max-width: 70%;
+  view-transition-class: mediatitle;
 }
 
 .icon-link {
@@ -107,6 +109,12 @@
   width: 60px;
   cursor: pointer;
   border-radius: 4px;
+}
+
+.arr-icon {
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
 }
 
 .extras {
@@ -206,16 +214,6 @@
 
 .loading {
   animation: spin-animation 2s linear infinite;
-}
-
-@keyframes spin-animation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .dialog-content {

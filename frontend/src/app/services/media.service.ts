@@ -1,132 +1,81 @@
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
-import {catchError, firstValueFrom, map, Observable, of} from 'rxjs';
+import {HttpClient, HttpParams, httpResource} from '@angular/common/http';
+import {computed, inject, Injectable, signal} from '@angular/core';
+import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
+import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {CustomfilterService} from './customfilter.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MediaService {
   private readonly httpClient = inject(HttpClient);
+  private readonly customfilterService = inject(CustomfilterService);
 
   private mediaUrl = environment.apiUrl + environment.media;
 
-  // allMedia = signal<Media[]>([]);
+  // Signals from others
+  readonly customFilters = this.customfilterService.viewFilters;
 
-  // Add a getter for the allMedia signal
-  // getAllMedia() {
-  //   return this.allMedia;
-  // }
+  // Constants
+  readonly defaultDisplayCount = 50;
 
-  /**
-   * Fetches all media items from the server, maps them, and saves them to the allMedia signal.
-   *
-   * @param {boolean | null} moviesOnly
-   * Flag to specify what Media items to fetch. Default is `null`.
-   * - If `true`, only movies will be fetched.
-   * - If `false`, only series will be fetched.
-   * - If `null`, both movies and series will be fetched.
-   * @param {string} [filterBy='all']
-   * The field by which to filter the media items. Default is `'all'`. \
-   * Possible values are:
-   * - `all`: Fetch all media items.
-   * - `downloaded`: Fetch only downloaded media items.
-   * - `monitored`: Fetch only monitored media items.
-   * - `missing`: Fetch only missing media items.
-   * - `unmonitored`: Fetch only unmonitored media items.
-   * @returns {void}
-   */
-  fetchAllMedia(moviesOnly: boolean | null, filterBy: string = 'all') {
-    // Fetch all media items from the server, map them, and save them to the allMedia signal
-    const url = `${this.mediaUrl}all`;
-    let params: HttpParams;
-    if (moviesOnly !== null) {
-      params = new HttpParams().set('movies_only', moviesOnly).set('filter_by', filterBy);
-    } else {
-      params = new HttpParams().set('filter_by', filterBy);
+  // Signals
+  readonly checkedMediaIDs = signal<number[]>([]);
+  readonly displayCount = signal<number>(this.defaultDisplayCount);
+  readonly inEditMode = signal<boolean>(false);
+  readonly moviesOnly = signal<boolean | null>(null);
+  readonly selectedMediaID = signal<number | null>(null);
+  readonly selectedSort = signal<keyof Media>('added_at');
+  readonly sortAscending = signal<boolean>(true);
+  readonly selectedFilter = signal<string>('all');
+
+  // Resources
+  readonly mediaResource = httpResource<Media[]>(() => ({url: this.mediaUrl + 'all'}), {
+    defaultValue: [],
+    parse: (response) => {
+      if (response && Array.isArray(response)) {
+        return response.map(mapMedia);
+      }
+      return [];
+    },
+  });
+  // readonly mediaFilesResource = httpResource<FolderInfo>(() => ({url: this.mediaUrl + this.selectedMediaID() + '/files'}), {
+  //   parse: (response) => mapFolderInfo(response),
+  // });
+
+  // Computed Signals
+  readonly filteredSortedMedia = computed(() => {
+    // Filter the media list by the selected filter option
+    let mediaList = applySelectedFilter(this.allMedia(), this.selectedFilter(), this.customFilters());
+    // Sort the media list by the selected sort option
+    // Sorts the list in place. If sortAscending is false, reverses the list
+    applySelectedSort(mediaList, this.selectedSort(), this.sortAscending());
+    return mediaList;
+  });
+  readonly displayMedia = computed(() => this.filteredSortedMedia().slice(0, this.displayCount()));
+  readonly selectedMedia = computed(() => {
+    const mediaID = this.selectedMediaID();
+    if (mediaID === null) {
+      return null;
     }
-    return this.httpClient.get<any[]>(url, {params: params});
-  }
-
-  /**
-   * Fetches updated media items from the server and updates the allMedia signal.
-   *
-   * @returns {void}
-   */
-  fetchUpdatedMedia(seconds: number) {
-    // Fetch updated media items from the server and update the allMedia signal
-    const url = `${this.mediaUrl}updated`;
-
-    const params = new HttpParams().set('seconds', seconds);
-    return this.httpClient.get<any[]>(url, {params: params});
-  }
-
-  /**
-   * Fetches a list of recently downloaded media items. Max 50 items.
-   *
-   * @param moviesOnly - Flag to specify what Media items to fetch. \
-   * - If `true`, only movies will be fetched. \
-   * - If `false`, only series will be fetched. \
-   * - If `null`, both movies and series will be fetched.
-   * @returns An Observable that emits an array of Media objects.
-   */
-  fetchRecentlyDownloaded(moviesOnly: boolean | null): Observable<Media[]> {
-    let url = `${this.mediaUrl}downloaded`;
-    let params = new HttpParams();
-    if (moviesOnly !== null) {
-      params = new HttpParams().set('limit', '50').set('movies_only', moviesOnly);
-    } else {
-      params = new HttpParams().set('limit', '50');
+    return this.mediaResource.value().find((media) => media.id === mediaID) || null;
+  });
+  readonly allMedia = computed(() => {
+    let _moviesOnly = this.moviesOnly();
+    switch (_moviesOnly) {
+      case true: {
+        return this.mediaResource.value().filter((media) => media.is_movie);
+      }
+      case false: {
+        return this.mediaResource.value().filter((media) => !media.is_movie);
+      }
+      case null: {
+        return this.mediaResource.value().filter((media) => media.status.toLowerCase() === 'downloaded');
+      }
     }
-    // Else, Fetch the filtered media list from the server
-    return this.httpClient.get<Media[]>(url, {params: params}).pipe(
-      map((media_list: any[]) => {
-        return media_list.map((media) => mapMedia(media));
-      }),
-    );
-  }
-
-  /**
-   * Retrieves a media item by its ID from the server.
-   *
-   * @param mediaID - The ID of the media item to retrieve.
-   * @returns An observable of the media item.
-   */
-  getMediaByID(mediaID: number): Observable<Media> {
-    const url = `${this.mediaUrl}${mediaID}`;
-    return this.httpClient.get<any>(url).pipe(map((media) => mapMedia(media)));
-  }
-
-  /**
-   * Retrieves the previous media item in the list based on the provided media ID.
-   *
-   * @param {number} mediaID - The ID of the current media item.
-   * @returns {Media | null} - The previous media item if it exists, otherwise null.
-   */
-  // getPreviousMedia(mediaID: number): Media | null {
-  //   let mediaList = this.allMedia();
-  //   let index = mediaList.findIndex(media => media.id === mediaID);
-  //   if (index > 0) {
-  //     return mediaList[index - 1];
-  //   }
-  //   return null;
-  // }
-
-  /**
-   * Retrieves the next media item in the list based on the provided media ID.
-   *
-   * @param {number} mediaID - The ID of the current media item.
-   * @returns {Media | null} - The next media item if it exists, otherwise null.
-   */
-  // getNextMedia(mediaID: number): Media | null {
-  //   let mediaList = this.allMedia();
-  //   let index = mediaList.findIndex(media => media.id === mediaID);
-  //   if (index < mediaList.length - 1) {
-  //     return mediaList[index + 1];
-  //   }
-  //   return null;
-  // }
+  });
 
   /**
    * Searches for media items that match the given search term.
@@ -204,34 +153,6 @@ export class MediaService {
   deleteMediaTrailer(mediaID: number): Observable<any> {
     const url = `${this.mediaUrl}${mediaID}/trailer`;
     return this.httpClient.delete(url);
-  }
-
-  /**
-   * Fetches the files for a Media item.
-   *
-   * @param mediaID - The ID of the Media item to fetch the files for.
-   * @returns An Observable that emits a `FolderInfo` object with the files for the specified Media item. \
-   * If no files are found for the specified Media item, the Observable will emit a string. \
-   * If an error occurs during the request, the Observable will emit an error.
-   */
-  getMediaFiles(mediaID: number): Observable<any> {
-    const url = `${this.mediaUrl}${mediaID}/files`;
-    return this.httpClient.get(url).pipe(
-      map((response) => {
-        if (typeof response === 'string') {
-          // Handle the string response
-          return response;
-        } else {
-          // Map the FolderInfo object
-          return mapFolderInfo(response);
-        }
-      }),
-      catchError((error) => {
-        // Handle error appropriately
-        console.error('Error fetching media files:', error);
-        return of(`Error: ${error.message}`);
-      }),
-    );
   }
 
   async fetchMediaFiles(mediaID: number): Promise<FolderInfo> {

@@ -1,11 +1,11 @@
-import {NgIf, TitleCasePipe} from '@angular/common';
-import {Component, effect, ElementRef, inject, input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
+import {TitleCasePipe} from '@angular/common';
+import {Component, computed, effect, ElementRef, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
-import {catchError, of, Subscription} from 'rxjs';
+import {catchError, of} from 'rxjs';
+import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
+import {SettingsService} from 'src/app/services/settings.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {DurationConvertPipe} from '../../helpers/duration-pipe';
-import {Media} from '../../models/media';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
 import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';
@@ -13,100 +13,78 @@ import {FilesComponent} from './files/files.component';
 
 @Component({
   selector: 'app-media-details',
-  imports: [NgIf, FormsModule, DurationConvertPipe, LoadIndicatorComponent, TitleCasePipe, FilesComponent],
+  imports: [CopyToClipboardDirective, FormsModule, DurationConvertPipe, LoadIndicatorComponent, TitleCasePipe, FilesComponent],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
 })
-export class MediaDetailsComponent implements OnDestroy, OnInit {
+export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly settingsService = inject(SettingsService);
   private readonly websocketService = inject(WebsocketService);
   private readonly viewContainerRef = inject(ViewContainerRef);
 
   mediaId = input(0, {transform: Number});
-  media?: Media = undefined;
-  isLoading = true;
-  isLoadingMonitor = false;
-  isLoadingDownload = false;
+  selectedMedia = this.mediaService.selectedMedia;
+  isLoading = computed(() => this.mediaService.mediaResource.isLoading());
+  isLoadingMonitor = signal<boolean>(false);
+  isLoadingDownload = signal<boolean>(false);
   trailer_url: string = '';
-  private webSocketSubscription?: Subscription;
-
-  /**
-   * Copies the provided text to the clipboard. If the Clipboard API is not available,
-   * it falls back to using the `execCommand` method for wider browser compatibility.
-   *
-   * @param textToCopy - The text string to be copied to the clipboard.
-   * @returns A promise that resolves when the text has been successfully copied.
-   *
-   * @remarks
-   * This method uses the modern Clipboard API if available, and falls back to the
-   * `execCommand` method for older browsers. It also displays a toast notification
-   * indicating the success or failure of the copy operation.
-   *
-   * @example
-   * ```typescript
-   * this.copyToClipboard("Hello, World!");
-   * ```
-   */
-  async copyToClipboard(textToCopy: string) {
-    if (!navigator.clipboard) {
-      // Fallback to the old execCommand() way (for wider browser coverage)
-      const tempInput = document.createElement('input');
-      tempInput.value = textToCopy;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      this.websocketService.showToast('Copied to clipboard!');
+  arr_url = computed(() => {
+    let media = this.selectedMedia();
+    if (!media) return '';
+    let connections = this.settingsService.connectionsResource.value();
+    let connection = connections.find((c) => c.id == media.connection_id);
+    if (!connection) return '';
+    if (connection.arr_type.toLowerCase() == 'radarr') {
+      return connection.url + '/movie/' + media.txdb_id;
     } else {
-      try {
-        await navigator.clipboard.writeText(textToCopy);
-        this.websocketService.showToast('Copied to clipboard!');
-      } catch (err) {
-        this.websocketService.showToast('Error copying text to clipboard.', 'Error');
-        console.error('Failed to copy: ', err);
-      }
+      return connection.url + '/series/' + media.title_slug;
     }
-    return;
-  }
-
-  // Load media data when the media ID changes
-  mediaEffect = effect(() => {
-    this.isLoading = true;
-    this.getMediaData();
   });
 
-  ngOnInit() {
-    this.isLoading = true;
-    // this.route.params.subscribe(params => {
-    //   this.mediaId.set(parseInt(params['id']));
-    //   this.getMediaData();
-    // });
+  // Load media data when the media ID changes
+  mediaIDChangeEffect = effect(() => {
+    this.mediaService.selectedMediaID.set(this.mediaId());
+  });
 
-    // Subscribe to WebSocket updates and refresh media data
-    this.webSocketSubscription = this.websocketService.toastMessage.subscribe(() => {
-      this.getMediaData();
-    });
-  }
+  mediaDataChangeEffect = effect(() => {
+    const media = this.selectedMedia();
+    if (media) {
+      this.trailer_url = media.youtube_trailer_id;
+    }
+  });
 
-  ngOnDestroy() {
-    // Unsubscribe from the websocket events
-    this.webSocketSubscription?.unsubscribe();
-  }
+  // ngOnInit() {
+  //   this.isLoading = true;
+  //   // this.route.params.subscribe(params => {
+  //   //   this.mediaId.set(parseInt(params['id']));
+  //   //   this.getMediaData();
+  //   // });
 
-  /**
-   * Fetches media data based on the current media ID. \
-   * Also sets the `trailer_url` property to the YouTube trailer ID of the media.
-   * @returns {void}
-   */
-  getMediaData(): void {
-    // Get Media Data
-    this.mediaService.getMediaByID(this.mediaId()).subscribe((media_res: Media) => {
-      this.media = media_res;
-      this.trailer_url = media_res.youtube_trailer_id;
-      this.isLoading = false;
-    });
-  }
+  //   // Subscribe to WebSocket updates and refresh media data
+  //   // this.webSocketSubscription = this.websocketService.toastMessage.subscribe(() => {
+  //   //   this.getMediaData();
+  //   // });
+  // }
+
+  // ngOnDestroy() {
+  //   // Unsubscribe from the websocket events
+  //   this.webSocketSubscription?.unsubscribe();
+  // }
+
+  // /**
+  //  * Fetches media data based on the current media ID. \
+  //  * Also sets the `trailer_url` property to the YouTube trailer ID of the media.
+  //  * @returns {void}
+  //  */
+  // getMediaData(): void {
+  //   // Get Media Data
+  //   this.mediaService.getMediaByID(this.mediaId()).subscribe((media_res: Media) => {
+  //     this.selectedMedia = media_res;
+  //     this.trailer_url = media_res.youtube_trailer_id;
+  //     this.isLoading = false;
+  //   });
+  // }
 
   openProfileSelectDialog(isNextActionSearch: boolean): void {
     // Open the dialog for selecting a profile
@@ -118,11 +96,15 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
       } else {
         this.downloadTrailer(profileId);
       }
-      dialogRef.destroy(); // Destroy the dialog after use
+      setTimeout(() => {
+        dialogRef.destroy(); // Destroy the dialog component after use
+      }, 3000);
     });
     dialogRef.instance.onClosed.subscribe(() => {
       // Handle dialog close
-      dialogRef.destroy(); // Destroy the dialog when closed
+      setTimeout(() => {
+        dialogRef.destroy(); // Destroy the dialog when closed
+      }, 3000);
     });
   }
 
@@ -138,13 +120,13 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
    * @returns {void}
    */
   downloadTrailer(profileId: number): void {
-    const old_id = this.media?.youtube_trailer_id?.toLowerCase() || '';
+    const old_id = this.selectedMedia()?.youtube_trailer_id?.toLowerCase() || '';
     const new_id = this.trailer_url.toLowerCase();
-    if (new_id.includes(old_id) && this.media?.trailer_exists) {
+    if (new_id.includes(old_id) && this.selectedMedia()?.trailer_exists) {
       // Trailer id is the same, no need to download
       return;
     }
-    this.isLoadingDownload = true;
+    this.isLoadingDownload.set(true);
     // console.log('Downloading trailer');
     this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {
       console.log(res);
@@ -159,60 +141,60 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
    * Once the subscription receives a response, it logs the response, updates the media's monitor status,
    * and sets the `isLoadingMonitor` flag to false.
    */
-  monitorSeries() {
+  monitorMedia() {
     // console.log('Toggling Media Monitoring');
-    this.isLoadingMonitor = true;
-    const monitor = !this.media?.monitor;
+    this.isLoadingMonitor.set(true);
+    const monitor = !this.selectedMedia()?.monitor;
     this.mediaService.monitorMedia(this.mediaId(), monitor).subscribe((res: string) => {
       console.log(res);
-      this.media!.monitor = monitor;
-      this.isLoadingMonitor = false;
+      this.selectedMedia()!.monitor = monitor;
+      this.isLoadingMonitor.set(false);
     });
   }
 
   searchTrailer(profileID: number) {
     // console.log('Searching for trailer');
     this.websocketService.showToast('Searching for trailer...');
-    this.isLoadingDownload = true;
+    this.isLoadingDownload.set(true);
     this.mediaService
       .searchMediaTrailer(this.mediaId(), profileID)
       .pipe(
         catchError((error) => {
           console.error('Error searching trailer:', error.error.detail);
           this.websocketService.showToast(error.error.detail, 'Error');
-          this.isLoadingDownload = false;
+          this.isLoadingDownload.set(false);
           return of('');
         }),
       )
       .subscribe((res: string) => {
         if (res) {
-          this.media!.youtube_trailer_id = res;
+          this.selectedMedia()!.youtube_trailer_id = res;
           this.trailer_url = res;
         }
-        this.isLoadingDownload = false;
+        this.isLoadingDownload.set(false);
       });
   }
 
   saveYtId() {
     // console.log('Saving youtube id');
     this.websocketService.showToast('Saving youtube id...');
-    this.isLoadingDownload = true;
+    this.isLoadingDownload.set(true);
     this.mediaService
       .saveMediaTrailer(this.mediaId(), this.trailer_url)
       .pipe(
         catchError((error) => {
           console.error('Error searching trailer:', error.error.detail);
           this.websocketService.showToast(error.error.detail, 'Error');
-          this.isLoadingDownload = false;
+          this.isLoadingDownload.set(false);
           return of('');
         }),
       )
       .subscribe((res: string) => {
         if (res) {
-          this.media!.youtube_trailer_id = res;
+          this.selectedMedia()!.youtube_trailer_id = res;
           this.trailer_url = res;
         }
-        this.isLoadingDownload = false;
+        this.isLoadingDownload.set(false);
       });
   }
 
@@ -223,10 +205,10 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
    * @returns {void}
    */
   openTrailer(): void {
-    if (!this.media?.youtube_trailer_id) {
+    if (!this.selectedMedia()?.youtube_trailer_id) {
       return;
     }
-    window.open(`https://www.youtube.com/watch?v=${this.media.youtube_trailer_id}`, '_blank');
+    window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
   }
 
   // Reference to the dialog element
@@ -263,7 +245,7 @@ export class MediaDetailsComponent implements OnDestroy, OnInit {
     this.closeDeleteDialog();
     this.mediaService.deleteMediaTrailer(this.mediaId()).subscribe((res: string) => {
       console.log(res);
-      this.media!.trailer_exists = false;
+      this.selectedMedia()!.trailer_exists = false;
     });
   }
 }
