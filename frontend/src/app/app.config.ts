@@ -1,14 +1,7 @@
 import {DATE_PIPE_DEFAULT_OPTIONS} from '@angular/common';
 import {provideHttpClient} from '@angular/common/http';
 import {ApplicationConfig, importProvidersFrom} from '@angular/core';
-import {
-  PreloadAllModules,
-  provideRouter,
-  withComponentInputBinding,
-  withInMemoryScrolling,
-  withPreloading,
-  withViewTransitions,
-} from '@angular/router';
+import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading} from '@angular/router';
 import {ApiModule} from 'generated-sources/openapi';
 import {TimeagoModule} from 'ngx-timeago';
 import {routes} from './app.routes';
@@ -19,7 +12,7 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withPreloading(PreloadAllModules),
-      withViewTransitions(),
+      // withViewTransitions(),
       withInMemoryScrolling({scrollPositionRestoration: 'top', anchorScrolling: 'enabled'}),
     ),
     provideHttpClient(),
