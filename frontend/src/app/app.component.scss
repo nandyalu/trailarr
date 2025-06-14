@@ -46,13 +46,16 @@
   position: sticky;
   top: 76px;
   height: calc(100vh - 76px);
+  view-transition-name: navmenu;
+  view-transition-class: navmenu-class;
 
   @media (width < 765px) {
     width: 100%;
-    height: auto;
+    height: 78px;
     position: fixed;
-    bottom: 0;
     top: auto;
+    bottom: -1px;
+    // Setting bottom to -1px as there is a 1px gap at the bottom sometimes
     left: 0;
     order: 2;
   }
