@@ -107,7 +107,10 @@ async def health_check():
     """
     try:
         # Run nvidia-smi to check for NVIDIA GPU presence
-        if app_settings.trailer_hardware_acceleration:
+        if (
+            app_settings.nvidia_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        ):
             logging.debug("Checking NVIDIA GPU availability")
             # Check if nvidia-smi is available
             if not shutil.which("nvidia-smi"):
