@@ -1,5 +1,5 @@
 import {CommonModule} from '@angular/common';
-import {Component, inject, signal, ViewContainerRef} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal, ViewContainerRef} from '@angular/core';
 import {Router, RouterLink} from '@angular/router';
 import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
 import {ProfileService} from 'src/app/services/profile.service';
@@ -11,6 +11,7 @@ import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
   imports: [CommonModule, LoadIndicatorComponent, RouterLink],
   templateUrl: './show-profiles.component.html',
   styleUrl: './show-profiles.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShowProfilesComponent {
   protected readonly profileService = inject(ProfileService);
@@ -36,7 +37,9 @@ export class ShowProfilesComponent {
         this.router.navigate(['/settings/profiles/edit', emitValue]);
       }
       // Else, Filter dialog closed without submission, do nothing
-      dialogRef.destroy(); // Destroy the dialog component after use
+      setTimeout(() => {
+        dialogRef.destroy(); // Destroy the dialog component after use
+      }, 3000);
     });
   }
 }

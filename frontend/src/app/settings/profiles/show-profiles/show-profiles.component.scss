@@ -32,7 +32,10 @@
 }
 
 .center {
-  margin: auto;
+  position: fixed;
+  top: 50vh;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .profile-container {
@@ -79,6 +82,7 @@
   grid-column: 2;
   width: auto;
   padding: 0.5rem;
+  margin: auto;
 }
 
 .profile-card-icon {
