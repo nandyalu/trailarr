@@ -53,10 +53,10 @@ def update_trailerprofile(
     )
 
     # Validate the updated trailer profile
-    trailerprofile_db.model_validate(trailerprofile_db.model_dump())
+    TrailerProfile.model_validate(trailerprofile_db)
 
     # Commit the changes to the database
-    _session.add(trailerprofile_db)
+    # _session.add(trailerprofile_db)
     _session.commit()
     _session.refresh(trailerprofile_db)
     logger.info(
