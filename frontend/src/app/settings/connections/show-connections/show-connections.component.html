@@ -1,63 +1,53 @@
-@let connections = connections$ | async;
-
-<dialog #deleteConnectionDialog (click)="closeDeleteDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Delete Connection</h2>
-    <p>This will Delete the connection and no longer monitor its Media</p>
-    <p>Delete the connection?</p>
-    <button class="danger" (click)="onConfirmDelete()" tabindex="2">Delete</button>
-    <button class="secondary" (click)="closeDeleteDialog()" tabindex="1">Cancel</button>
-  </div>
-</dialog>
+@let connections = connectionsResource.value();
 
 <div class="sett-conn-container">
   @if (isLoading()) {
     <app-load-indicator class="center" />
   } @else {
-    <h2>Connections</h2>
+    <div class="title-block">
+      <h2>Connections</h2>
+      <i class="icononly-button" [class.loading]="connectionsResource.isLoading()" title="Refresh" (click)="connectionsResource.reload()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="refresh-icon">
+          <path
+            d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+          />
+        </svg>
+      </i>
+    </div>
+    <button class="animated-button top-right-button" [routerLink]="RouteAdd">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+      </svg>
+      <span class="text">Add New</span>
+    </button>
     <hr />
 
-    @if (resultMessage) {
-      <p class="result-{{ resultType }}">{{ resultMessage }}</p>
+    @if (resultMessage()) {
+      <p class="result-{{ resultType() }}">{{ resultMessage() }}</p>
     }
 
     @if (connections && connections.length > 0) {
       <div class="connection-container">
         @for (connection of connections; track $index) {
           <div class="connection-card">
+            <a class="card-link" [routerLink]="[RouteEdit, connection.id]"></a>
             <h3 class="title">{{ connection.name }}</h3>
             <div class="content">
-              <p>Address: {{ connection.url }}</p>
+              <p>URL: {{ connection.url }}</p>
               <p>Monitor: {{ connection.monitor | uppercase }}</p>
-              <p>Added: {{ connection.added_at | date }}</p>
+              <p>Added: {{ connection.added_at | date: 'mediumDate' }}</p>
             </div>
-            <a class="link-image" target="_blank" href="{{ connection.url }}">
-              @switch (connection.arr_type) {
-                @case ('radarr') {
-                  <img src="assets/radarr_128.png" />
+            <div class="link-image">
+              <a target="_blank" href="{{ connection.url }}">
+                @switch (connection.arr_type) {
+                  @case ('radarr') {
+                    <img src="assets/radarr_128.png" />
+                  }
+                  @case ('sonarr') {
+                    <img src="assets/sonarr_128.png" />
+                  }
                 }
-                @case ('sonarr') {
-                  <img src="assets/sonarr_128.png" />
-                }
-              }
-            </a>
-            <div class="buttons">
-              <button class="animated-button secondary" (click)="selectedId = connection.id; showDeleteDialog()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
-                  />
-                </svg>
-                <span class="text">Delete</span>
-              </button>
-              <button class="animated-button primary" [routerLink]="[RouteEdit, connection.id]">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"
-                  />
-                </svg>
-                <span class="text">Edit</span>
-              </button>
+              </a>
             </div>
           </div>
         }
@@ -69,10 +59,4 @@
       </div>
     }
   }
-  <button class="animated-button top-right-button" [routerLink]="RouteAdd">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-      <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-    </svg>
-    <span class="text">Add New</span>
-  </button>
 </div>

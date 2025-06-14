@@ -1,7 +1,10 @@
 import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
-import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnInit, viewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
+import {ConnectionsService} from 'generated-sources/openapi';
+import {catchError, of} from 'rxjs';
+import {WebsocketService} from 'src/app/services/websocket.service';
 import {RouteParamConnectionId} from 'src/routing';
 import {Connection, ConnectionUpdate, PathMapping} from '../../../models/connection';
 import {SettingsService} from '../../../services/settings.service';
@@ -14,8 +17,10 @@ import {SettingsService} from '../../../services/settings.service';
 })
 export class EditConnectionComponent implements OnInit {
   private readonly _location = inject(Location);
+  private readonly connectionsService = inject(ConnectionsService);
   private readonly route = inject(ActivatedRoute);
   private readonly settingsService = inject(SettingsService);
+  private readonly webSocketService = inject(WebsocketService);
 
   connectionId: number = 0;
 
@@ -94,16 +99,16 @@ export class EditConnectionComponent implements OnInit {
   }
 
   // Reference to the dialog element
-  @ViewChild('cancelDialog') cancelDialog!: ElementRef<HTMLDialogElement>;
+  private readonly cancelDialog = viewChild<ElementRef<HTMLDialogElement>>('cancelDialog');
 
   showCancelDialog(): void {
     // Open the confirmation dialog
-    this.cancelDialog.nativeElement.showModal(); // Open the dialog
+    this.cancelDialog()?.nativeElement.showModal(); // Open the dialog
   }
 
   closeCancelDialog(): void {
     // Close the confirmation dialog
-    this.cancelDialog.nativeElement.close(); // Close the dialog
+    this.cancelDialog()?.nativeElement.close(); // Close the dialog
   }
 
   onCancel() {
@@ -146,5 +151,39 @@ export class EditConnectionComponent implements OnInit {
         }, 2000);
       }
     });
+  }
+
+  private readonly deleteDialog = viewChild<ElementRef<HTMLDialogElement>>('deleteConnectionDialog');
+  protected closeDeleteDialog = () => this.deleteDialog()?.nativeElement.close();
+  protected showDeleteDialog = () => this.deleteDialog()?.nativeElement.showModal();
+
+  protected onConfirmDelete() {
+    this.closeDeleteDialog();
+    this.connectionsService
+      .deleteConnectionApiV1ConnectionsConnectionIdDelete({connection_id: this.connectionId})
+      .pipe(
+        catchError((error) => {
+          let errorMessage = '';
+          if (error.error instanceof ErrorEvent) {
+            // client-side error
+            errorMessage = `Error: ${error.error.message}`;
+          } else {
+            // server-side error
+            errorMessage = `Error: ${error.status} ${error.error.detail}`;
+          }
+          return of(errorMessage);
+        }),
+      )
+      .subscribe((res) => {
+        let resultType = 'error';
+        if (res.toLowerCase().includes('success')) {
+          resultType = 'success';
+          // wait 3 seconds and go back
+          setTimeout(() => {
+            this._location.back();
+          }, 2000);
+        }
+        this.webSocketService.showToast(res, resultType);
+      });
   }
 }

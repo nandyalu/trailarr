@@ -7,6 +7,23 @@
   gap: 12px;
 }
 
+.title-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.refresh-icon {
+  cursor: pointer;
+  fill: var(--color-on-surface);
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
+}
+
 .top-right-button {
   position: absolute;
   top: 0;
@@ -52,6 +69,12 @@
   border-radius: 8px;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
+  position: relative;
+}
+
+.card-link {
+  position: absolute;
+  inset: 0;
 }
 
 .connection-card .title {
@@ -70,6 +93,16 @@
   grid-row: 2;
   grid-column: 2;
   width: auto;
+  margin: auto;
+  position: relative;
+  pointer-events: none;
+  z-index: 1;
+
+  img {
+    width: 3rem;
+    height: 3rem;
+    pointer-events: all;
+  }
 }
 
 .connection-card .buttons {

@@ -1,23 +1,29 @@
 .form-container {
   width: 100%;
   border: 2px solid var(--color-outline);
-  padding: 24px;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   position: relative;
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-surface-container);
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 0.15s;
 }
 
+.top-right-button {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+}
+
 .form-container form {
   display: block;
   padding: 0;
   border: var(--color-outline);
-  border-radius: 8px;
+  border-radius: 0.5rem;
 }
 
 .input-group {
