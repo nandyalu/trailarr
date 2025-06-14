@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "jest --ci --logHeapUsage",
     "test:dev": "jest --updateSnapshot --bail --runInBand",

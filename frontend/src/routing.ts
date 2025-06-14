@@ -10,7 +10,7 @@ export const RouteProfiles = 'profiles';
 export const RouteSeries = 'series';
 export const RouteSettings = 'settings';
 export const RouteTasks = 'tasks';
-export const RouteTrailer = 'trailer';
+export const RouteGeneral = 'general';
 
 export const RouteParamConnectionId = 'connectionId';
 export const RouteParamMediaId = 'mediaId';
