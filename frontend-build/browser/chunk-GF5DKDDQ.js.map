@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/util.ts"],
-  "sourcesContent": ["export const msSecond = 1000;\nexport const msMinute = 60 * msSecond;\nexport const msHour = 60 * msMinute;\n\nexport function durationString(durationInMinutes: number) {\n  const hours = Math.floor(durationInMinutes / 60);\n  const minutes = Math.floor(durationInMinutes % 60);\n\n  return hours === 0 ? `${minutes}m` : minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;\n}\n\nexport const jsonEqual = <T>(left: T, right: T): boolean => left === right || JSON.stringify(left) === JSON.stringify(right);\n"],
-  "mappings": ";AAAO,IAAM,WAAW;AACjB,IAAM,WAAW,KAAK;AACtB,IAAM,SAAS,KAAK;AAErB,SAAU,eAAe,mBAAyB;AACtD,QAAM,QAAQ,KAAK,MAAM,oBAAoB,EAAE;AAC/C,QAAM,UAAU,KAAK,MAAM,oBAAoB,EAAE;AAEjD,SAAO,UAAU,IAAI,GAAG,OAAO,MAAM,YAAY,IAAI,GAAG,KAAK,MAAM,GAAG,KAAK,KAAK,OAAO;AACzF;AAEO,IAAM,YAAY,CAAI,MAAS,UAAsB,SAAS,SAAS,KAAK,UAAU,IAAI,MAAM,KAAK,UAAU,KAAK;",
-  "names": []
-}
