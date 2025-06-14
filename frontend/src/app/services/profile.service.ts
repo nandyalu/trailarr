@@ -1,6 +1,8 @@
 import {httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {TrailerProfileRead, TrailerProfilesService} from 'generated-sources/openapi';
+import {TrailerProfileCreate, TrailerProfileRead, TrailerProfilesService} from 'generated-sources/openapi';
+import {Observable, of} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 import {environment} from 'src/environment';
 import {WebsocketService} from './websocket.service';
 
@@ -44,6 +46,80 @@ export class ProfileService {
     // If not found, return the value from the fetchSelectedProfileResource
     return this.fetchSelectedProfileResource.value();
   });
+
+  profileExists(id: number): boolean {
+    let exists = this.allProfiles.value().some((profile) => profile.id === id);
+    if (exists) return true; // Profile exists in the local list
+    // Else, send a notification that profile does not exist
+    this.websocketService.showToast(`Profile with ID '${id}' does not exist.`, 'error');
+    return false;
+  }
+
+  createProfile(profile: TrailerProfileCreate): Observable<number | null> {
+    if (!profile || !profile.customfilter.filter_name) {
+      this.websocketService.showToast('Profile name is required', 'error');
+      console.error('Profile creation failed: Name is required');
+      return of(null); // Return null observable if name is invalid
+    }
+    return this._service.createTrailerProfileApiV1TrailerprofilesPost({body: profile}).pipe(
+      map((createdProfile) => {
+        // Reload the Profiles
+        this.allProfiles.reload();
+        this.selectedProfileId.set(createdProfile.id); // Set the newly created profile as selected
+        this.websocketService.showToast(`Profile '${createdProfile.customfilter.filter_name}' created successfully!`, 'success');
+        return createdProfile.id;
+      }),
+      catchError((error) => {
+        // Log the server's error message
+        let errorMessage = 'An unknown error occurred!';
+        if (error.error instanceof ErrorEvent) {
+          // client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // server-side error
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        console.error('Failed to create profile:', errorMessage);
+        this.websocketService.showToast(errorMessage, 'error');
+        return of(null);
+      }),
+    );
+  }
+
+  updateProfile(profile: TrailerProfileRead): Observable<boolean> {
+    if (!profile || !profile.customfilter.filter_name) {
+      this.websocketService.showToast('Profile name is required', 'error');
+      console.error('Profile update failed: Name is required');
+      return of(false); // Return false observable if name is invalid
+    }
+    return this._service
+      .updateTrailerProfileApiV1TrailerprofilesTrailerprofileIdPut({
+        trailerprofile_id: profile.id,
+        body: profile,
+      })
+      .pipe(
+        map((updatedProfile) => {
+          // Reload Profiles
+          this.allProfiles.reload();
+          this.websocketService.showToast(`Profile '${updatedProfile.customfilter.filter_name}' updated successfully!`, 'success');
+          return true;
+        }),
+        catchError((error) => {
+          // Log the server's error message
+          let errorMessage = 'An unknown error occurred!';
+          if (error.error instanceof ErrorEvent) {
+            // client-side error
+            errorMessage = `Error: ${error.error.message}`;
+          } else {
+            // server-side error
+            errorMessage = `Error: ${error.status} ${error.error.detail}`;
+          }
+          console.error('Failed to update profile:', errorMessage);
+          this.websocketService.showToast(errorMessage, 'error');
+          return of(false);
+        }),
+      );
+  }
 
   updateSetting(key: keyof TrailerProfileRead, value: any) {
     const selectedId = this.selectedProfileId();
