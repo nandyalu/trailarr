@@ -1,22 +1,21 @@
-import {NgIf} from '@angular/common';
+import {NgTemplateOutlet} from '@angular/common';
 import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TimeagoModule} from 'ngx-timeago';
-import {ServerStats, Settings} from '../../models/settings';
+import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
+import {ServerStats} from '../../models/settings';
 import {SettingsService} from '../../services/settings.service';
-import {WebsocketService} from '../../services/websocket.service';
 
 @Component({
   selector: 'app-about',
-  imports: [TimeagoModule, NgIf, FormsModule],
+  imports: [CopyToClipboardDirective, FormsModule, TimeagoModule, NgTemplateOutlet],
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss',
 })
 export class AboutComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
-  private readonly websocketService = inject(WebsocketService);
 
-  settings?: Settings;
+  protected readonly settingsSignal = this.settingsService.settingsResource.value;
   serverStats?: ServerStats;
   currentPassword = '';
   newUsername = '';
@@ -27,34 +26,8 @@ export class AboutComponent implements OnInit {
   newPasswordVisible = false;
 
   ngOnInit() {
-    this.settingsService.getSettings().subscribe((settings) => (this.settings = settings));
+    // this.settingsService.getSettings().subscribe((settings) => (this.settings = settings));
     this.settingsService.getServerStats().subscribe((serverStats) => (this.serverStats = serverStats));
-  }
-
-  updatePassword() {
-    // this.settingsService.updatePassword().subscribe();
-  }
-
-  async copyToClipboard(textToCopy: string) {
-    if (!navigator.clipboard) {
-      // Fallback to the old execCommand() way (for wider browser coverage)
-      const tempInput = document.createElement('input');
-      tempInput.value = textToCopy;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      this.websocketService.showToast('Copied to clipboard!');
-    } else {
-      try {
-        await navigator.clipboard.writeText(textToCopy);
-        this.websocketService.showToast('Copied to clipboard!');
-      } catch (err) {
-        this.websocketService.showToast('Error copying text to clipboard.', 'Error');
-        console.error('Failed to copy: ', err);
-      }
-    }
-    return;
   }
 
   // Reference to the dialog element
