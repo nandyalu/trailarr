@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-import {RouteAbout, RouteConnections, RouteProfiles, RouteTrailer} from 'src/routing';
+import {RouteAbout, RouteConnections, RouteGeneral, RouteProfiles} from 'src/routing';
 
 @Component({
   selector: 'app-settings',
@@ -13,5 +13,5 @@ export class SettingsComponent {
   protected readonly RouteAbout = RouteAbout;
   protected readonly RouteConnections = RouteConnections;
   protected readonly RouteProfiles = RouteProfiles;
-  protected readonly RouteTrailer = RouteTrailer;
+  protected readonly RouteGeneral = RouteGeneral;
 }

@@ -4,19 +4,19 @@ import {
   RouteAdd,
   RouteConnections,
   RouteEdit,
+  RouteGeneral,
   RouteParamConnectionId,
   RouteParamProfileId,
   RouteProfiles,
-  RouteTrailer,
 } from 'src/routing';
 import {AboutComponent} from './about/about.component';
 import {AddConnectionComponent} from './connections/add-connection/add-connection.component';
 import {EditConnectionComponent} from './connections/edit-connection/edit-connection.component';
 import {ShowConnectionsComponent} from './connections/show-connections/show-connections.component';
+import {GeneralComponent} from './general/general.component';
 import {EditProfileComponent} from './profiles/edit-profile/edit-profile.component';
 import {ShowProfilesComponent} from './profiles/show-profiles/show-profiles.component';
 import {SettingsComponent} from './settings.component';
-import {TrailerComponent} from './trailer/trailer.component';
 
 export default [
   {
@@ -28,9 +28,9 @@ export default [
       {path: `${RouteConnections}/${RouteEdit}/:${RouteParamConnectionId}`, component: EditConnectionComponent},
       {path: RouteProfiles, component: ShowProfilesComponent},
       {path: `${RouteProfiles}/${RouteEdit}/:${RouteParamProfileId}`, component: EditProfileComponent},
-      {path: RouteTrailer, component: TrailerComponent},
+      {path: RouteGeneral, component: GeneralComponent},
       {path: RouteAbout, component: AboutComponent},
-      {path: '**', redirectTo: RouteTrailer, pathMatch: 'prefix'},
+      {path: '**', redirectTo: RouteGeneral, pathMatch: 'prefix'},
     ],
   },
 ] as Route[];
