@@ -70,6 +70,11 @@
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   position: relative;
+
+  @media (max-width: 765px) {
+    margin: auto;
+    width: 100%;
+  }
 }
 
 .card-link {

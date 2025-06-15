@@ -57,6 +57,7 @@
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   cursor: pointer;
+  text-decoration: none;
 
   @media (max-width: 765px) {
     margin: auto;

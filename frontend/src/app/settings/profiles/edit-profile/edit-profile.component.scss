@@ -1,5 +1,7 @@
 :host {
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .center {
@@ -7,6 +9,20 @@
   top: 50vh;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.title-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  max-width: calc(100% - 7rem);
+  color: var(--color-primary);
+}
+
+.edit-icon {
+  cursor: pointer;
+  fill: var(--color-on-surface);
 }
 
 .top-right-button {
