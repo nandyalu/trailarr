@@ -10,11 +10,8 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+
 from app_logger import ModuleLogger
-from sqlalchemy.orm import Session
-from core.base.database.models.customfilter import CustomFilter
-from core.base.database.models.filter import Filter, FilterCondition
-from core.base.database.models.trailerprofile import TrailerProfile
 from dotenv import load_dotenv
 import os
 
@@ -56,79 +53,132 @@ def upgrade() -> None:
                 nullable=False,
             )
         )
+        logger.info("Added 'always_search' column to 'trailerprofile' table")
     # ### end Alembic commands ###
 
-    # Add initial TrailerProfile entries
-    bind = op.get_bind()
-    session = Session(bind=bind)
+    # ### Add initial TrailerProfile entries ###
+    logger.info("Starting initial TrailerProfile creation")
+    connection = op.get_bind()
+    # session = Session(bind=connection)
+    metadata = sa.MetaData()
+    metadata.reflect(bind=connection)
+    filter_table = metadata.tables.get("filter")
+    customfilter_table = metadata.tables.get("customfilter")
+    trailer_profile_table = metadata.tables.get("trailerprofile")
+    if (
+        filter_table is None
+        or customfilter_table is None
+        or trailer_profile_table is None
+    ):
+        logger.info(
+            "One or more required tables do not exist! Please apply previous"
+            " migrations."
+        )
+        raise Exception(
+            "One or more required tables do not exist! Please apply previous"
+            " migrations."
+        )
     try:
         logger.info("Creating initial TrailerProfiles from .env file")
-        customfilter1 = CustomFilter(
-            filter_name="Movie Trailers",
-            filters=[
-                Filter(
-                    filter_by="is_movie",
-                    filter_condition=FilterCondition.EQUALS,
-                    filter_value="true",
-                ),
-                Filter(
-                    filter_by="trailer_exists",
-                    filter_condition=FilterCondition.EQUALS,
-                    filter_value="false",
-                ),
+        # 1. Insert CustomFilters into the CustomFilter table
+        customfilter_movies = {
+            "filter_name": "Movie Trailers",
+            "filter_type": "TRAILER",
+        }
+        customfilter_series = {
+            "filter_name": "Series Trailers",
+            "filter_type": "TRAILER",
+        }
+        cf_res1 = connection.execute(
+            customfilter_table.insert().values(customfilter_movies)
+        )
+        cf_id1 = cf_res1.lastrowid
+        cf_res2 = connection.execute(
+            customfilter_table.insert().values(customfilter_series)
+        )
+        cf_id2 = cf_res2.lastrowid
+        logger.info(f"Inserted CustomFilters with IDs: {cf_id1}, {cf_id2}")
+        # 2. Insert Filters into the Filter table
+        filter_trailer_exists1 = {
+            "filter_by": "trailer_exists",
+            "filter_condition": "EQUALS",
+            "filter_value": "false",
+            "customfilter_id": cf_id1,
+        }
+        filter_is_movie = {
+            "filter_by": "is_movie",
+            "filter_condition": "EQUALS",
+            "filter_value": "true",
+            "customfilter_id": cf_id1,
+        }
+        filter_trailer_exists2 = {
+            "filter_by": "trailer_exists",
+            "filter_condition": "EQUALS",
+            "filter_value": "false",
+            "customfilter_id": cf_id2,
+        }
+        filter_is_series = {
+            "filter_by": "is_movie",
+            "filter_condition": "EQUALS",
+            "filter_value": "false",
+            "customfilter_id": cf_id2,
+        }
+        op.bulk_insert(
+            filter_table,
+            [
+                filter_trailer_exists1,
+                filter_is_movie,
+                filter_trailer_exists2,
+                filter_is_series,
             ],
         )
-        profile1 = TrailerProfile(
-            file_format=getenv_str("TRAILER_FILE_FORMAT", "mkv"),
-            file_name=getenv_str(
+        logger.info(
+            "Inserted CustomFilters for initial TrailerProfiles successfully"
+        )
+        # 3. Create TrailerProfile entries with the CustomFilter and Filters
+        profile1 = {
+            "enabled": getenv_bool("MONITOR_ENABLED", True),
+            "file_format": getenv_str("TRAILER_FILE_FORMAT", "mkv"),
+            "file_name": getenv_str(
                 "TRAILER_FILE_NAME", "{title} - Trailer-trailer.{ext}"
             ),
-            folder_enabled=getenv_bool("TRAILER_FOLDER_MOVIE", False),
-            audio_format=getenv_str("TRAILER_AUDIO_FORMAT", "aac"),
-            audio_volume_level=getenv_int("TRAILER_AUDIO_VOLUME_LEVEL", 100),
-            video_resolution=getenv_int("TRAILER_RESOLUTION", 1080),
-            video_format=getenv_str("TRAILER_VIDEO_FORMAT", "h264"),
-            subtitles_enabled=getenv_bool("TRAILER_SUBTITLES_ENABLED", False),
-            subtitles_format=getenv_str("TRAILER_SUBTITLES_FORMAT", "srt"),
-            subtitles_language=getenv_str("TRAILER_SUBTITLES_LANGUAGE", "en"),
-            always_search=getenv_bool("TRAILER_ALWAYS_SEARCH", False),
-            embed_metadata=getenv_bool("TRAILER_EMBED_METADATA", False),
-            exclude_words=getenv_str("EXCLUDE_WORDS", ""),
-            min_duration=getenv_int("TRAILER_MIN_DURATION", 30),
-            max_duration=getenv_int("TRAILER_MAX_DURATION", 600),
-            remove_silence=getenv_bool("TRAILER_REMOVE_SILENCE", False),
-            search_query=getenv_str(
+            "folder_enabled": getenv_bool("TRAILER_FOLDER_MOVIE", False),
+            "folder_name": "Trailers",
+            "embed_metadata": getenv_bool("TRAILER_EMBED_METADATA", False),
+            "remove_silence": getenv_bool("TRAILER_REMOVE_SILENCE", False),
+            "audio_format": getenv_str("TRAILER_AUDIO_FORMAT", "aac"),
+            "audio_volume_level": getenv_int(
+                "TRAILER_AUDIO_VOLUME_LEVEL", 100
+            ),
+            "video_format": getenv_str("TRAILER_VIDEO_FORMAT", "h264"),
+            "video_resolution": getenv_int("TRAILER_RESOLUTION", 1080),
+            "subtitles_enabled": getenv_bool(
+                "TRAILER_SUBTITLES_ENABLED", False
+            ),
+            "subtitles_format": getenv_str("TRAILER_SUBTITLES_FORMAT", "srt"),
+            "subtitles_language": getenv_str(
+                "TRAILER_SUBTITLES_LANGUAGE", "en"
+            ),
+            "search_query": getenv_str(
                 "TRAILER_SEARCH_QUERY", "{title} {year} {is_movie} trailer"
             ),
-            customfilter=customfilter1,
-        )
-        session.add(profile1)
-        profile2 = TrailerProfile(**profile1.model_dump())
-        profile2.customfilter = CustomFilter(
-            filter_name="Series Trailers",
-            filters=[
-                Filter(
-                    filter_by="is_movie",
-                    filter_condition=FilterCondition.EQUALS,
-                    filter_value="false",
-                ),
-                Filter(
-                    filter_by="trailer_exists",
-                    filter_condition=FilterCondition.EQUALS,
-                    filter_value="false",
-                ),
-            ],
-        )
-        profile2.folder_enabled = getenv_bool("TRAILER_FOLDER_SERIES", True)
-        session.add(profile2)
-        session.commit()
+            "min_duration": getenv_int("TRAILER_MIN_DURATION", 30),
+            "max_duration": getenv_int("TRAILER_MAX_DURATION", 600),
+            "always_search": getenv_bool("TRAILER_ALWAYS_SEARCH", False),
+            "exclude_words": getenv_str("EXCLUDE_WORDS", ""),
+            "include_words": "",
+            "customfilter_id": cf_id1,
+        }
+        profile2 = profile1.copy()
+        profile2["customfilter_id"] = cf_id2
+        profile2["folder_enabled"] = getenv_bool("TRAILER_FOLDER_SERIES", True)
+        op.bulk_insert(trailer_profile_table, [profile1, profile2])
+
         logger.info("Initial TrailerProfiles created successfully")
     except Exception as e:
         logger.error(f"Failed to create initial TrailerProfiles: {e}")
-        session.rollback()
         raise
-    finally:
-        session.close()
+    # ### End initial TrailerProfile creation ###
 
 
 def downgrade() -> None:
