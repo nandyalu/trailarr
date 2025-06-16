@@ -1,4 +1,4 @@
-import {NgFor, NgIf} from '@angular/common';
+
 import {Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -10,7 +10,7 @@ import {MediaService} from '../../services/media.service';
 
 @Component({
   selector: 'app-topnav',
-  imports: [RouterLink, FormsModule, ReactiveFormsModule, NgIf, NgFor, RouterLink],
+  imports: [RouterLink, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './topnav.component.html',
   styleUrl: './topnav.component.scss',
 })

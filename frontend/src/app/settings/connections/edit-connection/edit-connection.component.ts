@@ -1,4 +1,4 @@
-import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import { Location, UpperCasePipe } from '@angular/common';
 import {Component, ElementRef, inject, OnInit, viewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
@@ -11,7 +11,7 @@ import {SettingsService} from '../../../services/settings.service';
 
 @Component({
   selector: 'app-edit-connection',
-  imports: [ReactiveFormsModule, NgFor, NgIf, UpperCasePipe],
+  imports: [ReactiveFormsModule, UpperCasePipe],
   templateUrl: './edit-connection.component.html',
   styleUrl: './edit-connection.component.scss',
 })

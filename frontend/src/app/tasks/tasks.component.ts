@@ -1,4 +1,4 @@
-import {NgFor, NgIf} from '@angular/common';
+
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {TimeagoModule} from 'ngx-timeago';
 import {Subscription} from 'rxjs';
@@ -9,7 +9,7 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-tasks',
-  imports: [NgIf, NgFor, LoadIndicatorComponent, TimeagoModule],
+  imports: [LoadIndicatorComponent, TimeagoModule],
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',

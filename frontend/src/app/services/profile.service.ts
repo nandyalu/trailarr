@@ -14,7 +14,7 @@ export class ProfileService {
   private _service = inject(TrailerProfilesService);
   private websocketService = inject(WebsocketService);
 
-  readonly allProfiles = httpResource<TrailerProfileRead[]>(this.profilesUrl, {defaultValue: []});
+  readonly allProfiles = httpResource<TrailerProfileRead[]>(() => this.profilesUrl, {defaultValue: []});
 
   /* Signal to track the selected profile ID */
   readonly selectedProfileId = signal(0);

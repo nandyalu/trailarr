@@ -1,4 +1,4 @@
-import {CommonModule} from '@angular/common';
+
 import {ChangeDetectionStrategy, Component, inject, signal, ViewContainerRef} from '@angular/core';
 import {Router, RouterLink} from '@angular/router';
 import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
@@ -8,7 +8,7 @@ import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
 
 @Component({
   selector: 'app-show-profiles',
-  imports: [CommonModule, LoadIndicatorComponent, RouterLink],
+  imports: [LoadIndicatorComponent, RouterLink],
   templateUrl: './show-profiles.component.html',
   styleUrl: './show-profiles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

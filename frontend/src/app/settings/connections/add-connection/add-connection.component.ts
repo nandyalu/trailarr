@@ -1,4 +1,4 @@
-import {Location, NgFor, NgIf, UpperCasePipe} from '@angular/common';
+import { Location, UpperCasePipe } from '@angular/common';
 import {Component, ElementRef, inject, ViewChild} from '@angular/core';
 import {FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConnectionCreate} from '../../../models/connection';
@@ -6,7 +6,7 @@ import {SettingsService} from '../../../services/settings.service';
 
 @Component({
   selector: 'app-add-connection',
-  imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf, UpperCasePipe],
+  imports: [ReactiveFormsModule, FormsModule, UpperCasePipe],
   templateUrl: './add-connection.component.html',
   styleUrl: './add-connection.component.scss',
 })

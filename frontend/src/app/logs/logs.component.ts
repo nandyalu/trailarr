@@ -1,4 +1,4 @@
-import {NgFor, NgIf} from '@angular/common';
+
 import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -10,7 +10,7 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-logs',
-  imports: [NgIf, NgFor, FormsModule, LoadIndicatorComponent, ReactiveFormsModule, TimeagoModule],
+  imports: [FormsModule, LoadIndicatorComponent, ReactiveFormsModule, TimeagoModule],
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss',
 })

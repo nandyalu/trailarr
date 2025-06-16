@@ -1,8 +1,9 @@
 <div class="tasks-container">
   <div class="text-heading">Scheduled</div>
   <hr />
-  <app-load-indicator *ngIf="isLoading1; else schedulesLoaded" class="center" />
-  <ng-template #schedulesLoaded>
+  @if (isLoading1) {
+    <app-load-indicator class="center" />
+  } @else {
     <div class="table-container">
       <table class="tasks-table">
         <tr class="table-row header">
@@ -15,40 +16,46 @@
           <th></th>
         </tr>
         <!-- <p>{{ scheduledTasks }}</p> -->
-        <tr *ngFor="let task of scheduledTasks" class="table-row">
-          <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
-          <td class="name">{{ task.name }}</td>
-          <td>{{ task.interval }}</td>
-          <td>{{ task.last_run_start ? (task.last_run_start | timeago) : 'Not run yet' }}</td>
-          <td>{{ task.last_run_status }}</td>
-          <td>{{ task.last_run_duration }}</td>
-          <td>{{ task.next_run ? (task.next_run | timeago) : 'Not scheduled' }}</td>
-          <td
-            *ngIf="task.last_run_status.toLowerCase() != 'running'"
-            title="Run task now"
-            (click)="task.last_run_status = 'Running'; runTask(task.task_id)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-              <path
-                d="M382-306.67 653.33-480 382-653.33v346.66ZM480-80q-82.33 0-155.33-31.5-73-31.5-127.34-85.83Q143-251.67 111.5-324.67T80-480q0-83 31.5-156t85.83-127q54.34-54 127.34-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82.33-31.5 155.33-31.5 73-85.5 127.34Q709-143 636-111.5T480-80Z"
-              />
-            </svg>
-          </td>
-          <td *ngIf="task.last_run_status.toLowerCase() == 'running'" title="Task is running">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
-              <path
-                d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
-              />
-            </svg>
-          </td>
-        </tr>
+        @for (task of scheduledTasks; track task) {
+          <tr class="table-row">
+            <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
+            <td class="name">{{ task.name }}</td>
+            <td>{{ task.interval }}</td>
+            <td>{{ task.last_run_start ? (task.last_run_start | timeago) : 'Not run yet' }}</td>
+            <td>{{ task.last_run_status }}</td>
+            <td>{{ task.last_run_duration }}</td>
+            <td>{{ task.next_run ? (task.next_run | timeago) : 'Not scheduled' }}</td>
+            @if (task.last_run_status.toLowerCase() != 'running') {
+              <td
+                title="Run task now"
+                (click)="task.last_run_status = 'Running'; runTask(task.task_id)"
+                >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M382-306.67 653.33-480 382-653.33v346.66ZM480-80q-82.33 0-155.33-31.5-73-31.5-127.34-85.83Q143-251.67 111.5-324.67T80-480q0-83 31.5-156t85.83-127q54.34-54 127.34-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82.33-31.5 155.33-31.5 73-85.5 127.34Q709-143 636-111.5T480-80Z"
+                    />
+                </svg>
+              </td>
+            }
+            @if (task.last_run_status.toLowerCase() == 'running') {
+              <td title="Task is running">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+                  <path
+                    d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+                    />
+                </svg>
+              </td>
+            }
+          </tr>
+        }
       </table>
     </div>
-  </ng-template>
+  }
   <div class="text-heading">Queue</div>
   <hr />
-  <app-load-indicator *ngIf="isLoading1; else queueLoaded" class="center" />
-  <ng-template #queueLoaded>
+  @if (isLoading1) {
+    <app-load-indicator class="center" />
+  } @else {
     <div class="table-container last-table">
       <table class="tasks-table">
         <tr class="table-row header">
@@ -59,15 +66,17 @@
           <th>Duration</th>
         </tr>
         <!-- <p>{{ queuedTasks }}</p> -->
-        <tr *ngFor="let task of queuedTasks" class="table-row">
-          <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
-          <td class="name">{{ task.name }}</td>
-          <td>{{ task.status }}</td>
-          <td>{{ task.started ? (task.started | timeago) : 'Pending' }}</td>
-          <td>{{ task.finished ? (task.finished | timeago) : '-' }}</td>
-          <td>{{ task.duration }}</td>
-        </tr>
+        @for (task of queuedTasks; track task) {
+          <tr class="table-row">
+            <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
+            <td class="name">{{ task.name }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.started ? (task.started | timeago) : 'Pending' }}</td>
+            <td>{{ task.finished ? (task.finished | timeago) : '-' }}</td>
+            <td>{{ task.duration }}</td>
+          </tr>
+        }
       </table>
     </div>
-  </ng-template>
+  }
 </div>

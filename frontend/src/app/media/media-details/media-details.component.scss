@@ -6,6 +6,7 @@
   margin: 1rem;
   border: 1px solid var(--color-outline);
   border-radius: 10px;
+  position: relative;
 
   @media (width < 768px) {
     margin: 0.5rem;
@@ -17,6 +18,10 @@
 }
 
 .center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   margin: auto;
 }
 

@@ -13,9 +13,9 @@ export class CustomfilterService {
 
   private cf_url = environment.apiUrl + environment.customfilters;
 
-  readonly homeFiltersResource = httpResource<CustomFilter[]>(this.cf_url + 'home', {defaultValue: []});
-  readonly moviesFiltersResource = httpResource<CustomFilter[]>(this.cf_url + 'movie', {defaultValue: []});
-  readonly seriesFiltersResource = httpResource<CustomFilter[]>(this.cf_url + 'series', {defaultValue: []});
+  readonly homeFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'home', {defaultValue: []});
+  readonly moviesFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'movie', {defaultValue: []});
+  readonly seriesFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'series', {defaultValue: []});
 
   readonly moviesOnly = signal<boolean | null>(null);
   readonly viewFilters = computed(() => {

@@ -54,14 +54,15 @@ export class FilesComponent {
 
   // Refresh the files list when the mediaId changes
   protected readonly filesResource = resource({
-    request: this.mediaId,
-    loader: ({request: mediaId}) => this.mediaService.fetchMediaFiles(mediaId),
+    params: () => ({mediaId: this.mediaId()}),
+    loader: ({params: {mediaId}}) => this.mediaService.fetchMediaFiles(mediaId),
   });
 
   protected readonly filesError = computed(() => {
-    const _error = this.filesResource.error() as ErrorMessage;
-    // console.log('Files Error:', _error);
-    return _error.error.detail;
+    const _error = this.filesResource.error();
+    if (!_error) return '';
+    const cause = _error.cause as ErrorMessage;
+    return cause?.error.detail || 'Error fetching media files.';
   });
 
   protected readonly isTextFile = computed(() =>
