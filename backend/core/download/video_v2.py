@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 import time
 from app_logger import ModuleLogger
@@ -77,11 +78,17 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _options.append("-f")
     _vres = f"[height<=?{profile.video_resolution}]"
     _vcodec = f"[vcodec={profile.video_format}]"
+    if profile.video_format == "copy":
+        # If the video format is copy, we will not filter by codec
+        _vcodec = ""
     # Most of the current hardware struggles with av1 conversion
     # So, we will try and download from YT in av1 format directly if available
     if profile.video_format == "av1":
         _vcodec = "[vcodec^=av]"
     _acodec = f"[acodec={profile.audio_format}]"
+    if profile.audio_format == "copy":
+        # If the audio format is copy, we will not filter by codec
+        _acodec = ""
     # Format 1: Best video and audio with the given resolution and codecs
     _format = f"bestvideo{_vres}{_vcodec}+bestaudio{_acodec}"
     # Format 2: Best video and audio with the given resolution and audio codec
@@ -117,6 +124,10 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     # if app_settings.trailer_remove_sponsorblocks:
     #     _options.append("--sponsorblock-remove")
     #     _options.append("intro,outro")
+    user_options = profile.ytdlp_extra_options
+    if user_options:
+        user_args = shlex.split(user_options)
+        _options.extend(user_args)
     return _options
 
 

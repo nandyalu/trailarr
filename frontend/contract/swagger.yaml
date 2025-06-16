@@ -29,7 +29,7 @@ paths:
       summary: Health Check
       description: 'Health check endpoint.
 
-        Runs ''nvidia-smi'' to check for NVIDIA GPU availability.
+        Runs ''nvidia-smi'' to check for NVIDIA GPU availability (if hw accel enabled).
 
         Returns ''unhealthy'' if the command fails.'
       operationId: health_check_status_get
@@ -3235,6 +3235,10 @@ components:
           type: string
           title: Include Words
           default: ''
+        ytdlp_extra_options:
+          type: string
+          title: Ytdlp Extra Options
+          default: ''
         id:
           anyOf:
             - type: integer
@@ -3337,6 +3341,10 @@ components:
         include_words:
           type: string
           title: Include Words
+          default: ''
+        ytdlp_extra_options:
+          type: string
+          title: Ytdlp Extra Options
           default: ''
         id:
           type: integer

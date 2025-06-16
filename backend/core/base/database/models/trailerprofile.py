@@ -83,6 +83,7 @@ class _TrailerProfileBase(SQLModel):
     always_search: bool = False
     exclude_words: str = ""
     include_words: str = ""
+    ytdlp_extra_options: str = ""
     # Filter id to apply to select this profile
 
 

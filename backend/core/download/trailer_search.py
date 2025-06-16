@@ -147,9 +147,9 @@ def search_yt_for_trailer(
     search_query = search_query.replace("  ", " ").strip()
     # Add ytsearch5: prefix to search query
     search_query = f"ytsearch10: {search_query}"
-    # Append "trailer" to search query if not already present
-    if "trailers" not in search_query:
-        search_query += " trailer"
+    # # Append "trailer" to search query if not already present
+    # if "trailer" not in search_query:
+    #     search_query += " trailer"
     logger.debug(f"Using Search query: {search_query}")
     # Search for video
     with YoutubeDL(options) as ydl:

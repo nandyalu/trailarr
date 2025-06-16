@@ -274,6 +274,20 @@
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('exclude_words', $event)"
       />
+      <app-text-setting
+        name="Yt-dlp Extra Options"
+        description="Additional options to pass to yt-dlp when downloading trailers."
+        descriptionExtra="Advanced use cases only. Use with caution!"
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Yt-dlp Extra Options'"
+        [autocomplete]="'off'"
+        [minLength]="0"
+        [maxLength]="500"
+        [value]="profile()?.ytdlp_extra_options ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('ytdlp_extra_options', $event)"
+      />
     </div>
   </details>
 </section>
