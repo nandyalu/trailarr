@@ -102,7 +102,7 @@ setup_timing_middleware(trailarr_api)
 async def health_check():
     """
     Health check endpoint.
-    Runs 'nvidia-smi' to check for NVIDIA GPU availability.
+    Runs 'nvidia-smi' to check for NVIDIA GPU availability (if hw accel enabled).
     Returns 'unhealthy' if the command fails.
     """
     try:
