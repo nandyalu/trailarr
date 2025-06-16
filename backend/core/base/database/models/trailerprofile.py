@@ -58,6 +58,7 @@ class _TrailerProfileBase(SQLModel):
     """
 
     enabled: bool = True
+    priority: int = 0
     # File settings
     file_format: str = "mkv"
     file_name: str = "{title} ({year})-trailer.{ext}"
@@ -169,6 +170,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         Check if the field is an integer field.
         """
         return field_name in [
+            "priority",
             "audio_volume_level",
             "video_resolution",
             "min_duration",
@@ -201,13 +203,22 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             " 'yes'/'no'"
         )
 
+    @field_validator("priority", mode="after")
+    @classmethod
+    def validate_priority(cls, v: int) -> int:
+        if 0 <= v <= 1000:
+            return v
+        raise ValueError(
+            f"Invalid priority value: '{v}'. Valid range is 0 to 1000."
+        )
+
     @field_validator("file_format", mode="after")
     @classmethod
     def validate_file_format(cls, v: str) -> str:
         if v in VALID_FILE_FORMATS:
             return v
         raise ValueError(
-            f"Invalid file format: {v}. Valid formats are:"
+            f"Invalid file format: '{v}'. Valid formats are:"
             f" {VALID_FILE_FORMATS}"
         )
 
@@ -233,7 +244,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if v in VALID_AUDIO_FORMATS:
             return v
         raise ValueError(
-            f"Invalid audio format: {v}. Valid formats are:"
+            f"Invalid audio format: '{v}'. Valid formats are:"
             f" {VALID_AUDIO_FORMATS}"
         )
 
@@ -243,7 +254,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if 1 <= v <= 200:
             return v
         raise ValueError(
-            f"Invalid audio volume level: {v}. Valid range is: 1-200"
+            f"Invalid audio volume level: '{v}'. Valid range is: 1-200"
         )
 
     @field_validator("video_resolution", mode="after")
@@ -252,7 +263,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if v in VALID_VIDEO_RESOLUTIONS:
             return v
         raise ValueError(
-            f"Invalid video resolution: {v}. Valid resolutions are:"
+            f"Invalid video resolution: '{v}'. Valid resolutions are:"
             f" {VALID_VIDEO_RESOLUTIONS}"
         )
 
@@ -262,7 +273,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if v in VALID_VIDEO_FORMATS:
             return v
         raise ValueError(
-            f"Invalid video format: {v}. Valid formats are:"
+            f"Invalid video format: '{v}'. Valid formats are:"
             f" {VALID_VIDEO_FORMATS}"
         )
 
@@ -272,7 +283,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if v in VALID_SUBTITLES_FORMATS:
             return v
         raise ValueError(
-            f"Invalid subtitles format: {v}. Valid formats are:"
+            f"Invalid subtitles format: '{v}'. Valid formats are:"
             f" {VALID_SUBTITLES_FORMATS}"
         )
 
@@ -305,19 +316,19 @@ class TrailerProfile(_TrailerProfileBase, table=True):
                     )
         if self.min_duration < 30:
             raise ValueError(
-                f"Invalid min_duration: {self.min_duration}. "
+                f"Invalid min_duration: '{self.min_duration}'. "
                 "Valid range is 30 to 600 seconds."
             )
         if 90 > self.max_duration > 600:
             raise ValueError(
-                f"Invalid max_duration: {self.max_duration}. "
+                f"Invalid max_duration: '{self.max_duration}'. "
                 "Valid range is 90 to 600 seconds."
             )
         if self.max_duration - self.min_duration < 60:
             raise ValueError(
                 "Duration difference should be at least 60 seconds. Provided:"
-                f" {self.min_duration} seconds (min),"
-                f" {self.max_duration} seconds (max)."
+                f" '{self.min_duration}' seconds (min),"
+                f" '{self.max_duration}' seconds (max)."
             )
         return self
 

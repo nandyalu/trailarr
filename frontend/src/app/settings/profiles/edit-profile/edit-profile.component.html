@@ -34,6 +34,20 @@
         [selectedOption]="profile()?.enabled"
         (optionChange)="profileService.updateSetting('enabled', $event)"
       />
+      <app-text-setting
+        name="Priority"
+        description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 1000."
+        descriptionExtra="When multiple profiles match, the one with the highest priority will be used."
+        [isNumberType]="true"
+        [isLongInput]="false"
+        [placeholder]="'Priority'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="3"
+        [value]="profile()?.priority ?? 0"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('priority', $event)"
+      />
     </div>
   </details>
 </section>

@@ -27,6 +27,11 @@ paths:
       tags:
         - Health Check
       summary: Health Check
+      description: 'Health check endpoint.
+
+        Runs ''nvidia-smi'' to check for NVIDIA GPU availability.
+
+        Returns ''unhealthy'' if the command fails.'
       operationId: health_check_status_get
       responses:
         '200':
@@ -670,6 +675,53 @@ paths:
                   - $ref: '#/components/schemas/FolderInfo'
                   - type: 'null'
                 title: Response Get Files Api V1 Files Files Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/files_simple:
+    get:
+      tags:
+        - Files
+        - Media
+      summary: Get Files Simple
+      description: "Get files in a directory in a simple format.\n\nArgs:\n    path\
+        \ (str): Path to the directory. \n\nReturns:\n    list: List of file names\
+        \ in the directory. \n\nRaises:\n    HTTPException (404): If the folder is\
+        \ not found."
+      operationId: get_files_simple_api_v1_files_files_simple_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Path
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FolderInfo'
+                title: Response Get Files Simple Api V1 Files Files Simple Get
         '401':
           description: API key is missing
         '422':
@@ -2970,6 +3022,9 @@ components:
         url_base:
           type: string
           title: Url Base
+        webui_username:
+          type: string
+          title: Webui Username
       type: object
       required:
         - api_key
@@ -3010,6 +3065,7 @@ components:
         - new_download_method
         - update_ytdlp
         - url_base
+        - webui_username
       title: Settings
     StreamInfo:
       properties:
@@ -3099,6 +3155,10 @@ components:
           type: boolean
           title: Enabled
           default: true
+        priority:
+          type: integer
+          title: Priority
+          default: 0
         file_format:
           type: string
           title: File Format
@@ -3198,6 +3258,10 @@ components:
           type: boolean
           title: Enabled
           default: true
+        priority:
+          type: integer
+          title: Priority
+          default: 0
         file_format:
           type: string
           title: File Format

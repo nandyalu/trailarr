@@ -15,6 +15,8 @@ def _find_matching_profile_id(
     db_media: MediaRead, trailer_profiles: list[TrailerProfileRead]
 ) -> int | None:
     """Find a matching profile for a media item and return it's ID."""
+    # Sort profiles by priority, higher priority first
+    trailer_profiles.sort(key=lambda p: p.priority, reverse=True)
     for profile in trailer_profiles:
         if matches_filters(db_media, profile.customfilter.filters):
             return profile.id
