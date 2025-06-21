@@ -323,6 +323,26 @@ class FilesHandler:
         return False
 
     @staticmethod
+    def check_file_exists(folder_path: str, file_name: str) -> bool:
+        """Check if a file exists in the specified folder.\n
+        Args:
+            folder_path (str): Path to the folder to check for the file.\n
+            file_name (str): Name of the file to check for.\n
+        Returns:
+            bool: True if the file exists in the folder, False otherwise."""
+        # Check if folder exists
+        if not os.path.isdir(folder_path):
+            return False
+
+        # Check for file in the folder
+        for entry in os.scandir(folder_path):
+            if entry.is_dir():
+                return FilesHandler().check_file_exists(entry.path, file_name)
+            if entry.name == file_name:
+                return True
+        return False
+
+    @staticmethod
     async def _get_inline_trailer_path(folder_path: str) -> str | None:
         """Get the path to the trailer file in the specified folder.\n
         Args:
