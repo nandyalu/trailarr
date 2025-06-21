@@ -104,7 +104,7 @@ export class AddCustomFilterDialogComponent {
     let _form = this.fb.group({
       id: [customFilterData ? customFilterData.id : null],
       filter_type: [customFilterData ? customFilterData.filter_type : this.filterTypeValue(), Validators.required],
-      filter_name: [customFilterData ? customFilterData.filter_name : '', [Validators.required, Validators.maxLength(30)]],
+      filter_name: [customFilterData ? customFilterData.filter_name : '', [Validators.required, Validators.maxLength(100)]],
       filters: this.fb.array([], Validators.required), // Will hold an array of filters.
     });
     this.customFilterForm = _form;
