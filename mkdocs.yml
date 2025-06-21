@@ -15,6 +15,7 @@ theme:
     - content.code.select
     - content.code.annotate
     - navigation.tabs
+    - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
     - navigation.path
@@ -105,6 +106,17 @@ nav:
     # - Usage: install/form.html
   - Setup:
     - Connections: setup/connections.md
+    - Profiles:
+      - Profiles: setup/profiles/index.md
+      - Settings:
+        - General: setup/profiles/settings/general.md
+        - File: setup/profiles/settings/file.md
+        - Audio: setup/profiles/settings/audio.md
+        - Video: setup/profiles/settings/video.md
+        - Subtitle: setup/profiles/settings/subtitle.md
+        - Search: setup/profiles/settings/search.md
+      - Filters: setup/profiles/filters.md
+      - Examples: setup/profiles/examples.md
     - Settings: setup/settings.md
   - Help:
     - Common: help/common.md
