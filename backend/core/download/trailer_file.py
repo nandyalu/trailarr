@@ -37,17 +37,16 @@ def normalize_filename(filename: str) -> str:
     Returns:
         str: Normalized filename."""
     # Normalize the filename to handle Unicode characters
-    logger.debug(f"Normalizing filename: {filename}")
-    filename = unicodedata.normalize("NFKD", filename)
+    _filename = unicodedata.normalize("NFKD", filename)
 
     # Remove any character that is not supported by Unix or Windows file systems
-    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', " ", filename)
+    _filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', " ", _filename)
     # Replace multiple spaces with a single space
-    filename = re.sub(r"\s+", " ", filename)
+    _filename = re.sub(r"\s+", " ", _filename)
     # Remove leading and trailing special characters
-    filename = filename.strip("_.-")
-    logger.debug(f"Normalized filename: {filename}")
-    return filename
+    _filename = _filename.strip("_.-")
+    logger.debug(f"Normalized filename: '{filename}' -> '{_filename}'")
+    return _filename
 
 
 def get_trailer_filename(
@@ -64,7 +63,8 @@ def get_trailer_filename(
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Trailer filename."""
-    logger.debug(f"Getting trailer filename for '{media.title}'...")
+    if increment_index == 1:
+        logger.debug(f"Getting trailer filename for '{media.title}'...")
     # Get trailer file name format from settings
     title_format = profile.file_name
     if title_format.count("{") != title_format.count("}"):
@@ -133,7 +133,8 @@ def get_trailer_path(
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Destination path for the trailer file."""
-    logger.debug(f"Getting trailer path for '{media.title}'...")
+    if increment_index == 1:
+        logger.debug(f"Getting trailer path for '{media.title}'...")
 
     # Get filename from source path and extract extension
     filename = os.path.basename(src_path)
