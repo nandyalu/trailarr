@@ -29,6 +29,7 @@ _AUDIO_CODECS = {
     "flac": "flac",
     "vorbis": "libvorbis",
     "opus": "libopus",
+    "copy": "copy",
 }
 
 _VIDEO_CODECS = {
@@ -48,6 +49,9 @@ _VIDEO_CODECS_NVIDIA = {
     # "vp9": "libvpx-vp9",  # hw encoder not available
     # "av1": "av1_nvenc",
 }
+
+_ACODEC_FALLBACK = "opus"
+_VCODEC_FALLBACK = "vp9"
 
 # _VIDEO_CODECS_VAAPI = {
 #     "h264": "h264_vaapi",
@@ -74,17 +78,17 @@ def _get_video_options_cpu(
             f"Video codec '{vcodec}' not implemented in Trailer, using h265"
             " codec"
         )
-        vcodec = "h265"
+        vcodec = _VCODEC_FALLBACK
     _vencoder = _VIDEO_CODECS[vcodec]
 
     # Convert video if current codec is not detected or different
     if video_stream is None or video_stream.codec_name != vcodec:
         if video_stream is None:
-            logger.debug(f"Converting video to {vcodec} codec")
+            logger.debug(f"Converting video to '{vcodec}' codec")
         else:
             logger.debug(
-                f"Converting video from {video_stream.codec_name} to"
-                f" {vcodec} codec"
+                f"Converting video from '{video_stream.codec_name}' to"
+                f" '{vcodec}' codec"
             )
         ffmpeg_cmd.append(_vencoder)
         ffmpeg_cmd.extend(["-preset", "veryfast", "-crf", "22"])
@@ -127,21 +131,21 @@ def _get_video_options_nvidia(
     ]
 
     if video_stream is None:
-        logger.debug(f"Converting video to {vcodec} codec")
+        logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
         video_options.extend(["-preset", "fast", "-cq", "22"])
         return video_options
 
     if video_stream.codec_name == vcodec:
         logger.debug(
-            f"Downloaded video is already in required codec: {vcodec}, "
+            f"Downloaded video is already in required codec: '{vcodec}', "
             "copying stream without converting"
         )
         video_options.append("copy")
     else:
         logger.debug(
-            f"Converting video from {video_stream.codec_name} to"
-            f" {vcodec} codec"
+            f"Converting video from '{video_stream.codec_name}' to"
+            f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
         video_options.extend(["-preset", "fast", "-cq", "22"])
@@ -174,50 +178,49 @@ def _get_audio_options(
         audio_stream (StreamInfo, Optional=None): Audio stream info.
     Returns:
         list[str]: FFMPEG command list for audio."""
+    # Volume level setting is between 1 and 200
+    # FFMPEG volume filter expects a value between 0.01 and 10.0
+    _volume_level = volume_level * 0.01
     ffmpeg_cmd: list[str] = []
+
+    # Resolve the audio codec
+    if acodec not in _AUDIO_CODECS:
+        logger.error(
+            f"Audio codec '{acodec}' not implemented, using"
+            f" {_ACODEC_FALLBACK} codec"
+        )
+        acodec = _ACODEC_FALLBACK
     _aencoder = _AUDIO_CODECS[acodec]
 
-    # Apply audio volume level filter if enabled
-    _volume_level = volume_level * 0.01
-    if _volume_level != 1:
-        logger.debug(
-            f"Applying audio volume level filter: '-af volume={_volume_level}'"
-        )
-        ffmpeg_cmd.extend(["-af", f"volume={_volume_level}"])
-
-    if audio_stream is None:
-        logger.debug(f"Converting audio to {acodec} codec")
-        ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
-        return ffmpeg_cmd
-
-    if acodec == "copy":
-        if _volume_level == 1:
+    if _volume_level == 1:
+        _COPY_COMMAND = ["-c:a", "copy"]
+        # Case 1: Copy audio stream without conversion
+        if acodec == "copy":
             logger.debug("Copying audio stream without converting")
-            ffmpeg_cmd.append("-c:a")
-            ffmpeg_cmd.append("copy")
-            return ffmpeg_cmd
-        else:
+            return _COPY_COMMAND
+        # Case 2: No volume change, same codec
+        if audio_stream and audio_stream.codec_name == acodec:
             logger.debug(
-                "Cannot apply volume level filter to copied audio stream, "
-                f"converting audio to {acodec} codec"
+                f"Audio already in '{acodec}', copying stream without"
+                " converting"
             )
-            ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
-            return ffmpeg_cmd
+            return _COPY_COMMAND
+    # Case 3: Apply audio volume level filter if enabled
+    logger.debug(f"Applying volume level filter: 'volume={_volume_level}'")
+    ffmpeg_cmd.extend(["-af", f"volume={_volume_level}"])
 
-    if audio_stream.codec_name == acodec and _volume_level == 1:
+    # Case 4: Copy is requested but volume change is needed
+    if acodec == "copy":
+        if audio_stream:
+            _aencoder = _AUDIO_CODECS.get(audio_stream.codec_name, _aencoder)
         logger.debug(
-            f"Downloaded audio is already in required codec: {acodec}, "
-            "copying stream without converting"
+            "Cannot apply volume level filter to 'copy' audio stream, "
+            f"converting audio to '{_aencoder}' codec"
         )
-        ffmpeg_cmd.append("-c:a")
-        ffmpeg_cmd.append("copy")
     else:
-        logger.debug(
-            f"Converting audio from {audio_stream.codec_name} to"
-            f" {acodec} codec"
-        )
-        ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
-
+        # Case 5: Convert audio codec with volume change
+        logger.debug(f"Converting audio to '{_aencoder}' codec")
+    ffmpeg_cmd.extend(["-c:a", _aencoder, "-b:a", "128k"])
     return ffmpeg_cmd
 
 
