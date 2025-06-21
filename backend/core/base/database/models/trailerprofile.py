@@ -67,10 +67,10 @@ class _TrailerProfileBase(SQLModel):
     embed_metadata: bool = True
     remove_silence: bool = False
     # Audio settings
-    audio_format: str = "aac"
+    audio_format: str = "opus"
     audio_volume_level: int = 100
     # Video settings
-    video_format: str = "h264"
+    video_format: str = "vp9"
     video_resolution: int = 1080
     # Subtitle settings
     subtitles_enabled: bool = True

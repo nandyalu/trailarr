@@ -140,17 +140,17 @@ def upgrade() -> None:
             "enabled": getenv_bool("MONITOR_ENABLED", True),
             "file_format": getenv_str("TRAILER_FILE_FORMAT", "mkv"),
             "file_name": getenv_str(
-                "TRAILER_FILE_NAME", "{title} - Trailer-trailer.{ext}"
+                "TRAILER_FILE_NAME", "{title} ({year})-trailer.{ext}"
             ),
             "folder_enabled": getenv_bool("TRAILER_FOLDER_MOVIE", False),
             "folder_name": "Trailers",
-            "embed_metadata": getenv_bool("TRAILER_EMBED_METADATA", False),
+            "embed_metadata": getenv_bool("TRAILER_EMBED_METADATA", True),
             "remove_silence": getenv_bool("TRAILER_REMOVE_SILENCE", False),
-            "audio_format": getenv_str("TRAILER_AUDIO_FORMAT", "aac"),
+            "audio_format": getenv_str("TRAILER_AUDIO_FORMAT", "opus"),
             "audio_volume_level": getenv_int(
                 "TRAILER_AUDIO_VOLUME_LEVEL", 100
             ),
-            "video_format": getenv_str("TRAILER_VIDEO_FORMAT", "h264"),
+            "video_format": getenv_str("TRAILER_VIDEO_FORMAT", "vp9"),
             "video_resolution": getenv_int("TRAILER_RESOLUTION", 1080),
             "subtitles_enabled": getenv_bool(
                 "TRAILER_SUBTITLES_ENABLED", False
