@@ -27,7 +27,7 @@
   @if (profileService.allProfiles.value() && profileService.allProfiles.value().length > 0) {
     <div class="profile-container">
       @for (profile of profileService.allProfiles.value(); track $index) {
-        <a class="profile-card" [routerLink]="[RouteEdit, profile.id]">
+        <a class="profile-card" [routerLink]="[profile.id]">
           <h3 class="profile-card-title">{{ profile.customfilter.filter_name }}</h3>
           <div class="profile-card-content">
             <p>Video: {{ profile.video_resolution }}p | {{ profile.video_format }}</p>

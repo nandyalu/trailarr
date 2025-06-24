@@ -1,4 +1,3 @@
-
 import {ChangeDetectionStrategy, Component, inject, signal, ViewContainerRef} from '@angular/core';
 import {Router, RouterLink} from '@angular/router';
 import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
@@ -34,7 +33,7 @@ export class ShowProfilesComponent {
       if (emitValue >= 0) {
         // Reload the filters and open profile edit page
         this.profileService.allProfiles.reload();
-        this.router.navigate(['/settings/profiles/edit', emitValue]);
+        this.router.navigate(['/settings/profiles', emitValue]);
       }
       // Else, Filter dialog closed without submission, do nothing
       setTimeout(() => {

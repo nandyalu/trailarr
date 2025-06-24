@@ -149,7 +149,7 @@ export class EditProfileComponent {
     this.profileService.createProfile(newProfile).subscribe((createdProfileId) => {
       if (createdProfileId) {
         this.closeCopyProfileDialog();
-        this.router.navigate(['/settings/profiles/edit', createdProfileId]);
+        this.router.navigate(['/settings/profiles', createdProfileId]);
       } else {
         console.error('Failed to create new profile. Please try again.');
       }

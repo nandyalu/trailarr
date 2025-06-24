@@ -30,7 +30,7 @@
       <div class="connection-container">
         @for (connection of connections; track $index) {
           <div class="connection-card">
-            <a class="card-link" [routerLink]="[RouteEdit, connection.id]"></a>
+            <a class="card-link" [routerLink]="[connection.id]"></a>
             <h3 class="title">{{ connection.name }}</h3>
             <div class="content">
               <p>URL: {{ connection.url }}</p>
