@@ -93,6 +93,7 @@
     "terminal.integrated.defaultProfile.linux": "bash",
     "[html]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.foldingStrategy": "indentation",
         "editor.formatOnSave": true,
         "editor.rulers": [
             {
@@ -115,6 +116,7 @@
     },
     "[scss]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.foldingStrategy": "indentation",
         "editor.formatOnSave": true,
         "editor.rulers": [
             {
@@ -126,6 +128,7 @@
     },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.foldingStrategy": "indentation",
         "editor.formatOnSave": true,
         "editor.rulers": [
             {
@@ -135,5 +138,8 @@
             }
         ],
         "typescript.tsdk": "node_modules\\typescript\\lib"
-    }
+    },
+    "editor.defaultFoldingRangeProvider": null,
+    "editor.foldingImportsByDefault": true,
+
 }
