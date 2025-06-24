@@ -10,7 +10,6 @@ from app_logger import logger
 from config.settings import app_settings
 from core.base.database.models.helpers import MediaImage
 
-
 POSTER = (300, 450)
 FANART = (1280, 720)
 STATIC_PATH_MOVIES = f"{app_settings.app_data_dir}/web/images/movies/"
@@ -91,16 +90,19 @@ async def download_image(url: str) -> Image.Image:
             image_data = await response.read()
             image_file = BytesIO(image_data)
             image = Image.open(image_file)
-            return image
+            return image.convert("RGB")  # Convert to RGB for consistency
 
 
 # ? Is the return value needed here?
-async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> bool:
+async def process_image(
+    is_movie: bool, media: MediaImage, retries: int = 3
+) -> bool:
     """Process a media image, download it if updated/doesn't exist, and save it to disk. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         media (MediaImage): Media image object.
-        retries (int) [Optional]: Number of retries in case of failure. Default is 3."""
+        retries (int) [Optional]: Number of retries in case of failure. Default is 3.
+    """
     if not await download_needed(is_movie, media):
         return False
     # download_needed() checks if image_url is None and returns False,
@@ -115,7 +117,9 @@ async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> 
     try:
         image = await download_image(media.image_url)
         image.thumbnail(image_dimensions)
-        image.save(media.image_path, format="JPEG", optimize=True)
+        image.save(
+            media.image_path, format="JPEG", optimize=True, progressive=True
+        )
         logger.debug(
             f"Image downloaded for media id: {media.id}, "
             f"URL: '{media.image_url}', path: '{media.image_path}'"
@@ -128,7 +132,9 @@ async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> 
     return True
 
 
-async def refresh_media_images(is_movie: bool, media_list: list[MediaImage]) -> None:
+async def refresh_media_images(
+    is_movie: bool, media_list: list[MediaImage]
+) -> None:
     """Refresh images in the disk. \n
     New images will be downloaded if:
     - The image URL is updated.
