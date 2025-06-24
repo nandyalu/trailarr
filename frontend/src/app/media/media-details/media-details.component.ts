@@ -3,7 +3,7 @@ import {Component, computed, effect, ElementRef, inject, input, signal, ViewChil
 import {FormsModule} from '@angular/forms';
 import {catchError, of} from 'rxjs';
 import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
-import {SettingsService} from 'src/app/services/settings.service';
+import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {DurationConvertPipe} from '../../helpers/duration-pipe';
 import {MediaService} from '../../services/media.service';
@@ -19,7 +19,7 @@ import {FilesComponent} from './files/files.component';
 })
 export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
-  private readonly settingsService = inject(SettingsService);
+  private readonly connectionService = inject(ConnectionService);
   private readonly websocketService = inject(WebsocketService);
   private readonly viewContainerRef = inject(ViewContainerRef);
 
@@ -32,7 +32,7 @@ export class MediaDetailsComponent {
   arr_url = computed(() => {
     let media = this.selectedMedia();
     if (!media) return '';
-    let connections = this.settingsService.connectionsResource.value();
+    let connections = this.connectionService.connectionsResource.value();
     let connection = connections.find((c) => c.id == media.connection_id);
     if (!connection) return '';
     if (connection.arr_type.toLowerCase() == 'radarr') {
@@ -53,38 +53,6 @@ export class MediaDetailsComponent {
       this.trailer_url = media.youtube_trailer_id;
     }
   });
-
-  // ngOnInit() {
-  //   this.isLoading = true;
-  //   // this.route.params.subscribe(params => {
-  //   //   this.mediaId.set(parseInt(params['id']));
-  //   //   this.getMediaData();
-  //   // });
-
-  //   // Subscribe to WebSocket updates and refresh media data
-  //   // this.webSocketSubscription = this.websocketService.toastMessage.subscribe(() => {
-  //   //   this.getMediaData();
-  //   // });
-  // }
-
-  // ngOnDestroy() {
-  //   // Unsubscribe from the websocket events
-  //   this.webSocketSubscription?.unsubscribe();
-  // }
-
-  // /**
-  //  * Fetches media data based on the current media ID. \
-  //  * Also sets the `trailer_url` property to the YouTube trailer ID of the media.
-  //  * @returns {void}
-  //  */
-  // getMediaData(): void {
-  //   // Get Media Data
-  //   this.mediaService.getMediaByID(this.mediaId()).subscribe((media_res: Media) => {
-  //     this.selectedMedia = media_res;
-  //     this.trailer_url = media_res.youtube_trailer_id;
-  //     this.isLoading = false;
-  //   });
-  // }
 
   openProfileSelectDialog(isNextActionSearch: boolean): void {
     // Open the dialog for selecting a profile
