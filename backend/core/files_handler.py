@@ -2,6 +2,7 @@ from datetime import datetime as dt
 import hashlib
 import os
 from pathlib import Path
+import re
 import shutil
 import aiofiles.os
 from pydantic import BaseModel, Field
@@ -94,7 +95,7 @@ class FolderInfo(BaseModel):
 class FilesHandler:
     """Utility class to handle files and folders."""
 
-    VIDEO_EXTENSIONS = tuple([".avi", "mkv", ".mp4", ".webm"])
+    VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -556,6 +557,10 @@ class FilesHandler:
                         trailer_folders.add(root)
                         break  # No need to check more files in this folder
                     if "trailer" in file.lower():
+                        # Issue#235 - Do not detect episode files as trailers
+                        # Use regex to detect if file name has `s\d{1,2}e\d{1,2}` pattern
+                        if re.search(r"s\d{1,2}e\d{1,2}", file, re.IGNORECASE):
+                            continue
                         trailer_folders_inline.add(root)
                         break  # No need to check more files in this folder
         msg = (
