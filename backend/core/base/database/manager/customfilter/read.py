@@ -9,6 +9,24 @@ from core.base.database.utils.engine import manage_session
 
 
 @manage_session
+def get_all_customfilters(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[CustomFilterRead]:
+    """
+    Get all custom filters.
+    Args:
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[CustomFilterRead]: List of all custom filters (read-only).
+    """
+    statement = select(CustomFilter)
+    db_customfilters = _session.exec(statement).all()
+    return convert_to_read_list(db_customfilters)
+
+
+@manage_session
 def get_home_customfilters(
     *,
     _session: Session = None,  # type: ignore

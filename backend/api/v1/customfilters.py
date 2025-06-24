@@ -11,6 +11,11 @@ customfilters_router = APIRouter(
 )
 
 
+@customfilters_router.get("/")
+async def get_all_customfilters() -> list[CustomFilterRead]:
+    return customfilter.get_all_customfilters()
+
+
 @customfilters_router.post("/")
 async def create_or_update_customfilter(
     view_filter: CustomFilterCreate,
