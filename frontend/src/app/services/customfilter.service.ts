@@ -13,24 +13,14 @@ export class CustomfilterService {
 
   private cf_url = environment.apiUrl + environment.customfilters;
 
-  readonly homeFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'home', {defaultValue: []});
-  readonly moviesFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'movie', {defaultValue: []});
-  readonly seriesFiltersResource = httpResource<CustomFilter[]>(() => this.cf_url + 'series', {defaultValue: []});
+  readonly filtersResource = httpResource<CustomFilter[]>(() => this.cf_url, {defaultValue: []});
 
   readonly moviesOnly = signal<boolean | null>(null);
   readonly viewFilters = computed(() => {
     let _moviesOnly = this.moviesOnly();
-    switch (_moviesOnly) {
-      case true: {
-        return this.moviesFiltersResource.value();
-      }
-      case false: {
-        return this.seriesFiltersResource.value();
-      }
-      case null: {
-        return this.homeFiltersResource.value();
-      }
-    }
+    const filterType = _moviesOnly === null ? FilterType.HOME : _moviesOnly ? FilterType.MOVIES : FilterType.SERIES;
+    const filters = this.filtersResource.value();
+    return filters.filter((f) => f.filter_type === filterType);
   });
 
   create(customFilter: CustomFilterCreate): Observable<CustomFilter> {
@@ -54,20 +44,7 @@ export class CustomfilterService {
     return this.httpClient.delete<boolean>(url);
   }
 
-  getViewFilters(moviesOnly: boolean | null): Observable<CustomFilter[]> {
-    const view = moviesOnly == null ? 'home' : moviesOnly ? 'movie' : 'series';
-    const url = this.cf_url + view;
-    return this.httpClient.get<CustomFilter[]>(url);
-  }
-
   reloadFilters(): void {
-    const _moviesOnly = this.moviesOnly();
-    if (_moviesOnly === null) {
-      this.homeFiltersResource.reload();
-    } else if (_moviesOnly) {
-      this.moviesFiltersResource.reload();
-    } else {
-      this.seriesFiltersResource.reload();
-    }
+    this.filtersResource.reload();
   }
 }
