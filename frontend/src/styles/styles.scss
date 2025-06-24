@@ -249,9 +249,13 @@ button {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background-color var(--transition-speed);
+  transition: background-color var(--transition-speed) scale var(--transition-speed);
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+}
+
+button:active {
+  scale: 0.95;
 }
 
 button:disabled {
@@ -414,6 +418,7 @@ button > svg {
 /* Animated Loading Bars */
 .loading-wave {
   /* width: 300px; */
+  margin: auto;
   height: 6rem;
   display: flex;
   align-items: flex-end;

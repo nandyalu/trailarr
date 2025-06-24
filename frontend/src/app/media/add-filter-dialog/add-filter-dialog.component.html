@@ -12,7 +12,7 @@
       <!-- Filters FormArray -->
       <div formArrayName="filters" class="filters-container">
         <!-- <h3>Filters</h3> -->
-        @for (filterGroup of filters.controls; track filterGroup; let i = $index) {
+        @for (filterGroup of filters.controls; let i = $index; track i) {
           <div [formGroupName]="i" class="filter-group">
             <!-- Filter By -->
             <div class="form-group">
