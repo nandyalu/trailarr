@@ -1,4 +1,4 @@
-.form-container {
+:host {
   width: 100%;
   border: 2px solid var(--color-outline);
   padding: 1.5rem;
@@ -19,11 +19,14 @@
   right: 2rem;
 }
 
-.form-container form {
-  display: block;
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   padding: 0;
   border: var(--color-outline);
   border-radius: 0.5rem;
+  container-type: inline-size;
 }
 
 .input-group {
@@ -31,23 +34,25 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 1rem;
 }
 
 .input-group label {
-  margin-right: 10px;
   display: block;
-  margin-bottom: 5px;
+  margin: 0 0 0 0.5rem;
+  font-size: smaller;
 }
 
 .input-group input {
   width: auto;
-  padding: 12px;
+  height: 3rem;
+  padding: 0.75rem;
   font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 1px;
   background-color: var(--color-surface-container-high);
-  color: var(--color-on-surface);
+  color: var(--color-tertiary);
   border: 2px solid var(--color-outline);
-  border-radius: 8px;
+  border-radius: 0.5rem;
 }
 
 input.ng-touched.ng-invalid {
@@ -55,7 +60,6 @@ input.ng-touched.ng-invalid {
   opacity: 0.6;
   background-color: var(--color-error-container);
   color: var(--color-on-error-container);
-  font-weight: 700;
 }
 
 .input-group .invalid-text {
@@ -66,44 +70,128 @@ input.ng-touched.ng-invalid {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
   justify-content: space-around;
   align-items: center;
+
+  @container (width < 40rem) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
+// #region Options-bar styles
 .option-container {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem 0 0 0;
+  gap: 0.5rem;
+
+  @container (width < 40rem) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
-.option-container label,
-.option-container span {
-  padding: 10px;
-  padding-left: 0;
-  display: block;
-  margin-right: 10px;
-  background-color: var(--color-surface-container);
-}
-
-.option-container .options-bar {
+.options-bar {
+  padding: 0.25rem;
   display: flex;
   background-color: var(--color-surface-container-high);
   border-radius: 10px;
   border: 0.5px solid var(--color-outline);
 }
 
-.option-container .option {
+.option-label {
   padding: 10px;
   cursor: pointer;
   border-radius: 10px;
   transition: 0.3s ease;
+  flex: 1 1 auto;
+  text-align: center;
 }
 
-.option-container .selected {
+.option-label:has(input:focus-visible) {
+  outline: -webkit-focus-ring-color auto 1px;
+}
+
+.option-name {
+  border-radius: 10px;
+  border: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.option__selected {
   background-color: var(--color-tertiary-container);
   font-weight: 600;
   color: var(--color-on-tertiary-container);
+  transition: 0.3s ease;
+}
+
+input[type='radio'] {
+  // display: none;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+// #endregion Options-bar styles
+
+// #region Path Mappings
+.mappings-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.d-row.mappings {
+  align-items: flex-end;
+}
+
+input:read-only {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.input-wrapper {
+  display: inline-block;
+  width: auto;
+  height: 3rem;
+  position: relative;
+}
+
+.folder-icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  cursor: pointer;
+  height: auto;
+  width: auto;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+
+  svg {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
+}
+// #endregion Path-select Dialog
+
+.result-text {
+  white-space: pre-wrap;
+  color: var(--color-info);
+  font-weight: 600;
+  line-height: 1.5rem;
 }
 
 .dialog-content {
