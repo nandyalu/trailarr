@@ -45,6 +45,7 @@ export class TextSettingComponent implements OnChanges {
   openPathSelectDialog(): void {
     // Open the dialog for selecting a path value
     const dialogRef = this.viewContainerRef.createComponent(PathSelectDialogComponent);
+    dialogRef.setInput('name', this.name());
     dialogRef.setInput('path', this.value());
     dialogRef.setInput('pathShouldEndWith', this.pathShouldEndWith());
     dialogRef.instance.onSubmit.subscribe((emitValue: string) => {

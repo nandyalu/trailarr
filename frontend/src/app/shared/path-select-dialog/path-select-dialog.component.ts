@@ -11,6 +11,7 @@ import {SettingsService} from 'src/app/services/settings.service';
 export class PathSelectDialogComponent {
   protected readonly settingsService = inject(SettingsService);
 
+  name = input.required<string>();
   path = model.required<string>();
   pathShouldEndWith = input.required<string>();
   isSubmitted = signal(false);
