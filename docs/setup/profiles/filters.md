@@ -36,13 +36,14 @@ Here are the available boolean filters:
 
 Here are the available integer filters:
 
-| Filter By        | Description                                                         |
-|-----------------:|:--------------------------------------------------------------------|
-| `ID`             | ID of the media item in Trailarr.                                   |
-| `ARR ID`         | ID of the media item in the ARR application (e.g., Radarr, Sonarr). |
-| `Connection ID`  | ID of the connection used for the media item in Trailarr.           |
-| `Year`           | Year the media item was released.                                   |
-| `Runtime`        | Runtime of the media item in minutes.                               |
+| Filter By        | Description                                                                       |
+|-----------------:|:----------------------------------------------------------------------------------|
+| `ID`             | ID of the media item in Trailarr.                                                 |
+| `ARR ID`         | ID of the media item in the ARR application (e.g., Radarr, Sonarr).               |
+| `Connection ID`  | ID of the connection used for the media item in Trailarr.                         |
+| `Year`           | Year the media item was released.                                                 |
+| `Runtime`        | Runtime of the media item in minutes.                                             |
+| `Season Count`   | Number of seasons for the series. If the media item is a movie, this will be `0`. |
 
 ### String Filters
 

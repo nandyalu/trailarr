@@ -40,6 +40,7 @@ class MediaBase(SQLModel):
     studio: str = Field(default="")
     media_exists: bool = Field(default=False)
     media_filename: str = Field(default="")
+    season_count: int = Field(default=0)
     overview: str | None = None
     runtime: int = 0
     # website: str | None = None

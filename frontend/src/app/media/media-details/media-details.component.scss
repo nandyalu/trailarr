@@ -104,6 +104,33 @@
   gap: 1rem;
   margin-left: auto;
   margin-right: 1rem;
+  align-items: flex-start;
+
+  svg {
+    background-color: var(--color-primary);
+    fill: var(--color-on-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  @media (width < 765px) {
+    position: relative;
+
+    .left {
+      position: fixed;
+      bottom: 10vh;
+      z-index: 10;
+      left: 2rem;
+    }
+
+    .right {
+      position: fixed;
+      bottom: 10vh;
+      z-index: 10;
+      right: 2rem;
+    }
+  }
 }
 
 .icon-link svg .success {

@@ -15,7 +15,8 @@ class RadarrDataParser(BaseModel):
     clean_title: str = Field(validation_alias="cleanTitle", default="")
     year: int = Field()
     language: str = Field(
-        validation_alias=AliasPath("originalLanguage", "name"), default="English"
+        validation_alias=AliasPath("originalLanguage", "name"),
+        default="English",
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
@@ -24,11 +25,14 @@ class RadarrDataParser(BaseModel):
     )
     studio: str = Field(default="")
     media_exists: bool = Field(
-        default=False, validation_alias=AliasPath("statistics", "movieFileCount")
+        default=False,
+        validation_alias=AliasPath("statistics", "movieFileCount"),
     )
     media_filename: str = Field(
         validation_alias=AliasPath("movieFile", "relativePath"), default=""
     )
+    # Season count is not applicable for movies
+    season_count: int = Field(default=0)
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tmdbId")

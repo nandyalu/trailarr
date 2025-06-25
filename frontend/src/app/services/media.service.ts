@@ -62,6 +62,30 @@ export class MediaService {
     }
     return this.mediaResource.value().find((media) => media.id === mediaID) || null;
   });
+  readonly previousMedia = computed(() => {
+    const mediaID = this.selectedMediaID();
+    if (mediaID === null) {
+      return null;
+    }
+    const mediaList = this.filteredSortedMedia();
+    const currentIndex = mediaList.findIndex((media) => media.id === mediaID);
+    if (currentIndex > 0) {
+      return mediaList[currentIndex - 1];
+    }
+    return null;
+  });
+  readonly nextMedia = computed(() => {
+    const mediaID = this.selectedMediaID();
+    if (mediaID === null) {
+      return null;
+    }
+    const mediaList = this.filteredSortedMedia();
+    const currentIndex = mediaList.findIndex((media) => media.id === mediaID);
+    if (currentIndex < mediaList.length - 1) {
+      return mediaList[currentIndex + 1];
+    }
+    return null;
+  });
   readonly allMedia = computed(() => {
     let _moviesOnly = this.moviesOnly();
     switch (_moviesOnly) {

@@ -1,10 +1,12 @@
 import {TitleCasePipe} from '@angular/common';
 import {Component, computed, effect, ElementRef, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
 import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
+import {RouteMedia} from 'src/routing';
 import {DurationConvertPipe} from '../../helpers/duration-pipe';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
@@ -13,7 +15,7 @@ import {FilesComponent} from './files/files.component';
 
 @Component({
   selector: 'app-media-details',
-  imports: [CopyToClipboardDirective, FormsModule, DurationConvertPipe, LoadIndicatorComponent, TitleCasePipe, FilesComponent],
+  imports: [CopyToClipboardDirective, DurationConvertPipe, FilesComponent, FormsModule, LoadIndicatorComponent, RouterLink, TitleCasePipe],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
 })
@@ -23,8 +25,12 @@ export class MediaDetailsComponent {
   private readonly websocketService = inject(WebsocketService);
   private readonly viewContainerRef = inject(ViewContainerRef);
 
+  RouteMedia = RouteMedia;
+
   mediaId = input(0, {transform: Number});
   selectedMedia = this.mediaService.selectedMedia;
+  previousMedia = this.mediaService.previousMedia;
+  nextMedia = this.mediaService.nextMedia;
   isLoading = computed(() => this.mediaService.mediaResource.isLoading());
   isLoadingMonitor = signal<boolean>(false);
   isLoadingDownload = signal<boolean>(false);

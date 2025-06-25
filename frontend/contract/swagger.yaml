@@ -404,6 +404,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/customfilters/:
+    get:
+      tags:
+        - Custom Filters
+      summary: Get All Customfilters
+      operationId: get_all_customfilters_api_v1_customfilters__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomFilterRead'
+                title: Response Get All Customfilters Api V1 Customfilters  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
         - Custom Filters
@@ -2671,6 +2706,10 @@ components:
           type: string
           title: Media Filename
           default: ''
+        season_count:
+          type: integer
+          title: Season Count
+          default: 0
         overview:
           anyOf:
             - type: string
@@ -3186,7 +3225,7 @@ components:
         audio_format:
           type: string
           title: Audio Format
-          default: aac
+          default: opus
         audio_volume_level:
           type: integer
           title: Audio Volume Level
@@ -3194,7 +3233,7 @@ components:
         video_format:
           type: string
           title: Video Format
-          default: h264
+          default: vp9
         video_resolution:
           type: integer
           title: Video Resolution
@@ -3293,7 +3332,7 @@ components:
         audio_format:
           type: string
           title: Audio Format
-          default: aac
+          default: opus
         audio_volume_level:
           type: integer
           title: Audio Volume Level
@@ -3301,7 +3340,7 @@ components:
         video_format:
           type: string
           title: Video Format
-          default: h264
+          default: vp9
         video_resolution:
           type: integer
           title: Video Resolution

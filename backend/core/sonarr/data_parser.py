@@ -15,7 +15,8 @@ class SonarrDataParser(BaseModel):
     clean_title: str = Field(validation_alias="cleanTitle", default="")
     year: int = Field()
     language: str = Field(
-        validation_alias=AliasPath("originalLanguage", "name"), default="English"
+        validation_alias=AliasPath("originalLanguage", "name"),
+        default="English",
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
@@ -25,10 +26,14 @@ class SonarrDataParser(BaseModel):
     )
     studio: str = Field(default="", validation_alias="network")
     media_exists: bool = Field(
-        default=False, validation_alias=AliasPath("statistics", "episodeFileCount")
+        default=False,
+        validation_alias=AliasPath("statistics", "episodeFileCount"),
     )
     # Sonarr does not have mediaFile name - since it's a series, multiple files
     media_filename: str = Field(default="")
+    season_count: int = Field(
+        default=0, validation_alias=AliasPath("statistics", "seasonCount")
+    )
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tvdbId")
@@ -48,7 +53,9 @@ class SonarrDataParser(BaseModel):
         return bool(v)
 
 
-def parse_series(connection_id: int, series_data: dict[str, Any]) -> MediaCreate:
+def parse_series(
+    connection_id: int, series_data: dict[str, Any]
+) -> MediaCreate:
     """Parse the series data from Sonarr to a SeriesCreate object.\n
     Args:
         connection_id (int): The connection id.

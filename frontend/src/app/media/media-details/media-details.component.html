@@ -91,18 +91,26 @@
             {{ selectedMedia_.title }}
           </span>
           <!-- Add Previous and Next icons here -->
-          <!-- <div class="nav-icons sm-none">
-            <div class="icon-link" (click)="copyToClipboard('prev')">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                <path d="m287-446.67 240 240L480-160 160-480l320-320 47 46.67-240 240h513v66.66H287Z"/>
-              </svg>
-            </div>
-            <div class="icon-link" (click)="copyToClipboard('next')">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                <path d="M673-446.67H160v-66.66h513l-240-240L480-800l320 320-320 320-47-46.67 240-240Z"/>
-              </svg>
-            </div>
-          </div> -->
+          @let _previousMedia = previousMedia();
+          @let _nextMedia = nextMedia();
+          <div class="nav-icons">
+            @if (_previousMedia) {
+              <!-- Show Previous icon only if _previousMedia is available -->
+              <div class="icon-link left" [routerLink]="['/' + RouteMedia, _previousMedia.id]" [title]="_previousMedia.title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="m287-446.67 240 240L480-160 160-480l320-320 47 46.67-240 240h513v66.66H287Z" />
+                </svg>
+              </div>
+            }
+            @if (_nextMedia) {
+              <!-- Show Next icon only if _nextMedia is available -->
+              <div class="icon-link right" [routerLink]="['/' + RouteMedia, _nextMedia.id]" [title]="_nextMedia.title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="M673-446.67H160v-66.66h513l-240-240L480-800l320 320-320 320-47-46.67 240-240Z" />
+                </svg>
+              </div>
+            }
+          </div>
         </div>
         <div class="media-details-row">
           <span class="text-md" [title]="selectedMedia_.year">{{ selectedMedia_.year }}</span>
@@ -152,11 +160,18 @@
               <span class="text-sm tooltip"
                 >{{ selectedMedia_.status | titlecase }}
                 <span class="tooltiptext">
+                  @if (!selectedMedia_.is_movie) {
+                    <p>Seasons: {{ selectedMedia_.season_count }}</p>
+                  }
                   <p>Monitored: {{ selectedMedia_.monitor }}</p>
                   <p>Downloaded: {{ selectedMedia_.trailer_exists }}</p>
                   <p>Added: {{ selectedMedia_.added_at.toLocaleString() }}</p>
                   <p>Updated: {{ selectedMedia_.updated_at.toLocaleString() }}</p>
-                  <p>Downloaded: {{ selectedMedia_.downloaded_at.toLocaleString() || '' }}</p>
+                  @if (selectedMedia_.downloaded_at && selectedMedia_.downloaded_at.toString() != 'Invalid Date') {
+                    <p>Downloaded: {{ selectedMedia_.downloaded_at.toLocaleString() }}</p>
+                  } @else {
+                    <p>Downloaded: Never</p>
+                  }
                 </span>
               </span>
             </div>
@@ -187,7 +202,7 @@
                 </span>
               }
               @if (isLoadingDownload()) {
-                <!-- Show loading icon -->
+                <!-- #region Show loading icon -->
                 <span class="loading-search icon-link" title="Searching for Trailer">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
                     <circle stroke-width="14" r="15" cx="40" cy="65">
@@ -225,6 +240,7 @@
                     </circle>
                   </svg>
                 </span>
+                <!-- #endregion -->
               }
               @if (trailer_url != selectedMedia_.youtube_trailer_id && !isLoadingDownload()) {
                 <button
