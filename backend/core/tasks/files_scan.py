@@ -44,7 +44,9 @@ async def scan_disk_for_trailers() -> None:
     # Find all folders with trailers
     trailer_folders: set[str] = set()
     for root_folder in root_folders:
-        trailer_folders.update(FilesHandler.scan_root_folders_for_trailers(root_folder))
+        trailer_folders.update(
+            await FilesHandler.scan_root_folders_for_trailers(root_folder)
+        )
 
     # Match the trailer folders to the media in the database
     updated_media: list[tuple[int, bool]] = []
@@ -66,5 +68,7 @@ async def scan_disk_for_trailers() -> None:
     if len(updated_media) == 0:
         logger.info("Media trailer statuses are up to date.")
         return None
-    logger.info(f"Updated {len(updated_media)} media items with new trailer status.")
+    logger.info(
+        f"Updated {len(updated_media)} media items with new trailer status."
+    )
     return None

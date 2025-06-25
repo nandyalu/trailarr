@@ -69,4 +69,4 @@ def get_trailer_folders(
     """
     statement = select(TrailerProfile.folder_name).distinct()
     db_trailerprofiles = _session.exec(statement).all()
-    return {folder.strip() for folder in db_trailerprofiles}
+    return {folder.strip() for folder in db_trailerprofiles if folder.strip()}

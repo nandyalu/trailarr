@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime as dt
 import hashlib
 import os
@@ -95,6 +96,7 @@ class FolderInfo(BaseModel):
 class FilesHandler:
     """Utility class to handle files and folders."""
 
+    VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
 
     @staticmethod
@@ -252,31 +254,70 @@ class FilesHandler:
         return False
 
     @staticmethod
+    def is_trailer_file(file_name: str) -> bool:
+        """Check if a file is a trailer file based on its name.\n
+        Args:
+            file_name (str): Name of the file to check.\n
+        Returns:
+            bool: True if the file is a trailer, False otherwise."""
+        if not file_name:
+            return False
+        if not file_name.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
+            return False
+        # Ensure file is not an episode file
+        if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
+            return False
+        # Check if the file name contains 'trailer'
+        if "trailer" in file_name.lower():
+            return True
+        return False
+
+    @staticmethod
+    def get_trailer_folders() -> set[str]:
+        """Get a list of trailer folder names.\n
+        Returns:
+            set[str]: Set with trailer folder names."""
+        # Get the trailer folders from the trailerprofile module
+        trailer_folders = trailerprofile.get_trailer_folders()
+        # Add 'trailer' and 'trailers' to the list
+        trailer_folders.add("trailer")
+        trailer_folders.add("trailers")
+        trailer_folders = {
+            folder.lower().strip() for folder in trailer_folders
+        }
+        return trailer_folders
+
+    @staticmethod
+    def is_trailer_folder(folder_name: str) -> bool:
+        """Check if a folder is a trailer folder based on its name.\n
+        Args:
+            folder_name (str): Name of the folder to check.\n
+        Returns:
+            bool: True if the folder is a trailer, False otherwise."""
+        if not folder_name:
+            return False
+        # Check if the folder name contains 'trailer'
+        if folder_name.lower().strip() in FilesHandler.get_trailer_folders():
+            return True
+        return False
+
+    @staticmethod
     async def _check_trailer_as_folder(path: str) -> bool:
         """Check if a trailer exists in the 'trailers' folder.\n
         Args:
             path (str): Folder path to check for a 'trailers' folder with a trailer file.\n
         Returns:
             bool: True if a trailer exists in the folder, False otherwise."""
-        trailer_folders = trailerprofile.get_trailer_folders()
-        trailer_folders.add("trailer")
-        trailer_folders.add("trailers")
         for entry in await aiofiles.os.scandir(path):
-            # Check if the directory is named 'Trailers' (case-insensitive)
+            # Check if the directory matches any of the trailers (case-insensitive)
             if not entry.is_dir():
                 continue
-            if entry.name.lower().strip() not in trailer_folders:
+            if not FilesHandler.is_trailer_folder(entry.name):
                 continue
-            # Check if any video files exist in the 'trailers' directory
-            for sub_entry in await aiofiles.os.scandir(entry.path):
-                if not sub_entry.is_file():
-                    continue
-                if not sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
-                    continue
-                if "trailer" in sub_entry.name.lower():
-                    return True
-                if "trailer" in entry.name.lower():
-                    return True
+            # Check if 'trailer' exists in the 'trailers' directory
+            if FilesHandler._check_trailer_as_file(entry.path):
+                return True
+        # No trailer folder or no trailer file found
         return False
 
     @staticmethod
@@ -290,11 +331,8 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
-                continue
-            if "trailer" not in entry.name:
-                continue
-            return True
+            if FilesHandler.is_trailer_file(entry.name):
+                return True
         return False
 
     @staticmethod
@@ -360,9 +398,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
-                continue
-            if "-trailer." not in entry.name:
+            if not FilesHandler.is_trailer_file(entry.name):
                 continue
             return entry.path
         return None
@@ -380,25 +416,16 @@ class FilesHandler:
         if not await aiofiles.os.path.isdir(folder_path):
             return None
 
-        # Get trailer folder names
-        trailer_folders = trailerprofile.get_trailer_folders()
-        trailer_folders.add("trailer")
-        trailer_folders.add("trailers")
-
         # Check for trailer as a folder
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_dir():
                 continue
-            if entry.name.lower().strip() not in trailer_folders:
+            if not FilesHandler.is_trailer_folder(entry.name):
                 continue
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
-                if not sub_entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
-                    continue
-                if "trailer" in sub_entry.name.lower():
-                    return sub_entry.path
-                if "trailer" in entry.name.lower():
+                if FilesHandler.is_trailer_file(sub_entry.name):
                     return sub_entry.path
         return None
 
@@ -498,23 +525,14 @@ class FilesHandler:
             bool: True if the trailer is deleted successfully, False otherwise.
         """
         logger.debug(f"Deleting trailer from folder: {folder_path}")
-        if await FilesHandler._check_trailer_as_file(folder_path):
-            for entry in await aiofiles.os.scandir(folder_path):
-                if not entry.is_file():
-                    continue
-                if not entry.name.endswith(FilesHandler.VIDEO_EXTENSIONS):
-                    continue
-                if "-trailer." not in entry.name:
-                    continue
-                return await FilesHandler.delete_file(entry.path)
-
-        if await FilesHandler._check_trailer_as_folder(folder_path):
-            for entry in await aiofiles.os.scandir(folder_path):
-                if not entry.is_dir():
-                    continue
-                if not entry.name.lower() == "trailers":
-                    continue
-                return await FilesHandler.delete_folder(entry.path)
+        # Check for an inline trailer and delete
+        trailer_path = await FilesHandler._get_inline_trailer_path(folder_path)
+        if trailer_path:
+            return await FilesHandler.delete_file(trailer_path)
+        # Check for a trailer in the 'trailers' folder and delete
+        trailer_path = await FilesHandler._get_folder_trailer_path(folder_path)
+        if trailer_path:
+            return await FilesHandler.delete_file(trailer_path)
         return False
 
     @staticmethod
@@ -538,7 +556,7 @@ class FilesHandler:
             return False
 
     @staticmethod
-    def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
+    async def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
         """Find all folders containing trailers in the specified root folders.\n
         Finds trailers in the media folder and also in a 'trailer' folder\n
         Args:
@@ -546,30 +564,44 @@ class FilesHandler:
         Returns:
             set[str]: Set of folder paths containing trailers."""
         logger.debug(f"Scanning '{root_media_dir}' for trailers.")
-        trailer_folders = set()
-        trailer_folders_inline = set()
+        if not FilesHandler.check_folder_exists(root_media_dir):
+            logger.warning(
+                f"Root media directory '{root_media_dir}' is not a directory."
+            )
+            return set()
+        inline_trailers = set()
+        folder_trailers = set()
         count = 0
-        for root, dirs, files in os.walk(root_media_dir):
+        tasks = []
+        media_folders = []
+        # Scan each immediate subfolder (media folder) in the root directory
+        for media_folder in await aiofiles.os.scandir(root_media_dir):
+            if not media_folder.is_dir():
+                continue
             count += 1
-            for file in files:
-                if file.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
-                    if "trailer" in root.lower():
-                        trailer_folders.add(root)
-                        break  # No need to check more files in this folder
-                    if "trailer" in file.lower():
-                        # Issue#235 - Do not detect episode files as trailers
-                        # Use regex to detect if file name has `s\d{1,2}e\d{1,2}` pattern
-                        if re.search(r"s\d{1,2}e\d{1,2}", file, re.IGNORECASE):
-                            continue
-                        trailer_folders_inline.add(root)
-                        break  # No need to check more files in this folder
+            media_folders.append(media_folder)
+            # Launch both checks concurrently for each media folder
+            tasks.append(
+                FilesHandler._get_inline_trailer_path(media_folder.path)
+            )
+            tasks.append(
+                FilesHandler._get_folder_trailer_path(media_folder.path)
+            )
+        results = await asyncio.gather(*tasks)
+        for idx, media_folder in enumerate(media_folders):
+            inline_result = results[idx * 2]
+            folder_result = results[idx * 2 + 1]
+            if inline_result:
+                inline_trailers.add(media_folder.path)
+            if folder_result:
+                folder_trailers.add(media_folder.path)
         msg = (
             f"Scanned {count} media folders. Found"
-            f" {len(trailer_folders)} (folders) "
+            f" {len(folder_trailers)} (folder) and"
+            f" {len(inline_trailers)} (inline) trailers."
         )
-        msg += f"and {len(trailer_folders_inline)} (inline) trailers."
-        logger.debug(msg)
-        return trailer_folders_inline.union(trailer_folders)
+        logger.info(msg)
+        return inline_trailers.union(folder_trailers)
 
     @staticmethod
     async def rename_file_fol(old_path: str, new_path: str) -> bool:
