@@ -150,7 +150,11 @@ def _download_with_ytdlp(
     # Download the video
     logger.debug(f"Downloading video with options: {ytdlp_cmd}")
     with subprocess.Popen(
-        ytdlp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        ytdlp_cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",  # Specify UTF-8 as the primary expected encoding
+        errors="replace",  # <-- replace un-decodable bytes
     ) as process:
         if not process.stdout or not process.stderr:
             # logger.error("Failed to start yt-dlp process")
@@ -203,7 +207,11 @@ def _convert_video(
     # Convert the video
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
     with subprocess.Popen(
-        ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        ffmpeg_cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",  # Specify UTF-8 as the primary expected encoding
+        errors="replace",  # <-- replace un-decodable bytes
     ) as process:
         if not process.stdout or not process.stderr:
             # logger.error("Failed to start ffmpeg process")
