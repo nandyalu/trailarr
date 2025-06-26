@@ -121,13 +121,12 @@ nav:
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md
-  - Development:
-    - Contributing: development/contributing.md
-  - Release Information:
+  - Release Notes:
     - Changelog: release-information/changelog.md
-    - Release Notes:
-      - '2025': release-information/2025.md
-      - '2024': release-information/2024.md
-  - Legal Disclaimer: legal-disclaimer.md
+    - '2025': release-information/2025.md
+    - '2024': release-information/2024.md
+  - References:
+    - Contributing: references/contributing.md
+    - Legal Disclaimer: references/legal-disclaimer.md
 # extra_javascript:
 #   - usage/builder.js
