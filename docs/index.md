@@ -105,7 +105,7 @@ If you have any suggestions or ideas for new features, please feel free to reach
 
 ## Contributing
 
-Contributions are welcome! Please see the [Contributing](development/contributing.md) guide for more information.
+Contributions are welcome! Please see the [Contributing](references/contributing.md) guide for more information.
 
 Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
@@ -115,4 +115,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](legal-disclaimer.md).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](references/legal-disclaimer.md).
