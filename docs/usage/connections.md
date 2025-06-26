@@ -11,7 +11,7 @@
         ```
 
 2. Go to `Settings` > `Connections` and Click the `Add New` button to add your Radarr and Sonarr instances.
-![Add New](add-new.png)
+![Add New](../getting-started/add-new.png)
 
 3. Add your Radarr and Sonarr instances.
 ![Add Connection](add-connection.png)
@@ -32,9 +32,9 @@
 8. Add the `API Key` from your Radarr or Sonarr instance.
     Get `API Key` by opening Radarr/Sonarr in your browser, going to `Settings > General`, then copy the API key.
 
-9. If you have a setup that requires `Path Mappings` to be set as described in [Volume Mapping](../install/volume-mapping.md), you can add them here. See [Path Mapping](#path-mapping) below for more information.
+9. If you have a setup that requires `Path Mappings` to be set as described in [Volume Mapping](../getting-started/volume-mapping.md), you can add them here. See [Path Mapping](#path-mapping) below for more information.
 
-    If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/help/docker-builder/builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
+    If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/usage/docker-builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
 
     !!! tip
         _You can set different path mappings for each Radarr/Sonarr instance._
@@ -46,7 +46,7 @@
 
 11. Repeat the steps for each Radarr and Sonarr instance you want to monitor.
 
-12. That's it! The application will now start downloading trailers for your media library. See [settings](settings.md) for more information on how to adjust settings.
+12. That's it! The application will now start downloading trailers for your media library. See [settings](../getting-started/application-settings.md) for more information on how to adjust settings.
 
 ## Monitor Types
 
@@ -84,12 +84,12 @@ If you are using Windows, you might need to add path mappings in most cases, unl
     So, if Radarr/Sonarr sends a path like `C:\Users\username\Movies\The MAtrix (1999)`, it will be replaced with `/media/movies/The Matrix (1999)`.
 
 1. Click the `Add Path Mapping` button.
-![Add Path Mapping](add-path-mapping.png)
+![Add Path Mapping](../getting-started/add-path-mapping.png)
 
 2. Set the `Path From` to the path inside Radarr/Sonarr connection.
 
 3. Set the `Path To` to the path inside the Trailarr container.
-![Path Mapping](path-mapping.png)
+![Path Mapping](../getting-started/path-mapping.png)
 
 4. Click the `Save` button to save the path mapping.
 

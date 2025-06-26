@@ -95,38 +95,39 @@ extra:
       link: https://discord.gg/KKPr5kQEzQ
 nav:
   - Trailarr: index.md
-  - Install:
-    - Install: install.md
-    - Environment Variables: install/env-variables.md
-    - Volume Mapping: install/volume-mapping.md
-    - Docker Compose: install/docker-compose.md
-    - Docker Run: install/docker-cli.md
-    - Hardware Acceleration: install/hardware-acceleration.md
-    # - Docker Builder: install/docker-builder.md
-    # - Usage: install/form.html
-  - Setup:
-    - Connections: setup/connections.md
+  - Getting Started:
+    - Overview: getting-started/index.md
+    - Environment Variables: getting-started/environment-variables.md
+    - Volume Mapping: getting-started/volume-mapping.md
+    - Docker Compose: getting-started/docker-compose.md
+    - Docker Run: getting-started/docker-cli.md
+    - Hardware Acceleration: getting-started/hardware-acceleration.md
+    - Application Settings: getting-started/application-settings.md
+  - Usage:
+    - Connections: usage/connections.md
     - Profiles:
-      - Profiles: setup/profiles/index.md
+      - Overview: usage/profiles/index.md
       - Settings:
-        - General: setup/profiles/settings/general.md
-        - File: setup/profiles/settings/file.md
-        - Audio: setup/profiles/settings/audio.md
-        - Video: setup/profiles/settings/video.md
-        - Subtitle: setup/profiles/settings/subtitle.md
-        - Search: setup/profiles/settings/search.md
-      - Filters: setup/profiles/filters.md
-      - Examples: setup/profiles/examples.md
-    - Settings: setup/settings.md
-  - Help:
-    - Common: help/common.md
-    - API Docs: help/api/docs.html
-    - Docker Builder: help/docker-builder/builder.html
-    - FAQ: help/faq.md
+        - General: usage/profiles/settings/general.md
+        - File: usage/profiles/settings/file.md
+        - Audio: usage/profiles/settings/audio.md
+        - Video: usage/profiles/settings/video.md
+        - Subtitle: usage/profiles/settings/subtitle.md
+        - Search: usage/profiles/settings/search.md
+      - Filters: usage/profiles/filters.md
+      - Examples: usage/profiles/examples.md
+    - API Docs: usage/api-docs.html
+    - Docker Builder: usage/docker-builder.html
+  - Troubleshooting:
+    - Common Issues: troubleshooting/common-issues.md
+    - FAQ: troubleshooting/faq.md
+  - Development:
+    - Contributing: development/contributing.md
+  - Release Information:
+    - Changelog: release-information/changelog.md
     - Release Notes:
-      - 2025: help/release-notes/2025.md
-      - 2024: help/release-notes/2024.md
-    # - Changelog: help/changelog.md
-    - Legal Disclaimer: help/legal-disclaimer.md
+      - '2025': release-information/2025.md
+      - '2024': release-information/2024.md
+  - Legal Disclaimer: legal-disclaimer.md
 # extra_javascript:
-#   - js/docker-builder.js
+#   - usage/builder.js
