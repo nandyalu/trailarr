@@ -37,7 +37,7 @@ Trailarr gets the media folders from the Radarr and Sonarr connections you add. 
 
 Some [examples](#examples) are provided below. 
 
-If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/usage/docker-builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
+If you need additional help, there is a [Docker Config Tool](https://nandyalu.github.io/trailarr/user-guide/docker-builder.html){:target="_blank"} that will help you generate the docker-compose file with the correct volume mappings and path mappings.
 
 If you are still facing issues, you can ask for help in the [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
@@ -118,13 +118,13 @@ For example, if Radarr has `/mnt/disk1/media/movies` mapped to `/media` and Sona
         - /mnt/disk1/media/tv:/media/tv
 ```
 
-2. Set the [path mapping](../usage/connections.md#path-mapping) for Radarr like:
+2. Set the [path mapping](../user-guide/connections.md#path-mapping) for Radarr like:
 ![Radarr Path Mapping](radarr-mapping.png)
 
     !!! tip
         The `Path From` needs to match root folder inside Radarr (`/media`), and the `Path To` needs to match the folder inside Trailarr where the media is mapped (`/media/movies`).
 
-3. Set the [path mapping](../usage/connections.md#path-mapping) for Sonarr like:
+3. Set the [path mapping](../user-guide/connections.md#path-mapping) for Sonarr like:
 ![Sonarr Path Mapping](sonarr-mapping.png)
 
     !!! tip
@@ -152,7 +152,7 @@ For example, if Radarr has `/mnt/disk1/media/movies` mapped to `/media` and Sona
 
 2. Now, you if you are running Radarr / Sonarr as docker containers, you can skip the next step and proceed to the [Environment Variables](environment-variables.md) setup.
 
-3. Otherwise, you need to setup the [Path Mapping](../usage/connections.md#path-mapping) for Radarr and Sonarr connections, as the media folder paths in Radarr/Sonarr will look like `C:\Users\username\Movies\The Matrix (1999)`, which won't be accessible by Trailarr as it's not a valid linux path. So, we need to add a path mapping to tell Trailarr what to replace that path with.
+3. Otherwise, you need to setup the [Path Mapping](../user-guide/connections.md#path-mapping) for Radarr and Sonarr connections, as the media folder paths in Radarr/Sonarr will look like `C:\Users\username\Movies\The Matrix (1999)`, which won't be accessible by Trailarr as it's not a valid linux path. So, we need to add a path mapping to tell Trailarr what to replace that path with.
 
 4. Remember, in step 1 we mapped `C:\Users\username\Movies` to `/media/movies`, so you need to go into `Settings -> Connections`, open Radarr/Sonarr and Add Path Mapping like this:
 

@@ -2,7 +2,7 @@ Profiles allow you to define how and when trailers should be downloaded and proc
 
 Profiles are made up of two things:
 
-- Settings: Audio, Video, and File settings
+- Settings: Audio, Video, File and Search settings
 - Filters: Conditions that determine when the profile should be applied to a media item.
 
 !!! tip ""

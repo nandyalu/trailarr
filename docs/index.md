@@ -53,7 +53,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Installation & Setup
 
-See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on how to [install](getting-started/index.md) and [setup](usage/connections.md) Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/connections.md) Trailarr.
 
 ## Dependencies
 
@@ -90,7 +90,7 @@ There are some changes that are planned for the future. These changes are not gu
 
 - [x] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
 - [x] Add custom filters to Media pages in frontend
-- [ ] Add a new method for making path mappings easier
+- [x] Add a new method for making path mappings easier
 - [x] Add options to disable conversion of downloaded videos
 - [x] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
 - [ ] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬

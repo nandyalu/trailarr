@@ -11,18 +11,19 @@ theme:
   logo: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png
   favicon: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png
   features:
+    - content.code.annotate
     - content.code.copy
     - content.code.select
-    - content.code.annotate
-    - navigation.tabs
+    - navigation.footer
     - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
     - navigation.path
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
-    - navigation.footer
-    - toc.follow
     - search.suggest
+    - toc.follow
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -102,30 +103,33 @@ nav:
     - Docker Compose: getting-started/docker-compose.md
     - Docker Run: getting-started/docker-cli.md
     - Hardware Acceleration: getting-started/hardware-acceleration.md
-  - Usage:
-    - Connections: usage/connections.md
-    - General Settings: usage/general-settings.md
+  - User Guide:
+    - Library: user-guide/library.md
+    - Tasks: user-guide/tasks.md
+    - Logs: user-guide/logs.md
+    - General Settings: user-guide/general-settings.md
+    - Connections: user-guide/connections.md
     - Profiles:
-      - Overview: usage/profiles/index.md
+      - Overview: user-guide/profiles/index.md
       - Settings:
-        - General: usage/profiles/settings/general.md
-        - File: usage/profiles/settings/file.md
-        - Audio: usage/profiles/settings/audio.md
-        - Video: usage/profiles/settings/video.md
-        - Subtitle: usage/profiles/settings/subtitle.md
-        - Search: usage/profiles/settings/search.md
-      - Filters: usage/profiles/filters.md
-      - Examples: usage/profiles/examples.md
-    - Docker Builder: usage/docker-builder.html
+        - General: user-guide/profiles/settings/general.md
+        - File: user-guide/profiles/settings/file.md
+        - Audio: user-guide/profiles/settings/audio.md
+        - Video: user-guide/profiles/settings/video.md
+        - Subtitle: user-guide/profiles/settings/subtitle.md
+        - Search: user-guide/profiles/settings/search.md
+      - Filters: user-guide/profiles/filters.md
+      - Examples: user-guide/profiles/examples.md
+    - Docker Builder: user-guide/docker-builder.html
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md
   - Release Notes:
-    - '2025': release-information/2025.md
-    - '2024': release-information/2024.md
+    - '2025': release-notes/2025.md
+    - '2024': release-notes/2024.md
   - References:
-    - API Docs: references/api-docs.html
     - Contributing: references/contributing.md
     - Legal Disclaimer: references/legal-disclaimer.md
+    - API Docs: references/api-docs/api-docs.html
 # extra_javascript:
 #   - usage/builder.js
