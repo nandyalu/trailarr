@@ -116,7 +116,6 @@ nav:
         - Search: usage/profiles/settings/search.md
       - Filters: usage/profiles/filters.md
       - Examples: usage/profiles/examples.md
-    - API Docs: usage/api-docs.html
     - Docker Builder: usage/docker-builder.html
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
@@ -125,6 +124,7 @@ nav:
     - '2025': release-information/2025.md
     - '2024': release-information/2024.md
   - References:
+    - API Docs: references/api-docs.html
     - Contributing: references/contributing.md
     - Legal Disclaimer: references/legal-disclaimer.md
 # extra_javascript:
