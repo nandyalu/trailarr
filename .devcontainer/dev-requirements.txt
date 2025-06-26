@@ -15,7 +15,7 @@ fastapi[standard]==0.115.13
 bcrypt==4.3.0
 pillow==11.2.1
 sqlmodel==0.0.24
-yt-dlp[default]==2025.6.9
+yt-dlp[default]==2025.6.25
 
 # Testing
 aioresponses==0.7.8
