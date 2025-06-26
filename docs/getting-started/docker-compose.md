@@ -27,7 +27,7 @@ services:
         restart: on-failure
 ```
 
-3. Update the env variables and volume mappings in the `docker-compose.yml` file. See [Environment Variables](env-variables.md) and [Volume Mapping](volume-mapping.md) for the details.
+3. Update the env variables and volume mappings in the `docker-compose.yml` file. See [Environment Variables](environment-variables.md) and [Volume Mapping](volume-mapping.md) for the details.
 
 4. Run the following command to start the application:
 ```bash

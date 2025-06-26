@@ -17,7 +17,7 @@ Yes, you can connect multiple Radarr and Sonarr instances to Trailarr. Trailarr 
 ## Trailarr is not downloading trailers for some Movies or Series. Why?
 Trailarr monitors the Movies and Series from connected Radarr and Sonarr instances based on the Monitor Type set. Make sure you have correct Monitor Types set for the Movies and Series you want Trailarr to download trailers for.
 
-More info about [Monitor Types here](../setup/connections.md#monitor-types).
+More info about [Monitor Types here](../usage/connections.md#monitor-types).
 
 
 ## How can I change the Monitor Type for a Movie or Series?
@@ -34,7 +34,7 @@ Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will
     Trailarr will not delete the trailer that was already downloaded. You have to manually click on `Delete` button to delete the trailer.
 
 ## Trailarr not downloading the specified youtube video, but downloading a different video. Why?
-Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > Trailer > Advanced` to download restricted videos. See [Settings](../setup/settings.md) for more info.
+Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > Trailer > Advanced` to download restricted videos. See [Settings](../getting-started/application-settings.md) for more info.
 
 
 ## Can I download multiple trailers for a Movie or Series?

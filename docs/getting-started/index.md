@@ -11,24 +11,24 @@ To run this application, you need the following installed on your system:
 
 ### Environment Variables
 
-See [Environment Variables](install/env-variables.md) for the list of optional environment variables set for the application.
+See [Environment Variables](environment-variables.md) for the list of optional environment variables set for the application.
 
 
 ### Volume Mapping
 
-See [Volume Mapping](install/volume-mapping.md) for the volume mapping details.
+See [Volume Mapping](volume-mapping.md) for the volume mapping details.
 
 
 ## Installation
 
 ### Docker Compose
 
-See [Docker Compose](install/docker-compose.md) for the Docker Compose installation instructions.
+See [Docker Compose](docker-compose.md) for the Docker Compose installation instructions.
 
 ### Docker CLI
 
-See [Docker CLI](install/docker-cli.md) for the Docker CLI installation instructions.
+See [Docker CLI](docker-cli.md) for the Docker CLI installation instructions.
 
 ## Help
 
-Use the [Docker Config Tool](help/docker-builder/builder.html){:target="_blank"} to generate the Docker Compose file/CLI command for setting up Docker Volumes and Path Mappings for Trailarr.
+Use the [Docker Config Tool](../usage/docker-builder.html){:target="_blank"} to generate the Docker Compose file/CLI command for setting up Docker Volumes and Path Mappings for Trailarr.

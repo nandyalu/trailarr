@@ -50,7 +50,7 @@ Select the logging level for the app. Available options are `Debug`, `Info`, `Wa
 
 If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can set the path to a file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
 
-See [Export YouTube Cookies.txt file](../help/common.md#export-youtube-cookiestxt-file) for more info.
+See [Export YouTube Cookies.txt file](../troubleshooting/common-issues.md#export-youtube-cookiestxt-file) for more info.
 
 !!! tip
     Use the `📁` (folder) icon to open a dialog that shows the container folders and files. Navigate to your `cookies.txt` file and confirm.
@@ -70,7 +70,7 @@ These are experimental options, might not work as expected! You can enable them 
 Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
 
 !!! note
-    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../install/hardware-acceleration.md).
+    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](hardware-acceleration.md).
 
 ### Update Yt-dlp
 

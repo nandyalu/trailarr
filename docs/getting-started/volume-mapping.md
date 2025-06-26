@@ -150,7 +150,7 @@ For example, if Radarr has `/mnt/disk1/media/movies` mapped to `/media` and Sona
 
         You could possibly map the network share directly to the Trailarr container, however, Trailarr won't be able to provide support for it at this time.
 
-2. Now, you if you are running Radarr / Sonarr as docker containers, you can skip the next step and proceed to the [Environment Variables](env-variables.md) setup.
+2. Now, you if you are running Radarr / Sonarr as docker containers, you can skip the next step and proceed to the [Environment Variables](environment-variables.md) setup.
 
 3. Otherwise, you need to setup the [Path Mapping](../usage/connections.md#path-mapping) for Radarr and Sonarr connections, as the media folder paths in Radarr/Sonarr will look like `C:\Users\username\Movies\The Matrix (1999)`, which won't be accessible by Trailarr as it's not a valid linux path. So, we need to add a path mapping to tell Trailarr what to replace that path with.
 
