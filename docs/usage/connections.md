@@ -46,7 +46,7 @@
 
 11. Repeat the steps for each Radarr and Sonarr instance you want to monitor.
 
-12. That's it! The application will now start downloading trailers for your media library. See [settings](../getting-started/application-settings.md) for more information on how to adjust settings.
+12. That's it! The application will now start downloading trailers for your media library. See [settings](general-settings.md) for more information on how to adjust settings.
 
 ## Monitor Types
 

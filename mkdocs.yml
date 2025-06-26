@@ -102,9 +102,9 @@ nav:
     - Docker Compose: getting-started/docker-compose.md
     - Docker Run: getting-started/docker-cli.md
     - Hardware Acceleration: getting-started/hardware-acceleration.md
-    - Application Settings: getting-started/application-settings.md
   - Usage:
     - Connections: usage/connections.md
+    - General Settings: usage/general-settings.md
     - Profiles:
       - Overview: usage/profiles/index.md
       - Settings:
