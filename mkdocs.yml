@@ -122,7 +122,6 @@ nav:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md
   - Release Notes:
-    - Changelog: release-information/changelog.md
     - '2025': release-information/2025.md
     - '2024': release-information/2024.md
   - References:
