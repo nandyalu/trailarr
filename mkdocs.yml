@@ -96,6 +96,13 @@ extra:
       link: https://discord.gg/KKPr5kQEzQ
 nav:
   - Trailarr: index.md
+  - Tutorials:
+    - First Things: tutorials/01-first-things.md
+    - Installation: tutorials/02-installation.md
+    - Configuration: tutorials/03-configuration.md
+    - Profiles: tutorials/04-profiles.md
+    - Connections: tutorials/05-connections.md
+    - Next Steps: tutorials/06-next-steps.md
   - Getting Started:
     - Overview: getting-started/index.md
     - Environment Variables: getting-started/environment-variables.md
