@@ -52,7 +52,7 @@ See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instr
 
 We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
 
-[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/0.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Video Title")
+[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/0.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42")
 
 ## Dependencies
 
