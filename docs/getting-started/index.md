@@ -1,34 +1,21 @@
-## Requirements
+# Getting Started
 
-To run this application, you need the following installed on your system:
+Thanks for your interest in Trailarr! This guide will help you get started with installing and configuring Trailarr, a tool designed to enhance your media experience by automatically downloading trailers for your movies and TV shows managed by Radarr and Sonarr.
 
-- Docker: [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/){:target="_blank"}
-- Radarr: [https://radarr.video/](https://radarr.video/){:target="_blank"}
-- Sonarr: [https://sonarr.tv/](https://sonarr.tv/){:target="_blank"}
+!!! tip ""
+    If you get stuck at any point, please refer to the [Troubleshooting](../troubleshooting/common-issues.md) section for help, or check out the [FAQ](../troubleshooting/faq.md) for common questions and answers. 
 
+!!! tip "Getting Help"
+    If you need further assistance, you can also join our community on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
-## Configuration
+In this guide, we will go over a few things you need do to install Trailarr and set it up to talk to your `Radarr` and `Sonarr` instances properly, recognize your media, and start downloading trailers for them.
 
-### Environment Variables
+Here's a quick overview of the steps we'll cover:
 
-See [Environment Variables](environment-variables.md) for the list of optional environment variables set for the application.
+1. [First Steps](./01-first-things/index.md): Some things you need to know before installing Trailarr.
+2. [Installation](./02-installation/index.md): Detailed instructions on how to install Trailarr, logging in, and initial configuration.
+3. [Setup](./03-setup/index.md): Initial configuration of Trailarr, including setting up connections to Radarr and Sonarr.
+4. [Next Steps](./04-next-steps.md): What to expect after the initial setup, including syncing and downloading trailers.
 
-
-### Volume Mapping
-
-See [Volume Mapping](volume-mapping.md) for the volume mapping details.
-
-
-## Installation
-
-### Docker Compose
-
-See [Docker Compose](docker-compose.md) for the Docker Compose installation instructions.
-
-### Docker CLI
-
-See [Docker CLI](docker-cli.md) for the Docker CLI installation instructions.
-
-## Help
-
-For help with installation, configuration, or troubleshooting, please refer to the [User Guide](../user-guide/library.md) or the [Troubleshooting](../troubleshooting/common-issues.md) sections of the documentation.
+Let's get started with the first steps to get Trailarr up and running!
+You can follow the links above to navigate through the guide, or use the sidebar for quick access to each section.

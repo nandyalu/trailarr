@@ -1,3 +1,4 @@
+# Profiles
 Profiles allow you to define how and when trailers should be downloaded and processed in Trailarr.
 
 Profiles are made up of two things:

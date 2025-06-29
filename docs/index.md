@@ -53,7 +53,11 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Installation & Setup
 
-See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/connections.md) Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
+
+We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
+
+<iframe width="100%" style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/Hz31zWEtY5k?si=dTgRuFwXyF9-Tufh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Dependencies
 
@@ -62,6 +66,7 @@ Trailarr is built using the following libraries and tools:
 - [Angular](https://angular.dev/){:target="_blank"}
 - [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
 - [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
+- [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material){:target="_blank"}
 - [Python](https://www.python.org/){:target="_blank"}
 - [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
 
@@ -96,7 +101,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
-- [ ] Update docs for Windows path mappings
+- [x] Update docs for Windows path mappings
 - [ ] Improve task logging
 - [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
