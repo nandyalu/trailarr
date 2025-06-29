@@ -51,6 +51,7 @@ theme:
 plugins:
   - search
   - git-revision-date-localized
+  - glightbox
   # - swagger-ui-tag
   - mkdocs_github_changelog:
         # token: !ENV GITHUB_TOKEN
@@ -96,28 +97,32 @@ extra:
       link: https://discord.gg/KKPr5kQEzQ
 nav:
   - Trailarr: index.md
-  - Tutorials:
-    - First Things: tutorials/01-first-things.md
-    - Installation: tutorials/02-installation.md
-    - Configuration: tutorials/03-configuration.md
-    - Profiles: tutorials/04-profiles.md
-    - Connections: tutorials/05-connections.md
-    - Next Steps: tutorials/06-next-steps.md
   - Getting Started:
-    - Overview: getting-started/index.md
-    - Environment Variables: getting-started/environment-variables.md
-    - Volume Mapping: getting-started/volume-mapping.md
-    - Docker Compose: getting-started/docker-compose.md
-    - Docker Run: getting-started/docker-cli.md
-    - Hardware Acceleration: getting-started/hardware-acceleration.md
+    - getting-started/index.md
+    - First Things: 
+      - getting-started/01-first-things/index.md
+      - Environment Variables: getting-started/01-first-things/environment-variables.md
+      - Radarr Sonarr Volumes: getting-started/01-first-things/radarr-sonarr-volumes.md
+    - Installation: 
+      - getting-started/02-installation/index.md
+      - Docker Compose: getting-started/02-installation/docker-compose.md
+      - Docker Run: getting-started/02-installation/docker-run.md
+      - Unraid: getting-started/02-installation/unraid.md
+      - Hardware Acceleration: getting-started/02-installation/hardware-acceleration.md
+    - Setup:
+      - getting-started/03-setup/index.md
+      - Profiles: getting-started/03-setup/profiles.md
+      - Connections: getting-started/03-setup/connections.md
+    - Next Steps: getting-started/04-next-steps.md
   - User Guide:
+    - user-guide/index.md
     - Library: user-guide/library.md
     - Tasks: user-guide/tasks.md
     - Logs: user-guide/logs.md
     - General Settings: user-guide/general-settings.md
     - Connections: user-guide/connections.md
     - Profiles:
-      - Overview: user-guide/profiles/index.md
+      - user-guide/profiles/index.md
       - Settings:
         - General: user-guide/profiles/settings/general.md
         - File: user-guide/profiles/settings/file.md

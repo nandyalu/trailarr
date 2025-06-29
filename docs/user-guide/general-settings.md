@@ -70,7 +70,7 @@ These are experimental options, might not work as expected! You can enable them 
 Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
 
 !!! note
-    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../getting-started/hardware-acceleration.md).
+    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../getting-started/02-installation/hardware-acceleration.md).
 
 ### Update Yt-dlp
 
