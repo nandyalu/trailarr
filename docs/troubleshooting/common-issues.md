@@ -30,7 +30,7 @@ Once you have updated these settings, any trailers downloaded afterwards will be
 
 ## YouTube Cookies
 
-If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can save your YouTube cookies and set the [Yt-dlp Cookies Path](../user-guide/general-settings.md#yt-dlp-cookies-path) to cookies.txt file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
+If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can save your YouTube cookies and set the [Yt-dlp Cookies Path](../user-guide/settings/general-settings/index.md#yt-dlp-cookies-path) to cookies.txt file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
 
 YouTube rotates cookies frequently on open YouTube browser tabs as a security measure. To export cookies that will remain working with yt-dlp, you will need to export cookies in such a way that they are never rotated.
 
@@ -38,7 +38,7 @@ YouTube rotates cookies frequently on open YouTube browser tabs as a security me
     This is a hack to bypass YouTube restrictions and it might not always work. There is nothing Trailarr can do in those situations.
 
 !!! warning "Do NOT use cookies with New Installations"
-    If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.
+    If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity and YouTube placing a ban on your account. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.
     
     Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
 
@@ -66,7 +66,7 @@ See below for more info regarding youtube downloaders and cookies:
 - Youtube-dl: [How do I pass cookies to youtube-dl?](https://github.com/ytdl-org/youtube-dl#how-do-i-pass-cookies-to-youtube-dl)
 
 !!! warning
-    Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the cookies file in [`Yt-dlp Cookies Path` setting](../user-guide/general-settings.md#yt-dlp-cookies-path).
+    Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the cookies file in [`Yt-dlp Cookies Path` setting](../user-guide/settings/general-settings/index.md#yt-dlp-cookies-path).
 
 ### Coookies not working
 

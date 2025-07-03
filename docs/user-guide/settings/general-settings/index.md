@@ -1,3 +1,5 @@
+# Trailarr Settings
+
 There are several settings that you can use to customize the behavior of Trailarr app. These settings can be set by opening the app in browser [http://localhost:7889/settings](http://localhost:8000/settings){:target="_blank"} and navigating to `Settings > General` page.
 
 ## General Settings
@@ -50,13 +52,18 @@ Select the logging level for the app. Available options are `Debug`, `Info`, `Wa
 
 If you are having issues downloading trailers due to age restrictions, bot detection, etc., you can set the path to a file containing YouTube cookies. This will allow the app to use the cookies to bypass restrictions.
 
-See [Export YouTube Cookies.txt file](../troubleshooting/common-issues.md#export-youtube-cookiestxt-file) for more info.
+See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#export-youtube-cookiestxt-file) for more info.
 
 !!! tip
     Use the `📁` (folder) icon to open a dialog that shows the container folders and files. Navigate to your `cookies.txt` file and confirm.
 
 !!! warning
     Make sure to save the cookies file in a secure location and map the volume to the container. Set the path to the file in this setting.
+
+!!! warning "Do NOT use cookies with New Installations"
+    If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity and YouTube placing a ban on your account. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.
+    
+    Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
 
 
 ## Experimental Settings
@@ -70,7 +77,7 @@ These are experimental options, might not work as expected! You can enable them 
 Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
 
 !!! note
-    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../getting-started/02-installation/hardware-acceleration.md).
+    This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../../../getting-started/02-installation/hardware-acceleration.md).
 
 ### Update Yt-dlp
 

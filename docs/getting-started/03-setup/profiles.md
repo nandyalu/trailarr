@@ -10,7 +10,7 @@ Profiles define the settings for trailers (like quality, format, search, etc.) a
 !!! tip ""
     `Profiles` allow you to play with different settings and filters that allow you to customize Trailarr and make it download a different language trailer for certain media, or 4K trailers for some movies, etc. So, we won't cover them here and instead just use the default Profiles for now. You can play with them later.
 
-    More details on Profiles are under [User Guide > Profiles](../../user-guide/profiles/index.md)
+    More details on Profiles are under [User Guide > Profiles](../../user-guide/settings/profiles/index.md)
 
 Trailarr comes with two default profiles to get you started:
 
@@ -30,6 +30,6 @@ Review the default profiles and consider if they meet your needs. If not, adjust
 !!! tip 
     Make sure the Profiles are enabled, disabled Profiles will not be used!
 
-More information regarding `Profiles` can be found in [User Guides > Profiles](../../user-guide/profiles/index.md).
+More information regarding `Profiles` can be found in [User Guides > Profiles](../../user-guide/settings/profiles/index.md).
 
 You are now ready to setup [Connections](./connections.md) to Radarr/Sonarr to let Trailarr start working on your trailers.

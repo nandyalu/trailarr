@@ -87,13 +87,13 @@ We will go over the `volumes` section in detail below.
 And there are 2 parts to each volume mapping:
 
 1. **Local Folder**: The folder on your computer/server where the media files are stored.
-2. **Container Folder**: The folder inside the Trailarr container where the it can access the media files.
+2. **Container Folder**: The folder inside the Trailarr container where it can access the media files.
 
 This is used like:
 
 ```yaml
   volumes:
-    - **Local Folder**:**Container Folder**
+    - <Local Folder>:<Container Folder>
 ```
 
 #### **Trailarr AppData**
@@ -210,8 +210,48 @@ services:
 ```
 These are examples. You **must** update these.
 
-*   The left side (`/path/on/your/host/...`) should be the **same host path** that your Radarr/Sonarr containers use for their media.
-*   The right side (`:/movies`, `:/tv`) is how this path will be known *inside the Trailarr container*. You will use these paths later when configuring connections in Trailarr. **Make sure these paths are unique and do not conflict with any other container's paths.**
+*   The left side (`/path/on/your/host/...`) should be the **folder path** where media files are located in your system.
+*   The right side (`:/movies`, `:/tv`) is how this path will be known *inside the Trailarr container*. You will use these paths later when configuring connections in Trailarr. 
+
+!!! important "Use UNIQUE container folder paths"
+    **Make sure these paths are unique and do not conflict with any other container's paths.**
+    **What does this mean?**
+    Let's say you used below configuration:
+
+    ```yaml hl_lines="9 11"
+    # DO NOT USE THIS
+    services:
+      trailarr:
+        image: nandyalu/trailarr:latest
+        # Other options here
+        volumes:
+          - /path/to/your/trailarr:/config # For Trailarr's database and logs
+          # Map your Radarr media folder(s)
+          - /mnt/disk1/media/movies:/media # Container Path: '/media'
+          # Map your Sonarr media folder(s)
+          - /mnt/disk2/media/tv:/media # Container Path: '/media'
+        # Other options here
+    ```
+
+    This means we are telling Docker to link both our `Movies` and `TV` folders to `Media` folder inside Trailarr container. Docker will link `Movies` folder to `/media` folder first and then replaces it with `TV` folder later, so Trailarr will only have access to `TV` folder and not the `Movies` folder.
+
+    You can use something like below to get around this:
+
+    ```yaml hl_lines="9 11"
+    # DO NOT USE THIS
+    services:
+      trailarr:
+        image: nandyalu/trailarr:latest
+        # Other options here
+        volumes:
+          - /path/to/your/trailarr:/config # For Trailarr's database and logs
+          # Map your Radarr media folder(s)
+          - /mnt/disk1/media/movies:/disk1/media # <-- MODIFIED
+          # Map your Sonarr media folder(s)
+          - /mnt/disk2/media/tv:/disk2/media # <-- MODIFIED
+        # Other options here
+    ```
+
 
 !!! important
     If you have a path with spaces in it, you can either:

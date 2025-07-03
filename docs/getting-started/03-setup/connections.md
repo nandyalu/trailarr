@@ -38,7 +38,7 @@ Setting up a connection involves three main steps:
 After a successful initial test, Trailarr needs to know how to access the media files managed by this *Arr instance. This is where you map the root folders reported by the *Arr API to the paths where Trailarr can find them.
 
 !!! tip ""
-    Remeber the `Volume Mappings` we set during [installation](../02-installation/docker-compose.md#explanation-of-options), we use them here!
+    Remeber the `Volume Mappings` we set during [installation](../02-installation/docker-compose.md#media-folders), we use them here!
 
 ![Connection - Add - Path Mappings](connection-add-path-mappings.png)
 
@@ -52,6 +52,7 @@ After a successful initial test, Trailarr needs to know how to access the media 
     !!! danger ""
         You can `Delete` a `Path Mapping` by clicking on the `X` button next to it!
 
+          - It is NOT recommended to delete them unless you know what you are doing!
           - You can remove it if your `Path From` is same as `Path To`.
           - You can leave them there even if `Path From = Path To`.
     
@@ -60,13 +61,20 @@ After a successful initial test, Trailarr needs to know how to access the media 
     ??? example "Examples 1 & 2 - TRaSH Guides - SAME path as `Radarr`/`Sonarr`"
         If you used a `volume mapping` that is SAME as `Radarr`/`Sonarr` in `Trailarr` then `Path To` is same as `Path To`:
 
-        ```yaml hl_lines="7 14"
+        ```yaml hl_lines="7 14 21"
         services:
           radarr:
             image: ghcr.io/hotio/radarr:latest
             # Other options here
             volumes:
             - /docker/appdata/radarr:/config
+            - /data:/data
+            # Other options here
+          sonarr:
+            image: ghcr.io/hotio/sonarr:latest
+            # Other options here
+            volumes:
+            - /docker/appdata/sonarr:/config
             - /data:/data
             # Other options here
           trailarr:
@@ -79,7 +87,7 @@ After a successful initial test, Trailarr needs to know how to access the media 
         ```
         OR
 
-        ```yaml hl_lines="7 14"
+        ```yaml hl_lines="7 14 21 22"
         services:
           radarr:
             image: ghcr.io/hotio/radarr:latest
@@ -88,11 +96,19 @@ After a successful initial test, Trailarr needs to know how to access the media 
               - /docker/appdata/radarr:/config
               - /mnt/movies_disk/media/movies:/media/movies
             # Other options here
+          sonarr:
+            image: ghcr.io/hotio/sonarr:latest
+            # Other options here
+            volumes:
+              - /docker/appdata/sonarr:/config
+              - /mnt/series_disk/media/tv:/media/tv
+            # Other options here
           trailarr:
             image: nandyalu/trailarr:latest
             # Other options here
             volumes:
               - /docker/appdata/trailarr:/config
+              - /mnt/movies_disk/media/movies:/media/movies
               - /mnt/series_disk/media/tv:/media/tv
             # Other options here
         ```
@@ -198,6 +214,9 @@ Once all Path Mappings are filled out, you should have something like below, you
 
 !!! tip ""
     Crucially, ensure that each "Path From" is correctly mapped to its corresponding location in Trailarr's file system.
+
+!!! warning
+    `Volume Mappings` used during Installation and `Path Mappings` are connected to each other - Whenever you modify the `Volume Mappings` you need to update the relevant Connection to update the `Path Mappings` as well!
 
 ## 3. **Validate & Submit**
 

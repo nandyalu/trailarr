@@ -50,8 +50,21 @@ theme:
         name: Switch to system preference
 plugins:
   - search
-  - git-revision-date-localized
-  - glightbox
+  - git-revision-date-localized:
+      type: datetime
+      locale: en
+      fallback_to_build_date: true
+      enable_creation_date: true
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      auto_caption: false
+      caption_position: bottom
   # - swagger-ui-tag
   - mkdocs_github_changelog:
         # token: !ENV GITHUB_TOKEN
@@ -116,23 +129,28 @@ nav:
     - Next Steps: getting-started/04-next-steps.md
   - User Guide:
     - user-guide/index.md
-    - Library: user-guide/library.md
-    - Tasks: user-guide/tasks.md
-    - Logs: user-guide/logs.md
-    - General Settings: user-guide/general-settings.md
-    - Connections: user-guide/connections.md
-    - Profiles:
-      - user-guide/profiles/index.md
-      - Settings:
-        - General: user-guide/profiles/settings/general.md
-        - File: user-guide/profiles/settings/file.md
-        - Audio: user-guide/profiles/settings/audio.md
-        - Video: user-guide/profiles/settings/video.md
-        - Subtitle: user-guide/profiles/settings/subtitle.md
-        - Search: user-guide/profiles/settings/search.md
-      - Filters: user-guide/profiles/filters.md
-      - Examples: user-guide/profiles/examples.md
-    - Docker Builder: user-guide/docker-builder.html
+    - General: user-guide/general/index.md
+    - Library: 
+      - user-guide/library/index.md
+      - Media Details: user-guide/library/media-details/index.md
+    - Tasks: user-guide/tasks/index.md
+    - Logs: user-guide/logs/index.md
+    - Settings: 
+      - user-guide/settings/index.md
+      - General Settings: user-guide/settings/general-settings/index.md
+      - Connections: user-guide/settings/connections/index.md
+      - Profiles:
+        - user-guide/settings/profiles/index.md
+        - Settings:
+          - General: user-guide/settings/profiles/settings/general.md
+          - File: user-guide/settings/profiles/settings/file.md
+          - Audio: user-guide/settings/profiles/settings/audio.md
+          - Video: user-guide/settings/profiles/settings/video.md
+          - Subtitle: user-guide/settings/profiles/settings/subtitle.md
+          - Search: user-guide/settings/profiles/settings/search.md
+        - Filters: user-guide/settings/profiles/filters.md
+        - Examples: user-guide/settings/profiles/examples.md
+      - About: user-guide/settings/about/index.md
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md
