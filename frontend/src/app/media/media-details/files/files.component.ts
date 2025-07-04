@@ -1,5 +1,6 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -73,7 +74,7 @@ export class FilesComponent {
 
   ngOnInit() {
     // Subscribe to WebSocket updates to reload media data when necessary
-    this.webSocketService.toastMessage.subscribe((msg) => {
+    this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
       const msgText = msg.message.toLowerCase();
       const mediaIdStr = this.mediaId().toString();
       const mediaTitle = this.mediaService.selectedMedia()?.title?.toLowerCase() || '';

@@ -1,5 +1,6 @@
 import {AsyncPipe} from '@angular/common';
 import {Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterOutlet} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {msMinute} from 'src/util';
@@ -31,7 +32,7 @@ export class AppComponent implements OnDestroy, OnInit {
     this.resetIdleTimer();
 
     // Subscribe to messages and display them
-    this.toastSubscription = this.websocketService.toastMessage.subscribe({
+    this.toastSubscription = this.websocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe({
       next: (data: MessageData) => {
         this.messages.update((msgs) => [...msgs, data]);
         setTimeout(() => {
