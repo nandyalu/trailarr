@@ -34,7 +34,7 @@ else
 fi
 
 # Get migration message from user input
-read -p "Enter migration message: " migration_message
+read -r -p "Enter migration message: " migration_message
 if [ -z "$migration_message" ]; then
   echo "Migration message cannot be empty. Restoring original database and exiting."
   rm /config/trailarr.db
