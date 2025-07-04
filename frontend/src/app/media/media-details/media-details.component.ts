@@ -1,6 +1,5 @@
 import {TitleCasePipe} from '@angular/common';
 import {Component, computed, effect, ElementRef, HostListener, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
@@ -64,19 +63,6 @@ export class MediaDetailsComponent {
       }
     }
   });
-
-  ngOnInit() {
-    // Subscribe to WebSocket updates to reload media data when necessary
-    this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
-      const msgText = msg.message.toLowerCase();
-      const mediaIdStr = this.mediaId().toString();
-      const mediaTitle = this.selectedMedia()?.title?.toLowerCase() || '';
-      const checkForItems = ['media', 'trailer', mediaIdStr, mediaTitle];
-      if (checkForItems.some((term) => term && msgText.includes(term))) {
-        this.mediaService.mediaResource.reload();
-      }
-    });
-  }
 
   // Add Hostlisteners to handle keyboard shortcuts
   @HostListener('document:keydown', ['$event'])
