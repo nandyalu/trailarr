@@ -13,8 +13,7 @@ updates:
       interval: daily
     target-branch: "dev"
     open-pull-requests-limit: 5 # Limit the number of open PRs
-    reviewers: # Add reviewers
-      - "nandyalu"
+
   # Maintain dependencies for pip - backend
   # - package-ecosystem: "pip"
   #   directory: "/backend"
@@ -22,8 +21,7 @@ updates:
   #     interval: weekly
   #   target-branch: "main"
   #   open-pull-requests-limit: 3 # Limit the number of open PRs
-  #   reviewers: # Add reviewers
-  #     - "nandyalu"
+
   # Maintain dependencies for npm - frontend (Angular and rxjs only)
   # - package-ecosystem: "npm"
   #   directory: "/frontend"
@@ -31,8 +29,6 @@ updates:
   #     interval: weekly
   #   target-branch: "dev"
   #   open-pull-requests-limit: 3 # Limit the number of open PRs
-  #   reviewers: # Add reviewers
-  #     - "nandyalu"
   #   allow:
   #     - dependency-name: "@angular/*"
   #     - dependency-name: "rxjs"
