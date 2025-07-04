@@ -39,7 +39,7 @@ export const jsonEqual = <T>(left: T, right: T): boolean => left === right || JS
 
 const cacheMap = new Map<string, any>();
 export function CacheDecorator(ttl: number = 0): MethodDecorator {
-  return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  return function (_: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {
       const cacheKey = `${propertyKey.toString()}:${JSON.stringify(args)}`;

@@ -25,7 +25,7 @@ else
   echo "Database file '/config/trailarr.db' does not exist!"
   echo "You need to revert all model changes before creating a migration, in order to create a new database and apply existing migrations."
   # Wait for user input before continuing
-  read -p "Revert changes to models and Press Enter to continue or Ctrl+C to exit..."
+  read -r -p "Revert changes to models and Press Enter to continue or Ctrl+C to exit..."
   # Run Alembic upgrade to the latest version
   echo "Running Alembic upgrade to create a database and upgrade to the latest version..."
   alembic upgrade head
@@ -34,8 +34,7 @@ else
 fi
 
 # Get migration message from user input
-echo "Enter migration message:"
-read migration_message
+read -p "Enter migration message: " migration_message
 if [ -z "$migration_message" ]; then
   echo "Migration message cannot be empty. Restoring original database and exiting."
   rm /config/trailarr.db
