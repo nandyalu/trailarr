@@ -64,9 +64,11 @@ export class MediaDetailsComponent {
     }
   });
 
+  private readonly destroy$ = new Subject<void>();
+
   ngOnInit() {
     // Subscribe to WebSocket updates to reload media data when necessary
-    this.webSocketService.toastMessage.subscribe((msg) => {
+    this.webSocketService.toastMessage.pipe(takeUntil(this.destroy$)).subscribe((msg) => {
       const msgText = msg.message.toLowerCase();
       const mediaIdStr = this.mediaId().toString();
       const mediaTitle = this.selectedMedia()?.title?.toLowerCase() || '';
