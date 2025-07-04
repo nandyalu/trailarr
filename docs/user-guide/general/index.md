@@ -1,8 +1,10 @@
 # General
 
-🚧 Under Construction... 🚧
-
 This page explains some of the generic options that are available in the Trailarr UI
+
+## Documentation Search
+
+If you are looking for something, but not sure where to look in the documentation... Search is your friend! You can search with keywords.
 
 ## Search Media (`Ctrl + F`)
 

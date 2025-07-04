@@ -6,6 +6,7 @@ on:
     paths:
       - docs/**
       - mkdocs.yml
+  workflow_dispatch:  # Allows manual triggering of the workflow
 permissions:
   contents: write
 jobs:
@@ -33,7 +34,7 @@ jobs:
       #     restore-keys: |
       #       mkdocs-material-
       - name: Install Dependencies
-        run: pip install mkdocs-material mkdocs-git-revision-date-localized-plugin mkdocs_github_changelog
+        run: pip install mkdocs-material mkdocs-git-revision-date-localized-plugin mkdocs_github_changelog mkdocs-glightbox
       - name: Build and Deploy
         run: mkdocs gh-deploy --force
         env:
