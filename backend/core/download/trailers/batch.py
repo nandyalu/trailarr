@@ -44,6 +44,9 @@ def batch_download_task(
             )
         finally:
             downloading_count += 1
+        # Sleep for a random time if more downloads are pending
+        if downloading_count >= download_count:
+            return
         _sleep_for = 100 + randint(0, 50)
         logger.debug(
             f"Sleeping for {_sleep_for} seconds before next download..."

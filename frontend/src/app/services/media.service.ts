@@ -1,10 +1,12 @@
 import {HttpClient, HttpParams, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
 import {CustomfilterService} from './customfilter.service';
+import {WebsocketService} from './websocket.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +14,7 @@ import {CustomfilterService} from './customfilter.service';
 export class MediaService {
   private readonly httpClient = inject(HttpClient);
   private readonly customfilterService = inject(CustomfilterService);
+  private readonly webSocketService = inject(WebsocketService);
 
   private mediaUrl = environment.apiUrl + environment.media;
 
@@ -100,6 +103,17 @@ export class MediaService {
       }
     }
   });
+
+  constructor() {
+    // Subscribe to WebSocket updates to reload media data when necessary
+    this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
+      const msgText = msg.message.toLowerCase();
+      const checkForItems = ['media', 'trailer', 'task', 'download', 'batch', 'update', 'delete', 'monitor', 'unmonitor'];
+      if (checkForItems.some((term) => term && msgText.includes(term))) {
+        this.mediaResource.reload();
+      }
+    });
+  }
 
   /**
    * Searches for media items that match the given search term.

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from api.v1 import websockets
 from app_logger import ModuleLogger
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaUpdateDC
@@ -114,10 +115,12 @@ def download_trailer(
         # Move the trailer to the media folder (create subfolder if needed)
         trailer_file.move_trailer_to_folder(output_file, media, profile)
         __update_media_status(media, MonitorStatus.DOWNLOADED)
-        logger.info(
+        msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"
             f" from ({video_id})"
         )
+        logger.info(msg)
+        websockets.broadcast(msg, "Success")
         return True
     except Exception as e:
         logger.error(f"Failed to download trailer: {e}")

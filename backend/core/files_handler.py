@@ -574,6 +574,13 @@ class FilesHandler:
         count = 0
         tasks = []
         media_folders = []
+
+        semaphore = asyncio.Semaphore(10)  # Limit scanning 10 files at a time
+
+        async def bounded(coro):
+            async with semaphore:
+                return await coro
+
         # Scan each immediate subfolder (media folder) in the root directory
         for media_folder in await aiofiles.os.scandir(root_media_dir):
             if not media_folder.is_dir():
@@ -582,11 +589,16 @@ class FilesHandler:
             media_folders.append(media_folder)
             # Launch both checks concurrently for each media folder
             tasks.append(
-                FilesHandler._get_inline_trailer_path(media_folder.path)
+                bounded(
+                    FilesHandler._get_inline_trailer_path(media_folder.path)
+                )
             )
             tasks.append(
-                FilesHandler._get_folder_trailer_path(media_folder.path)
+                bounded(
+                    FilesHandler._get_folder_trailer_path(media_folder.path)
+                )
             )
+
         results = await asyncio.gather(*tasks)
         for idx, media_folder in enumerate(media_folders):
             inline_result = results[idx * 2]
