@@ -9,6 +9,7 @@ export interface Media {
   studio: string;
   media_exists: boolean;
   media_filename: string;
+  season_count: number;
   overview: string;
   runtime: number;
   youtube_trailer_id: string;

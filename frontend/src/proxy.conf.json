@@ -1,0 +1,32 @@
+{
+    "/api": {
+        "target": "http://127.0.0.1:7888",
+        "secure": false,
+        "changeOrigin": true,
+        "cookieDomainRewrite": "localhost",
+        "headers": {
+            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
+        },
+        "logLevel": "debug"
+    },
+    "/config": {
+        "target": "http://127.0.0.1:7888",
+        "secure": false,
+        "changeOrigin": true,
+        "cookieDomainRewrite": "localhost",
+        "headers": {
+            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
+        },
+        "logLevel": "debug"
+    },
+    "/ws": {
+        "target": "ws://127.0.0.1:7888",
+        "secure": false,
+        "changeOrigin": true,
+        "cookieDomainRewrite": "localhost",
+        "headers": {
+            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
+        },
+        "logLevel": "debug"
+    }
+}

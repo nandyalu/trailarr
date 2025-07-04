@@ -11,8 +11,8 @@
 <!-- # Trailarr -->
 
 [![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/){:target="_blank"}
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
-[![Angular](https://img.shields.io/badge/angular-19.2.10-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
+[![Angular](https://img.shields.io/badge/angular-20.0.2-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr){:target="_blank"}
 
 [![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml){:target="_blank"}
@@ -47,12 +47,17 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 - Searches for a trailer if not set in Radarr/Sonarr.
 - Option to download desired video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for NVIDIA GPUs.
+- Customizable profiles to manage trailer downloads and processing.
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 
 ## Installation & Setup
 
-See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on how to [install](./install.md) and [setup](./setup/connections.md) Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
+
+We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D){:target="_blank"} that explains Trailarr installation and setup on Unraid.
+
+<iframe width="100%" style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/Hz31zWEtY5k?si=dTgRuFwXyF9-Tufh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Dependencies
 
@@ -61,13 +66,14 @@ Trailarr is built using the following libraries and tools:
 - [Angular](https://angular.dev/){:target="_blank"}
 - [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
 - [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
+- [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material){:target="_blank"}
 - [Python](https://www.python.org/){:target="_blank"}
 - [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
 
 
 ## Support
 
-If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/help/faq/) first. 
+If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/) first. 
 
 If you still need help, please use the below:
 
@@ -87,14 +93,15 @@ If you encounter any bugs/issues, please create an issue on the [GitHub reposito
 
 There are some changes that are planned for the future. These changes are not guaranteed to be implemented, but they are on the roadmap.
 
-- [ ] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
+- [x] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
 - [x] Add custom filters to Media pages in frontend
-- [ ] Add a new method for making path mappings easier
-- [ ] Add options to disable conversion of downloaded videos
+- [x] Add a new method for making path mappings easier
+- [x] Add options to disable conversion of downloaded videos
 - [x] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
+- [ ] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
-- [ ] Update docs for Windows path mappings
+- [x] Update docs for Windows path mappings
 - [ ] Improve task logging
 - [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
@@ -103,7 +110,7 @@ If you have any suggestions or ideas for new features, please feel free to reach
 
 ## Contributing
 
-Contributions are welcome! Please see the [Contributing](./CONTRIBUTING.md) guide for more information.
+Contributions are welcome! Please see the [Contributing](references/contributing.md) guide for more information.
 
 Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
@@ -113,4 +120,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](./help/legal-disclaimer.md).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](references/legal-disclaimer.md).

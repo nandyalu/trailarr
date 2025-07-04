@@ -73,6 +73,24 @@ async def get_files(path: str) -> FolderInfo | None:
         )
 
 
+@files_router.get("/files_simple")
+async def get_files_simple(path: str) -> list[FolderInfo]:
+    """Get files in a directory in a simple format.\n
+    Args:
+        path (str): Path to the directory. \n
+    Returns:
+        list: List of file names in the directory. \n
+    Raises:
+        HTTPException (404): If the folder is not found."""
+    try:
+        files_handler = FilesHandler()
+        return await files_handler.get_folder_files_simple(path)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
 @files_router.get("/video")
 async def video_endpoint(file_path: str, range: str = Header(None)):
     """Stream video files.\n

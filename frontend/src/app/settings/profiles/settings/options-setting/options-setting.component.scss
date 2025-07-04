@@ -1,0 +1,77 @@
+:host {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  justify-items: start;
+  align-items: center;
+  margin: 1.5rem 0.5rem;
+  gap: 1rem;
+
+  @container (width < 40rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content-label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+label,
+span {
+  font-weight: bold;
+  text-wrap: nowrap;
+}
+
+svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+.options-bar {
+  padding: 0.25rem;
+  display: flex;
+  background-color: var(--color-surface-container-high);
+  border-radius: 10px;
+  border: 0.5px solid var(--color-outline);
+}
+
+.option-label {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: 0.3s ease;
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.option-label:has(input:focus-visible) {
+  outline: -webkit-focus-ring-color auto 1px;
+}
+
+.option-name {
+  border-radius: 10px;
+  border: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.option__selected {
+  background-color: var(--color-tertiary-container);
+  font-weight: 600;
+  color: var(--color-on-tertiary-container);
+  transition: 0.3s ease;
+}
+
+input {
+  // display: none;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}

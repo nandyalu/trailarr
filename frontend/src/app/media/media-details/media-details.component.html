@@ -1,131 +1,156 @@
 <div class="media-details-container">
-  <app-load-indicator *ngIf="isLoading; else mediaLoaded" class="center" />
-  <ng-template #mediaLoaded>
-    <div *ngIf="media" class="media-details-card">
-      <div class="media-fanart-overlay" style="background-image: url({{ media.fanart_path }});"></div>
-      <div class="media-poster" [class.sm-none]="!media.poster_path" title="{{ media.title }} Poster">
-        <img src="{{ media.poster_path || 'assets/poster-lg.png' }}" alt="{{ media.title }}" />
+  @if (isLoading()) {
+    <app-load-indicator class="center" />
+  }
+  @let selectedMedia_ = selectedMedia();
+  @if (selectedMedia_) {
+    <div class="media-details-card">
+      <div class="media-fanart-overlay" [style]="'background-image: url(' + selectedMedia_.fanart_path + ');'"></div>
+      <div class="media-poster" [class.sm-none]="!selectedMedia_.poster_path" title="{{ selectedMedia_.title }} Poster">
+        <img
+          src="{{ selectedMedia_.poster_path || 'assets/poster-lg.png' }}"
+          alt="{{ selectedMedia_.title }}"
+          [style]="'view-transition-name: media-' + selectedMedia_.id + '-image'"
+        />
       </div>
       <div class="media-details-col">
         <div class="media-details-row">
-          <div *ngIf="media.trailer_exists; else noTrailer" class="icon-link" title="Trailer Downloaded">
-            <!-- Show Downloaded icon -->
-            <svg
-              *ngIf="media.trailer_exists"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 -960 960 960"
-              class="downloaded-icon success"
-              aria-label="Trailer Exists"
-            >
-              <path
-                d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z"
-              />
-            </svg>
-          </div>
-          <ng-template #noTrailer>
-            <div *ngIf="isLoadingMonitor" class="icon-link" title="Updating Monitor Status">
-              <!-- Show loading icon on click -->
-              <!-- Cycle icon - Google Fonts -->
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+          @if (selectedMedia_.trailer_exists) {
+            <div class="icon-link" title="Trailer Downloaded">
+              <!-- Show Downloaded icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 -960 960 960"
+                class="downloaded-icon success"
+                aria-label="Trailer Exists"
+                [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
+              >
                 <path
-                  d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+                  d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z"
                 />
               </svg>
             </div>
-            <div
-              *ngIf="!isLoadingMonitor"
-              (click)="isLoadingMonitor = true; monitorSeries()"
-              class="icon-link"
-              [title]="media.monitor ? 'Monitored, click to change' : 'Not Monitored, click to change'"
-            >
-              <span *ngIf="media.monitor">
-                <!-- Show Monitored icon -->
-                <svg
-                  *ngIf="media.monitor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 -960 960 960"
-                  class="monitored-icon"
-                  aria-label="Monitored"
-                >
+          } @else {
+            @if (isLoadingMonitor()) {
+              <div class="icon-link" title="Updating Monitor Status">
+                <!-- Show loading icon on click -->
+                <!-- Cycle icon - Google Fonts -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
                   <path
-                    d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
+                    d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
                   />
                 </svg>
-              </span>
-              <span *ngIf="!media.monitor">
-                <!-- Show Not Monitored icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon" aria-label="Not Monitored">
-                  <path
-                    d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
-                  />
-                </svg>
-              </span>
-            </div>
-            <!-- <ng-template #monitored>
-              <div (click)="monitorSeries()" class="icon-link" title="Monitored, click to change">
-                <span *ngIf="!isLoadingMonitor">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon" aria-label="Not Monitored">
-                    <path d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"/>
-                  </svg>
-                </span>
-                <span *ngIf="isLoadingMonitor">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
-                    <path
-                      d="M480.76-153.7q-132.19 0-228.01-95.33-95.82-95.34-95.82-227.06v-45.24l-77.36 77.37-40.68-40.91L191-637.22l152.35 152.35-40.92 40.91-77.36-77.37v44.76q0 104.61 75.3 179.56 75.3 74.94 180.39 74.94 29.48 0 55.96-5.23 26.48-5.24 49.71-15.72l48.5 48.26q-37.19 21.91-75.6 31.49-38.42 9.57-78.57 9.57Zm289.48-166.84L617.89-472.89l41.91-41.91 76.37 76.37v-40.77q0-104.37-75.42-179.43-75.42-75.07-180.27-75.07-29.72 0-56.2 5.74-26.48 5.74-49.71 14.22l-48.27-48.5q37.2-21.67 75.49-30.75 38.3-9.08 78.69-9.08 131.95 0 227.89 95.46 95.93 95.46 95.93 226.94v43.24l77.13-77.37 40.92 40.91-152.11 152.35Z" />
-                  </svg>
-                </span>
               </div>
-            </ng-template>
-            <ng-template #notMonitored>
-              <div (click)="monitorSeries()" class="icon-link" title="Not Monitored, click to change">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon" aria-label="Not Monitored">
-                  <path d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"/>
-                </svg>
+            } @else {
+              <div
+                (click)="monitorMedia()"
+                class="icon-link"
+                [title]="selectedMedia_.monitor ? 'Monitored, click to change' : 'Not Monitored, click to change'"
+              >
+                @if (selectedMedia_.monitor) {
+                  <span>
+                    <!-- Show Monitored icon -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 -960 960 960"
+                      class="monitored-icon"
+                      aria-label="Monitored"
+                      [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
+                    >
+                      <path
+                        d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
+                      />
+                    </svg>
+                  </span>
+                } @else {
+                  <span>
+                    <!-- Show Not Monitored icon -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 -960 960 960"
+                      class="not-monitored-icon"
+                      aria-label="Not Monitored"
+                      [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
+                    >
+                      <path
+                        d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
+                      />
+                    </svg>
+                  </span>
+                }
               </div>
-            </ng-template> -->
-          </ng-template>
-          <span class="text-lg title-text copy" (click)="copyToClipboard(media.title)" [title]="media.title">
-            {{ media.title }}
+            }
+          }
+          <span
+            class="text-lg title-text"
+            appCopyToClipboard
+            [textToCopy]="selectedMedia_.title"
+            [title]="selectedMedia_.title"
+            [style]="'view-transition-name: media-' + selectedMedia_.id + '-title'"
+          >
+            {{ selectedMedia_.title }}
           </span>
           <!-- Add Previous and Next icons here -->
-          <!-- <div class="nav-icons sm-none">
-            <div class="icon-link" (click)="copyToClipboard('prev')">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                <path d="m287-446.67 240 240L480-160 160-480l320-320 47 46.67-240 240h513v66.66H287Z"/>
-              </svg>
-            </div>
-            <div class="icon-link" (click)="copyToClipboard('next')">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                <path d="M673-446.67H160v-66.66h513l-240-240L480-800l320 320-320 320-47-46.67 240-240Z"/>
-              </svg>
-            </div>
-          </div> -->
+          @let _previousMedia = previousMedia();
+          @let _nextMedia = nextMedia();
+          <div class="nav-icons">
+            @if (_previousMedia) {
+              <!-- Show Previous icon only if _previousMedia is available -->
+              <div class="icon-link left" [routerLink]="['/' + RouteMedia, _previousMedia.id]" [title]="_previousMedia.title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="m287-446.67 240 240L480-160 160-480l320-320 47 46.67-240 240h513v66.66H287Z" />
+                </svg>
+              </div>
+            }
+            @if (_nextMedia) {
+              <!-- Show Next icon only if _nextMedia is available -->
+              <div class="icon-link right" [routerLink]="['/' + RouteMedia, _nextMedia.id]" [title]="_nextMedia.title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="M673-446.67H160v-66.66h513l-240-240L480-800l320 320-320 320-47-46.67 240-240Z" />
+                </svg>
+              </div>
+            }
+          </div>
         </div>
         <div class="media-details-row">
-          <span class="text-md" [title]="media.year">{{ media.year }}</span>
-          <span class="text-md" [title]="media.runtime | durationConvert">{{ media.runtime | durationConvert }}</span>
+          <span class="text-md" [title]="selectedMedia_.year">{{ selectedMedia_.year }}</span>
+          <span class="text-md" [title]="selectedMedia_.runtime | durationConvert">{{ selectedMedia_.runtime | durationConvert }}</span>
         </div>
         <div class="media-details-row">
-          <a *ngIf="media.imdb_id" href="https://www.imdb.com/title/{{ media.imdb_id }}/" target="_blank" title="IMDB Link">
-            <img src="assets/IMDBlogo.png" alt="IMDB" class="xdb-icon" />
-          </a>
-          <ng-container *ngIf="media.is_movie; else showTVDBLogo">
-            <a *ngIf="media.txdb_id" href="https://www.themoviedb.org/movie/{{ media.txdb_id }}" target="_blank" title="TMDB Link">
-              <img src="assets/TMDBlogo.png" alt="TMDB" class="xdb-icon" />
+          @if (selectedMedia_.imdb_id) {
+            <a href="https://www.imdb.com/title/{{ selectedMedia_.imdb_id }}/" target="_blank" title="IMDB Link">
+              <img src="assets/IMDBlogo.png" alt="IMDB" class="xdb-icon" />
             </a>
-          </ng-container>
-          <ng-template #showTVDBLogo>
-            <a *ngIf="media.txdb_id" href="https://www.thetvdb.com/?tab=series&id={{ media.txdb_id }}" target="_blank" title="TVDB Link">
-              <img src="assets/TVDBlogo.png" alt="TVDB" class="xdb-icon" />
-            </a>
-          </ng-template>
+          }
+          @if (selectedMedia_.txdb_id) {
+            @if (selectedMedia_.is_movie) {
+              <a href="https://www.themoviedb.org/movie/{{ selectedMedia_.txdb_id }}" target="_blank" title="TMDB Link">
+                <img src="assets/TMDBlogo.png" alt="TMDB" class="xdb-icon" />
+              </a>
+            } @else {
+              <a href="https://www.thetvdb.com/?tab=series&id={{ selectedMedia_.txdb_id }}" target="_blank" title="TVDB Link">
+                <img src="assets/TVDBlogo.png" alt="TVDB" class="xdb-icon" />
+              </a>
+            }
+          }
+          @if (arr_url()) {
+            @if (selectedMedia_.is_movie) {
+              <a [href]="arr_url()" target="_blank" title="Radarr Movie Link">
+                <img src="assets/radarr_128.png" alt="Radarr" class="arr-icon" />
+              </a>
+            } @else {
+              <a [href]="arr_url()" target="_blank" title="Sonarr Movie Link">
+                <img src="assets/sonarr_128.png" alt="TVDB" class="arr-icon" />
+              </a>
+            }
+          }
         </div>
         <div class="media-details-row extras">
           <span>
-            <div class="labeled-text" [title]="media.folder_path">
+            <div class="labeled-text" [title]="selectedMedia_.folder_path">
               <span class="label">Path</span>
-              <span class="text-sm copy" (click)="copyToClipboard(media.folder_path)">
-                <code>{{ media.folder_path }}</code>
+              <span class="text-sm" appCopyToClipboard [textToCopy]="selectedMedia_.folder_path">
+                <code>{{ selectedMedia_.folder_path }}</code>
               </span>
             </div>
           </span>
@@ -133,13 +158,20 @@
             <div class="labeled-text">
               <span class="label">Status</span>
               <span class="text-sm tooltip"
-                >{{ media.status | titlecase }}
+                >{{ selectedMedia_.status | titlecase }}
                 <span class="tooltiptext">
-                  <p>Monitored: {{ media.monitor }}</p>
-                  <p>Downloaded: {{ media.trailer_exists }}</p>
-                  <p>Added: {{ media.added_at.toLocaleString() }}</p>
-                  <p>Updated: {{ media.updated_at.toLocaleString() }}</p>
-                  <p>Downloaded: {{ media.downloaded_at.toLocaleString() || '' }}</p>
+                  @if (!selectedMedia_.is_movie) {
+                    <p>Seasons: {{ selectedMedia_.season_count }}</p>
+                  }
+                  <p>Monitored: {{ selectedMedia_.monitor }}</p>
+                  <p>Downloaded: {{ selectedMedia_.trailer_exists }}</p>
+                  <p>Added: {{ selectedMedia_.added_at.toLocaleString() }}</p>
+                  <p>Updated: {{ selectedMedia_.updated_at.toLocaleString() }}</p>
+                  @if (selectedMedia_.downloaded_at && selectedMedia_.downloaded_at.toString() != 'Invalid Date') {
+                    <p>Downloaded: {{ selectedMedia_.downloaded_at.toLocaleString() }}</p>
+                  } @else {
+                    <p>Downloaded: Never</p>
+                  }
                 </span>
               </span>
             </div>
@@ -148,7 +180,7 @@
         <div class="media-details-row">
           <div class="labeled-text" title="Overview">
             <span class="label">Overview</span>
-            <span class="text-sm">{{ media.overview }}</span>
+            <span class="text-sm">{{ selectedMedia_.overview }}</span>
           </div>
         </div>
         <div class="media-details-row">
@@ -160,8 +192,8 @@
                 <span class="text-md sm-show">Youtube ID/URL:</span>
                 <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL" />
               </div>
-              @if (media.youtube_trailer_id == '' && trailer_url == '' && !isLoadingDownload) {
-                <span class="search-button icon-link" title="Search Trailer" (click)="searchTrailer()">
+              @if (selectedMedia_.youtube_trailer_id == '' && trailer_url == '' && !isLoadingDownload()) {
+                <span class="search-button icon-link" title="Search Trailer" (click)="openProfileSelectDialog(true)">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                     <path
                       d="M801-108 537-372q-31 26-72.96 40-41.96 14-86.6 14-114.6 0-192.52-78Q107-474 107-586t78-190q78-78 190-78t190 78q78 78 78 190.15 0 43.85-13.5 84.35Q616-461 588-425l266 264-53 53ZM375.5-391q81.75 0 138.13-56.79Q570-504.58 570-586q0-81.42-56.29-138.21Q457.43-781 375.59-781q-82.67 0-139.13 56.79Q180-667.42 180-586q0 81.42 56.46 138.21Q292.92-391 375.5-391Z"
@@ -169,8 +201,8 @@
                   </svg>
                 </span>
               }
-              @if (isLoadingDownload) {
-                <!-- Show loading icon -->
+              @if (isLoadingDownload()) {
+                <!-- #region Show loading icon -->
                 <span class="loading-search icon-link" title="Searching for Trailer">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
                     <circle stroke-width="14" r="15" cx="40" cy="65">
@@ -208,10 +240,10 @@
                     </circle>
                   </svg>
                 </span>
+                <!-- #endregion -->
               }
-              @if (trailer_url != media.youtube_trailer_id && !isLoadingDownload) {
+              @if (trailer_url != selectedMedia_.youtube_trailer_id && !isLoadingDownload()) {
                 <button
-                  *ngIf="trailer_url != media.youtube_trailer_id"
                   class="primary icononly-button save-button success"
                   id="update_trailer_search_query"
                   tabindex="24"
@@ -223,38 +255,44 @@
                 </button>
               }
             </div>
-            <p *ngIf="trailer_url != media.youtube_trailer_id" class="text-sm info-text">
-              Click Download to download trailer from updated link!
-            </p>
+            @if (trailer_url != selectedMedia_.youtube_trailer_id) {
+              <p class="text-sm info-text">Click Download to download trailer from updated link!</p>
+            }
           </div>
         </div>
         <div class="media-details-row">
-          <button *ngIf="media.youtube_trailer_id" (click)="openTrailer()" class="primary" title="Watch Trailer on Youtube">Watch</button>
-          <button
-            *ngIf="!media.trailer_exists || media.youtube_trailer_id != trailer_url"
-            (click)="isLoadingDownload = true; downloadTrailer()"
-            class="primary"
-            title="Download Trailer"
-            [disabled]="isLoadingDownload || media.status == 'downloading'"
-          >
-            <span>Download </span>
-            <span *ngIf="isLoadingDownload || media.status == 'downloading'" class="loading-icon">
-              <!-- Cycle icon - Google Fonts -->
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
-                <path
-                  d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
-                />
-              </svg>
-            </span>
-          </button>
-          <!-- Change downloading / monitor button on click -->
-          <button *ngIf="media.trailer_exists" (click)="showDeleteDialog()" class="danger" title="Delete Trailer">Delete</button>
+          @if (selectedMedia_.youtube_trailer_id) {
+            <button (click)="openTrailer()" class="primary" title="Watch Trailer on Youtube">Watch</button>
+          }
+          @if (!selectedMedia_.trailer_exists || selectedMedia_.youtube_trailer_id != trailer_url) {
+            <button
+              (click)="openProfileSelectDialog(false)"
+              class="primary"
+              title="Download Trailer"
+              [disabled]="isLoadingDownload() || selectedMedia_.status == 'downloading'"
+            >
+              <span>Download </span>
+              @if (isLoadingDownload() || selectedMedia_.status == 'downloading') {
+                <span class="loading-icon">
+                  <!-- Cycle icon - Google Fonts -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+                    <path
+                      d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+                    />
+                  </svg>
+                </span>
+              }
+            </button>
+          }
+          @if (selectedMedia_.trailer_exists) {
+            <button (click)="showDeleteDialog()" class="danger" title="Delete Trailer">Delete</button>
+          }
         </div>
       </div>
     </div>
     <!-- Show Media Files -->
     <media-files [mediaId]="mediaId()"></media-files>
-  </ng-template>
+  }
 </div>
 
 <dialog #deleteDialog (click)="closeDeleteDialog()">

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+
+# Ensure Node.js and npm are in the PATH
+export PATH=$PATH:/usr/local/bin:/usr/local/share/nvm/current/bin
+echo $PATH
+
 # Set TimeZone based on env variable
 echo "Setting TimeZone to $TZ"
 echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
@@ -49,9 +54,11 @@ echo "Running Alembic migrations"
 cd backend
 alembic upgrade head && echo "Alembic migrations ran successfully"
 
-# Install Angular dependencies
-echo "Installing Angular dependencies"
+# Install Angular & dependencies
+echo "Installing Angular and it's dependencies"
+npm install -g @angular/cli@19.2.10
 cd ../frontend && npm install
+ng completion
 
 # Start Angular application
 # echo "Building Angular application"

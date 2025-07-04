@@ -15,11 +15,32 @@
   </div>
   <!-- Container to show Websocket messages received from server -->
   <div class="toast-container">
-    <div *ngFor="let msg of messages" class="toast" [ngClass]="msg.type.toLowerCase()">
-      <span>{{ msg.message }}</span>
-    </div>
+    @for (msg of messages(); track $index) {
+      <div class="toast" [class]="msg.type.toLowerCase()">
+        <span>{{ msg.message }}</span>
+      </div>
+    }
   </div>
 </div>
+
+<!-- Session Timing Out Dialog -->
+<dialog #sessionEndingDialog>
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Extend Session?</h2>
+    <p>You we gone for a while, we are about to close your session!</p>
+    <p>{{ sessionEndTime() | timeRemaining | async }} remaining</p>
+    <!-- <p>Click on 'Refresh' button below to refresh the page</p> -->
+    <div class="loading-container">
+      <div class="loading-container-inner">
+        <div class="dash first"></div>
+        <div class="dash seconde"></div>
+        <div class="dash third"></div>
+        <div class="dash fourth"></div>
+      </div>
+    </div>
+    <button class="primary" (click)="extendTime()">Extend Session</button>
+  </div>
+</dialog>
 
 <!-- Session Timed Out Dialog -->
 <dialog #sessionEndedDialog>

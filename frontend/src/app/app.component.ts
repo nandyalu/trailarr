@@ -1,37 +1,43 @@
-import {NgClass, NgFor} from '@angular/common';
-import {Component, ElementRef, HostListener, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AsyncPipe} from '@angular/common';
+import {Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterOutlet} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {msMinute} from 'src/util';
+import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
 import {SidenavComponent} from './nav/sidenav/sidenav.component';
 import {TopnavComponent} from './nav/topnav/topnav.component';
 import {MessageData, WebsocketService} from './services/websocket.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TopnavComponent, SidenavComponent, NgFor, NgClass],
+  imports: [AsyncPipe, RouterOutlet, TimeRemainingPipe, TopnavComponent, SidenavComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnDestroy, OnInit {
   private readonly websocketService = inject(WebsocketService);
 
-  messages: MessageData[] = [];
+  protected messages = signal<MessageData[]>([]);
   private toastSubscription?: Subscription;
 
-  private timeoutId: any;
+  private extendTimeoutId: any;
+  private sessionTimeoutId: any;
   private readonly IDLE_LIMIT: number = 10 * msMinute;
+  private readonly EXTEND_LIMIT: number = 2 * msMinute;
+  protected sessionEndTime = signal<number>(Date.now() + this.IDLE_LIMIT + this.EXTEND_LIMIT);
 
   ngOnInit() {
     // Reset the idle timer
     this.resetIdleTimer();
 
     // Subscribe to messages and display them
-    this.toastSubscription = this.websocketService.toastMessage.subscribe({
+    this.toastSubscription = this.websocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe({
       next: (data: MessageData) => {
-        this.messages.unshift(data);
+        this.messages.update((msgs) => [...msgs, data]);
         setTimeout(() => {
-          this.messages.pop();
+          // Remove last message after 3 seconds
+          this.messages.update((msgs) => msgs.filter((msg) => msg !== data));
         }, 3000);
       },
     });
@@ -43,16 +49,19 @@ export class AppComponent implements OnDestroy, OnInit {
   @HostListener('document:keypress', ['$event'])
   resetIdleTimer(): void {
     // Activity detected, reset the idle timer
-    clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(() => {
-      this.closeAllSubscriptions();
+    clearTimeout(this.sessionTimeoutId);
+    clearTimeout(this.extendTimeoutId);
+    // Reset the time remaining signal
+    this.extendTimeoutId = setTimeout(() => {
+      // Update the time remaining signal
+      this.showEndingDialog();
     }, this.IDLE_LIMIT);
   }
 
   closeAllSubscriptions() {
     console.log('Session Idle, closing all subscriptions!');
     // Show Session timed out dialog
-    this.showDialog();
+    this.showEndedDialog();
     // and show a button to reload the page
     // Close the websocket connection
     this.websocketService.close();
@@ -64,16 +73,40 @@ export class AppComponent implements OnDestroy, OnInit {
 
   ngOnDestroy() {
     this.closeAllSubscriptions();
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
+    if (this.extendTimeoutId) {
+      clearTimeout(this.extendTimeoutId);
+    }
+    if (this.sessionTimeoutId) {
+      clearTimeout(this.sessionTimeoutId);
     }
   }
 
   // Reference to the dialog element
-  @ViewChild('sessionEndedDialog') sessionEndedDialog!: ElementRef<HTMLDialogElement>;
+  readonly sessionEndingDialog = viewChild.required<ElementRef<HTMLDialogElement>>('sessionEndingDialog');
+  readonly sessionEndedDialog = viewChild.required<ElementRef<HTMLDialogElement>>('sessionEndedDialog');
 
-  showDialog(): void {
-    this.sessionEndedDialog.nativeElement.showModal();
+  showEndingDialog(): void {
+    // Show the dialog and start timer to end the session in 2 minutes
+    this.sessionEndTime.set(Date.now() + this.EXTEND_LIMIT);
+    this.sessionEndingDialog().nativeElement.showModal();
+    this.sessionTimeoutId = setTimeout(() => {
+      this.closeAllSubscriptions();
+    }, this.EXTEND_LIMIT);
+  }
+
+  showEndedDialog(): void {
+    this.closeEndingDialog();
+    this.sessionEndedDialog().nativeElement.showModal();
+  }
+
+  closeEndingDialog(): void {
+    this.sessionEndingDialog().nativeElement.close();
+  }
+
+  extendTime(): void {
+    this.sessionEndTime.set(Date.now() + this.EXTEND_LIMIT);
+    this.resetIdleTimer();
+    this.closeEndingDialog();
   }
 
   reloadPage(): void {

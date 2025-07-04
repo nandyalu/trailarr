@@ -3,6 +3,7 @@ from sqlmodel import Session
 from app_logger import ModuleLogger
 from core.base.database.models.trailerprofile import TrailerProfile
 from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
 
@@ -19,16 +20,22 @@ def delete_trailerprofile(
             database connection. A new session is created if not provided.
     Returns:
         bool: True if the trailer profile was deleted successfully.
+    Raises:
+        ItemNotFoundError: If the trailer profile with the given id does not exist.
     """
     db_trailerprofile = _session.get(TrailerProfile, id)
     if not db_trailerprofile:
-        return False
+        raise ItemNotFoundError("TrailerProfile", id)
 
     # Delete all filters associated with the custom filter
-    for filter in db_trailerprofile.customfilter.filters:
-        _session.delete(filter)
-    # Delete the custom filter associated with the trailer profile
-    _session.delete(db_trailerprofile.customfilter)
+    try:
+        for filter in db_trailerprofile.customfilter.filters:
+            _session.delete(filter)
+        # Delete the custom filter associated with the trailer profile
+        _session.delete(db_trailerprofile.customfilter)
+    except Exception as e:
+        logger.error(f"Error deleting filters for trailer profile {id}: {e}")
+
     # Delete the trailer profile
     _session.delete(db_trailerprofile)
     _session.commit()

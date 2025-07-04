@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.3.1-beta
+  version: 0.4.0
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -27,6 +27,11 @@ paths:
       tags:
         - Health Check
       summary: Health Check
+      description: 'Health check endpoint.
+
+        Runs ''nvidia-smi'' to check for NVIDIA GPU availability (if hw accel enabled).
+
+        Returns ''unhealthy'' if the command fails.'
       operationId: health_check_status_get
       responses:
         '200':
@@ -399,6 +404,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/customfilters/:
+    get:
+      tags:
+        - Custom Filters
+      summary: Get All Customfilters
+      operationId: get_all_customfilters_api_v1_customfilters__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomFilterRead'
+                title: Response Get All Customfilters Api V1 Customfilters  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
         - Custom Filters
@@ -670,6 +710,53 @@ paths:
                   - $ref: '#/components/schemas/FolderInfo'
                   - type: 'null'
                 title: Response Get Files Api V1 Files Files Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/files_simple:
+    get:
+      tags:
+        - Files
+        - Media
+      summary: Get Files Simple
+      description: "Get files in a directory in a simple format.\n\nArgs:\n    path\
+        \ (str): Path to the directory. \n\nReturns:\n    list: List of file names\
+        \ in the directory. \n\nRaises:\n    HTTPException (404): If the folder is\
+        \ not found."
+      operationId: get_files_simple_api_v1_files_files_simple_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Path
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FolderInfo'
+                title: Response Get Files Simple Api V1 Files Files Simple Get
         '401':
           description: API key is missing
         '422':
@@ -1484,8 +1571,9 @@ paths:
         - Media
       summary: Search For Trailer
       description: "Search for trailer for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item. \n\nReturns:\n    str: Youtube ID of the trailer if\
-        \ found, else empty string."
+        \ ID of the media item.\n    profile_id (int): ID of the trailer profile to\
+        \ use.\n\nReturns:\n    str: Youtube ID of the trailer if found, else empty\
+        \ string."
       operationId: search_for_trailer_api_v1_media__media_id__search_post
       security:
         - APIKeyQuery: []
@@ -1497,6 +1585,12 @@ paths:
           schema:
             type: integer
             title: Media Id
+        - name: profile_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            title: Profile Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2185,21 +2279,6 @@ paths:
           schema:
             type: integer
             title: Trailerprofile Id
-        - name: setting
-          in: query
-          required: true
-          schema:
-            type: string
-            title: Setting
-        - name: value
-          in: query
-          required: true
-          schema:
-            anyOf:
-              - type: string
-              - type: integer
-              - type: boolean
-            title: Value
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2208,6 +2287,12 @@ paths:
               - type: string
               - type: 'null'
             title: Trailarr Api Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSetting'
       responses:
         '200':
           description: Successful Response
@@ -2621,6 +2706,10 @@ components:
           type: string
           title: Media Filename
           default: ''
+        season_count:
+          type: integer
+          title: Season Count
+          default: 0
         overview:
           anyOf:
             - type: string
@@ -2972,6 +3061,9 @@ components:
         url_base:
           type: string
           title: Url Base
+        webui_username:
+          type: string
+          title: Webui Username
       type: object
       required:
         - api_key
@@ -3012,6 +3104,7 @@ components:
         - new_download_method
         - update_ytdlp
         - url_base
+        - webui_username
       title: Settings
     StreamInfo:
       properties:
@@ -3101,6 +3194,10 @@ components:
           type: boolean
           title: Enabled
           default: true
+        priority:
+          type: integer
+          title: Priority
+          default: 0
         file_format:
           type: string
           title: File Format
@@ -3117,22 +3214,30 @@ components:
           type: string
           title: Folder Name
           default: Trailers
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
         audio_format:
           type: string
           title: Audio Format
-          default: aac
+          default: opus
         audio_volume_level:
           type: integer
           title: Audio Volume Level
           default: 100
+        video_format:
+          type: string
+          title: Video Format
+          default: vp9
         video_resolution:
           type: integer
           title: Video Resolution
           default: 1080
-        video_format:
-          type: string
-          title: Video Format
-          default: h264
         subtitles_enabled:
           type: boolean
           title: Subtitles Enabled
@@ -3145,22 +3250,10 @@ components:
           type: string
           title: Subtitles Language
           default: en
-        always_search:
-          type: boolean
-          title: Always Search
-          default: false
-        embed_metadata:
-          type: boolean
-          title: Embed Metadata
-          default: true
-        exclude_words:
+        search_query:
           type: string
-          title: Exclude Words
-          default: ''
-        include_words:
-          type: string
-          title: Include Words
-          default: ''
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
         min_duration:
           type: integer
           title: Min Duration
@@ -3169,14 +3262,22 @@ components:
           type: integer
           title: Max Duration
           default: 600
-        remove_silence:
+        always_search:
           type: boolean
-          title: Remove Silence
+          title: Always Search
           default: false
-        search_query:
+        exclude_words:
           type: string
-          title: Search Query
-          default: '{title} {year} {is_movie} trailer'
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
+        ytdlp_extra_options:
+          type: string
+          title: Ytdlp Extra Options
+          default: ''
         id:
           anyOf:
             - type: integer
@@ -3200,6 +3301,10 @@ components:
           type: boolean
           title: Enabled
           default: true
+        priority:
+          type: integer
+          title: Priority
+          default: 0
         file_format:
           type: string
           title: File Format
@@ -3216,22 +3321,30 @@ components:
           type: string
           title: Folder Name
           default: Trailers
+        embed_metadata:
+          type: boolean
+          title: Embed Metadata
+          default: true
+        remove_silence:
+          type: boolean
+          title: Remove Silence
+          default: false
         audio_format:
           type: string
           title: Audio Format
-          default: aac
+          default: opus
         audio_volume_level:
           type: integer
           title: Audio Volume Level
           default: 100
+        video_format:
+          type: string
+          title: Video Format
+          default: vp9
         video_resolution:
           type: integer
           title: Video Resolution
           default: 1080
-        video_format:
-          type: string
-          title: Video Format
-          default: h264
         subtitles_enabled:
           type: boolean
           title: Subtitles Enabled
@@ -3244,22 +3357,10 @@ components:
           type: string
           title: Subtitles Language
           default: en
-        always_search:
-          type: boolean
-          title: Always Search
-          default: false
-        embed_metadata:
-          type: boolean
-          title: Embed Metadata
-          default: true
-        exclude_words:
+        search_query:
           type: string
-          title: Exclude Words
-          default: ''
-        include_words:
-          type: string
-          title: Include Words
-          default: ''
+          title: Search Query
+          default: '{title} {year} {is_movie} trailer'
         min_duration:
           type: integer
           title: Min Duration
@@ -3268,14 +3369,22 @@ components:
           type: integer
           title: Max Duration
           default: 600
-        remove_silence:
+        always_search:
           type: boolean
-          title: Remove Silence
+          title: Always Search
           default: false
-        search_query:
+        exclude_words:
           type: string
-          title: Search Query
-          default: '{title} {year} {is_movie} trailer'
+          title: Exclude Words
+          default: ''
+        include_words:
+          type: string
+          title: Include Words
+          default: ''
+        ytdlp_extra_options:
+          type: string
+          title: Ytdlp Extra Options
+          default: ''
         id:
           type: integer
           title: Id

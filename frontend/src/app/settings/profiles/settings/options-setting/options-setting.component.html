@@ -1,0 +1,22 @@
+<div class="content-label" [id]="inputId + '_label'">
+  <span>{{ name() }}</span>
+  <small>{{ description() }}</small>
+  @if (descriptionExtra()) {
+    <small>{{ descriptionExtra() }}</small>
+  }
+</div>
+<div class="options-bar" role="radiogroup" [attr.aria-labelledby]="inputId + '_label'">
+  @for (option of options(); track option) {
+    <label class="option-label" [class.option__selected]="option === selectedOption()">
+      <input
+        type="radio"
+        [id]="inputId + '_' + option"
+        [name]="inputId"
+        [value]="option"
+        [checked]="option === selectedOption()"
+        (change)="onOptionClick(option)"
+      />
+      <span class="option-name">{{ option }}</span>
+    </label>
+  }
+</div>

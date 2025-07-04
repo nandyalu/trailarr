@@ -74,7 +74,7 @@ export const booleanFilterKeys: (keyof Media)[] = ['arr_monitored', 'is_movie', 
 
 export const dateFilterKeys: (keyof Media)[] = ['added_at', 'downloaded_at', 'updated_at'];
 
-export const numberFilterKeys: (keyof Media)[] = ['arr_id', 'connection_id', 'id', 'runtime', 'year'];
+export const numberFilterKeys: (keyof Media)[] = ['arr_id', 'connection_id', 'id', 'runtime', 'season_count', 'year'];
 
 export const stringFilterKeys: (keyof Media)[] = [
   'clean_title',

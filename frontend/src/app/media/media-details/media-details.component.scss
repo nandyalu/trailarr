@@ -6,6 +6,7 @@
   margin: 1rem;
   border: 1px solid var(--color-outline);
   border-radius: 10px;
+  position: relative;
 
   @media (width < 768px) {
     margin: 0.5rem;
@@ -17,6 +18,10 @@
 }
 
 .center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   margin: auto;
 }
 
@@ -54,6 +59,7 @@
   height: auto;
   object-fit: contain;
   margin-bottom: auto;
+  view-transition-class: mediaimage;
 }
 
 .media-details-col {
@@ -75,6 +81,7 @@
   display: inline-block;
   overflow: hidden;
   max-width: 70%;
+  view-transition-class: mediatitle;
 }
 
 .icon-link {
@@ -97,6 +104,33 @@
   gap: 1rem;
   margin-left: auto;
   margin-right: 1rem;
+  align-items: flex-start;
+
+  svg {
+    background-color: var(--color-primary);
+    fill: var(--color-on-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  @media (width < 765px) {
+    position: relative;
+
+    .left {
+      position: fixed;
+      bottom: 10vh;
+      z-index: 10;
+      left: 2rem;
+    }
+
+    .right {
+      position: fixed;
+      bottom: 10vh;
+      z-index: 10;
+      right: 2rem;
+    }
+  }
 }
 
 .icon-link svg .success {
@@ -107,6 +141,12 @@
   width: 60px;
   cursor: pointer;
   border-radius: 4px;
+}
+
+.arr-icon {
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
 }
 
 .extras {
@@ -206,16 +246,6 @@
 
 .loading {
   animation: spin-animation 2s linear infinite;
-}
-
-@keyframes spin-animation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .dialog-content {

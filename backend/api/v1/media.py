@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from api.v1 import websockets
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from app_logger import ModuleLogger
+from core.base.database.manager import trailerprofile
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
@@ -310,26 +311,20 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
         }
     },
 )
-async def search_for_trailer(media_id: int) -> str:
+async def search_for_trailer(media_id: int, profile_id: int) -> str:
     """Search for trailer for media by ID. \n
     Args:
-        media_id (int): ID of the media item. \n
+        media_id (int): ID of the media item.
+        profile_id (int): ID of the trailer profile to use.\n
     Returns:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
     logger.info(f"Searching for trailer for media with ID: {media_id}")
     db_handler = MediaDatabaseManager()
     media = db_handler.read(media_id)
-    # mediaT = MediaTrailer(
-    #     id=media.id,
-    #     title=media.title,
-    #     is_movie=media.is_movie,
-    #     language=media.language,
-    #     year=media.year,
-    #     yt_id=media.youtube_trailer_id,
-    #     folder_path=media.folder_path or "",
-    # )
-    if yt_id := trailer_search.search_yt_for_trailer(media):
+    profile = trailerprofile.get_trailerprofile(profile_id)
+
+    if yt_id := trailer_search.search_yt_for_trailer(media, profile):
         db_handler.update_ytid(media_id, yt_id)
         msg = (
             f"Trailer found for media '{media.title}' [{media.id}] as"
@@ -436,7 +431,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
             for media_id in update.media_ids:
                 await delete_media_trailer(media_id)
         elif update.action == "download":
-            if not update.profile_id:
+            if not update.profile_id or update.profile_id <= 0:
                 msg = "No trailer profile ID provided!"
                 await websockets.ws_manager.broadcast(msg, "Error")
                 return

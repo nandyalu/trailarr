@@ -15,6 +15,8 @@ def _find_matching_profile_id(
     db_media: MediaRead, trailer_profiles: list[TrailerProfileRead]
 ) -> int | None:
     """Find a matching profile for a media item and return it's ID."""
+    # Sort profiles by priority, higher priority first
+    trailer_profiles.sort(key=lambda p: p.priority, reverse=True)
     for profile in trailer_profiles:
         if matches_filters(db_media, profile.customfilter.filters):
             return profile.id
@@ -42,6 +44,18 @@ def _is_valid_media(
     return True
 
 
+# def _check_file_already_downloaded(
+#     media: MediaRead, profile: TrailerProfileRead
+# ) -> bool:
+#     """Check if the trailer file for the given profile already exists for media."""
+#     if not media.folder_path:
+#         return False
+
+#     file_name = get_trailer_filename(media, profile, profile.file_format, 1)
+
+#     return FilesHandler.check_file_exists(media.folder_path, file_name)
+
+
 def _process_media_items(
     db_media_list: list[MediaRead],
     trailer_profiles: list[TrailerProfileRead],
@@ -62,6 +76,12 @@ def _process_media_items(
 
         if not _is_valid_media(db_media, skipped_titles):
             continue
+
+        # if _check_file_already_downloaded(
+        #     db_media, trailer_profiles[profile_id]
+        # ):
+        #     skipped_titles["already_downloaded"].append(db_media.title)
+        #     continue
 
         _download_count += 1
         profile_to_media_map[profile_id].append(db_media)
@@ -122,6 +142,21 @@ def download_missing_trailers() -> None:
     if not trailer_profiles:
         logger.warning("No TrailerProfiles found, skipping download trailers")
         return
+    enabled_profiles: list[TrailerProfileRead] = []
+    for profile in trailer_profiles:
+        if profile.enabled:
+            enabled_profiles.append(profile)
+        else:
+            logger.debug(
+                "Skipping disabled TrailerProfile:"
+                f" {profile.customfilter.filter_name}"
+            )
+    # If no enabled profiles, log a warning and exit.
+    if not enabled_profiles:
+        logger.warning("No enabled TrailerProfiles found, skipping download")
+        return
+    # Sort Profiles to the highest priority first
+    enabled_profiles.sort(key=lambda p: p.priority, reverse=True)
 
     # Initialize the dictionary to track skipped titles.
     skipped_titles: dict[str, list[str]] = {
@@ -129,16 +164,17 @@ def download_missing_trailers() -> None:
         "not_monitored": [],
         "missing_folder_path": [],
         "media_not_found": [],
+        # "already_downloaded": [],
     }
 
     # Initialize profile maps for grouping media items.
-    profile_map = {profile.id: profile for profile in trailer_profiles}
+    profile_map = {profile.id: profile for profile in enabled_profiles}
     profile_to_media_map: dict[int, list[MediaRead]] = {
-        profile.id: [] for profile in trailer_profiles
+        profile.id: [] for profile in enabled_profiles
     }
 
     _download_count = _process_media_items(
-        db_media_list, trailer_profiles, skipped_titles, profile_to_media_map
+        db_media_list, enabled_profiles, skipped_titles, profile_to_media_map
     )
 
     _log_skipped_titles(skipped_titles, len(db_media_list), _download_count)

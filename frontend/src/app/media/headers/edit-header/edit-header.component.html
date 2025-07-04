@@ -1,0 +1,71 @@
+<!-- Edit Mode Header -->
+<div class="media-header edit">
+  <!-- Monitor Button -->
+  <div class="media-header-button" (click)="batchUpdate('monitor')" aria-label="Monitor" title="Monitor">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Monitor">
+      <path
+        d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
+      />
+    </svg>
+    <span>Monitor</span>
+  </div>
+  <!-- Unmonitor Button -->
+  <div class="media-header-button" (click)="batchUpdate('unmonitor')" aria-label="UnMonitor" title="UnMonitor">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="UnMonitor">
+      <path
+        d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
+      />
+    </svg>
+    <span>UnMonitor</span>
+  </div>
+  <!-- Download Trailer Button -->
+  <div class="media-header-button" (click)="openProfileSelectDialog()" aria-label="Download" title="Download">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Download">
+      <path
+        d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+      />
+    </svg>
+    <span>Download</span>
+  </div>
+  <!-- Delete Trailer Button -->
+  <div class="media-header-button delete" (click)="batchUpdate('delete')" aria-label="Delete" title="Delete">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Delete">
+      <path
+        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+      />
+    </svg>
+    <span>Delete</span>
+  </div>
+  <!-- Cancel Button -->
+  <div class="media-header-button" (click)="inEditMode.set(false)" aria-label="Cancel" title="Cancel">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Cancel">
+      <path
+        d="M819-28 407-440H160v280h480v-161l80 80v81q0 33-23.5 56.5T640-80H160q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h80v-7L27-820l57-57L876-85l-57 57Zm-99-327-80-80-165-165h165q33 0 56.5 23.5T720-520v80h80v-280H355L246-829q8-23 28.5-37t45.5-14h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80v5Z"
+      />
+    </svg>
+    <span>Cancel</span>
+  </div>
+  <div class="empty-space"></div>
+  <!-- Selected Count -->
+  <p class="count">
+    <span>Selected: </span>
+    {{ checkedMediaIDs().length }}
+    <span> / {{ filteredSortedMedia().length }}</span>
+  </p>
+  <!-- Select All Button -->
+  <div class="media-header-button" (click)="selectAll()" aria-label="Select All" title="Select All">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
+      <path
+        d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
+      />
+    </svg>
+  </div>
+  <!-- Clear Button -->
+  <div class="media-header-button" (click)="clearSelection()" aria-label="Clear" title="Clear">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
+      <path
+        d="m500-120-56-56 142-142-142-142 56-56 142 142 142-142 56 56-142 142 142 142-56 56-142-142-142 142Zm-220 0v-80h80v80h-80Zm-80-640h-80q0-33 23.5-56.5T200-840v80Zm80 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80q33 0 56.5 23.5T840-760h-80ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm640 0v-80h80v80h-80Z"
+      />
+    </svg>
+  </div>
+</div>

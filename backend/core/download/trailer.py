@@ -37,6 +37,13 @@ def __update_media_status(media: MediaRead, type: MonitorStatus):
             monitor=True,
             status=MonitorStatus.MISSING,
         )
+        if media.trailer_exists:
+            # If trailer exists but download failed, it should be marked as DOWNLOADED
+            update = MediaUpdateDC(
+                id=media.id,
+                monitor=False,
+                status=MonitorStatus.DOWNLOADED,
+            )
     else:
         # Handle other statuses if needed
         return None
@@ -95,7 +102,7 @@ def download_trailer(
         media.youtube_trailer_id = None
 
     # Get the video ID, search if needed
-    video_id = trailer_search.get_video_id(media, exclude)
+    video_id = trailer_search.get_video_id(media, profile, exclude)
 
     if not video_id:
         raise DownloadFailedError(f"No trailer found for {media.title}")

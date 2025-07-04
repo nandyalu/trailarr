@@ -1,0 +1,92 @@
+// @media (prefers-reduced-motion: no-preference) {
+//   @view-transition {
+//     navigation: auto;
+//   }
+// }
+
+// html::view-transition-group(*) {
+//   animation-duration: 0.25s;
+// }
+
+// ::view-transition-group(.navmenu-class) {
+//   animation-duration: 0.25s;
+// }
+// ::view-transition-group(.mediacard),
+// ::view-transition-group(.mediaimage),
+// ::view-transition-group(.mediatitle) {
+//   animation-duration: 1s;
+// }
+
+// ::view-transition-group(navmenu) {
+//   animation-duration: 0.25s;
+//   animation-delay: 1s;
+// }
+
+// ::view-transition-old(navmenu),
+// ::view-transition-new(navmenu) {
+//   z-index: 100;
+//   mix-blend-mode: normal !important;
+
+//   @media (max-width: 765px) {
+//     height: 78px;
+//     opacity: 1 !important;
+//   }
+// }
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

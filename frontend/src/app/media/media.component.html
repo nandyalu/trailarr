@@ -1,145 +1,9 @@
-@if (!inEditMode) {
-  <div class="media-header">
-    <!-- Edit Button -->
-    <div class="media-header-button" (click)="inEditMode = true" aria-label="Edit" title="Edit">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
-        <path
-          d="M640-160v-360H160v360h480Zm80-200v-80h80v-360H320v200h-80v-200q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80ZM160-80q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h480q33 0 56.5 23.5T720-520v360q0 33-23.5 56.5T640-80H160Zm400-603ZM400-340Z"
-        />
-      </svg>
-      <span>Edit</span>
-    </div>
-    <div class="empty-space"></div>
-    <!-- Sort Options -->
-    <div class="media-header-sortitem">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-        <path d="M74-159v-135h304v135H74Zm0-255v-134h558v134H74Zm0-254v-135h812v135H74Z" />
-      </svg>
-      <div>{{ selectedSort() | displayTitle }}</div>
-      <div class="sortitem-dropdown">
-        @for (sortOption of sortOptions; track sortOption) {
-          <div class="sortitem-dropdown-option" (click)="setMediaSort(sortOption)">
-            {{ sortOption | displayTitle }}
-            @if (selectedSort() == sortOption) {
-              <div>
-                @if (sortAscending()) {
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-                    <path d="M480-130 200-410l96-96 184 185 184-185 96 96-280 280Zm0-299L200-708l96-97 184 185 184-185 96 97-280 279Z" />
-                  </svg>
-                } @else {
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-                    <path d="m296-155-96-97 280-279 280 279-96 97-184-185-184 185Zm0-299-96-96 280-280 280 280-96 96-184-185-184 185Z" />
-                  </svg>
-                }
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Filter Options -->
-    <div class="media-header-filteritem">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-        <path d="M371-158v-135h219v135H371ZM200-413v-135h558v135H200ZM74-668v-135h812v135H74Z" />
-      </svg>
-      <div>{{ selectedFilter() | displayTitle }}</div>
-      <div class="filteritem-dropdown">
-        @for (filterOption of allFilters(); track filterOption) {
-          <div class="filteritem-dropdown-option" (click)="setMediaFilter(filterOption)">
-            {{ filterOption | displayTitle }}
-            @if (selectedFilter() == filterOption) {
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-                  <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
-                </svg>
-              </div>
-            }
-          </div>
-        }
-        <div class="filteritem-dropdown-option" (click)="openFilterDialog()" aria-label="CustomFilters" title="Edit">
-          <span>Custom Filters</span>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
-            <path
-              d="M421-97v-248h83v83h353v83H504v82h-83Zm-318-82v-83h270v83H103Zm187-178v-82H103v-82h187v-84h83v248h-83Zm131-82v-82h436v82H421Zm166-176v-248h83v82h187v83H670v83h-83Zm-484-83v-83h436v83H103Z"
-            />
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
+@if (!inEditMode()) {
+  <!-- Header in Normal Mode -->
+  <app-normal-header />
 } @else {
   <!-- Edit Mode Header -->
-  <div class="media-header edit">
-    <!-- Monitor Button -->
-    <div class="media-header-button" (click)="batchUpdate('monitor')" aria-label="Monitor" title="Monitor">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Monitor">
-        <path
-          d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
-        />
-      </svg>
-      <span>Monitor</span>
-    </div>
-    <!-- Unmonitor Button -->
-    <div class="media-header-button" (click)="batchUpdate('unmonitor')" aria-label="UnMonitor" title="UnMonitor">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="UnMonitor">
-        <path
-          d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
-        />
-      </svg>
-      <span>UnMonitor</span>
-    </div>
-    <!-- Download Trailer Button -->
-    <div class="media-header-button" (click)="batchUpdate('download')" aria-label="Download" title="Download">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Download">
-        <path
-          d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
-        />
-      </svg>
-      <span>Download</span>
-    </div>
-    <!-- Delete Trailer Button -->
-    <div class="media-header-button delete" (click)="batchUpdate('delete')" aria-label="Delete" title="Delete">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Delete">
-        <path
-          d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
-        />
-      </svg>
-      <span>Delete</span>
-    </div>
-    <!-- Cancel Button -->
-    <div class="media-header-button" (click)="toggleEditMode(false)" aria-label="Cancel" title="Cancel">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Cancel">
-        <path
-          d="M819-28 407-440H160v280h480v-161l80 80v81q0 33-23.5 56.5T640-80H160q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h80v-7L27-820l57-57L876-85l-57 57Zm-99-327-80-80-165-165h165q33 0 56.5 23.5T720-520v80h80v-280H355L246-829q8-23 28.5-37t45.5-14h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80v5Z"
-        />
-      </svg>
-      <span>Cancel</span>
-    </div>
-    <div class="empty-space"></div>
-    <!-- Selected Count -->
-    <p class="count">
-      <span>Selected: </span>
-      {{ selectedMedia.length }}
-      <span> / {{ filteredSortedMedia().length }}</span>
-    </p>
-    <!-- Select All Button -->
-    <div class="media-header-button" (click)="selectAll()" aria-label="Select All" title="Select All">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
-        <path
-          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q8 0 15 1.5t14 4.5l-74 74H200v560h560v-266l80-80v346q0 33-23.5 56.5T760-120H200Zm261-160L235-506l56-56 170 170 367-367 57 55-424 424Z"
-        />
-      </svg>
-    </div>
-    <!-- Clear Button -->
-    <div class="media-header-button" (click)="selectedMedia = []" aria-label="Clear" title="Clear">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon" aria-label="Clear">
-        <path
-          d="m500-120-56-56 142-142-142-142 56-56 142 142 142-142 56 56-142 142 142 142-56 56-142-142-142 142Zm-220 0v-80h80v80h-80Zm-80-640h-80q0-33 23.5-56.5T200-840v80Zm80 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 0v-80q33 0 56.5 23.5T840-760h-80ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm640 0v-80h80v80h-80Z"
-        />
-      </svg>
-    </div>
-  </div>
+  <app-edit-header />
 }
 
 <div class="media-container">
@@ -163,27 +27,33 @@
       </div>
     }
 
-    <div class="media-row" appScrollNearEnd (nearEnd)="onNearEndScroll()">
-      @for (media of displayMedia(); track media) {
+    <div class="media-row" appScrollNearEnd (nearEnd)="onNearEndScroll()" role="listbox" aria-multiselectable="true">
+      @for (media of displayMedia(); track media.id) {
         <!-- <div class="media-card" [routerLink]="['/media', media.id]"> -->
-        @if (inEditMode) {
+        @if (inEditMode()) {
           <!-- Edit Mode - Show Checkboxes -->
-          <div class="media-card" [title]="media.title">
+          <div class="media-card" [title]="media.title" role="option" [attr.aria-selected]="checkedMediaIDs().includes(media.id)">
             <input
               type="checkbox"
               [id]="media.id"
               class="media-card-checkbox"
               (click)="$event.stopPropagation()"
               (change)="onMediaSelected(media, $event)"
-              [checked]="selectedMedia.includes(media.id)"
+              [checked]="checkedMediaIDs().includes(media.id)"
             />
             <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
           </div>
         } @else {
           <!-- Normal Mode - Show Media Card -->
-          <div class="media-card" [routerLink]="['/media', media.id]" [title]="media.title" [id]="media.id">
+          <a
+            class="media-card"
+            [routerLink]="['/' + RouteMedia, media.id]"
+            [title]="media.title"
+            [id]="media.id"
+            [style]="'view-transition-name: media-' + media.id"
+          >
             <ng-container *ngTemplateOutlet="mediaCard; context: {media: media}"></ng-container>
-          </div>
+          </a>
         }
       }
     </div>
@@ -200,12 +70,19 @@
       (load)="media.isImageLoaded = true"
       (error)="media.isImageLoaded = true"
       [class.animated-gradient]="!media.isImageLoaded"
+      [style]="'view-transition-name: media-' + media.id + '-image'"
     />
-    <p>{{ media.title }}</p>
+    <p [style]="'view-transition-name: media-' + media.id + '-title'">{{ media.title }}</p>
   </label>
   @if (media.status.toLowerCase() == 'downloading') {
     <!-- Downloading Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Downloading">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 -960 960 960"
+      class="monitored-icon"
+      aria-label="Downloading"
+      [style]="'view-transition-name: media-' + media.id + '-logo'"
+    >
       <g transform="scale(0.9) translate(65,-60)">
         <path
           d="M343 -107q-120 -42 -194.5 -146.5T74 -490q0 -29 4 -57.5T91 -604l-57 33 -37 -62 185 -107 106 184 -63 36 -54 -92q-13 30 -18.5 60.5T147 -490q0 113 65.5 200T381 -171zm291 -516v-73h107q-47 -60 -115.5 -93.5T480 -823q-66 0 -123.5 24T255 -734l-38 -65q54 -45 121 -71t142 -26q85 0 160.5 33T774 -769v-67h73v213zM598 -1 413 -107l107 -184 62 37 -54 94q123 -17 204.5 -110.5T814 -489q0 -19 -2.5 -37.5T805 -563h74q4 18 6 36.5t2 36.5q0 142 -87 251.5T578 -96l56 33z"
@@ -216,7 +93,13 @@
     </svg>
   } @else if (media.monitor) {
     <!-- Monitored Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 -960 960 960"
+      class="monitored-icon"
+      aria-label="Monitored"
+      [style]="'view-transition-name: media-' + media.id + '-logo'"
+    >
       <path
         d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
       />
@@ -229,6 +112,7 @@
       class="downloaded-icon"
       [class.success]="media.trailer_exists"
       aria-label="Trailer Exists"
+      [style]="'view-transition-name: media-' + media.id + '-logo'"
     >
       <path
         d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z"
@@ -237,45 +121,4 @@
   }
 </ng-template>
 
-<!-- Add Filter Dialog -->
-<dialog #addFilterDialog (close)="closeFilterDialog()">
-  @if (isCustomFilterDialogOpen) {
-    <!-- Show Add/Edit Filter Dialog -->
-    <app-add-filter-dialog
-      [filterType]="moviesOnly() == null ? 'HOME' : moviesOnly() ? 'MOVIES' : 'SERIES'"
-      [customFilter]="editFilter"
-      (dialogClosed)="closeFilterDialog()"
-    ></app-add-filter-dialog>
-  } @else {
-    <!-- Show List of Custom Filters -->
-    <div class="dialog-content" (click)="$event.stopPropagation()">
-      <div class="dialog-title">Custom Filters</div>
-      @for (filter of customFilters(); track filter) {
-        <div class="filteritem-dropdown-option">
-          <span (click)="openFilterEditDialog(filter)" title="Edit Custom Filter">
-            {{ filter.filter_name }}
-          </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 -960 960 960"
-            class="icon delete-icon"
-            aria-label="Delete"
-            (click)="deleteFilter(filter.id)"
-            title="Delete Custom Filter"
-          >
-            <path
-              d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
-            />
-          </svg>
-        </div>
-      }
-    </div>
-    <div class="buttons-row">
-      <!-- Button to Cancel Dialog -->
-      <button class="danger" (click)="closeFilterDialog()">Cancel</button>
-
-      <!-- Add New Custom Filter button -->
-      <button class="primary" (click)="openFilterEditDialog(null)">Add New</button>
-    </div>
-  }
-</dialog>
+<template #dialogContainer></template>

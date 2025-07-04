@@ -1,5 +1,6 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
-import {Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -19,6 +20,7 @@ interface ErrorMessage {
   imports: [DatePipe, FormsModule, LoadIndicatorComponent, NgTemplateOutlet],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilesComponent {
   private readonly filesService = inject(FilesService);
@@ -53,14 +55,15 @@ export class FilesComponent {
 
   // Refresh the files list when the mediaId changes
   protected readonly filesResource = resource({
-    request: this.mediaId,
-    loader: ({request: mediaId}) => this.mediaService.fetchMediaFiles(mediaId),
+    params: () => ({mediaId: this.mediaId()}),
+    loader: ({params: {mediaId}}) => this.mediaService.fetchMediaFiles(mediaId),
   });
 
   protected readonly filesError = computed(() => {
-    const _error = this.filesResource.error() as ErrorMessage;
-    // console.log('Files Error:', _error);
-    return _error.error.detail;
+    const _error = this.filesResource.error();
+    if (!_error) return '';
+    const cause = _error.cause as ErrorMessage;
+    return cause?.error.detail || 'Error fetching media files.';
   });
 
   protected readonly isTextFile = computed(() =>
@@ -69,21 +72,18 @@ export class FilesComponent {
 
   protected readonly isVideoFile = computed(() => ['.mp4', '.mkv', '.avi', '.webm'].some((ext) => this.selectedFileName().endsWith(ext)));
 
-  // ngOnInit() {
-  //   this.getMediaFiles();
-  // }
-
-  // getMediaFiles(): void {
-  //   // Get Media Files
-  //   this.mediaService.getMediaFiles(this.mediaId() + 1000).subscribe((files: FolderInfo | string) => {
-  //     if (typeof files === 'string') {
-  //       this.mediaFilesResponse = files;
-  //     } else {
-  //       this.mediaFiles = files;
-  //     }
-  //     this.filesLoading = false;
-  //   });
-  // }
+  ngOnInit() {
+    // Subscribe to WebSocket updates to reload media data when necessary
+    this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
+      const msgText = msg.message.toLowerCase();
+      const mediaIdStr = this.mediaId().toString();
+      const mediaTitle = this.mediaService.selectedMedia()?.title?.toLowerCase() || '';
+      const checkForItems = ['media', 'trailer', mediaIdStr, mediaTitle];
+      if (checkForItems.some((term) => term && msgText.includes(term))) {
+        this.filesResource.reload();
+      }
+    });
+  }
 
   asFolderInfo(folder: FolderInfo): FolderInfo {
     // For use in ng-template for type checking

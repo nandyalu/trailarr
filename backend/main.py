@@ -1,10 +1,19 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
+import shutil
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie, validate_login
 from app_logger import ModuleLogger
@@ -84,11 +93,32 @@ trailarr_api.add_middleware(
     allow_headers=["*"],
 )
 
+trailarr_api.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=7)
+setup_timing_middleware(trailarr_api)
+
 
 # Health check route
 @trailarr_api.get("/status", tags=["Health Check"])
 async def health_check():
-    return {"status": "healthy"}
+    """
+    Health check endpoint.
+    Runs 'nvidia-smi' to check for NVIDIA GPU availability (if hw accel enabled).
+    Returns 'unhealthy' if the command fails.
+    """
+    try:
+        # Run nvidia-smi to check for NVIDIA GPU presence
+        if (
+            app_settings.nvidia_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        ):
+            logging.debug("Checking NVIDIA GPU availability")
+            # Check if nvidia-smi is available
+            if not shutil.which("nvidia-smi"):
+                raise EnvironmentError("nvidia-smi command not found")
+        return {"status": "healthy"}
+    except Exception as e:
+        logging.error(f"Health check failed: {e}")
+        raise HTTPException(404, detail=f"unhealthy. Error: {e}")
 
 
 # Register API routes

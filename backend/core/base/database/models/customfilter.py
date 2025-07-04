@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any
 from sqlmodel import Field, Relationship, SQLModel
 
 # if TYPE_CHECKING:
@@ -58,6 +59,57 @@ class CustomFilter(_CustomFilterBase, table=True):
     # trailerprofile: Optional["TrailerProfile"] = Relationship(
     #     back_populates="customfilter"
     # )
+
+    # @classmethod
+    # def from_create(cls, obj: "CustomFilterCreate") -> "CustomFilter":
+    #     """
+    #     Convert CustomFilterCreate to CustomFilter.
+    #     This method is used to convert the CustomFilterCreate model
+    #     to the CustomFilter model for database operations.
+    #     """
+    #     _filters = [Filter.model_validate(f) for f in obj.filters]
+    #     obj.filters = _filters  # type: ignore[assignment]
+    #     # Validate the CustomFilterCreate model
+    #     _validated_obj = cls.model_validate(obj.model_dump())
+    #     _validated_obj.filters = _filters
+    #     return _validated_obj
+
+    # # Overriding the model_validate method to ensure
+    # # that the Filters are validated correctly.
+    # # This is necessary because the CustomFilter has nested models.
+    @classmethod
+    def model_validate(
+        cls,
+        obj: "CustomFilter | CustomFilterCreate | CustomFilterRead | dict[str, Any]",
+        *,
+        strict: bool | None = None,
+        from_attributes: bool | None = None,
+        context: dict[str, Any] | None = None,
+        update: dict[str, Any] | None = None,
+    ) -> "CustomFilter":
+        """
+        Validate the CustomFilter model. \n
+        This method ensures that the nested models are validated
+        correctly before validating the CustomFilter itself.
+        """
+        if isinstance(obj, dict):
+            # If obj is a dict, convert it to CustomFilterCreate
+            obj = CustomFilterCreate.model_validate(obj)
+        db_filters: list[Filter] = []
+        if isinstance(obj, cls):
+            # If obj is already a CustomFilter instance, return it
+            db_filters = obj.filters
+        else:
+            db_filters = [Filter.model_validate(f) for f in obj.filters]
+        _validated_obj = super().model_validate(
+            obj.model_dump(),
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            update=update,
+        )
+        _validated_obj.filters = db_filters
+        return _validated_obj
 
 
 class CustomFilterCreate(_CustomFilterBase):

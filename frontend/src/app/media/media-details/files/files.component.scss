@@ -10,6 +10,33 @@
   text-align: center;
 }
 
+.title-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.files-title {
+  margin: 0;
+  margin-block: 0;
+}
+
+.icononly-button {
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+.refresh-icon {
+  cursor: pointer;
+  fill: var(--color-on-surface);
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
+}
+
 .media-files-container {
   display: flex;
   flex-direction: column;
@@ -25,11 +52,6 @@
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface-variant);
   overflow-y: auto;
-}
-
-.media-files-container .files-title {
-  margin: 0;
-  margin-block: 0;
 }
 
 .files-header {

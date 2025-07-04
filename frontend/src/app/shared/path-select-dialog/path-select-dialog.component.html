@@ -1,0 +1,27 @@
+<dialog #pathSelectDialog>
+  <h2>Select a Path for '{{ name() }}'</h2>
+  <hr />
+  <input type="text" [(ngModel)]="path" placeholder="Enter path here" />
+  <section>
+    <p (click)="goUpOneLevel()">(Up one level)</p>
+    @for (folder of folders(); track folder) {
+      <p (click)="setPath(folder.path, folder.type)" [class.selected]="folder.path === path()">{{ folder.name }}</p>
+    }
+  </section>
+  <div class="buttons-row">
+    <button [disabled]="!path().endsWith(pathShouldEndWith()) || isSubmitted()" (click)="submitValue()">
+      <span> Confirm </span>
+      @if (isSubmitted()) {
+        <span class="loading-icon">
+          <!-- Cycle icon - Google Fonts -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+            <path
+              d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+            />
+          </svg>
+        </span>
+      }
+    </button>
+    <button class="danger" (click)="cancelDialog()">Cancel</button>
+  </div>
+</dialog>

@@ -26,6 +26,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
 /* *::-webkit-scrollbar {
   width: 0.25rem;
 }
@@ -231,6 +237,10 @@ hr {
   fill: var(--color-on-surface);
 }
 
+.ng-touched.ng-invalid:not(form):not(div) {
+  border: 2px solid var(--color-danger);
+}
+
 /* Button Styles */
 button {
   padding: 0.5rem 1rem;
@@ -239,9 +249,13 @@ button {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background-color var(--transition-speed);
+  transition: background-color var(--transition-speed) scale var(--transition-speed);
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+}
+
+button:active {
+  scale: 0.95;
 }
 
 button:disabled {
@@ -252,21 +266,47 @@ button:disabled {
 button.primary {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+  svg {
+    fill: var(--color-on-primary);
+  }
 }
 
 button.secondary {
   background-color: var(--color-secondary);
   color: var(--color-on-secondary);
+  svg {
+    fill: var(--color-on-secondary);
+  }
 }
 
 button.tertiary {
   background-color: var(--color-tertiary);
   color: var(--color-on-tertiary);
+  svg {
+    fill: var(--color-on-tertiary);
+  }
 }
 
 button.danger {
   background-color: var(--color-danger);
   color: var(--color-danger-text);
+  svg {
+    fill: var(--color-danger-text);
+  }
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-secondary);
+  color: var(--color-on-secondary);
+  border: none;
+  border-radius: 0.25rem;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
 }
 
 .icononly-button {
@@ -368,9 +408,17 @@ button > svg {
   box-shadow: 0 0 0 calc(var(--size) * 0.25) var(--color-outline-variant);
 }
 
+.buttons-row {
+  display: block flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0.5rem;
+}
+
 /* Animated Loading Bars */
 .loading-wave {
   /* width: 300px; */
+  margin: auto;
   height: 6rem;
   display: flex;
   align-items: flex-end;
@@ -502,12 +550,23 @@ dialog[open] {
   }
 }
 
+dialog.error[open] {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 1rem;
+  text-align: center;
+}
+
 dialog::backdrop {
   background-image: linear-gradient(0deg, var(--color-surface-variant), var(--color-background));
   transition-property: display opacity overlay;
   transition-duration: 1s;
   transition-behavior: allow-discrete;
   opacity: 0;
+}
+
+dialog.error::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
 }
 
 dialog[open]::backdrop {

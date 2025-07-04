@@ -1,131 +1,219 @@
-<div class="form-container">
-  <h2>Edit Connection:</h2>
-  <hr />
-  <form [formGroup]="editConnectionForm">
-    <div class="input-group">
-      <label for="name">Connection Name</label>
-      <input
-        id="name"
-        type="text"
-        formControlName="name"
-        placeholder="Connection Name"
-        autocomplete="off"
-        autocapitalize="words"
-        tabindex="1"
-        oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)"
+@if (isCreate()) {
+  <h2>Create Connection</h2>
+} @else {
+  <h2>Edit Connection</h2>
+  <button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
       />
-      <p *ngIf="name.invalid && name.touched" class="invalid-text">Server Name is required! Minimum 3 characters</p>
+    </svg>
+    <span class="text">Delete</span>
+  </button>
+}
+<hr />
+@if (isLoading() || !connectionForm) {
+  <app-load-indicator />
+} @else {
+  <form [formGroup]="connectionForm" [id]="'connectionForm' + connectionId()">
+    <!-- #region Name -->
+    <div class="input-group">
+      <label for="name">Name</label>
+      <input id="name" autocapitalize="words" autocomplete="off" formControlName="name" placeholder="Connection Name" type="text" />
+      @let name = connectionForm.get('name');
+      @if (name?.invalid && name?.touched) {
+        <p class="invalid-text">Connection Name is required and must be at least 3 characters long!</p>
+      }
     </div>
+    <!-- #endregion Name -->
+
+    <!-- #region Connection Type Options -->
     <div class="d-row">
+      <!-- #region ArrType -->
       <div class="option-container">
-        <span>Arr Type: </span>
-        <div id="arrtype" class="options-bar">
-          <div
-            *ngFor="let option of arrOptions"
-            class="option"
-            tabindex="2"
-            [class.selected]="option === editConnectionForm.value.arrType"
-            (click)="setArrType(option)"
-            (keydown.enter)="setArrType(option)"
-            (keydown.space)="setArrType(option)"
-          >
-            {{ option | uppercase }}
-          </div>
+        <legend id="arrtype_label">Arr Type:</legend>
+        <div class="options-bar" role="radiogroup" aria-labelledby="arrtype_label">
+          @for (option of arrOptions; track option) {
+            <label class="option-label" [class.option__selected]="option === connectionForm.value.arr_type">
+              <input
+                type="radio"
+                [id]="'arrtype_' + option + '_option'"
+                name="arr_type"
+                [value]="option"
+                formControlName="arr_type"
+                [checked]="option === connectionForm.value.arr_type"
+              />
+              <span class="option-name">{{ option | uppercase }}</span>
+            </label>
+          }
         </div>
       </div>
+      <!-- #endregion ArrType -->
+
+      <!-- #region MonitorType -->
       <div class="option-container">
-        <span>Monitor Type: </span>
-        <div id="monitorType" class="options-bar">
-          <div
-            *ngFor="let option of monitorOptions"
-            class="option"
-            tabindex="3"
-            [class.selected]="option === editConnectionForm.value.monitorType"
-            (click)="setMonitorType(option)"
-            (keydown.enter)="setMonitorType(option)"
-            (keydown.space)="setMonitorType(option)"
-          >
-            {{ option | uppercase }}
-          </div>
+        <legend id="monitorType_label">Monitor Type:</legend>
+        <div class="options-bar" role="radiogroup" aria-labelledby="monitorType_label">
+          @for (option of monitorOptions; track option) {
+            <label class="option-label" [class.option__selected]="option === connectionForm.value.monitor">
+              <input
+                type="radio"
+                [id]="'monitorType_' + option + '_option'"
+                name="monitor"
+                [value]="option"
+                formControlName="monitor"
+                [checked]="option === connectionForm.value.monitor"
+              />
+              <span class="option-name">{{ option | uppercase }}</span>
+            </label>
+          }
         </div>
       </div>
+      <!-- #endregion MonitorType -->
     </div>
+    <!-- #endregion Connection Type Options -->
+
+    <!-- #region URL -->
     <div class="input-group">
       <label for="url">Server URL</label>
-      <input
-        id="url"
-        type="url"
-        formControlName="url"
-        placeholder="Server URL Ex: http://192.168.0.15:6969"
-        tabindex="4"
-        autocomplete="off"
-      />
-      <p *ngIf="url.invalid && url.touched" class="invalid-text">Server URL is invalid!</p>
+      <input id="url" autocomplete="off" formControlName="url" placeholder="Server URL Ex: http://192.168.0.15:6969" type="url" />
+      @let url = connectionForm.get('url');
+      @if (url?.invalid && url?.touched) {
+        <p class="invalid-text">Connection URL is required!</p>
+      }
     </div>
+    <!-- #endregion URL -->
+
+    <!-- #region API Key -->
     <div class="input-group">
       <label for="apiKey">API Key</label>
-      <input id="apiKey" type="text" formControlName="apiKey" placeholder="APIKEY" tabindex="5" autocomplete="off" />
-      <p *ngIf="apiKey.invalid && apiKey.touched" class="invalid-text">APIKey is invalid!</p>
+      <input id="apiKey" autocomplete="off" formControlName="api_key" placeholder="API Key" type="text" />
+      @let apiKey = connectionForm.get('api_key');
+      @if (apiKey?.invalid && apiKey?.touched) {
+        <p class="invalid-text">API Key is required!</p>
+      }
     </div>
-    <h3>Path Mappings:</h3>
-    <hr />
-    <div formArrayName="path_mappings">
-      <div *ngFor="let path_mapping of pathMappings.controls; let i = index" [formGroupName]="i" class="d-row">
-        <div class="input-group">
-          <label for="path_from">Path From</label>
-          <input id="path_from" type="text" formControlName="path_from" placeholder="Arr Internal Path" tabindex="6" autocomplete="off" />
-        </div>
-        <div class="input-group">
-          <label for="path_to">Path To</label>
-          <input id="path_to" type="text" formControlName="path_to" placeholder="Trailarr Internal Path" tabindex="6" autocomplete="off" />
-        </div>
-        <button class="icononly-button tertiary" id="remove" name="Remove Path Mapping" tabindex="6" (click)="removePathMapping(i)">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
-          </svg>
-          <!-- <span class="text">Remove</span> -->
-        </button>
+    <!-- #endregion API Key -->
+
+    <!-- #region Path Mappings -->
+    @if (arePathMappingsAdded()) {
+      <h3>Path Mappings</h3>
+      <hr />
+      <div formArrayName="path_mappings" class="mappings-wrapper">
+        @for (mapping of pathMappings.controls; let i = $index; track mapping) {
+          <div [formGroupName]="i" class="d-row mappings">
+            <div class="input-group">
+              <label for="path_from">Path From</label>
+              <input
+                id="path_from"
+                type="text"
+                formControlName="path_from"
+                placeholder="Arr Internal Path"
+                [readOnly]="true"
+                autocomplete="off"
+              />
+            </div>
+            <div class="input-group">
+              <label for="path_to">Path To</label>
+              <div class="input-wrapper">
+                <input id="path_to" type="text" formControlName="path_to" placeholder="Trailarr Internal Path" autocomplete="off" />
+                <button
+                  class="tertiary folder-icon"
+                  (click)="openPathSelectDialog(i, mapping?.get('path_from')?.value)"
+                  type="button"
+                  title="Select Path"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button class="icononly-button tertiary" id="remove" name="Remove Path Mapping" (click)="removePathMapping(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+              </svg>
+              <!-- <span class="text">Remove</span> -->
+            </button>
+          </div>
+        }
       </div>
-    </div>
-    <div class="d-row">
-      <button class="animated-button tertiary" id="add-path-mapping" tabindex="10" (click)="addPathMapping()">
+    }
+    <!-- #endregion Path Mappings -->
+
+    <!-- #region Submission Result -->
+    @let _submitResult = submitResult();
+    @if (_submitResult) {
+      <p class="result-text">{{ _submitResult }}</p>
+    }
+    <!-- #endregion Submission Result -->
+
+    <!-- #region Action Buttons -->
+    <div class="buttons-row">
+      @if (isReadyToSubmit()) {
+        <button
+          class="animated-button primary"
+          id="submit"
+          type="submit"
+          [disabled]="connectionForm.pristine || connectionForm.invalid"
+          (click)="onSubmit()"
+        >
+          <!-- Save Icon - Google Fonts W:400 G: 200 S: 48px -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M856-690v513q0 28.73-22.14 50.86Q811.72-104 783-104H177q-28.73 0-50.86-22.14Q104-148.27 104-177v-606q0-28.72 22.14-50.86Q148.27-856 177-856h513l166 166Zm-73 32.22L657.78-783H177v606h606v-480.78ZM479.82-238q46.18 0 78.68-32.32 32.5-32.33 32.5-78.5 0-46.18-32.32-78.68-32.33-32.5-78.5-32.5-46.18 0-78.68 32.32-32.5 32.33-32.5 78.5 0 46.18 32.32 78.68 32.33 32.5 78.5 32.5ZM226-577h374v-157H226v157Zm-49-80.78V-177v-606 125.22Z"
+            />
+          </svg>
+          <span class="text">Submit</span>
+        </button>
+      } @else {
+        <button
+          class="animated-button primary"
+          id="test"
+          type="test"
+          [disabled]="connectionForm.pristine || connectionForm.invalid"
+          (click)="onSubmit()"
+        >
+          <!-- Conversion Path Icon - Google Fonts W:400 G: 200 S: 48px -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M766-113q-43 0-76-26t-41-63H443q-67.76 0-111.38-43.67Q288-289.34 288-357.17T331.62-469q43.62-44 111.38-44h77q40.17 0 65.59-25.17 25.41-25.17 25.41-65t-25.35-65.33Q560.3-694 520.21-694H312q-10 37-42.5 63T194-605q-50.92 0-85.96-35.06Q73-675.12 73-726.06t35.04-86.44Q143.08-848 194-848q43 0 75.5 26.5t42.91 62.5H520q68.17 0 112.09 43.88 43.91 43.87 43.91 112 0 68.12-43.91 111.62Q588.17-448 520-448h-77q-39.76 0-64.88 25.38Q353-397.25 353-357.12 353-317 378.12-292q25.12 25 64.88 25h206q9.3-35.81 41.65-62.41Q723-356 766-356q51.33 0 86.67 35.26Q888-285.47 888-234.24 888-183 852.67-148q-35.34 35-86.67 35ZM193.68-678q20.32 0 34.82-13.68 14.5-13.69 14.5-34 0-20.32-14.27-34.82T194.14-775q-20.32 0-34.23 14.27Q146-746.46 146-726.14q0 20.32 13.68 34.23 13.69 13.91 34 13.91Z"
+            />
+          </svg>
+          <span class="text">Test</span>
+        </button>
+      }
+      <button class="animated-button secondary" id="cancel" type="button" (click)="onCancel()">
+        <!-- Close Icon - Google Fonts W:400 G: 200 S: 48px -->
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-        </svg>
-        <span class="text">Add Path Mapping</span>
-      </button>
-    </div>
-    <div class="d-row">
-      <button class="animated-button secondary" id="cancel" tabindex="6" (click)="onCancel()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+          <path d="m247-195-51-52 233-233-233-234 51-52 234 234 232-234 51 52-232 234 232 233-51 52-232-234-234 234Z" />
         </svg>
         <span class="text">Cancel</span>
       </button>
-      <button
-        class="animated-button primary"
-        id="submit"
-        type="submit"
-        tabindex="7"
-        [disabled]="!editConnectionForm.valid || editConnectionForm.untouched"
-        (click)="onSubmit()"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path
-            d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"
-          />
-        </svg>
-        <span class="text">submit</span>
-      </button>
     </div>
-    <p *ngIf="addConnResult">{{ addConnResult }}</p>
+    <!-- #endregion Action Buttons -->
   </form>
-</div>
+}
 <dialog #cancelDialog (click)="closeCancelDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">
     <h2>Unsaved Changes</h2>
-    <p>Canges will be lost. Are you sure you want to cancel?</p>
-    <button class="secondary" (click)="onConfirmCancel()" tabindex="2">Yes</button>
-    <button class="primary" (click)="closeCancelDialog()" tabindex="1">No</button>
+    <p>Changes will be lost. Are you sure you want to cancel?</p>
+    <div class="buttons-row">
+      <button class="danger" (click)="onConfirmCancel()">Yes</button>
+      <button class="primary" (click)="closeCancelDialog()">No</button>
+    </div>
+  </div>
+</dialog>
+<dialog #deleteConnectionDialog (click)="closeDeleteDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Delete Connection</h2>
+    <p>This will Delete the connection and no longer monitor its Media</p>
+    <p>Delete the connection?</p>
+    <div class="buttons-row">
+      <button class="danger" (click)="onConfirmDelete()">Delete</button>
+      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
+    </div>
   </div>
 </dialog>

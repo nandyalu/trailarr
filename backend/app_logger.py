@@ -30,6 +30,12 @@ def config_logging():
     """Setup the logging configuration using the config file.
     This will setup the root logger configuration and start the queue handler listener.
     """
+    # Disable uvicorn access logger
+    uvicorn_access = logging.getLogger("uvicorn.access")
+    uvicorn_access.handlers = []
+    uvicorn_access.disabled = True
+
+    # FastAPI logger
     queue = multiprocessing.Queue(-1)
     parent_path = pathlib.Path(__file__).parent
     config_file = pathlib.Path(parent_path, "config", "logger_config.json")
@@ -74,6 +80,20 @@ class ModuleLogger(logging.LoggerAdapter):
         if self.isEnabledFor(TRACE_LEVEL):
             self._log(TRACE_LEVEL, message, args, **kwargs)
 
+    def log_errors(self, message, *args, **kwargs):
+        if app_settings.log_level == "DEBUG":
+            # If log level is debug, use the exception method to log errors
+            super().exception(message, *args, **kwargs)
+        else:
+            # In production mode, use the error method to log errors
+            super().error(message, *args, **kwargs)
+
+    def error(self, message, *args, **kwargs):
+        self.log_errors(message, *args, **kwargs)
+
+    def exception(self, message, *args, **kwargs):
+        self.log_errors(message, *args, **kwargs)
+
     def process(self, msg, kwargs):
         return "%s: %s" % (self.log_prefix, msg), kwargs
 
@@ -82,3 +102,6 @@ if not _is_logging_setup:
     config_logging()
     _is_logging_setup = True
 logger = get_logger()
+
+uvicorn_logger = logging.getLogger("uvicorn")
+uvicorn_logger.setLevel(logging.getLevelName(logging.DEBUG))

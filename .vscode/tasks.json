@@ -210,6 +210,32 @@
 				"reveal": "always"
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "Create Alembic Migration",
+			"detail": "Create a new Alembic migration",
+			"type": "shell",
+			"command": "./scripts/create_migration.sh",
+			"icon": {
+				"id": "database",
+				"color": "terminal.ansiCyan"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHON_PATH": "${workspaceFolder}/backend",
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1"
+				}
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": [],
 		}
 	]
 }

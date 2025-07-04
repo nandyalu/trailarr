@@ -37,32 +37,36 @@ def normalize_filename(filename: str) -> str:
     Returns:
         str: Normalized filename."""
     # Normalize the filename to handle Unicode characters
-    logger.debug(f"Normalizing filename: {filename}")
-    filename = unicodedata.normalize("NFKD", filename)
+    _filename = unicodedata.normalize("NFKD", filename)
 
     # Remove any character that is not supported by Unix or Windows file systems
-    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', " ", filename)
+    _filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', " ", _filename)
     # Replace multiple spaces with a single space
-    filename = re.sub(r"\s+", " ", filename)
+    _filename = re.sub(r"\s+", " ", _filename)
     # Remove leading and trailing special characters
-    filename = filename.strip("_.-")
-    logger.debug(f"Normalized filename: {filename}")
-    return filename
+    _filename = _filename.strip("_.-")
+    logger.debug(f"Normalized filename: '{filename}' -> '{_filename}'")
+    return _filename
 
 
 def get_trailer_filename(
-    media: MediaRead, ext: str, increment_index: int
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    ext: str,
+    increment_index: int,
 ) -> str:
     """Get the trailer filename based on app settings. \n
     Args:
         media (MediaRead): MediaRead object.
+        profile (TrailerProfileRead): Trailer Profile used to download.
         ext (str): Extension of the trailer file.
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Trailer filename."""
-    logger.debug(f"Getting trailer filename for '{media.title}'...")
+    if increment_index == 1:
+        logger.debug(f"Getting trailer filename for '{media.title}'...")
     # Get trailer file name format from settings
-    title_format = app_settings.trailer_file_name
+    title_format = profile.file_name
     if title_format.count("{") != title_format.count("}"):
         logger.error(
             "Invalid title format, setting to default file name format"
@@ -74,9 +78,9 @@ def get_trailer_filename(
     _filename_wo_ext, _ = os.path.splitext(media.media_filename)
     title_opts["media_filename"] = _filename_wo_ext
     title_opts["youtube_id"] = media.youtube_trailer_id
-    title_opts["resolution"] = f"{app_settings.trailer_resolution}p"
-    title_opts["vcodec"] = app_settings.trailer_video_format
-    title_opts["acodec"] = app_settings.trailer_audio_format
+    title_opts["resolution"] = f"{profile.video_resolution}p"
+    title_opts["vcodec"] = profile.video_format
+    title_opts["acodec"] = profile.audio_format
     title_opts["ext"] = ext
 
     # Remove increment index if it's 0
@@ -110,6 +114,7 @@ def get_trailer_path(
     src_path: str,
     dst_folder_path: str,
     media: MediaRead,
+    profile: TrailerProfileRead,
     increment_index: int = 1,
 ) -> str:
     """Get the destination path for the trailer file. \n
@@ -124,10 +129,12 @@ def get_trailer_path(
         src_path (str): Source path of the trailer file.
         dst_folder_path (str): Destination folder path.
         media (MediaRead): MediaRead object.
+        profile (TrailerProfileRead): Trailer Profile used to download.
         increment_index (int): Index to increment the trailer number. \n
     Returns:
         str: Destination path for the trailer file."""
-    logger.debug(f"Getting trailer path for '{media.title}'...")
+    if increment_index == 1:
+        logger.debug(f"Getting trailer path for '{media.title}'...")
 
     # Get filename from source path and extract extension
     filename = os.path.basename(src_path)
@@ -135,7 +142,7 @@ def get_trailer_path(
     _ext = _ext.replace(".", "")
 
     # Format the title to get the new filename
-    filename = get_trailer_filename(media, _ext, increment_index)
+    filename = get_trailer_filename(media, profile, _ext, increment_index)
 
     # Get the destination path
     dst_file_path = os.path.join(dst_folder_path, filename)
@@ -145,7 +152,7 @@ def get_trailer_path(
             f"File already exists at: {dst_file_path}, incrementing index..."
         )
         return get_trailer_path(
-            src_path, dst_folder_path, media, increment_index + 1
+            src_path, dst_folder_path, media, profile, increment_index + 1
         )
     logger.debug(f"Trailer path: {dst_file_path}")
     return dst_file_path
@@ -210,7 +217,7 @@ def move_trailer_to_folder(
         os.chmod(dst_folder_path, dst_permissions)
 
     # Construct the new filename and move the file
-    dst_file_path = get_trailer_path(src_path, dst_folder_path, media)
+    dst_file_path = get_trailer_path(src_path, dst_folder_path, media, profile)
     logger.debug(f"Moving trailer from '{src_path}' to '{dst_file_path}'")
     shutil.move(src_path, dst_file_path)
 

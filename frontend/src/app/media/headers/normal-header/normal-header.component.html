@@ -1,0 +1,101 @@
+<div class="media-header">
+  <!-- Edit Button -->
+  <div class="media-header-button" (click)="inEditMode.set(true)" aria-label="Edit" title="Edit">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
+      <path
+        d="M640-160v-360H160v360h480Zm80-200v-80h80v-360H320v200h-80v-200q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v360q0 33-23.5 56.5T800-360h-80ZM160-80q-33 0-56.5-23.5T80-160v-360q0-33 23.5-56.5T160-600h480q33 0 56.5 23.5T720-520v360q0 33-23.5 56.5T640-80H160Zm400-603ZM400-340Z"
+      />
+    </svg>
+    <span>Edit</span>
+  </div>
+  <div class="empty-space"></div>
+  <!-- Sort Options -->
+  <div class="media-header-sortitem">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+      <path d="M74-159v-135h304v135H74Zm0-255v-134h558v134H74Zm0-254v-135h812v135H74Z" />
+    </svg>
+    <div>{{ selectedSort() | displayTitle }}</div>
+    <div class="sortitem-dropdown">
+      @for (sortOption of sortOptions; track sortOption) {
+        <div class="sortitem-dropdown-option" (click)="setMediaSort(sortOption)">
+          {{ sortOption | displayTitle }}
+          @if (selectedSort() == sortOption) {
+            <div>
+              @if (sortAscending()) {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                  <path d="M480-130 200-410l96-96 184 185 184-185 96 96-280 280Zm0-299L200-708l96-97 184 185 184-185 96 97-280 279Z" />
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                  <path d="m296-155-96-97 280-279 280 279-96 97-184-185-184 185Zm0-299-96-96 280-280 280 280-96 96-184-185-184 185Z" />
+                </svg>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Filter Options -->
+  <div class="media-header-filteritem">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+      <path d="M371-158v-135h219v135H371ZM200-413v-135h558v135H200ZM74-668v-135h812v135H74Z" />
+    </svg>
+    <div>{{ selectedFilter() | displayTitle }}</div>
+    <div class="filteritem-dropdown">
+      @for (filterOption of allFilters(); track filterOption) {
+        <div class="filteritem-dropdown-option" (click)="setMediaFilter(filterOption)">
+          {{ filterOption | displayTitle }}
+          @if (selectedFilter() == filterOption) {
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+                <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
+              </svg>
+            </div>
+          }
+        </div>
+      }
+      <div class="filteritem-dropdown-option" (click)="openFilterDialog()" aria-label="CustomFilters" title="Edit">
+        <span>Custom Filters</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+          <path
+            d="M421-97v-248h83v83h353v83H504v82h-83Zm-318-82v-83h270v83H103Zm187-178v-82H103v-82h187v-84h83v248h-83Zm131-82v-82h436v82H421Zm166-176v-248h83v82h187v83H670v83h-83Zm-484-83v-83h436v83H103Z"
+          />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog to show List of Custom Filters -->
+<dialog #showFiltersDialog (close)="closeFilterDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <div class="dialog-title">Custom Filters</div>
+    @for (filter of customFilters(); track filter) {
+      <div class="filteritem-dropdown-option">
+        <span (click)="openFilterEditDialog(filter)" title="Edit Custom Filter">
+          {{ filter.filter_name }}
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 -960 960 960"
+          class="icon delete-icon"
+          aria-label="Delete"
+          (click)="deleteFilter(filter.id)"
+          title="Delete Custom Filter"
+        >
+          <path
+            d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+          />
+        </svg>
+      </div>
+    }
+  </div>
+  <div class="buttons-row">
+    <!-- Button to Cancel Dialog -->
+    <button class="danger" (click)="closeFilterDialog()">Cancel</button>
+    <!-- Add New Custom Filter button -->
+    <button class="primary" (click)="openFilterEditDialog(null)">Add New</button>
+  </div>
+</dialog>

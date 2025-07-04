@@ -1,0 +1,16 @@
+<dialog #profileSelectDialog (close)="onCancel()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h3>Select Trailer Profile</h3>
+    <p>Select a profile to use for searching/downloading</p>
+    <label for="profile-select">Select a Profile:</label>
+    <select name="profiles" id="profile-select" [(ngModel)]="selectedProfileID" required="true">
+      @for (profile of allProfiles(); track profile) {
+        <option [value]="profile.id">{{ profile.customfilter.filter_name }}</option>
+      }
+    </select>
+    <div class="buttons-row">
+      <button class="primary" [disabled]="!selectedProfileID()" (click)="onConfirm()">Confirm</button>
+      <button class="danger" (click)="onCancel()">Cancel</button>
+    </div>
+  </div>
+</dialog>

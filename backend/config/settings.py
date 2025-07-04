@@ -320,6 +320,7 @@ class _Config:
             "new_download_method": self.new_download_method,
             "update_ytdlp": self.update_ytdlp,
             "url_base": self.url_base,
+            "webui_username": self.webui_username,
         }
 
     @property

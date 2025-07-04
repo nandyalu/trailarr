@@ -1,0 +1,64 @@
+<div class="title-block">
+  <h2>Profiles</h2>
+  <i
+    class="icononly-button"
+    [class.loading]="profileService.allProfiles.isLoading()"
+    title="Refresh"
+    (click)="profileService.allProfiles.reload()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="refresh-icon">
+      <path
+        d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+      />
+    </svg>
+  </i>
+</div>
+<button class="animated-button top-right-button" (click)="openFilterDialog()">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+  </svg>
+  <span class="text">Add New</span>
+</button>
+<hr />
+
+@if (profileService.allProfiles.isLoading()) {
+  <app-load-indicator class="center" />
+} @else {
+  @if (profileService.allProfiles.value() && profileService.allProfiles.value().length > 0) {
+    <div class="profile-container">
+      @for (profile of profileService.allProfiles.value(); track $index) {
+        <a class="profile-card" [routerLink]="[profile.id]">
+          <h3 class="profile-card-title">{{ profile.customfilter.filter_name }}</h3>
+          <div class="profile-card-content">
+            <p>Video: {{ profile.video_resolution }}p | {{ profile.video_format }}</p>
+            <p>Audio: {{ profile.audio_format }}</p>
+            @if (profile.subtitles_enabled) {
+              <p>Subtitle: {{ profile.subtitles_language }} | {{ profile.subtitles_format }}</p>
+            } @else {
+              <p>Subtitles: No</p>
+            }
+          </div>
+          <div class="profile-card-checkbox">
+            @if (profile.enabled) {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="profile-card-icon success" title="Profile Enabled">
+                <path
+                  d="m421-288 294-294-55-54-239 239-121-121-54 54 175 176Zm58.54 224q-85.18 0-161.02-33.02t-132.16-89.34q-56.32-56.32-89.34-132.29T64-480q0-86.27 33.08-162.15 33.08-75.88 89.68-132.47 56.61-56.59 132.22-88.99Q394.59-896 479.56-896q86.33 0 162.51 32.39 76.18 32.4 132.56 89Q831-718 863.5-641.96q32.5 76.04 32.5 162.5 0 85.46-32.39 160.8-32.4 75.34-88.99 131.92Q718.03-130.16 642-97.08 565.98-64 479.54-64Zm.46-73q142.51 0 242.76-100.74Q823-338.49 823-480q0-142.51-100.24-242.76Q622.51-823 480-823q-141.51 0-242.26 100.24Q137-622.51 137-480q0 141.51 100.74 242.26Q338.49-137 480-137Zm0-343Z"
+                />
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="profile-card-icon danger" title="Profile Disabled">
+                <path
+                  d="M836-29 724-141q-52 37-113.57 57Q548.87-64 480-64q-87.64 0-163.98-32.02-76.34-32.02-132.16-87.84-55.82-55.82-87.84-132.16T64-480q0-68.87 20-130.43Q104-672 141-724L15-850l52-52L888-81l-52 52ZM480-137q54.5 0 102.25-14.5T671-193L498-366l-77 78-175-176 49-49 122 120 27-27-251-251q-27 41-41.5 88.75T137-480q0 146 98.5 244.5T480-137Zm339-99-52-52q26-41 41-89.5T823-480q0-146-98.5-244.5T480-823q-54 0-102.5 15T288-767l-52-52q50.84-36.43 112.62-56.72Q410.4-896 480-896q87.89 0 163.94 32Q720-832 776-776t88 132.06q32 76.05 32 163.94 0 69.6-20.28 131.38Q855.43-286.84 819-236ZM594-461l-55-54 121-121 55 54-121 121Zm-67-66Zm-95 95Z"
+                />
+              </svg>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  } @else {
+    <div class="center">
+      <p>No profiles found.</p>
+    </div>
+  }
+}

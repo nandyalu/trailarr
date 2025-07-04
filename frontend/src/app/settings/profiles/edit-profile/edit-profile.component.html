@@ -1,0 +1,391 @@
+@if (profileService.allProfiles.isLoading()) {
+  <app-load-indicator class="center" />
+}
+
+<div class="title-block">
+  <h2>Profile: {{ profile()?.customfilter?.filter_name }}</h2>
+  <i class="icononly-button" title="Edit Profile Name" (click)="openFilterDialog()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="edit-icon">
+      <path
+        d="M177-177h44l462-460.6-44-44.4-462 460.6v44.4Zm-73 73v-146l590-590q8-7 18-11t21.5-4q10.5 0 20 3.5T772-841l69 69q8 9 11.5 19t3.5 20q0 11-4 21.5t-10.67 17.17L250-104H104Zm672-630-41-41 41 41Zm-114 74-23-22 44 44-21-22Z"
+      />
+    </svg>
+  </i>
+</div>
+<button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+    <path
+      d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
+    />
+  </svg>
+  <span class="text">Delete</span>
+</button>
+<hr />
+<!-- General Settings -->
+<section>
+  <details open>
+    <summary>General</summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="Profile Enabled"
+        description="Enable or disable this profile"
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.enabled"
+        (optionChange)="profileService.updateSetting('enabled', $event)"
+      />
+      <app-text-setting
+        name="Priority"
+        description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 1000."
+        descriptionExtra="When multiple profiles match, the one with the highest priority will be used."
+        [isNumberType]="true"
+        [isLongInput]="false"
+        [placeholder]="'Priority'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="3"
+        [value]="profile()?.priority ?? 0"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('priority', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- File Settings -->
+<section>
+  <details open>
+    <summary>File</summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="File Format"
+        description="Final file format(extension) of the trailer file."
+        [options]="fileFormatOptions"
+        [selectedOption]="profile()?.file_format"
+        (optionChange)="profileService.updateSetting('file_format', $event)"
+      />
+      <app-text-setting
+        name="File Name"
+        description="File name to use for downloaded trailers."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'File Name'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="150"
+        [value]="profile()?.file_name ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('file_name', $event)"
+      />
+      <app-options-setting
+        name="Folder Enabled"
+        description="Save trailer file in a seperate folder inside Media folder."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.folder_enabled"
+        (optionChange)="profileService.updateSetting('folder_enabled', $event)"
+      />
+      <app-text-setting
+        name="Folder Name"
+        description="Name of the folder to save trailer file."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Folder Name'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="50"
+        [value]="profile()?.folder_name ?? ''"
+        [disabled]="!profile()?.folder_enabled"
+        (onSubmit)="profileService.updateSetting('folder_name', $event)"
+      />
+      <app-options-setting
+        name="Embed Metadata"
+        description="Embed info from YouTube video in the trailer file."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.embed_metadata"
+        (optionChange)="profileService.updateSetting('embed_metadata', $event)"
+      />
+      <app-options-setting
+        name="Remove Silence"
+        description="Detect and remove silence (3s+, 30dB) from the end of the trailer file."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.remove_silence"
+        (optionChange)="profileService.updateSetting('remove_silence', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- Audio Settings -->
+<section>
+  <details open>
+    <summary>Audio</summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="Audio Format"
+        description="Final audio format(codec) of the trailer file."
+        [options]="audioFormatOptions"
+        [selectedOption]="profile()?.audio_format"
+        (optionChange)="profileService.updateSetting('audio_format', $event)"
+      />
+      <app-range-setting
+        name="Audio Volume Level"
+        description="Volume level of the audio in the trailer file. Value less than 100 will reduce the loudness and viceversa!"
+        descriptionExtra="Default is 100 (Full Volume). Minimum is 1. Maximum is 200."
+        [minValue]="1"
+        [maxValue]="200"
+        [stepValue]="1"
+        [value]="profile()?.audio_volume_level ?? 100"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('audio_volume_level', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- Video Settings -->
+<section>
+  <details open>
+    <summary>Video</summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="Video Format"
+        description="Final video format(codec) of the trailer file."
+        [options]="videoFormatOptions"
+        [selectedOption]="profile()?.video_format"
+        (optionChange)="profileService.updateSetting('video_format', $event)"
+      />
+      <app-options-setting
+        name="Video Resolution"
+        description="Resolution of the trailer video file."
+        [options]="videoResolutionOptions"
+        [selectedOption]="profile()?.video_resolution"
+        (optionChange)="profileService.updateSetting('video_resolution', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- Subtitle Settings -->
+<section>
+  <details open>
+    <summary>Subtitle</summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="Subtitles Enabled"
+        description="Enable or disable subtitle download for this profile."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.subtitles_enabled"
+        (optionChange)="profileService.updateSetting('subtitles_enabled', $event)"
+      />
+      <app-options-setting
+        name="Subtitles Format"
+        description="Final subtitle format of the trailer file."
+        [options]="subtitleFormatOptions"
+        [selectedOption]="profile()?.subtitles_format"
+        (optionChange)="profileService.updateSetting('subtitles_format', $event)"
+      />
+      <app-text-setting
+        name="Subtitles Language"
+        description="Language of the subtitle to download. Use 2-letter ISO language code."
+        [isNumberType]="false"
+        [isLongInput]="false"
+        [placeholder]="'Subtitles Language'"
+        [autocomplete]="'off'"
+        [minLength]="2"
+        [maxLength]="20"
+        [value]="profile()?.subtitles_language ?? 'en'"
+        [disabled]="!profile()?.subtitles_enabled"
+        (onSubmit)="profileService.updateSetting('subtitles_language', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- Search Settings -->
+<section>
+  <details open>
+    <summary>Search</summary>
+    <hr />
+    <div class="setting-group">
+      <app-text-setting
+        name="Search Query"
+        description="Query to use when searching for trailers on YouTube."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Search Query'"
+        [autocomplete]="'off'"
+        [minLength]="10"
+        [maxLength]="150"
+        [value]="profile()?.search_query ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('search_query', $event)"
+      />
+      <app-range-setting
+        name="Min Duration"
+        description="Minimum video duration (in seconds) to consider while searching."
+        descriptionExtra="Default is 30. Minimum is 30. Should be atmost `Maximum Duration - 60`."
+        [minValue]="30"
+        [maxValue]="minLimitMax()"
+        [value]="profile()?.min_duration ?? 30"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('min_duration', $event)"
+      />
+      <app-range-setting
+        name="Max Duration"
+        description="Maximum video duration (in seconds) to consider while searching."
+        descriptionExtra="Default is 600. Maximum is 600. Should be atleast `Minimum Duration + 60`."
+        [minValue]="maxLimitMin()"
+        [maxValue]="600"
+        [value]="profile()?.max_duration ?? 600"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('max_duration', $event)"
+      />
+      <app-options-setting
+        name="Always Search"
+        description="Enable this to always search for trailers, ignoring the youtube id received from Radarr."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.always_search"
+        (optionChange)="profileService.updateSetting('always_search', $event)"
+      />
+      <app-text-setting
+        name="Include Words in Title"
+        description="Download a video only if certain words exist in video title. Comma-separated list."
+        descriptionExtra="Eg: 'trailer, official'"
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Include Words'"
+        [autocomplete]="'off'"
+        [minLength]="0"
+        [maxLength]="200"
+        [value]="profile()?.include_words ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('include_words', $event)"
+      />
+      <app-text-setting
+        name="Exclude Words in Title"
+        description="Exclude downloading a video if certain words exist in video title. Comma-separated list."
+        descriptionExtra="Eg: 'teaser, behind the scenes, review, comment'"
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Exclude Words List'"
+        [autocomplete]="'off'"
+        [minLength]="0"
+        [maxLength]="200"
+        [value]="profile()?.exclude_words ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('exclude_words', $event)"
+      />
+      <app-text-setting
+        name="Yt-dlp Extra Options"
+        description="Additional options to pass to yt-dlp when downloading trailers."
+        descriptionExtra="Advanced use cases only. Use with caution!"
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Yt-dlp Extra Options'"
+        [autocomplete]="'off'"
+        [minLength]="0"
+        [maxLength]="500"
+        [value]="profile()?.ytdlp_extra_options ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('ytdlp_extra_options', $event)"
+      />
+    </div>
+  </details>
+</section>
+<!-- Table to show filters list -->
+<section>
+  <details open>
+    <summary>Filters</summary>
+    <hr />
+    <div class="setting-group">
+      <p>Filters are conditions that media must meet. This profile is used only when all conditions match.</p>
+      <small>Think of filters as rules; if a movie or show matches all the rules, this profile will be used.</small>
+      @if (profile()?.customfilter?.filters?.length) {
+        <table class="filter-details">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Condition</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (filter of profile()?.customfilter?.filters; track filter) {
+              <tr>
+                <td>{{ filter.filter_by }}</td>
+                <td>{{ filter.filter_condition }}</td>
+                <td>{{ filter.filter_value }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <ng-template #noFilters>
+          <p>No filters defined for this profile.</p>
+        </ng-template>
+      }
+      <button class="primary filters-button" (click)="openFilterDialog()">Add/Edit Filters</button>
+    </div>
+  </details>
+</section>
+<div class="buttons-row">
+  <button class="icon-button secondary" (click)="showCopyProfileDialog()">
+    <!-- Shadow Add - Google Fonts Icon - W: 400, G: 200, S: 48px-->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M524-407v-117H407v-73h117v-116h73v116h116v73H597v117h-73ZM137-64q-28.72 0-50.86-22.14T64-137v-512q0-28.72 22.14-50.86T137-722h106v-101q0-28.72 22.14-50.86Q287.27-896 316-896h507q28.72 0 50.86 22.14T896-823v507q0 28.73-22.14 50.86Q851.72-243 823-243H722v106q0 28.72-22.14 50.86T649-64H137Zm179-252h507v-507H316v507Z"
+      />
+    </svg>
+    <span class="text">Duplicate Profile</span>
+  </button>
+  <button class="icon-button secondary" (click)="showJsonEditDialog()">
+    <!-- Data Object - Google Fonts Icon - W: 400, G: 200, S: 48px-->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M590-144v-73h97q24 0 40.5-15.88Q744-248.75 744-273v-91q0-40 23.5-71.5T830-479v-7q-39-7-62.5-38.5T744-596v-91q0-24.25-16.37-40.63Q711.25-744 687-744h-97v-72h108q49 0 83.5 34.58Q816-746.83 816-697v91q0 24.25 15.88 40.12Q847.75-550 871-550h25v139h-25q-23.25 0-39.12 16.37Q816-378.25 816-354v91q0 49.83-34.58 84.42Q746.83-144 698-144H590Zm-327 0q-50 0-84.5-34.58Q144-213.17 144-263v-91q0-24.25-16.37-40.63Q111.25-411 87-411H64v-139h23q24.25 0 40.63-15.88Q144-581.75 144-606v-91q0-49.83 34.58-84.42Q213.17-816 263-816h108v72h-98q-24 0-40 16.37-16 16.38-16 40.63v91q0 40-24 71.5T131-486v7q38 12 62 43.5t24 71.5v91q0 24.25 15.88 40.12Q248.75-217 273-217h98v73H263Z"
+      />
+    </svg>
+    <span class="text">Advanced Editor</span>
+  </button>
+</div>
+
+<dialog #deleteProfileDialog class="error" (click)="closeDeleteDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Delete Profile</h2>
+    <p>This will Delete the profile and no longer use it for downloads</p>
+    <p>Delete the profile?</p>
+    <div class="buttons-row">
+      <button class="danger" (click)="onConfirmDelete()">Delete</button>
+      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog #copyProfileDialog (click)="closeCopyProfileDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Duplicate Profile</h2>
+    <p>This will create a copy of the current profile.</p>
+    <div class="input-wrapper">
+      <label for="new-profile-name">New Profile Name</label>
+      <input type="text" id="new-profile-name" class="new-profile-name" [(ngModel)]="newProfileName" placeholder="New Profile Name" />
+    </div>
+    <div class="buttons-row">
+      <button class="primary" [disabled]="!newProfileName()" (click)="onConfirmCopy()">Duplicate</button>
+      <button class="secondary" (click)="closeCopyProfileDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog #jsonEditDialog (click)="closeJsonEditDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Edit Profile JSON</h2>
+    <p>This will allow you to edit the profile JSON directly.</p>
+    <div class="input-wrapper">
+      <label for="profile-json">Profile JSON</label>
+      <textarea id="profile-json" class="json-editor" [(ngModel)]="profileJSON" #jsonEditor></textarea>
+    </div>
+    <div class="buttons-row">
+      <button class="primary" [disabled]="!profileJSON()" (click)="onJsonEditSave()">Save</button>
+      <button class="secondary" (click)="closeJsonEditDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>

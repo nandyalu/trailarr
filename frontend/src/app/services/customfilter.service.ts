@@ -1,8 +1,9 @@
-import {HttpClient} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
+import {HttpClient, httpResource} from '@angular/common/http';
+import {computed, inject, Injectable, signal} from '@angular/core';
+import {TrailerProfileCreate} from 'generated-sources/openapi';
 import {Observable} from 'rxjs';
 import {environment} from '../../environment';
-import {CustomFilter, CustomFilterCreate} from '../models/customfilter';
+import {CustomFilter, CustomFilterCreate, FilterType} from '../models/customfilter';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +13,24 @@ export class CustomfilterService {
 
   private cf_url = environment.apiUrl + environment.customfilters;
 
+  readonly filtersResource = httpResource<CustomFilter[]>(() => this.cf_url, {defaultValue: []});
+
+  readonly moviesOnly = signal<boolean | null>(null);
+  readonly viewFilters = computed(() => {
+    let _moviesOnly = this.moviesOnly();
+    const filterType = _moviesOnly === null ? FilterType.HOME : _moviesOnly ? FilterType.MOVIES : FilterType.SERIES;
+    const filters = this.filtersResource.value();
+    return filters.filter((f) => f.filter_type === filterType);
+  });
+
   create(customFilter: CustomFilterCreate): Observable<CustomFilter> {
+    if (customFilter.filter_type === FilterType.TRAILER) {
+      const profileUrl = environment.apiUrl + environment.profiles;
+      const profileCreate = {
+        customfilter: customFilter,
+      } as unknown as TrailerProfileCreate;
+      return this.httpClient.post<CustomFilter>(profileUrl, profileCreate);
+    }
     return this.httpClient.post<CustomFilter>(this.cf_url, customFilter);
   }
 
@@ -26,9 +44,7 @@ export class CustomfilterService {
     return this.httpClient.delete<boolean>(url);
   }
 
-  getViewFilters(moviesOnly: boolean | null): Observable<CustomFilter[]> {
-    const view = moviesOnly == null ? 'home' : moviesOnly ? 'movie' : 'series';
-    const url = this.cf_url + view;
-    return this.httpClient.get<CustomFilter[]>(url);
+  reloadFilters(): void {
+    this.filtersResource.reload();
   }
 }
