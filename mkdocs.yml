@@ -11,18 +11,19 @@ theme:
   logo: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png
   favicon: https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png
   features:
+    - content.code.annotate
     - content.code.copy
     - content.code.select
-    - content.code.annotate
-    - navigation.tabs
+    - navigation.footer
     - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
     - navigation.path
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
-    - navigation.footer
-    - toc.follow
     - search.suggest
+    - toc.follow
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -49,7 +50,21 @@ theme:
         name: Switch to system preference
 plugins:
   - search
-  - git-revision-date-localized
+  - git-revision-date-localized:
+      type: datetime
+      locale: en
+      fallback_to_build_date: true
+      enable_creation_date: true
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      auto_caption: false
+      caption_position: bottom
   # - swagger-ui-tag
   - mkdocs_github_changelog:
         # token: !ENV GITHUB_TOKEN
@@ -95,38 +110,56 @@ extra:
       link: https://discord.gg/KKPr5kQEzQ
 nav:
   - Trailarr: index.md
-  - Install:
-    - Install: install.md
-    - Environment Variables: install/env-variables.md
-    - Volume Mapping: install/volume-mapping.md
-    - Docker Compose: install/docker-compose.md
-    - Docker Run: install/docker-cli.md
-    - Hardware Acceleration: install/hardware-acceleration.md
-    # - Docker Builder: install/docker-builder.md
-    # - Usage: install/form.html
-  - Setup:
-    - Connections: setup/connections.md
-    - Profiles:
-      - Profiles: setup/profiles/index.md
-      - Settings:
-        - General: setup/profiles/settings/general.md
-        - File: setup/profiles/settings/file.md
-        - Audio: setup/profiles/settings/audio.md
-        - Video: setup/profiles/settings/video.md
-        - Subtitle: setup/profiles/settings/subtitle.md
-        - Search: setup/profiles/settings/search.md
-      - Filters: setup/profiles/filters.md
-      - Examples: setup/profiles/examples.md
-    - Settings: setup/settings.md
-  - Help:
-    - Common: help/common.md
-    - API Docs: help/api/docs.html
-    - Docker Builder: help/docker-builder/builder.html
-    - FAQ: help/faq.md
-    - Release Notes:
-      - 2025: help/release-notes/2025.md
-      - 2024: help/release-notes/2024.md
-    # - Changelog: help/changelog.md
-    - Legal Disclaimer: help/legal-disclaimer.md
+  - Getting Started:
+    - getting-started/index.md
+    - First Things: 
+      - getting-started/01-first-things/index.md
+      - Environment Variables: getting-started/01-first-things/environment-variables.md
+      - Radarr Sonarr Volumes: getting-started/01-first-things/radarr-sonarr-volumes.md
+    - Installation: 
+      - getting-started/02-installation/index.md
+      - Docker Compose: getting-started/02-installation/docker-compose.md
+      - Docker Run: getting-started/02-installation/docker-run.md
+      - Unraid: getting-started/02-installation/unraid.md
+      - Hardware Acceleration: getting-started/02-installation/hardware-acceleration.md
+    - Setup:
+      - getting-started/03-setup/index.md
+      - Profiles: getting-started/03-setup/profiles.md
+      - Connections: getting-started/03-setup/connections.md
+    - Next Steps: getting-started/04-next-steps.md
+  - User Guide:
+    - user-guide/index.md
+    - General: user-guide/general/index.md
+    - Library: 
+      - user-guide/library/index.md
+      - Media Details: user-guide/library/media-details/index.md
+    - Tasks: user-guide/tasks/index.md
+    - Logs: user-guide/logs/index.md
+    - Settings: 
+      - user-guide/settings/index.md
+      - General Settings: user-guide/settings/general-settings/index.md
+      - Connections: user-guide/settings/connections/index.md
+      - Profiles:
+        - user-guide/settings/profiles/index.md
+        - Settings:
+          - General: user-guide/settings/profiles/settings/general.md
+          - File: user-guide/settings/profiles/settings/file.md
+          - Audio: user-guide/settings/profiles/settings/audio.md
+          - Video: user-guide/settings/profiles/settings/video.md
+          - Subtitle: user-guide/settings/profiles/settings/subtitle.md
+          - Search: user-guide/settings/profiles/settings/search.md
+        - Filters: user-guide/settings/profiles/filters.md
+        - Examples: user-guide/settings/profiles/examples.md
+      - About: user-guide/settings/about/index.md
+  - Troubleshooting:
+    - Common Issues: troubleshooting/common-issues.md
+    - FAQ: troubleshooting/faq.md
+  - Release Notes:
+    - '2025': release-notes/2025.md
+    - '2024': release-notes/2024.md
+  - References:
+    - Contributing: references/contributing.md
+    - Legal Disclaimer: references/legal-disclaimer.md
+    - API Docs: references/api-docs/api-docs.html
 # extra_javascript:
-#   - js/docker-builder.js
+#   - usage/builder.js

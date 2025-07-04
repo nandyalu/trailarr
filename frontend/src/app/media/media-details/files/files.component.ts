@@ -71,21 +71,18 @@ export class FilesComponent {
 
   protected readonly isVideoFile = computed(() => ['.mp4', '.mkv', '.avi', '.webm'].some((ext) => this.selectedFileName().endsWith(ext)));
 
-  // ngOnInit() {
-  //   this.getMediaFiles();
-  // }
-
-  // getMediaFiles(): void {
-  //   // Get Media Files
-  //   this.mediaService.getMediaFiles(this.mediaId() + 1000).subscribe((files: FolderInfo | string) => {
-  //     if (typeof files === 'string') {
-  //       this.mediaFilesResponse = files;
-  //     } else {
-  //       this.mediaFiles = files;
-  //     }
-  //     this.filesLoading = false;
-  //   });
-  // }
+  ngOnInit() {
+    // Subscribe to WebSocket updates to reload media data when necessary
+    this.webSocketService.toastMessage.subscribe((msg) => {
+      const msgText = msg.message.toLowerCase();
+      const mediaIdStr = this.mediaId().toString();
+      const mediaTitle = this.mediaService.selectedMedia()?.title?.toLowerCase() || '';
+      const checkForItems = ['media', 'trailer', mediaIdStr, mediaTitle];
+      if (checkForItems.some((term) => term && msgText.includes(term))) {
+        this.filesResource.reload();
+      }
+    });
+  }
 
   asFolderInfo(folder: FolderInfo): FolderInfo {
     // For use in ng-template for type checking

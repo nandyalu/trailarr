@@ -48,8 +48,11 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 
 ## Installation
 
-See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on how to [install](https://nandyalu.github.io/trailarr/install/) and [setup](https://nandyalu.github.io/trailarr/setup/connections/) Trailarr.
+See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on [Getting Started](https://nandyalu.github.io/trailarr/getting-started/) and [User Guide](https://nandyalu.github.io/trailarr/user-guide/).
 
+We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
+
+[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/0.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42")
 
 ## Dependencies
 
@@ -58,6 +61,7 @@ Trailarr is built using the following libraries and tools:
 - [Angular](https://angular.dev/)
 - [Ffmpeg](https://ffmpeg.org/)
 - [FastAPI](https://fastapi.tiangolo.com)
+- [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material)
 - [Python](https://www.python.org/)
 - [Yt-dlp](https://github.com/yt-dlp/yt-dlp)
 
@@ -92,7 +96,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
-- [ ] Update docs for Windows path mappings
+- [x] Update docs for Windows path mappings
 - [ ] Improve task logging
 - [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
@@ -101,7 +105,7 @@ If you have any suggestions or ideas for new features, please feel free to reach
 
 ## Contributing
 
-Contributions are welcome! Please see the [Contributing](https://github.com/nandyalu/trailarr/blob/main/.github/CONTRIBUTING.md) guide for more information.
+Contributions are welcome! Please see the [Contributing](https://nandyalu.github.io/trailarr/references/contributing) guide for more information.
 
 Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ).
 
@@ -111,4 +115,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](https://nandyalu.github.io/trailarr/help/legal-disclaimer/).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](https://nandyalu.github.io/trailarr/references/legal-disclaimer/).

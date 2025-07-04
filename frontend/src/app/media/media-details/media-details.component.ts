@@ -1,7 +1,7 @@
 import {TitleCasePipe} from '@angular/common';
-import {Component, computed, effect, ElementRef, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
+import {Component, computed, effect, ElementRef, HostListener, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
 import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
 import {ConnectionService} from 'src/app/services/connection.service';
@@ -22,8 +22,9 @@ import {FilesComponent} from './files/files.component';
 export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
   private readonly connectionService = inject(ConnectionService);
-  private readonly websocketService = inject(WebsocketService);
+  private readonly webSocketService = inject(WebsocketService);
   private readonly viewContainerRef = inject(ViewContainerRef);
+  private readonly router = inject(Router);
 
   RouteMedia = RouteMedia;
 
@@ -55,10 +56,62 @@ export class MediaDetailsComponent {
 
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
-    if (media) {
+    if (media && media.youtube_trailer_id) {
       this.trailer_url = media.youtube_trailer_id;
+      if (media.status !== 'downloading') {
+        this.isLoadingDownload.set(false);
+      }
     }
   });
+
+  private readonly destroy$ = new Subject<void>();
+
+  ngOnInit() {
+    // Subscribe to WebSocket updates to reload media data when necessary
+    this.webSocketService.toastMessage.pipe(takeUntil(this.destroy$)).subscribe((msg) => {
+      const msgText = msg.message.toLowerCase();
+      const mediaIdStr = this.mediaId().toString();
+      const mediaTitle = this.selectedMedia()?.title?.toLowerCase() || '';
+      const checkForItems = ['media', 'trailer', mediaIdStr, mediaTitle];
+      if (checkForItems.some((term) => term && msgText.includes(term))) {
+        this.mediaService.mediaResource.reload();
+      }
+    });
+  }
+
+  // Add Hostlisteners to handle keyboard shortcuts
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Check if the active element is an input, textarea, or contenteditable element
+    const activeElement = document.activeElement as HTMLElement;
+    const isInputField = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
+    // Check if the event is a keydown event and the media ID is set
+    if (!isInputField && event.type === 'keydown' && this.mediaId()) {
+      // Check if the 'ArrowRight' key is pressed
+      if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'n') {
+        // If the 'ArrowRight' key is pressed, open Next Media
+        let nextMedia1 = this.nextMedia();
+        if (nextMedia1) {
+          // If there is no next media, navigate to the first media in the list
+          this.router.navigate([RouteMedia, nextMedia1.id]);
+        }
+      }
+      // Check if the 'ArrowLeft' key is pressed
+      else if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'p') {
+        // If the 'ArrowLeft' key is pressed, open Previous Media
+        let previousMedia1 = this.previousMedia();
+        if (previousMedia1) {
+          // If there is no previous media, navigate to the last media in the list
+          this.router.navigate([RouteMedia, previousMedia1.id]);
+        }
+      }
+      // Check if the 'Delete' key is pressed
+      else if (event.key === 'Delete' || event.key === 'Backspace') {
+        // If the 'Delete' key is pressed, show the delete dialog
+        this.showDeleteDialog();
+      }
+    }
+  }
 
   openProfileSelectDialog(isNextActionSearch: boolean): void {
     // Open the dialog for selecting a profile
@@ -96,7 +149,8 @@ export class MediaDetailsComponent {
   downloadTrailer(profileId: number): void {
     const old_id = this.selectedMedia()?.youtube_trailer_id?.toLowerCase() || '';
     const new_id = this.trailer_url.toLowerCase();
-    if (new_id.includes(old_id) && this.selectedMedia()?.trailer_exists) {
+    const trailer_exists = this.selectedMedia()?.trailer_exists || false;
+    if (old_id && new_id.includes(old_id) && trailer_exists) {
       // Trailer id is the same, no need to download
       return;
     }
@@ -128,46 +182,38 @@ export class MediaDetailsComponent {
 
   searchTrailer(profileID: number) {
     // console.log('Searching for trailer');
-    this.websocketService.showToast('Searching for trailer...');
+    this.webSocketService.showToast('Searching for trailer...');
     this.isLoadingDownload.set(true);
     this.mediaService
       .searchMediaTrailer(this.mediaId(), profileID)
       .pipe(
         catchError((error) => {
           console.error('Error searching trailer:', error.error.detail);
-          this.websocketService.showToast(error.error.detail, 'Error');
+          this.webSocketService.showToast(error.error.detail, 'Error');
           this.isLoadingDownload.set(false);
           return of('');
         }),
       )
-      .subscribe((res: string) => {
-        if (res) {
-          this.selectedMedia()!.youtube_trailer_id = res;
-          this.trailer_url = res;
-        }
+      .subscribe(() => {
         this.isLoadingDownload.set(false);
       });
   }
 
   saveYtId() {
     // console.log('Saving youtube id');
-    this.websocketService.showToast('Saving youtube id...');
+    this.webSocketService.showToast('Saving youtube id...');
     this.isLoadingDownload.set(true);
     this.mediaService
       .saveMediaTrailer(this.mediaId(), this.trailer_url)
       .pipe(
         catchError((error) => {
           console.error('Error searching trailer:', error.error.detail);
-          this.websocketService.showToast(error.error.detail, 'Error');
+          this.webSocketService.showToast(error.error.detail, 'Error');
           this.isLoadingDownload.set(false);
           return of('');
         }),
       )
-      .subscribe((res: string) => {
-        if (res) {
-          this.selectedMedia()!.youtube_trailer_id = res;
-          this.trailer_url = res;
-        }
+      .subscribe(() => {
         this.isLoadingDownload.set(false);
       });
   }
