@@ -1,7 +1,5 @@
 # Media Details
 
-🚧 Under Construction... 🚧
-
 Media Details of an item will be opened in Trailarr UI under URL '/media/{id}' where `{id}` is the media ID in Trailarr.
 
 ![Library - Media Details](library-media-details.png)
