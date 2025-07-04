@@ -7,7 +7,7 @@
 </p>
 
 [![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/) 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
 [![Angular](https://img.shields.io/badge/angular-20.0.2-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
 
@@ -68,7 +68,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/help/faq/) first. 
+If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/) first. 
 
 If you still need help, please use the below:
 
@@ -90,7 +90,7 @@ There are some changes that are planned for the future. These changes are not gu
 
 - [x] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
 - [x] Add custom filters to Media pages in frontend
-- [ ] Add a new method for making path mappings easier
+- [x] Add a new method for making path mappings easier
 - [x] Add options to disable conversion of downloaded videos
 - [x] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
 - [ ] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬

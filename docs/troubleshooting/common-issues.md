@@ -1,32 +1,3 @@
-## Download Trailer in Specific Language
-
-If you want trailers to be downloaded in a specific language, you can use the below steps to instruct Trailarr to try searching for trailers in that language.
-
-!!! note
-    This is not a foolproof method as it depends on multiple factors like:
-
-    - availability of the trailer in that language on YouTube
-    - YouTube returning that result when searched using the search query
-    - whether it matches the other filters like duration, quality, etc. 
-
-
-To do this, navigate to `Settings > Trailer > Advanced` and change the following settings:
-
-- `Trailer Always Search` to `True`.
-
-    !!! info
-        This setting will tell Trailarr to not use the YouTube trailer id from Radarr/Sonarr. Instead, it will search for the trailer based on the `YouTube Search Query` setting.
-
-- `YouTube Search Query` to the specify desired language like `{title} {year} {is_movie} French trailer`. 
-
-    !!! info
-        The `{title}`, `{year}`, `{is_movie}` are placeholders that will be replaced with the actual values. The language can be any language like `French`, `Spanish`, `German`, etc.
-
-Once you have updated these settings, any trailers downloaded afterwards will be searched using the new search query.
-
-!!! warning
-    This will not impact any trailers that have already been downloaded.
-
 
 ## YouTube Cookies
 
@@ -91,60 +62,17 @@ Sometimes the cookies might not work right away. You can try the following steps
 Windows users of Docker Desktop often experience slow read/write speeds when using volume mounts. This is a known limitation of file sharing between the Windows host and Docker containers.
 
 Relevant threads discussing this issue:
+
 - [File access in mounted volumes extremely slow](https://forums.docker.com/t/file-access-in-mounted-volumes-extremely-slow-cpu-bound/8076)
 - [Performance volume mount](https://forums.docker.com/t/performance-volume-mount/27633)
 
-### Docker Compose Example for Windows Users
-Below is an example Docker Compose configuration optimized for Windows users:
-
-```yaml
-services:
-  trailarr:
-    image: nandyalu/trailarr:latest
-    container_name: trailarr
-    environment:
-      - TZ=America/Chicago
-    ports:
-      - 7889:7889
-    volumes:
-      - trailarr_data:/config # volume for app data, the first part `trailarr_data` is the volume name
-      - M:\Movies:/m/movies   # Movies drive
-      - R:\TV:/r/tv           # TV series drive 1
-      - S:\TV:/s/tv           # TV series drive 2
-      - T:\TV:/t/tv           # TV series drive 3
-    restart: unless-stopped
-
-volumes:
-  trailarr_data:  # volume name, should match the volume name in the service
-    # Any extra options for the volume if needed
-```
-
-More information on Docker Volumes can be found in the [Docker documentation](https://docs.docker.com/engine/storage/volumes/).
-
-### Path Mappings in Trailarr
-To properly map your paths in Trailarr, you need to add Path Mappings in the connections that use the above drives.
-
-For example, if you have Radarr connection that only uses the `M:\Movies` drive, you can add the following Path Mapping:
-
-```
-Path From     Path To
-M:\Movies\    /m/movies/
-```
-
-Similarly, for Sonarr connections that use `R:\TV`, `S:\TV`, and `T:\TV`, you can add the following Path Mappings:
-
-Example Path Mappings:
-```
-Path From     Path To
-R:\TV\        /r/tv/
-S:\TV\        /s/tv/
-T:\TV\        /t/tv/
-```
+Fortunately, there is a workaround we can use to fix this by using a docker volume. This has already been covered in Example 4 in [Volume Mappings](../getting-started/02-installation/docker-compose.md#volumes).
 
 ### Copying `cookies.txt` to the Docker Volume
 If you need to add a `cookies.txt` file (for YouTube age verification), you can copy it directly into the container's volume. Follow these steps:
 
-#### Steps to Copy `cookies.txt` to the Docker Volume
+Steps to Copy `cookies.txt` to the Docker Volume
+
 1. **Run the Container (if not already running):**
    Make sure the container is running.
 
@@ -164,7 +92,7 @@ If you need to add a `cookies.txt` file (for YouTube age verification), you can 
    ```
    You should see `cookies.txt` listed.
 
-### Notes
-- The `/config` directory inside the container is backed by the `trailarr_data` volume. Once the file is in the volume, it will persist even if you recreate the container.
-- If the file path or permissions cause issues, ensure the `cookies.txt` file on your host machine is accessible and readable.
+!!! notes
+    - The `/config` directory inside the container is backed by the `trailarr_data` volume. Once the file is in the volume, it will persist even if you recreate the container.
+    - If the file path or permissions cause issues, ensure the `cookies.txt` file on your host machine is accessible and readable.
 

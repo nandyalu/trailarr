@@ -11,7 +11,7 @@
 <!-- # Trailarr -->
 
 [![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/){:target="_blank"}
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
 [![Angular](https://img.shields.io/badge/angular-20.0.2-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr){:target="_blank"}
 
@@ -55,7 +55,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
 
-We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
+We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D){:target="_blank"} that explains Trailarr installation and setup on Unraid.
 
 <iframe width="100%" style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/Hz31zWEtY5k?si=dTgRuFwXyF9-Tufh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
@@ -73,7 +73,7 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/help/faq/) first. 
+If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/) first. 
 
 If you still need help, please use the below:
 

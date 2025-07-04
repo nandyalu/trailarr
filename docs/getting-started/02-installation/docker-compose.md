@@ -255,6 +255,7 @@ These are examples. You **must** update these.
 
 !!! important
     If you have a path with spaces in it, you can either:
+    
     - Use quotes around the path like this: `"/path/with spaces:/media/movies"` (recommended)
     - Or escape the spaces with a backslash like this: `/path/with\ spaces:/media/movies`
 

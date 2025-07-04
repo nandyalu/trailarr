@@ -5,6 +5,8 @@ Yes, this works with Plex, Emby, and Jellyfin. Trailarr downloads trailers for M
 ## How can I watch the trailers?
 You can watch the trailers in the Movie or Series details in Plex, Emby, or Jellyfin. Trailers downloaded by Trailarr are saved in the same folder as the Movie or Series, for Plex, Emby, and Jellyfin to recognize and display them along with the Movie or Series.
 
+You can also watch the trailer in the Media details page by clicking on the trailer file (in Files section) and selecting `Play Video`.
+
 
 ## Can I use Tailarr without Radarr or Sonarr?
 No, Trailarr relies on data from Radarr and Sonarr to monitor Movies and Series. You need to have Radarr and/or Sonarr setup and connected to Trailarr to download trailers.
@@ -15,13 +17,9 @@ Yes, you can connect multiple Radarr and Sonarr instances to Trailarr. Trailarr 
 
 
 ## Trailarr is not downloading trailers for some Movies or Series. Why?
-Trailarr monitors the Movies and Series from connected Radarr and Sonarr instances based on the Monitor Type set. Make sure you have correct Monitor Types set for the Movies and Series you want Trailarr to download trailers for.
+Trailarr monitors the Movies and Series from connected Radarr and Sonarr instances based on the Monitor Type set. Make sure you have correct Monitor Types set for the Movies and Series you want Trailarr to download trailers for, and also have a Profile that applies to the Media item.
 
 More info about [Monitor Types here](../user-guide/settings/connections/index.md#monitor-types).
-
-
-## How can I change the Monitor Type for a Movie or Series?
-You can open up a Movie or Series details in Trailarr and click on the `Monitor` button to change the Monitor Type for that Movie or Series. Trailarr will download a trailer for that in the next schedule.
 
 
 ## Trailarr downloaded an incorrect trailer for a Movie or Series. How can I fix it?
@@ -34,7 +32,7 @@ Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will
     Trailarr will not delete the trailer that was already downloaded. You have to manually click on `Delete` button to delete the trailer.
 
 ## Trailarr not downloading the specified youtube video, but downloading a different video. Why?
-Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > Trailer > Advanced` to download restricted videos. See [Settings](../user-guide/settings/general-settings/index.md) for more info.
+Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > General` to download restricted videos. See [Settings](../user-guide/settings/general-settings/index.md#yt-dlp-cookies-path) for more info.
 
 
 ## Can I download multiple trailers for a Movie or Series?
