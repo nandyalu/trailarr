@@ -23,6 +23,6 @@ The **About** page in Trailarr provides a comprehensive overview of your applica
 
 ## Getting Support
 - **Documentation:** Link to the official documentation.
-- **Discord:** Join the Trailarr Discord community.
+- **Discord:** Link to join the Trailarr Discord community.
 - **GitHub:** View the source code or report issues.
 - **Reddit:** Join the Trailarr subreddit for discussions and help.
