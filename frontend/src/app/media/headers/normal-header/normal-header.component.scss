@@ -26,12 +26,27 @@
   }
 }
 
+button {
+  background-color: transparent;
+  padding: 0.75rem 0;
+}
+
+.refresh-icon {
+  fill: var(--color-on-surface);
+}
+
+.loading {
+  cursor: progress;
+  animation: spin-animation 2s linear infinite;
+}
+
 .media-header-button {
   display: flex;
   align-items: center;
   font-weight: bold;
   cursor: pointer;
   padding: 0.75rem 0;
+  color: var(--color-on-surface);
 
   .button-icon {
     width: 2.25rem;
@@ -49,7 +64,8 @@
   }
 }
 
-.media-header-button:hover:not(.delete) {
+.media-header-button:hover:not(.delete),
+button:hover:not(.delete) {
   color: var(--color-primary);
 
   svg {
@@ -84,7 +100,8 @@
 
 .media-header-sortitem:hover,
 .media-header-filteritem:hover,
-.media-header-button:hover {
+.media-header-button:hover,
+button:hover {
   background-color: var(--color-surface-container-highest);
 }
 

@@ -104,7 +104,7 @@ def _log_skipped_titles(
     )
 
 
-def _download_trailers(
+async def _download_trailers(
     profile_map: dict[int, TrailerProfileRead],
     profile_to_media_map: dict[int, list[MediaRead]],
     download_count: int,
@@ -119,7 +119,7 @@ def _download_trailers(
             f"Downloading trailers for {len(media_list)} media items using"
             f" profile: {profile.customfilter.filter_name}"
         )
-        batch_download_task(
+        await batch_download_task(
             media_list,
             profile,
             downloading_count=_downloading_count,
@@ -128,7 +128,7 @@ def _download_trailers(
         _downloading_count += len(media_list)
 
 
-def download_missing_trailers() -> None:
+async def download_missing_trailers() -> None:
     """Download missing trailers for monitored media items."""
     # Exit if monitoring is disabled
     if not app_settings.monitor_enabled:
@@ -179,6 +179,8 @@ def download_missing_trailers() -> None:
 
     _log_skipped_titles(skipped_titles, len(db_media_list), _download_count)
 
-    _download_trailers(profile_map, profile_to_media_map, _download_count)
+    await _download_trailers(
+        profile_map, profile_to_media_map, _download_count
+    )
 
     logger.info("Finished downloading missing trailers.")

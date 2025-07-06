@@ -1,5 +1,5 @@
 import {DatePipe, NgTemplateOutlet} from '@angular/common';
-import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, resource, signal, ViewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
@@ -29,10 +29,16 @@ export class FilesComponent {
 
   readonly mediaId = input.required<number>();
 
+  protected readonly filesOpened = signal(false);
   protected readonly textFileLoading = signal(true);
   protected readonly videoInfoLoading = signal(true);
   // mediaFilesResponse: string = 'No files found';
   // mediaFiles: FolderInfo | undefined = undefined;
+
+  mediaIDEffect = effect(() => {
+    this.mediaId();
+    this.filesOpened.set(false); // Reset filesOpened when mediaId changes
+  });
 
   selectedFilePath: string = '';
   protected readonly selectedFileName = signal('');
@@ -53,10 +59,13 @@ export class FilesComponent {
       .join(', '),
   );
 
-  // Refresh the files list when the mediaId changes
+  // Refresh the files list when the mediaId changes and filesOpened is true
   protected readonly filesResource = resource({
-    params: () => ({mediaId: this.mediaId()}),
-    loader: ({params: {mediaId}}) => this.mediaService.fetchMediaFiles(mediaId),
+    params: () => ({mediaId: this.mediaId(), filesOpened: this.filesOpened()}),
+    loader: async ({params: {mediaId, filesOpened}}) => {
+      if (!filesOpened) return undefined;
+      return await this.mediaService.fetchMediaFiles(mediaId);
+    },
   });
 
   protected readonly filesError = computed(() => {

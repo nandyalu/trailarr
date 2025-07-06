@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 
 from app_logger import ModuleLogger
@@ -5,6 +6,7 @@ from config.settings import app_settings
 from core.base.database.manager import trailerprofile
 from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.media import MediaRead
+from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailer import download_trailer
 from core.download.trailers.batch import batch_download_task
 from core.files_handler import FilesHandler
@@ -79,6 +81,18 @@ def download_trailer_by_id(
     return msg
 
 
+def _batch_download_task(
+    media_list: list[MediaRead],
+    profile: TrailerProfileRead,
+) -> None:
+    """Run the async task in a separate event loop."""
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+    new_loop.run_until_complete(batch_download_task(media_list, profile))
+    new_loop.close()
+    return
+
+
 def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     """Download trailers for a list of media IDs. \n
     Schedules a background job to download them. \n
@@ -139,7 +153,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         return
     # Add Job to scheduler to download trailers
     scheduler.add_job(
-        func=batch_download_task,
+        func=_batch_download_task,
         args=(media_trailer_list, profile),
         trigger="date",
         run_date=datetime.now() + timedelta(seconds=1),

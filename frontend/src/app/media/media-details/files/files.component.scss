@@ -15,11 +15,18 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .files-title {
   margin: 0;
   margin-block: 0;
+}
+
+.files-open {
+  flex: 1;
+  cursor: pointer;
+  padding: 0.75rem;
 }
 
 .icononly-button {

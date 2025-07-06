@@ -49,6 +49,12 @@ def _cleanup_trailers():
     return
 
 
+def _download_missing_trailers():
+    """Download missing trailers."""
+    run_async(download_missing_trailers)
+    return
+
+
 def refresh_api_data_job():
     """
     Schedules a background job to refresh Arr API data. \n
@@ -152,7 +158,7 @@ def download_missing_trailers_job():
         None
     """
     scheduler.add_job(
-        func=download_missing_trailers,
+        func=_download_missing_trailers,
         trigger="interval",
         minutes=app_settings.monitor_interval,
         id="download_missing_trailers_job",

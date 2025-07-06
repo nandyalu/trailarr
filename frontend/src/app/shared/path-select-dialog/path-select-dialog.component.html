@@ -4,8 +4,12 @@
   <input type="text" [(ngModel)]="path" placeholder="Enter path here" />
   <section>
     <p (click)="goUpOneLevel()">(Up one level)</p>
-    @for (folder of folders(); track folder) {
-      <p (click)="setPath(folder.path, folder.type)" [class.selected]="folder.path === path()">{{ folder.name }}</p>
+    @if (isLoading()) {
+      <app-load-indicator class="center" />
+    } @else {
+      @for (folder of folders(); track folder) {
+        <p (click)="setPath(folder.path, folder.type)" [class.selected]="folder.path === path()">{{ folder.name }}</p>
+      }
     }
   </section>
   <div class="buttons-row">
