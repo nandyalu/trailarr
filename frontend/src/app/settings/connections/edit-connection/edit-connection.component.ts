@@ -98,6 +98,23 @@ export class EditConnectionComponent {
   //#endregion
 
   // #region Form Methods
+  formatPathFrom(path_from: string): string {
+    // Ensure path_from ends with a slash or backslash
+    if (path_from.endsWith('/') || path_from.endsWith('\\')) {
+      return path_from; // Already formatted
+    }
+    // If it contains a slash, add a trailing slash
+    if (path_from.includes('/')) {
+      return path_from + '/';
+    }
+    // If it contains a backslash, add a trailing backslash
+    if (path_from.includes('\\')) {
+      return path_from + '\\';
+    }
+    // If it doesn't contain either, return as is (or you can choose to add a default slash)
+    return path_from; // No change needed
+  }
+
   addPathMappings(rootfolders: string[]) {
     if (!this.connectionForm) return;
     const path_mappings = this.connectionForm.get('path_mappings') as FormArray;
@@ -106,7 +123,7 @@ export class EditConnectionComponent {
     let count = 0;
     rootfolders.forEach((rf) => {
       // Only add if no existing mapping with this path_from
-      const exists = path_mappings.controls.some((ctrl) => ctrl.get('path_from')?.value === (rf.endsWith('/') ? rf : rf + '/'));
+      const exists = path_mappings.controls.some((ctrl) => ctrl.get('path_from')?.value === this.formatPathFrom(rf));
       if (!exists) {
         path_mappings.push(this.createPathMapping(null, rf));
         isUpdated = true;
@@ -166,9 +183,10 @@ export class EditConnectionComponent {
       id = pathMapping.id;
     }
     let pathFromFormatted = pathMapping ? pathMapping.path_from : pathFrom;
-    if (!pathFromFormatted.endsWith('/')) {
-      pathFromFormatted += '/';
+    if (!pathFromFormatted) {
+      pathFromFormatted = ''; // Ensure it's not undefined
     }
+    pathFromFormatted = this.formatPathFrom(pathFromFormatted); // Format the path_from
     return this.formBuilder.group({
       id: [id],
       connection_id: [pathMapping ? pathMapping.connection_id : null],
