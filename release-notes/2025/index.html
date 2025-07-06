@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v040-beta-july-04-2025" class="md-skip">
+        <a href="#v040-beta-july-06-2025" class="md-skip">
           Skip to content
         </a>
       
@@ -1814,6 +1814,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v040-beta-july-06-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.0-beta - July 06 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v040-beta-july-04-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4.0-beta - July 04 2025
@@ -2047,6 +2056,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v040-beta-july-06-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.0-beta - July 06 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v040-beta-july-04-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4.0-beta - July 04 2025
@@ -2112,12 +2130,68 @@
 
   <h1>2025</h1>
 
+<h2 id="v040-beta-july-06-2025"><strong>v0.4.0-beta</strong> - <em>July 06 2025</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p>Added extra delay between Trailer downloads to prevent account bans on new installs. New delays are as follows (along with an additional random delay of <code>0-60</code> seconds):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Download No</th>
+<th style="text-align: center;">Delay</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1 - 9</td>
+<td style="text-align: center;">2 mins</td>
+</tr>
+<tr>
+<td style="text-align: center;">10 - 49</td>
+<td style="text-align: center;">4 mins</td>
+</tr>
+<tr>
+<td style="text-align: center;">50 - 99</td>
+<td style="text-align: center;">6 mins</td>
+</tr>
+<tr>
+<td style="text-align: center;">100 - 199</td>
+<td style="text-align: center;">7 mins</td>
+</tr>
+<tr>
+<td style="text-align: center;">200 - 499</td>
+<td style="text-align: center;">9 mins</td>
+</tr>
+<tr>
+<td style="text-align: center;">1000+</td>
+<td style="text-align: center;">10 mins</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Added a <code>Refresh</code> button on Media Library pages - Gets updated Media list from server.</p>
+</li>
+<li>Media Files in Media Details page are now loaded on demand. You now have to click on the Files section to display them. Saves some IO bandwidth!</li>
+<li>Increased Session Timeout to 15 minutes (12 minutes + 3 minutes to extend).</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed a bug that added an incorrect end slash on Windows Path Mappings. Fixes <a href="https://github.com/nandyalu/trailarr/issues/250" target="_blank">#250</a>. 📂</li>
+<li>Updated Default login details in <a href="https://nandyalu.github.io/trailarr/getting-started/03-setup/" target="_blank">Docs</a> to change password to <code>trailarr</code>, as it was incorrectly said <code>admin</code>. Related to <a href="https://github.com/nandyalu/trailarr/issues/248" target="_blank">#248</a>.</li>
+<li>Fixed a bug in Media Details page that sometimes would not refresh the changes loaded from server.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Added some extra details to Docs.</li>
+</ul>
 <h2 id="v040-beta-july-04-2025"><strong>v0.4.0-beta</strong> - <em>July 04 2025</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li>Trailer download method has been updated to use the new download method by default. Old download method has been removed. Rewritten the other parts of download method that weren't updated in v0.3.0-beta. 🎉</li>
 <li>If a trailer conversion fails, app will now try to convert it again without hardware acceleration. This will help in cases where hardware acceleration fails due to unsupported codecs or other issues. ✨</li>
-<li>Trailer Profiles have been added for downloading trailers in different formats. Opening up new possibilities for downloading trailers in different formats. See <a href="https://nandyalu.github.io/trailarr/user-guide/settings/profiles/" target="_blank">Docs</a> for more details. Fixes <a href="https://github.com/nandyalu/trailarr/issues/79" target="_blank">#79</a>. 🎥} and [#218]{https://github.com/nandyalu/trailarr/issues/218}{:target="_blank"</li>
+<li>Trailer Profiles have been added for downloading trailers in different formats. Opening up new possibilities for downloading trailers in different formats. See <a href="https://nandyalu.github.io/trailarr/user-guide/settings/profiles/" target="_blank">Docs</a> for more details. Fixes <a href="https://github.com/nandyalu/trailarr/issues/79" target="_blank">#79</a> and <a href="https://github.com/nandyalu/trailarr/issues/218" target="_blank">#218</a>. 🎥</li>
 <li><code>Download</code> and <code>Search</code> buttons in <code>Media Details</code> now opens a dialog to select a <code>Trailer Profile</code>. 📥</li>
 <li>Video and audio formats in <code>Trailer Profiles</code> can be set to <code>copy</code> to avoid re-encoding the video and audio streams. This will speed up the download and conversion process. Use with <code>mkv</code> file format for better compatibility. Fixes <a href="https://github.com/nandyalu/trailarr/issues/204" target="_blank">#204</a>. 🎞️</li>
 <li>Added a new setting in <code>Profiles</code> for <code>Include Words</code> to filter for certain words to exist in the trailer title. 📝</li>
@@ -2266,7 +2340,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 4, 2025 06:17:57 UTC">July 4, 2025 06:17:57</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 6, 2025 09:52:23 UTC">July 6, 2025 09:52:23</span>
   </span>
 
     
