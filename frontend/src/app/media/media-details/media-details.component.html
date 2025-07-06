@@ -1,8 +1,8 @@
+@let selectedMedia_ = selectedMedia();
 <div class="media-details-container">
   @if (isLoading()) {
     <app-load-indicator class="center" />
   }
-  @let selectedMedia_ = selectedMedia();
   @if (selectedMedia_) {
     <div class="media-details-card">
       <div class="media-fanart-overlay" [style]="'background-image: url(' + selectedMedia_.fanart_path + ');'"></div>
@@ -290,10 +290,14 @@
         </div>
       </div>
     </div>
-    <!-- Show Media Files -->
-    <media-files [mediaId]="mediaId()"></media-files>
   }
 </div>
+@if (selectedMedia_) {
+  <!-- Show Media Files -->
+  <div class="media-details-container">
+    <media-files [mediaId]="mediaId()"></media-files>
+  </div>
+}
 
 <dialog #deleteDialog (click)="closeDeleteDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">

@@ -56,8 +56,8 @@ export class MediaDetailsComponent {
 
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
-    if (media && media.youtube_trailer_id) {
-      this.trailer_url = media.youtube_trailer_id;
+    if (media) {
+      this.trailer_url = media.youtube_trailer_id || '';
       if (media.status !== 'downloading') {
         this.isLoadingDownload.set(false);
       }
