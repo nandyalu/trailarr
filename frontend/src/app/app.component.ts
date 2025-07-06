@@ -22,8 +22,8 @@ export class AppComponent implements OnDestroy, OnInit {
 
   private extendTimeoutId: any;
   private sessionTimeoutId: any;
-  private readonly IDLE_LIMIT: number = 10 * msMinute;
-  private readonly EXTEND_LIMIT: number = 2 * msMinute;
+  private readonly IDLE_LIMIT: number = 12 * msMinute;
+  private readonly EXTEND_LIMIT: number = 3 * msMinute;
   protected sessionEndTime = signal<number>(Date.now() + this.IDLE_LIMIT + this.EXTEND_LIMIT);
 
   ngOnInit() {
