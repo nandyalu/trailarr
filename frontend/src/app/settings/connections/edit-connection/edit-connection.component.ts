@@ -98,21 +98,21 @@ export class EditConnectionComponent {
   //#endregion
 
   // #region Form Methods
-  formatPathFrom(path_from: string): string {
+  formatPathFrom(pathFrom: string): string {
     // Ensure path_from ends with a slash or backslash
-    if (path_from.endsWith('/') || path_from.endsWith('\\')) {
-      return path_from; // Already formatted
+    if (pathFrom.endsWith('/') || pathFrom.endsWith('\\')) {
+      return pathFrom; // Already formatted
     }
     // If it contains a slash, add a trailing slash
-    if (path_from.includes('/')) {
-      return path_from + '/';
+    if (pathFrom.includes('/')) {
+      return pathFrom + '/';
     }
     // If it contains a backslash, add a trailing backslash
-    if (path_from.includes('\\')) {
-      return path_from + '\\';
+    if (pathFrom.includes('\\')) {
+      return pathFrom + '\\';
     }
     // If it doesn't contain either, return as is (or you can choose to add a default slash)
-    return path_from; // No change needed
+    return pathFrom; // No change needed
   }
 
   addPathMappings(rootfolders: string[]) {
