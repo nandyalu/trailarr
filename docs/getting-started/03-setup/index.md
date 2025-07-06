@@ -5,12 +5,21 @@ Once Trailarr is installed and running, it's time to perform the initial configu
 This guide will walk you through the steps to set up your Trailarr instance, including changing the default login credentials and adjusting general settings. We'll also cover how to set up your media library connections in the next sections.
 
 1.  **Access Trailarr:**
-    Open your web browser and navigate to Trailarr. If you installed it on the same machine you're using, this will typically be `http://localhost:7889` (or whichever host port you mapped during installation).
+    Open your web browser and navigate to Trailarr. If you installed it on the same machine you're using, this will typically be [http://localhost:7889](http://localhost:7889){:target="_blank"} (or whichever host port you mapped during installation).
+
+    !!! tip 
+        Use your Local IP if `localhost` doesn't work! 
+
+        Ex: [http://192.168.0.15:7889](http://192.168.0.15:7889){:target="_blank"}
 
 2.  **Initial Login:**
     You will be greeted with a login screen.
-    *   Default Username: `admin`
-    *   Default Password: `admin`
+    
+    ```
+    Default Username: `admin`
+    Default Password: `trailarr`
+    ```
+
     Enter these credentials and click `Login`.
 
 3.  **Change Login Credentials:** (Optional but recommended)
