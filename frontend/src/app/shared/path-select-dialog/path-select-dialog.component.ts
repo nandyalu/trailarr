@@ -1,10 +1,11 @@
 import {Component, effect, ElementRef, inject, input, model, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {SettingsService} from 'src/app/services/settings.service';
+import {LoadIndicatorComponent} from '../load-indicator';
 
 @Component({
   selector: 'app-path-select-dialog',
-  imports: [FormsModule],
+  imports: [FormsModule, LoadIndicatorComponent],
   templateUrl: './path-select-dialog.component.html',
   styleUrl: './path-select-dialog.component.scss',
 })
