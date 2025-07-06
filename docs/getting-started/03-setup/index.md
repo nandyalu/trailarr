@@ -16,8 +16,8 @@ This guide will walk you through the steps to set up your Trailarr instance, inc
     You will be greeted with a login screen.
     
     ```
-    Default Username: `admin`
-    Default Password: `trailarr`
+    Default Username: admin
+    Default Password: trailarr
     ```
 
     Enter these credentials and click `Login`.
