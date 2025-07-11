@@ -19,6 +19,19 @@ from exceptions import (
 logger = ModuleLogger("TrailerDownloadTasks")
 
 
+def _download_trailer(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    retry_count: int,
+) -> None:
+    """Run the async task in a separate event loop."""
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+    new_loop.run_until_complete(download_trailer(media, profile, retry_count))
+    new_loop.close()
+    return
+
+
 def download_trailer_by_id(
     media_id: int, profile_id: int, yt_id: str = ""
 ) -> str:
@@ -64,7 +77,7 @@ def download_trailer_by_id(
 
     # Add Job to scheduler to download trailer
     scheduler.add_job(
-        func=download_trailer,
+        func=_download_trailer,
         args=(media, profile, retry_count),
         trigger="date",
         run_date=datetime.now() + timedelta(seconds=1),

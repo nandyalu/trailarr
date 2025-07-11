@@ -25,6 +25,12 @@ def run_async(task) -> None:
     return
 
 
+def _check_for_update():
+    """Check for updates to the Docker image."""
+    run_async(check_for_update)
+    return
+
+
 def _refresh_api_data():
     """Refreshes data from Arr APIs."""
     run_async(api_refresh)
@@ -120,7 +126,7 @@ def update_check_job():
         None
     """
     scheduler.add_job(
-        func=check_for_update,
+        func=_check_for_update,
         trigger="interval",
         days=1,
         id="docker_update_check_job",
