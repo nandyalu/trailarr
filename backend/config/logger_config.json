@@ -6,7 +6,11 @@
       "format": "%(levelname)s: %(message)s"
     },
     "detailed": {
-      "format": "%(asctime)s [%(levelname)s|%(module)s|L%(lineno)03d]: %(message)s",
+      "format": "%(asctime)s [%(levelname)s|%(module)s|L%(lineno)03d]: %(name)s: %(message)s",
+      "datefmt": "%Y-%m-%dT%H:%M:%S%z"
+    },
+    "messageonly": {
+      "format": "%(asctime)s %(message)s",
       "datefmt": "%Y-%m-%dT%H:%M:%S%z"
     }
   },
@@ -34,7 +38,7 @@
   },
   "loggers": {
     "root": {
-      "level": "INFO",
+      "level": "DEBUG",
       "handlers": [
         "console", "stderr", "file"
       ]

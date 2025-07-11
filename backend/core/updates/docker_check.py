@@ -22,7 +22,7 @@ def get_latest_image_version(image_name) -> str | None:
         release_data = response.json()
         return release_data["tag_name"]
     except Exception as e:
-        logger.exception(f"Error fetching release info from Github API: {e}")
+        logger.error(f"Error fetching release info from Github API: {e}")
         return None
 
 

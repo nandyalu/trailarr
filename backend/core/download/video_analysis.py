@@ -245,9 +245,7 @@ def get_silence_timestamps(
         )
         return silence_start, silence_end
     except Exception as e:
-        logger.exception(
-            f"Exception while detecting silence in video: {str(e)}"
-        )
+        logger.error(f"Exception while detecting silence in video: {str(e)}")
     # timeTook = datetime.now() - time
     # print(f"Time took: {timeTook}")
     return None, None
@@ -335,9 +333,7 @@ def remove_silence_at_end(file_path: str) -> str:
         )
         trim_video_at_end(file_path, output_file, silence_start)
     except Exception as e:
-        logger.exception(
-            f"Exception while removing silence from video: {str(e)}"
-        )
+        logger.error(f"Exception while removing silence from video: {str(e)}")
         return file_path
     silence_time = silence_end - silence_start
     logger.info(

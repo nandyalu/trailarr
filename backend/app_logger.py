@@ -73,29 +73,15 @@ class ModuleLogger(logging.LoggerAdapter):
         Args:
             log_prefix (str): The prefix to add to log messages."""
         self.log_prefix = log_prefix
-        logger = logging.getLogger(__name__)
-        super(ModuleLogger, self).__init__(logger, {})
+        logger = logging.getLogger(log_prefix)
+        super().__init__(logger)
 
     def trace(self, message, *args, **kwargs):
         if self.isEnabledFor(TRACE_LEVEL):
             self._log(TRACE_LEVEL, message, args, **kwargs)
 
-    def log_errors(self, message, *args, **kwargs):
-        if app_settings.log_level == "DEBUG":
-            # If log level is debug, use the exception method to log errors
-            super().exception(message, *args, **kwargs)
-        else:
-            # In production mode, use the error method to log errors
-            super().error(message, *args, **kwargs)
-
-    def error(self, message, *args, **kwargs):
-        self.log_errors(message, *args, **kwargs)
-
-    def exception(self, message, *args, **kwargs):
-        self.log_errors(message, *args, **kwargs)
-
-    def process(self, msg, kwargs):
-        return "%s: %s" % (self.log_prefix, msg), kwargs
+    # def process(self, msg, kwargs):
+    #     return "%s: %s" % (self.log_prefix, msg), kwargs
 
 
 if not _is_logging_setup:
