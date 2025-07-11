@@ -1,6 +1,7 @@
 from typing import Any
 from pydantic import field_validator, model_validator
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Boolean, Integer
+from sqlmodel import Column, Field, Relationship, SQLModel, String, text
 
 # if TYPE_CHECKING:
 from core.base.database.models.customfilter import (
@@ -58,7 +59,12 @@ class _TrailerProfileBase(SQLModel):
     """
 
     enabled: bool = True
-    priority: int = 0
+    priority: int = Field(
+        default=0,
+        ge=0,
+        le=1000,
+        sa_column=Column(Integer, server_default="0", nullable=False),
+    )
     # File settings
     file_format: str = "mkv"
     file_name: str = "{title} ({year})-trailer.{ext}"
@@ -80,10 +86,16 @@ class _TrailerProfileBase(SQLModel):
     search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60
     max_duration: int = 600
-    always_search: bool = False
-    exclude_words: str = ""
-    include_words: str = ""
-    ytdlp_extra_options: str = ""
+    always_search: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    exclude_words: str = Field(default="")
+    include_words: str = Field(default="")
+    ytdlp_extra_options: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
     # Filter id to apply to select this profile
 
 

@@ -3,7 +3,7 @@ from functools import wraps
 from sqlite3 import OperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import StaticPool
+from sqlalchemy import Engine, event, StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
 from config.settings import app_settings
@@ -24,11 +24,28 @@ if app_settings.testing:
 else:
     engine = create_engine(
         sqlite_url,
-        connect_args={"check_same_thread": False},  # Allow multi-threaded access
+        connect_args={
+            "check_same_thread": False
+        },  # Allow multi-threaded access
         echo=False,
     )  # pragma: no cover
 # * Not needed, Alembic will create the database tables
 # SQLModel.metadata.create_all(engine)
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """
+    Apply PRAGMA statements when a new connection is established.
+    This will work for existing databases and new ones.
+    """
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    # Add busy_timeout for robustness if not already included
+    cursor.execute("PRAGMA busy_timeout=5000")  # 5 seconds
+    cursor.close()
 
 
 @contextmanager

@@ -1,7 +1,6 @@
 # from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import Connection, engine_from_config, pool, text as sa_text
 from sqlmodel import SQLModel
 
 from alembic import context
@@ -33,6 +32,26 @@ target_metadata = SQLModel.metadata
 config.set_main_option("sqlalchemy.url", app_settings.database_url)
 
 
+EXCLUDE_TABLES = [
+    "applogrecord",
+]
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name in EXCLUDE_TABLES:
+        return False
+    return True
+
+
+def set_sqlite_pragmas(connection: Connection) -> None:
+    # Enable foreign keys for schema comparison and enforcement
+    connection.execute(sa_text("PRAGMA foreign_keys = ON;"))
+    # Set WAL mode for better concurrency and resilience
+    connection.execute(sa_text("PRAGMA journal_mode = WAL;"))
+    # Set synchronous mode (NORMAL is often a good balance)
+    connection.execute(sa_text("PRAGMA synchronous = NORMAL;"))
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -53,6 +72,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_server_default=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -73,11 +93,13 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        set_sqlite_pragmas(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             render_as_batch=True,
             compare_server_default=True,
+            include_object=include_object,
         )
 
         with context.begin_transaction():

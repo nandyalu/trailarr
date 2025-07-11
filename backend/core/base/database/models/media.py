@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
-from sqlmodel import Field, SQLModel, ForeignKey
+from sqlalchemy import Boolean, Column, String, text
+from sqlmodel import Field, Integer, SQLModel, ForeignKey
 
 
 def get_current_time():
@@ -34,13 +35,30 @@ class MediaBase(SQLModel):
     arr_id: int = Field(index=True)
     is_movie: bool = Field(default=True, index=True)
     title: str = Field(index=True)
-    clean_title: str = Field(index=True, default="")
+    clean_title: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
     year: int = Field(default_factory=get_current_year, index=True)
     language: str = Field(default="en", index=True)
-    studio: str = Field(default="")
-    media_exists: bool = Field(default=False)
-    media_filename: str = Field(default="")
-    season_count: int = Field(default=0)
+    studio: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    media_exists: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    media_filename: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    season_count: int = Field(
+        default=0,
+        sa_column=Column(Integer, server_default="0", nullable=False),
+    )
     overview: str | None = None
     runtime: int = 0
     # website: str | None = None
@@ -48,7 +66,12 @@ class MediaBase(SQLModel):
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
     txdb_id: str = Field(index=True)
-    title_slug: str = Field(index=True, default="")
+    title_slug: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
     poster_url: str | None = None
     fanart_url: str | None = None
     poster_path: str | None = None
@@ -56,7 +79,14 @@ class MediaBase(SQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
-    status: MonitorStatus = Field(default=MonitorStatus.MISSING)
+    status: MonitorStatus = Field(
+        default=MonitorStatus.MISSING,
+        sa_column=Column(
+            String(11),
+            server_default=text("'MISSING'"),
+            nullable=False,
+        ),
+    )
 
 
 class Media(MediaBase, table=True):
