@@ -47,5 +47,5 @@ box_echo "----------------------------------------------------------------------
 box_echo "Starting Trailarr application..."
 echo "+==============================================================================+";
 echo ""
-cd /app
-exec uvicorn backend.main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889}
+cd /app/backend
+exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889}

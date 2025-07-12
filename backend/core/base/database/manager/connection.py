@@ -9,7 +9,6 @@ from core.base.database.models.connection import (
     PathMapping,
 )
 
-from core.base.database.models.media import Media
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
 from core.radarr.api_manager import RadarrManager
@@ -47,7 +46,9 @@ class ConnectionDatabaseManager:
         # with the current implementation of PathMappingCRU
         # https://github.com/nandyalu/trailarr/issues/53
         _path_mappings = self._convert_path_mappings(connection)
-        connection.path_mappings = []  # Clear path mappings from input connection
+        connection.path_mappings = (
+            []
+        )  # Clear path mappings from input connection
         # Create db connection object from input
         db_connection = Connection.model_validate(connection)
         # Add path mappings to database connection
@@ -91,7 +92,10 @@ class ConnectionDatabaseManager:
         """
         statement = select(Connection)
         connections = _session.exec(statement).all()
-        return [ConnectionRead.model_validate(connection) for connection in connections]
+        return [
+            ConnectionRead.model_validate(connection)
+            for connection in connections
+        ]
 
     def _end_path_with_slash(self, path: str) -> str:
         """End a path with a slash if it does not already have one \n
@@ -132,7 +136,9 @@ class ConnectionDatabaseManager:
             db_path_mapping.path_from = self._end_path_with_slash(
                 db_path_mapping.path_from
             )
-            db_path_mapping.path_to = self._end_path_with_slash(db_path_mapping.path_to)
+            db_path_mapping.path_to = self._end_path_with_slash(
+                db_path_mapping.path_to
+            )
             db_path_mappings.append(db_path_mapping)
         return db_path_mappings
 
@@ -160,13 +166,19 @@ class ConnectionDatabaseManager:
         # Get new path mappings
         new_mappings = self._convert_path_mappings(connection_update)
         # Make a dictionary of new mappings by id
-        new_mappings_ids = [mapping.id for mapping in new_mappings if mapping.id]
+        new_mappings_ids = [
+            mapping.id for mapping in new_mappings if mapping.id
+        ]
         # Get existing path mappings
         existing_mappings = db_connection.path_mappings
-        existing_mappings_dict = {mapping.id: mapping for mapping in existing_mappings}
+        existing_mappings_dict = {
+            mapping.id: mapping for mapping in existing_mappings
+        }
 
         # Delete removed mappings
-        for db_mapping in existing_mappings[:]:  # Copy the list to avoid modifying
+        for db_mapping in existing_mappings[
+            :
+        ]:  # Copy the list to avoid modifying
             if db_mapping.id not in new_mappings_ids:
                 db_connection.path_mappings.remove(db_mapping)
                 _session.delete(db_mapping)
@@ -259,10 +271,14 @@ class ConnectionDatabaseManager:
         # Get the connection from the database
         db_connection = self._get_db_item(connection_id, _session=_session)
         # Update the connection details from input
-        connection_update_data = connection_update.model_dump(exclude_unset=True)
+        connection_update_data = connection_update.model_dump(
+            exclude_unset=True
+        )
         db_connection.sqlmodel_update(connection_update_data)
         # Update the path mappings
-        self._update_path_mappings(db_connection, connection_update, _session=_session)
+        self._update_path_mappings(
+            db_connection, connection_update, _session=_session
+        )
         # Validate the connection details
         await validate_connection(db_connection)
         # Commit the changes to the database
@@ -289,14 +305,14 @@ class ConnectionDatabaseManager:
         """
         connection = self._get_db_item(connection_id, _session=_session)
         _session.delete(connection)
-        # Delete all path mappings associated with the connection
-        for path_mapping in connection.path_mappings:
-            _session.delete(path_mapping)
-        # Delete all media associated with the connection
-        _statement = select(Media).where(Media.connection_id == connection_id)
-        media_list = _session.exec(_statement).all()
-        for media in media_list:
-            _session.delete(media)
+        # # Delete all path mappings associated with the connection
+        # for path_mapping in connection.path_mappings:
+        #     _session.delete(path_mapping)
+        # # Delete all media associated with the connection
+        # _statement = select(Media).where(Media.connection_id == connection_id)
+        # media_list = _session.exec(_statement).all()
+        # for media in media_list:
+        #     _session.delete(media)
         _session.commit()
         return True
 

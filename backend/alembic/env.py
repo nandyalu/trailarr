@@ -1,5 +1,6 @@
 # from logging.config import fileConfig
 
+import logging
 from sqlalchemy import Connection, engine_from_config, pool, text as sa_text
 from sqlmodel import SQLModel
 
@@ -45,11 +46,11 @@ def include_object(object, name, type_, reflected, compare_to):
 
 def set_sqlite_pragmas(connection: Connection) -> None:
     # Enable foreign keys for schema comparison and enforcement
-    connection.execute(sa_text("PRAGMA foreign_keys = ON;"))
+    connection.execute(sa_text("PRAGMA foreign_keys = OFF;"))
     # Set WAL mode for better concurrency and resilience
-    connection.execute(sa_text("PRAGMA journal_mode = WAL;"))
+    connection.execute(sa_text("PRAGMA journal_mode = DELETE;"))
     # Set synchronous mode (NORMAL is often a good balance)
-    connection.execute(sa_text("PRAGMA synchronous = NORMAL;"))
+    # connection.execute(sa_text("PRAGMA synchronous = NORMAL;"))
 
 
 def run_migrations_offline() -> None:
@@ -64,6 +65,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    logging.info("Running migrations in offline mode")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -86,6 +88,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    logging.info("Running migrations in online mode")
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -93,7 +96,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        set_sqlite_pragmas(connection)
+        # set_sqlite_pragmas(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
@@ -106,7 +109,11 @@ def run_migrations_online() -> None:
             context.run_migrations()
 
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+try:
+    if context.is_offline_mode():
+        run_migrations_offline()
+    else:
+        run_migrations_online()
+except Exception as e:
+    logging.error(f"Migration failed: {e}")
+    raise

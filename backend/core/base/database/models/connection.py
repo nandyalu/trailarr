@@ -40,7 +40,9 @@ class PathMapping(SQLModel, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    connection_id: int | None = Field(default=None, foreign_key="connection.id")
+    connection_id: int | None = Field(
+        default=None, foreign_key="connection.id", ondelete="CASCADE"
+    )
     path_from: str
     path_to: str
 
@@ -69,7 +71,7 @@ class Connection(ConnectionBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     added_at: datetime = Field(default_factory=get_current_time)
-    path_mappings: list[PathMapping] = Relationship()
+    path_mappings: list[PathMapping] = Relationship(cascade_delete=True)
 
 
 class ConnectionCreate(ConnectionBase):
@@ -86,7 +88,7 @@ class ConnectionRead(ConnectionBase):
     path_mappings: list[PathMappingCRU]
 
 
-class ConnectionUpdate(ConnectionBase):
+class ConnectionUpdate(SQLModel):
     """Connection model for updating a connection. This is used in the API while updating."""
 
     name: str | None = None

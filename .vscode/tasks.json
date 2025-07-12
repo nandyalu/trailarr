@@ -236,6 +236,32 @@
 				"reveal": "always"
 			},
 			"problemMatcher": [],
+		},
+		{
+			"label": "Run FastAPI with startup script",
+			"detail": "Run FastAPI with the startup script",
+			"type": "shell",
+			"command": "./scripts/start.sh",
+			"icon": {
+				"id": "play-circle",
+				"color": "terminal.ansiCyan"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHON_PATH": "${workspaceFolder}/backend",
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1"
+				}
+			},
+			"group": {
+				"kind": "none",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": [],
 		}
 	]
 }

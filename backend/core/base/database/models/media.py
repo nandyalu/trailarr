@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import Boolean, Column, String, text
-from sqlmodel import Field, Integer, SQLModel, ForeignKey
+from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
+from sqlmodel import Field, Integer, SQLModel
 
 
 def get_current_time():
@@ -28,10 +28,7 @@ class MediaBase(SQLModel):
     Use MediaCreate, MediaRead, MediaUpdate models instead.
     """
 
-    connection_id: int = Field(
-        foreign_key=ForeignKey("connection.id", on_delete="CASCADE"),
-        index=True,
-    )
+    connection_id: int
     arr_id: int = Field(index=True)
     is_movie: bool = Field(default=True, index=True)
     title: str = Field(index=True)
@@ -82,7 +79,7 @@ class MediaBase(SQLModel):
     status: MonitorStatus = Field(
         default=MonitorStatus.MISSING,
         sa_column=Column(
-            String(11),
+            sa_Enum(MonitorStatus, native_enum=False),
             server_default=text("'MISSING'"),
             nullable=False,
         ),
@@ -98,7 +95,9 @@ class Media(MediaBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    connection_id: int = Field(foreign_key="connection.id", index=True)
+    connection_id: int = Field(
+        foreign_key="connection.id", index=True, ondelete="CASCADE"
+    )
     is_movie: bool = Field(default=True, index=True)
 
     added_at: datetime = Field(default_factory=get_current_time)

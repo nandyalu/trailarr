@@ -15,7 +15,6 @@ import sqlmodel.sql.sqltypes
 from app_logger import ModuleLogger
 from sqlalchemy.schema import SchemaItem
 
-
 # revision identifiers, used by Alembic.
 revision: str = "34f937f1d7b9"
 down_revision: Union[str, None] = "325a4fb01c20"
@@ -41,8 +40,12 @@ def _create_mapping_table() -> None:
         "pathmapping",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("connection_id", sa.Integer(), nullable=True),
-        sa.Column("path_from", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("path_to", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "path_from", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
+        sa.Column(
+            "path_to", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.ForeignKeyConstraint(
             ["connection_id"],
             ["connection.id"],
@@ -67,19 +70,39 @@ def _create_media_table(table_name: str, create_is_movie_column: bool) -> None:
     _columns2: list[SchemaItem] = [
         sa.Column("title", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
-        sa.Column("language", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("overview", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column(
+            "language", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
+        sa.Column(
+            "overview", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
         sa.Column("runtime", sa.Integer(), nullable=False),
         sa.Column(
-            "youtube_trailer_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+            "youtube_trailer_id",
+            sqlmodel.sql.sqltypes.AutoString(),
+            nullable=True,
         ),
-        sa.Column("folder_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("imdb_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("txdb_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("poster_url", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("fanart_url", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("poster_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("fanart_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column(
+            "folder_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
+        sa.Column(
+            "imdb_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
+        sa.Column(
+            "txdb_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
+        sa.Column(
+            "poster_url", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
+        sa.Column(
+            "fanart_url", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
+        sa.Column(
+            "poster_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
+        sa.Column(
+            "fanart_path", sqlmodel.sql.sqltypes.AutoString(), nullable=True
+        ),
         sa.Column("trailer_exists", sa.Boolean(), nullable=False),
         sa.Column("monitor", sa.Boolean(), nullable=False),
         sa.Column("arr_monitored", sa.Boolean(), nullable=False),
@@ -98,19 +121,34 @@ def _create_media_table(table_name: str, create_is_movie_column: bool) -> None:
 
     # Create indexes
     logging.info(f"Creating indexes for {table_name} table")
-    op.create_index(f"ix_{table_name}_year", table_name, ["year"], unique=False)
-    op.create_index(f"ix_{table_name}_txdb_id", table_name, ["txdb_id"], unique=False)
-    op.create_index(f"ix_{table_name}_title", table_name, ["title"], unique=False)
-    op.create_index(f"ix_{table_name}_language", table_name, ["language"], unique=False)
+    op.create_index(
+        f"ix_{table_name}_year", table_name, ["year"], unique=False
+    )
+    op.create_index(
+        f"ix_{table_name}_txdb_id", table_name, ["txdb_id"], unique=False
+    )
+    op.create_index(
+        f"ix_{table_name}_title", table_name, ["title"], unique=False
+    )
+    op.create_index(
+        f"ix_{table_name}_language", table_name, ["language"], unique=False
+    )
     if create_is_movie_column:
         op.create_index(
             f"ix_{table_name}_is_movie", table_name, ["is_movie"], unique=False
         )
-    op.create_index(f"ix_{table_name}_imdb_id", table_name, ["imdb_id"], unique=False)
     op.create_index(
-        f"ix_{table_name}_connection_id", table_name, ["connection_id"], unique=False
+        f"ix_{table_name}_imdb_id", table_name, ["imdb_id"], unique=False
     )
-    op.create_index(f"ix_{table_name}_arr_id", table_name, ["arr_id"], unique=False)
+    op.create_index(
+        f"ix_{table_name}_connection_id",
+        table_name,
+        ["connection_id"],
+        unique=False,
+    )
+    op.create_index(
+        f"ix_{table_name}_arr_id", table_name, ["arr_id"], unique=False
+    )
 
     return
 
@@ -123,13 +161,17 @@ def _create_is_movie_column(table_name: str, create_index: bool) -> None:
             sa.Column(
                 "is_movie",
                 sa.Boolean(),
-                server_default=sa.true() if table_name == "movie" else sa.false(),
+                server_default=(
+                    sa.true() if table_name == "movie" else sa.false()
+                ),
                 nullable=False,
             ),
         )
     # Create index on is_movie column
     if create_index:
-        logging.info(f"Creating index for is_movie column in {table_name} table")
+        logging.info(
+            f"Creating index for is_movie column in {table_name} table"
+        )
         op.create_index(
             f"ix_{table_name}_is_movie", table_name, ["is_movie"], unique=False
         )
@@ -146,7 +188,9 @@ def _copy_to_media_table(table_name: str) -> None:
         SELECT {cols}
         FROM {from_table};
     """
-    copy_statement = base_statement.format(cols=all_cols, from_table=table_name)
+    copy_statement = base_statement.format(
+        cols=all_cols, from_table=table_name
+    )
 
     # Copy all series data to media table
     op.execute(copy_statement)
@@ -178,28 +222,28 @@ def _drop_table(table_name: str) -> None:
     if not _check_table_exists(table_name):
         logging.info(f"{table_name.title()} table does not exist")
         return
-    logging.info(f"Dropping {table_name} table and it's indexes")
-    # Get all indexes for the table
-    indexes = sa.inspect(op.get_bind()).get_indexes(table_name)
+    # logging.info(f"Dropping {table_name} table and it's indexes")
+    # # Get all indexes for the table
+    # indexes = sa.inspect(op.get_bind()).get_indexes(table_name)
 
-    # Drop all indexes for the table
-    for index in indexes:
-        if index["name"]:
-            logging.info(f"Dropping index {index['name']} from {table_name} table")
-            op.drop_index(index["name"], table_name=table_name)
+    # # Drop all indexes for the table
+    # for index in indexes:
+    #     if index["name"]:
+    #         logging.info(f"Dropping index {index['name']} from {table_name} table")
+    #         op.drop_index(index["name"], table_name=table_name)
 
-    # Drop foreign key constraints if any
-    foreign_keys = sa.inspect(op.get_bind()).get_foreign_keys(table_name)
-    for fk in foreign_keys:
-        if fk["name"]:
-            logging.info(
-                f"Dropping foreign key constraint {fk['name']} from {table_name} table"
-            )
-            op.drop_constraint(fk["name"], table_name, type_="foreignkey")
+    # # Drop foreign key constraints if any
+    # foreign_keys = sa.inspect(op.get_bind()).get_foreign_keys(table_name)
+    # for fk in foreign_keys:
+    #     if fk["name"]:
+    #         logging.info(
+    #             f"Dropping foreign key constraint {fk['name']} from {table_name} table"
+    #         )
+    #         op.drop_constraint(fk["name"], table_name, type_="foreignkey")
 
     # Drop the table
     logging.info(f"Dropping {table_name} table")
-    op.drop_table(table_name)
+    op.drop_table(table_name, if_exists=True)
     return
 
 

@@ -3,7 +3,7 @@ from functools import wraps
 from sqlite3 import OperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import Engine, event, StaticPool
+from sqlalchemy import Engine, event, StaticPool, text as sa_text
 from sqlmodel import SQLModel, Session, create_engine
 
 from config.settings import app_settings
@@ -46,6 +46,13 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     # Add busy_timeout for robustness if not already included
     cursor.execute("PRAGMA busy_timeout=5000")  # 5 seconds
     cursor.close()
+
+
+def flush_records_to_db():
+    """Flush in-memory records to the database."""
+    with engine.connect() as connection:
+        connection.execute(sa_text("PRAGMA wal_checkpoint(FULL);"))
+        connection.commit()
 
 
 @contextmanager

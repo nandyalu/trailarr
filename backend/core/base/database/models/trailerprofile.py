@@ -110,10 +110,13 @@ class TrailerProfile(_TrailerProfileBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     customfilter_id: int | None = Field(
-        default=None, foreign_key="customfilter.id"
+        default=None,
+        foreign_key="customfilter.id",
+        unique=True,
+        ondelete="CASCADE",
     )
     customfilter: CustomFilter = Relationship(
-        # back_populates="trailerprofile"
+        cascade_delete=True, sa_relationship_kwargs={"single_parent": True}
     )
 
     # @classmethod

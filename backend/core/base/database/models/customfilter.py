@@ -54,7 +54,7 @@ class CustomFilter(_CustomFilterBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     # filters: list["Filter"] = Relationship(back_populates="customfilter")
-    filters: list[Filter] = Relationship()
+    filters: list[Filter] = Relationship(cascade_delete=True)
     """List of filters for the view"""
     # trailerprofile: Optional["TrailerProfile"] = Relationship(
     #     back_populates="customfilter"

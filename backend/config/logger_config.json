@@ -34,13 +34,18 @@
       "filename": "/data/logs/trailarr.log",
       "maxBytes": 1000000,
       "backupCount": 10
+    },
+    "db": {
+      "()": "config.app_logger_db.DatabaseLoggingHandler",
+      "level": "DEBUG",
+      "formatter": "messageonly"
     }
   },
   "loggers": {
     "root": {
       "level": "DEBUG",
       "handlers": [
-        "console", "stderr", "file"
+        "db", "console", "stderr", "file"
       ]
     }
   }

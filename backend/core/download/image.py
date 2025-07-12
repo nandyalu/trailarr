@@ -45,7 +45,10 @@ async def delete_image(image_path: str):
     Args:
         image_path (str): Path to the image."""
     try:
-        await aiofiles.os.remove(image_path)
+        if await aiofiles.os.path.exists(image_path):
+            await aiofiles.os.remove(image_path)
+        else:
+            logger.debug(f"Image not found: '{image_path}'")
     except Exception:
         logger.error(f"Unable to delete image: '{image_path}'")
     return
