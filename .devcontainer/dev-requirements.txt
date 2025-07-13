@@ -9,6 +9,7 @@ mkdocs-glightbox==0.4.0
 # Backend
 aiohttp==3.12.13
 aiofiles==24.1.0
+aiosqlite==0.21.0
 alembic==1.16.2
 apscheduler==3.11.0
 async-lru==2.0.5
