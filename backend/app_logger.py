@@ -35,6 +35,10 @@ def config_logging():
     uvicorn_access.handlers = []
     uvicorn_access.disabled = True
 
+    # Set aiosqlite logger to critical level
+    aiosqlite_logger = logging.getLogger("aiosqlite")
+    aiosqlite_logger.setLevel(logging.CRITICAL)
+
     # FastAPI logger
     queue = multiprocessing.Queue(-1)
     parent_path = pathlib.Path(__file__).parent
