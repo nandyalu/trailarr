@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Any
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+
+from core.base.database.models.base import AppSQLModel
 
 # if TYPE_CHECKING:
 from core.base.database.models.filter import (
@@ -26,7 +28,7 @@ class FilterType(Enum):
     """Only for Trailer Profiles"""
 
 
-class _CustomFilterBase(SQLModel):
+class _CustomFilterBase(AppSQLModel):
     """
     Base model for CustomFilter.\n
     Note: \n

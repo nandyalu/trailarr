@@ -2,11 +2,10 @@
 
 import logging
 from sqlalchemy import Connection, engine_from_config, pool, text as sa_text
-from sqlmodel import SQLModel
 
 from alembic import context
 
-import core.base.database.utils.init_db  # noqa: F401
+from core.base.database.utils.init_db import AppSQLModel
 from config.settings import app_settings
 import app_logger  # noqa: F401
 
@@ -24,7 +23,7 @@ config = context.config
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = SQLModel.metadata
+target_metadata = AppSQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

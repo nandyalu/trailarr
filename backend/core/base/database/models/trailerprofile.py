@@ -1,9 +1,10 @@
 from typing import Any
 from pydantic import field_validator, model_validator
 from sqlalchemy import Boolean, Integer
-from sqlmodel import Column, Field, Relationship, SQLModel, String, text
+from sqlmodel import Column, Field, Relationship, String, text
 
 # if TYPE_CHECKING:
+from core.base.database.models.base import AppSQLModel
 from core.base.database.models.customfilter import (
     CustomFilter,
     CustomFilterCreate,
@@ -48,7 +49,7 @@ VALID_FILE_DICT = {
 }
 
 
-class _TrailerProfileBase(SQLModel):
+class _TrailerProfileBase(AppSQLModel):
     """
     Base model for TrailerProfile.\n
     Note: \n

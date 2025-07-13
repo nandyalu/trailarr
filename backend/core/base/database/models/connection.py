@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+
+from core.base.database.models.base import AppSQLModel
 
 
 def get_current_time():
@@ -23,7 +25,7 @@ class MonitorType(Enum):
 
 # Note: Creating a separate model for PathMappingCRU to avoid unwanted DB updates \
 # on PathMapping table in database.
-class PathMappingCRU(SQLModel):
+class PathMappingCRU(AppSQLModel):
     """Path Mapping model to use for Create, Read, and Update operations."""
 
     id: int | None = Field(default=None)
@@ -32,7 +34,7 @@ class PathMappingCRU(SQLModel):
     path_to: str
 
 
-class PathMapping(SQLModel, table=True):
+class PathMapping(AppSQLModel, table=True):
     """Path Mappings used to map remote paths to local paths. \n
     Can be set per Connection. \n
     Set `path_from` to Radarr/Sonarr root folder. \n
@@ -47,7 +49,7 @@ class PathMapping(SQLModel, table=True):
     path_to: str
 
 
-class ConnectionBase(SQLModel):
+class ConnectionBase(AppSQLModel):
     """Base class for the Connection model. \n
     Note: \n
         🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
@@ -88,7 +90,7 @@ class ConnectionRead(ConnectionBase):
     path_mappings: list[PathMappingCRU]
 
 
-class ConnectionUpdate(SQLModel):
+class ConnectionUpdate(AppSQLModel):
     """Connection model for updating a connection. This is used in the API while updating."""
 
     name: str | None = None

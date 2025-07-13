@@ -2,7 +2,9 @@ from enum import Enum
 from typing import Any, Self
 
 from pydantic import field_validator, model_validator
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from core.base.database.models.base import AppSQLModel
 
 
 class FilterCondition(Enum):
@@ -208,7 +210,7 @@ def _validate_date_filter(filter: "Filter") -> None:
             )
 
 
-class _FilterBase(SQLModel):
+class _FilterBase(AppSQLModel):
     """
     Base model for Filter.\n
     Note: \n

@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
-from sqlmodel import Field, Integer, SQLModel
+from sqlmodel import Field, Integer
+
+from core.base.database.models.base import AppSQLModel
 
 
 def get_current_time():
@@ -21,7 +23,7 @@ class MonitorStatus(Enum):
     MONITORED = "monitored"
 
 
-class MediaBase(SQLModel):
+class MediaBase(AppSQLModel):
     """Base class for the Media model. \n
     Note: \n
         🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
