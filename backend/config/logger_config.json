@@ -36,14 +36,14 @@
       "backupCount": 10
     },
     "db": {
-      "()": "config.app_logger_db.DatabaseLoggingHandler",
-      "level": "DEBUG",
+      "()": "config.logs.db_handler.DatabaseLoggingHandler",
+      "level": "TRACE",
       "formatter": "messageonly"
     }
   },
   "loggers": {
     "root": {
-      "level": "DEBUG",
+      "level": "TRACE",
       "handlers": [
         "db", "console", "stderr", "file"
       ]
