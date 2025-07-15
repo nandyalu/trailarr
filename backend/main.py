@@ -13,6 +13,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from config.logs.db_utils import flush_logs_to_db
 from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie, validate_login
@@ -20,6 +21,7 @@ from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
 from config.settings import app_settings
+from core.base.database.utils.engine import flush_records_to_db
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 
@@ -42,7 +44,11 @@ async def lifespan(app: FastAPI):
     yield
 
     # Before shutdown
+    logging.debug("Shutting down the scheduler and flushing logs to DB")
     scheduler.shutdown()
+    flush_records_to_db()
+    flush_logs_to_db()
+    logging.debug("Trailarr shutdown complete")
 
 
 # Get APP_NAME and APP_VERSION from environment variables

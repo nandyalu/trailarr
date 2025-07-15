@@ -22,8 +22,8 @@ def set_logger_level(log_level: str) -> None:
     }
     # _log_level = "DEBUG" if app_settings.debug else "INFO"
     level = log_levels.get(log_level, logging.INFO)
-    logging.getLogger().setLevel(level)
+    # logging.getLogger().setLevel(level) # log everything on root logger
     set_handler_level("console", level)
-    set_handler_level("file", level)
+    # set_handler_level("file", level)
     logging.info(f"Log level set to '{log_level}'")
     return

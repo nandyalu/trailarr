@@ -10,4 +10,4 @@ export const environment = {
   settings: 'settings/',
   tasks: 'tasks/',
   trailerprofiles: 'trailerprofiles/',
-};
+} as const;

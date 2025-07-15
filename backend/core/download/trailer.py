@@ -73,7 +73,7 @@ def __download_and_verify_trailer(
     return output_file
 
 
-def download_trailer(
+async def download_trailer(
     media: MediaRead,
     profile: TrailerProfileRead,
     retry_count: int = 2,
@@ -120,7 +120,7 @@ def download_trailer(
             f" from ({video_id})"
         )
         logger.info(msg)
-        websockets.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success")
         return True
     except Exception as e:
         logger.error(f"Failed to download trailer: {e}")
@@ -132,7 +132,9 @@ def download_trailer(
             media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
-            return download_trailer(media, profile, retry_count - 1, exclude)
+            return await download_trailer(
+                media, profile, retry_count - 1, exclude
+            )
         raise DownloadFailedError(
             f"Failed to download trailer for {media.title}"
         )

@@ -1898,6 +1898,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/raw:
+    get:
+      tags:
+        - Logs
+      summary: Get Raw Logs
+      operationId: get_raw_logs_api_v1_logs_raw_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: level
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/LogLevel'
+            default: INFO
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Offset
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1000
+            title: Limit
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppLogRecord'
+                title: Response Get Raw Logs Api V1 Logs Raw Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/logs/:
     get:
       tags:
@@ -2310,6 +2366,54 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    AppLogRecord:
+      properties:
+        id:
+          type: integer
+          title: Id
+        created:
+          type: string
+          format: date-time
+          title: Created
+        loggername:
+          type: string
+          title: Loggername
+          default: General
+        level:
+          $ref: '#/components/schemas/LogLevel'
+        message:
+          type: string
+          title: Message
+        filename:
+          type: string
+          title: Filename
+        lineno:
+          type: integer
+          title: Lineno
+        taskname:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Taskname
+        mediaid:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Mediaid
+        traceback:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Traceback
+      type: object
+      required:
+        - level
+        - message
+        - filename
+        - lineno
+        - taskname
+      title: AppLogRecord
+      description: A SQLModel representation of a log record for SQLite storage.
     ArrType:
       type: string
       enum:
@@ -2668,6 +2772,18 @@ components:
         - message
         - raw_log
       title: Log
+    LogLevel:
+      type: string
+      enum:
+        - TRACE
+        - DEBUG
+        - INFO
+        - WARNING
+        - ERROR
+        - EXCEPTION
+        - CRITICAL
+      title: LogLevel
+      description: Enumeration for log levels.
     MediaRead:
       properties:
         connection_id:
@@ -3196,6 +3312,8 @@ components:
           default: true
         priority:
           type: integer
+          maximum: 1000.0
+          minimum: 0.0
           title: Priority
           default: 0
         file_format:
@@ -3303,6 +3421,8 @@ components:
           default: true
         priority:
           type: integer
+          maximum: 1000.0
+          minimum: 0.0
           title: Priority
           default: 0
         file_format:

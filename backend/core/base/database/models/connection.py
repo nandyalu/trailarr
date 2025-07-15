@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+
+from core.base.database.models.base import AppSQLModel
 
 
 def get_current_time():
@@ -23,7 +25,7 @@ class MonitorType(Enum):
 
 # Note: Creating a separate model for PathMappingCRU to avoid unwanted DB updates \
 # on PathMapping table in database.
-class PathMappingCRU(SQLModel):
+class PathMappingCRU(AppSQLModel):
     """Path Mapping model to use for Create, Read, and Update operations."""
 
     id: int | None = Field(default=None)
@@ -32,7 +34,7 @@ class PathMappingCRU(SQLModel):
     path_to: str
 
 
-class PathMapping(SQLModel, table=True):
+class PathMapping(AppSQLModel, table=True):
     """Path Mappings used to map remote paths to local paths. \n
     Can be set per Connection. \n
     Set `path_from` to Radarr/Sonarr root folder. \n
@@ -40,12 +42,14 @@ class PathMapping(SQLModel, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    connection_id: int | None = Field(default=None, foreign_key="connection.id")
+    connection_id: int | None = Field(
+        default=None, foreign_key="connection.id", ondelete="CASCADE"
+    )
     path_from: str
     path_to: str
 
 
-class ConnectionBase(SQLModel):
+class ConnectionBase(AppSQLModel):
     """Base class for the Connection model. \n
     Note: \n
         🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
@@ -69,7 +73,7 @@ class Connection(ConnectionBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     added_at: datetime = Field(default_factory=get_current_time)
-    path_mappings: list[PathMapping] = Relationship()
+    path_mappings: list[PathMapping] = Relationship(cascade_delete=True)
 
 
 class ConnectionCreate(ConnectionBase):
@@ -86,7 +90,7 @@ class ConnectionRead(ConnectionBase):
     path_mappings: list[PathMappingCRU]
 
 
-class ConnectionUpdate(ConnectionBase):
+class ConnectionUpdate(AppSQLModel):
     """Connection model for updating a connection. This is used in the API while updating."""
 
     name: str | None = None

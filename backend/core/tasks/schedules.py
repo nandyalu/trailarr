@@ -6,7 +6,7 @@ from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
-from core.tasks.cleanup import trailer_cleanup
+from core.tasks.cleanup import delete_old_logs, trailer_cleanup
 from core.tasks.files_scan import scan_disk_for_trailers
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_update
@@ -22,6 +22,12 @@ def run_async(task) -> None:
     asyncio.set_event_loop(new_loop)
     new_loop.run_until_complete(task())
     new_loop.close()
+    return
+
+
+def _check_for_update():
+    """Check for updates to the Docker image."""
+    run_async(check_for_update)
     return
 
 
@@ -45,6 +51,7 @@ def _scan_disk_for_trailers():
 
 def _cleanup_trailers():
     """Cleanup trailers without audio."""
+    run_async(delete_old_logs)
     run_async(trailer_cleanup)
     return
 
@@ -120,7 +127,7 @@ def update_check_job():
         None
     """
     scheduler.add_job(
-        func=check_for_update,
+        func=_check_for_update,
         trigger="interval",
         days=1,
         id="docker_update_check_job",
@@ -133,7 +140,7 @@ def update_check_job():
 
 
 def trailer_cleanup_job():
-    """Schedules a background job to cleanup trailers.\n
+    """Schedules a background job to cleanup trailers and other things.\n
         - Runs once a day, first run in 4 hours. \n
     Returns:
         None
@@ -142,12 +149,12 @@ def trailer_cleanup_job():
         func=_cleanup_trailers,
         trigger="interval",
         days=1,
-        id="trailer_cleanup_job",
-        name="Trailer Cleanup",
+        id="cleanup_job",
+        name="Cleanup Task",
         next_run_time=datetime.now() + timedelta(hours=4),
         max_instances=1,
     )
-    logger.info("Trailer Cleanup job scheduled!")
+    logger.info("Cleanup job scheduled!")
     return
 
 

@@ -21,9 +21,9 @@
   text-align: center;
 }
 
-.center {
-  margin: auto;
-}
+// .center {
+//   margin: auto;
+// }
 
 .logssearch {
   display: flex;
@@ -55,6 +55,21 @@
 .loading {
   cursor: progress;
   animation: spin-animation 2s linear infinite;
+}
+
+.logs-type-select {
+  width: 10rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
+  font-size: 1rem;
+
+  &:focus {
+    outline: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
 }
 
 .logssearch-form {
@@ -116,6 +131,16 @@
 summary .logs-text {
   flex: 1;
   margin-left: 2rem;
+}
+
+.logs-pre {
+  text-wrap: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0.5rem 0;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: var(--color-surface-container-highest);
 }
 
 .logs-icon {

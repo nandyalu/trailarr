@@ -43,7 +43,7 @@ def handle_exceptions(func):
         try:
             return await func(*args, **kwargs)
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             # Try to extract a user-friendly message, fallback to str(e)
             try:
                 _msg = str(e).split("Value error, ")[1].split(" [")[0].strip()

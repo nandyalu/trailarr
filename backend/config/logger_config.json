@@ -6,7 +6,11 @@
       "format": "%(levelname)s: %(message)s"
     },
     "detailed": {
-      "format": "%(asctime)s [%(levelname)s|%(module)s|L%(lineno)03d]: %(message)s",
+      "format": "%(asctime)s [%(levelname)s|%(module)s|L%(lineno)03d]: %(name)s: %(message)s",
+      "datefmt": "%Y-%m-%dT%H:%M:%S%z"
+    },
+    "messageonly": {
+      "format": "%(asctime)s %(message)s",
       "datefmt": "%Y-%m-%dT%H:%M:%S%z"
     }
   },
@@ -23,20 +27,17 @@
       "formatter": "simple",
       "stream": "ext://sys.stderr"
     },
-    "file": {
-      "class": "logging.handlers.RotatingFileHandler",
-      "level": "INFO",
-      "formatter": "detailed",
-      "filename": "/data/logs/trailarr.log",
-      "maxBytes": 1000000,
-      "backupCount": 10
+    "db": {
+      "()": "config.logs.db_handler.DatabaseLoggingHandler",
+      "level": "TRACE",
+      "formatter": "messageonly"
     }
   },
   "loggers": {
     "root": {
-      "level": "INFO",
+      "level": "TRACE",
       "handlers": [
-        "console", "stderr", "file"
+        "db", "console", "stderr"
       ]
     }
   }

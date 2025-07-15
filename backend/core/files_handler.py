@@ -315,7 +315,7 @@ class FilesHandler:
             if not FilesHandler.is_trailer_folder(entry.name):
                 continue
             # Check if 'trailer' exists in the 'trailers' directory
-            if FilesHandler._check_trailer_as_file(entry.path):
+            if await FilesHandler._check_trailer_as_file(entry.path):
                 return True
         # No trailer folder or no trailer file found
         return False
@@ -608,8 +608,8 @@ class FilesHandler:
             if folder_result:
                 folder_trailers.add(media_folder.path)
         msg = (
-            f"Scanned {count} media folders. Found"
-            f" {len(folder_trailers)} (folder) and"
+            f"Scanned Root folder '{root_media_dir}' ({count} media folders): "
+            f"Found {len(folder_trailers)} (folder) and"
             f" {len(inline_trailers)} (inline) trailers."
         )
         logger.info(msg)

@@ -6,8 +6,8 @@ import yaml
 from main import trailarr_api
 
 print("Exporting OpenAPI documentation...")
-# Save JSON to "/app/docs/help/api/openapi.json"
-OUTPUT_JSON = Path("/app/docs/help/api") / "openapi.json"
+# Save JSON to "/app/docs/references/api-docs/openapi.json"
+OUTPUT_JSON = Path("/app/docs/references/api-docs") / "openapi.json"
 OUTPUT_JSON.write_text(json.dumps(trailarr_api.openapi(), indent=None))
 
 print(f"OpenAPI documentation exported to {OUTPUT_JSON}")

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from sqlmodel import SQLModel
 
+from core.base.database.models.base import AppSQLModel
 from core.base.database.models.media import MonitorStatus
 
 
@@ -34,7 +34,7 @@ class MediaImage:
 
 
 # @dataclass(eq=False, frozen=True, repr=False, slots=True)
-class MediaReadDC(SQLModel):
+class MediaReadDC(AppSQLModel):
     id: int
     created: bool
     folder_path: str | None

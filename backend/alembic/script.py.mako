@@ -20,12 +20,24 @@ down_revision: Union[str, None] = ${repr(down_revision)}
 branch_labels: Union[str, Sequence[str], None] = ${repr(branch_labels)}
 depends_on: Union[str, Sequence[str], None] = ${repr(depends_on)}
 
-logging = ModuleLogger("AlembicMigrations")
+logger = ModuleLogger("AlembicMigrations")
 
 
 def upgrade() -> None:
+    # Disable foreign keys temporarily for migrations
+    op.execute("PRAGMA foreign_keys=OFF")
+
     ${upgrades if upgrades else "pass"}
+    
+    # Re-enable foreign keys after migrations
+    op.execute("PRAGMA foreign_keys=ON")
 
 
 def downgrade() -> None:
+    # Disable foreign keys temporarily for migrations
+    op.execute("PRAGMA foreign_keys=OFF")
+    
     ${downgrades if downgrades else "pass"}
+
+    # Re-enable foreign keys after migrations
+    op.execute("PRAGMA foreign_keys=ON")

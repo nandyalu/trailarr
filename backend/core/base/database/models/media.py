@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
-from sqlmodel import Field, SQLModel, ForeignKey
+from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
+from sqlmodel import Field, Integer
+
+from core.base.database.models.base import AppSQLModel
 
 
 def get_current_time():
@@ -20,27 +23,41 @@ class MonitorStatus(Enum):
     MONITORED = "monitored"
 
 
-class MediaBase(SQLModel):
+class MediaBase(AppSQLModel):
     """Base class for the Media model. \n
     Note: \n
         🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
     Use MediaCreate, MediaRead, MediaUpdate models instead.
     """
 
-    connection_id: int = Field(
-        foreign_key=ForeignKey("connection.id", on_delete="CASCADE"),
-        index=True,
-    )
+    connection_id: int
     arr_id: int = Field(index=True)
     is_movie: bool = Field(default=True, index=True)
     title: str = Field(index=True)
-    clean_title: str = Field(index=True, default="")
+    clean_title: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
     year: int = Field(default_factory=get_current_year, index=True)
     language: str = Field(default="en", index=True)
-    studio: str = Field(default="")
-    media_exists: bool = Field(default=False)
-    media_filename: str = Field(default="")
-    season_count: int = Field(default=0)
+    studio: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    media_exists: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    media_filename: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    season_count: int = Field(
+        default=0,
+        sa_column=Column(Integer, server_default="0", nullable=False),
+    )
     overview: str | None = None
     runtime: int = 0
     # website: str | None = None
@@ -48,7 +65,12 @@ class MediaBase(SQLModel):
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
     txdb_id: str = Field(index=True)
-    title_slug: str = Field(index=True, default="")
+    title_slug: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
     poster_url: str | None = None
     fanart_url: str | None = None
     poster_path: str | None = None
@@ -56,7 +78,14 @@ class MediaBase(SQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
-    status: MonitorStatus = Field(default=MonitorStatus.MISSING)
+    status: MonitorStatus = Field(
+        default=MonitorStatus.MISSING,
+        sa_column=Column(
+            sa_Enum(MonitorStatus, native_enum=False),
+            server_default=text("'MISSING'"),
+            nullable=False,
+        ),
+    )
 
 
 class Media(MediaBase, table=True):
@@ -68,7 +97,9 @@ class Media(MediaBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    connection_id: int = Field(foreign_key="connection.id", index=True)
+    connection_id: int = Field(
+        foreign_key="connection.id", index=True, ondelete="CASCADE"
+    )
     is_movie: bool = Field(default=True, index=True)
 
     added_at: datetime = Field(default_factory=get_current_time)

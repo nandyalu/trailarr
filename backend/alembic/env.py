@@ -1,12 +1,11 @@
 # from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from sqlmodel import SQLModel
+import logging
+from sqlalchemy import Connection, engine_from_config, pool, text as sa_text
 
 from alembic import context
 
-import core.base.database.utils.init_db  # noqa: F401
+from core.base.database.utils.init_db import AppSQLModel
 from config.settings import app_settings
 import app_logger  # noqa: F401
 
@@ -24,13 +23,33 @@ config = context.config
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = SQLModel.metadata
+target_metadata = AppSQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option("sqlalchemy.url", app_settings.database_url)
+
+
+EXCLUDE_TABLES = [
+    "applogrecord",
+]
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name in EXCLUDE_TABLES:
+        return False
+    return True
+
+
+def set_sqlite_pragmas(connection: Connection) -> None:
+    # Enable foreign keys for schema comparison and enforcement
+    connection.execute(sa_text("PRAGMA foreign_keys = OFF;"))
+    # Set WAL mode for better concurrency and resilience
+    connection.execute(sa_text("PRAGMA journal_mode = DELETE;"))
+    # Set synchronous mode (NORMAL is often a good balance)
+    # connection.execute(sa_text("PRAGMA synchronous = NORMAL;"))
 
 
 def run_migrations_offline() -> None:
@@ -45,6 +64,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    logging.info("Running migrations in offline mode")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -53,6 +73,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_server_default=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -66,6 +87,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    logging.info("Running migrations in online mode")
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -73,18 +95,24 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        # set_sqlite_pragmas(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             render_as_batch=True,
             compare_server_default=True,
+            include_object=include_object,
         )
 
         with context.begin_transaction():
             context.run_migrations()
 
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+try:
+    if context.is_offline_mode():
+        run_migrations_offline()
+    else:
+        run_migrations_online()
+except Exception as e:
+    logging.error(f"Migration failed: {e}")
+    raise
