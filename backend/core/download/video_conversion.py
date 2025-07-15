@@ -188,7 +188,7 @@ def _get_audio_options(
         acodec = _ACODEC_FALLBACK
     _aencoder = _AUDIO_CODECS[acodec]
 
-    if volume_level == 100:
+    if volume_level == DEFAULT_VOLUME_LEVEL:
         _COPY_COMMAND = ["-c:a", "copy"]
         # Case 1: Copy audio stream without conversion
         if acodec == "copy":
