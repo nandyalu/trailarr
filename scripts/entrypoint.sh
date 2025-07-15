@@ -86,22 +86,42 @@ box_echo "----------------------------------------------------------------------
 
 # Check if /dev/dri exists and check for Intel/AMD GPU
 box_echo "Checking for Intel GPU availability..."
-export QSV_GPU_AVAILABLE="false"
+export INTEL_GPU_AVAILABLE="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
-        # Intel QSV might be available. Further check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA' | grep -i 'Intel' > /dev/null 2>&1; then
-            export QSV_GPU_AVAILABLE="true"
-            box_echo "Intel GPU detected. Intel QSV is likely available."
+        # Intel GPU might be available. Check for Intel-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -i 'Intel' > /dev/null 2>&1; then
+            export INTEL_GPU_AVAILABLE="true"
+            box_echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
         else
-            box_echo "No Intel GPU detected. Intel QSV is not available."
+            box_echo "No Intel GPU detected. Intel hardware acceleration not available."
         fi
     else
-        box_echo "Intel QSV not detected. No renderD devices found in /dev/dri."
+        box_echo "Intel GPU not detected. No renderD devices found in /dev/dri."
     fi
 else
-    box_echo "Intel QSV is not available. /dev/dri does not exist."
+    box_echo "Intel GPU is not available. /dev/dri does not exist."
+fi
+box_echo "--------------------------------------------------------------------------";
+
+box_echo "Checking for AMD GPU availability..."
+export AMD_GPU_AVAILABLE="false"
+if [ -d /dev/dri ]; then
+    # Check for AMD GPU
+    if ls /dev/dri | grep -q "renderD"; then
+        # AMD GPU might be available. Check for AMD-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'AMD|ATI|Radeon' > /dev/null 2>&1; then
+            export AMD_GPU_AVAILABLE="true"
+            box_echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
+        else
+            box_echo "No AMD GPU detected. AMD hardware acceleration not available."
+        fi
+    else
+        box_echo "AMD GPU not detected. No renderD devices found in /dev/dri."
+    fi
+else
+    box_echo "AMD GPU is not available. /dev/dri does not exist."
 fi
 box_echo "--------------------------------------------------------------------------";
 
