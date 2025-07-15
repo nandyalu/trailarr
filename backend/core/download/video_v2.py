@@ -155,7 +155,7 @@ def _download_with_ytdlp(
             ytdlp_cmd,
             capture_output=True,
             text=True,
-            timeout=900,  # 15 minutes timeout
+            timeout=SUBPROCESS_TIMEOUT,  # 15 minutes timeout
             encoding="utf-8",
             errors="replace",
         )
