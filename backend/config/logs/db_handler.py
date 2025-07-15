@@ -55,11 +55,20 @@ class DatabaseLoggingHandler(logging.Handler):
             elif "apscheduler" in _loggername:
                 _loggername = "Tasks"
 
+            # Update message for YT-DLP download and FFMPEG conversion
+            _message = record.getMessage()
+            if "YT-DLP output::" in _message:
+                _tb = _message if not _tb else _message + _tb
+                _message = "Downloading video using YT-DLP"
+            elif "FFMPEG output::" in _message:
+                _tb = _message if not _tb else _message + _tb
+                _message = "Converting video using FFMPEG"
+
             # Create a log record instance for the database
             log_record = AppLogRecord(
                 created=_created,
                 loggername=_loggername,
-                level=record.levelname,
+                level=record.levelname,  # type: ignore
                 message=record.getMessage(),
                 filename=record.module,
                 lineno=record.lineno,
