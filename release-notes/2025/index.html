@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v042-beta-july-15-2025" class="md-skip">
+        <a href="#v043-beta-july-15-2025" class="md-skip">
           Skip to content
         </a>
       
@@ -1814,6 +1814,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v043-beta-july-15-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.3-beta - July 15 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v042-beta-july-15-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4.2-beta - July 15 2025
@@ -2065,6 +2074,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v043-beta-july-15-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.3-beta - July 15 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v042-beta-july-15-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4.2-beta - July 15 2025
@@ -2148,6 +2166,19 @@
 
   <h1>2025</h1>
 
+<h2 id="v043-beta-july-15-2025"><strong>v0.4.3-beta</strong> - <em>July 15 2025</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Refactored <code>YT-DLP Download</code> and <code>FFMPEG Conversion</code> methods to use <code>subprocess.run</code> instead of <code>subprocess.popen</code> to fix deadlocks. Fixes <a href="https://github.com/nandyalu/trailarr/issues/253" target="_blank">#253</a>. 📂</li>
+<li>Fixed a bug that was applying <code>Audio Volume level</code> even when it is set to <code>100</code>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Upgraded <code>fastapi</code> to version <code>0.116.1</code> and replaced the <code>standard</code> extra with <code>standard-no-fastapi-cloud-cli</code>.</li>
+<li>Updated <code>aiohttp</code> to version <code>3.12.14</code>.</li>
+<li>Improved logging for subprocess output in <code>YT-DLP download</code> and <code>FFMPEG conversion</code>. All logs are consolidated into a single <code>DEBUG</code> log.</li>
+<li>Health check endpoint used by <code>Docker</code> now looks for <code>NVIDIA GPU</code> (if enabled) once an hour!</li>
+</ul>
 <h2 id="v042-beta-july-15-2025"><strong>v0.4.2-beta</strong> - <em>July 15 2025</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -2381,7 +2412,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 15, 2025 09:19:30 UTC">July 15, 2025 09:19:30</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 15, 2025 22:42:58 UTC">July 15, 2025 22:42:58</span>
   </span>
 
     
