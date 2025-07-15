@@ -9,7 +9,7 @@ from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.video_conversion import get_ffmpeg_cmd
 from exceptions import ConversionFailedError, DownloadFailedError
 
-logger = ModuleLogger("TrailersDownloader2")
+logger = ModuleLogger("TrailersDownloader")
 # ffmpeg -i output1.mkv -c:v libx264 -c:a aac -c:s srt output1-converted3-264-aac-srt-cpu.mkv
 # 3m44.35s - 53.29MB
 # ffmpeg -i output1.mkv -c:v libx264 -preset veryfast -crf 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-cpu-fast.mkv  # noqa: E501
@@ -149,37 +149,55 @@ def _download_with_ytdlp(
     ytdlp_cmd.append(url)
     # Download the video
     logger.debug(f"Downloading video with options: {ytdlp_cmd}")
-    with subprocess.Popen(
-        ytdlp_cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8",  # Specify UTF-8 as the primary expected encoding
-        errors="replace",  # <-- replace un-decodable bytes
-    ) as process:
-        if not process.stdout or not process.stderr:
-            # logger.error("Failed to start yt-dlp process")
-            raise DownloadFailedError("Failed to start yt-dlp process")
-        for line in process.stdout:
-            logger.debug(line.strip())
-        for line in process.stderr:
-            line = line.strip()
-            if "sign in" in line.lower():
-                msg = line.strip()
-                if "age restricted" in line.lower():
+
+    try:
+        result = subprocess.run(
+            ytdlp_cmd,
+            capture_output=True,
+            text=True,
+            timeout=900,  # 15 minutes timeout
+            encoding="utf-8",
+            errors="replace",
+        )
+
+        # Log all output in a single call and check for sign-in errors
+        combined_output = ""
+        if result.stdout:
+            combined_output += f"STDOUT:\n{result.stdout}\n"
+        if result.stderr:
+            combined_output += f"STDERR:\n{result.stderr}"
+
+        if combined_output:
+            logger.debug(f"YT-DLP output::\n{combined_output}")
+
+        # Check for sign-in errors in stderr
+        if result.stderr:
+            stderr_lower = result.stderr.lower()
+            if "sign in" in stderr_lower:
+                msg = "Sign in required to download video"
+                if "age restricted" in stderr_lower:
                     msg = "Video is age restricted, sign in to download"
-                if "not a bot" in line.lower():
+                elif "not a bot" in stderr_lower:
                     msg = (
                         "Youtube bot detection kicked in, sign in to download"
                     )
                 logger.error(msg)
                 raise DownloadFailedError(msg)
-            logger.debug(line.strip())
-            # raise Exception("Error downloading video")
-    # Check if the process is successful
-    if process.returncode != 0:
-        msg = f"FFMPEG command failed with exit code {process.returncode}"
+
+        if result.returncode != 0:
+            msg = f"yt-dlp command failed with exit code {result.returncode}"
+            logger.error(msg)
+            raise DownloadFailedError(f"Error downloading video. {msg}")
+
+    except subprocess.TimeoutExpired:
+        msg = "yt-dlp download timed out after 15 minutes"
         logger.error(msg)
-        raise DownloadFailedError(f"Error downloading video. {msg}")
+        raise DownloadFailedError(msg)
+    except Exception as e:
+        msg = f"Error running yt-dlp process: {str(e)}"
+        logger.error(msg)
+        raise DownloadFailedError(msg)
+
     logger.info("Video downloaded successfully")
     return file_path.replace("%(ext)s", profile.file_format)
     # return "Video downloaded successfully"
@@ -206,37 +224,53 @@ def _convert_video(
     )
     # Convert the video
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
-    with subprocess.Popen(
-        ffmpeg_cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8",  # Specify UTF-8 as the primary expected encoding
-        errors="replace",  # <-- replace un-decodable bytes
-    ) as process:
-        if not process.stdout or not process.stderr:
-            # logger.error("Failed to start ffmpeg process")
-            raise ConversionFailedError("Failed to start FFMPEG process")
-        for line in process.stdout:
-            logger.debug(line.strip())
-        for line in process.stderr:
-            logger.debug(line.strip())
 
-    if process.returncode != 0:
-        # If the conversion fails, retry without hardware acceleration
-        if retry:
-            logger.warning(
-                "FFmpeg conversion failed with exit code"
-                f" {process.returncode}, retrying without hardware"
-                " acceleration (if enabled)"
-            )
-            # Retry the conversion with fallback
-            return _convert_video(
-                profile, input_file, output_file, retry=False
-            )
-        # If the conversion fails again, log the error and raise an exception
-        msg = f"FFmpeg command failed with exit code {process.returncode}"
+    try:
+        result = subprocess.run(
+            ffmpeg_cmd,
+            capture_output=True,
+            text=True,
+            timeout=900,  # 15 minutes timeout
+            encoding="utf-8",
+            errors="replace",
+        )
+
+        # Log all output in a single call
+        combined_output = ""
+        if result.stdout:
+            combined_output += f"STDOUT:\n{result.stdout}\n"
+        if result.stderr:
+            combined_output += f"STDERR:\n{result.stderr}"
+
+        if combined_output:
+            logger.debug(f"FFmpeg output::\n{combined_output}")
+
+        if result.returncode != 0:
+            # If the conversion fails, retry without hardware acceleration
+            if retry:
+                logger.warning(
+                    "FFmpeg conversion failed with exit code"
+                    f" {result.returncode}, retrying without hardware"
+                    " acceleration (if enabled)"
+                )
+                # Retry the conversion with fallback
+                return _convert_video(
+                    profile, input_file, output_file, retry=False
+                )
+            # If the conversion fails again, log the error and raise an exception
+            msg = f"FFmpeg command failed with exit code {result.returncode}"
+            logger.error(msg)
+            raise ConversionFailedError(f"Error converting video. {msg}")
+
+    except subprocess.TimeoutExpired:
+        msg = "FFmpeg conversion timed out after 15 minutes"
         logger.error(msg)
-        raise ConversionFailedError(f"Error converting video. {msg}")
+        raise ConversionFailedError(msg)
+    except Exception as e:
+        msg = f"Error running FFmpeg process: {str(e)}"
+        logger.error(msg)
+        raise ConversionFailedError(msg)
+
     logger.info("Video converted successfully")
     return "Video converted successfully"
 
