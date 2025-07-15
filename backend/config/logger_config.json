@@ -27,14 +27,6 @@
       "formatter": "simple",
       "stream": "ext://sys.stderr"
     },
-    "file": {
-      "class": "logging.handlers.RotatingFileHandler",
-      "level": "INFO",
-      "formatter": "detailed",
-      "filename": "/data/logs/trailarr.log",
-      "maxBytes": 1000000,
-      "backupCount": 10
-    },
     "db": {
       "()": "config.logs.db_handler.DatabaseLoggingHandler",
       "level": "TRACE",
@@ -45,7 +37,7 @@
     "root": {
       "level": "TRACE",
       "handlers": [
-        "db", "console", "stderr", "file"
+        "db", "console", "stderr"
       ]
     }
   }
