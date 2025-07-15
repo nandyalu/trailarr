@@ -61,6 +61,8 @@ _VCODEC_FALLBACK = "vp9"
 #     "av1": "av1_vaapi",
 # }
 
+DEFAULT_VOLUME_LEVEL = 100
+
 
 def _get_video_options_cpu(
     vcodec: str, input_file: str, video_stream: StreamInfo | None = None

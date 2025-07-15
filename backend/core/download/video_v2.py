@@ -10,6 +10,9 @@ from core.download.video_conversion import get_ffmpeg_cmd
 from exceptions import ConversionFailedError, DownloadFailedError
 
 logger = ModuleLogger("TrailersDownloader")
+
+SUBPROCESS_TIMEOUT = 900  # 15 minutes timeout for subprocesses
+
 # ffmpeg -i output1.mkv -c:v libx264 -c:a aac -c:s srt output1-converted3-264-aac-srt-cpu.mkv
 # 3m44.35s - 53.29MB
 # ffmpeg -i output1.mkv -c:v libx264 -preset veryfast -crf 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-cpu-fast.mkv  # noqa: E501
@@ -230,7 +233,7 @@ def _convert_video(
             ffmpeg_cmd,
             capture_output=True,
             text=True,
-            timeout=900,  # 15 minutes timeout
+            timeout=SUBPROCESS_TIMEOUT,  # 15 minutes timeout
             encoding="utf-8",
             errors="replace",
         )
