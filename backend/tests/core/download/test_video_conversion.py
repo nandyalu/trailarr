@@ -83,12 +83,13 @@ class TestVideoConversionHardwareAcceleration:
         options = _get_video_options_intel("h264", input_file)
         
         expected_options = [
-            "-init_hw_device", "vaapi=intel:/dev/dri/renderD128",
+            "-init_hw_device", "vaapi=intel",
             "-filter_hw_device", "intel",
             "-i", input_file,
             "-vf", "format=nv12,hwupload",
             "-c:v", "h264_vaapi",
-            "-qp", "22"
+            "-crf", "22",
+            "-async_depth", "4"
         ]
         assert options == expected_options
 
@@ -100,7 +101,10 @@ class TestVideoConversionHardwareAcceleration:
         expected_options = [
             "-i", input_file,
             "-c:v", "h264_amf",
-            "-qp", "22"
+            "-crf", "22",
+            "-preset", "balanced",
+            "-quality", "balanced",
+            "-usage", "transcoding"
         ]
         assert options == expected_options
 
@@ -184,11 +188,13 @@ class TestVideoConversionHardwareAcceleration:
         cmd = get_ffmpeg_cmd(trailer_profile, "/tmp/input.mkv", "/tmp/output.mkv")
         
         # Verify Intel-specific options
-        assert "vaapi=intel:/dev/dri/renderD128" in cmd
+        assert "vaapi=intel" in cmd
         assert "format=nv12,hwupload" in cmd
         assert "h264_vaapi" in cmd
-        assert "-qp" in cmd
+        assert "-crf" in cmd
         assert "22" in cmd
+        assert "-async_depth" in cmd
+        assert "4" in cmd
 
     @patch('core.download.video_conversion.get_media_info')
     @patch('config.settings.app_settings')
@@ -208,8 +214,13 @@ class TestVideoConversionHardwareAcceleration:
         
         # Verify AMD-specific options
         assert "h264_amf" in cmd
-        assert "-qp" in cmd
+        assert "-crf" in cmd
         assert "22" in cmd
+        assert "-preset" in cmd
+        assert "balanced" in cmd
+        assert "-quality" in cmd
+        assert "-usage" in cmd
+        assert "transcoding" in cmd
 
     @patch('core.download.video_conversion.get_media_info')
     @patch('config.settings.app_settings')

@@ -14,8 +14,11 @@ logger = ModuleLogger("VideoConversion")
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mkv -c:v h264_nvenc -preset fast -cq 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-nvenc.mkv  # noqa: E501
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i test.webm -c:v h264_nvenc -preset fast -cq 22 -af volume=1.5 -c:a aac -b:a 128k -c:s srt -movflags +faststart -tune zerolatency test-264-af-aac-srt-fs-nvenc.mkv  # noqa: E501
 
-# VAAPI (Intel) - Implemented below with device initialization and video filters
-# ffmpeg -init_hw_device vaapi=foo:/dev/dri/renderD128 -filter_hw_device foo -i output1.mkv -vf 'format=nv12,hwupload' -c:v h264_vaapi -qp 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-i916hw-fast.mkv  # noqa: E501
+# VAAPI (Intel) - Optimized implementation with auto-detection and performance improvements
+# ffmpeg -init_hw_device vaapi=intel -filter_hw_device intel -i output1.mkv -vf 'format=nv12,hwupload' -c:v h264_vaapi -crf 22 -async_depth 4 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-i916hw-fast.mkv  # noqa: E501
+
+# AMF (AMD) - Optimized implementation with presets and quality settings
+# ffmpeg -i output1.mkv -c:v h264_amf -crf 22 -preset balanced -quality balanced -usage transcoding -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-amf-balanced.mkv  # noqa: E501
 
 
 # -movflags +faststart - only applicable to mp4 containers
@@ -189,7 +192,7 @@ def _get_video_options_intel(
     vencoder = _VIDEO_CODECS_INTEL[vcodec]
     video_options: list[str] = [
         "-init_hw_device",
-        "vaapi=intel:/dev/dri/renderD128",
+        "vaapi=intel",  # Auto-detect Intel GPU device
         "-filter_hw_device",
         "intel",
         "-i",
@@ -202,7 +205,7 @@ def _get_video_options_intel(
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22"])
+        video_options.extend(["-crf", "22", "-async_depth", "4"])
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -217,7 +220,7 @@ def _get_video_options_intel(
             f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22"])
+        video_options.extend(["-crf", "22", "-async_depth", "4"])
 
     return video_options
 
@@ -249,7 +252,12 @@ def _get_video_options_amd(
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22"])
+        video_options.extend([
+            "-crf", "22",
+            "-preset", "balanced",
+            "-quality", "balanced",
+            "-usage", "transcoding"
+        ])
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -264,7 +272,12 @@ def _get_video_options_amd(
             f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22"])
+        video_options.extend([
+            "-crf", "22",
+            "-preset", "balanced",
+            "-quality", "balanced",
+            "-usage", "transcoding"
+        ])
 
     return video_options
 
