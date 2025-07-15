@@ -102,8 +102,8 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
-- [ ] Improve task logging
-- [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
+- [ ] Improve task logging (in progress)
+- [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are always looking for ways to improve the project.

@@ -5,29 +5,29 @@ Trailarr can be used with hardware acceleration to speed up video conversion usi
 
 
 !!! note
-    Trailarr supports hardware acceleration using NVIDIA GPUs (CUDA), Intel GPUs (VAAPI), and AMD GPUs (AMF). The system automatically detects available GPU hardware and uses the best acceleration method available.
+    Trailarr supports hardware acceleration using NVIDIA GPUs (CUDA), Intel GPUs (VAAPI), and AMD GPUs (AMF). The container automatically detects available GPU hardware during startup and uses the best acceleration method available.
 
 
 ## Prerequisites
 
 Before you begin, ensure you have the following available based on your GPU type:
 
-### NVIDIA GPUs
-- NVIDIA GPU
-- NVIDIA drivers installed on your system
-- NVIDIA Container Toolkit installed on your system
+=== "NVIDIA GPU (CUDA)"
+    - NVIDIA GPU
+    - NVIDIA drivers installed on your system
+    - NVIDIA Container Toolkit installed on your system
 
-If you haven't installed the NVIDIA Container Toolkit, follow the [official installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html){:target="_blank"}.
+    If you haven't installed the NVIDIA Container Toolkit, follow the [official installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html){:target="_blank"}.
 
-### Intel GPUs
-- Intel GPU with hardware video acceleration support
-- Intel GPU drivers installed on your system
-- `/dev/dri` devices available to the container
+=== "Intel GPU (VAAPI)"
+    - Intel GPU with hardware video acceleration support
+    - Intel GPU drivers installed on your system
+    - `/dev/dri` devices available to the container
 
-### AMD GPUs
-- AMD GPU with AMF (Advanced Media Framework) support
-- AMD GPU drivers installed on your system
-- `/dev/dri` devices available to the container
+=== "AMD GPU (AMF)"
+    - AMD GPU with AMF (Advanced Media Framework) support
+    - AMD GPU drivers installed on your system
+    - `/dev/dri` devices available to the container
 
 
 ## Installation
@@ -39,109 +39,119 @@ To run Trailarr with hardware acceleration, you need to provide the appropriate 
 Run the following command to start Trailarr with NVIDIA GPU acceleration:
 
 !!! important
-    The important part of the command is the `--runtime=nvidia` flag, which tells Docker to use the NVIDIA runtime. You can modify rest of the command to suit your needs.
+    The important part of the command is the `runtime=nvidia` flag, which tells Docker to use the NVIDIA runtime. You can modify rest of the command to suit your needs.
 
-```bash
-docker run -d \
-    --name=trailarr \
-    -e TZ=America/New_York \
-    -e PUID=1000 \
-    -e PGID=1000 \
-    -p 7889:7889 \
-    --runtime=nvidia \  # <-- Add this line for NVIDIA GPUs
-    -v <LOCAL_APPDATA_FOLDER>:/config \
-    -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
-    -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
-    --restart unless-stopped \
-    nandyalu/trailarr:latest
-```
+=== "Docker Compose"
+
+    ```yaml
+    services:
+      trailarr:
+        image: nandyalu/trailarr:latest
+        container_name: trailarr
+        environment:
+          - TZ=America/New_York
+          - PUID=1000
+          - PGID=1000
+        ports:
+          - 7889:7889
+        runtime: nvidia  # <-- Add this line for NVIDIA GPUs
+        volumes:
+          - <LOCAL_APPDATA_FOLDER>:/config
+          - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
+          - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
+        restart: on-failure
+    ```
+
+=== "Docker Run"
+
+    ```bash
+    docker run -d \
+        --name=trailarr \
+        -e TZ=America/New_York \
+        -e PUID=1000 \
+        -e PGID=1000 \
+        -p 7889:7889 \
+        --runtime=nvidia \  # <-- Add this line for NVIDIA GPUs
+        -v <LOCAL_APPDATA_FOLDER>:/config \
+        -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
+        -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
+        --restart unless-stopped \
+        nandyalu/trailarr:latest
+    ```
 
 ### Intel/AMD GPUs
 
 Run the following command to start Trailarr with Intel or AMD GPU acceleration:
 
 !!! important
-    The important part of the command is the `--device /dev/dri` flag, which gives the container access to the GPU hardware. You can modify rest of the command to suit your needs.
+    The important part of the command is the `device /dev/dri` flag, which gives the container access to the GPU hardware. You can modify rest of the command to suit your needs.
 
-```bash
-docker run -d \
-    --name=trailarr \
-    -e TZ=America/New_York \
-    -e PUID=1000 \
-    -e PGID=1000 \
-    -p 7889:7889 \
-    --device /dev/dri \  # <-- Add this line for Intel/AMD GPUs
-    -v <LOCAL_APPDATA_FOLDER>:/config \
-    -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
-    -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
-    --restart unless-stopped \
-    nandyalu/trailarr:latest
-```
+=== "Docker Compose"
 
-### Docker Compose
-
-If you are using Docker Compose, you can add the appropriate configurations:
-
-#### For NVIDIA GPUs:
-
-```yaml
-services:
-    trailarr:
+    ```yaml
+    services:
+      trailarr:
         image: nandyalu/trailarr:latest
         container_name: trailarr
         environment:
-            - TZ=America/New_York
-            - PUID=1000
-            - PGID=1000
+          - TZ=America/New_York
+          - PUID=1000
+          - PGID=1000
         ports:
-            - 7889:7889
-        runtime: nvidia  # <-- Add this line for NVIDIA GPUs
-        volumes:
-            - <LOCAL_APPDATA_FOLDER>:/config
-            - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
-            - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
-        restart: on-failure
-```
-
-#### For Intel/AMD GPUs:
-
-```yaml
-services:
-    trailarr:
-        image: nandyalu/trailarr:latest
-        container_name: trailarr
-        environment:
-            - TZ=America/New_York
-            - PUID=1000
-            - PGID=1000
-        ports:
-            - 7889:7889
+          - 7889:7889
         devices:
-            - /dev/dri:/dev/dri  # <-- Add this line for Intel/AMD GPUs
+          - /dev/dri:/dev/dri  # <-- Add this line for Intel/AMD GPUs
         volumes:
-            - <LOCAL_APPDATA_FOLDER>:/config
-            - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
-            - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
+          - <LOCAL_APPDATA_FOLDER>:/config
+          - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
+          - <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER>
         restart: on-failure
-```
+    ```
 
-### Testing Hardware Acceleration
+=== "Docker Run"
+
+    ```bash
+    docker run -d \
+        --name=trailarr \
+        -e TZ=America/New_York \
+        -e PUID=1000 \
+        -e PGID=1000 \
+        -p 7889:7889 \
+        --device /dev/dri \  # <-- Add this line for Intel/AMD GPUs
+        -v <LOCAL_APPDATA_FOLDER>:/config \
+        -v <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER> \
+        -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
+        --restart unless-stopped \
+        nandyalu/trailarr:latest
+    ```
+
+## Testing Hardware Acceleration
 
 Once you have set up Trailarr with hardware acceleration, you can test if it is working correctly:
 
-#### NVIDIA GPUs
-```bash
-docker exec -it trailarr nvidia-smi
-```
+=== "NVIDIA GPU (CUDA)"
 
-If everything is set up correctly, you should see the NVIDIA GPU details in the output.
+    ```bash
+    docker exec -it trailarr nvidia-smi
+    ```
 
-#### Intel/AMD GPUs
-```bash
-docker exec -it trailarr ls -la /dev/dri
-```
+    If everything is set up correctly, you should see the NVIDIA GPU details in the output.
 
-If everything is set up correctly, you should see the DRI devices (like `renderD128`) in the output.
+=== "Intel GPU (VAAPI)"
+
+    ```bash
+    docker exec -it trailarr ls -la /dev/dri
+    ```
+
+    If everything is set up correctly, you should see the DRI devices (like `renderD128`) in the output.
+
+=== "AMD GPU (AMF)"
+
+    ```bash
+    docker exec -it trailarr ls -la /dev/dri
+    ```
+
+    If everything is set up correctly, you should see the DRI devices (like `renderD128`) in the output.
 
 You can also check the GPU detection by looking at the container logs:
 ```bash
@@ -156,24 +166,27 @@ Look for messages like "NVIDIA GPU is available", "Intel GPU detected", or "AMD 
 To enable hardware acceleration in Trailarr, navigate to `Settings` -> `General` -> `Advanced Settings` and enable the `Hardware Acceleration` option.
 
 !!! note
-    Trailarr automatically detects available GPU hardware and uses the best acceleration method available. The priority order is: NVIDIA > Intel > AMD > CPU fallback.
+    Trailarr automatically detects available GPU hardware and uses the best acceleration method available. The priority order is: NVIDIA > AMD > Intel > CPU fallback.
 
 ## Supported Codecs by GPU Type
 
-### NVIDIA GPUs (CUDA)
-- **H.264** (`h264_nvenc`) - Full hardware acceleration
-- **H.265/HEVC** (`hevc_nvenc`) - Full hardware acceleration
-- **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+=== "NVIDIA GPU (CUDA)"
 
-### Intel GPUs (VAAPI)
-- **H.264** (`h264_vaapi`) - Full hardware acceleration
-- **H.265/HEVC** (`hevc_vaapi`) - Full hardware acceleration
-- **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+    - **H.264** (`h264_nvenc`) - Full hardware acceleration
+    - **H.265/HEVC** (`hevc_nvenc`) - Full hardware acceleration
+    - **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
 
-### AMD GPUs (AMF)
-- **H.264** (`h264_amf`) - Full hardware acceleration
-- **H.265/HEVC** (`hevc_amf`) - Full hardware acceleration
-- **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+=== "Intel GPU (VAAPI)"
+
+    - **H.264** (`h264_vaapi`) - Full hardware acceleration
+    - **H.265/HEVC** (`hevc_vaapi`) - Full hardware acceleration
+    - **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+
+=== "AMD GPU (AMF)"
+
+    - **H.264** (`h264_amf`) - Full hardware acceleration
+    - **H.265/HEVC** (`hevc_amf`) - Full hardware acceleration
+    - **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
 
 ## When Hardware Acceleration is NOT Used
 
@@ -188,36 +201,70 @@ Hardware acceleration will automatically fall back to CPU encoding in the follow
 ## How Trailarr Uses Hardware Acceleration Internally
 
 ### Detection Process
+
 1. **Container Startup**: During container startup, Trailarr automatically detects available GPU hardware
 2. **NVIDIA Detection**: Uses `nvidia-smi` command to detect NVIDIA GPUs
 3. **Intel/AMD Detection**: Checks for `/dev/dri` devices and uses `lspci` to identify Intel/AMD GPUs
 4. **Environment Variables**: Sets `NVIDIA_GPU_AVAILABLE`, `INTEL_GPU_AVAILABLE`, and `AMD_GPU_AVAILABLE` environment variables
 
 ### Acceleration Priority
+
 When multiple GPUs are available, Trailarr uses the following priority order:
+
 1. **NVIDIA GPU** (highest priority) - Uses CUDA hardware acceleration
-2. **Intel GPU** - Uses VAAPI hardware acceleration  
-3. **AMD GPU** - Uses AMF hardware acceleration
+2. **AMD GPU** - Uses AMF hardware acceleration
+3. **Intel GPU** - Uses VAAPI hardware acceleration  
 4. **CPU Fallback** (lowest priority) - Uses software encoding
 
 ### Command Examples
 
-**NVIDIA GPU (CUDA)**:
-```bash
-ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mkv -c:v h264_nvenc -preset fast -cq 22 -c:a aac -b:a 128k output.mkv
-```
+=== "NVIDIA GPU (CUDA)"
 
-**Intel GPU (VAAPI)**:
-```bash
-ffmpeg -init_hw_device vaapi=intel -filter_hw_device intel -i input.mkv -vf format=nv12,hwupload -c:v h264_vaapi -crf 22 -async_depth 4 -c:a aac -b:a 128k output.mkv
-```
+    ```bash
+    ffmpeg \
+        -hwaccel cuda \
+        -hwaccel_output_format cuda \
+        -i input.mkv \
+        -c:v h264_nvenc \
+        -preset fast \
+        -cq 22 \
+        -c:a aac \
+        -b:a 128k \
+        output.mkv
+    ```
 
-**AMD GPU (AMF)**:
-```bash
-ffmpeg -i input.mkv -c:v h264_amf -crf 22 -preset balanced -quality balanced -usage transcoding -c:a aac -b:a 128k output.mkv
-```
+=== "Intel GPU (VAAPI)"
 
-### Helpful Links
+    ```bash
+    ffmpeg \
+        -init_hw_device vaapi=intel \
+        -filter_hw_device intel \
+        -i input.mkv \
+        -vf format=nv12,hwupload \
+        -c:v h264_vaapi \
+        -crf 22 \
+        -async_depth 4 \
+        -c:a aac \
+        -b:a 128k \
+        output.mkv
+    ```
+
+=== "AMD GPU (AMF)"
+
+    ```bash
+    ffmpeg \
+        -i input.mkv \
+        -c:v h264_amf \
+        -crf 22 \
+        -preset balanced \
+        -quality balanced \
+        -usage transcoding \
+        -c:a aac \
+        -b:a 128k \
+        output.mkv
+    ```
+
+## Helpful Links
 
 - [NVIDIA Container Toolkit Installation Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html){:target="_blank"}
 - [Docker Compose - GPU](https://docs.docker.com/compose/how-tos/gpu-support/){:target="_blank"}

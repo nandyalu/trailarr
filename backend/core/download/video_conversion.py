@@ -252,12 +252,18 @@ def _get_video_options_amd(
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
-        video_options.extend([
-            "-crf", "22",
-            "-preset", "balanced",
-            "-quality", "balanced",
-            "-usage", "transcoding"
-        ])
+        video_options.extend(
+            [
+                "-crf",
+                "22",
+                "-preset",
+                "balanced",
+                "-quality",
+                "balanced",
+                "-usage",
+                "transcoding",
+            ]
+        )
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -272,12 +278,18 @@ def _get_video_options_amd(
             f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
-        video_options.extend([
-            "-crf", "22",
-            "-preset", "balanced",
-            "-quality", "balanced",
-            "-usage", "transcoding"
-        ])
+        video_options.extend(
+            [
+                "-crf",
+                "22",
+                "-preset",
+                "balanced",
+                "-quality",
+                "balanced",
+                "-usage",
+                "transcoding",
+            ]
+        )
 
     return video_options
 
@@ -294,12 +306,15 @@ def _get_video_options(
         ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
         logger.debug("Copying video stream without converting")
         return ffmpeg_cmd
+    # First priority: NVIDIA
     if use_nvidia:
         return _get_video_options_nvidia(vcodec, input_file, video_stream)
-    if use_intel:
-        return _get_video_options_intel(vcodec, input_file, video_stream)
+    # Second priority: AMD
     if use_amd:
         return _get_video_options_amd(vcodec, input_file, video_stream)
+    # Third priority: Intel
+    if use_intel:
+        return _get_video_options_intel(vcodec, input_file, video_stream)
     return _get_video_options_cpu(vcodec, input_file, video_stream)
 
 
@@ -454,7 +469,12 @@ def get_ffmpeg_cmd(
     # Set video specific options
     ffmpeg_cmd.extend(
         _get_video_options(
-            profile.video_format, input_file, use_nvidia, use_intel, use_amd, _video_stream
+            profile.video_format,
+            input_file,
+            use_nvidia,
+            use_intel,
+            use_amd,
+            _video_stream,
         )
     )
     # Set audio specific options
