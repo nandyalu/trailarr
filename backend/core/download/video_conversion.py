@@ -14,7 +14,7 @@ logger = ModuleLogger("VideoConversion")
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mkv -c:v h264_nvenc -preset fast -cq 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-nvenc.mkv  # noqa: E501
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i test.webm -c:v h264_nvenc -preset fast -cq 22 -af volume=1.5 -c:a aac -b:a 128k -c:s srt -movflags +faststart -tune zerolatency test-264-af-aac-srt-fs-nvenc.mkv  # noqa: E501
 
-# VAAPI (Intel) - Not implementing as I'm not sure how and need help with development for this.
+# VAAPI (Intel) - Implemented below with device initialization and video filters
 # ffmpeg -init_hw_device vaapi=foo:/dev/dri/renderD128 -filter_hw_device foo -i output1.mkv -vf 'format=nv12,hwupload' -c:v h264_vaapi -qp 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-i916hw-fast.mkv  # noqa: E501
 
 
@@ -48,6 +48,22 @@ _VIDEO_CODECS_NVIDIA = {
     # "vp8": "libvpx",  # hw encoder not available
     # "vp9": "libvpx-vp9",  # hw encoder not available
     # "av1": "av1_nvenc",
+}
+
+_VIDEO_CODECS_INTEL = {
+    "h264": "h264_vaapi",
+    "h265": "hevc_vaapi",
+    # "vp8": "libvpx",  # hw encoder not available
+    # "vp9": "libvpx-vp9",  # hw encoder not available
+    # "av1": "av1_vaapi",
+}
+
+_VIDEO_CODECS_AMD = {
+    "h264": "h264_amf",
+    "h265": "hevc_amf",
+    # "vp8": "libvpx",  # hw encoder not available
+    # "vp9": "libvpx-vp9",  # hw encoder not available
+    # "av1": "av1_amf",
 }
 
 _ACODEC_FALLBACK = "opus"
@@ -153,10 +169,112 @@ def _get_video_options_nvidia(
     return video_options
 
 
+def _get_video_options_intel(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate the ffmpeg video options for Intel GPU (VAAPI).
+    Args:
+        vcodec (str): Video codec to convert to
+        input_file (str): Input video file path
+        video_stream (StreamInfo, Optional=None): Video stream info
+    Returns:
+        list[str]: FFMPEG command list."""
+    if vcodec not in _VIDEO_CODECS_INTEL:
+        logger.error(
+            f"Video codec '{vcodec}' not supported by Intel hardware encoder,"
+            " using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    vencoder = _VIDEO_CODECS_INTEL[vcodec]
+    video_options: list[str] = [
+        "-init_hw_device",
+        "vaapi=intel:/dev/dri/renderD128",
+        "-filter_hw_device",
+        "intel",
+        "-i",
+        input_file,
+        "-vf",
+        "format=nv12,hwupload",
+        "-c:v",
+    ]
+
+    if video_stream is None:
+        logger.debug(f"Converting video to '{vcodec}' codec")
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22"])
+        return video_options
+
+    if video_stream.codec_name == vcodec:
+        logger.debug(
+            f"Downloaded video is already in required codec: '{vcodec}', "
+            "copying stream without converting"
+        )
+        video_options.append("copy")
+    else:
+        logger.debug(
+            f"Converting video from '{video_stream.codec_name}' to"
+            f" '{vcodec}' codec"
+        )
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22"])
+
+    return video_options
+
+
+def _get_video_options_amd(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate the ffmpeg video options for AMD GPU (AMF).
+    Args:
+        vcodec (str): Video codec to convert to
+        input_file (str): Input video file path
+        video_stream (StreamInfo, Optional=None): Video stream info
+    Returns:
+        list[str]: FFMPEG command list."""
+    if vcodec not in _VIDEO_CODECS_AMD:
+        logger.error(
+            f"Video codec '{vcodec}' not supported by AMD hardware encoder,"
+            " using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    vencoder = _VIDEO_CODECS_AMD[vcodec]
+    video_options: list[str] = [
+        "-i",
+        input_file,
+        "-c:v",
+    ]
+
+    if video_stream is None:
+        logger.debug(f"Converting video to '{vcodec}' codec")
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22"])
+        return video_options
+
+    if video_stream.codec_name == vcodec:
+        logger.debug(
+            f"Downloaded video is already in required codec: '{vcodec}', "
+            "copying stream without converting"
+        )
+        video_options.append("copy")
+    else:
+        logger.debug(
+            f"Converting video from '{video_stream.codec_name}' to"
+            f" '{vcodec}' codec"
+        )
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22"])
+
+    return video_options
+
+
 def _get_video_options(
     vcodec: str,
     input_file: str,
     use_nvidia: bool,
+    use_intel: bool,
+    use_amd: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
     if vcodec == "copy":
@@ -165,6 +283,10 @@ def _get_video_options(
         return ffmpeg_cmd
     if use_nvidia:
         return _get_video_options_nvidia(vcodec, input_file, video_stream)
+    if use_intel:
+        return _get_video_options_intel(vcodec, input_file, video_stream)
+    if use_amd:
+        return _get_video_options_amd(vcodec, input_file, video_stream)
     return _get_video_options_cpu(vcodec, input_file, video_stream)
 
 
@@ -278,13 +400,23 @@ def get_ffmpeg_cmd(
         fallback (bool): If True, hardware acceleration is not used.
     Returns:
         list[str]: FFMPEG command list."""
-    # Check if NVIDIA hardware acceleration is enabled
+    # Check if hardware acceleration is enabled
     if fallback:
         logger.debug("Fallback mode enabled, using CPU for conversion")
         use_nvidia = False
+        use_intel = False
+        use_amd = False
     else:
         use_nvidia = (
             app_settings.nvidia_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        )
+        use_intel = (
+            app_settings.intel_gpu_available
+            and app_settings.trailer_hardware_acceleration
+        )
+        use_amd = (
+            app_settings.amd_gpu_available
             and app_settings.trailer_hardware_acceleration
         )
     _video_stream: StreamInfo | None = None
@@ -309,7 +441,7 @@ def get_ffmpeg_cmd(
     # Set video specific options
     ffmpeg_cmd.extend(
         _get_video_options(
-            profile.video_format, input_file, use_nvidia, _video_stream
+            profile.video_format, input_file, use_nvidia, use_intel, use_amd, _video_stream
         )
     )
     # Set audio specific options

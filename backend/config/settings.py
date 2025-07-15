@@ -314,6 +314,8 @@ class _Config:
             "ytdlp_version": self.ytdlp_version,
             "trailer_remove_silence": self.trailer_remove_silence,
             "nvidia_gpu_available": self.nvidia_gpu_available,
+            "intel_gpu_available": self.intel_gpu_available,
+            "amd_gpu_available": self.amd_gpu_available,
             "trailer_hardware_acceleration": (
                 self.trailer_hardware_acceleration
             ),
@@ -625,6 +627,18 @@ class _Config:
 
     nvidia_gpu_available = bool_property("NVIDIA_GPU_AVAILABLE", default=False)
     """NVIDIA GPU available for hardware acceleration.
+        - Value is set during container startup based on availability.
+        - Default is False.
+        - Valid values are True/False."""
+    
+    intel_gpu_available = bool_property("INTEL_GPU_AVAILABLE", default=False)
+    """Intel GPU available for hardware acceleration (VAAPI).
+        - Value is set during container startup based on availability.
+        - Default is False.
+        - Valid values are True/False."""
+    
+    amd_gpu_available = bool_property("AMD_GPU_AVAILABLE", default=False)
+    """AMD GPU available for hardware acceleration (AMF).
         - Value is set during container startup based on availability.
         - Default is False.
         - Valid values are True/False."""
