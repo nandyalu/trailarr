@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v040-beta-july-06-2025" class="md-skip">
+        <a href="#v042-beta-july-15-2025" class="md-skip">
           Skip to content
         </a>
       
@@ -1814,9 +1814,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v040-beta-july-06-2025" class="md-nav__link">
+  <a href="#v042-beta-july-15-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.4.0-beta - July 06 2025
+      v0.4.2-beta - July 15 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v041-beta-july-06-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.1-beta - July 06 2025
     </span>
   </a>
   
@@ -2056,9 +2065,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v040-beta-july-06-2025" class="md-nav__link">
+  <a href="#v042-beta-july-15-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.4.0-beta - July 06 2025
+      v0.4.2-beta - July 15 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v041-beta-july-06-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.4.1-beta - July 06 2025
     </span>
   </a>
   
@@ -2130,7 +2148,30 @@
 
   <h1>2025</h1>
 
-<h2 id="v040-beta-july-06-2025"><strong>v0.4.0-beta</strong> - <em>July 06 2025</em></h2>
+<h2 id="v042-beta-july-15-2025"><strong>v0.4.2-beta</strong> - <em>July 15 2025</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>YouTube search now uses <code>1080</code> resolution as <code>2160</code> was causing some issues.</li>
+<li>Logs are now stored in database instead of text files. All Logs are saved to database, change filters to see them. Helps with better handling and supports tying them to media items in future.</li>
+<li>Logs are stored for 30 days. Old logs will be deleted as part of <code>Cleanup</code> task.</li>
+<li>Updated frontend <code>Logs</code> section to use logs from database along with tracebacks for errors and above.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed a bug that was reporting trailer download as failed even though download succeeded. Fixes <a href="https://github.com/nandyalu/trailarr/issues/253" target="_blank">#253</a>. 📂</li>
+<li>Fixed a bug with <code>FilesHandler</code> that scans for trailers.</li>
+<li>Fixed a bug in Media Details page that sometimes would not refresh the changes loaded from server.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>All Scheduled Tasks are now async.</li>
+<li>Normalized database defaults for alembic migrations and added <code>ONDELETE</code> relationships.</li>
+<li><code>glightox</code> version used in devcontainer has been corrected.</li>
+<li>Separated SQLModel base for AppLogs and App models.</li>
+<li>Corrected openapi path used in Docs from generator script.</li>
+<li>Setup some <code>PRAGMA</code> options on database engine to make relationships work and improve performance.</li>
+</ul>
+<h2 id="v041-beta-july-06-2025"><strong>v0.4.1-beta</strong> - <em>July 06 2025</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li>
@@ -2340,7 +2381,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 6, 2025 09:52:23 UTC">July 6, 2025 09:52:23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 15, 2025 09:19:30 UTC">July 15, 2025 09:19:30</span>
   </span>
 
     
