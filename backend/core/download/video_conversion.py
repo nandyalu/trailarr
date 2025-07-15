@@ -80,6 +80,8 @@ _VCODEC_FALLBACK = "vp9"
 #     "av1": "av1_vaapi",
 # }
 
+DEFAULT_VOLUME_LEVEL = 100
+
 
 def _get_video_options_cpu(
     vcodec: str, input_file: str, video_stream: StreamInfo | None = None
@@ -132,7 +134,7 @@ def _get_video_options_nvidia(
     Returns:
         list[str]: FFMPEG command list."""
     if vcodec not in _VIDEO_CODECS_NVIDIA:
-        logger.error(
+        logger.warning(
             f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder,"
             " using CPU"
         )
@@ -328,10 +330,6 @@ def _get_audio_options(
         audio_stream (StreamInfo, Optional=None): Audio stream info.
     Returns:
         list[str]: FFMPEG command list for audio."""
-    # Volume level setting is between 1 and 200
-    # FFMPEG volume filter expects a value between 0.01 and 10.0
-    _volume_level = volume_level * 0.01
-    ffmpeg_cmd: list[str] = []
 
     # Resolve the audio codec
     if acodec not in _AUDIO_CODECS:
@@ -342,7 +340,7 @@ def _get_audio_options(
         acodec = _ACODEC_FALLBACK
     _aencoder = _AUDIO_CODECS[acodec]
 
-    if _volume_level == 1:
+    if volume_level == DEFAULT_VOLUME_LEVEL:
         _COPY_COMMAND = ["-c:a", "copy"]
         # Case 1: Copy audio stream without conversion
         if acodec == "copy":
@@ -356,6 +354,10 @@ def _get_audio_options(
             )
             return _COPY_COMMAND
     # Case 3: Apply audio volume level filter if enabled
+    # Volume level setting is between 1 and 200
+    # FFMPEG volume filter expects a value between 0.01 and 10.0
+    _volume_level = volume_level * 0.01
+    ffmpeg_cmd: list[str] = []
     logger.debug(f"Applying volume level filter: 'volume={_volume_level}'")
     ffmpeg_cmd.extend(["-af", f"volume={_volume_level}"])
 
@@ -430,7 +432,7 @@ def get_ffmpeg_cmd(
         list[str]: FFMPEG command list."""
     # Check if hardware acceleration is enabled
     if fallback:
-        logger.debug("Fallback mode enabled, using CPU for conversion")
+        logger.debug("Falling back to CPU for conversion")
         use_nvidia = False
         use_intel = False
         use_amd = False
