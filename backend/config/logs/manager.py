@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from sqlmodel import col, desc, select
 from config.logs.db_utils import get_async_logs_session
 from config.logs.model import AppLogRecord, LOG_LEVELS, LogLevel
@@ -28,3 +29,20 @@ async def get_all_logs(
         )
         logs = await session.exec(stmt)
         return list(logs)
+
+
+async def delete_old_logs(days: int = 30) -> int:
+    """Delete logs older than the specified number of days."""
+    date_threshold = datetime.now() - timedelta(days=days)
+    async with get_async_logs_session() as session:
+        stmt = select(AppLogRecord).where(
+            col(AppLogRecord.created) < date_threshold
+        )
+        logs_to_delete = await session.exec(stmt)
+        logs_to_delete = logs_to_delete.all()
+        count = len(logs_to_delete)
+        if logs_to_delete:
+            for log in logs_to_delete:
+                await session.delete(log)
+            await session.commit()
+        return count
