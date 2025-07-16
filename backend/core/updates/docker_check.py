@@ -28,16 +28,25 @@ async def get_latest_image_version(image_name: str) -> str | None:
         return None
 
 
-def get_current_image_version():
+def get_current_image_version(check_app: bool = True) -> str:
     """Gets the current version of the image running in the container."""
-    # Implement logic to get the current image version
-    # This could be an environment variable or a file in your container
-    return app_settings.version
+    if check_app:
+        return app_settings.version
+    return app_settings.ytdlp_version
 
 
-async def check_for_update():
-    image_name = "nandyalu/trailarr"
-    current_version = get_current_image_version()
+async def check_for_update(check_app: bool = True) -> None:
+    """Check for updates to the Docker image and yt-dlp version.
+    Args:
+        check_app (bool): If True, checks the app version, \
+            otherwise checks yt-dlp version.
+    Returns:
+        None
+    """
+    image_name = "nandyalu/trailarr" if check_app else "yt-dlp/yt-dlp"
+    _app = "Trailarr" if check_app else "yt-dlp"
+    current_version = get_current_image_version(check_app)
+    logger.info(f"Current version of {_app}: {current_version}")
     latest_version = await get_latest_image_version(image_name)
 
     if not latest_version:
@@ -45,16 +54,24 @@ async def check_for_update():
 
     if current_version != latest_version:
         logger.info(
-            f"A newer version ({latest_version}) of the image is available."
+            f"A newer version ({latest_version}) of {_app} is available."
             " Please update!"
         )
-        app_settings.update_available = True
+        if check_app:
+            app_settings.update_available = True
+        else:
+            app_settings.update_available_ytdlp = True
     else:
         logger.info(
-            f"You are using the latest version ({latest_version}) of the"
-            " image."
+            f"You are using the latest version ({latest_version}) of {_app}."
         )
+
+
+async def check_for_updates():
+    """Check for updates to the Docker image and yt-dlp version."""
+    await check_for_update(True)  # Check app version
+    await check_for_update(False)  # Check yt-dlp version
 
 
 if __name__ == "__main__":
-    asyncio.run(check_for_update())
+    asyncio.run(check_for_updates())
