@@ -91,7 +91,7 @@ if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
         # Intel GPU might be available. Check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA|3D' | grep -i 'Intel' > /dev/null 2>&1; then
+        if lspci | grep -iE 'Display|VGA|3D' | grep -i 'Intel|ARC' > /dev/null 2>&1; then
             export GPU_AVAILABLE_INTEL="true"
             box_echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
         else
