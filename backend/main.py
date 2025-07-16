@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
 import os
 import shutil
 from fastapi import (
@@ -102,6 +103,8 @@ trailarr_api.add_middleware(
 trailarr_api.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=7)
 setup_timing_middleware(trailarr_api)
 
+last_check_time = datetime.now(timezone.utc)
+
 
 # Health check route
 @trailarr_api.get("/status", tags=["Health Check"])
@@ -112,11 +115,15 @@ async def health_check():
     Returns 'unhealthy' if the command fails.
     """
     try:
-        # Run nvidia-smi to check for NVIDIA GPU presence
+        # Run nvidia-smi to check for NVIDIA GPU presence once every hour
+        global last_check_time
+        current_time = datetime.now(timezone.utc)
         if (
-            app_settings.nvidia_gpu_available
+            current_time - last_check_time > timedelta(hours=1)
+            and app_settings.nvidia_gpu_available
             and app_settings.trailer_hardware_acceleration
         ):
+            last_check_time = current_time
             logging.debug("Checking NVIDIA GPU availability")
             # Check if nvidia-smi is available
             if not shutil.which("nvidia-smi"):
