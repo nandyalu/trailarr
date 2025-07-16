@@ -65,7 +65,7 @@ def __download_and_verify_trailer(
     output_file = download_video(trailer_url, tmp_output_file, profile)
     tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
     if not trailer_file.verify_download(
-        tmp_output_file, output_file, media.title
+        tmp_output_file, output_file, media.title, profile
     ):
         raise DownloadFailedError("Trailer verification failed")
     if profile.remove_silence:

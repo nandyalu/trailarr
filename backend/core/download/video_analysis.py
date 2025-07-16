@@ -6,7 +6,6 @@ import json
 
 from pydantic import BaseModel
 
-from config.settings import app_settings
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("VideoAnalysis")
@@ -136,11 +135,17 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     return None
 
 
-def verify_trailer_streams(trailer_path: str):
+def verify_trailer_streams(
+    trailer_path: str, min_duration: int = 10, max_duration: int = 1200
+) -> bool:
     """
     Check if the trailer has audio and video streams. \n
     Args:
-        trailer_path (str): Path to the trailer file. \n
+        trailer_path (str): Path to the trailer file.
+        min_duration (int): Minimum duration of the trailer in seconds. \
+            Default is 10 seconds.
+        max_duration (int): Maximum duration of the trailer in seconds. \
+            Default is 1200 seconds (20 minutes).
     Returns:
         bool: True if the trailer has audio and video streams, False otherwise.
     """
@@ -154,15 +159,15 @@ def verify_trailer_streams(trailer_path: str):
         logger.debug(f"No media info found for the trailer: {trailer_path}")
         return False
     # Varify the trailer duration is within the limits
-    if media_info.duration_seconds < app_settings.trailer_min_duration:
+    if media_info.duration_seconds < min_duration:
         logger.debug(
-            "Trailer duration less than 10 seconds:"
+            f"Trailer duration less than {min_duration} seconds:"
             f" {media_info.duration_seconds}"
         )
         return False
-    if media_info.duration_seconds > app_settings.trailer_max_duration:
+    if media_info.duration_seconds > max_duration:
         logger.debug(
-            "Trailer duration more than 60 seconds:"
+            f"Trailer duration more than {max_duration} seconds:"
             f" {media_info.duration_seconds}"
         )
         return False
