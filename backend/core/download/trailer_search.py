@@ -242,6 +242,7 @@ def get_video_id(
         else:
             video_id = media.youtube_trailer_id
     if video_id:
+        media.youtube_trailer_id = video_id
         return video_id
     # Search for trailer on youtube, until a max of 30 search results
     search_length = 10
@@ -264,4 +265,5 @@ def get_video_id(
         video_id = search_yt_for_trailer(
             media, profile, exclude, search_length=search_length + 10
         )
+    media.youtube_trailer_id = video_id
     return video_id
