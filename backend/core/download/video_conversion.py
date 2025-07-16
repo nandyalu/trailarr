@@ -437,17 +437,21 @@ def get_ffmpeg_cmd(
         use_intel = False
         use_amd = False
     else:
+        # Use individual GPU settings, falling back to global setting if needed
         use_nvidia = (
             app_settings.nvidia_gpu_available
             and app_settings.nvidia_gpu_enabled
+            and app_settings.trailer_hardware_acceleration
         )
         use_intel = (
             app_settings.intel_gpu_available
             and app_settings.intel_gpu_enabled
+            and app_settings.trailer_hardware_acceleration
         )
         use_amd = (
             app_settings.amd_gpu_available
             and app_settings.amd_gpu_enabled
+            and app_settings.trailer_hardware_acceleration
         )
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
