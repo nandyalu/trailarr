@@ -311,12 +311,12 @@ def _get_video_options(
     # First priority: NVIDIA
     if use_nvidia:
         return _get_video_options_nvidia(vcodec, input_file, video_stream)
-    # Second priority: AMD
-    if use_amd:
-        return _get_video_options_amd(vcodec, input_file, video_stream)
-    # Third priority: Intel
+    # Second priority: Intel
     if use_intel:
         return _get_video_options_intel(vcodec, input_file, video_stream)
+    # Third priority: AMD
+    if use_amd:
+        return _get_video_options_amd(vcodec, input_file, video_stream)
     return _get_video_options_cpu(vcodec, input_file, video_stream)
 
 
@@ -439,15 +439,15 @@ def get_ffmpeg_cmd(
     else:
         use_nvidia = (
             app_settings.nvidia_gpu_available
-            and app_settings.trailer_hardware_acceleration
+            and app_settings.nvidia_gpu_enabled
         )
         use_intel = (
             app_settings.intel_gpu_available
-            and app_settings.trailer_hardware_acceleration
+            and app_settings.intel_gpu_enabled
         )
         use_amd = (
             app_settings.amd_gpu_available
-            and app_settings.trailer_hardware_acceleration
+            and app_settings.amd_gpu_enabled
         )
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None

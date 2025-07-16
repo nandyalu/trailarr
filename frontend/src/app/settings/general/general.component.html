@@ -90,11 +90,29 @@
       <p>These are experimental options, might not work as expected!</p>
       @if (settings()?.nvidia_gpu_available) {
         <app-options-setting
-          name="Nvidia GPU Acceleration"
-          description="Use Nvidia GPU for hardware acceleration."
+          name="NVIDIA GPU Acceleration"
+          description="Use NVIDIA GPU for hardware acceleration."
           [options]="trueFalseOptions"
-          [selectedOption]="settings()?.trailer_hardware_acceleration"
-          (optionChange)="updateSetting('trailer_hardware_acceleration', $event)"
+          [selectedOption]="settings()?.nvidia_gpu_enabled"
+          (optionChange)="updateSetting('nvidia_gpu_enabled', $event)"
+        />
+      }
+      @if (settings()?.intel_gpu_available) {
+        <app-options-setting
+          name="Intel GPU Acceleration"
+          description="Use Intel GPU for hardware acceleration (VAAPI)."
+          [options]="trueFalseOptions"
+          [selectedOption]="settings()?.intel_gpu_enabled"
+          (optionChange)="updateSetting('intel_gpu_enabled', $event)"
+        />
+      }
+      @if (settings()?.amd_gpu_available) {
+        <app-options-setting
+          name="AMD GPU Acceleration"
+          description="Use AMD GPU for hardware acceleration (AMF)."
+          [options]="trueFalseOptions"
+          [selectedOption]="settings()?.amd_gpu_enabled"
+          (optionChange)="updateSetting('amd_gpu_enabled', $event)"
         />
       }
       <app-options-setting

@@ -3165,6 +3165,21 @@ components:
         nvidia_gpu_available:
           type: boolean
           title: Nvidia Gpu Available
+        intel_gpu_available:
+          type: boolean
+          title: Intel Gpu Available
+        amd_gpu_available:
+          type: boolean
+          title: Amd Gpu Available
+        nvidia_gpu_enabled:
+          type: boolean
+          title: Nvidia Gpu Enabled
+        intel_gpu_enabled:
+          type: boolean
+          title: Intel Gpu Enabled
+        amd_gpu_enabled:
+          type: boolean
+          title: Amd Gpu Enabled
         trailer_hardware_acceleration:
           type: boolean
           title: Trailer Hardware Acceleration
@@ -3216,6 +3231,11 @@ components:
         - ytdlp_version
         - trailer_remove_silence
         - nvidia_gpu_available
+        - intel_gpu_available
+        - amd_gpu_available
+        - nvidia_gpu_enabled
+        - intel_gpu_enabled
+        - amd_gpu_enabled
         - trailer_hardware_acceleration
         - new_download_method
         - update_ytdlp

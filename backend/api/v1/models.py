@@ -69,6 +69,11 @@ class Settings(BaseModel):
     ytdlp_version: str
     trailer_remove_silence: bool
     nvidia_gpu_available: bool
+    intel_gpu_available: bool
+    amd_gpu_available: bool
+    nvidia_gpu_enabled: bool
+    intel_gpu_enabled: bool
+    amd_gpu_enabled: bool
     trailer_hardware_acceleration: bool
     new_download_method: bool
     update_ytdlp: bool

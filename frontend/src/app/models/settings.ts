@@ -32,6 +32,11 @@ export interface Settings {
   ytdlp_version: string;
   new_download_method: boolean;
   nvidia_gpu_available: boolean;
+  intel_gpu_available: boolean;
+  amd_gpu_available: boolean;
+  nvidia_gpu_enabled: boolean;
+  intel_gpu_enabled: boolean;
+  amd_gpu_enabled: boolean;
   trailer_remove_silence: boolean;
 
   trailer_hardware_acceleration: boolean;

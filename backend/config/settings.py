@@ -316,6 +316,9 @@ class _Config:
             "nvidia_gpu_available": self.nvidia_gpu_available,
             "intel_gpu_available": self.intel_gpu_available,
             "amd_gpu_available": self.amd_gpu_available,
+            "nvidia_gpu_enabled": self.nvidia_gpu_enabled,
+            "intel_gpu_enabled": self.intel_gpu_enabled,
+            "amd_gpu_enabled": self.amd_gpu_enabled,
             "trailer_hardware_acceleration": (
                 self.trailer_hardware_acceleration
             ),
@@ -643,12 +646,28 @@ class _Config:
         - Default is False.
         - Valid values are True/False."""
 
+    nvidia_gpu_enabled = bool_property("NVIDIA_GPU_ENABLED", default=True)
+    """Enable NVIDIA GPU hardware acceleration.
+        - Default is True (enabled if available).
+        - Valid values are True/False."""
+    
+    intel_gpu_enabled = bool_property("INTEL_GPU_ENABLED", default=True)
+    """Enable Intel GPU hardware acceleration (VAAPI).
+        - Default is True (enabled if available).
+        - Valid values are True/False."""
+    
+    amd_gpu_enabled = bool_property("AMD_GPU_ENABLED", default=True)
+    """Enable AMD GPU hardware acceleration (AMF).
+        - Default is True (enabled if available).
+        - Valid values are True/False."""
+
     trailer_hardware_acceleration = bool_property(
         "TRAILER_HARDWARE_ACCELERATION", default=True
     )
     """Hardware acceleration status for trailers.
         - Default is True.
-        - Valid values are True/False."""
+        - Valid values are True/False.
+        - Deprecated: Use individual GPU settings instead."""
 
     new_download_method = bool_property("NEW_DOWNLOAD_METHOD", default=False)
     """Flag to enable new download method for yt-dlp and conversion.
