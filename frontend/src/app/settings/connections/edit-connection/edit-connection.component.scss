@@ -194,6 +194,24 @@ input:read-only {
   line-height: 1.5rem;
 }
 
+.close-progress {
+  width: 100%;
+  height: 0.25rem;
+  background-color: var(--color-success-text);
+  border-radius: 0.25rem;
+  animation: closeProgress 3s linear 0s;
+}
+
+@keyframes closeProgress {
+  0% {
+    width: 100%;
+  }
+
+  100% {
+    width: 0%;
+  }
+}
+
 .dialog-content {
   background-color: var(--color-on-error-container);
   color: var(--color-on-error);
