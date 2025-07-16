@@ -18,6 +18,13 @@
     <div class="about-content">
       <span>Yt-dlp Version</span>
       <code>{{ settings?.ytdlp_version }}</code>
+      <a
+        class="update-available"
+        [class.latest]="!settings?.update_available_ytdlp"
+        href="https://pypi.org/project/yt-dlp/"
+        target="_blank"
+        >{{ settings?.update_available_ytdlp ? 'Update Available' : 'Latest' }}</a
+      >
     </div>
     <div class="about-content">
       <span>API Key</span>
