@@ -12,37 +12,57 @@ echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
 # Create data folder for storing database and other config files
 mkdir -p /config/logs && chown -R vscode:vscode /config
 
-echo "Checking for GPU availability..."
 # Check for NVIDIA GPU
-export NVIDIA_GPU_AVAILABLE="false"
+echo "Checking for NVIDIA GPU availability..."
+export GPU_AVAILABLE_NVIDIA="false"
 if command -v nvidia-smi &> /dev/null; then
     if nvidia-smi > /dev/null 2>&1; then
-        echo "NVIDIA GPU is available."
-        export NVIDIA_GPU_AVAILABLE="true"
+        echo "NVIDIA GPU detected. NVIDIA hardware acceleration (CUDA) is available."
+        export GPU_AVAILABLE_NVIDIA="true"
     else
-        echo "NVIDIA GPU is not available."
+        echo "NVIDIA GPU not detected."
     fi
 else
-    echo "nvidia-smi command not found."
+    echo "nvidia-smi command not found. NVIDIA GPU not detected."
 fi
 
-# Check if /dev/dri exists
-export QSV_GPU_AVAILABLE="false"
+# Check if /dev/dri exists and check for Intel/AMD GPU
+echo "Checking for Intel GPU availability..."
+export GPU_AVAILABLE_INTEL="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
-        # Intel QSV might be available. Further check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA' | grep -i 'Intel'; then
-            export QSV_GPU_AVAILABLE="true"
-            echo "Intel GPU detected. Intel QSV is likely available."
+        # Intel GPU might be available. Check for Intel-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -i 'Intel' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_INTEL="true"
+            echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
         else
-            echo "No Intel GPU detected. Intel QSV is not available."
+            echo "No Intel GPU detected. Intel hardware acceleration not available."
         fi
     else
-        echo "Intel QSV not detected. No renderD devices found in /dev/dri."
+        echo "Intel GPU not detected. No renderD devices found in /dev/dri."
     fi
 else
-    echo "Intel QSV is not available. /dev/dri does not exist."
+    echo "Intel GPU is not available. /dev/dri does not exist."
+fi
+
+echo "Checking for AMD GPU availability..."
+export GPU_AVAILABLE_AMD="false"
+if [ -d /dev/dri ]; then
+    # Check for AMD GPU
+    if ls /dev/dri | grep -q "renderD"; then
+        # AMD GPU might be available. Check for AMD-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'AMD|ATI|Radeon' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_AMD="true"
+            echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
+        else
+            echo "No AMD GPU detected. AMD hardware acceleration not available."
+        fi
+    else
+        echo "AMD GPU not detected. No renderD devices found in /dev/dri."
+    fi
+else
+    echo "AMD GPU is not available. /dev/dri does not exist."
 fi
 
 # Check the version of yt-dlp and store it in a global environment variable
