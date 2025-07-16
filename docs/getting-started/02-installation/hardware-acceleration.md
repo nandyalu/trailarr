@@ -7,6 +7,15 @@ Trailarr can be used with hardware acceleration to speed up video conversion usi
 !!! note
     Trailarr supports hardware acceleration using NVIDIA GPUs (CUDA), Intel GPUs (VAAPI), and AMD GPUs (AMF). The container automatically detects available GPU hardware during startup and uses the best acceleration method available.
 
+!!! info "Runtime Libraries Included"
+    The Trailarr container includes the necessary runtime libraries for GPU acceleration:
+    
+    - **Intel GPU**: `libva2`, `libva-drm2`, `intel-media-va-driver`
+    - **AMD GPU**: `libdrm2` 
+    - **NVIDIA GPU**: Uses NVIDIA Container Toolkit (runtime provided by host)
+    
+    No additional package installation is required in the container.
+
 
 ## Prerequisites
 
@@ -24,12 +33,14 @@ Before you begin, ensure you have the following available based on your GPU type
     - Intel GPU drivers installed on your system
     - `/dev/dri` devices available to the container
 
-    You might need to install and setup your Intel GPU (and possibly the iGPU) to work with VAAPI, see [Intel libva](https://github.com/intel/libva){:target="_blank"} and [Intel Media Drivers](https://github.com/intel/media-driver/){:target="_blank"} for more info.
+    The Trailarr container includes the necessary Intel GPU runtime libraries (`libva2`, `libva-drm2`, `intel-media-va-driver`) for VAAPI support. You might need to install and setup your Intel GPU drivers on the host system to work with VAAPI, see [Intel libva](https://github.com/intel/libva){:target="_blank"} and [Intel Media Drivers](https://github.com/intel/media-driver/){:target="_blank"} for more info.
 
 === "AMD GPU (AMF)"
     - AMD GPU with AMF (Advanced Media Framework) support
     - AMD GPU drivers installed on your system
     - `/dev/dri` devices available to the container
+    
+    The Trailarr container includes the necessary AMD GPU runtime libraries (`libdrm2`) for hardware access. You need to ensure AMD GPU drivers are properly installed on your host system.
 
 
 ## Installation

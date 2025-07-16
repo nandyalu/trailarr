@@ -39,7 +39,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
 # Install tzdata, pciutils and set timezone
-RUN apt-get update && apt-get install -y tzdata pciutils && \
+# Install Intel GPU support (VAAPI) and AMD GPU support runtime libraries
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    pciutils \
+    # Intel GPU (VAAPI) support
+    libva2 \
+    libva-drm2 \
+    intel-media-va-driver \
+    # AMD GPU support (DRM/KMS for hardware access)
+    libdrm2 \
+    && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
