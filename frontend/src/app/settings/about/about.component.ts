@@ -1,9 +1,9 @@
 import {NgTemplateOutlet} from '@angular/common';
 import {Component, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {ServerStats} from 'generated-sources/openapi';
 import {TimeagoModule} from 'ngx-timeago';
 import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
-import {ServerStats} from '../../models/settings';
 import {SettingsService} from '../../services/settings.service';
 
 @Component({
