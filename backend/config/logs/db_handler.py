@@ -54,13 +54,15 @@ class DatabaseLoggingHandler(logging.Handler):
                 _loggername = "AlembicMigrations"
             elif "apscheduler" in _loggername:
                 _loggername = "Tasks"
+            if "asyncio" in _loggername and record.levelno <= logging.INFO:
+                return  # Skip asyncio logs
 
             # Update message for YT-DLP download and FFMPEG conversion
             _message = record.getMessage()
-            if "YT-DLP output::" in _message:
+            if "YT-DLP Output::" in _message:
                 _tb = _message if not _tb else _message + _tb
                 _message = "Downloading video using YT-DLP"
-            elif "FFMPEG output::" in _message:
+            elif "FFMPEG Output::" in _message:
                 _tb = _message if not _tb else _message + _tb
                 _message = "Converting video using FFMPEG"
 
@@ -69,7 +71,7 @@ class DatabaseLoggingHandler(logging.Handler):
                 created=_created,
                 loggername=_loggername,
                 level=record.levelname,  # type: ignore
-                message=record.getMessage(),
+                message=_message,
                 filename=record.module,
                 lineno=record.lineno,
                 taskname=_taskName,

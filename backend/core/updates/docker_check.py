@@ -1,5 +1,4 @@
 import aiohttp
-import asyncio
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -73,5 +72,5 @@ async def check_for_updates():
     await check_for_update(False)  # Check yt-dlp version
 
 
-if __name__ == "__main__":
-    asyncio.run(check_for_updates())
+# if __name__ == "__main__":
+#     asyncio.run(check_for_updates())
