@@ -24,6 +24,8 @@ Before you begin, ensure you have the following available based on your GPU type
     - Intel GPU drivers installed on your system
     - `/dev/dri` devices available to the container
 
+    You might need to install and setup your Intel GPU (and possibly the iGPU) to work with VAAPI, see [Intel libva](https://github.com/intel/libva){:target="_blank"} and [Intel Media Drivers](https://github.com/intel/media-driver/){:target="_blank"} for more info.
+
 === "AMD GPU (AMF)"
     - AMD GPU with AMF (Advanced Media Framework) support
     - AMD GPU drivers installed on your system
@@ -272,5 +274,6 @@ When multiple GPUs are available, Trailarr uses the following priority order:
 - [Enable NVIDIA in WSL](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-cuda-in-wsl){:target="_blank"}
 - [NVIDIA Blog Post](https://developer.nvidia.com/blog/gpu-containers-runtime/){:target="_blank"}
 - [Intel VAAPI Documentation](https://github.com/intel/libva){:target="_blank"}
+- [Intel Media Drivers](https://github.com/intel/media-driver/){:target="_blank"}
 - [AMD AMF Documentation](https://github.com/GPUOpen-LibrariesAndSDKs/AMF){:target="_blank"}
 - [FFmpeg Hardware Acceleration](https://trac.ffmpeg.org/wiki/HWAccelIntro){:target="_blank"}
