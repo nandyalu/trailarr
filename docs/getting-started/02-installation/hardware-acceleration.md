@@ -205,7 +205,7 @@ Hardware acceleration will automatically fall back to CPU encoding in the follow
 1. **Container Startup**: During container startup, Trailarr automatically detects available GPU hardware
 2. **NVIDIA Detection**: Uses `nvidia-smi` command to detect NVIDIA GPUs
 3. **Intel/AMD Detection**: Checks for `/dev/dri` devices and uses `lspci` to identify Intel/AMD GPUs
-4. **Environment Variables**: Sets `NVIDIA_GPU_AVAILABLE`, `INTEL_GPU_AVAILABLE`, and `AMD_GPU_AVAILABLE` environment variables
+4. **Environment Variables**: Sets `GPU_AVAILABLE_NVIDIA`, `GPU_AVAILABLE_INTEL`, and `GPU_AVAILABLE_AMD` environment variables
 
 ### Acceleration Priority
 
