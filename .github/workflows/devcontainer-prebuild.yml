@@ -34,16 +34,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-
       - name: Build and push devcontainer pre-build
         uses: devcontainers/ci@v0.3
         with:
@@ -51,4 +41,7 @@ jobs:
           cacheFrom: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           platform: linux/amd64
           configFile: .devcontainer/devcontainer-prebuild.json
-          push: always
+          push: ${{ github.event_name != 'pull_request' }}
+          skipContainerUserIdUpdate: true
+          runCmd: |
+            echo "Devcontainer pre-build completed successfully!"
