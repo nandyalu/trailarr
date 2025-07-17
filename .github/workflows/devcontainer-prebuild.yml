@@ -48,8 +48,8 @@ jobs:
         with:
           imageName: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           cacheFrom: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          platform: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          platform: linux/amd64,linux/arm64
+          push: always
           skipContainerUserIdUpdate: true
           runCmd: |
             echo "Devcontainer pre-build completed successfully!"
