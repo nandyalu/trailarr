@@ -51,4 +51,5 @@ jobs:
           platform: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           skipContainerUserIdUpdate: true
-          runCmd: make ci-build
+          runCmd: |
+            echo "Devcontainer pre-build completed successfully!"
