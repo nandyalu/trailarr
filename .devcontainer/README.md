@@ -11,8 +11,9 @@ A devcontainer pre-build is a pre-built container image that contains all the de
 The workflow (`.github/workflows/devcontainer-prebuild.yml`) automatically:
 
 1. **Triggers** on changes to any files in the `.devcontainer/` directory
-2. **Builds** the devcontainer using the `devcontainer-prebuild.json` configuration
-3. **Publishes** the pre-built image to `ghcr.io/nandyalu/trailarr/devcontainer`
+2. **Prepares** the configuration by temporarily using the prebuild config as `devcontainer.json`
+3. **Builds** the devcontainer using the clean prebuild configuration
+4. **Publishes** the pre-built image to `ghcr.io/nandyalu/trailarr/devcontainer`
 
 ## Pre-build Configuration
 
