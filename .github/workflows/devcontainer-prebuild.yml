@@ -52,4 +52,5 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           skipContainerUserIdUpdate: true
           runCmd: |
+            make ci-build
             echo "Devcontainer pre-build completed successfully!"
