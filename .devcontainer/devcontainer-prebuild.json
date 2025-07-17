@@ -1,0 +1,42 @@
+{
+	"name": "Trailarr",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"containerEnv": {
+		"LOG_LEVEL": "Info",
+		"TESTING": "False",
+		"APP_PORT": "7888",
+		"APP_DATA_DIR": "/config",
+		"NEW_DOWNLOAD_METHOD": "True"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "latest"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Angular.ng-template",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.debugpy",
+				"GitHub.copilot",
+				"ms-python.black-formatter",
+				"ms-python.flake8",
+				"Gruntfuggly.todo-tree",
+				"MohammadBaqer.better-folding",
+				"aaron-bond.better-comments",
+				"usernamehw.errorlens",
+				"KevinRose.vsc-python-indent",
+				"qwtel.sqlite-viewer",
+				"oderwat.indent-rainbow",
+				"redhat.vscode-yaml",
+				"GitHub.copilot-chat",
+				"esbenp.prettier-vscode"
+			]
+		}
+	},
+	"postCreateCommand": "sudo startup.sh"
+}
