@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs-material mkdocs-git-revision-date-localized-plugin mkdocs_github_changelog mkdocs-glightbox
+          pip install -r .devcontainer/docs-requirements.txt
 
       - name: Build documentation
         run: mkdocs build
