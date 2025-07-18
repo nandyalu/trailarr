@@ -1,0 +1,32 @@
+name: Docs Preview Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Remove docs preview for PR
+        run: |
+          PREVIEW_DIR="site/pr-${{ github.event.pull_request.number }}"
+          if [ -d "$PREVIEW_DIR" ]; then
+            rm -rf "$PREVIEW_DIR"
+            echo "Deleted $PREVIEW_DIR"
+          else
+            echo "No preview directory found for PR #${{ github.event.pull_request.number }}"
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove docs preview for PR #${{ github.event.pull_request.number }}" || echo "Nothing to commit"
+          git push origin gh-pages
