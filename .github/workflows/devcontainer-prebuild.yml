@@ -48,7 +48,7 @@ jobs:
         with:
           imageName: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           cacheFrom: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          platform: linux/amd64,linux/arm64
+          platform: linux/amd64
           push: always
           skipContainerUserIdUpdate: true
           runCmd: |

@@ -35,31 +35,6 @@
 		"APP_PORT": "7888",
 		"APP_DATA_DIR": "/app/config"
 	},
-
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"Angular.ng-template",
-				"ms-python.python",
-				"ms-python.vscode-pylance",
-				"ms-python.debugpy",
-				"GitHub.copilot",
-				"ms-python.black-formatter",
-				"ms-python.flake8",
-				"Gruntfuggly.todo-tree",
-				"MohammadBaqer.better-folding",
-				"aaron-bond.better-comments",
-				"usernamehw.errorlens",
-				"KevinRose.vsc-python-indent",
-				"qwtel.sqlite-viewer",
-				"oderwat.indent-rainbow",
-				"redhat.vscode-yaml",
-				"GitHub.copilot-chat",
-				"esbenp.prettier-vscode",
-				"mkxml.vscode-filesize"
-			]
-		}
-	},
 	
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "sudo startup.sh"
