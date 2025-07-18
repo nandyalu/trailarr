@@ -1,10 +1,12 @@
 ## Custom Added
 .venv/
 *.pyc
-trailarr.db
+*.db
+/config/
 !frontend-build/
 git-filter-repo
 restart_stack.py
+
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files
