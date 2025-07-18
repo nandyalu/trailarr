@@ -1,20 +1,28 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+// This file is used to prebuild the dev container for Trailarr development. GitHub Actions will use this to build the container image. Build Image: ghcr.io/trailarr/trailarr/devcontainer:latest
 {
 	"name": "Trailarr",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"workspaceFolder": "/app",
+
+	// Set some default Environment variables for the container.
+	// These can be overridden in the devcontainer.json file or in the VS Code settings.
 	"containerEnv": {
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/config",
-		"NEW_DOWNLOAD_METHOD": "True"
+		"APP_DATA_DIR": "/app/config"
 	},
+	// Install Node.js in the container, for running Angular.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "latest"
 		}
 	},
+	// Installing some common VS Code extensions for Python and Angular development.
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -34,7 +42,8 @@
 				"oderwat.indent-rainbow",
 				"redhat.vscode-yaml",
 				"GitHub.copilot-chat",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"mkxml.vscode-filesize"
 			]
 		}
 	},
