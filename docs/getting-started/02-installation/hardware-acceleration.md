@@ -288,3 +288,4 @@ When multiple GPUs are available, Trailarr uses the following priority order:
 - [Intel Media Drivers](https://github.com/intel/media-driver/){:target="_blank"}
 - [AMD AMF Documentation](https://github.com/GPUOpen-LibrariesAndSDKs/AMF){:target="_blank"}
 - [FFmpeg Hardware Acceleration](https://trac.ffmpeg.org/wiki/HWAccelIntro){:target="_blank"}
+More links here!
