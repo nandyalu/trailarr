@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
 # Install the xz-utils package
 RUN apt-get update && apt-get install -y curl xz-utils tzdata \
-    git gnupg2 pciutils pinentry-curses \
+    git gnupg2 pciutils libva2 libva-drm2 intel-media-va-driver \
+    libdrm2 pinentry-curses \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -25,7 +26,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
-    APP_VERSION="0.4.2" \
+    APP_VERSION="0.4.4" \
     NVIDIA_VISIBLE_DEVICES="all" \
     NVIDIA_DRIVER_CAPABILITIES="all"
 

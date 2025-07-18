@@ -3,14 +3,12 @@
 {
 	"name": "Trailarr",
 
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
+	"image": "ghcr.io/nandyalu/trailarr/devcontainer:latest",
 	"runArgs": [
 		// Uncomment to use NVIDIA runtime for GPU support
 		// "--runtime=nvidia",
-		"-p=7888:7888",
-		"-p=7887:8000"
+		"-p=7888:7888", // Expose FastAPI port for debugging/running
+		"-p=7887:8000" // Expose MkDocs port for documentation / Angular ng serve
 	],
 
 	// Mount appdata folder for persistent storage
@@ -19,7 +17,7 @@
 		// Mount /dev/dri for GPU access (if needed)
 		// "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
 		// Mount appdata folder for persistent storage
-		"source=/var/appdata/trailarr-dev,target=/config,type=bind,consistency=cached",
+		"source=/var/appdata/trailarr-dev,target=/app/config,type=bind,consistency=cached",
 		// Mount media folder for app to detect the media library
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached",
 		// Mount local GPG keys for signing
@@ -35,14 +33,7 @@
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/config",
-		"NEW_DOWNLOAD_METHOD": "True"
-	},
-
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": "latest"
-		}
+		"APP_DATA_DIR": "/app/config"
 	},
 
 	"customizations": {
@@ -64,7 +55,8 @@
 				"oderwat.indent-rainbow",
 				"redhat.vscode-yaml",
 				"GitHub.copilot-chat",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"mkxml.vscode-filesize"
 			]
 		}
 	},
