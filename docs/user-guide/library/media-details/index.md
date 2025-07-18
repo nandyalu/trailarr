@@ -70,6 +70,25 @@ There are 3 actions buttons that can appear depending on the selected Media
 !!! warning
     This will Delete the trailer file on disk! Cannot be reversed!
 
+## Downloads Section
+
+This section will show all the downloaded trailers for the selected Media.
+
+![Media Details - Downloads Section](media-downloads.png)
+
+Each downloaded trailer will be displayed with the following information:
+
+- **YouTube ID**: The YouTube video ID of the downloaded trailer. Clicking on this will open the video on YouTube in a new tab.
+- **Profile Name**: The name of the profile used to download the trailer.
+- **Download Date**: The date and time the trailer was downloaded.
+- **Duration**: The duration of the trailer.
+- **Size**: The size of the trailer file.
+- **Resolution**: The resolution of the trailer.
+
+A refresh button is available to rescan the media folder for any new trailers.
+
+An info icon is available at the end of each download record, which will show the rest of the information in a tooltip.
+
 ## Files Section
 
 ![Media Details - Click to Open Files](media-files-click-to-open.png)

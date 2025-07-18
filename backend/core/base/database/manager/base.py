@@ -2,9 +2,11 @@ from datetime import datetime, timedelta, timezone
 import re
 from typing import Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
+from sqlalchemy.orm import selectinload
 from sqlmodel.sql.expression import SelectOfScalar
 
 from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.models.download import Download, DownloadCreate, DownloadRead
 from core.base.database.models.media import (
     Media,
     MediaCreate,
@@ -133,7 +135,7 @@ class MediaDatabaseManager:
         Returns:
             list[MediaRead]: List of MediaRead objects.
         """
-        statement = select(Media)
+        statement = select(Media).options(selectinload(Media.downloads))
         if movies_only is not None:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
         if filter_by:
@@ -143,6 +145,23 @@ class MediaDatabaseManager:
                 statement = statement.order_by(sort_by)
             else:
                 statement = statement.order_by(desc(sort_by))
+        db_media_list = _session.exec(statement).all()
+        return self._convert_to_read_list(db_media_list)
+
+    @manage_session
+    def read_all_with_downloads(
+        self,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[MediaRead]:
+        """Get all media objects from the database with their downloads. \n
+        Args:
+            _session (Session, Optional): A session to use for the database connection.\
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[MediaRead]: List of MediaRead objects.
+        """
+        statement = select(Media).options(selectinload(Media.downloads))
         db_media_list = _session.exec(statement).all()
         return self._convert_to_read_list(db_media_list)
 
@@ -887,6 +906,70 @@ class MediaDatabaseManager:
         )
         # logger.info(f"Final statement: {statement}")
         return statement
+
+    @manage_session
+    def create_download(
+        self,
+        download_create: DownloadCreate,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Create a new download object in the database.\n
+        Args:
+            download_create (DownloadCreate): The download object to create.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            None
+        """
+        db_download = Download.model_validate(download_create)
+        _session.add(db_download)
+        _session.commit()
+        return
+
+    @manage_session
+    def read_all_downloads(
+        self,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[DownloadRead]:
+        """Get all download objects from the database. \n
+        Args:
+            _session (Session, Optional): A session to use for the database connection.\
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[DownloadRead]: List of DownloadRead objects.
+        """
+        statement = select(Download)
+        db_download_list = _session.exec(statement).all()
+        return [DownloadRead.model_validate(d) for d in db_download_list]
+
+    @manage_session
+    def update_download_file_exists(
+        self,
+        download_id: int,
+        file_exists: bool,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Update the file_exists status of a download item in the database by id.\n
+        Args:
+            download_id (int): The id of the download to update.
+            file_exists (bool): The file_exists status to set.
+            _session (Session, Optional): A session to use for the database connection. \
+                Default is `None`, in which case a new session will be created.
+        Returns:
+            None
+        Raises:
+            ItemNotFoundError: If the download item with provided id doesn't exist.
+        """
+        db_download = _session.get(Download, download_id)
+        if not db_download:
+            raise ItemNotFoundError("Download", download_id)
+        db_download.file_exists = file_exists
+        _session.add(db_download)
+        _session.commit()
+        return
 
     def _get_db_item(self, media_id: int, session: Session) -> Media:
         """🚨This is a private method🚨 \n

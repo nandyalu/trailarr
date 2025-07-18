@@ -11,11 +11,12 @@ import {DurationConvertPipe} from '../../helpers/duration-pipe';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
 import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';
+import { MediaDownloadsComponent } from './media-downloads/media-downloads.component';
 import {FilesComponent} from './files/files.component';
 
 @Component({
   selector: 'app-media-details',
-  imports: [CopyToClipboardDirective, DurationConvertPipe, FilesComponent, FormsModule, LoadIndicatorComponent, RouterLink, TitleCasePipe],
+  imports: [CopyToClipboardDirective, DurationConvertPipe, FilesComponent, FormsModule, LoadIndicatorComponent, RouterLink, TitleCasePipe, MediaDownloadsComponent],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
 })

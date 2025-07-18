@@ -1,9 +1,13 @@
+from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
+from typing import List
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
-from sqlmodel import Field, Integer
+from sqlalchemy.orm import Mapped
+from sqlmodel import Field, Integer, Relationship
 
 from core.base.database.models.base import AppSQLModel
+from .download import Download
 
 
 def get_current_time():
@@ -106,6 +110,8 @@ class Media(MediaBase, table=True):
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
 
+    downloads: Mapped[list[Download]] = Relationship(back_populates="media")
+
 
 class MediaCreate(MediaBase):
     """Media model for creating a new media objects. \n
@@ -130,6 +136,7 @@ class MediaRead(MediaBase):
     added_at: datetime
     updated_at: datetime
     downloaded_at: datetime | None
+    downloads: list[Download] = []
 
 
 class MediaUpdate(MediaBase):

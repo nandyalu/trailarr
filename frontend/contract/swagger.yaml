@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.4.0
+  version: 0.0.1
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -2594,6 +2594,81 @@ components:
         - filters
       title: CustomFilterRead
       description: Model for reading CustomFilter.
+    Download:
+      properties:
+        path:
+          type: string
+          title: Path
+        file_name:
+          type: string
+          title: File Name
+        size:
+          type: integer
+          title: Size
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        resolution:
+          type: string
+          title: Resolution
+        video_format:
+          type: string
+          title: Video Format
+        audio_format:
+          type: string
+          title: Audio Format
+        audio_channels:
+          type: string
+          title: Audio Channels
+        file_format:
+          type: string
+          title: File Format
+        duration:
+          type: integer
+          title: Duration
+          default: 0
+        subtitles:
+          type: string
+          title: Subtitles
+          default: unk
+        added_at:
+          type: string
+          format: date-time
+          title: Added At
+        profile_id:
+          type: integer
+          title: Profile Id
+        media_id:
+          type: integer
+          title: Media Id
+        youtube_id:
+          type: string
+          title: Youtube Id
+        file_exists:
+          type: boolean
+          title: File Exists
+          default: true
+        id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Id
+      type: object
+      required:
+        - path
+        - file_name
+        - size
+        - updated_at
+        - resolution
+        - video_format
+        - audio_format
+        - audio_channels
+        - file_format
+        - profile_id
+        - media_id
+        - youtube_id
+      title: Download
     ErrorResponse:
       properties:
         message:
@@ -2909,6 +2984,12 @@ components:
               format: date-time
             - type: 'null'
           title: Downloaded At
+        downloads:
+          items:
+            $ref: '#/components/schemas/Download'
+          type: array
+          title: Downloads
+          default: []
       type: object
       required:
         - connection_id

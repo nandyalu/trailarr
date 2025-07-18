@@ -6,6 +6,7 @@ from core.base.database.manager.base import MediaDatabaseManager
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
+from core.download.service import record_new_trailer_download
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
 from exceptions import DownloadFailedError
@@ -113,8 +114,14 @@ async def download_trailer(
         # Download the trailer and verify
         output_file = __download_and_verify_trailer(media, video_id, profile)
         # Move the trailer to the media folder (create subfolder if needed)
-        trailer_file.move_trailer_to_folder(output_file, media, profile)
+        final_file_path = trailer_file.move_trailer_to_folder(output_file, media, profile)
         __update_media_status(media, MonitorStatus.DOWNLOADED)
+        await record_new_trailer_download(
+            media_id=media.id,
+            profile_id=profile.id,
+            file_path=final_file_path,
+            youtube_video_id=video_id,
+        )
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"
             f" from ({video_id})"

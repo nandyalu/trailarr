@@ -1,3 +1,23 @@
+export interface Download {
+  id: number;
+  path: string;
+  file_name: string;
+  size: number;
+  updated_at: Date;
+  resolution: string;
+  video_format: string;
+  audio_format: string;
+  audio_channels: string;
+  file_format: string;
+  duration: number;
+  subtitles: string;
+  added_at: Date;
+  profile_id: number;
+  media_id: number;
+  youtube_id: string;
+  file_exists: boolean;
+}
+
 export interface Media {
   is_movie: boolean;
   connection_id: number;
@@ -29,6 +49,7 @@ export interface Media {
   added_at: Date;
   updated_at: Date;
   downloaded_at: Date;
+  downloads: Download[];
 
   // Additional properties
   isImageLoaded: boolean;

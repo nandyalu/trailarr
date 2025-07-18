@@ -66,6 +66,22 @@ Custom filters are also supported here!
     When you make a selection for a `sort` or `filter` option, browser will remember and apply that next time.
 
 
+## Trailer Tracking
+
+Trailarr automatically tracks new trailer downloads and adds them to its database. This allows for better management and opens up possibilities for future features like downloading season-specific trailers and extras.
+
+When a new trailer is downloaded, Trailarr extracts metadata from the file and stores it in the database. This includes information like resolution, video and audio formats, duration, and subtitles.
+
+### Existing Trailers
+
+The `Scan Disk for Trailers` task will scan your media folders for existing trailers and add them to the database if they are not already tracked.
+
+For existing trailers, Trailarr will try to determine the `YouTubeId` in the following ways:
+
+- **From Metadata**: If you have enabled the option to embed metadata in the downloaded file, Trailarr will try to extract the YouTube video URL from the file's comment field.
+- **From Media Item**: If the media item has a `youtube_trailer_id` and the `downloaded_at` timestamp matches the file's creation/modification time, Trailarr will use that as the `YouTubeId`.
+- **Unknown**: If the `YouTubeId` cannot be determined from the above methods, it will be set to `unknown0000`.
+
 ## Edit View
 
 ![Library - Edit Button](library-edit-button.png)

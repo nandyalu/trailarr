@@ -293,6 +293,11 @@
   }
 </div>
 @if (selectedMedia_) {
+  <!-- Show Media Downloads -->
+  <div class="media-details-container">
+    <app-media-downloads [mediaId]="mediaId()"></app-media-downloads>
+  </div>
+
   <!-- Show Media Files -->
   <div class="media-details-container">
     <media-files [mediaId]="mediaId()"></media-files>

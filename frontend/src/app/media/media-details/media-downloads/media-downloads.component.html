@@ -1,0 +1,34 @@
+<div class="downloads-container">
+  <div class="header">
+    <h2>Downloads</h2>
+    <button (click)="refreshDownloads()" class="icon-button" title="Refresh Downloads">
+      <span class="material-icons">refresh</span>
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-load-indicator />
+  } @else {
+    <div class="downloads-list">
+      @for (download of selectedMedia()?.downloads; track download.id) {
+        <div class="download-item">
+          <div class="download-info">
+            <a href="https://www.youtube.com/watch?v={{ download.youtube_id }}" target="_blank" title="Watch on YouTube">
+              {{ download.youtube_id }}
+            </a>
+            <span>{{ download.profile_id }}</span>
+            <span>{{ download.added_at | date:'short' }}</span>
+            <span>{{ durationToTime(download.duration) }}</span>
+            <span>{{ bytesToSize(download.size) }}</span>
+            <span>{{ download.resolution }}</span>
+          </div>
+          <div class="download-details">
+            <span class="material-icons" [title]="getTooltip(download)">info</span>
+          </div>
+        </div>
+      } @empty {
+        <p>No downloads found for this media.</p>
+      }
+    </div>
+  }
+</div>

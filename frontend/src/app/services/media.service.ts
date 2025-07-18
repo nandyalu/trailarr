@@ -224,4 +224,9 @@ export class MediaService {
     const params = new HttpParams().set('yt_id', ytID);
     return this.httpClient.post(url, {}, {params: params});
   }
+
+  scanMediaDownloads(mediaID: number): Observable<any> {
+    const url = `${this.mediaUrl}${mediaID}/scan`;
+    return this.httpClient.post(url, {});
+  }
 }

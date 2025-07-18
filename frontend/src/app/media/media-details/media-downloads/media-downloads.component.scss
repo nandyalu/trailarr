@@ -1,0 +1,60 @@
+.downloads-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      margin: 0;
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+  }
+
+  .downloads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .download-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border: 1px solid #eee;
+      border-radius: 4px;
+
+      .download-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+
+        a {
+          color: #007bff;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .download-details {
+        .material-icons {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}

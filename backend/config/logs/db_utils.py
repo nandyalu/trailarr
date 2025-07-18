@@ -22,7 +22,7 @@ async_engine = create_async_engine(
     echo=False,
 )
 
-LogBase.metadata.create_all(engine)
+# LogBase.metadata.create_all(engine)
 
 
 def flush_logs_to_db():
