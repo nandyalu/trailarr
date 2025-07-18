@@ -556,64 +556,27 @@ class FilesHandler:
             return False
 
     @staticmethod
-    async def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
-        """Find all folders containing trailers in the specified root folders.\n
-        Finds trailers in the media folder and also in a 'trailer' folder\n
+    async def scan_for_trailers(root_media_dir: str) -> list[str]:
+        """Find all trailer files in the specified root folder.\n
         Args:
             root_media_dir (str): The root directory to search for trailers.\n
         Returns:
-            set[str]: Set of folder paths containing trailers."""
+            list[str]: List of trailer file paths."""
         logger.debug(f"Scanning '{root_media_dir}' for trailers.")
         if not FilesHandler.check_folder_exists(root_media_dir):
             logger.warning(
                 f"Root media directory '{root_media_dir}' is not a directory."
             )
-            return set()
-        inline_trailers = set()
-        folder_trailers = set()
-        count = 0
-        tasks = []
-        media_folders = []
+            return []
 
-        semaphore = asyncio.Semaphore(10)  # Limit scanning 10 files at a time
+        trailer_files = []
 
-        async def bounded(coro):
-            async with semaphore:
-                return await coro
+        for dirpath, _, filenames in os.walk(root_media_dir):
+            for filename in filenames:
+                if FilesHandler.is_trailer_file(filename):
+                    trailer_files.append(os.path.join(dirpath, filename))
 
-        # Scan each immediate subfolder (media folder) in the root directory
-        for media_folder in await aiofiles.os.scandir(root_media_dir):
-            if not media_folder.is_dir():
-                continue
-            count += 1
-            media_folders.append(media_folder)
-            # Launch both checks concurrently for each media folder
-            tasks.append(
-                bounded(
-                    FilesHandler._get_inline_trailer_path(media_folder.path)
-                )
-            )
-            tasks.append(
-                bounded(
-                    FilesHandler._get_folder_trailer_path(media_folder.path)
-                )
-            )
-
-        results = await asyncio.gather(*tasks)
-        for idx, media_folder in enumerate(media_folders):
-            inline_result = results[idx * 2]
-            folder_result = results[idx * 2 + 1]
-            if inline_result:
-                inline_trailers.add(media_folder.path)
-            if folder_result:
-                folder_trailers.add(media_folder.path)
-        msg = (
-            f"Scanned Root folder '{root_media_dir}' ({count} media folders): "
-            f"Found {len(folder_trailers)} (folder) and"
-            f" {len(inline_trailers)} (inline) trailers."
-        )
-        logger.info(msg)
-        return inline_trailers.union(folder_trailers)
+        return trailer_files
 
     @staticmethod
     async def rename_file_fol(old_path: str, new_path: str) -> bool:

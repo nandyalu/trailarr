@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, timezone
 import re
 from typing import Protocol, Sequence
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from core.base.database.manager.connection import ConnectionDatabaseManager
+from core.base.database.models.download import Download
 from core.base.database.models.media import (
     Media,
     MediaCreate,
@@ -926,3 +928,37 @@ class MediaDatabaseManager:
         )
         db_media = session.exec(statement).first()
         return db_media
+
+    @manage_session
+    def create_download(
+        self,
+        download: Download,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Create a new download record in the database.\n
+        Args:
+            download (Download): The download object to create.
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.
+        """
+        _session.add(download)
+        _session.commit()
+        return
+
+    @manage_session
+    def read_all_with_downloads(
+        self,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[MediaRead]:
+        """Get all media objects from the database with their downloads.\n
+        Args:
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            list[MediaRead]: List of MediaRead objects.
+        """
+        statement = select(Media).options(selectinload(Media.downloads))
+        db_media_list = _session.exec(statement).all()
+        return self._convert_to_read_list(db_media_list)

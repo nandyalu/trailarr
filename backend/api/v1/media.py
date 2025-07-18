@@ -12,6 +12,7 @@ from core.tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
 )
+from core.tasks.media_scan import scan_media_for_downloads
 
 logger = ModuleLogger("MediaAPI")
 
@@ -389,6 +390,38 @@ async def delete_media_trailer(media_id: int) -> str:
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Error deleting trailer!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
+@media_router.post(
+    "/{media_id}/scan",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        }
+    },
+)
+async def scan_media(media_id: int) -> str:
+    """Scan media by ID. \n
+    Args:
+        media_id (int): ID of the media item. \n
+    Returns:
+        str: Scanning message.
+    """
+    logger.info(f"Scanning media with ID: {media_id}")
+    try:
+        await scan_media_for_downloads(media_id)
+        msg = f"Scanning media with ID: {media_id}"
+        await websockets.ws_manager.broadcast(msg, "Success")
+        return msg
+    except Exception as e:
+        await websockets.ws_manager.broadcast(
+            "Error scanning media!", "Error"
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)

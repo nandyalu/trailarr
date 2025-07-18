@@ -6,7 +6,9 @@ from dotenv import load_dotenv, set_key
 
 from config import app_logger_opts
 
-APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/config"))
+APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/app/config"))
+if os.path.exists("/config"):
+    APP_DATA_DIR = "/config"
 ENV_PATH = f"{APP_DATA_DIR}/.env"
 RESOLUTION_DICT = {
     "SD": 360,

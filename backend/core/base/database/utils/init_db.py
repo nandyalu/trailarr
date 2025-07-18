@@ -6,6 +6,7 @@
 from core.base.database.models.base import AppSQLModel
 from core.base.database.models.connection import Connection
 from core.base.database.models.media import Media
+from core.base.database.models.download import Download
 from core.base.database.models.filter import Filter
 from core.base.database.models.customfilter import CustomFilter
 from core.base.database.models.trailerprofile import TrailerProfile
@@ -16,7 +17,7 @@ from core.base.database.utils.engine import engine
 # initializing DB. Otherwise, SQLModel might fail to initialize \
 # relationships properly
 
-__ALL__ = [Connection, Media, Filter, CustomFilter, TrailerProfile]
+__ALL__ = [Connection, Media, Filter, CustomFilter, TrailerProfile, Download]
 
 
 def init_db():

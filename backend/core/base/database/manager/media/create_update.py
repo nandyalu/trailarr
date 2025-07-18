@@ -3,6 +3,7 @@ from typing import Sequence
 from sqlmodel import Session
 from core.base.database.manager.media import logger
 from core.base.database.manager.media.base import BaseMediaManager
+from core.base.database.models.download import Download
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import Media, MediaCreate, MediaRead, MediaUpdate
 from core.base.database.utils.engine import manage_session
@@ -205,5 +206,22 @@ class MediaCreateUpdateManager:
         """
         for media_update in media_update_list:
             self.update_media_status(media_update, _session=_session, _commit=False)
+        _session.commit()
+        return
+
+    @manage_session
+    def create_download(
+        self,
+        download: Download,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Create a new download record in the database.\n
+        Args:
+            download (Download): The download object to create.
+            _session (Session) [Optional]: A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.
+        """
+        _session.add(download)
         _session.commit()
         return

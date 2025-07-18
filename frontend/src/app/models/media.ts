@@ -1,3 +1,5 @@
+import { Download } from './download';
+
 export interface Media {
   is_movie: boolean;
   connection_id: number;
@@ -29,6 +31,7 @@ export interface Media {
   added_at: Date;
   updated_at: Date;
   downloaded_at: Date;
+  downloads: Download[];
 
   // Additional properties
   isImageLoaded: boolean;
@@ -41,6 +44,11 @@ export function mapMedia(media: any): Media {
     updated_at: new Date(`${media.updated_at}Z`),
     downloaded_at: new Date(`${media.downloaded_at}Z`),
     isImageLoaded: false,
+    downloads: media.downloads.map((d: any) => ({
+      ...d,
+      added_at: new Date(`${d.added_at}Z`),
+      updated_at: new Date(`${d.updated_at}Z`),
+    })),
   };
 }
 

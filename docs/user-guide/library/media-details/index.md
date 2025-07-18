@@ -70,6 +70,12 @@ There are 3 actions buttons that can appear depending on the selected Media
 !!! warning
     This will Delete the trailer file on disk! Cannot be reversed!
 
+## Downloads Section
+
+This section will show all the downloaded trailers for the media item. You can see information like the YouTube ID, profile name, duration, size, and resolution. You can also see more detailed information by hovering over the info icon.
+
+You can also trigger a rescan of the media folder for new downloads by clicking the refresh icon.
+
 ## Files Section
 
 ![Media Details - Click to Open Files](media-files-click-to-open.png)

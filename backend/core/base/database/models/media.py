@@ -1,9 +1,13 @@
 from datetime import datetime, timezone
 from enum import Enum
+from typing import TYPE_CHECKING, List
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
-from sqlmodel import Field, Integer
+from sqlmodel import Field, Integer, Relationship
 
 from core.base.database.models.base import AppSQLModel
+
+if TYPE_CHECKING:
+    from core.base.database.models.download import Download
 
 
 def get_current_time():
@@ -105,6 +109,13 @@ class Media(MediaBase, table=True):
     added_at: datetime = Field(default_factory=get_current_time)
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
+
+    downloads: List["Download"] = Relationship(
+        back_populates="media",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+        },
+    )
 
 
 class MediaCreate(MediaBase):
