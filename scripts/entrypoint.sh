@@ -74,10 +74,17 @@ box_echo "Checking for NVIDIA GPU availability..."
 export GPU_AVAILABLE_NVIDIA="false"
 if command -v nvidia-smi &> /dev/null; then
     if nvidia-smi > /dev/null 2>&1; then
-        box_echo "NVIDIA GPU detected. NVIDIA hardware acceleration (CUDA) is available."
-        export GPU_AVAILABLE_NVIDIA="true"
+        # Get NVIDIA GPU information
+        GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
+        if [ -n "$GPU_INFO" ]; then
+            box_echo "NVIDIA GPU detected: $GPU_INFO"
+            box_echo "NVIDIA hardware acceleration (CUDA) is available."
+            export GPU_AVAILABLE_NVIDIA="true"
+        else
+            box_echo "NVIDIA GPU not detected - no device information available."
+        fi
     else
-        box_echo "NVIDIA GPU not detected."
+        box_echo "NVIDIA GPU not detected - nvidia-smi failed."
     fi
 else
     box_echo "nvidia-smi command not found. NVIDIA GPU not detected."
@@ -88,14 +95,27 @@ box_echo "----------------------------------------------------------------------
 box_echo "Checking for Intel GPU availability..."
 export GPU_AVAILABLE_INTEL="false"
 if [ -d /dev/dri ]; then
-    # Check for Intel GPU
-    if ls /dev/dri | grep -q "renderD"; then
-        # Intel GPU might be available. Check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC' > /dev/null 2>&1; then
+    # List DRI devices
+    DRI_DEVICES=$(ls -la /dev/dri 2>/dev/null | grep "renderD" | wc -l)
+    if [ "$DRI_DEVICES" -gt 0 ]; then
+        # Check for Intel GPU
+        INTEL_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC')
+        if [ -n "$INTEL_GPU" ]; then
             export GPU_AVAILABLE_INTEL="true"
-            box_echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
+            box_echo "Intel GPU detected: $INTEL_GPU"
+            box_echo "DRI render devices found: $(ls /dev/dri/renderD* 2>/dev/null | tr '\n' ' ')"
+            box_echo "Intel hardware acceleration (VAAPI) is available."
+            
+            # Test VAAPI capability
+            if command -v vainfo &> /dev/null; then
+                VAAPI_INFO=$(vainfo --display drm --device /dev/dri/renderD128 2>/dev/null | grep -i "VAProfile" | head -2)
+                if [ -n "$VAAPI_INFO" ]; then
+                    box_echo "VAAPI capabilities detected:"
+                    echo "$VAAPI_INFO" | while read line; do box_echo "  $line"; done
+                fi
+            fi
         else
-            box_echo "No Intel GPU detected. Intel hardware acceleration not available."
+            box_echo "No Intel GPU detected in PCI devices."
         fi
     else
         box_echo "Intel GPU not detected. No renderD devices found in /dev/dri."
@@ -108,20 +128,63 @@ box_echo "----------------------------------------------------------------------
 box_echo "Checking for AMD GPU availability..."
 export GPU_AVAILABLE_AMD="false"
 if [ -d /dev/dri ]; then
-    # Check for AMD GPU
-    if ls /dev/dri | grep -q "renderD"; then
-        # AMD GPU might be available. Check for AMD-specific devices
-        if lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon' > /dev/null 2>&1; then
+    # List DRI devices
+    DRI_DEVICES=$(ls -la /dev/dri 2>/dev/null | grep "renderD" | wc -l)
+    if [ "$DRI_DEVICES" -gt 0 ]; then
+        # Check for AMD GPU
+        AMD_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon')
+        if [ -n "$AMD_GPU" ]; then
             export GPU_AVAILABLE_AMD="true"
-            box_echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
+            box_echo "AMD GPU detected: $AMD_GPU"
+            box_echo "DRI render devices found: $(ls /dev/dri/renderD* 2>/dev/null | tr '\n' ' ')"
+            box_echo "AMD hardware acceleration (VAAPI) is available."
+            
+            # Test VAAPI capability for AMD
+            if command -v vainfo &> /dev/null; then
+                VAAPI_INFO=$(vainfo --display drm --device /dev/dri/renderD128 2>/dev/null | grep -i "VAProfile" | head -2)
+                if [ -n "$VAAPI_INFO" ]; then
+                    box_echo "VAAPI capabilities detected:"
+                    echo "$VAAPI_INFO" | while read line; do box_echo "  $line"; done
+                fi
+            fi
         else
-            box_echo "No AMD GPU detected. AMD hardware acceleration not available."
+            box_echo "No AMD GPU detected in PCI devices."
         fi
     else
         box_echo "AMD GPU not detected. No renderD devices found in /dev/dri."
     fi
 else
     box_echo "AMD GPU is not available. /dev/dri does not exist."
+fi
+box_echo "--------------------------------------------------------------------------";
+
+# Check user group memberships for GPU access
+box_echo "Checking container user permissions for GPU access..."
+if [ -d /dev/dri ]; then
+    # Check if render group exists and get GID
+    RENDER_GID=$(stat -c '%g' /dev/dri/renderD128 2>/dev/null)
+    VIDEO_GID=$(getent group video 2>/dev/null | cut -d: -f3)
+    
+    if [ -n "$RENDER_GID" ]; then
+        box_echo "DRI render device group ID: $RENDER_GID"
+        # Check if current user will have access to render devices
+        if groups | grep -q "render\|$RENDER_GID"; then
+            box_echo "Container user has render group access."
+        else
+            box_echo "Note: Container user may need render group access for optimal GPU performance."
+        fi
+    fi
+    
+    if [ -n "$VIDEO_GID" ]; then
+        box_echo "Video group ID: $VIDEO_GID"
+        if groups | grep -q "video\|$VIDEO_GID"; then
+            box_echo "Container user has video group access."
+        else
+            box_echo "Note: Container user may need video group access for GPU functionality."
+        fi
+    fi
+else
+    box_echo "No DRI devices available - GPU group checks skipped."
 fi
 box_echo "--------------------------------------------------------------------------";
 
