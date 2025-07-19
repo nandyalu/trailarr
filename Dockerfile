@@ -39,9 +39,24 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
 # Install tzdata, pciutils and set timezone
-RUN apt-get update && apt-get install -y tzdata pciutils && \
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    pciutils \
+    && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install GPU hardware acceleration support packages (optional, for runtime)
+# These packages are needed for Intel GPU (VAAPI) and AMD GPU hardware acceleration
+# Installation continues even if some packages are not available in certain architectures
+RUN apt-get update && \
+    (apt-get install -y \
+        libva2 \
+        libva-drm2 \
+        intel-media-va-driver \
+        libdrm2 \
+    || echo "Warning: Some GPU acceleration packages could not be installed") && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory

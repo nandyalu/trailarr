@@ -4,7 +4,7 @@ The **About** page in Trailarr provides a comprehensive overview of your applica
 
 ## Application Information
 - **Version:** Displays the current Trailarr version and notifies you if an update is available, with a link to the Docker Hub page.
-- **Yt-dlp Version:** Shows the version of yt-dlp currently installed in Trailarr.
+- **Yt-dlp Version:** Displays the version of yt-dlp installed in Trailarr and notifies you if an update is available, with a link to the PyPI page.
 - **API Key:** Trailarr API key. Clicking on this will copy the API Key to your clipboard.
 - **Appdata Folder:** The path to the application’s data directory.
 - **Server Started:** Shows when the server was started (with timeago formatting).

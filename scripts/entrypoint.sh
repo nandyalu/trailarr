@@ -69,15 +69,15 @@ box_echo "----------------------------------------------------------------------
 /app/scripts/update_ytdlp.sh $APP_DATA_DIR
 box_echo "--------------------------------------------------------------------------";
 
-box_echo "Checking for NVIDIA GPU availability..."
 # Check for NVIDIA GPU
-export NVIDIA_GPU_AVAILABLE="false"
+box_echo "Checking for NVIDIA GPU availability..."
+export GPU_AVAILABLE_NVIDIA="false"
 if command -v nvidia-smi &> /dev/null; then
     if nvidia-smi > /dev/null 2>&1; then
-        box_echo "NVIDIA GPU is available."
-        export NVIDIA_GPU_AVAILABLE="true"
+        box_echo "NVIDIA GPU detected. NVIDIA hardware acceleration (CUDA) is available."
+        export GPU_AVAILABLE_NVIDIA="true"
     else
-        box_echo "NVIDIA GPU is not available."
+        box_echo "NVIDIA GPU not detected."
     fi
 else
     box_echo "nvidia-smi command not found. NVIDIA GPU not detected."
@@ -86,22 +86,42 @@ box_echo "----------------------------------------------------------------------
 
 # Check if /dev/dri exists and check for Intel/AMD GPU
 box_echo "Checking for Intel GPU availability..."
-export QSV_GPU_AVAILABLE="false"
+export GPU_AVAILABLE_INTEL="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
-        # Intel QSV might be available. Further check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA' | grep -i 'Intel' > /dev/null 2>&1; then
-            export QSV_GPU_AVAILABLE="true"
-            box_echo "Intel GPU detected. Intel QSV is likely available."
+        # Intel GPU might be available. Check for Intel-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_INTEL="true"
+            box_echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
         else
-            box_echo "No Intel GPU detected. Intel QSV is not available."
+            box_echo "No Intel GPU detected. Intel hardware acceleration not available."
         fi
     else
-        box_echo "Intel QSV not detected. No renderD devices found in /dev/dri."
+        box_echo "Intel GPU not detected. No renderD devices found in /dev/dri."
     fi
 else
-    box_echo "Intel QSV is not available. /dev/dri does not exist."
+    box_echo "Intel GPU is not available. /dev/dri does not exist."
+fi
+box_echo "--------------------------------------------------------------------------";
+
+box_echo "Checking for AMD GPU availability..."
+export GPU_AVAILABLE_AMD="false"
+if [ -d /dev/dri ]; then
+    # Check for AMD GPU
+    if ls /dev/dri | grep -q "renderD"; then
+        # AMD GPU might be available. Check for AMD-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_AMD="true"
+            box_echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
+        else
+            box_echo "No AMD GPU detected. AMD hardware acceleration not available."
+        fi
+    else
+        box_echo "AMD GPU not detected. No renderD devices found in /dev/dri."
+    fi
+else
+    box_echo "AMD GPU is not available. /dev/dri does not exist."
 fi
 box_echo "--------------------------------------------------------------------------";
 

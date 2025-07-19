@@ -9,7 +9,7 @@ We have guides for installing Trailarr using these methods:
 - [Unraid](./unraid.md)
 
 !!! tip "Hardware Acceleration"
-    Trailarr also supports Hardware Acceleration using NVIDIA GPUs for converting downloaded trailers. See details in [Hardware Acceleration](./hardware-acceleration.md) section. Intel and AMD GPU Support will be added soon!
+    Trailarr also supports Hardware Acceleration using Intel, AMD, and NVIDIA GPUs for converting downloaded trailers. See details in [Hardware Acceleration](./hardware-acceleration.md) section.
 
 Each method has its own set of instructions, so choose the one that best fits your setup.
 
