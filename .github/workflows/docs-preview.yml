@@ -20,6 +20,16 @@ jobs:
         with:
           fetch-depth: 0 # Needed for mkdocs-git-revision-date-localized-plugin
       
+      - name: Check for docs changes
+        id: docs-changes
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }} ${{ github.sha }} | grep -E '^docs/|\.md$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No docs changes detected."
+            exit 78
+          fi
+
       - run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
