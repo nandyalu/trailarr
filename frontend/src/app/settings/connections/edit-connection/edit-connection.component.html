@@ -147,7 +147,6 @@
     @let _submitResult = submitResult();
     @if (_submitResult) {
       <p class="result-text">{{ _submitResult }}</p>
-      <div class="close-progress"></div>
     }
     <!-- #endregion Submission Result -->
 
@@ -195,6 +194,10 @@
       </button>
     </div>
     <!-- #endregion Action Buttons -->
+
+    @if (_submitResult.toLowerCase().includes('ated success')) {
+      <div class="close-progress"></div>
+    }
   </form>
 }
 <dialog #cancelDialog (click)="closeCancelDialog()">
