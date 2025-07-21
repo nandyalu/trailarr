@@ -180,12 +180,28 @@ def _get_video_options_vaapi(
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
+    # Use environment variables to get the correct device for Intel or AMD GPU
+    import os
+    device_path = "/dev/dri/renderD128"  # default fallback
+    
+    # Check which GPU is enabled and available, prefer Intel over AMD
+    if (app_settings.gpu_available_intel and app_settings.gpu_enabled_intel and 
+        os.environ.get("INTEL_GPU_DEVICE")):
+        device_path = os.environ.get("INTEL_GPU_DEVICE")
+        logger.debug(f"Using Intel GPU device: {device_path}")
+    elif (app_settings.gpu_available_amd and app_settings.gpu_enabled_amd and 
+          os.environ.get("AMD_GPU_DEVICE")):
+        device_path = os.environ.get("AMD_GPU_DEVICE")
+        logger.debug(f"Using AMD GPU device: {device_path}")
+    else:
+        logger.debug(f"Using default GPU device: {device_path}")
+
     vencoder = _VIDEO_CODECS_VAAPI[vcodec]
     video_options: list[str] = [
         "-hwaccel",
         "vaapi",
         "-hwaccel_device",
-        "/dev/dri/renderD128",
+        device_path,
         "-i",
         input_file,
         "-vf",
