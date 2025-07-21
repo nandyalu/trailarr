@@ -13,7 +13,7 @@ Trailarr can be used with hardware acceleration to speed up video conversion usi
     - **Intel/AMD GPU**: `libva2`, `libva-drm2`, `intel-media-va-driver`, `i965-va-driver`, `mesa-va-drivers`, `vainfo`
     - **NVIDIA GPU**: Uses NVIDIA Container Toolkit (runtime provided by host)
     
-    The container uses johnvansickle.com static ffmpeg builds with full hardware acceleration support compiled in.
+    The container uses yt-dlp/FFmpeg-Builds static builds with comprehensive hardware acceleration codec support.
 
 
 ## Prerequisites
@@ -240,6 +240,9 @@ services:
     # ... rest of config
 ```
 
+!!! info "Automatic Group Assignment"
+    The Trailarr container automatically attempts to add the container user (`appuser`) to the necessary GPU groups (`render`, `video`, and common GPU group IDs like 226, 128, 129) during startup. This reduces the need for manual group configuration in most cases.
+
 
 ### Enabling Hardware Acceleration in Trailarr
 
@@ -282,7 +285,8 @@ Hardware acceleration will automatically fall back to CPU encoding in the follow
 1. **Container Startup**: During container startup, Trailarr automatically detects available GPU hardware
 2. **NVIDIA Detection**: Uses `nvidia-smi` command to detect NVIDIA GPUs
 3. **Intel/AMD Detection**: Checks for `/dev/dri` devices and uses `lspci` to identify Intel/AMD GPUs
-4. **Environment Variables**: Sets `GPU_AVAILABLE_NVIDIA`, `GPU_AVAILABLE_INTEL`, and `GPU_AVAILABLE_AMD` environment variables
+4. **Dynamic Device Mapping**: Automatically maps specific GPU devices (e.g., `/dev/dri/renderD128`, `/dev/dri/renderD129`) to Intel/AMD GPUs
+5. **Environment Variables**: Sets `GPU_AVAILABLE_NVIDIA`, `GPU_AVAILABLE_INTEL`, `GPU_AVAILABLE_AMD`, and device-specific paths
 
 ### Acceleration Priority
 
@@ -314,7 +318,7 @@ When multiple GPUs are available, Trailarr uses the following priority order:
     ```bash
     ffmpeg \
         -hwaccel vaapi \
-        -hwaccel_device /dev/dri/renderD128 \
+        -hwaccel_device [dynamic_device_path] \  # e.g., /dev/dri/renderD128
         -i input.mkv \
         -vf format=nv12,hwupload \
         -c:v h264_vaapi \
