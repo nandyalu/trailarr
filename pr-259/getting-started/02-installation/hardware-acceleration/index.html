@@ -2364,7 +2364,7 @@
 <li><strong>Intel/AMD GPU</strong>: <code>libva2</code>, <code>libva-drm2</code>, <code>intel-media-va-driver</code>, <code>i965-va-driver</code>, <code>mesa-va-drivers</code>, <code>vainfo</code></li>
 <li><strong>NVIDIA GPU</strong>: Uses NVIDIA Container Toolkit (runtime provided by host)</li>
 </ul>
-<p>The container uses johnvansickle.com static ffmpeg builds with full hardware acceleration support compiled in.</p>
+<p>The container uses yt-dlp/FFmpeg-Builds static builds with comprehensive hardware acceleration codec support.</p>
 </div>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before you begin, ensure you have the following available based on your GPU type:</p>
@@ -2564,6 +2564,10 @@
 </span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PGID=${GID}</span>
 </span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="c1"># ... rest of config</span>
 </span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Automatic Group Assignment</p>
+<p>The Trailarr container automatically attempts to add the container user (<code>appuser</code>) to the necessary GPU groups (<code>render</code>, <code>video</code>, and common GPU group IDs like 226, 128, 129) during startup. This reduces the need for manual group configuration in most cases.</p>
+</div>
 <h3 id="enabling-hardware-acceleration-in-trailarr">Enabling Hardware Acceleration in Trailarr</h3>
 <p>To enable hardware acceleration in Trailarr, navigate to <code>Settings</code> -&gt; <code>General</code> -&gt; <code>Advanced Settings</code> and enable the <code>Hardware Acceleration</code> option.</p>
 <div class="admonition note">
@@ -2608,7 +2612,8 @@
 <li><strong>Container Startup</strong>: During container startup, Trailarr automatically detects available GPU hardware</li>
 <li><strong>NVIDIA Detection</strong>: Uses <code>nvidia-smi</code> command to detect NVIDIA GPUs</li>
 <li><strong>Intel/AMD Detection</strong>: Checks for <code>/dev/dri</code> devices and uses <code>lspci</code> to identify Intel/AMD GPUs</li>
-<li><strong>Environment Variables</strong>: Sets <code>GPU_AVAILABLE_NVIDIA</code>, <code>GPU_AVAILABLE_INTEL</code>, and <code>GPU_AVAILABLE_AMD</code> environment variables</li>
+<li><strong>Dynamic Device Mapping</strong>: Automatically maps specific GPU devices (e.g., <code>/dev/dri/renderD128</code>, <code>/dev/dri/renderD129</code>) to Intel/AMD GPUs</li>
+<li><strong>Environment Variables</strong>: Sets <code>GPU_AVAILABLE_NVIDIA</code>, <code>GPU_AVAILABLE_INTEL</code>, <code>GPU_AVAILABLE_AMD</code>, and device-specific paths</li>
 </ol>
 <h3 id="acceleration-priority">Acceleration Priority</h3>
 <p>When multiple GPUs are available, Trailarr uses the following priority order:</p>
@@ -2636,7 +2641,7 @@
 <div class="tabbed-block">
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ffmpeg<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span>-hwaccel<span class="w"> </span>vaapi<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span>-hwaccel_device<span class="w"> </span>/dev/dri/renderD128<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span>-hwaccel_device<span class="w"> </span><span class="o">[</span>dynamic_device_path<span class="o">]</span><span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># e.g., /dev/dri/renderD128</span>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span>-i<span class="w"> </span>input.mkv<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span>-vf<span class="w"> </span><span class="nv">format</span><span class="o">=</span>nv12,hwupload<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span>-c:v<span class="w"> </span>h264_vaapi<span class="w"> </span><span class="se">\</span>
@@ -2684,7 +2689,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 20, 2025 19:00:58 UTC">July 20, 2025 19:00:58</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 21, 2025 03:50:28 UTC">July 21, 2025 03:50:28</span>
   </span>
 
     
