@@ -1,3 +1,4 @@
+import os
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
@@ -47,15 +48,15 @@ _VIDEO_CODECS_NVIDIA = {
     "h265": "hevc_nvenc",
     # "vp8": "libvpx",  # hw encoder not available
     # "vp9": "libvpx-vp9",  # hw encoder not available
-    # "av1": "av1_nvenc",
+    "av1": "av1_nvenc",
 }
 
 _VIDEO_CODECS_VAAPI = {
     "h264": "h264_vaapi",
     "h265": "hevc_vaapi",
-    # "vp8": "libvpx",  # hw encoder not available
-    # "vp9": "libvpx-vp9",  # hw encoder not available
-    # "av1": "av1_vaapi",
+    "vp8": "vp8_vaapi",
+    "vp9": "vp9-vaapi",
+    "av1": "av1_vaapi",
 }
 
 _ACODEC_FALLBACK = "opus"
@@ -101,7 +102,18 @@ def _get_video_options_cpu(
                 f" '{vcodec}' codec"
             )
         ffmpeg_cmd.append(_vencoder)
-        ffmpeg_cmd.extend(["-preset", "veryfast", "-crf", "22"])
+        ffmpeg_cmd.extend(
+            [
+                "-preset",
+                "veryfast",
+                "-crf",
+                "22",
+                "-vf",
+                "format=yuv420p",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
     else:
         logger.debug(
             f"Downloaded video is already in required codec: {vcodec}, "
@@ -137,13 +149,26 @@ def _get_video_options_nvidia(
         "cuda",
         "-i",
         input_file,
+        "vf",
+        "scale_cuda=format=nv12",
         "-c:v",
     ]
 
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
-        video_options.extend(["-preset", "fast", "-cq", "22"])
+        video_options.extend(
+            [
+                "-preset",
+                "fast",
+                "-cq",
+                "22",
+                "-b:v",
+                "0",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -158,7 +183,18 @@ def _get_video_options_nvidia(
             f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
-        video_options.extend(["-preset", "fast", "-cq", "22"])
+        video_options.extend(
+            [
+                "-preset",
+                "fast",
+                "-cq",
+                "22",
+                "-b:v",
+                "0",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
 
     return video_options
 
@@ -181,20 +217,29 @@ def _get_video_options_vaapi(
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
     # Use environment variables to get the correct device for Intel or AMD GPU
-    import os
     device_path = "/dev/dri/renderD128"  # default fallback
-    
+
     # Check which GPU is enabled and available, prefer Intel over AMD
-    if (app_settings.gpu_available_intel and app_settings.gpu_enabled_intel and 
-        os.environ.get("INTEL_GPU_DEVICE")):
-        device_path = os.environ.get("INTEL_GPU_DEVICE")
+    if (
+        app_settings.gpu_available_intel
+        and app_settings.gpu_enabled_intel
+        and os.environ.get("GPU_DEVICE_INTEL")
+    ):
+        device_path = os.environ.get("GPU_DEVICE_INTEL")
         logger.debug(f"Using Intel GPU device: {device_path}")
-    elif (app_settings.gpu_available_amd and app_settings.gpu_enabled_amd and 
-          os.environ.get("AMD_GPU_DEVICE")):
-        device_path = os.environ.get("AMD_GPU_DEVICE")
+    elif (
+        app_settings.gpu_available_amd
+        and app_settings.gpu_enabled_amd
+        and os.environ.get("GPU_DEVICE_AMD")
+    ):
+        device_path = os.environ.get("GPU_DEVICE_AMD")
         logger.debug(f"Using AMD GPU device: {device_path}")
     else:
         logger.debug(f"Using default GPU device: {device_path}")
+
+    # fallback if no env var is set
+    if not device_path:
+        device_path = "/dev/dri/renderD128"
 
     vencoder = _VIDEO_CODECS_VAAPI[vcodec]
     video_options: list[str] = [
@@ -212,7 +257,7 @@ def _get_video_options_vaapi(
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec using VAAPI")
         video_options.append(vencoder)
-        video_options.extend(["-crf", "22", "-b:v", "0"])
+        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -227,7 +272,7 @@ def _get_video_options_vaapi(
             f" '{vcodec}' codec using VAAPI"
         )
         video_options.append(vencoder)
-        video_options.extend(["-crf", "22", "-b:v", "0"])
+        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
 
     return video_options
 
@@ -375,9 +420,8 @@ def get_ffmpeg_cmd(
         )
         # Use VAAPI for both Intel and AMD GPUs
         use_vaapi = (
-            (app_settings.gpu_available_intel and app_settings.gpu_enabled_intel)
-            or (app_settings.gpu_available_amd and app_settings.gpu_enabled_amd)
-        )
+            app_settings.gpu_available_intel and app_settings.gpu_enabled_intel
+        ) or (app_settings.gpu_available_amd and app_settings.gpu_enabled_amd)
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
     _subtitle_stream: StreamInfo | None = None
