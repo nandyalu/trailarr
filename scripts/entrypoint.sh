@@ -72,70 +72,47 @@ box_echo "----------------------------------------------------------------------
 # Function to detect and map GPU devices dynamically
 detect_gpu_devices() {
     # Initialize device mappings
-    export NVIDIA_GPU_DEVICE=""
-    export INTEL_GPU_DEVICE=""
-    export AMD_GPU_DEVICE=""
-    
+    export GPU_DEVICE_NVIDIA=""
+    export GPU_DEVICE_INTEL=""
+    export GPU_DEVICE_AMD=""
+
     # Check for DRI devices and map them to specific GPUs
     if [ -d /dev/dri ]; then
         for device in /dev/dri/renderD*; do
             if [ -e "$device" ]; then
-                # Use udev to get device information if available
-                device_info=$(udevadm info --query=property --name="$device" 2>/dev/null | grep -E "ID_VENDOR|ID_MODEL" || true)
-                
-                # Try to identify GPU vendor from device path info
-                if echo "$device_info" | grep -qi "nvidia"; then
-                    [ -z "$NVIDIA_GPU_DEVICE" ] && export NVIDIA_GPU_DEVICE="$device"
-                elif echo "$device_info" | grep -qi "intel"; then
-                    [ -z "$INTEL_GPU_DEVICE" ] && export INTEL_GPU_DEVICE="$device"
-                elif echo "$device_info" | grep -qi "amd\|ati\|radeon"; then
-                    [ -z "$AMD_GPU_DEVICE" ] && export AMD_GPU_DEVICE="$device"
-                else
-                    # Fallback: check corresponding PCI device
-                    major_minor=$(stat -c "%t:%T" "$device" 2>/dev/null)
-                    if [ -n "$major_minor" ]; then
-                        # Try to match with PCI devices
-                        for pci_device in /sys/bus/pci/devices/*/; do
-                            if [ -f "$pci_device/vendor" ] && [ -f "$pci_device/device" ]; then
-                                vendor_id=$(cat "$pci_device/vendor" 2>/dev/null)
-                                # NVIDIA: 10de, Intel: 8086, AMD: 1002
-                                case "$vendor_id" in
-                                    0x10de)
-                                        [ -z "$NVIDIA_GPU_DEVICE" ] && export NVIDIA_GPU_DEVICE="$device"
-                                        ;;
-                                    0x8086)
-                                        [ -z "$INTEL_GPU_DEVICE" ] && export INTEL_GPU_DEVICE="$device"
-                                        ;;
-                                    0x1002)
-                                        [ -z "$AMD_GPU_DEVICE" ] && export AMD_GPU_DEVICE="$device"
-                                        ;;
-                                esac
-                            fi
-                        done
-                    fi
-                    
-                    # Final fallback: assign to first available if still empty based on lspci
-                    if [ -z "$INTEL_GPU_DEVICE" ] && [ -z "$AMD_GPU_DEVICE" ] && [ -z "$NVIDIA_GPU_DEVICE" ]; then
-                        # Check which GPU types are present in lspci
-                        if lspci 2>/dev/null | grep -qi "nvidia" && [ -z "$NVIDIA_GPU_DEVICE" ]; then
-                            export NVIDIA_GPU_DEVICE="$device"
-                        elif lspci 2>/dev/null | grep -qi "intel" && [ -z "$INTEL_GPU_DEVICE" ]; then
-                            export INTEL_GPU_DEVICE="$device"
-                        elif lspci 2>/dev/null | grep -qi "amd\|ati\|radeon" && [ -z "$AMD_GPU_DEVICE" ]; then
-                            export AMD_GPU_DEVICE="$device"
-                        fi
-                    fi
+                # Get sysfs path
+                syspath=$(udevadm info --query=path --name="$device")
+                fullpath="/sys$syspath/device"
+
+                # Check if the device has a vendor file
+                if [ -f "$fullpath/vendor" ]; then
+                    vendor=$(cat "$fullpath/vendor")
+                    # NVIDIA: 10de, Intel: 8086, AMD: 1002
+                    # PCI Vendor IDS: https://pci-ids.ucw.cz/
+                    case "$vendor" in
+                        0x10de)
+                            [ -z "$GPU_DEVICE_NVIDIA" ] && export GPU_DEVICE_NVIDIA="$device"
+                            ;;
+                        0x8086)
+                            [ -z "$GPU_DEVICE_INTEL" ] && export GPU_DEVICE_INTEL="$device"
+                            ;;
+                        0x1002|0x1022)
+                            [ -z "$GPU_DEVICE_AMD" ] && export GPU_DEVICE_AMD="$device"
+                            ;;
+                    esac
                 fi
             fi
         done
     fi
-    
-    # Default to renderD128 if no specific device was mapped but DRI exists
-    if [ -d /dev/dri ] && [ -e "/dev/dri/renderD128" ]; then
-        [ -z "$INTEL_GPU_DEVICE" ] && export INTEL_GPU_DEVICE="/dev/dri/renderD128"
-        [ -z "$AMD_GPU_DEVICE" ] && export AMD_GPU_DEVICE="/dev/dri/renderD128"
+
+    # Fallback to renderD128 if nothing was detected
+    if [ -e "/dev/dri/renderD128" ]; then
+        [ -z "$GPU_DEVICE_INTEL" ] && export GPU_DEVICE_INTEL="/dev/dri/renderD128"
+        [ -z "$GPU_DEVICE_AMD" ] && export GPU_DEVICE_AMD="/dev/dri/renderD128"
+        [ -z "$GPU_DEVICE_NVIDIA" ] && export GPU_DEVICE_NVIDIA="/dev/dri/renderD128"
     fi
 }
+
 
 # Detect GPU devices before checking for availability
 detect_gpu_devices
@@ -151,8 +128,8 @@ if command -v nvidia-smi &> /dev/null; then
             box_echo "NVIDIA GPU detected: $GPU_INFO"
             box_echo "NVIDIA hardware acceleration (CUDA) is available."
             export GPU_AVAILABLE_NVIDIA="true"
-            if [ -n "$NVIDIA_GPU_DEVICE" ]; then
-                box_echo "NVIDIA GPU device: $NVIDIA_GPU_DEVICE"
+            if [ -n "$GPU_DEVICE_NVIDIA" ]; then
+                box_echo "NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
             fi
         else
             box_echo "NVIDIA GPU not detected - no device information available."
@@ -174,15 +151,15 @@ if [ -d /dev/dri ]; then
     if [ -n "$INTEL_GPU" ]; then
         export GPU_AVAILABLE_INTEL="true"
         box_echo "Intel GPU detected: $INTEL_GPU"
-        if [ -n "$INTEL_GPU_DEVICE" ]; then
-            box_echo "Intel GPU device: $INTEL_GPU_DEVICE"
+        if [ -n "$GPU_DEVICE_INTEL" ]; then
+            box_echo "Intel GPU device: $GPU_DEVICE_INTEL"
         else
             box_echo "Intel GPU device: /dev/dri/renderD128 (default fallback)"
         fi
         box_echo "Intel hardware acceleration (VAAPI) is available."
         
         # Test VAAPI capability
-        device_to_test="${INTEL_GPU_DEVICE:-/dev/dri/renderD128}"
+        device_to_test="${GPU_DEVICE_INTEL:-/dev/dri/renderD128}"
         if command -v vainfo &> /dev/null; then
             VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
@@ -206,15 +183,15 @@ if [ -d /dev/dri ]; then
     if [ -n "$AMD_GPU" ]; then
         export GPU_AVAILABLE_AMD="true"
         box_echo "AMD GPU detected: $AMD_GPU"
-        if [ -n "$AMD_GPU_DEVICE" ]; then
-            box_echo "AMD GPU device: $AMD_GPU_DEVICE"
+        if [ -n "$GPU_DEVICE_AMD" ]; then
+            box_echo "AMD GPU device: $GPU_DEVICE_AMD"
         else
             box_echo "AMD GPU device: /dev/dri/renderD128 (default fallback)"
         fi
         box_echo "AMD hardware acceleration (VAAPI) is available."
         
         # Test VAAPI capability for AMD
-        device_to_test="${AMD_GPU_DEVICE:-/dev/dri/renderD128}"
+        device_to_test="${GPU_DEVICE_AMD:-/dev/dri/renderD128}"
         if command -v vainfo &> /dev/null; then
             VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
