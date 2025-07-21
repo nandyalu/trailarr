@@ -115,7 +115,7 @@ if ffmpeg -f lavfi -i testsrc=duration=2:size=320x240:rate=30 -pix_fmt yuv420p /
     # Test VAAPI encoding
     if ffmpeg -encoders 2>/dev/null | grep -q h264_vaapi && [ -e /dev/dri/renderD128 ]; then
         echo "Testing VAAPI h264_vaapi..."
-        if ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -i /tmp/test_input.mkv -vf format=nv12,hwupload -c:v h264_vaapi -crf 30 -b:v 0 /tmp/test_vaapi.mkv -y > /dev/null 2>&1; then
+        if ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -i /tmp/test_input.mkv -vf format=nv12,hwupload -c:v h264_vaapi -qp 30 -b:v 0 /tmp/test_vaapi.mkv -y > /dev/null 2>&1; then
             echo "✓ VAAPI encoding test passed"
             rm -f /tmp/test_vaapi.mkv
         else
