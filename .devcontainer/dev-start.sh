@@ -31,10 +31,10 @@ export QSV_GPU_AVAILABLE="false"
 if [ -d /dev/dri ]; then
     # Check for Intel GPU
     if ls /dev/dri | grep -q "renderD"; then
-        # Intel QSV might be available. Further check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA' | grep -i 'Intel'; then
-            export QSV_GPU_AVAILABLE="true"
-            echo "Intel GPU detected. Intel QSV is likely available."
+        # Intel GPU might be available. Check for Intel-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'Intel|ARC' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_INTEL="true"
+            echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
         else
             echo "No Intel GPU detected. Intel QSV is not available."
         fi
@@ -42,7 +42,26 @@ if [ -d /dev/dri ]; then
         echo "Intel QSV not detected. No renderD devices found in /dev/dri."
     fi
 else
-    echo "Intel QSV is not available. /dev/dri does not exist."
+    echo "Intel GPU is not available. /dev/dri does not exist."
+fi
+
+echo "Checking for AMD GPU availability..."
+export GPU_AVAILABLE_AMD="false"
+if [ -d /dev/dri ]; then
+    # Check for AMD GPU
+    if ls /dev/dri | grep -q "renderD"; then
+        # AMD GPU might be available. Check for AMD-specific devices
+        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'AMD|ATI|Radeon' > /dev/null 2>&1; then
+            export GPU_AVAILABLE_AMD="true"
+            echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
+        else
+            echo "No AMD GPU detected. AMD hardware acceleration not available."
+        fi
+    else
+        echo "AMD GPU not detected. No renderD devices found in /dev/dri."
+    fi
+else
+    echo "AMD GPU is not available. /dev/dri does not exist."
 fi
 
 # Check the version of yt-dlp and store it in a global environment variable
