@@ -1,3 +1,4 @@
+import os
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
@@ -14,8 +15,8 @@ logger = ModuleLogger("VideoConversion")
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i input.mkv -c:v h264_nvenc -preset fast -cq 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-nvenc.mkv  # noqa: E501
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i test.webm -c:v h264_nvenc -preset fast -cq 22 -af volume=1.5 -c:a aac -b:a 128k -c:s srt -movflags +faststart -tune zerolatency test-264-af-aac-srt-fs-nvenc.mkv  # noqa: E501
 
-# VAAPI (Intel) - Not implementing as I'm not sure how and need help with development for this.
-# ffmpeg -init_hw_device vaapi=foo:/dev/dri/renderD128 -filter_hw_device foo -i output1.mkv -vf 'format=nv12,hwupload' -c:v h264_vaapi -qp 22 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-i916hw-fast.mkv  # noqa: E501
+# VAAPI (Intel/AMD) - Unified approach using VAAPI for both Intel and AMD GPUs
+# ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -i output1.mkv -vf format=nv12,hwupload -c:v h264_vaapi -crf 22 -b:v 0 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-vaapi.mkv  # noqa: E501
 
 
 # -movflags +faststart - only applicable to mp4 containers
@@ -47,7 +48,15 @@ _VIDEO_CODECS_NVIDIA = {
     "h265": "hevc_nvenc",
     # "vp8": "libvpx",  # hw encoder not available
     # "vp9": "libvpx-vp9",  # hw encoder not available
-    # "av1": "av1_nvenc",
+    "av1": "av1_nvenc",
+}
+
+_VIDEO_CODECS_VAAPI = {
+    "h264": "h264_vaapi",
+    "h265": "hevc_vaapi",
+    "vp8": "vp8_vaapi",
+    "vp9": "vp9-vaapi",
+    "av1": "av1_vaapi",
 }
 
 _ACODEC_FALLBACK = "opus"
@@ -93,7 +102,18 @@ def _get_video_options_cpu(
                 f" '{vcodec}' codec"
             )
         ffmpeg_cmd.append(_vencoder)
-        ffmpeg_cmd.extend(["-preset", "veryfast", "-crf", "22"])
+        ffmpeg_cmd.extend(
+            [
+                "-preset",
+                "veryfast",
+                "-crf",
+                "22",
+                "-vf",
+                "format=yuv420p",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
     else:
         logger.debug(
             f"Downloaded video is already in required codec: {vcodec}, "
@@ -129,13 +149,26 @@ def _get_video_options_nvidia(
         "cuda",
         "-i",
         input_file,
+        "vf",
+        "scale_cuda=format=nv12",
         "-c:v",
     ]
 
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec")
         video_options.append(vencoder)
-        video_options.extend(["-preset", "fast", "-cq", "22"])
+        video_options.extend(
+            [
+                "-preset",
+                "fast",
+                "-cq",
+                "22",
+                "-b:v",
+                "0",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -150,7 +183,96 @@ def _get_video_options_nvidia(
             f" '{vcodec}' codec"
         )
         video_options.append(vencoder)
-        video_options.extend(["-preset", "fast", "-cq", "22"])
+        video_options.extend(
+            [
+                "-preset",
+                "fast",
+                "-cq",
+                "22",
+                "-b:v",
+                "0",
+                "-pix_fmt",
+                "yuv420p",
+            ]
+        )
+
+    return video_options
+
+
+def _get_video_options_vaapi(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate the ffmpeg video options for Intel/AMD GPU (VAAPI).
+    Args:
+        vcodec (str): Video codec to convert to
+        input_file (str): Input video file path
+        video_stream (StreamInfo, Optional=None): Video stream info
+    Returns:
+        list[str]: FFMPEG command list."""
+    if vcodec not in _VIDEO_CODECS_VAAPI:
+        logger.warning(
+            f"Video codec '{vcodec}' not supported by VAAPI hardware encoder,"
+            " using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    # Use environment variables to get the correct device for Intel or AMD GPU
+    device_path = "/dev/dri/renderD128"  # default fallback
+
+    # Check which GPU is enabled and available, prefer Intel over AMD
+    if (
+        app_settings.gpu_available_intel
+        and app_settings.gpu_enabled_intel
+        and os.environ.get("GPU_DEVICE_INTEL")
+    ):
+        device_path = os.environ.get("GPU_DEVICE_INTEL")
+        logger.debug(f"Using Intel GPU device: {device_path}")
+    elif (
+        app_settings.gpu_available_amd
+        and app_settings.gpu_enabled_amd
+        and os.environ.get("GPU_DEVICE_AMD")
+    ):
+        device_path = os.environ.get("GPU_DEVICE_AMD")
+        logger.debug(f"Using AMD GPU device: {device_path}")
+    else:
+        logger.debug(f"Using default GPU device: {device_path}")
+
+    # fallback if no env var is set
+    if not device_path:
+        device_path = "/dev/dri/renderD128"
+
+    vencoder = _VIDEO_CODECS_VAAPI[vcodec]
+    video_options: list[str] = [
+        "-hwaccel",
+        "vaapi",
+        "-hwaccel_device",
+        device_path,
+        "-i",
+        input_file,
+        "-vf",
+        "format=nv12,hwupload",
+        "-c:v",
+    ]
+
+    if video_stream is None:
+        logger.debug(f"Converting video to '{vcodec}' codec using VAAPI")
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
+        return video_options
+
+    if video_stream.codec_name == vcodec:
+        logger.debug(
+            f"Downloaded video is already in required codec: '{vcodec}', "
+            "copying stream without converting"
+        )
+        video_options.append("copy")
+    else:
+        logger.debug(
+            f"Converting video from '{video_stream.codec_name}' to"
+            f" '{vcodec}' codec using VAAPI"
+        )
+        video_options.append(vencoder)
+        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
 
     return video_options
 
@@ -159,14 +281,19 @@ def _get_video_options(
     vcodec: str,
     input_file: str,
     use_nvidia: bool,
+    use_vaapi: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
     if vcodec == "copy":
         ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
         logger.debug("Copying video stream without converting")
         return ffmpeg_cmd
+    # First priority: NVIDIA
     if use_nvidia:
         return _get_video_options_nvidia(vcodec, input_file, video_stream)
+    # Second priority: Intel/AMD VAAPI
+    if use_vaapi:
+        return _get_video_options_vaapi(vcodec, input_file, video_stream)
     return _get_video_options_cpu(vcodec, input_file, video_stream)
 
 
@@ -280,15 +407,21 @@ def get_ffmpeg_cmd(
         fallback (bool): If True, hardware acceleration is not used.
     Returns:
         list[str]: FFMPEG command list."""
-    # Check if NVIDIA hardware acceleration is enabled
+    # Check if hardware acceleration is enabled
     if fallback:
         logger.debug("Falling back to CPU for conversion")
         use_nvidia = False
+        use_vaapi = False
     else:
+        # Use individual GPU settings, falling back to global setting if needed
         use_nvidia = (
-            app_settings.nvidia_gpu_available
-            and app_settings.trailer_hardware_acceleration
+            app_settings.gpu_available_nvidia
+            and app_settings.gpu_enabled_nvidia
         )
+        # Use VAAPI for both Intel and AMD GPUs
+        use_vaapi = (
+            app_settings.gpu_available_intel and app_settings.gpu_enabled_intel
+        ) or (app_settings.gpu_available_amd and app_settings.gpu_enabled_amd)
     _video_stream: StreamInfo | None = None
     _audio_stream: StreamInfo | None = None
     _subtitle_stream: StreamInfo | None = None
@@ -311,7 +444,11 @@ def get_ffmpeg_cmd(
     # Set video specific options
     ffmpeg_cmd.extend(
         _get_video_options(
-            profile.video_format, input_file, use_nvidia, _video_stream
+            profile.video_format,
+            input_file,
+            use_nvidia,
+            use_vaapi,
+            _video_stream,
         )
     )
     # Set audio specific options

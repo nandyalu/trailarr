@@ -10,6 +10,7 @@ trim_trailing_whitespace = true
 max_line_length = 140
 
 [*.ts]
+bracket_spacing = false
 quote_type = single
 
 [*.md]

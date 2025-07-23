@@ -40,7 +40,10 @@ These are advanced settings, if you don't know what they do, do not modify them!
 
 - Default is `Info`
 
-Select the logging level for the app. Available options are `Debug`, `Info`, `Warning`, `Error`.
+Select the logging level for the app logs to display in it's console. Available options are `Debug`, `Info`, `Warning`, `Error`.
+
+!!! info "Console logs only"
+    Trailarr logs all logs in it's database (starting from `v0.4.3`), setting this will change what logs are reported by container to Docker.
 
 ??? info
     If you are having issues and need to troubleshoot or request help, set the log level to `Debug` to get more detailed logs.
@@ -70,11 +73,29 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
 
 These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
-### Hardware Acceleration
+### AMD GPU Acceleration
 
-- Default is `false`
+- Default is `true`
 
-Enable this setting to use hardware acceleration for video conversion. This will speed up the conversion process by using the NVIDIA GPU for encoding and decoding.
+Enable this setting to use hardware acceleration for the conversion process by using the AMD GPU for encoding and decoding.
+
+!!! note
+    This setting is available only if an AMD GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../../../getting-started/02-installation/hardware-acceleration.md).
+
+### Intel GPU Acceleration
+
+- Default is `true`
+
+Enable this setting to use hardware acceleration for the conversion process by using the Intel GPU for encoding and decoding.
+
+!!! note
+    This setting is available only if an Intel GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../../../getting-started/02-installation/hardware-acceleration.md).
+
+### NVIDIA GPU Acceleration
+
+- Default is `true`
+
+Enable this setting to use hardware acceleration for the conversion process by using the NVIDIA GPU for encoding and decoding.
 
 !!! note
     This setting is available only if an NVIDIA GPU is detected on the host system. For setup instructions, see [Hardware Acceleration](../../../getting-started/02-installation/hardware-acceleration.md).
