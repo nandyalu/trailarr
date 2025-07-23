@@ -245,10 +245,23 @@ async def get_frontend(rest_of_path: str = ""):
 
 
 # Check if the frontend directory exists, if not create it
-static_dir = os.path.abspath("/app/frontend-build/browser")
-if not os.path.exists(static_dir):
-    logging.debug("Creating static directory")
-    os.makedirs(static_dir)
+# Support both Docker (/app) and bare metal (/opt/trailarr) paths
+static_dirs = [
+    "/opt/trailarr/frontend-build/browser",  # Bare metal
+    "/app/frontend-build/browser"            # Docker
+]
+
+static_dir = None
+for dir_path in static_dirs:
+    if os.path.exists(dir_path):
+        static_dir = os.path.abspath(dir_path)
+        break
+
+if static_dir is None:
+    # Fallback to first option and create it
+    static_dir = os.path.abspath(static_dirs[0])
+    logging.debug(f"Creating static directory: {static_dir}")
+    os.makedirs(static_dir, exist_ok=True)
 else:
-    logging.debug("Mounting frontend directory for frontend files!")
+    logging.debug(f"Using frontend directory: {static_dir}")
     trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
