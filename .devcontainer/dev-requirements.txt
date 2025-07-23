@@ -10,7 +10,7 @@ mkdocs-glightbox==0.4.0
 aiohttp==3.12.14
 aiofiles==24.1.0
 aiosqlite==0.21.0
-alembic==1.16.4
+alembic==1.16.2
 apscheduler==3.11.0
 async-lru==2.0.5
 fastapi[standard-no-fastapi-cloud-cli]==0.116.1
