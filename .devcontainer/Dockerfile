@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y curl xz-utils tzdata \
 WORKDIR /app
 
 # Install Python Packages
-COPY requirements/*.txt requirements/.
+COPY requirements/*.txt /app/requirements/
 RUN python -m pip install --no-cache-dir --disable-pip-version-check \
     --upgrade -r /app/requirements/docs.txt -r /app/requirements/main.txt -r /app/requirements/testing.txt
 
