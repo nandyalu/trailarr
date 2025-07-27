@@ -10,9 +10,9 @@ RUN apt-get update && apt-get install -y curl xz-utils tzdata \
 WORKDIR /app
 
 # Install Python Packages
-COPY dev-requirements.txt .
+COPY requirements/*.txt /app/requirements/
 RUN python -m pip install --no-cache-dir --disable-pip-version-check \
-    --upgrade -r /app/dev-requirements.txt
+    --upgrade -r /app/requirements/docs.txt -r /app/requirements/main.txt -r /app/requirements/testing.txt
 
 # Download and extract the custom FFmpeg build from yt-dlp
 RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \

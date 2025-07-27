@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r .devcontainer/docs-requirements.txt
+          pip install -r .devcontainer/requirements/docs.txt
 
       - name: Build documentation
         run: mkdocs build
