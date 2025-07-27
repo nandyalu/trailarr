@@ -16,6 +16,17 @@ install_drivers_debian() {
     FAILED_PACKAGES=()
     # Core VAAPI libraries (most important for Intel/AMD)
     apt-get install -y libva2 || FAILED_PACKAGES+=("libva2")
+    apt-get -yqq install git cmake pkg-config meson libdrm-dev automake libtool && \
+    mkdir -p /tmp/libva && \
+    cd /tmp/libva && \
+    git clone https://github.com/intel/libva.git /tmp/libva && \
+    git checkout 2.22.0 && \
+    ./autogen.sh --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig && \
+    rm -rf /tmp/libva || FAILED_PACKAGES+=("libva build")
+
     apt-get install -y libva-drm2 || FAILED_PACKAGES+=("libva-drm2")
 
     # Intel GPU drivers
