@@ -46,6 +46,6 @@
 				"mkxml.vscode-filesize"
 			]
 		}
-	},
-	"postCreateCommand": "sudo startup.sh"
+	}
+	// "postCreateCommand": "sudo startup.sh"
 }
