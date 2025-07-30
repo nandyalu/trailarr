@@ -31,6 +31,7 @@ install_drivers_debian() {
 
     # Intel GPU drivers
     apt-get install -y intel-media-va-driver || FAILED_PACKAGES+=("intel-media-va-driver")
+    apt-get install -y intel-media-va-driver-non-free || FAILED_PACKAGES+=("intel-media-va-driver-non-free")
     apt-get install -y i965-va-driver || FAILED_PACKAGES+=("i965-va-driver")
 
     # AMD GPU drivers
