@@ -8,7 +8,7 @@ install_drivers_debian() {
     ARCH=$(dpkg --print-architecture)
 
     # Update package list
-    sed -i 's/^Components: main$/& contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources
+    sed -i 's/^Components: main$/& contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources || true
     apt-get update
     
     # Install GPU hardware acceleration runtime libraries in separate commands to prevent build failures
