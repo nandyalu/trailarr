@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y curl xz-utils tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 # Install HW Acceleration drivers and libraries
-COPY ../scripts/install_drivers.sh /tmp/install_drivers.sh
+COPY scripts/install_drivers.sh /tmp/install_drivers.sh
 RUN chmod +x /tmp/install_drivers.sh && \
     /tmp/install_drivers.sh
 
@@ -15,7 +15,7 @@ RUN chmod +x /tmp/install_drivers.sh && \
 WORKDIR /app
 
 # Install Python Packages
-COPY requirements/*.txt /app/requirements/
+COPY .devcontainer/requirements/*.txt /app/requirements/
 RUN python -m pip install --no-cache-dir --disable-pip-version-check \
     --upgrade -r /app/requirements/docs.txt -r /app/requirements/main.txt -r /app/requirements/testing.txt
 
@@ -39,7 +39,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ENV PYTHON_PATH="${PYTHON_PATH}:/app/backend"
 
 # Copy startup script
-COPY ./dev-start.sh /usr/local/bin/startup.sh
+COPY .devcontainer/dev-start.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
 
 # Expose the port the app runs on
