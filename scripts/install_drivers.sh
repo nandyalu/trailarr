@@ -8,6 +8,9 @@ install_drivers_debian() {
     ARCH=$(dpkg --print-architecture)
 
     # Update package list
+    echo "deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware" > /etc/apt/sources.list.d/non-free.list
+    echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/non-free.list
+    echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/non-free.list
     apt-get update
     
     # Install GPU hardware acceleration runtime libraries in separate commands to prevent build failures
@@ -33,6 +36,7 @@ install_drivers_debian() {
     apt-get install -y intel-media-va-driver || FAILED_PACKAGES+=("intel-media-va-driver")
     apt-get install -y intel-media-va-driver-non-free || FAILED_PACKAGES+=("intel-media-va-driver-non-free")
     apt-get install -y i965-va-driver || FAILED_PACKAGES+=("i965-va-driver")
+    apt-get install -y i965-va-driver-shaders || FAILED_PACKAGES+=("i965-va-driver-shaders")
 
     # AMD GPU drivers
     apt-get install -y mesa-va-drivers || FAILED_PACKAGES+=("mesa-va-drivers")

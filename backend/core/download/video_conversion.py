@@ -247,6 +247,8 @@ def _get_video_options_vaapi(
         "vaapi",
         "-hwaccel_device",
         device_path,
+        "-vaapi_device",
+        device_path,
         "-i",
         input_file,
         "-vf",
