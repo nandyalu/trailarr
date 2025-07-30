@@ -39,7 +39,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ENV PYTHON_PATH="${PYTHON_PATH}:/app/backend"
 
 # Copy startup script
-COPY dev-start.sh /usr/local/bin/startup.sh
+COPY ./dev-start.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
 
 # Expose the port the app runs on
