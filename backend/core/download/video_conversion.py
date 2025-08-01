@@ -33,6 +33,11 @@ _AUDIO_CODECS = {
     "copy": "copy",
 }
 
+_SUBTITLES_CODECS = {
+    "srt": "srt",
+    "vtt": "webvtt",
+}
+
 _VIDEO_CODECS = {
     "h264": "libx264",
     "h265": "libx265",
@@ -365,14 +370,23 @@ def _get_subtitle_options(
     Returns:
         list[str]: FFMPEG command list for subtitles."""
     ffmpeg_cmd: list[str] = []
+    _scodec = _SUBTITLES_CODECS.get(scodec, "srt")
     if stream is None:
-        logger.debug(f"Converting subtitles to {scodec} format")
+        logger.debug(f"Converting subtitles to {_scodec} format")
     else:
-        logger.debug(
-            f"Converting subtitles from {stream.codec_name} to {scodec} format"
-        )
+        if stream.codec_name == _scodec:
+            logger.debug(
+                f"Subtitle already in '{_scodec}' format, copying stream "
+                "without converting"
+            )
+            _scodec = "copy"
+        else:
+            logger.debug(
+                f"Converting subtitles from {stream.codec_name} to"
+                f" {_scodec} format"
+            )
     ffmpeg_cmd.append("-c:s")
-    ffmpeg_cmd.append(scodec)
+    ffmpeg_cmd.append(_scodec)
     return ffmpeg_cmd
 
 
