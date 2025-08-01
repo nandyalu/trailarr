@@ -7,6 +7,12 @@ install_drivers_debian() {
     # Get the architecture of the system
     ARCH=$(dpkg --print-architecture)
 
+    # Only install drivers on amd64 architecture
+    if [ "$ARCH" != "amd64" ]; then
+        echo "Skipping driver installation on $ARCH architecture (drivers only supported on amd64)"
+        return 0
+    fi
+
     # Update package list
     sed -i 's/^Components: main$/& contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources || true
     apt-get update
