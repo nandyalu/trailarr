@@ -50,6 +50,15 @@ install_drivers_debian() {
     apt-get install -y libdrm2 || FAILED_PACKAGES+=("libdrm2")
     apt-get install -y libmfx1 || FAILED_PACKAGES+=("libmfx1")
 
+    # Cleanup build dependencies and package cache to reduce image size
+    echo "Cleaning up build dependencies and package cache..."
+    apt-get remove -y git cmake pkg-config meson libdrm-dev automake libtool
+    apt-get autoremove -y
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    rm -rf /tmp/*
+    rm -rf /var/tmp/*
+
     # Check if any packages failed to install
     if [ ${#FAILED_PACKAGES[@]} -ne 0 ]; then
         echo "Warning: [$ARCH] The following packages could not be installed: ${FAILED_PACKAGES[*]}"
