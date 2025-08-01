@@ -56,7 +56,27 @@ jobs:
           keep_files: true
           publish_branch: gh-pages
 
+      - name: Check for existing preview comment
+        id: check-comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          # Check if a preview comment already exists
+          EXISTING_COMMENT=$(gh pr view $PR_NUMBER --repo "$REPO" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🚀 Docs preview for this PR"))) | .id' | head -n1)
+          
+          if [ -n "$EXISTING_COMMENT" ]; then
+            echo "Found existing preview comment: $EXISTING_COMMENT"
+            echo "comment_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "No existing preview comment found"
+            echo "comment_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Comment preview link on PR
+        if: steps.check-comment.outputs.comment_exists == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

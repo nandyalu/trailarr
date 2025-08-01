@@ -94,6 +94,12 @@ def int_property(
         return getenv_int(name, default)
 
     def setter(self, value: int) -> None:
+        # Convert to int if value is a string to handle API input
+        if isinstance(value, str):
+            try:
+                value = int(value)
+            except ValueError:
+                value = default  # Use default if conversion fails
         if min_ is not None:
             value = max(min_, value)
         if max_ is not None:
