@@ -170,7 +170,7 @@ box_echo "----------------------------------------------------------------------
 # Switch to the non-root user and execute the command
 box_echo "Switching to user '$APPUSER' and starting the application"
 
-exec gosu "$APPUSER" /app/scripts/start.sh
+exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
 
 # DO NOT ADD ANY OTHER COMMANDS HERE! THEY WON'T BE EXECUTED!
 # Instead add them in the start.sh script
