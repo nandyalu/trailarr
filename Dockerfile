@@ -1,3 +1,10 @@
+# Stage 1 - gosu builder
+FROM golang:1.24.5-bookworm AS gosu-builder
+RUN apt-get update && apt-get install -y --no-install-recommends git
+RUN git clone https://github.com/harshitsidhwa/gosu.git /gosu
+WORKDIR /gosu
+RUN go build -o /usr/local/bin/gosu .
+
 # Stage 1 - Python dependencies
 FROM python:3.12-slim AS python-deps
 
@@ -21,6 +28,10 @@ RUN chmod +x /tmp/install_ffmpeg.sh && \
 
 # Stage 2 - Final image
 FROM python:3.12-slim
+
+# Copy gosu from builder stage
+COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu
+RUN chmod +x /usr/local/bin/gosu
 
 # Install HW Acceleration drivers and libraries
 COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh

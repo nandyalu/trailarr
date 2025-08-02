@@ -333,17 +333,7 @@ box_echo "----------------------------------------------------------------------
 # Switch to the non-root user and execute the command
 box_echo "Switching to user '$APPUSER' and starting the application"
 
-# Get the shell for the user
-USER_SHELL=$(getent passwd "$APPUSER" | cut -d: -f7)
-
-# Check if the shell is valid and executable
-if [[ -x "$USER_SHELL" && "$USER_SHELL" != "/usr/sbin/nologin" && "$USER_SHELL" != "/bin/false" ]]; then
-    exec su "$APPUSER" -c /app/scripts/start.sh
-else
-    # If the shell is invalid or missing, use a fallback shell (Ex: user www-data doesn't have a shell)
-    box_echo "User shell is invalid or missing, using fallback shell: '/bin/bash'"
-    exec su "$APPUSER" -s /bin/bash -c /app/scripts/start.sh
-fi
+exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
 
 # DO NOT ADD ANY OTHER COMMANDS HERE! THEY WON'T BE EXECUTED!
 # Instead add them in the start.sh script
