@@ -164,7 +164,7 @@ if [ -d /dev/dri ]; then
             VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
                 box_echo "VAAPI capabilities detected:"
-                echo "$VAAPI_INFO" | while read line; do box_echo "  $line"; done
+                echo "$VAAPI_INFO" | while read -r line; do box_echo "  $line"; done
             fi
         fi
     else
@@ -196,7 +196,7 @@ if [ -d /dev/dri ]; then
             VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
                 box_echo "VAAPI capabilities detected:"
-                echo "$VAAPI_INFO" | while read line; do box_echo "  $line"; done
+                echo "$VAAPI_INFO" | while read -r line; do box_echo "  $line"; done
             fi
         fi
     else
