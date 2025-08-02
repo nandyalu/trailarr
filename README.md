@@ -48,7 +48,28 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 
 ## Installation
 
+Trailarr can be installed using Docker (recommended) or directly on bare metal:
+
+**Docker Installation (Recommended):**
 See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on [Getting Started](https://nandyalu.github.io/trailarr/getting-started/) and [User Guide](https://nandyalu.github.io/trailarr/user-guide/).
+
+**Bare Metal Installation:**
+For users who need direct hardware access (especially GPU acceleration in Proxmox LXC environments):
+
+```bash
+# Clone the repository
+git clone https://github.com/nandyalu/trailarr.git
+cd trailarr
+
+# Run the installation script for Debian-based systems
+./install.sh
+
+# Start the service
+sudo systemctl enable trailarr
+sudo systemctl start trailarr
+```
+
+See [Bare Metal Installation Guide](https://nandyalu.github.io/trailarr/getting-started/installation/baremetal/) for detailed instructions.
 
 We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
 
