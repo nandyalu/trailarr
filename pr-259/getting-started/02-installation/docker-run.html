@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://nandyalu.github.io/trailarr/user-guide/settings/connections/index.html">
+        <link rel="canonical" href="https://nandyalu.github.io/trailarr/getting-started/02-installation/docker-run.html">
       
       
-        <link rel="prev" href="../general-settings/index.html">
+        <link rel="prev" href="docker-compose.html">
       
       
-        <link rel="next" href="../profiles/index.html">
+        <link rel="next" href="unraid.html">
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
@@ -24,14 +24,14 @@
     
     
       
-        <title>Connections - Trailarr Docs</title>
+        <title>Docker Run - Trailarr Docs</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,14 +50,14 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
     
-   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
     html.glightbox-open { overflow: initial; height: 100%; }
     .gslide-title { margin-top: 0px; user-select: text; }
     .gslide-desc { color: #666; user-select: text; }
@@ -66,7 +66,7 @@
     .gdesc-inner { font-size: 0.75rem; }
     body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
     body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
-    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#connections" class="md-skip">
+        <a href="#explanation-of-options" class="md-skip">
           Skip to content
         </a>
       
@@ -101,7 +101,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../index.html" title="Trailarr Docs" class="md-header__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+    <a href="../../index.html" title="Trailarr Docs" class="md-header__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
       
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="logo">
 
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Connections
+              Docker Run
             
           </span>
         </div>
@@ -237,7 +237,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../index.html" class="md-tabs__link">
+      <a href="../../index.html" class="md-tabs__link">
         
   
   
@@ -254,11 +254,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../getting-started/index.html" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../index.html" class="md-tabs__link">
           
   
   
@@ -276,13 +278,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../index.html" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../user-guide/index.html" class="md-tabs__link">
           
   
   
@@ -304,7 +304,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../troubleshooting/common-issues.html" class="md-tabs__link">
+        <a href="../../troubleshooting/common-issues.html" class="md-tabs__link">
           
   
   
@@ -326,7 +326,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../release-notes/2025.html" class="md-tabs__link">
+        <a href="../../release-notes/2025.html" class="md-tabs__link">
           
   
   
@@ -348,7 +348,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../references/contributing.html" class="md-tabs__link">
+        <a href="../../references/contributing.html" class="md-tabs__link">
           
   
   
@@ -390,7 +390,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../index.html" title="Trailarr Docs" class="md-nav__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+    <a href="../../index.html" title="Trailarr Docs" class="md-nav__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
       
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="logo">
 
@@ -419,7 +419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../index.html" class="md-nav__link">
+      <a href="../../index.html" class="md-nav__link">
         
   
   
@@ -438,6 +438,8 @@
       
   
   
+    
+  
   
   
     
@@ -459,18 +461,21 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/index.html" class="md-nav__link ">
+            <a href="../index.html" class="md-nav__link ">
               
   
   
@@ -483,13 +488,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Getting Started
@@ -530,7 +535,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/01-first-things/index.html" class="md-nav__link ">
+            <a href="../01-first-things/index.html" class="md-nav__link ">
               
   
   
@@ -565,7 +570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/01-first-things/environment-variables.html" class="md-nav__link">
+      <a href="../01-first-things/environment-variables.html" class="md-nav__link">
         
   
   
@@ -588,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/01-first-things/radarr-sonarr-volumes.html" class="md-nav__link">
+      <a href="../01-first-things/radarr-sonarr-volumes.html" class="md-nav__link">
         
   
   
@@ -616,6 +621,8 @@
                 
   
   
+    
+  
   
   
     
@@ -640,15 +647,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/02-installation/index.html" class="md-nav__link ">
+            <a href="index.html" class="md-nav__link ">
               
   
   
@@ -667,7 +674,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             Installation
@@ -683,7 +690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/docker-compose.html" class="md-nav__link">
+      <a href="docker-compose.html" class="md-nav__link">
         
   
   
@@ -703,10 +710,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/docker-run.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Docker Run
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="docker-run.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -717,6 +744,33 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#explanation-of-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explanation of options:
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -729,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/unraid.html" class="md-nav__link">
+      <a href="unraid.html" class="md-nav__link">
         
   
   
@@ -752,7 +806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/hardware-acceleration.html" class="md-nav__link">
+      <a href="hardware-acceleration.html" class="md-nav__link">
         
   
   
@@ -808,7 +862,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/03-setup/index.html" class="md-nav__link ">
+            <a href="../03-setup/index.html" class="md-nav__link ">
               
   
   
@@ -843,7 +897,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/03-setup/profiles.html" class="md-nav__link">
+      <a href="../03-setup/profiles.html" class="md-nav__link">
         
   
   
@@ -866,7 +920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/03-setup/connections.html" class="md-nav__link">
+      <a href="../03-setup/connections.html" class="md-nav__link">
         
   
   
@@ -897,7 +951,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/04-next-steps.html" class="md-nav__link">
+      <a href="../04-next-steps.html" class="md-nav__link">
         
   
   
@@ -924,8 +978,6 @@
       
   
   
-    
-  
   
   
     
@@ -949,21 +1001,18 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../index.html" class="md-nav__link ">
+            <a href="../../user-guide/index.html" class="md-nav__link ">
               
   
   
@@ -976,13 +1025,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             User Guide
@@ -998,7 +1047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../general/index.html" class="md-nav__link">
+      <a href="../../user-guide/general/index.html" class="md-nav__link">
         
   
   
@@ -1044,7 +1093,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../library/index.html" class="md-nav__link ">
+            <a href="../../user-guide/library/index.html" class="md-nav__link ">
               
   
   
@@ -1079,7 +1128,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../library/media-details/index.html" class="md-nav__link">
+      <a href="../../user-guide/library/media-details/index.html" class="md-nav__link">
         
   
   
@@ -1110,7 +1159,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tasks/index.html" class="md-nav__link">
+      <a href="../../user-guide/tasks/index.html" class="md-nav__link">
         
   
   
@@ -1133,7 +1182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../logs/index.html" class="md-nav__link">
+      <a href="../../user-guide/logs/index.html" class="md-nav__link">
         
   
   
@@ -1153,8 +1202,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1179,15 +1226,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../index.html" class="md-nav__link ">
+            <a href="../../user-guide/settings/index.html" class="md-nav__link ">
               
   
   
@@ -1206,7 +1253,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             Settings
@@ -1222,7 +1269,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../general-settings/index.html" class="md-nav__link">
+      <a href="../../user-guide/settings/general-settings/index.html" class="md-nav__link">
         
   
   
@@ -1242,32 +1289,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Connections
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/connections/index.html" class="md-nav__link">
         
   
   
@@ -1278,92 +1303,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#edit-connection-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Edit Connection Fields
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Edit Connection Fields">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#monitor-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Monitor Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Monitor Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#new" class="md-nav__link">
-    <span class="md-ellipsis">
-      New
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sync" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sync
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#none" class="md-nav__link">
-    <span class="md-ellipsis">
-      None
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1403,7 +1342,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../profiles/index.html" class="md-nav__link ">
+            <a href="../../user-guide/settings/profiles/index.html" class="md-nav__link ">
               
   
   
@@ -1493,7 +1432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/general.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/general.html" class="md-nav__link">
         
   
   
@@ -1516,7 +1455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/file.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/file.html" class="md-nav__link">
         
   
   
@@ -1539,7 +1478,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/audio.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/audio.html" class="md-nav__link">
         
   
   
@@ -1562,7 +1501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/video.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/video.html" class="md-nav__link">
         
   
   
@@ -1585,7 +1524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/subtitle.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/subtitle.html" class="md-nav__link">
         
   
   
@@ -1608,7 +1547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/search.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/search.html" class="md-nav__link">
         
   
   
@@ -1639,7 +1578,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/filters.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/filters.html" class="md-nav__link">
         
   
   
@@ -1662,7 +1601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/examples.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/examples.html" class="md-nav__link">
         
   
   
@@ -1693,7 +1632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../about/index.html" class="md-nav__link">
+      <a href="../../user-guide/settings/about/index.html" class="md-nav__link">
         
   
   
@@ -1778,7 +1717,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../troubleshooting/common-issues.html" class="md-nav__link">
+      <a href="../../troubleshooting/common-issues.html" class="md-nav__link">
         
   
   
@@ -1801,7 +1740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../troubleshooting/faq.html" class="md-nav__link">
+      <a href="../../troubleshooting/faq.html" class="md-nav__link">
         
   
   
@@ -1878,7 +1817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-notes/2025.html" class="md-nav__link">
+      <a href="../../release-notes/2025.html" class="md-nav__link">
         
   
   
@@ -1901,7 +1840,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-notes/2024.html" class="md-nav__link">
+      <a href="../../release-notes/2024.html" class="md-nav__link">
         
   
   
@@ -1980,7 +1919,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/contributing.html" class="md-nav__link">
+      <a href="../../references/contributing.html" class="md-nav__link">
         
   
   
@@ -2003,7 +1942,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/legal-disclaimer.html" class="md-nav__link">
+      <a href="../../references/legal-disclaimer.html" class="md-nav__link">
         
   
   
@@ -2026,7 +1965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/api-docs/api-docs.html" class="md-nav__link">
+      <a href="../../references/api-docs/api-docs.html" class="md-nav__link">
         
   
   
@@ -2066,8 +2005,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -2076,68 +2013,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#edit-connection-fields" class="md-nav__link">
+  <a href="#explanation-of-options" class="md-nav__link">
     <span class="md-ellipsis">
-      Edit Connection Fields
+      Explanation of options:
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Edit Connection Fields">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#monitor-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Monitor Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Monitor Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#new" class="md-nav__link">
-    <span class="md-ellipsis">
-      New
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sync" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sync
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#none" class="md-nav__link">
-    <span class="md-ellipsis">
-      None
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2160,29 +2040,38 @@
   
 
 
-<h1 id="connections">Connections</h1>
-<h2 id="edit-connection-fields">Edit Connection Fields</h2>
-<ul>
-<li><strong>Name</strong>: A unique name for your connection (min. 3 characters).</li>
-<li><strong>Arr Type</strong>: Select either Radarr or Sonarr.</li>
-<li><strong>Monitor Type</strong>: Choose how trailers are monitored/downloaded (see below).</li>
-<li><strong>Server URL</strong>: The full URL to your Radarr/Sonarr server (e.g., http://192.168.0.15:7878).</li>
-<li><strong>API Key</strong>: The API key from your Radarr/Sonarr server settings.</li>
-<li><strong>Path Mappings</strong>: Map Radarr/Sonarr internal paths to Trailarr paths for correct file access.</li>
-</ul>
-<h3 id="monitor-types">Monitor Types</h3>
-<h4 id="missing"><code>Missing</code></h4>
-<p>Monitors and downloads trailers for movies/series without a trailer.</p>
-<h4 id="new"><code>New</code></h4>
-<p>Only Monitors and download trailers for movies/series that gets added after the change.</p>
-<h4 id="sync"><code>Sync</code></h4>
-<p>Monitors and downloads trailers for movie/series that are monitored in Radarr/Sonarr.</p>
-<h4 id="none"><code>None</code></h4>
-<p>Turns off monitoring for the connection and does not download any trailers.</p>
+  <h1>Docker Run</h1>
+
+<p>Before you begin, make sure you have reviewed the <a href="../01-first-things/index.html">First Things</a> section to understand environment variables and how to find your existing Radarr/Sonarr volume mappings.</p>
 <div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p><em>If you have a huge library and don't want to download trailers for all of them, set the monitor type to <code>None</code> when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to <code>New</code> to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for.</em></p>
+<p class="admonition-title">Use Docker Compose</p>
+<p>It is recommended to use <code>Docker Compose</code>, as it makes it easy to update to latest version and/or update the configuration later if needed</p>
 </div>
+<p>If you prefer not to use Docker Compose, you can use the <code>docker run</code> command. Be sure to replace placeholders with your actual paths and settings.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--name<span class="w"> </span>trailarr<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">TZ</span><span class="o">=</span><span class="s2">&quot;America/New_York&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="c1"># Add any other environment variables as needed</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">7889</span>:7889<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>-v<span class="w"> </span>/path/to/your/trailarr:/config<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>-v<span class="w"> </span>/path/on/your/host/movies:/movies<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span>-v<span class="w"> </span>/path/on/your/host/tv:/tv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="c1"># Add more volume mappings as needed</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>--restart<span class="w"> </span>unless-stopped<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>nandyalu/trailarr:latest
+</span></code></pre></div>
+<h2 id="explanation-of-options"><strong>Explanation of options:</strong></h2>
+<p>For a detailed explanation of how to setup each of these see <a href="docker-compose.html">Docker Compose</a>.</p>
+<ul>
+<li><code>-d</code>: Runs the container in detached mode (in the background).</li>
+<li><code>--name trailarr</code>: Assigns a name to the container.</li>
+<li><code>-e OPTION=VALUE</code>: An environment variable to use with the container.</li>
+<li><code>-p 7889:7889</code>: Maps port 7889 on your host to port 7889 in the container. Change the host port (left side) if needed.</li>
+<li><code>-v HOST_PATH:CONTAINER_PATH</code>: Map a HOST_PATH (path in your computer/server) to an INTERNAL_PATH (path inside Trailarr container).</li>
+<li><code>--restart unless-stopped</code>: Ensures the container restarts automatically when unhealthy.</li>
+<li><code>nandyalu/trailarr:latest</code>: The Docker image to use.</li>
+</ul>
+<p>Now that Trailarr is up and running, we need to configure it to connect to our <code>Radarr</code> and <code>Sonarr</code> to let it start doing it's job - download trailers. We will go over that in the next section <a href="../03-setup/index.html">Setup</a>.</p>
 
 
 
@@ -2205,7 +2094,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 3, 2025 22:44:41 UTC">July 3, 2025 22:44:41</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="June 29, 2025 09:36:18 UTC">June 29, 2025 09:36:18</span>
   </span>
 
     
@@ -2215,7 +2104,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 3, 2025 22:44:41 UTC">July 3, 2025 22:44:41</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="June 29, 2025 09:36:18 UTC">June 29, 2025 09:36:18</span>
   </span>
 
     
@@ -2252,7 +2141,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../general-settings/index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: General Settings">
+          <a href="docker-compose.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Docker Compose">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2262,20 +2151,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                General Settings
+                Docker Compose
               </div>
             </div>
           </a>
         
         
           
-          <a href="../profiles/index.html" class="md-footer__link md-footer__link--next" aria-label="Next: Profiles">
+          <a href="unraid.html" class="md-footer__link md-footer__link--next" aria-label="Next: Unraid">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Profiles
+                Unraid
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2361,10 +2250,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});

@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://nandyalu.github.io/trailarr/user-guide/settings/connections/index.html">
+        <link rel="canonical" href="https://nandyalu.github.io/trailarr/getting-started/01-first-things/environment-variables.html">
       
       
-        <link rel="prev" href="../general-settings/index.html">
+        <link rel="prev" href="index.html">
       
       
-        <link rel="next" href="../profiles/index.html">
+        <link rel="next" href="radarr-sonarr-volumes.html">
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
@@ -24,14 +24,14 @@
     
     
       
-        <title>Connections - Trailarr Docs</title>
+        <title>Environment Variables - Trailarr Docs</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,14 +50,14 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
     
-   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
     html.glightbox-open { overflow: initial; height: 100%; }
     .gslide-title { margin-top: 0px; user-select: text; }
     .gslide-desc { color: #666; user-select: text; }
@@ -66,7 +66,7 @@
     .gdesc-inner { font-size: 0.75rem; }
     body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
     body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
-    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#connections" class="md-skip">
+        <a href="#app_data_dir" class="md-skip">
           Skip to content
         </a>
       
@@ -101,7 +101,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../index.html" title="Trailarr Docs" class="md-header__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+    <a href="../../index.html" title="Trailarr Docs" class="md-header__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
       
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="logo">
 
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Connections
+              Environment Variables
             
           </span>
         </div>
@@ -237,7 +237,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../index.html" class="md-tabs__link">
+      <a href="../../index.html" class="md-tabs__link">
         
   
   
@@ -254,11 +254,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../getting-started/index.html" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../index.html" class="md-tabs__link">
           
   
   
@@ -276,13 +278,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../index.html" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../user-guide/index.html" class="md-tabs__link">
           
   
   
@@ -304,7 +304,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../troubleshooting/common-issues.html" class="md-tabs__link">
+        <a href="../../troubleshooting/common-issues.html" class="md-tabs__link">
           
   
   
@@ -326,7 +326,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../release-notes/2025.html" class="md-tabs__link">
+        <a href="../../release-notes/2025.html" class="md-tabs__link">
           
   
   
@@ -348,7 +348,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../references/contributing.html" class="md-tabs__link">
+        <a href="../../references/contributing.html" class="md-tabs__link">
           
   
   
@@ -390,7 +390,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../index.html" title="Trailarr Docs" class="md-nav__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+    <a href="../../index.html" title="Trailarr Docs" class="md-nav__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
       
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="logo">
 
@@ -419,7 +419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../index.html" class="md-nav__link">
+      <a href="../../index.html" class="md-nav__link">
         
   
   
@@ -438,6 +438,8 @@
       
   
   
+    
+  
   
   
     
@@ -459,18 +461,21 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/index.html" class="md-nav__link ">
+            <a href="../index.html" class="md-nav__link ">
               
   
   
@@ -483,13 +488,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Getting Started
@@ -502,6 +507,8 @@
                 
   
   
+    
+  
   
   
     
@@ -522,15 +529,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/01-first-things/index.html" class="md-nav__link ">
+            <a href="index.html" class="md-nav__link ">
               
   
   
@@ -549,7 +556,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             First Things
@@ -562,10 +569,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../getting-started/01-first-things/environment-variables.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Environment Variables
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="environment-variables.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -576,6 +603,87 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#app_data_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      APP_DATA_DIR
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pgid" class="md-nav__link">
+    <span class="md-ellipsis">
+      PGID
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puid" class="md-nav__link">
+    <span class="md-ellipsis">
+      PUID
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tz" class="md-nav__link">
+    <span class="md-ellipsis">
+      TZ
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webui_disable_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      WEBUI_DISABLE_AUTH
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webui_password" class="md-nav__link">
+    <span class="md-ellipsis">
+      WEBUI_PASSWORD
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -588,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/01-first-things/radarr-sonarr-volumes.html" class="md-nav__link">
+      <a href="radarr-sonarr-volumes.html" class="md-nav__link">
         
   
   
@@ -648,7 +756,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/02-installation/index.html" class="md-nav__link ">
+            <a href="../02-installation/index.html" class="md-nav__link ">
               
   
   
@@ -683,7 +791,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/docker-compose.html" class="md-nav__link">
+      <a href="../02-installation/docker-compose.html" class="md-nav__link">
         
   
   
@@ -706,7 +814,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/docker-run.html" class="md-nav__link">
+      <a href="../02-installation/docker-run.html" class="md-nav__link">
         
   
   
@@ -729,7 +837,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/unraid.html" class="md-nav__link">
+      <a href="../02-installation/unraid.html" class="md-nav__link">
         
   
   
@@ -752,7 +860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/02-installation/hardware-acceleration.html" class="md-nav__link">
+      <a href="../02-installation/hardware-acceleration.html" class="md-nav__link">
         
   
   
@@ -808,7 +916,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../getting-started/03-setup/index.html" class="md-nav__link ">
+            <a href="../03-setup/index.html" class="md-nav__link ">
               
   
   
@@ -843,7 +951,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/03-setup/profiles.html" class="md-nav__link">
+      <a href="../03-setup/profiles.html" class="md-nav__link">
         
   
   
@@ -866,7 +974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/03-setup/connections.html" class="md-nav__link">
+      <a href="../03-setup/connections.html" class="md-nav__link">
         
   
   
@@ -897,7 +1005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/04-next-steps.html" class="md-nav__link">
+      <a href="../04-next-steps.html" class="md-nav__link">
         
   
   
@@ -924,8 +1032,6 @@
       
   
   
-    
-  
   
   
     
@@ -949,21 +1055,18 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../index.html" class="md-nav__link ">
+            <a href="../../user-guide/index.html" class="md-nav__link ">
               
   
   
@@ -976,13 +1079,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             User Guide
@@ -998,7 +1101,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../general/index.html" class="md-nav__link">
+      <a href="../../user-guide/general/index.html" class="md-nav__link">
         
   
   
@@ -1044,7 +1147,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../library/index.html" class="md-nav__link ">
+            <a href="../../user-guide/library/index.html" class="md-nav__link ">
               
   
   
@@ -1079,7 +1182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../library/media-details/index.html" class="md-nav__link">
+      <a href="../../user-guide/library/media-details/index.html" class="md-nav__link">
         
   
   
@@ -1110,7 +1213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tasks/index.html" class="md-nav__link">
+      <a href="../../user-guide/tasks/index.html" class="md-nav__link">
         
   
   
@@ -1133,7 +1236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../logs/index.html" class="md-nav__link">
+      <a href="../../user-guide/logs/index.html" class="md-nav__link">
         
   
   
@@ -1153,8 +1256,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1179,15 +1280,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../index.html" class="md-nav__link ">
+            <a href="../../user-guide/settings/index.html" class="md-nav__link ">
               
   
   
@@ -1206,7 +1307,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             Settings
@@ -1222,7 +1323,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../general-settings/index.html" class="md-nav__link">
+      <a href="../../user-guide/settings/general-settings/index.html" class="md-nav__link">
         
   
   
@@ -1242,32 +1343,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Connections
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/connections/index.html" class="md-nav__link">
         
   
   
@@ -1278,92 +1357,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#edit-connection-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Edit Connection Fields
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Edit Connection Fields">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#monitor-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Monitor Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Monitor Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#new" class="md-nav__link">
-    <span class="md-ellipsis">
-      New
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sync" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sync
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#none" class="md-nav__link">
-    <span class="md-ellipsis">
-      None
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1403,7 +1396,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../profiles/index.html" class="md-nav__link ">
+            <a href="../../user-guide/settings/profiles/index.html" class="md-nav__link ">
               
   
   
@@ -1493,7 +1486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/general.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/general.html" class="md-nav__link">
         
   
   
@@ -1516,7 +1509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/file.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/file.html" class="md-nav__link">
         
   
   
@@ -1539,7 +1532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/audio.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/audio.html" class="md-nav__link">
         
   
   
@@ -1562,7 +1555,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/video.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/video.html" class="md-nav__link">
         
   
   
@@ -1585,7 +1578,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/subtitle.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/subtitle.html" class="md-nav__link">
         
   
   
@@ -1608,7 +1601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/settings/search.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/settings/search.html" class="md-nav__link">
         
   
   
@@ -1639,7 +1632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/filters.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/filters.html" class="md-nav__link">
         
   
   
@@ -1662,7 +1655,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../profiles/examples.html" class="md-nav__link">
+      <a href="../../user-guide/settings/profiles/examples.html" class="md-nav__link">
         
   
   
@@ -1693,7 +1686,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../about/index.html" class="md-nav__link">
+      <a href="../../user-guide/settings/about/index.html" class="md-nav__link">
         
   
   
@@ -1778,7 +1771,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../troubleshooting/common-issues.html" class="md-nav__link">
+      <a href="../../troubleshooting/common-issues.html" class="md-nav__link">
         
   
   
@@ -1801,7 +1794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../troubleshooting/faq.html" class="md-nav__link">
+      <a href="../../troubleshooting/faq.html" class="md-nav__link">
         
   
   
@@ -1878,7 +1871,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-notes/2025.html" class="md-nav__link">
+      <a href="../../release-notes/2025.html" class="md-nav__link">
         
   
   
@@ -1901,7 +1894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-notes/2024.html" class="md-nav__link">
+      <a href="../../release-notes/2024.html" class="md-nav__link">
         
   
   
@@ -1980,7 +1973,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/contributing.html" class="md-nav__link">
+      <a href="../../references/contributing.html" class="md-nav__link">
         
   
   
@@ -2003,7 +1996,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/legal-disclaimer.html" class="md-nav__link">
+      <a href="../../references/legal-disclaimer.html" class="md-nav__link">
         
   
   
@@ -2026,7 +2019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../references/api-docs/api-docs.html" class="md-nav__link">
+      <a href="../../references/api-docs/api-docs.html" class="md-nav__link">
         
   
   
@@ -2066,8 +2059,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -2076,68 +2067,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#edit-connection-fields" class="md-nav__link">
+  <a href="#app_data_dir" class="md-nav__link">
     <span class="md-ellipsis">
-      Edit Connection Fields
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Edit Connection Fields">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#monitor-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Monitor Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Monitor Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing
+      APP_DATA_DIR
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#new" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#pgid" class="md-nav__link">
     <span class="md-ellipsis">
-      New
+      PGID
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#sync" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#puid" class="md-nav__link">
     <span class="md-ellipsis">
-      Sync
+      PUID
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#none" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#tz" class="md-nav__link">
     <span class="md-ellipsis">
-      None
+      TZ
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#webui_disable_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      WEBUI_DISABLE_AUTH
+    </span>
+  </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#webui_password" class="md-nav__link">
+    <span class="md-ellipsis">
+      WEBUI_PASSWORD
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
   
 </li>
       
@@ -2160,29 +2148,104 @@
   
 
 
-<h1 id="connections">Connections</h1>
-<h2 id="edit-connection-fields">Edit Connection Fields</h2>
+  <h1>Environment Variables</h1>
+
+<p><strong>Environment variables are OPTIONAL.</strong></p>
+<p>Here are the optional environment variables you can set:</p>
+<h3 id="app_data_dir"><code>APP_DATA_DIR</code></h3>
 <ul>
-<li><strong>Name</strong>: A unique name for your connection (min. 3 characters).</li>
-<li><strong>Arr Type</strong>: Select either Radarr or Sonarr.</li>
-<li><strong>Monitor Type</strong>: Choose how trailers are monitored/downloaded (see below).</li>
-<li><strong>Server URL</strong>: The full URL to your Radarr/Sonarr server (e.g., http://192.168.0.15:7878).</li>
-<li><strong>API Key</strong>: The API key from your Radarr/Sonarr server settings.</li>
-<li><strong>Path Mappings</strong>: Map Radarr/Sonarr internal paths to Trailarr paths for correct file access.</li>
+<li>Default is <code>/config</code>.</li>
 </ul>
-<h3 id="monitor-types">Monitor Types</h3>
-<h4 id="missing"><code>Missing</code></h4>
-<p>Monitors and downloads trailers for movies/series without a trailer.</p>
-<h4 id="new"><code>New</code></h4>
-<p>Only Monitors and download trailers for movies/series that gets added after the change.</p>
-<h4 id="sync"><code>Sync</code></h4>
-<p>Monitors and downloads trailers for movie/series that are monitored in Radarr/Sonarr.</p>
-<h4 id="none"><code>None</code></h4>
-<p>Turns off monitoring for the connection and does not download any trailers.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p><em>If you have a huge library and don't want to download trailers for all of them, set the monitor type to <code>None</code> when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to <code>New</code> to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for.</em></p>
+<p>This environment variable is used to set the application data directory. If setting this, make sure to map the volume to the same directory.</p>
+<p>Useful if you want to store the application data in a different directory than the default.</p>
+<p>For example, if you want to store the application data in <code>/app_config/abc</code>, you can set the <code>APP_DATA_DIR</code> environment variable like this:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP_DATA_DIR=/app_config/abc</span>
+</span></span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="hll"><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/appdata/trailarr:/app_config/abc</span>
+</span></span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you are setting the <code>APP_DATA_DIR</code> environment variable, make sure to set an absolute path like <code>/data</code> or <code>/config/abc</code>, and map the volume to the same directory.</p>
 </div>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Do not set <code>APP_DATA_DIR</code> to <code>/app</code> or <code>/tmp</code> or any other linux system directory. This could cause the application to not work correctly or data loss.</p>
+</div>
+<h3 id="pgid"><code>PGID</code></h3>
+<ul>
+<li>Default is <code>1000</code>.</li>
+</ul>
+<p>This environment variable is used to set the group ID for the application.</p>
+<p>Useful if you have permission issues with the application writing to the volume. You can set the group ID to the group of the volume or a group that has read/write permissions to the volume.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PGID=1000</span>
+</span></code></pre></div>
+<h3 id="puid"><code>PUID</code></h3>
+<ul>
+<li>Default is <code>1000</code>.</li>
+</ul>
+<p>This environment variable is used to set the user ID for the application.</p>
+<p>Useful if you have permission issues with the application writing to the volume. You can set the user ID to the owner of the volume or a user that has read/write permissions to the volume.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUID=1000</span>
+</span></code></pre></div>
+<h3 id="tz"><code>TZ</code></h3>
+<ul>
+<li>Default is <code>America/New_York</code>.</li>
+</ul>
+<p>This environment variable is used to set the timezone for the application.</p>
+<p>For a list of valid timezones, see <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">tz database time zones</a>.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TZ=America/New_York</span>
+</span></code></pre></div>
+<h3 id="webui_disable_auth"><code>WEBUI_DISABLE_AUTH</code></h3>
+<ul>
+<li>Default is <code>False</code>.</li>
+</ul>
+<p>This environment variable is used to disable the authentication for the web interface.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WEBUI_DISABLE_AUTH=True</span><span class="w"> </span><span class="c1"># This will disable the web UI authentication</span>
+</span></code></pre></div>
+<h3 id="webui_password"><code>WEBUI_PASSWORD</code></h3>
+<ul>
+<li>Default is <code>trailarr</code> (hashed).</li>
+</ul>
+<p>Trailarr Web Interface has a browser login to access the app. Default credentials are:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Username:<span class="w"> </span>admin
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Password:<span class="w"> </span>trailarr
+</span></code></pre></div>
+<p>If you forget your password, set this environment variable to <code>''</code> (empty string) to reset the password for the web interface to default.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WEBUI_PASSWORD=&#39;&#39;</span><span class="w"> </span><span class="c1"># This will reset the password to default</span>
+</span></code></pre></div>
+<p>To change the password, go to <code>Settings &gt; About &gt; Password</code> in web interface. </p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>If you change your password from the web interface, the password will be hashed and stored internally. There is no way to retrieve the password as only a hashed version is stored, you need to reset it if you forget it.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Once you change your password, don't forget to remove the <code>WEBUI_PASSWORD</code> environment variable from the docker-compose file.</p>
+</div>
+<h3 id="example">Example</h3>
+<p>Here is an example of setting the environment variables:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TZ=America/Los_Angeles</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUID=1000</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PGID=1000</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP_DATA_DIR=/data/trailarr</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/appdata/trailarr:/data/trailarr</span>
+</span></code></pre></div>
+<p>This sets the environment variables to run the app with following settings:</p>
+<ul>
+<li>Timezone: America/Los_Angeles</li>
+<li>User ID: 1000</li>
+<li>Group ID: 1000</li>
+<li>Application data directory: /data/trailarr</li>
+<li>Volume mapping: /var/appdata/trailarr:/data/trailarr</li>
+</ul>
 
 
 
@@ -2205,7 +2268,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 3, 2025 22:44:41 UTC">July 3, 2025 22:44:41</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="June 29, 2025 09:36:18 UTC">June 29, 2025 09:36:18</span>
   </span>
 
     
@@ -2215,7 +2278,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 3, 2025 22:44:41 UTC">July 3, 2025 22:44:41</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 23, 2024 21:52:46 UTC">August 23, 2024 21:52:46</span>
   </span>
 
     
@@ -2252,7 +2315,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../general-settings/index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: General Settings">
+          <a href="index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: First Things">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2262,20 +2325,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                General Settings
+                First Things
               </div>
             </div>
           </a>
         
         
           
-          <a href="../profiles/index.html" class="md-footer__link md-footer__link--next" aria-label="Next: Profiles">
+          <a href="radarr-sonarr-volumes.html" class="md-footer__link md-footer__link--next" aria-label="Next: Radarr Sonarr Volumes">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Profiles
+                Radarr Sonarr Volumes
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2361,10 +2424,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
