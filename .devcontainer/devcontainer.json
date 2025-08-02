@@ -6,7 +6,7 @@
 	"image": "ghcr.io/nandyalu/trailarr/devcontainer:latest",
 	"runArgs": [
 		// Uncomment to use NVIDIA runtime for GPU support
-		// "--runtime=nvidia",
+		"--runtime=nvidia",
 		"-p=7888:7888", // Expose FastAPI port for debugging/running
 		"-p=7887:8000" // Expose MkDocs port for documentation / Angular ng serve
 	],
@@ -15,7 +15,7 @@
 	// Update these paths to match your local setup
 	"mounts": [
 		// Mount /dev/dri for GPU access (if needed)
-		// "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
+		"source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
 		// Mount appdata folder for persistent storage
 		"source=/var/appdata/trailarr-dev,target=/app/config,type=bind,consistency=cached",
 		// Mount media folder for app to detect the media library

@@ -9,7 +9,7 @@ from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import delete_old_logs, trailer_cleanup
 from core.tasks.files_scan import scan_disk_for_trailers
 from core.tasks.image_refresh import refresh_images
-from core.updates.docker_check import check_for_update
+from core.updates.docker_check import check_for_updates
 
 # from core.tasks.task_runner import TaskRunner
 
@@ -27,7 +27,7 @@ def run_async(task) -> None:
 
 def _check_for_update():
     """Check for updates to the Docker image."""
-    run_async(check_for_update)
+    run_async(check_for_updates)
     return
 
 

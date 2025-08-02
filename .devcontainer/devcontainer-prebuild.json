@@ -4,7 +4,8 @@
 {
 	"name": "Trailarr",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"context": ".."
 	},
 	"workspaceFolder": "/app",
 

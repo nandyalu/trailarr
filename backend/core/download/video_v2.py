@@ -171,7 +171,7 @@ def _download_with_ytdlp(
             combined_output += f"STDERR:\n{result.stderr}"
 
         if combined_output:
-            logger.debug(f"YT-DLP output::\n{combined_output}")
+            logger.debug(f"YT-DLP Output::\n{combined_output}")
 
         # Check for sign-in errors in stderr
         if result.stderr:
@@ -246,7 +246,7 @@ def _convert_video(
             combined_output += f"STDERR:\n{result.stderr}"
 
         if combined_output:
-            logger.debug(f"FFmpeg output::\n{combined_output}")
+            logger.debug(f"FFMPEG Output::\n{combined_output}")
 
         if result.returncode != 0:
             # If the conversion fails, retry without hardware acceleration

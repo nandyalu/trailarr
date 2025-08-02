@@ -33,6 +33,11 @@ FROM python:3.12-slim
 COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu
 RUN chmod +x /usr/local/bin/gosu
 
+# Install HW Acceleration drivers and libraries
+COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
+RUN chmod +x /tmp/install_drivers.sh && \
+    /tmp/install_drivers.sh
+
 # ARG APP_VERSION, will be set during build by github actions
 ARG APP_VERSION=0.0.0-dev
 
@@ -49,8 +54,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NVIDIA_VISIBLE_DEVICES="all" \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
-# Install tzdata, pciutils and set timezone
-RUN apt-get update && apt-get install -y tzdata pciutils && \
+# Install tzdata and pciutils, set timezone
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    pciutils \
+    udev \
+    && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*

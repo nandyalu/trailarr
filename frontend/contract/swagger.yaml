@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.4.0
+  version: 0.5.0
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -3072,18 +3072,24 @@ components:
         app_mode:
           type: string
           title: App Mode
-        exclude_words:
-          type: string
-          title: Exclude Words
-        version:
-          type: string
-          title: Version
-        server_start_time:
-          type: string
-          title: Server Start Time
-        timezone:
-          type: string
-          title: Timezone
+        gpu_available_amd:
+          type: boolean
+          title: Gpu Available Amd
+        gpu_available_intel:
+          type: boolean
+          title: Gpu Available Intel
+        gpu_available_nvidia:
+          type: boolean
+          title: Gpu Available Nvidia
+        gpu_enabled_amd:
+          type: boolean
+          title: Gpu Enabled Amd
+        gpu_enabled_intel:
+          type: boolean
+          title: Gpu Enabled Intel
+        gpu_enabled_nvidia:
+          type: boolean
+          title: Gpu Enabled Nvidia
         log_level:
           type: string
           title: Log Level
@@ -3093,134 +3099,64 @@ components:
         monitor_interval:
           type: integer
           title: Monitor Interval
-        trailer_folder_movie:
-          type: boolean
-          title: Trailer Folder Movie
-        trailer_folder_series:
-          type: boolean
-          title: Trailer Folder Series
-        trailer_resolution:
-          type: integer
-          title: Trailer Resolution
-        trailer_file_name:
+        server_start_time:
           type: string
-          title: Trailer File Name
-        trailer_file_format:
+          title: Server Start Time
+        timezone:
           type: string
-          title: Trailer File Format
-        trailer_always_search:
-          type: boolean
-          title: Trailer Always Search
-        trailer_search_query:
-          type: string
-          title: Trailer Search Query
-        trailer_audio_format:
-          type: string
-          title: Trailer Audio Format
-        trailer_audio_volume_level:
-          type: integer
-          title: Trailer Audio Volume Level
-        trailer_video_format:
-          type: string
-          title: Trailer Video Format
-        trailer_subtitles_enabled:
-          type: boolean
-          title: Trailer Subtitles Enabled
-        trailer_subtitles_format:
-          type: string
-          title: Trailer Subtitles Format
-        trailer_subtitles_language:
-          type: string
-          title: Trailer Subtitles Language
-        trailer_embed_metadata:
-          type: boolean
-          title: Trailer Embed Metadata
-        trailer_min_duration:
-          type: integer
-          title: Trailer Min Duration
-        trailer_max_duration:
-          type: integer
-          title: Trailer Max Duration
-        trailer_remove_sponsorblocks:
-          type: boolean
-          title: Trailer Remove Sponsorblocks
-        trailer_web_optimized:
-          type: boolean
-          title: Trailer Web Optimized
+          title: Timezone
         update_available:
           type: boolean
           title: Update Available
-        wait_for_media:
+        update_available_ytdlp:
           type: boolean
-          title: Wait For Media
-        yt_cookies_path:
-          type: string
-          title: Yt Cookies Path
-        ytdlp_version:
-          type: string
-          title: Ytdlp Version
-        trailer_remove_silence:
-          type: boolean
-          title: Trailer Remove Silence
-        nvidia_gpu_available:
-          type: boolean
-          title: Nvidia Gpu Available
-        trailer_hardware_acceleration:
-          type: boolean
-          title: Trailer Hardware Acceleration
-        new_download_method:
-          type: boolean
-          title: New Download Method
+          title: Update Available Ytdlp
         update_ytdlp:
           type: boolean
           title: Update Ytdlp
         url_base:
           type: string
           title: Url Base
+        version:
+          type: string
+          title: Version
+        wait_for_media:
+          type: boolean
+          title: Wait For Media
         webui_username:
           type: string
           title: Webui Username
+        yt_cookies_path:
+          type: string
+          title: Yt Cookies Path
+        ytdlp_version:
+          type: string
+          title: Ytdlp Version
       type: object
       required:
         - api_key
         - app_data_dir
         - app_mode
-        - exclude_words
-        - version
-        - server_start_time
-        - timezone
+        - gpu_available_amd
+        - gpu_available_intel
+        - gpu_available_nvidia
+        - gpu_enabled_amd
+        - gpu_enabled_intel
+        - gpu_enabled_nvidia
         - log_level
         - monitor_enabled
         - monitor_interval
-        - trailer_folder_movie
-        - trailer_folder_series
-        - trailer_resolution
-        - trailer_file_name
-        - trailer_file_format
-        - trailer_always_search
-        - trailer_search_query
-        - trailer_audio_format
-        - trailer_audio_volume_level
-        - trailer_video_format
-        - trailer_subtitles_enabled
-        - trailer_subtitles_format
-        - trailer_subtitles_language
-        - trailer_embed_metadata
-        - trailer_min_duration
-        - trailer_max_duration
-        - trailer_remove_sponsorblocks
-        - trailer_web_optimized
+        - server_start_time
+        - timezone
         - update_available
-        - wait_for_media
-        - yt_cookies_path
-        - ytdlp_version
-        - trailer_remove_silence
-        - nvidia_gpu_available
-        - trailer_hardware_acceleration
-        - new_download_method
+        - update_available_ytdlp
         - update_ytdlp
         - url_base
+        - version
+        - wait_for_media
         - webui_username
+        - yt_cookies_path
+        - ytdlp_version
       title: Settings
     StreamInfo:
       properties:
