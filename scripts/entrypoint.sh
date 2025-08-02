@@ -141,29 +141,6 @@ chown -R "$APPUSER":"$APPGROUP" /app
 chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 box_echo "--------------------------------------------------------------------------";
 
-# Grant access to video hardware if /dev/dri exists
-if [ -d /dev/dri ]; then
-    box_echo "Hardware acceleration device found at /dev/dri"
-    RENDER_GID=$(stat -c "%g" /dev/dri/render* | head -n 1)
-    if [ -n "$RENDER_GID" ]; then
-        RENDER_GROUP=$(getent group "$RENDER_GID" | cut -d: -f1)
-        if [ -z "$RENDER_GROUP" ]; then
-            RENDER_GROUP="render"
-            box_echo "Creating group '$RENDER_GROUP' with GID '$RENDER_GID'"
-            groupadd -g "$RENDER_GID" "$RENDER_GROUP"
-        else
-            box_echo "Group '$RENDER_GROUP' with GID '$RENDER_GID' already exists"
-        fi
-        box_echo "Adding user '$APPUSER' to group '$RENDER_GROUP'"
-        usermod -a -G "$RENDER_GROUP" "$APPUSER"
-    else
-        box_echo "Could not determine GID of render device. Hardware acceleration might not work."
-    fi
-else
-    box_echo "No hardware acceleration device found at /dev/dri"
-fi
-box_echo "--------------------------------------------------------------------------";
-
 # # Create a temporary directory to download trailers to
 # mkdir -p /app/tmp
 
