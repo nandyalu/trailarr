@@ -75,6 +75,11 @@ detect_gpu_devices() {
     export GPU_DEVICE_NVIDIA=""
     export GPU_DEVICE_INTEL=""
     export GPU_DEVICE_AMD=""
+    
+    # Initialize availability flags
+    export GPU_AVAILABLE_NVIDIA="false"
+    export GPU_AVAILABLE_INTEL="false"
+    export GPU_AVAILABLE_AMD="false"
 
     # Check for DRI devices and map them to specific GPUs
     if [ -d /dev/dri ]; then
@@ -95,9 +100,11 @@ detect_gpu_devices() {
                             ;;
                         0x8086)
                             [ -z "$GPU_DEVICE_INTEL" ] && export GPU_DEVICE_INTEL="$device"
+                            export GPU_AVAILABLE_INTEL="true"
                             ;;
                         0x1002|0x1022)
                             [ -z "$GPU_DEVICE_AMD" ] && export GPU_DEVICE_AMD="$device"
+                            export GPU_AVAILABLE_AMD="true"
                             ;;
                     esac
                 fi
@@ -105,11 +112,15 @@ detect_gpu_devices() {
         done
     fi
 
-    # Fallback to renderD128 if nothing was detected
-    if [ -e "/dev/dri/renderD128" ]; then
-        [ -z "$GPU_DEVICE_INTEL" ] && export GPU_DEVICE_INTEL="/dev/dri/renderD128"
-        [ -z "$GPU_DEVICE_AMD" ] && export GPU_DEVICE_AMD="/dev/dri/renderD128"
-        [ -z "$GPU_DEVICE_NVIDIA" ] && export GPU_DEVICE_NVIDIA="/dev/dri/renderD128"
+    # Check for NVIDIA GPU using nvidia-smi
+    if command -v nvidia-smi &> /dev/null; then
+        if nvidia-smi > /dev/null 2>&1; then
+            # Get NVIDIA GPU information
+            GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
+            if [ -n "$GPU_INFO" ]; then
+                export GPU_AVAILABLE_NVIDIA="true"
+            fi
+        fi
     fi
 }
 
@@ -119,91 +130,85 @@ detect_gpu_devices
 
 # Check for NVIDIA GPU
 box_echo "Checking for NVIDIA GPU availability..."
-export GPU_AVAILABLE_NVIDIA="false"
-if command -v nvidia-smi &> /dev/null; then
-    if nvidia-smi > /dev/null 2>&1; then
-        # Get NVIDIA GPU information
-        GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
-        if [ -n "$GPU_INFO" ]; then
-            box_echo "NVIDIA GPU detected: $GPU_INFO"
-            box_echo "NVIDIA hardware acceleration (CUDA) is available."
-            export GPU_AVAILABLE_NVIDIA="true"
-            if [ -n "$GPU_DEVICE_NVIDIA" ]; then
-                box_echo "NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
-            fi
-        else
-            box_echo "NVIDIA GPU not detected - no device information available."
+if [ "$GPU_AVAILABLE_NVIDIA" = "true" ]; then
+    # Get NVIDIA GPU information
+    GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
+    if [ -n "$GPU_INFO" ]; then
+        box_echo "NVIDIA GPU detected: $GPU_INFO"
+        box_echo "NVIDIA hardware acceleration (CUDA) is available."
+        if [ -n "$GPU_DEVICE_NVIDIA" ]; then
+            box_echo "NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
         fi
     else
-        box_echo "NVIDIA GPU not detected - nvidia-smi failed."
+        box_echo "NVIDIA GPU not detected - no device information available."
+        export GPU_AVAILABLE_NVIDIA="false"
     fi
 else
-    box_echo "nvidia-smi command not found. NVIDIA GPU not detected."
+    if command -v nvidia-smi &> /dev/null; then
+        box_echo "NVIDIA GPU not detected - nvidia-smi failed or no GPU found."
+    else
+        box_echo "nvidia-smi command not found. NVIDIA GPU not detected."
+    fi
 fi
 box_echo "--------------------------------------------------------------------------";
 
-# Check if /dev/dri exists and check for Intel GPU
+# Check for Intel GPU
 box_echo "Checking for Intel GPU availability..."
-export GPU_AVAILABLE_INTEL="false"
-if [ -d /dev/dri ]; then
-    # Check for Intel GPU
+if [ "$GPU_AVAILABLE_INTEL" = "true" ]; then
+    # Check for Intel GPU using lspci
     INTEL_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC')
     if [ -n "$INTEL_GPU" ]; then
-        export GPU_AVAILABLE_INTEL="true"
         box_echo "Intel GPU detected: $INTEL_GPU"
-        if [ -n "$GPU_DEVICE_INTEL" ]; then
-            box_echo "Intel GPU device: $GPU_DEVICE_INTEL"
-        else
-            box_echo "Intel GPU device: /dev/dri/renderD128 (default fallback)"
-        fi
+        box_echo "Intel GPU device: $GPU_DEVICE_INTEL"
         box_echo "Intel hardware acceleration (VAAPI) is available."
         
         # Test VAAPI capability
-        device_to_test="${GPU_DEVICE_INTEL:-/dev/dri/renderD128}"
         if command -v vainfo &> /dev/null; then
-            VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
+            VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_INTEL" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
                 box_echo "VAAPI capabilities detected:"
                 echo "$VAAPI_INFO" | while read -r line; do box_echo "  $line"; done
             fi
         fi
     else
-        box_echo "No Intel GPU detected in PCI devices."
+        box_echo "Intel GPU device detected but not found in PCI devices."
     fi
 else
-    box_echo "Intel GPU is not available. /dev/dri does not exist."
+    if [ -d /dev/dri ]; then
+        box_echo "No Intel GPU detected in DRI devices."
+    else
+        box_echo "Intel GPU is not available. /dev/dri does not exist."
+    fi
 fi
 box_echo "--------------------------------------------------------------------------";
 
+# Check for AMD GPU
 box_echo "Checking for AMD GPU availability..."
-export GPU_AVAILABLE_AMD="false"
-if [ -d /dev/dri ]; then
-    # Check for AMD GPU
+if [ "$GPU_AVAILABLE_AMD" = "true" ]; then
+    # Check for AMD GPU using lspci
     AMD_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon')
     if [ -n "$AMD_GPU" ]; then
-        export GPU_AVAILABLE_AMD="true"
         box_echo "AMD GPU detected: $AMD_GPU"
-        if [ -n "$GPU_DEVICE_AMD" ]; then
-            box_echo "AMD GPU device: $GPU_DEVICE_AMD"
-        else
-            box_echo "AMD GPU device: /dev/dri/renderD128 (default fallback)"
-        fi
+        box_echo "AMD GPU device: $GPU_DEVICE_AMD"
         box_echo "AMD hardware acceleration (VAAPI) is available."
         
         # Test VAAPI capability for AMD
-        device_to_test="${GPU_DEVICE_AMD:-/dev/dri/renderD128}"
         if command -v vainfo &> /dev/null; then
-            VAAPI_INFO=$(vainfo --display drm --device "$device_to_test" 2>/dev/null | grep -i "VAProfile" | head -2)
+            VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_AMD" 2>/dev/null | grep -i "VAProfile" | head -2)
             if [ -n "$VAAPI_INFO" ]; then
                 box_echo "VAAPI capabilities detected:"
                 echo "$VAAPI_INFO" | while read -r line; do box_echo "  $line"; done
             fi
         fi
     else
-        box_echo "No AMD GPU detected in PCI devices."
+        box_echo "AMD GPU device detected but not found in PCI devices."
     fi
 else
-    box_echo "AMD GPU is not available. /dev/dri does not exist."
+    if [ -d /dev/dri ]; then
+        box_echo "No AMD GPU detected in DRI devices."
+    else
+        box_echo "AMD GPU is not available. /dev/dri does not exist."
+    fi
 fi
 box_echo "--------------------------------------------------------------------------";
 
@@ -280,11 +285,48 @@ if getent group video > /dev/null 2>&1; then
     usermod -a -G video "$APPUSER" 2>/dev/null && groups_added="$groups_added video"
 fi
 
+# Add to specific DRI device groups for detected Intel/AMD GPUs
+if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
+    box_echo "Checking groups for detected Intel/AMD GPU devices..."
+    
+    # Check Intel GPU device group if detected
+    if [ -n "$GPU_DEVICE_INTEL" ] && [ -e "$GPU_DEVICE_INTEL" ]; then
+        intel_gid=$(stat -c '%g' "$GPU_DEVICE_INTEL" 2>/dev/null)
+        if [ -n "$intel_gid" ] && getent group "$intel_gid" > /dev/null 2>&1; then
+            intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
+            if ! groups "$APPUSER" | grep -q "\b$intel_group_name\b"; then
+                box_echo "Adding user '$APPUSER' to Intel GPU device group '$intel_group_name' (GID: $intel_gid)"
+                usermod -a -G "$intel_group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $intel_group_name($intel_gid)"
+            else
+                box_echo "User '$APPUSER' already in Intel GPU group '$intel_group_name'"
+            fi
+        fi
+    fi
+    
+    # Check AMD GPU device group if detected
+    if [ -n "$GPU_DEVICE_AMD" ] && [ -e "$GPU_DEVICE_AMD" ]; then
+        amd_gid=$(stat -c '%g' "$GPU_DEVICE_AMD" 2>/dev/null)
+        if [ -n "$amd_gid" ] && getent group "$amd_gid" > /dev/null 2>&1; then
+            amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
+            if ! groups "$APPUSER" | grep -q "\b$amd_group_name\b"; then
+                box_echo "Adding user '$APPUSER' to AMD GPU device group '$amd_group_name' (GID: $amd_gid)"
+                usermod -a -G "$amd_group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $amd_group_name($amd_gid)"
+            else
+                box_echo "User '$APPUSER' already in AMD GPU group '$amd_group_name'"
+            fi
+        fi
+    fi
+else
+    box_echo "No Intel or AMD GPU devices detected for group assignment"
+fi
+
 # Add to common GPU device group IDs (226, 128, 129) if they exist
 for gid in 226 128 129; do
     if getent group "$gid" > /dev/null 2>&1; then
         group_name=$(getent group "$gid" | cut -d: -f1)
-        usermod -a -G "$group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $group_name($gid)"
+        if ! groups "$APPUSER" | grep -q "\b$group_name\b"; then
+            usermod -a -G "$group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $group_name($gid)"
+        fi
     fi
 done
 
