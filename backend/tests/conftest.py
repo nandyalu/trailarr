@@ -1,14 +1,28 @@
+import os
+import tempfile
 from urllib.parse import urlencode, urljoin
 from aioresponses import aioresponses
 import pytest
 
+_temp_dir = None
+
 
 # TODO! Update all tests to current codebase
-def pytest_configure():
+def pytest_configure(config):
+    global _temp_dir
+    # Create a temporary directory for the test run
+    _temp_dir = tempfile.TemporaryDirectory()
+    os.environ["APP_DATA_DIR"] = _temp_dir.name
     # os.environ["TESTING"] = "True"
     from core.base.database.utils.init_db import init_db
 
     init_db()
+
+
+def pytest_unconfigure(config):
+    global _temp_dir
+    if _temp_dir:
+        _temp_dir.cleanup()
 
 
 @pytest.fixture(autouse=True)
