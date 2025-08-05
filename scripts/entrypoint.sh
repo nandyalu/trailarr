@@ -377,6 +377,27 @@ box_echo "----------------------------------------------------------------------
 # # Create a temporary directory to download trailers to
 # mkdir -p /app/tmp
 
+box_echo "Ensuring appuser has access to GPU-related groups..."
+
+for group in "${gpu_groups[@]}"; do
+    # Get group info
+    group_entry=$(getent group "$group")
+    if [ -n "$group_entry" ]; then
+        group_name=$(echo "$group_entry" | cut -d: -f1)
+        group_gid=$(echo "$group_entry" | cut -d: -f3)
+
+        # Create group inside container if it doesn't exist
+        if ! getent group "$group_gid" > /dev/null 2>&1; then
+            box_echo "Creating group '$group_name' with GID '$group_gid'"
+            groupadd -g "$group_gid" "$group_name"
+        fi
+        # Add appuser to the group
+        box_echo "Adding user '$APPUSER' to group '$group_name'"
+        usermod -aG "$group_name" "$APPUSER"
+    fi
+done
+
+
 # Switch to the non-root user and execute the command
 box_echo "Switching to user '$APPUSER' and starting the application"
 
@@ -384,10 +405,10 @@ box_echo "Switching to user '$APPUSER' and starting the application"
 if [ ${#gpu_groups[@]} -gt 0 ]; then
     # Join the groups with commas for gosu's --groups parameter
     gpu_groups_str=$(IFS=','; echo "${gpu_groups[*]}")
-    box_echo "Starting application with GPU groups: $gpu_groups_str"
-    exec gosu --groups="$gpu_groups_str" "$APPUSER" /usr/bin/env /app/scripts/start.sh
+    box_echo "Starting application as '$APPUSER' with GPU groups: '$gpu_groups_str'"
+    exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
 else
-    box_echo "Starting application without additional GPU groups"
+    box_echo "Starting application as '$APPUSER'"
     exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
 fi
 
