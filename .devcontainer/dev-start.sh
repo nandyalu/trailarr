@@ -16,8 +16,7 @@ source /app/scripts/entrypoint/gpu_detection.sh
 source /app/scripts/entrypoint/directories.sh
 source /app/scripts/entrypoint/env_file.sh
 
-# Set development-specific environment
-export APP_DATA_DIR="/config"
+# Set development-specific environment variables
 export APPUSER="vscode"
 export APPGROUP="vscode"
 
