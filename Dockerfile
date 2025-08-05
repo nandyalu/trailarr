@@ -82,9 +82,9 @@ COPY --from=python-deps /usr/local/ /usr/local/
 # Set the python path
 ENV PYTHONPATH=/app/backend
 
-# Copy the scripts folder, and make all scripts executable
+# Copy the scripts folder, and make all scripts executable (including subdirectories)
 COPY ./scripts /app/scripts
-RUN chmod +x /app/scripts/*.sh
+RUN find /app/scripts -name "*.sh" -type f -exec chmod +x {} \;
 
 # Expose the port the app runs on
 EXPOSE ${APP_PORT}

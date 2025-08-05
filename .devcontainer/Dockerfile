@@ -38,6 +38,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Set the python path
 ENV PYTHON_PATH="${PYTHON_PATH}:/app/backend"
 
+# Copy required scripts for development container
+COPY scripts/box_echo.sh /app/scripts/box_echo.sh
+COPY scripts/entrypoint/ /app/scripts/entrypoint/
+RUN find /app/scripts -name "*.sh" -type f -exec chmod +x {} \;
+
 # Copy startup script
 COPY .devcontainer/dev-start.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
