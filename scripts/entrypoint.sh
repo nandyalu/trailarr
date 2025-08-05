@@ -271,21 +271,24 @@ else
     useradd -u "$PUID" -g "$PGID" -m "$APPUSER"
 fi
 
-# Add appuser to GPU-related groups for hardware acceleration access
-box_echo "Adding user '$APPUSER' to GPU-related groups for hardware acceleration..."
-groups_added=""
+# Identify GPU-related groups for hardware acceleration access
+box_echo "Identifying GPU-related groups for hardware acceleration..."
+gpu_groups=()
+groups_found=""
 
-# Add to render group (for GPU access)
+# Check for render group (for GPU access)
 if getent group render > /dev/null 2>&1; then
-    usermod -a -G render "$APPUSER" 2>/dev/null && groups_added="$groups_added render"
+    gpu_groups+=("render")
+    groups_found="$groups_found render"
 fi
 
-# Add to video group (for video device access)
+# Check for video group (for video device access)
 if getent group video > /dev/null 2>&1; then
-    usermod -a -G video "$APPUSER" 2>/dev/null && groups_added="$groups_added video"
+    gpu_groups+=("video")
+    groups_found="$groups_found video"
 fi
 
-# Add to specific DRI device groups for detected Intel/AMD GPUs
+# Check for specific DRI device groups for detected Intel/AMD GPUs
 if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
     box_echo "Checking groups for detected Intel/AMD GPU devices..."
     
@@ -294,11 +297,11 @@ if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
         intel_gid=$(stat -c '%g' "$GPU_DEVICE_INTEL" 2>/dev/null)
         if [ -n "$intel_gid" ] && getent group "$intel_gid" > /dev/null 2>&1; then
             intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
-            if ! groups "$APPUSER" | grep -q "\b$intel_group_name\b"; then
-                box_echo "Adding user '$APPUSER' to Intel GPU device group '$intel_group_name' (GID: $intel_gid)"
-                usermod -a -G "$intel_group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $intel_group_name($intel_gid)"
-            else
-                box_echo "User '$APPUSER' already in Intel GPU group '$intel_group_name'"
+            box_echo "Found Intel GPU device group '$intel_group_name' (GID: $intel_gid)"
+            # Check if group is not already in the list
+            if [[ ! " ${gpu_groups[@]} " =~ " ${intel_group_name} " ]]; then
+                gpu_groups+=("$intel_group_name")
+                groups_found="$groups_found $intel_group_name($intel_gid)"
             fi
         fi
     fi
@@ -308,11 +311,11 @@ if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
         amd_gid=$(stat -c '%g' "$GPU_DEVICE_AMD" 2>/dev/null)
         if [ -n "$amd_gid" ] && getent group "$amd_gid" > /dev/null 2>&1; then
             amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
-            if ! groups "$APPUSER" | grep -q "\b$amd_group_name\b"; then
-                box_echo "Adding user '$APPUSER' to AMD GPU device group '$amd_group_name' (GID: $amd_gid)"
-                usermod -a -G "$amd_group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $amd_group_name($amd_gid)"
-            else
-                box_echo "User '$APPUSER' already in AMD GPU group '$amd_group_name'"
+            box_echo "Found AMD GPU device group '$amd_group_name' (GID: $amd_gid)"
+            # Check if group is not already in the list
+            if [[ ! " ${gpu_groups[@]} " =~ " ${amd_group_name} " ]]; then
+                gpu_groups+=("$amd_group_name")
+                groups_found="$groups_found $amd_group_name($amd_gid)"
             fi
         fi
     fi
@@ -320,20 +323,22 @@ else
     box_echo "No Intel or AMD GPU devices detected for group assignment"
 fi
 
-# Add to common GPU device group IDs (226, 128, 129) if they exist
+# Check for common GPU device group IDs (226, 128, 129) if they exist
 for gid in 226 128 129; do
     if getent group "$gid" > /dev/null 2>&1; then
         group_name=$(getent group "$gid" | cut -d: -f1)
-        if ! groups "$APPUSER" | grep -q "\b$group_name\b"; then
-            usermod -a -G "$group_name" "$APPUSER" 2>/dev/null && groups_added="$groups_added $group_name($gid)"
+        # Check if group is not already in the list
+        if [[ ! " ${gpu_groups[@]} " =~ " ${group_name} " ]]; then
+            gpu_groups+=("$group_name")
+            groups_found="$groups_found $group_name($gid)"
         fi
     fi
 done
 
-if [ -n "$groups_added" ]; then
-    box_echo "Added user '$APPUSER' to GPU groups:$groups_added"
+if [ -n "$groups_found" ]; then
+    box_echo "GPU groups identified for gosu:$groups_found"
 else
-    box_echo "No additional GPU groups found or user already has access"
+    box_echo "No GPU groups found for hardware acceleration"
 fi
 
 # Write GPU detection results to .env file for the application to use
@@ -375,7 +380,16 @@ box_echo "----------------------------------------------------------------------
 # Switch to the non-root user and execute the command
 box_echo "Switching to user '$APPUSER' and starting the application"
 
-exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
+# Build the gosu command with GPU groups
+if [ ${#gpu_groups[@]} -gt 0 ]; then
+    # Join the groups with commas for gosu's --groups parameter
+    gpu_groups_str=$(IFS=','; echo "${gpu_groups[*]}")
+    box_echo "Starting application with GPU groups: $gpu_groups_str"
+    exec gosu --groups="$gpu_groups_str" "$APPUSER" /usr/bin/env /app/scripts/start.sh
+else
+    box_echo "Starting application without additional GPU groups"
+    exec gosu "$APPUSER" /usr/bin/env /app/scripts/start.sh
+fi
 
 # DO NOT ADD ANY OTHER COMMANDS HERE! THEY WON'T BE EXECUTED!
 # Instead add them in the start.sh script
