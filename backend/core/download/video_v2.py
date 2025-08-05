@@ -184,21 +184,17 @@ def _download_with_ytdlp(
                     msg = (
                         "Youtube bot detection kicked in, sign in to download"
                     )
-                logger.error(msg)
                 raise DownloadFailedError(msg)
 
         if result.returncode != 0:
             msg = f"yt-dlp command failed with exit code {result.returncode}"
-            logger.error(msg)
             raise DownloadFailedError(f"Error downloading video. {msg}")
 
     except subprocess.TimeoutExpired:
         msg = "yt-dlp download timed out after 15 minutes"
-        logger.error(msg)
         raise DownloadFailedError(msg)
     except Exception as e:
         msg = f"Error running yt-dlp process: {str(e)}"
-        logger.error(msg)
         raise DownloadFailedError(msg)
 
     logger.info("Video downloaded successfully")
@@ -260,18 +256,15 @@ def _convert_video(
                 return _convert_video(
                     profile, input_file, output_file, retry=False
                 )
-            # If the conversion fails again, log the error and raise an exception
+            # If the conversion fails again, raise an exception
             msg = f"FFmpeg command failed with exit code {result.returncode}"
-            logger.error(msg)
             raise ConversionFailedError(f"Error converting video. {msg}")
 
     except subprocess.TimeoutExpired:
         msg = "FFmpeg conversion timed out after 15 minutes"
-        logger.error(msg)
         raise ConversionFailedError(msg)
     except Exception as e:
         msg = f"Error running FFmpeg process: {str(e)}"
-        logger.error(msg)
         raise ConversionFailedError(msg)
 
     logger.info("Video converted successfully")

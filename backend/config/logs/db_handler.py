@@ -11,9 +11,30 @@ def get_synthetic_traceback():
     try:
         raise Exception("Synthetic traceback for logging context")
     except Exception:
-        exc = "".join(
-            traceback.format_exc().splitlines(keepends=True)
-        )  # skip the synthetic message
+        exc = "".join(traceback.format_exc().splitlines(keepends=True))
+        # Remove the synthetic exception lines - keep only the actual call stack
+        lines = exc.split("\n")
+        filtered_lines = []
+        skip_next = False
+
+        for line in lines:
+            # Skip the synthetic exception and its immediate context
+            if "Exception: Synthetic traceback for logging context" in line:
+                skip_next = True
+                continue
+            elif skip_next and line.strip() == "":
+                skip_next = False
+                continue
+            elif not skip_next:
+                filtered_lines.append(line)
+
+        # If we have a meaningful stack trace, return it; otherwise return a clean message
+        if (
+            len(filtered_lines) > 3
+        ):  # More than just "Traceback (most recent call last):"
+            return "\n".join(filtered_lines)
+        else:
+            return "Stack trace captured at error logging point"
     return exc
 
 

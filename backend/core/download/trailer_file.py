@@ -265,5 +265,5 @@ def verify_download(
             try:
                 os.remove(output_file)
             except Exception as e:
-                logger.error(f"Failed to delete trailer file: {e}")
+                logger.exception(f"Failed to delete trailer file: {e}")
     return trailer_downloaded

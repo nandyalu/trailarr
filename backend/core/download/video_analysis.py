@@ -131,7 +131,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             video_info.streams.append(stream_info)
         return video_info
     except Exception as e:
-        logger.error(f"Error extracting video info: {str(e)}")
+        logger.exception(f"Error extracting video info: {str(e)}")
     return None
 
 
@@ -250,7 +250,9 @@ def get_silence_timestamps(
         )
         return silence_start, silence_end
     except Exception as e:
-        logger.error(f"Exception while detecting silence in video: {str(e)}")
+        logger.exception(
+            f"Exception while detecting silence in video: {str(e)}"
+        )
     # timeTook = datetime.now() - time
     # print(f"Time took: {timeTook}")
     return None, None
@@ -338,7 +340,10 @@ def remove_silence_at_end(file_path: str) -> str:
         )
         trim_video_at_end(file_path, output_file, silence_start)
     except Exception as e:
-        logger.error(f"Exception while removing silence from video: {str(e)}")
+        # Log error with traceback but return original file to continue processing
+        logger.exception(
+            f"Exception while removing silence from video: {str(e)}"
+        )
         return file_path
     silence_time = silence_end - silence_start
     logger.info(
