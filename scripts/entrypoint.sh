@@ -276,6 +276,18 @@ box_echo "Identifying GPU-related groups for hardware acceleration..."
 gpu_groups=()
 groups_found=""
 
+# Function to check if group is already in the array
+group_exists() {
+    local group_to_check="$1"
+    local group
+    for group in "${gpu_groups[@]}"; do
+        if [ "$group" = "$group_to_check" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 # Check for render group (for GPU access)
 if getent group render > /dev/null 2>&1; then
     gpu_groups+=("render")
@@ -299,7 +311,7 @@ if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
             intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
             box_echo "Found Intel GPU device group '$intel_group_name' (GID: $intel_gid)"
             # Check if group is not already in the list
-            if [[ ! " ${gpu_groups[@]} " =~ " ${intel_group_name} " ]]; then
+            if ! group_exists "$intel_group_name"; then
                 gpu_groups+=("$intel_group_name")
                 groups_found="$groups_found $intel_group_name($intel_gid)"
             fi
@@ -313,7 +325,7 @@ if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
             amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
             box_echo "Found AMD GPU device group '$amd_group_name' (GID: $amd_gid)"
             # Check if group is not already in the list
-            if [[ ! " ${gpu_groups[@]} " =~ " ${amd_group_name} " ]]; then
+            if ! group_exists "$amd_group_name"; then
                 gpu_groups+=("$amd_group_name")
                 groups_found="$groups_found $amd_group_name($amd_gid)"
             fi
@@ -328,7 +340,7 @@ for gid in 226 128 129; do
     if getent group "$gid" > /dev/null 2>&1; then
         group_name=$(getent group "$gid" | cut -d: -f1)
         # Check if group is not already in the list
-        if [[ ! " ${gpu_groups[@]} " =~ " ${group_name} " ]]; then
+        if ! group_exists "$group_name"; then
             gpu_groups+=("$group_name")
             groups_found="$groups_found $group_name($gid)"
         fi
