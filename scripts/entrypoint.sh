@@ -307,28 +307,38 @@ if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
     # Check Intel GPU device group if detected
     if [ -n "$GPU_DEVICE_INTEL" ] && [ -e "$GPU_DEVICE_INTEL" ]; then
         intel_gid=$(stat -c '%g' "$GPU_DEVICE_INTEL" 2>/dev/null)
-        if [ -n "$intel_gid" ] && getent group "$intel_gid" > /dev/null 2>&1; then
-            intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
-            box_echo "Found Intel GPU device group '$intel_group_name' (GID: $intel_gid)"
-            # Check if group is not already in the list
-            if ! group_exists "$intel_group_name"; then
-                gpu_groups+=("$intel_group_name")
-                groups_found="$groups_found $intel_group_name($intel_gid)"
+        if [[ -n "$intel_gid" ]]; then
+            if getent group "$intel_gid" > /dev/null 2>&1; then
+                intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
+            else
+                intel_group_name="gpuintel"
+                box_echo "Creating group '$intel_group_name' with GID '$intel_gid'"
+                groupadd -g "$intel_gid" "$intel_group_name"
             fi
+            box_echo "Adding user '$APPUSER' to group '$intel_group_name'"
+            usermod -aG "$intel_group_name" "$APPUSER"
+            gpu_groups+=("$intel_group_name")
+            groups_found="$groups_found $intel_group_name($intel_gid)"
         fi
     fi
     
     # Check AMD GPU device group if detected
     if [ -n "$GPU_DEVICE_AMD" ] && [ -e "$GPU_DEVICE_AMD" ]; then
         amd_gid=$(stat -c '%g' "$GPU_DEVICE_AMD" 2>/dev/null)
-        if [ -n "$amd_gid" ] && getent group "$amd_gid" > /dev/null 2>&1; then
-            amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
+        if [[ -n "$amd_gid" ]]; then
+            if getent group "$amd_gid" > /dev/null 2>&1; then
+                amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
+            else
+                amd_group_name="gpuamd"
+                box_echo "Creating group '$amd_group_name' with GID '$amd_gid'"
+                groupadd -g "$amd_gid" "$amd_group_name"
+            fi
             box_echo "Found AMD GPU device group '$amd_group_name' (GID: $amd_gid)"
             # Check if group is not already in the list
             if ! group_exists "$amd_group_name"; then
                 gpu_groups+=("$amd_group_name")
-                groups_found="$groups_found $amd_group_name($amd_gid)"
             fi
+            groups_found="$groups_found $amd_group_name($amd_gid)"
         fi
     fi
 else
@@ -391,22 +401,30 @@ box_echo "----------------------------------------------------------------------
 
 box_echo "Ensuring appuser has access to GPU-related groups..."
 
+group_index=1
 for group in "${gpu_groups[@]}"; do
-    # Get group info
     group_entry=$(getent group "$group")
     if [ -n "$group_entry" ]; then
         group_name=$(echo "$group_entry" | cut -d: -f1)
         group_gid=$(echo "$group_entry" | cut -d: -f3)
-
-        # Create group inside container if it doesn't exist
-        if ! getent group "$group_gid" > /dev/null 2>&1; then
-            box_echo "Creating group '$group_name' with GID '$group_gid'"
-            groupadd -g "$group_gid" "$group_name"
-        fi
-        # Add appuser to the group
-        box_echo "Adding user '$APPUSER' to group '$group_name'"
-        usermod -aG "$group_name" "$APPUSER"
+    else
+        # Fallback: assume $group is a GID and create a synthetic name
+        group_gid="$group"
+        group_name="gpugroup${group_index}"
+        group_index=$((group_index + 1))
+        box_echo "Group name not found for GID '$group_gid', creating fallback group '$group_name'"
+        groupadd -g "$group_gid" "$group_name"
     fi
+
+    # Create group inside container if it doesn't exist
+    if ! getent group "$group_gid" > /dev/null 2>&1; then
+        box_echo "Creating group '$group_name' with GID '$group_gid'"
+        groupadd -g "$group_gid" "$group_name"
+    fi
+    # Add appuser to the group
+    box_echo "Adding user '$APPUSER' to group '$group_name'"
+    usermod -aG "$group_name" "$APPUSER"
+    box_echo "appuser groups: $(id -Gn appuser)"
 done
 
 
