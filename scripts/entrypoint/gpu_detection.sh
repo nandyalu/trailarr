@@ -98,9 +98,9 @@ check_intel_gpu() {
             
             # Test VAAPI capability
             if command -v vainfo &> /dev/null; then
-                VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_INTEL" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|AV1")
+                VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_INTEL" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|VP8|VP9|AV1")
                 if [ -n "$VAAPI_INFO" ]; then
-                    box_echo "VAAPI capabilities detected (H.264, HEVC, AV1):"
+                    box_echo "VAAPI capabilities detected (H.264, HEVC, VP8, VP9, AV1):"
                     echo "$VAAPI_INFO" | while read -r line; do box_echo "  $line"; done
                 fi
             fi

@@ -5,7 +5,7 @@ Trailarr can be used with hardware acceleration to speed up video conversion usi
 
 
 !!! note
-    Trailarr supports hardware acceleration using NVIDIA GPUs (CUDA) and Intel/AMD GPUs (VAAPI). The container automatically detects available GPU hardware during startup and uses the best acceleration method available.
+    Trailarr supports hardware acceleration using NVIDIA GPUs (CUDA) and Intel/AMD GPUs (VAAPI). The container automatically detects available GPU hardware during startup and uses the best acceleration method available (configurable in `Settings > General`).
 
 !!! info "Runtime Libraries Included"
     The Trailarr container includes the necessary runtime libraries and ffmpeg build with hardware acceleration support:
@@ -13,7 +13,7 @@ Trailarr can be used with hardware acceleration to speed up video conversion usi
     - **Intel/AMD GPU**: `libva2`, `libva-drm2`, `intel-media-va-driver`, `i965-va-driver`, `mesa-va-drivers`, `vainfo`
     - **NVIDIA GPU**: Uses NVIDIA Container Toolkit (runtime provided by host)
     
-    The container uses yt-dlp/FFmpeg-Builds static builds with comprehensive hardware acceleration codec support.
+    The container uses static FFMPEG builds from [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds){:target="_blank"} with comprehensive hardware acceleration support.
 
 
 ## Prerequisites
@@ -31,20 +31,23 @@ Before you begin, ensure you have the following available based on your GPU type
     - Intel GPU with hardware video acceleration support
     - Intel GPU drivers installed on your system
     - `/dev/dri` devices available to the container
-    - Host user added to `render` and/or `video` groups (recommended)
+    - Host user (your self user account) added to `render` and/or `video` groups (optional, but recommended)
 
-    **Host System Requirements:**
-    ```bash
-    # Ubuntu/Debian - Install Intel GPU drivers and VAAPI support
-    sudo apt update
-    sudo apt install intel-media-va-driver i965-va-driver vainfo
-    
-    # Add your user to render and video groups
-    sudo usermod -a -G render,video $USER
-    
-    # Verify VAAPI functionality
-    vainfo
-    ```
+    ??? example "Drivers installation and GPU access"
+
+        You can install the necessary Intel Drivers and add access to GPU device with below commands. This is a basic example, steps for your particular system and hardware might vary. Please refer to offical documentation.
+        
+        ```bash
+        # Ubuntu/Debian - Install Intel GPU drivers and VAAPI support
+        sudo apt update
+        sudo apt install intel-media-va-driver i965-va-driver vainfo
+        
+        # Add your user to render and video groups
+        sudo usermod -a -G render,video $USER
+        
+        # Verify VAAPI functionality
+        vainfo
+        ```
 
     The Trailarr container includes the necessary Intel GPU runtime libraries. Ensure your Intel GPU drivers support VAAPI acceleration.
 
@@ -52,20 +55,23 @@ Before you begin, ensure you have the following available based on your GPU type
     - AMD GPU with VAAPI support (most modern AMD GPUs)
     - AMD GPU drivers installed on your system
     - `/dev/dri` devices available to the container
-    - Host user added to `render` and/or `video` groups (recommended)
+    - Host user (your self user account) added to `render` and/or `video` groups (optional, but recommended)
     
-    **Host System Requirements:**
-    ```bash
-    # Ubuntu/Debian - Install AMD GPU drivers and VAAPI support
-    sudo apt update
-    sudo apt install mesa-va-drivers vainfo
-    
-    # Add your user to render and video groups
-    sudo usermod -a -G render,video $USER
-    
-    # Verify VAAPI functionality
-    vainfo
-    ```
+    ??? example "Drivers installation and GPU access"
+
+        You can install the necessary AMD (Mesa) Drivers and add access to GPU device with below commands. This is a basic example, steps for your particular system and hardware might vary. Please refer to offical documentation.
+
+        ```bash
+        # Ubuntu/Debian - Install AMD GPU drivers and VAAPI support
+        sudo apt update
+        sudo apt install mesa-va-drivers vainfo
+        
+        # Add your user to render and video groups
+        sudo usermod -a -G render,video $USER
+        
+        # Verify VAAPI functionality
+        vainfo
+        ```
 
     The Trailarr container includes the necessary AMD GPU runtime libraries. AMD GPUs use VAAPI through Mesa drivers for hardware acceleration.
 
@@ -139,8 +145,8 @@ Run the following command to start Trailarr with Intel or AMD GPU acceleration:
           - PGID=1000
         ports:
           - 7889:7889
-        devices:
-          - /dev/dri:/dev/dri  # <-- Add this line for Intel/AMD GPUs
+        devices:  # <-- Add this line for Intel/AMD GPUs
+          - /dev/dri:/dev/dri  # <-- And this line
         volumes:
           - <LOCAL_APPDATA_FOLDER>:/config
           - <LOCAL_MEDIA_FOLDER>:<RADARR_ROOT_FOLDER>
@@ -163,6 +169,18 @@ Run the following command to start Trailarr with Intel or AMD GPU acceleration:
         -v <LOCAL_MEDIA_FOLDER>:<SONARR_ROOT_FOLDER> \
         --restart unless-stopped \
         nandyalu/trailarr:latest
+    ```
+
+??? note "Multiple GPUs on your system"
+
+    If you have multiple GPUs, you can just pass the actual device that you want to use with Trailarr. 
+    
+    For example, if you have an Intel UHD Graphics (CPU integrated Graphics) and a dedicated Intel ARC GPU, then you will have `/dev/dri/renderD128` (Intel UHD) and `/dev/dri/renderD129` (Intel ARC) and you want to use the Intel ARC with Trailarr, then use this
+
+    ```yaml
+        # rest of the docker-compose
+        devices:
+          - /dev/dri/renderD129:/dev/dri/renderD129
     ```
 
 ## Testing Hardware Acceleration
@@ -201,6 +219,8 @@ Look for messages like "NVIDIA GPU detected", "Intel GPU detected", or "AMD GPU 
 
 ## Host System Setup
 
+Trailarr takes care of most of these automatically during startup so you don't have to. However, there are some situations where Trailarr might not be able to do so and you can try the below to try and make it work.
+
 ### User Group Configuration (Intel/AMD GPUs)
 
 For optimal Intel/AMD GPU performance, ensure your host user is added to the appropriate groups:
@@ -233,7 +253,6 @@ If you encounter permission issues, you may need to run the container with speci
 services:
   trailarr:
     image: nandyalu/trailarr:latest
-    user: "${UID}:${GID}"  # Use host user ID
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -249,7 +268,7 @@ services:
 To enable hardware acceleration in Trailarr, navigate to `Settings` -> `General` -> `Advanced Settings` and enable the `Hardware Acceleration` option.
 
 !!! note
-    Trailarr automatically detects available GPU hardware and uses the best acceleration method available. The priority order is: NVIDIA > Intel/AMD VAAPI > CPU fallback.
+    Trailarr automatically detects available GPU hardware and uses the best acceleration method available (if multiple methods are detected and enabled). The priority order is: NVIDIA > Intel VAAPI > AMD VAAPI > CPU fallback.
 
 ## Supported Codecs by GPU Type
 
@@ -257,13 +276,16 @@ To enable hardware acceleration in Trailarr, navigate to `Settings` -> `General`
 
     - **H.264** (`h264_nvenc`) - Full hardware acceleration
     - **H.265/HEVC** (`hevc_nvenc`) - Full hardware acceleration
-    - **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+    - **AV1** (`av1_nvenc`) - Full hardware acceleration
+    - **Other codecs** (VP8, VP9) - Harware acceleration NOT supported, CPU fallback for Software encoding
 
 === "Intel/AMD GPU (VAAPI)"
 
     - **H.264** (`h264_vaapi`) - Full hardware acceleration
     - **H.265/HEVC** (`hevc_vaapi`) - Full hardware acceleration
-    - **Other codecs** (VP8, VP9, AV1) - Software encoding (CPU fallback)
+    - **VP8** (`vp8_vaapi`) - Full hardware acceleration
+    - **VP9** (`vp9_vaapi`) - Full hardware acceleration
+    - **AV1** (`av1_vaapi`) - Full hardware acceleration
 
 !!! note "Unified VAAPI Approach"
     Both Intel and AMD GPUs use VAAPI (Video Acceleration API) for hardware acceleration. This simplifies the implementation and provides consistent performance across different GPU manufacturers.
@@ -272,7 +294,7 @@ To enable hardware acceleration in Trailarr, navigate to `Settings` -> `General`
 
 Hardware acceleration will automatically fall back to CPU encoding in the following cases:
 
-1. **Unsupported Video Codecs**: VP8, VP9, and AV1 codecs are not supported by most GPU hardware encoders and will use CPU encoding
+1. **Unsupported Video Codecs**: VP8, VP9, and AV1 codecs are not supported by older GPU hardware encoders and will use CPU encoding
 2. **Copy Video Format**: When the video format is set to "copy" in the trailer profile, no encoding occurs
 3. **Hardware Acceleration Disabled**: When the "Hardware Acceleration" setting is disabled in Trailarr settings
 4. **GPU Not Available**: When no compatible GPU is detected or accessible by the container
@@ -305,9 +327,12 @@ When multiple GPUs are available, Trailarr uses the following priority order:
         -hwaccel cuda \
         -hwaccel_output_format cuda \
         -i input.mkv \
+        -vf scale_cuda=format=nv12 \
         -c:v h264_nvenc \
         -preset fast \
         -cq 22 \
+        -b:v 0 \
+        -pix_fmt yuv420p \
         -c:a aac \
         -b:a 128k \
         output.mkv
@@ -319,11 +344,13 @@ When multiple GPUs are available, Trailarr uses the following priority order:
     ffmpeg \
         -hwaccel vaapi \
         -hwaccel_device [dynamic_device_path] \  # e.g., /dev/dri/renderD128
+        -vaapi_device [dynamic_device_path] \  # e.g., /dev/dri/renderD128
         -i input.mkv \
         -vf format=nv12,hwupload \
         -c:v h264_vaapi \
-        -crf 22 \
+        -qp 22 \
         -b:v 0 \
+        -pix_fmt yuv420p \
         -c:a aac \
         -b:a 128k \
         output.mkv

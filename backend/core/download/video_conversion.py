@@ -60,7 +60,7 @@ _VIDEO_CODECS_VAAPI = {
     "h264": "h264_vaapi",
     "h265": "hevc_vaapi",
     "vp8": "vp8_vaapi",
-    "vp9": "vp9-vaapi",
+    "vp9": "vp9_vaapi",
     "av1": "av1_vaapi",
 }
 
@@ -154,7 +154,7 @@ def _get_video_options_nvidia(
         "cuda",
         "-i",
         input_file,
-        "vf",
+        "-vf",
         "scale_cuda=format=nv12",
         "-c:v",
     ]
