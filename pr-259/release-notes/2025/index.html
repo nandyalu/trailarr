@@ -2210,9 +2210,6 @@
 <li>Hardware acceleration priority system: NVIDIA &gt; Intel VAAPI &gt; AMD VAAPI &gt; CPU fallback, ensuring optimal performance based on available hardware. 📊</li>
 <li>Enhanced container startup logging showing detected GPU hardware, device paths, and VAAPI capabilities for better troubleshooting. 📝</li>
 <li>Added a check for <code>YT-DLP</code> version in <code>Docker Update Check</code> and display if an update is available in <code>Settings &gt; About</code>. 🔄</li>
-<li>Modularized container entrypoint scripts for better maintainability and organization into separate functional components. 🛠️</li>
-<li>Improved GPU group management with automatic user group assignment for hardware acceleration access (render, video, and device-specific groups). 👥</li>
-<li>Enhanced exception logging throughout the application for better debugging and error tracking. 🐛</li>
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
@@ -2225,7 +2222,6 @@
 <li>Updated hardware acceleration documentation with comprehensive setup instructions for Intel and AMD GPUs using VAAPI. 📖</li>
 <li>Added host system setup requirements and user group configuration instructions for optimal GPU performance. 🏠</li>
 <li>Enhanced troubleshooting guides with GPU detection commands and permission verification steps. 🔍</li>
-<li>Added detailed documentation for modular entrypoint script architecture and development guidelines. 📝</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
 <ul>
@@ -2233,7 +2229,10 @@
 <li>Enhanced development container configuration with improved GPU support and package management. 🧪</li>
 <li>Updated frontend build process and npm dependencies for better performance and security. 📦</li>
 <li>Streamlined GPU detection logic with fallback mechanisms and robust error handling. 🔄</li>
+<li>Modularized container entrypoint scripts for better maintainability and organization into separate functional components. 🛠️</li>
+<li>Improved GPU group management with automatic user group assignment for hardware acceleration access (render, video, and device-specific groups). 👥</li>
 <li>Improved container startup performance through optimized script execution order. ⚡</li>
+<li>Enhanced exception logging throughout the application for better debugging and error tracking. 🐛</li>
 </ul>
 <h2 id="v044-beta-july-26-2025"><strong>v0.4.4-beta</strong> - <em>July 26 2025</em></h2>
 <p><strong>Bug Fixes:</strong> 🐛</p>
@@ -2491,7 +2490,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 6, 2025 00:05:45 UTC">August 6, 2025 00:05:45</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 7, 2025 06:12:30 UTC">August 7, 2025 06:12:30</span>
   </span>
 
     
