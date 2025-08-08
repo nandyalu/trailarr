@@ -14,7 +14,6 @@ from exceptions import InvalidResponseError, ItemNotFoundError
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
 
-
 # Copied from backend/database/crud/connection.py
 CREATE_SUCCESS_MSG = "Connection createded successfully! {}"
 UPDATE_SUCCESS_MESSAGE = "Connection updated successfully!"
@@ -31,6 +30,7 @@ connection = ConnectionCreate(
     url="http://example.com",
     api_key="API_KEY",
     monitor=MonitorType.MONITOR_NEW,
+    path_mappings=[],
 )
 
 # Default connection update object to use in tests
@@ -126,7 +126,9 @@ class TestConnectionDatabaseHandler:
         await self.test_create_connection()
 
         # Call the update_connection method and assert the return value
-        update_result = await self.db_handler.update(CONN_ID_1, connection_update)
+        update_result = await self.db_handler.update(
+            CONN_ID_1, connection_update
+        )
         # assert update_result == UPDATE_SUCCESS_MESSAGE
 
         # Call the read_connection method and assert the return values match
@@ -206,13 +208,17 @@ class TestConnectionValidation:
         async def mock_result_success(self):
             return "Success message"
 
-        monkeypatch.setattr(RadarrManager, "get_system_status", mock_result_success)
+        monkeypatch.setattr(
+            RadarrManager, "get_system_status", mock_result_success
+        )
         # Call validate_connection function with the mock connection and assert return value
         result = await validate_connection(connection)
         assert result == "Success message"
 
     @pytest.mark.asyncio
-    async def test_validate_connection_invalid_connection_radarr(self, monkeypatch):
+    async def test_validate_connection_invalid_connection_radarr(
+        self, monkeypatch
+    ):
         # Create a connection object
         connection = ConnectionBase(
             name="Connection Name",
@@ -226,7 +232,9 @@ class TestConnectionValidation:
         async def mock_result_invalid(self):
             raise InvalidResponseError("Error message")
 
-        monkeypatch.setattr(RadarrManager, "get_system_status", mock_result_invalid)
+        monkeypatch.setattr(
+            RadarrManager, "get_system_status", mock_result_invalid
+        )
 
         # Call the validate_connection function with the mock connection
         with pytest.raises(InvalidResponseError) as exceptions:
@@ -236,7 +244,9 @@ class TestConnectionValidation:
         assert str(exceptions.value) == "Error message"
 
     @pytest.mark.asyncio
-    async def test_validate_connection_invalid_connection_sonarr(self, monkeypatch):
+    async def test_validate_connection_invalid_connection_sonarr(
+        self, monkeypatch
+    ):
         # Create a connection object
         connection = ConnectionBase(
             name="Connection Name",
@@ -250,7 +260,9 @@ class TestConnectionValidation:
         async def mock_result_invalid(self):
             raise InvalidResponseError("Error message")
 
-        monkeypatch.setattr(SonarrManager, "get_system_status", mock_result_invalid)
+        monkeypatch.setattr(
+            SonarrManager, "get_system_status", mock_result_invalid
+        )
 
         # Call the validate_connection function with the mock connection
         with pytest.raises(InvalidResponseError) as exceptions:

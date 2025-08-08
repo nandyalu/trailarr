@@ -33,7 +33,7 @@
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/app/config"
+		"APP_DATA_DIR": "${workspaceFolder}/config"
 	},
 	
 	// Use 'postCreateCommand' to run commands after the container is created.
