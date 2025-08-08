@@ -154,8 +154,8 @@ def _get_video_options_nvidia(
         "cuda",
         "-i",
         input_file,
-        "-vf",
-        "scale_cuda=format=nv12",
+        # "-vf",
+        # "scale_cuda=format=nv12",
         "-c:v",
     ]
 
@@ -170,8 +170,8 @@ def _get_video_options_nvidia(
                 "22",
                 "-b:v",
                 "0",
-                "-pix_fmt",
-                "yuv420p",
+                # "-pix_fmt",
+                # "yuv420p",
             ]
         )
         return video_options
@@ -196,8 +196,8 @@ def _get_video_options_nvidia(
                 "22",
                 "-b:v",
                 "0",
-                "-pix_fmt",
-                "yuv420p",
+                # "-pix_fmt",
+                # "yuv420p",
             ]
         )
 
