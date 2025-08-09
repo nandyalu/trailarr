@@ -28,6 +28,12 @@ box_echo "Creating '$APP_DATA_DIR' folder for storing database and other config 
 # Remove trailing slash from APP_DATA_DIR if it exists
 export APP_DATA_DIR=$(echo $APP_DATA_DIR | sed 's:/*$::')
 
+# Set APP_DATA_DIR env to /app/config if empty
+if [ -z "$APP_DATA_DIR" ]; then
+  APP_DATA_DIR="/app/config"
+  export APP_DATA_DIR
+fi
+
 # Create appdata folder for storing database and other config files
 mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
 mkdir -p /app/tmp && chmod -R 755 /app/tmp
@@ -47,7 +53,7 @@ box_echo "yt-dlp version: $YTDLP_VERSION"
 
 # Run Alembic migrations
 box_echo "Running Alembic migrations"
-cd backend
+cd /app/backend
 alembic upgrade head && box_echo "Alembic migrations ran successfully"
 
 # Install Angular & dependencies

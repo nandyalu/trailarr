@@ -34,7 +34,9 @@ connection = ConnectionCreate(
 )
 
 # Default connection update object to use in tests
-connection_update = ConnectionUpdate(monitor=MonitorType.MONITOR_SYNC)
+connection_update = ConnectionUpdate(
+    monitor=MonitorType.MONITOR_SYNC, path_mappings=[]
+)
 
 # Default Connection id for create
 CONN_ID_1 = 1
@@ -62,8 +64,9 @@ class TestConnectionDatabaseHandler:
     async def test_create_connection(self):
 
         # Call the create_connection method and assert the return value
-        result = await self.db_handler.create(connection)
+        result, id = await self.db_handler.create(connection)
         assert result == VALIDATE_SUCCESS_MSG
+        assert id >= 1
 
     @pytest.mark.asyncio
     async def test_create_connection_fail(self, monkeypatch):
