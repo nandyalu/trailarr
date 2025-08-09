@@ -327,12 +327,10 @@ When multiple GPUs are available, Trailarr uses the following priority order:
         -hwaccel cuda \
         -hwaccel_output_format cuda \
         -i input.mkv \
-        -vf scale_cuda=format=nv12 \
         -c:v h264_nvenc \
         -preset fast \
         -cq 22 \
         -b:v 0 \
-        -pix_fmt yuv420p \
         -c:a aac \
         -b:a 128k \
         output.mkv
