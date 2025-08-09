@@ -120,8 +120,8 @@ async def health_check():
         current_time = datetime.now(timezone.utc)
         if (
             current_time - last_check_time > timedelta(hours=1)
-            and app_settings.nvidia_gpu_available
-            and app_settings.trailer_hardware_acceleration
+            and app_settings.gpu_available_nvidia
+            and app_settings.gpu_enabled_nvidia
         ):
             last_check_time = current_time
             logging.debug("Checking NVIDIA GPU availability")

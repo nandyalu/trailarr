@@ -9,8 +9,8 @@ We have guides for installing Trailarr using these methods:
 - [Bare Metal](./baremetal.md) - For advanced users and hardware acceleration
 - [Unraid](./unraid.md)
 
-!!! tip "Hardware Acceleration"
-    Trailarr supports Hardware Acceleration using NVIDIA GPUs for converting downloaded trailers. Bare metal installations provide better GPU access, especially in virtualized environments like Proxmox LXC. See details in [Hardware Acceleration](./hardware-acceleration.md) section. Intel and AMD GPU Support will be added soon!
+!!! tip "Hardware Acceleration
+    Trailarr also supports Hardware Acceleration using Intel, AMD, and NVIDIA GPUs for converting downloaded trailers. Bare metal installations provide better GPU access, especially in virtualized environments like Proxmox LXC. See details in [Hardware Acceleration](./hardware-acceleration.md) section.
 
 ## Which Installation Method to Choose?
 

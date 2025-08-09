@@ -1,0 +1,7 @@
+# Testing
+aioresponses==0.7.8
+hypothesis==6.130.11
+schemathesis==4.0.2
+pytest==8.4.1
+pytest-asyncio==1.1.0
+pytest-cov==6.2.1

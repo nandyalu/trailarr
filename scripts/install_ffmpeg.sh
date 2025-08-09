@@ -22,6 +22,7 @@ install_ffmpeg_debian() {
 
     # Install the required dependencies
     apt-get update && apt-get install -y curl xz-utils
+    
     # Download and install ffmpeg
     echo "Downloading ffmpeg for $ARCH"
     curl -L -o /tmp/ffmpeg.tar.xz "$FFMPEG_URL"
@@ -29,6 +30,12 @@ install_ffmpeg_debian() {
     tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1
     mv /tmp/ffmpeg/bin/* /usr/local/bin/
     rm -rf /tmp/ffmpeg.tar.xz /tmp/ffmpeg
+    
+    # Verify ffmpeg installation
+    if command -v ffmpeg &> /dev/null; then
+        echo "Successfully installed ffmpeg version:"
+        ffmpeg -version | head -n 1
+    fi
 }
 
 # Detect the OS and install ffmpeg accordingly

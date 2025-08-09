@@ -1,91 +1,74 @@
-#!/bin/sh
+#!/bin/bash
 
+# Development container startup script
+# Reuses production entrypoint components where possible
+
+# Source the box_echo function for consistent logging
+source /app/scripts/box_echo.sh
 
 # Ensure Node.js and npm are in the PATH
 export PATH=$PATH:/usr/local/bin:/usr/local/share/nvm/current/bin
-echo $PATH
+box_echo "PATH: $PATH"
 
-# Set TimeZone based on env variable
-echo "Setting TimeZone to $TZ"
-echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+# Source production scripts for reuse
+source /app/scripts/entrypoint/timezone.sh
+source /app/scripts/entrypoint/gpu_detection.sh
+source /app/scripts/entrypoint/directories.sh
+source /app/scripts/entrypoint/env_file.sh
 
-# Create data folder for storing database and other config files
-mkdir -p /config/logs && chown -R vscode:vscode /config
+# Set development-specific environment variables
+export APPUSER="vscode"
+export APPGROUP="vscode"
 
-echo "Checking for GPU availability..."
-# Check for NVIDIA GPU
-export NVIDIA_GPU_AVAILABLE="false"
-if command -v nvidia-smi &> /dev/null; then
-    if nvidia-smi > /dev/null 2>&1; then
-        echo "NVIDIA GPU is available."
-        export NVIDIA_GPU_AVAILABLE="true"
-    else
-        echo "NVIDIA GPU is not available."
-    fi
-else
-    echo "nvidia-smi command not found."
+# Configure timezone (reuse production function)
+configure_timezone
+
+# Create development data directories (reuse production logic)
+box_echo "Creating '$APP_DATA_DIR' folder for storing database and other config files"
+# Remove trailing slash from APP_DATA_DIR if it exists
+export APP_DATA_DIR=$(echo $APP_DATA_DIR | sed 's:/*$::')
+
+# Set APP_DATA_DIR env to /app/config if empty
+if [ -z "$APP_DATA_DIR" ]; then
+  APP_DATA_DIR="/app/config"
+  export APP_DATA_DIR
 fi
 
-# Check if /dev/dri exists
-export QSV_GPU_AVAILABLE="false"
-if [ -d /dev/dri ]; then
-    # Check for Intel GPU
-    if ls /dev/dri | grep -q "renderD"; then
-        # Intel GPU might be available. Check for Intel-specific devices
-        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'Intel|ARC' > /dev/null 2>&1; then
-            export GPU_AVAILABLE_INTEL="true"
-            echo "Intel GPU detected. Intel hardware acceleration (VAAPI) is available."
-        else
-            echo "No Intel GPU detected. Intel QSV is not available."
-        fi
-    else
-        echo "Intel QSV not detected. No renderD devices found in /dev/dri."
-    fi
-else
-    echo "Intel GPU is not available. /dev/dri does not exist."
-fi
+# Create appdata folder for storing database and other config files
+mkdir -p "${APP_DATA_DIR}/logs" && chmod -R 755 $APP_DATA_DIR
+mkdir -p /app/tmp && chmod -R 755 /app/tmp
+chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
-echo "Checking for AMD GPU availability..."
-export GPU_AVAILABLE_AMD="false"
-if [ -d /dev/dri ]; then
-    # Check for AMD GPU
-    if ls /dev/dri | grep -q "renderD"; then
-        # AMD GPU might be available. Check for AMD-specific devices
-        if lspci | grep -iE 'Display|VGA|3D' | grep -iE 'AMD|ATI|Radeon' > /dev/null 2>&1; then
-            export GPU_AVAILABLE_AMD="true"
-            echo "AMD GPU detected. AMD hardware acceleration (AMF) is available."
-        else
-            echo "No AMD GPU detected. AMD hardware acceleration not available."
-        fi
-    else
-        echo "AMD GPU not detected. No renderD devices found in /dev/dri."
-    fi
-else
-    echo "AMD GPU is not available. /dev/dri does not exist."
-fi
+# GPU Detection (reuse production functions)
+setup_gpu_detection
+
+# Generate environment file with GPU detection results (reuse production function)
+generate_env_file
 
 # Check the version of yt-dlp and store it in a global environment variable
+box_echo "Checking yt-dlp version..."
 YTDLP_VERSION=$(yt-dlp --version)
 export YTDLP_VERSION
+box_echo "yt-dlp version: $YTDLP_VERSION"
 
 # Run Alembic migrations
-echo "Running Alembic migrations"
-cd backend
-alembic upgrade head && echo "Alembic migrations ran successfully"
+box_echo "Running Alembic migrations"
+cd /app/backend
+alembic upgrade head && box_echo "Alembic migrations ran successfully"
 
 # Install Angular & dependencies
-echo "Installing Angular and it's dependencies"
+box_echo "Installing Angular and it's dependencies"
 npm install -g @angular/cli@19.2.10
 cd ../frontend && npm install
 ng completion
 
 # Start Angular application
-# echo "Building Angular application"
+# box_echo "Building Angular application"
 # cd /app/frontend && nohup ng serve &
 
 # Start FastAPI application
-# echo "Starting FastAPI application"
+# box_echo "Starting FastAPI application"
 # cd /app
 # exec gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api
 
-echo "Dev container started successfully!"
+box_echo "Dev container started successfully!"

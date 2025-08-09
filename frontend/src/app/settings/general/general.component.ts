@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {Settings} from 'generated-sources/openapi';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
-import {Settings} from '../../models/settings';
 import {SettingsService} from '../../services/settings.service';
 import {OptionsSettingComponent} from '../profiles/settings/options-setting/options-setting.component';
 import {TextSettingComponent} from '../profiles/settings/text-setting/text-setting.component';

@@ -12,7 +12,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/){:target="_blank"}
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com){:target="_blank"}
-[![Angular](https://img.shields.io/badge/angular-20.0.2-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
+[![Angular](https://img.shields.io/badge/angular-20.1.6-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/){:target="_blank"}
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr){:target="_blank"}
 
 [![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml){:target="_blank"}
@@ -102,8 +102,8 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
-- [ ] Improve task logging
-- [ ] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
+- [ ] Improve task logging (in progress)
+- [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are always looking for ways to improve the project.

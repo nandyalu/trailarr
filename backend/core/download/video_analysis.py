@@ -6,7 +6,6 @@ import json
 
 from pydantic import BaseModel
 
-from config.settings import app_settings
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("VideoAnalysis")
@@ -132,15 +131,21 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             video_info.streams.append(stream_info)
         return video_info
     except Exception as e:
-        logger.error(f"Error extracting video info: {str(e)}")
+        logger.exception(f"Error extracting video info: {str(e)}")
     return None
 
 
-def verify_trailer_streams(trailer_path: str):
+def verify_trailer_streams(
+    trailer_path: str, min_duration: int = 10, max_duration: int = 1200
+) -> bool:
     """
     Check if the trailer has audio and video streams. \n
     Args:
-        trailer_path (str): Path to the trailer file. \n
+        trailer_path (str): Path to the trailer file.
+        min_duration (int): Minimum duration of the trailer in seconds. \
+            Default is 10 seconds.
+        max_duration (int): Maximum duration of the trailer in seconds. \
+            Default is 1200 seconds (20 minutes).
     Returns:
         bool: True if the trailer has audio and video streams, False otherwise.
     """
@@ -154,15 +159,15 @@ def verify_trailer_streams(trailer_path: str):
         logger.debug(f"No media info found for the trailer: {trailer_path}")
         return False
     # Varify the trailer duration is within the limits
-    if media_info.duration_seconds < app_settings.trailer_min_duration:
+    if media_info.duration_seconds < min_duration:
         logger.debug(
-            "Trailer duration less than 10 seconds:"
+            f"Trailer duration less than {min_duration} seconds:"
             f" {media_info.duration_seconds}"
         )
         return False
-    if media_info.duration_seconds > app_settings.trailer_max_duration:
+    if media_info.duration_seconds > max_duration:
         logger.debug(
-            "Trailer duration more than 60 seconds:"
+            f"Trailer duration more than {max_duration} seconds:"
             f" {media_info.duration_seconds}"
         )
         return False
@@ -245,7 +250,9 @@ def get_silence_timestamps(
         )
         return silence_start, silence_end
     except Exception as e:
-        logger.error(f"Exception while detecting silence in video: {str(e)}")
+        logger.exception(
+            f"Exception while detecting silence in video: {str(e)}"
+        )
     # timeTook = datetime.now() - time
     # print(f"Time took: {timeTook}")
     return None, None
@@ -333,7 +340,10 @@ def remove_silence_at_end(file_path: str) -> str:
         )
         trim_video_at_end(file_path, output_file, silence_start)
     except Exception as e:
-        logger.error(f"Exception while removing silence from video: {str(e)}")
+        # Log error with traceback but return original file to continue processing
+        logger.exception(
+            f"Exception while removing silence from video: {str(e)}"
+        )
         return file_path
     silence_time = silence_end - silence_start
     logger.info(

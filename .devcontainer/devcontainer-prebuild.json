@@ -4,7 +4,8 @@
 {
 	"name": "Trailarr",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"context": ".."
 	},
 	"workspaceFolder": "/app",
 
@@ -46,6 +47,6 @@
 				"mkxml.vscode-filesize"
 			]
 		}
-	},
-	"postCreateCommand": "sudo startup.sh"
+	}
+	// "postCreateCommand": "sudo startup.sh"
 }

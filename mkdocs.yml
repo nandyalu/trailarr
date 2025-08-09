@@ -14,6 +14,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.code.select
+    - content.tabs.link
     - navigation.footer
     - navigation.indexes
     - navigation.instant
@@ -97,6 +98,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
   - md_in_html
 extra:
   social:

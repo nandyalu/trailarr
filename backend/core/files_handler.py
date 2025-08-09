@@ -254,15 +254,26 @@ class FilesHandler:
         return False
 
     @staticmethod
+    def is_video_file(file_name: str) -> bool:
+        """Check if a file is a video file based on its name.\n
+        Args:
+            file_name (str): Name of the file to check.\n
+        Returns:
+            bool: True if the file is a video, False otherwise."""
+        if not file_name:
+            return False
+        if not file_name.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
+            return False
+        return True
+
+    @staticmethod
     def is_trailer_file(file_name: str) -> bool:
         """Check if a file is a trailer file based on its name.\n
         Args:
             file_name (str): Name of the file to check.\n
         Returns:
             bool: True if the file is a trailer, False otherwise."""
-        if not file_name:
-            return False
-        if not file_name.lower().endswith(FilesHandler.VIDEO_EXTENSIONS):
+        if not FilesHandler.is_video_file(file_name):
             return False
         # Ensure file is not an episode file
         if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
@@ -425,7 +436,11 @@ class FilesHandler:
             for sub_entry in await aiofiles.os.scandir(entry.path):
                 if not sub_entry.is_file():
                     continue
+                # Return file with `trailer` in name (if exists)
                 if FilesHandler.is_trailer_file(sub_entry.name):
+                    return sub_entry.path
+                # Return video file path (if exists)
+                if FilesHandler.is_video_file(sub_entry.name):
                     return sub_entry.path
         return None
 
