@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v045-beta-tbd" class="md-skip">
+        <a href="#v050-tbd" class="md-skip">
           Skip to content
         </a>
       
@@ -1814,9 +1814,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v045-beta-tbd" class="md-nav__link">
+  <a href="#v050-tbd" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.4.5-beta - TBD
+      v0.5.0 - TBD
     </span>
   </a>
   
@@ -2092,9 +2092,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v045-beta-tbd" class="md-nav__link">
+  <a href="#v050-tbd" class="md-nav__link">
     <span class="md-ellipsis">
-      v0.4.5-beta - TBD
+      v0.5.0 - TBD
     </span>
   </a>
   
@@ -2202,18 +2202,37 @@
 
   <h1>2025</h1>
 
-<h2 id="v045-beta-tbd"><strong>v0.4.5-beta</strong> - <em>TBD</em></h2>
+<h2 id="v050-tbd"><strong>v0.5.0</strong> - <em>TBD</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
-<li>None</li>
+<li>Added Intel and AMD GPU hardware acceleration support using VAAPI (Video Acceleration API). 🚀</li>
+<li>Individual GPU control settings in UI under <code>Settings</code> &gt; <code>General</code> &gt; <code>Advanced</code>. Can now enable/disable each GPU type (NVIDIA, Intel, AMD) independently when detected. ⚙️</li>
+<li>Hardware acceleration priority system: NVIDIA &gt; Intel VAAPI &gt; AMD VAAPI &gt; CPU fallback, ensuring optimal performance based on available hardware. 📊</li>
+<li>Enhanced container startup logging showing detected GPU hardware, device paths, and VAAPI capabilities for better troubleshooting. 📝</li>
+<li>Added a check for <code>YT-DLP</code> version in <code>Docker Update Check</code> and display if an update is available in <code>Settings &gt; About</code>. 🔄</li>
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
-<li>Fixed a bug that raised an error when setting <code>Monitor Interval</code> from Web UI. Fixes <a href="https://github.com/nandyalu/trailarr/issues/273" target="_blank">#273</a>.</li>
+<li>Fixed a bug that raised an error when setting <code>Monitor Interval</code> from Web UI. Fixes <a href="https://github.com/nandyalu/trailarr/issues/273" target="_blank">#273</a>. 🔧</li>
+<li>Improved GPU device detection and permission handling to prevent access issues. 🔐</li>
+<li>Fixed container user group configuration to ensure proper GPU hardware access. 👤</li>
+</ul>
+<p><strong>Documentation:</strong> 📚</p>
+<ul>
+<li>Updated hardware acceleration documentation with comprehensive setup instructions for Intel and AMD GPUs using VAAPI. 📖</li>
+<li>Added host system setup requirements and user group configuration instructions for optimal GPU performance. 🏠</li>
+<li>Enhanced troubleshooting guides with GPU detection commands and permission verification steps. 🔍</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
 <ul>
-<li>None</li>
+<li>Refactored container entrypoint into modular components: banner display, timezone configuration, directory setup, GPU detection, user management, environment configuration, and application startup. 🏗️</li>
+<li>Enhanced development container configuration with improved GPU support and package management. 🧪</li>
+<li>Updated frontend build process and npm dependencies for better performance and security. 📦</li>
+<li>Streamlined GPU detection logic with fallback mechanisms and robust error handling. 🔄</li>
+<li>Modularized container entrypoint scripts for better maintainability and organization into separate functional components. 🛠️</li>
+<li>Improved GPU group management with automatic user group assignment for hardware acceleration access (render, video, and device-specific groups). 👥</li>
+<li>Improved container startup performance through optimized script execution order. ⚡</li>
+<li>Enhanced exception logging throughout the application for better debugging and error tracking. 🐛</li>
 </ul>
 <h2 id="v044-beta-july-26-2025"><strong>v0.4.4-beta</strong> - <em>July 26 2025</em></h2>
 <p><strong>Bug Fixes:</strong> 🐛</p>
@@ -2471,7 +2490,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 31, 2025 23:26:00 UTC">July 31, 2025 23:26:00</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 9, 2025 05:52:31 UTC">August 9, 2025 05:52:31</span>
   </span>
 
     
@@ -2498,6 +2517,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -2625,7 +2646,7 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.50899def.min.js"></script>
