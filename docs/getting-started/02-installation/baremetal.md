@@ -1,53 +1,398 @@
 # Bare Metal Installation
 
-Trailarr can be installed directly on Debian-based systems without Docker. This installation method is ideal for users who prefer bare metal installations or have hardware acceleration requirements that are difficult to achieve with Docker (such as GPU passthrough in Proxmox LXC environments).
+Trailarr can be installed directly on Debian-based systems without Docker. This installation method provides optimal performance with native GPU hardware acceleration support, making it ideal for environments where Docker GPU passthrough is complex (such as Proxmox LXC containers).
 
 !!! info "System Requirements"
-    - Debian-based Linux distribution (Ubuntu, Debian, etc.)
-    - Python 3.8 or higher
-    - curl and wget
-    - sudo privileges
-    - At least 2GB of free disk space
+    - Debian-based Linux distribution (Ubuntu 20.04+, Debian 11+, etc.)
+    - User account with sudo privileges
+    - curl, wget, and git
+    - At least 4GB of free disk space
+    - Internet connection for downloading dependencies
 
-## Installation
+!!! warning "Python Version"
+    The application requires Python 3.13.5. The installer will automatically detect and install this version if not available on your system.
 
-### Quick Installation
+## Quick Installation
 
-1. Download or clone the Trailarr source code:
-   ```bash
-   git clone https://github.com/nandyalu/trailarr.git
-   cd trailarr
-   ```
+### One-Command Installation
 
-2. Run the installation script:
-   ```bash
-   ./install.sh
-   ```
-
-3. Follow the prompts to complete the installation.
-
-4. Start Trailarr:
-   ```bash
-   sudo systemctl enable trailarr
-   sudo systemctl start trailarr
-   ```
-
-### Manual Installation
-
-If you prefer to install manually or need to customize the installation:
-
-#### 1. Install System Dependencies
+Run this single command to download and install Trailarr:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-pip python3-venv curl wget xz-utils git sqlite3 pciutils tzdata ca-certificates
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
 ```
 
-#### 2. Install ffmpeg
+This command will:
 
-The installation script will automatically download and install the latest ffmpeg build for your architecture. If you prefer to install manually:
+1. Download the latest Trailarr release
+2. Extract the installation scripts
+3. Run the interactive installation process
+4. Set up GPU hardware acceleration (if available)
+5. Configure the systemd service
+
+### Alternative: Clone and Install
+
+If you prefer to review the code first:
 
 ```bash
+git clone https://github.com/nandyalu/trailarr.git
+cd trailarr
+./scripts/baremetal/install.sh
+```
+
+## Installation Process
+
+The installer will guide you through the following steps:
+
+### 1. System Verification
+- Checks for Debian-based distribution
+- Verifies user has sudo privileges
+- Installs required system dependencies
+
+### 2. Python 3.13.5 Setup
+- Detects if Python 3.13.5 is already installed
+- Downloads and installs Python locally if needed
+- Creates isolated virtual environment
+
+### 3. GPU Hardware Detection
+- Automatically detects NVIDIA, Intel, and AMD GPUs
+- Tests hardware acceleration capabilities
+- Identifies required drivers and groups
+
+### 4. Interactive Configuration
+
+The installer will prompt you for:
+
+#### Monitor Interval
+How often Trailarr checks for new content:
+- **3600** (1 hour) - High responsiveness, higher system load
+- **10800** (3 hours) - **Recommended** balance
+- **21600** (6 hours) - Lower system load, slower detection
+
+#### Wait for Media Files
+- **Yes** (recommended) - Download trailers only after media files exist
+- **No** - Download trailers immediately when added to Radarr/Sonarr
+
+#### Hardware Acceleration
+If GPUs are detected, you can:
+- Enable/disable hardware acceleration
+- Select which GPU to use (if multiple available)
+- Configure driver installation
+
+#### Network Configuration
+- Set web interface port (default: 7889)
+- Configure timezone
+
+### 5. Media Tools Installation
+- Installs ffmpeg and yt-dlp in application directory
+- Sets up environment variables for local binaries
+- Creates update scripts for maintenance
+
+### 6. GPU Driver Installation
+Based on your selections:
+- **NVIDIA**: Installs CUDA drivers and runtime
+- **Intel**: Installs VAAPI drivers and libraries  
+- **AMD**: Installs VAAPI drivers for AMD GPUs
+- Adds user to required groups for GPU access
+
+### 7. Service Configuration
+- Creates systemd service with security hardening
+- Sets up automatic startup
+- Configures logging and restart policies
+
+## Directory Structure
+
+After installation, files are organized as follows:
+
+```
+/opt/trailarr/              # Application installation
+├── backend/                # Python application code
+├── frontend-build/         # Web interface files
+├── assets/                 # Static assets and images
+├── scripts/                # Maintenance and startup scripts
+├── bin/                    # Local binaries (ffmpeg, yt-dlp)
+├── venv/                   # Python virtual environment
+├── python/                 # Local Python installation (if needed)
+└── .env                    # Configuration file
+
+/var/lib/trailarr/          # Application data
+├── logs/                   # Application logs
+├── backups/                # Automatic database backups
+├── web/images/             # Downloaded trailer files
+├── config/                 # Configuration files
+└── trailarr.db            # SQLite database
+
+/var/log/trailarr/          # System logs
+└── trailarr.log           # Service logs
+
+/etc/systemd/system/        # Service configuration
+└── trailarr.service       # Systemd service file
+```
+
+## Hardware Acceleration
+
+### GPU Support
+
+The installer automatically detects and configures:
+
+#### NVIDIA GPUs
+- **Requirements**: NVIDIA graphics card with CUDA support
+- **Drivers**: Automatically installs nvidia-driver and CUDA runtime
+- **Acceleration**: Uses NVENC/NVDEC for video processing
+- **Note**: Reboot may be required after driver installation
+
+#### Intel GPUs  
+- **Requirements**: Intel integrated graphics or Arc GPUs
+- **Drivers**: Installs Intel Media Driver and VAAPI libraries
+- **Acceleration**: Uses Intel Quick Sync Video (QSV)
+- **Formats**: H.264, HEVC, VP8, VP9, AV1 (depending on hardware)
+
+#### AMD GPUs
+- **Requirements**: AMD Radeon graphics cards
+- **Drivers**: Installs Mesa VAAPI drivers
+- **Acceleration**: Uses VAAPI for hardware encoding/decoding
+- **Formats**: H.264, HEVC, AV1 (depending on hardware)
+
+### GPU Selection
+
+If multiple GPUs are detected:
+- The installer will list all available options
+- You can choose which GPU to use for acceleration
+- Only one GPU can be used at a time
+- Configuration can be changed later in `/opt/trailarr/.env`
+
+## Service Management
+
+### Starting and Stopping
+
+```bash
+# Start Trailarr
+sudo systemctl start trailarr
+
+# Stop Trailarr  
+sudo systemctl stop trailarr
+
+# Restart Trailarr
+sudo systemctl restart trailarr
+
+# Enable auto-start on boot
+sudo systemctl enable trailarr
+
+# Disable auto-start
+sudo systemctl disable trailarr
+```
+
+### Checking Status
+
+```bash
+# Check service status
+sudo systemctl status trailarr
+
+# View recent logs
+sudo journalctl -u trailarr -n 50
+
+# Follow logs in real-time
+sudo journalctl -u trailarr -f
+
+# View application logs
+tail -f /var/lib/trailarr/logs/app.log
+```
+
+## Configuration
+
+### Main Configuration File
+
+Edit `/opt/trailarr/.env` to modify settings:
+
+```bash
+# Application Settings
+APP_PORT=7889
+APP_DATA_DIR=/var/lib/trailarr
+MONITOR_INTERVAL=10800
+WAIT_FOR_MEDIA=true
+
+# Hardware Acceleration
+ENABLE_HWACCEL=true
+HWACCEL_TYPE=nvidia
+
+# Python Environment
+PYTHONPATH=/opt/trailarr/backend
+PYTHON_EXECUTABLE=/opt/trailarr/venv/bin/python
+
+# Local Binaries
+PATH=/opt/trailarr/bin:$PATH
+FFMPEG_PATH=/opt/trailarr/bin/ffmpeg
+YTDLP_PATH=/opt/trailarr/bin/yt-dlp
+```
+
+### Applying Configuration Changes
+
+After editing configuration:
+
+```bash
+sudo systemctl restart trailarr
+```
+
+## Maintenance
+
+### Updating Trailarr
+
+```bash
+# Stop the service
+sudo systemctl stop trailarr
+
+# Backup current installation
+sudo cp -r /opt/trailarr /opt/trailarr.backup
+
+# Download and run the installer again
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
+
+# Start the service
+sudo systemctl start trailarr
+```
+
+### Updating yt-dlp
+
+yt-dlp is automatically updated during startup, or manually:
+
+```bash
+sudo -u trailarr /opt/trailarr/scripts/update_ytdlp_local.sh
+```
+
+### Database Backups
+
+Automatic backups are created before each application start:
+- Location: `/var/lib/trailarr/backups/`
+- Retention: 30 most recent backups
+- Format: `trailarr_YYYYMMDDHHMMSS.db`
+
+### Log Rotation
+
+Logs are automatically managed by systemd journald. To configure retention:
+
+```bash
+# Edit journald configuration
+sudo nano /etc/systemd/journald.conf
+
+# Set log retention (e.g., 7 days)
+MaxRetentionSec=7d
+SystemMaxUse=500M
+
+# Restart journald
+sudo systemctl restart systemd-journald
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Service Won't Start
+
+```bash
+# Check service status and logs
+sudo systemctl status trailarr
+sudo journalctl -u trailarr -n 50
+
+# Common causes:
+# - Port already in use
+# - Database corruption
+# - Missing dependencies
+# - Permission issues
+```
+
+#### GPU Acceleration Not Working
+
+```bash
+# Check GPU status
+lspci | grep -i vga
+lspci | grep -i nvidia
+
+# Check drivers
+nvidia-smi  # For NVIDIA
+vainfo      # For Intel/AMD
+
+# Check user groups
+groups trailarr
+ls -la /dev/dri/
+```
+
+#### Permission Errors
+
+```bash
+# Fix ownership
+sudo chown -R trailarr:trailarr /opt/trailarr
+sudo chown -R trailarr:trailarr /var/lib/trailarr
+
+# Check service user
+sudo systemctl show trailarr | grep User
+```
+
+#### Port Conflicts
+
+```bash
+# Check what's using the port
+sudo netstat -tlnp | grep :7889
+sudo lsof -i :7889
+
+# Change port in configuration
+sudo nano /opt/trailarr/.env
+# Edit APP_PORT=7889 to different port
+sudo systemctl restart trailarr
+```
+
+### Getting Help
+
+- **GitHub Issues**: [Report bugs and get support](https://github.com/nandyalu/trailarr/issues)
+- **Documentation**: [Complete documentation](https://github.com/nandyalu/trailarr/docs)
+- **Logs**: Always include logs when reporting issues
+
+## Uninstallation
+
+### Quick Uninstall
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/uninstall.sh | bash
+```
+
+### Manual Uninstall
+
+```bash
+# Stop and disable service
+sudo systemctl stop trailarr
+sudo systemctl disable trailarr
+
+# Remove service file
+sudo rm /etc/systemd/system/trailarr.service
+sudo systemctl daemon-reload
+
+# Remove application files
+sudo rm -rf /opt/trailarr
+
+# Remove data (optional - will lose all trailers and configuration)
+sudo rm -rf /var/lib/trailarr
+sudo rm -rf /var/log/trailarr
+
+# Remove user
+sudo userdel trailarr
+```
+
+The uninstaller will prompt you to preserve data for future reinstallations.
+
+## Comparison with Docker
+
+| Feature | Docker | Bare Metal |
+|---------|--------|------------|
+| **Setup Complexity** | Easy | Moderate |
+| **Resource Usage** | Higher (container overhead) | Lower (native) |
+| **Hardware Access** | Limited (requires passthrough) | Full (direct access) |
+| **GPU Support** | Complex in LXC environments | Native support |
+| **Performance** | Good | Optimal |
+| **Updates** | Container replacement | File-based updates |
+| **System Integration** | Isolated | Native systemd service |
+| **Troubleshooting** | Container logs | System logs |
+| **Best For** | Quick setup, isolated environments | Performance, complex GPU setups |
+
+Choose bare metal installation when you need maximum performance, have complex GPU requirements, or are running in environments where Docker GPU passthrough is challenging.
 # For amd64
 curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
 

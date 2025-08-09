@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Trailarr Bare Metal Installation Script for Debian-based systems
-# This script installs Trailarr directly on the host system without Docker
+# Trailarr Bare Metal Installation Bootstrap Script
+# This script downloads the latest Trailarr release and runs the installation
 
 set -e
 
@@ -19,6 +19,29 @@ print_message() {
     echo -e "${color}${message}${NC}"
 }
 
+# Configuration
+REPO_URL="https://github.com/nandyalu/trailarr"
+TEMP_DIR="/tmp/trailarr_install"
+INSTALL_SCRIPT="scripts/baremetal/install.sh"
+
+# Function to display banner
+display_banner() {
+    clear
+    cat << 'EOF'
+ _______           _ _                     
+|__   __|         (_) |                    
+   | |_ __ __ _ ___ _| | __ _ _ __ _ __      
+   | | '__/ _` |/ __| | |/ _` | '__| '__|     
+   | | | | (_| | (__| | | (_| | |  | |        
+   |_|_|  \__,_|\___|_|_|\__,_|_|  |_|        
+                                             
+       Bare Metal Installation              
+                                             
+EOF
+    print_message $BLUE "This script will download and install Trailarr directly on your system"
+    echo ""
+}
+
 # Function to check if running as root
 check_root() {
     if [[ $EUID -eq 0 ]]; then
@@ -28,76 +51,128 @@ check_root() {
     fi
 }
 
-# Function to check if distribution is supported
-check_distribution() {
-    if [ ! -f /etc/debian_version ]; then
-        print_message $RED "This installation script only supports Debian-based distributions."
-        print_message $YELLOW "Please use Docker installation for other distributions."
+# Function to check dependencies
+check_dependencies() {
+    print_message $BLUE "Checking required dependencies..."
+    
+    # Check for required commands
+    MISSING_DEPS=()
+    
+    for cmd in curl wget git unzip; do
+        if ! command -v "$cmd" &> /dev/null; then
+            MISSING_DEPS+=("$cmd")
+        fi
+    done
+    
+    if [ ${#MISSING_DEPS[@]} -ne 0 ]; then
+        print_message $RED "Missing required dependencies: ${MISSING_DEPS[*]}"
+        print_message $YELLOW "Please install them first:"
+        print_message $YELLOW "  sudo apt update && sudo apt install -y ${MISSING_DEPS[*]}"
         exit 1
     fi
     
-    print_message $GREEN "✓ Debian-based distribution detected"
+    print_message $GREEN "✓ All dependencies are available"
 }
 
-# Function to install system dependencies
-install_system_deps() {
-    print_message $BLUE "Installing system dependencies..."
+# Function to get latest release version
+get_latest_version() {
+    print_message $BLUE "Fetching latest release information..."
     
-    sudo apt-get update
-    sudo apt-get install -y \
-        python3 \
-        python3-pip \
-        python3-venv \
-        curl \
-        wget \
-        xz-utils \
-        git \
-        sqlite3 \
-        pciutils \
-        tzdata \
-        ca-certificates
-    
-    print_message $GREEN "✓ System dependencies installed"
-}
-
-# Function to install ffmpeg
-install_ffmpeg() {
-    print_message $BLUE "Installing ffmpeg..."
-    
-    # Get the architecture of the system
-    ARCH=$(dpkg --print-architecture)
-    if [ "$ARCH" == "amd64" ]; then
-        FFMPEG_URL="https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
-    elif [ "$ARCH" == "arm64" ] || [ "$ARCH" == "aarch64" ]; then
-        FFMPEG_URL="https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
-    else
-        print_message $YELLOW "Unsupported architecture: $ARCH, installing ffmpeg from apt"
-        sudo apt-get install -y ffmpeg
-        print_message $GREEN "✓ ffmpeg installed from apt"
-        return
+    # Try to get latest release from GitHub API
+    if command -v curl &> /dev/null; then
+        LATEST_VERSION=$(curl -s "https://api.github.com/repos/nandyalu/trailarr/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || echo "")
+    elif command -v wget &> /dev/null; then
+        LATEST_VERSION=$(wget -qO- "https://api.github.com/repos/nandyalu/trailarr/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || echo "")
     fi
-
-    # Download and install ffmpeg
-    print_message $BLUE "Downloading ffmpeg for $ARCH..."
-    curl -L -o /tmp/ffmpeg.tar.xz "$FFMPEG_URL"
-    mkdir -p /tmp/ffmpeg
-    tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1
-    sudo cp /tmp/ffmpeg/bin/* /usr/local/bin/
-    rm -rf /tmp/ffmpeg.tar.xz /tmp/ffmpeg
     
-    print_message $GREEN "✓ ffmpeg installed to /usr/local/bin/"
+    if [ -z "$LATEST_VERSION" ]; then
+        print_message $YELLOW "Could not fetch latest version, using main branch"
+        DOWNLOAD_URL="${REPO_URL}/archive/refs/heads/main.zip"
+        EXTRACT_DIR="trailarr-main"
+    else
+        print_message $GREEN "✓ Latest version: $LATEST_VERSION"
+        DOWNLOAD_URL="${REPO_URL}/archive/refs/tags/${LATEST_VERSION}.zip"
+        EXTRACT_DIR="trailarr-${LATEST_VERSION#v}"
+    fi
 }
 
-# Function to create trailarr user and directories
-create_user_and_dirs() {
-    print_message $BLUE "Creating trailarr user and directories..."
+# Function to download and extract source
+download_source() {
+    print_message $BLUE "Downloading Trailarr source code..."
     
-    # Create trailarr user if it doesn't exist
-    if ! id "trailarr" &>/dev/null; then
-        sudo useradd -r -d /opt/trailarr -s /bin/bash -m trailarr
-        print_message $GREEN "✓ Created trailarr user"
+    # Clean up any existing temp directory
+    rm -rf "$TEMP_DIR"
+    mkdir -p "$TEMP_DIR"
+    cd "$TEMP_DIR"
+    
+    # Download source
+    if command -v curl &> /dev/null; then
+        curl -L -o trailarr.zip "$DOWNLOAD_URL"
+    elif command -v wget &> /dev/null; then
+        wget -O trailarr.zip "$DOWNLOAD_URL"
     else
-        print_message $YELLOW "! trailarr user already exists"
+        print_message $RED "Neither curl nor wget available for download"
+        exit 1
+    fi
+    
+    # Extract archive
+    unzip -q trailarr.zip
+    
+    if [ ! -d "$EXTRACT_DIR" ]; then
+        print_message $RED "Failed to extract source code"
+        exit 1
+    fi
+    
+    print_message $GREEN "✓ Source code downloaded and extracted"
+}
+
+# Function to run installation
+run_installation() {
+    print_message $BLUE "Starting Trailarr installation..."
+    
+    cd "$TEMP_DIR/$EXTRACT_DIR"
+    
+    # Check if installation script exists
+    if [ ! -f "$INSTALL_SCRIPT" ]; then
+        print_message $RED "Installation script not found: $INSTALL_SCRIPT"
+        exit 1
+    fi
+    
+    # Make installation script executable
+    chmod +x "$INSTALL_SCRIPT"
+    
+    # Run the installation
+    bash "$INSTALL_SCRIPT"
+}
+
+# Function to cleanup
+cleanup() {
+    print_message $BLUE "Cleaning up temporary files..."
+    rm -rf "$TEMP_DIR"
+    print_message $GREEN "✓ Cleanup complete"
+}
+
+# Main function
+main() {
+    # Set up error handling
+    trap cleanup EXIT
+    
+    display_banner
+    check_root
+    check_dependencies
+    get_latest_version
+    download_source
+    run_installation
+    
+    print_message $GREEN ""
+    print_message $GREEN "🎉 Trailarr installation bootstrap completed!"
+    print_message $GREEN ""
+    echo "The installation script has been downloaded and executed."
+    echo "Please check the output above for any further instructions."
+}
+
+# Run main function
+main "$@"
     fi
     
     # Create directories
