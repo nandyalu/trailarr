@@ -8,6 +8,8 @@ RUN go build -o /usr/local/bin/gosu .
 # Stage 1 - Python dependencies
 FROM python:3.13-slim AS python-deps
 
+# For bare metal installation, see install.sh script in the repository root
+
 # PYTHONDONTWRITEBYTECODE=1 -> Keeps Python from generating .pyc files in the container
 # PYTHONUNBUFFERED=1 -> Turns off buffering for easier container logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
