@@ -46,7 +46,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.
 - Option to download desired video as trailer for any movie/series.
-- Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for NVIDIA GPUs.
+- Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for AMD, Intel, and NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
