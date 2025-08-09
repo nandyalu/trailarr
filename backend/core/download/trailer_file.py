@@ -232,14 +232,18 @@ def move_trailer_to_folder(
 
 
 def verify_download(
-    tmp_output_file: str, output_file: str, title: str
+    tmp_output_file: str,
+    output_file: str,
+    title: str,
+    profile: TrailerProfileRead,
 ) -> bool:
     """Verify if the trailer is downloaded successfully. \n
     Also checks if the trailer has audio and video streams. \n
     Args:
         tmp_output_file (str): Temporary output file path.
         output_file (str): Output file path.
-        title (str): Title of the media. \n
+        title (str): Title of the media.
+        profile (TrailerProfileRead): Trailer Profile used to download. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
     # Check if the trailer is downloaded successfully
@@ -250,7 +254,9 @@ def verify_download(
         trailer_downloaded = False
     else:
         # Verify the trailer has audio and video streams
-        trailer_downloaded = video_analysis.verify_trailer_streams(output_file)
+        trailer_downloaded = video_analysis.verify_trailer_streams(
+            output_file, profile.min_duration, profile.max_duration
+        )
         if not trailer_downloaded:
             logger.debug(
                 f"Trailer has either no audio or video streams: {title}"
@@ -259,5 +265,5 @@ def verify_download(
             try:
                 os.remove(output_file)
             except Exception as e:
-                logger.error(f"Failed to delete trailer file: {e}")
+                logger.exception(f"Failed to delete trailer file: {e}")
     return trailer_downloaded

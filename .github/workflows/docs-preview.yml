@@ -64,25 +64,40 @@ jobs:
           REPO="${{ github.repository }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
           
-          # Check if a preview comment already exists
-          EXISTING_COMMENT=$(gh pr view $PR_NUMBER --repo "$REPO" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🚀 Docs preview for this PR"))) | .id' | head -n1)
+          # Check if a preview comment already exists using GitHub API
+          EXISTING_COMMENT=$(gh api repos/$REPO/issues/$PR_NUMBER/comments \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("🚀 Docs preview for this PR"))) | .id' \
+            | head -n1)
           
           if [ -n "$EXISTING_COMMENT" ]; then
             echo "Found existing preview comment: $EXISTING_COMMENT"
             echo "comment_exists=true" >> $GITHUB_OUTPUT
+            echo "comment_id=$EXISTING_COMMENT" >> $GITHUB_OUTPUT
           else
             echo "No existing preview comment found"
             echo "comment_exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Comment preview link on PR
-        if: steps.check-comment.outputs.comment_exists == 'false'
+      - name: Update or create preview comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REPO="${{ github.repository }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
           DOCS_URL="https://${REPO%/*}.github.io/${REPO#*/}/pr-${PR_NUMBER}/"
-          gh pr comment $PR_NUMBER \
-            --repo "$REPO" \
-            --body "🚀 Docs preview for this PR: [View Documentation]($DOCS_URL)"
+          COMMENT_BODY="🚀 Docs preview for this PR: [View Documentation]($DOCS_URL)"
+          
+          if [ "${{ steps.check-comment.outputs.comment_exists }}" == "true" ]; then
+            # Update existing comment
+            COMMENT_ID="${{ steps.check-comment.outputs.comment_id }}"
+            echo "Updating existing comment: $COMMENT_ID"
+            gh api repos/$REPO/issues/comments/$COMMENT_ID \
+              --method PATCH \
+              --field body="$COMMENT_BODY"
+          else
+            # Create new comment
+            echo "Creating new comment"
+            gh pr comment $PR_NUMBER \
+              --repo "$REPO" \
+              --body "$COMMENT_BODY"
+          fi

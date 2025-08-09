@@ -36,9 +36,9 @@ async def batch_download_task(
         try:
             await download_trailer(media, profile)
         except DownloadFailedError as e:
-            logger.error(e)
+            logger.exception(e)
         except Exception as e:
-            logger.error(
+            logger.exception(
                 "Unexpected error downloading trailer for media"
                 f" '{media.title}' [{media.id}]: {e}"
             )

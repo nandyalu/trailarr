@@ -65,7 +65,7 @@ def __download_and_verify_trailer(
     output_file = download_video(trailer_url, tmp_output_file, profile)
     tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
     if not trailer_file.verify_download(
-        tmp_output_file, output_file, media.title
+        tmp_output_file, output_file, media.title, profile
     ):
         raise DownloadFailedError("Trailer verification failed")
     if profile.remove_silence:
@@ -104,6 +104,7 @@ async def download_trailer(
 
     # Get the video ID, search if needed
     video_id = trailer_search.get_video_id(media, profile, exclude)
+    media.youtube_trailer_id = video_id
 
     if not video_id:
         raise DownloadFailedError(f"No trailer found for {media.title}")
@@ -123,7 +124,7 @@ async def download_trailer(
         await websockets.ws_manager.broadcast(msg, "Success")
         return True
     except Exception as e:
-        logger.error(f"Failed to download trailer: {e}")
+        logger.exception(f"Failed to download trailer: {e}")
         __update_media_status(media, MonitorStatus.MISSING)
         if retry_count > 0:
             logger.info(

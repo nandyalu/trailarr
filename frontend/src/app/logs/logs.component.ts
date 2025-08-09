@@ -35,7 +35,7 @@ export class LogsComponent implements OnInit {
     () => ({
       url: this.logsService.logsUrl + 'raw',
       method: 'GET',
-      params: {level: this.selectedLogLevel().toUpperCase()},
+      params: {level: this.selectedLogLevel().toUpperCase(), limit: this.limit()},
     }),
     {
       defaultValue: [],
@@ -45,6 +45,7 @@ export class LogsComponent implements OnInit {
   // Component signals
   searchQuery = signal<string>('');
   selectedLogLevel = signal(LogLevel.Info);
+  limit = signal(1000); // Default limit for logs
   filteredLogs = computed(() => {
     const query = this.searchQuery();
     const logs = this.allLogs.value();
@@ -99,6 +100,7 @@ export class LogsComponent implements OnInit {
   loadMore() {
     const currentCount = this.displayCount();
     if (currentCount >= this.allLogs.value().length) {
+      this.limit.update((limit) => limit + 1000); // Increase the limit by 1000
       return; // No more logs to load
     }
     // Increase the display count by 30

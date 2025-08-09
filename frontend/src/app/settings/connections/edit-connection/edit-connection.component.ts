@@ -308,7 +308,7 @@ export class EditConnectionComponent {
           this.router.navigate(['/settings/connections']).then(() => {
             this.connectionService.connectionsResource.reload();
           });
-        }, 2000);
+        }, 3000);
       },
       error: (error) => {
         console.error('Error creating connection:', error);
@@ -326,7 +326,7 @@ export class EditConnectionComponent {
           this.router.navigate(['/settings/connections']).then(() => {
             this.connectionService.connectionsResource.reload();
           });
-        }, 2000);
+        }, 3000);
       },
       error: (error) => {
         console.error('Error deleting connection:', error);
@@ -398,7 +398,7 @@ export class EditConnectionComponent {
           this.router.navigate(['/settings/connections']).then(() => {
             this.connectionService.connectionsResource.reload();
           });
-        }, 2000);
+        }, 3000);
       },
       error: (error) => {
         console.error('Error updating connection:', error);

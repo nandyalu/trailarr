@@ -38,42 +38,26 @@ class Settings(BaseModel):
     api_key: str
     app_data_dir: str
     app_mode: str
-    exclude_words: str
-    version: str
-    server_start_time: str
-    timezone: str
+    gpu_available_amd: bool
+    gpu_available_intel: bool
+    gpu_available_nvidia: bool
+    gpu_enabled_amd: bool
+    gpu_enabled_intel: bool
+    gpu_enabled_nvidia: bool
     log_level: str
     monitor_enabled: bool
     monitor_interval: int
-    trailer_folder_movie: bool
-    trailer_folder_series: bool
-    trailer_resolution: int
-    trailer_file_name: str
-    trailer_file_format: str
-    trailer_always_search: bool
-    trailer_search_query: str
-    trailer_audio_format: str
-    trailer_audio_volume_level: int
-    trailer_video_format: str
-    trailer_subtitles_enabled: bool
-    trailer_subtitles_format: str
-    trailer_subtitles_language: str
-    trailer_embed_metadata: bool
-    trailer_min_duration: int
-    trailer_max_duration: int
-    trailer_remove_sponsorblocks: bool
-    trailer_web_optimized: bool
+    server_start_time: str
+    timezone: str
     update_available: bool
-    wait_for_media: bool
-    yt_cookies_path: str
-    ytdlp_version: str
-    trailer_remove_silence: bool
-    nvidia_gpu_available: bool
-    trailer_hardware_acceleration: bool
-    new_download_method: bool
+    update_available_ytdlp: bool
     update_ytdlp: bool
     url_base: str
+    version: str
+    wait_for_media: bool
     webui_username: str
+    yt_cookies_path: str
+    ytdlp_version: str
 
 
 class UpdateSetting(BaseModel):
