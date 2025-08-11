@@ -1,0 +1,115 @@
+<div class="container-fluid py-3">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-play-btn-fill me-2"></i>
+            Plex Integration
+          </h5>
+        </div>
+        <div class="card-body">
+          
+          <!-- Initial State: Connect Button -->
+          <div *ngIf="isInitial()" class="text-center">
+            <p class="text-muted mb-4">
+              Connect your Plex account to enable library scanning and extras checking.
+            </p>
+            <button type="button" class="btn btn-primary btn-lg" (click)="connectPlex()">
+              <i class="bi bi-plug me-2"></i>
+              Connect Plex
+            </button>
+          </div>
+
+          <!-- Pending State: Authentication in progress -->
+          <div *ngIf="isPending()" class="text-center">
+            <div class="mb-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            
+            <h6 class="mb-3">Waiting for you to log in to Plex...</h6>
+            
+            <div class="alert alert-info">
+              <p class="mb-2">
+                <strong>Your PIN:</strong> 
+                <span class="badge bg-dark fs-6 mx-2">{{ pin() }}</span>
+              </p>
+              <p class="mb-0">
+                A new browser window has opened. Please enter this PIN to complete the connection.
+              </p>
+            </div>
+            
+            <button type="button" class="btn btn-outline-secondary mt-3" (click)="disconnectPlex()">
+              Cancel
+            </button>
+          </div>
+
+          <!-- Success State: Connected -->
+          <div *ngIf="isSuccess()" class="text-center">
+            <div class="alert alert-success">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <strong>Plex is now connected!</strong>
+            </div>
+            
+            <div class="text-start mb-4">
+              <p><strong>Server:</strong> {{ serverAddress() }}</p>
+              <p><strong>Status:</strong> <span class="badge bg-success">Connected</span></p>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <button type="button" class="btn btn-outline-primary" (click)="testScan()">
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Test Scan
+              </button>
+              <button type="button" class="btn btn-outline-info" (click)="testExtras()">
+                <i class="bi bi-collection-play me-2"></i>
+                Test Extras
+              </button>
+              <button type="button" class="btn btn-outline-danger" (click)="disconnectPlex()">
+                <i class="bi bi-plug-fill me-2"></i>
+                Disconnect Plex
+              </button>
+            </div>
+          </div>
+
+          <!-- Error State: Something went wrong -->
+          <div *ngIf="isError()" class="text-center">
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <strong>Connection Error</strong>
+              <div class="mt-2">{{ errorMessage() }}</div>
+            </div>
+            
+            <button type="button" class="btn btn-primary" (click)="tryAgain()">
+              <i class="bi bi-arrow-clockwise me-2"></i>
+              Try Again
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Information Card -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            About Plex Integration
+          </h6>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-2">
+            The Plex integration allows Trailarr to:
+          </p>
+          <ul class="text-muted">
+            <li>Trigger media library scans when new trailers are downloaded</li>
+            <li>Check for existing extras and trailers in your Plex library</li>
+            <li>Avoid downloading duplicate content that already exists</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

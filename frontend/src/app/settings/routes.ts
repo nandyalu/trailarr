@@ -6,6 +6,7 @@ import {
   RouteGeneral,
   RouteParamConnectionId,
   RouteParamProfileId,
+  RoutePlex,
   RouteProfiles,
 } from 'src/routing';
 import {AboutComponent} from './about/about.component';
@@ -15,6 +16,7 @@ import {GeneralComponent} from './general/general.component';
 import {EditProfileComponent} from './profiles/edit-profile/edit-profile.component';
 import {ShowProfilesComponent} from './profiles/show-profiles/show-profiles.component';
 import {SettingsComponent} from './settings.component';
+import {PlexIntegrationComponent} from './plex/plex-integration.component';
 
 export default [
   {
@@ -27,6 +29,7 @@ export default [
       {path: RouteProfiles, component: ShowProfilesComponent},
       {path: `${RouteProfiles}/:${RouteParamProfileId}`, component: EditProfileComponent},
       {path: RouteGeneral, component: GeneralComponent},
+      {path: RoutePlex, component: PlexIntegrationComponent},
       {path: RouteAbout, component: AboutComponent},
       {path: '**', redirectTo: RouteGeneral, pathMatch: 'prefix'},
     ],
