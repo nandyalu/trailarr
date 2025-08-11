@@ -9,9 +9,9 @@ import aiohttp
 from typing import Dict, Any
 from datetime import datetime, timedelta
 
-import logging
+from app_logger import ModuleLogger
 
-logging = logging.getLogger("PlexAuth")
+logging = ModuleLogger("PlexAuth")
 
 # Plex API endpoints
 PLEX_PIN_URL = "https://plex.tv/api/v2/pins"

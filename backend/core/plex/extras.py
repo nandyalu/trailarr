@@ -8,9 +8,9 @@ import aiohttp
 from typing import Dict, Any, List
 import json
 
-import logging
+from app_logger import ModuleLogger
 
-logging = logging.getLogger("PlexExtras")
+logging = ModuleLogger("PlexExtras")
 
 
 async def check_for_extras(

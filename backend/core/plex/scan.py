@@ -8,9 +8,9 @@ import aiohttp
 from typing import Dict, Any
 from urllib.parse import quote
 
-import logging
+from app_logger import ModuleLogger
 
-logging = logging.getLogger("PlexScan")
+logging = ModuleLogger("PlexScan")
 
 
 async def trigger_media_scan(token: str, server_address: str, media_folder_path: str) -> Dict[str, Any]:

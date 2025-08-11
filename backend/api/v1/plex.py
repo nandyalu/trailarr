@@ -12,9 +12,9 @@ from core.plex.auth import start_auth_flow, poll_for_token
 from core.plex.scan import trigger_media_scan
 from core.plex.extras import check_for_extras
 from api.v1.models import ErrorResponse
-import logging
+from app_logger import ModuleLogger
 
-logging = logging.getLogger("PlexAPI")
+logging = ModuleLogger("PlexAPI")
 
 plex_router = APIRouter(prefix="/plex", tags=["Plex Integration"])
 
