@@ -15,6 +15,7 @@ from api.v1.settings import settings_router
 from api.v1.logs import logs_router
 from api.v1.tasks import tasks_router
 from api.v1.trailerprofiles import trailerprofiles_router
+from api.v1.plex import plex_router
 
 from app_logger import ModuleLogger
 
@@ -40,6 +41,7 @@ authenticated_router.include_router(settings_router)
 authenticated_router.include_router(logs_router)
 authenticated_router.include_router(tasks_router)
 authenticated_router.include_router(trailerprofiles_router)
+authenticated_router.include_router(plex_router)
 
 # Now create API router and add the authenticated router to it
 api_v1_router = APIRouter()
