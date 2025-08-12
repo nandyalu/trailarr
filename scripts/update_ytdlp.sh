@@ -30,7 +30,7 @@ check_and_update() {
 
     if [ "$update_ytdlp_lower" == "true" ] || [ "$update_ytdlp_lower" == "1" ]; then
         box_echo "UPDATE_YTDLP is set to True. Installing the latest version of yt-dlp..."
-        pip install --upgrade yt-dlp[default]
+        pip install --upgrade yt-dlp[default,curl-cffi]
         
         # Check the version of yt-dlp and store it in a global environment variable
         YTDLP_VERSION=$(yt-dlp --version)
