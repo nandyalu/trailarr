@@ -291,10 +291,7 @@ def _get_video_options(
     use_vaapi: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
-    _copy = False
-    if video_stream and video_stream.codec_name == vcodec:
-        _copy = True
-    if vcodec == "copy" or _copy:
+    if vcodec == "copy" or (video_stream and video_stream.codec_name == vcodec):
         ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
         logger.debug("Copying video stream without converting")
         return ffmpeg_cmd
