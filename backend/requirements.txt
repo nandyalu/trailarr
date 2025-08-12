@@ -9,5 +9,5 @@ fastapi[standard-no-fastapi-cloud-cli]==0.116.1  # Update version in README.md a
 bcrypt==4.3.0
 pillow==11.3.0
 sqlmodel==0.0.24
-yt-dlp[default,curl-cffi]==2025.7.21
+yt-dlp[default,curl-cffi]==2025.8.11
 
