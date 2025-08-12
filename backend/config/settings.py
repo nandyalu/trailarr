@@ -11,6 +11,8 @@ ENV_PATH = f"{APP_DATA_DIR}/.env"
 
 if os.getcwd().startswith("/app/backend"):
     APP_MODE = "Docker"
+elif os.path.exists("/opt/trailarr/backend") and os.getcwd().startswith("/opt/trailarr"):
+    APP_MODE = "Bare Metal"
 else:
     APP_MODE = "Standalone"
 
@@ -143,8 +145,23 @@ def get_ytdlp_version() -> str:
     try:
         from subprocess import check_output
 
-        _ytdlp = "/usr/local/bin/yt-dlp"
-        _ver = check_output([_ytdlp, "--version"]).decode("utf-8").strip()
+        # Check for different yt-dlp installation paths
+        _ytdlp_paths = [
+            getenv_str("YTDLP_PATH", "/usr/local/bin/yt-dlp"),  # Configurable path
+            "/opt/trailarr/bin/yt-dlp",       # Bare metal local install
+            "/opt/trailarr/venv/bin/yt-dlp",  # Bare metal venv
+            "/usr/local/bin/yt-dlp",         # Docker
+            "yt-dlp"                         # System PATH
+        ]
+        
+        for _ytdlp_path in _ytdlp_paths:
+            try:
+                _ver = check_output([_ytdlp_path, "--version"]).decode("utf-8").strip()
+                break
+            except (FileNotFoundError, OSError):
+                continue
+        else:
+            _ver = "0.0.0"  # If none of the paths work
     except Exception:
         _ver = "0.0.0"
     _save_to_env("YTDLP_VERSION", _ver)
@@ -394,6 +411,24 @@ class _Config:
         - Default is empty string.
         - If a value is provided, app will start with that url_base as \
             root path."""
+
+    ffmpeg_path = str_property("FFMPEG_PATH", default="/usr/local/bin/ffmpeg")
+    """Path to ffmpeg binary.
+        - Default is /usr/local/bin/ffmpeg (Docker).
+        - For bare metal installations, this should point to local ffmpeg installation.
+        - Valid values are any valid file path to ffmpeg binary."""
+
+    ffprobe_path = str_property("FFPROBE_PATH", default="/usr/local/bin/ffprobe")
+    """Path to ffprobe binary.
+        - Default is /usr/local/bin/ffprobe (Docker).
+        - For bare metal installations, this should point to local ffprobe installation.
+        - Valid values are any valid file path to ffprobe binary."""
+
+    ytdlp_path = str_property("YTDLP_PATH", default="/usr/local/bin/yt-dlp")
+    """Path to yt-dlp binary.
+        - Default is /usr/local/bin/yt-dlp (Docker).
+        - For bare metal installations, this should point to local yt-dlp installation.
+        - Valid values are any valid file path to yt-dlp binary."""
 
     # def resolve_closest_resolution(self, value: str | int) -> int:
     #     """Resolve the closest resolution for the given value. \n

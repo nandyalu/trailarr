@@ -7,6 +7,7 @@ import json
 from pydantic import BaseModel
 
 from app_logger import ModuleLogger
+from config.settings import app_settings
 
 logger = ModuleLogger("VideoAnalysis")
 
@@ -71,7 +72,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         " : stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
-        "/usr/local/bin/ffprobe",
+        app_settings.ffprobe_path,
         "-v",
         "error",
         "-show_entries",
@@ -211,7 +212,7 @@ def get_silence_timestamps(
         logger.debug(f"Running ffmpeg silencedetect for: {file_path}")
         result = subprocess.run(
             [
-                "/usr/local/bin/ffmpeg",
+                app_settings.ffmpeg_path,
                 "-i",
                 file_path,
                 "-af",
@@ -277,7 +278,7 @@ def trim_video_at_end(
         # Remove silence part from end of video
         logger.debug(f"Running ffmpeg trim command on video: {file_path}")
         remove_cmd = [
-            "/usr/local/bin/ffmpeg",
+            app_settings.ffmpeg_path,
             "-i",
             file_path,
             "-to",
