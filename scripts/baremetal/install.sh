@@ -52,8 +52,8 @@ display_banner() {
    ##    ##    ##  ##     ##  ##  ##       ##     ## ##    ##  ##    ## 
    ##    ##     ## ##     ## #### ######## ##     ## ##     ## ##     ##
 
-                     Bare Metal Installation Script
-                                             
+                    Bare Metal Installation Script
+
 EOF
     print_message $BLUE "Installing Trailarr directly on your system for maximum performance"
     print_message $BLUE "with native GPU hardware acceleration support"
@@ -362,7 +362,7 @@ run_interactive_config() {
     else
         print_message $YELLOW "Interactive config script not found, using defaults"
         # Create basic .env file
-        sudo tee "$INSTALL_DIR/.env" > /dev/null << EOF
+        sudo tee "$DATA_DIR/.env" > /dev/null << EOF
 APP_PORT=7889
 APP_DATA_DIR=$DATA_DIR
 MONITOR_INTERVAL=60

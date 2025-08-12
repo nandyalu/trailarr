@@ -197,11 +197,7 @@ configure_gpu_settings() {
 }
 
 # Function to write configuration to file
-write_configuration() {
-    # Use APP_DATA_DIR if set, otherwise use default
-    DATA_DIR="${APP_DATA_DIR:-/var/lib/trailarr}"
-    CONFIG_FILE="$DATA_DIR/.env"
-    
+write_configuration() {    
     box_echo "Writing configuration to $CONFIG_FILE..."
     
     # Ensure data directory exists

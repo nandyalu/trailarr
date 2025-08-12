@@ -6,7 +6,7 @@ We have guides for installing Trailarr using these methods:
 
 - [Docker Compose](./docker-compose.md) ⭐ **Recommended**
 - [Docker Run](./docker-run.md)
-- [Bare Metal](./baremetal.md) - For advanced users and hardware acceleration
+- [Bare Metal](./baremetal.md) - For advanced users
 - [Unraid](./unraid.md)
 
 !!! tip "Hardware Acceleration
