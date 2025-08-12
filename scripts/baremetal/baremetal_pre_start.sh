@@ -106,56 +106,52 @@ update_ytdlp() {
     
     if [ -f "$INSTALL_DIR/scripts/update_ytdlp_local.sh" ]; then
         bash "$INSTALL_DIR/scripts/update_ytdlp_local.sh" || box_echo "Warning: yt-dlp update failed"
-    elif [ -f "$INSTALL_DIR/bin/yt-dlp" ]; then
-        YTDLP_VERSION=$("$INSTALL_DIR/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
+    elif [ -f "$INSTALL_DIR/venv/bin/yt-dlp" ]; then
+        YTDLP_VERSION=$("$INSTALL_DIR/venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
         box_echo "✓ yt-dlp version: $YTDLP_VERSION"
     else
-        box_echo "⚠ yt-dlp not found in local installation"
+        box_echo "⚠ yt-dlp not found in virtual environment"
     fi
     
     box_echo "--------------------------------------------------------------------------"
 }
 
-# GPU detection for bare metal (simplified)
-check_gpu_availability() {
-    box_echo "Checking GPU hardware acceleration status"
+# Load GPU status from environment file (already set by gpu_setup.sh during installation)
+load_gpu_status() {
+    box_echo "Loading GPU hardware acceleration status"
+    
+    # GPU availability is already set in .env file by gpu_setup.sh during installation
+    # We just need to export them for the application
+    export GPU_AVAILABLE_NVIDIA="${GPU_AVAILABLE_NVIDIA:-false}"
+    export GPU_AVAILABLE_INTEL="${GPU_AVAILABLE_INTEL:-false}"
+    export GPU_AVAILABLE_AMD="${GPU_AVAILABLE_AMD:-false}"
     
     if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
         case "$HWACCEL_TYPE" in
             "nvidia")
-                if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
-                    GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
-                    box_echo "✓ NVIDIA GPU acceleration available: $GPU_INFO"
-                    export NVIDIA_GPU_AVAILABLE="true"
+                if [ "$GPU_AVAILABLE_NVIDIA" = "true" ] && command -v nvidia-smi &> /dev/null; then
+                    box_echo "✓ NVIDIA GPU acceleration enabled and available"
                 else
-                    box_echo "⚠ NVIDIA GPU acceleration configured but not available"
-                    export NVIDIA_GPU_AVAILABLE="false"
+                    box_echo "⚠ NVIDIA GPU acceleration enabled but may not be available"
                 fi
                 ;;
             "intel")
-                if [ -d /dev/dri ] && command -v vainfo &> /dev/null; then
-                    box_echo "✓ Intel GPU acceleration available"
-                    export QSV_GPU_AVAILABLE="true"
+                if [ "$GPU_AVAILABLE_INTEL" = "true" ]; then
+                    box_echo "✓ Intel GPU acceleration enabled and available"
                 else
-                    box_echo "⚠ Intel GPU acceleration configured but may not be available"
-                    export QSV_GPU_AVAILABLE="false"
+                    box_echo "⚠ Intel GPU acceleration enabled but may not be available"
                 fi
                 ;;
             "amd")
-                if [ -d /dev/dri ] && command -v vainfo &> /dev/null; then
-                    box_echo "✓ AMD GPU acceleration available"
-                    export AMD_GPU_AVAILABLE="true"
+                if [ "$GPU_AVAILABLE_AMD" = "true" ]; then
+                    box_echo "✓ AMD GPU acceleration enabled and available"
                 else
-                    box_echo "⚠ AMD GPU acceleration configured but may not be available"
-                    export AMD_GPU_AVAILABLE="false"
+                    box_echo "⚠ AMD GPU acceleration enabled but may not be available"
                 fi
                 ;;
         esac
     else
         box_echo "GPU hardware acceleration disabled"
-        export NVIDIA_GPU_AVAILABLE="false"
-        export QSV_GPU_AVAILABLE="false"
-        export AMD_GPU_AVAILABLE="false"
     fi
     
     box_echo "--------------------------------------------------------------------------"
@@ -168,7 +164,7 @@ main() {
     setup_directories
     load_environment
     update_ytdlp
-    check_gpu_availability
+    load_gpu_status
     
     box_echo "Pre-start checks complete - ready to start application"
     box_echo "=========================================================================="

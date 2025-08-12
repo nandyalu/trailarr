@@ -71,7 +71,7 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     """Get the YoutubeDL options for downloading the video"""
     _options: list[str] = []
     _options.append("--ffmpeg-location")
-    _options.append("/usr/local/bin/ffmpeg")
+    _options.append(app_settings.ffmpeg_path)
     # _options.append("--no-warnings")
     _options.append("--no-playlist")
     _options.append("--progress-delta")

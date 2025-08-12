@@ -207,20 +207,17 @@ install_python_deps() {
     print_message $GREEN "✓ Python dependencies installed"
 }
 
-# Function to detect and setup GPUs
+# Function to detect GPU hardware
 setup_gpu_hardware() {
-    box_echo "Detecting and setting up GPU hardware..."
+    box_echo "Detecting GPU hardware..."
     
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
-        # Run GPU detection
+        # Run GPU detection only
         source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
         
         # Save results for interactive config
         echo "export DETECTED_GPUS=(${DETECTED_GPUS[*]})" > /tmp/gpu_detection_results
         echo "export AVAILABLE_GPUS=(${AVAILABLE_GPUS[*]})" >> /tmp/gpu_detection_results
-        
-        # Setup GPU groups for the trailarr user
-        setup_gpu_groups "trailarr"
     else
         print_message $YELLOW "GPU setup script not found, skipping GPU configuration"
     fi
@@ -267,7 +264,7 @@ EOF
     print_message $GREEN "✓ Configuration complete"
 }
 
-# Function to create systemd service
+# Function to create and start systemd service
 create_systemd_service() {
     box_echo "Creating systemd service..."
     
@@ -305,41 +302,28 @@ ProtectControlGroups=true
 WantedBy=multi-user.target
 EOF
     
-    # Reload systemd
+    # Reload systemd and enable service
     sudo systemctl daemon-reload
+    sudo systemctl enable trailarr
     
-    print_message $GREEN "✓ Systemd service created"
-}
-
-# Function to install GPU drivers if requested
-install_gpu_drivers() {
-    # Source configuration
-    if [ -f "$INSTALL_DIR/.env" ]; then
-        source "$INSTALL_DIR/.env"
-    fi
+    print_message $GREEN "✓ Systemd service created and enabled"
     
-    if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
-        box_echo "Installing GPU drivers for $HWACCEL_TYPE..."
+    # Start the service
+    box_echo "Starting Trailarr service..."
+    if sudo systemctl start trailarr; then
+        print_message $GREEN "✓ Trailarr service started successfully"
         
-        case "$HWACCEL_TYPE" in
-            "nvidia")
-                if command -v nvidia-smi &> /dev/null; then
-                    print_message $GREEN "✓ NVIDIA drivers already installed"
-                else
-                    print_message $YELLOW "Installing NVIDIA drivers..."
-                    source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
-                    install_nvidia_drivers
-                fi
-                ;;
-            "intel")
-                source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
-                install_intel_drivers
-                ;;
-            "amd")
-                source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
-                install_amd_drivers
-                ;;
-        esac
+        # Wait a moment and check status
+        sleep 3
+        if sudo systemctl is-active --quiet trailarr; then
+            print_message $GREEN "✓ Trailarr service is running"
+        else
+            print_message $YELLOW "⚠ Service started but may need time to initialize"
+            print_message $YELLOW "Check status with: sudo systemctl status trailarr"
+        fi
+    else
+        print_message $YELLOW "⚠ Failed to start service automatically"
+        print_message $YELLOW "You can start it manually with: sudo systemctl start trailarr"
     fi
 }
 
@@ -361,15 +345,14 @@ display_completion() {
     echo "  - Service User: trailarr"
     echo ""
     echo "Next Steps:"
-    echo "  1. Enable the service:  sudo systemctl enable trailarr"
-    echo "  2. Start the service:   sudo systemctl start trailarr"
-    echo "  3. Check service status: sudo systemctl status trailarr"
-    echo "  4. View logs:           sudo journalctl -u trailarr -f"
+    echo "  1. Check service status: sudo systemctl status trailarr"
+    echo "  2. View logs:           sudo journalctl -u trailarr -f"
+    echo "  3. Access web interface: http://localhost:${APP_PORT:-7889}"
     echo ""
     
-    if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" = "nvidia" ]; then
-        print_message $YELLOW "Note: NVIDIA GPU acceleration is enabled. A reboot may be required"
-        print_message $YELLOW "for driver changes to take effect."
+    if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
+        print_message $YELLOW "Note: GPU hardware acceleration is enabled for $HWACCEL_TYPE."
+        print_message $YELLOW "Ensure required drivers are installed for optimal performance."
     fi
     
     echo "For support and documentation, visit:"
@@ -394,7 +377,6 @@ main() {
     setup_gpu_hardware
     install_media_tools
     run_interactive_config
-    install_gpu_drivers
     create_systemd_service
     
     # Clean up temporary files
