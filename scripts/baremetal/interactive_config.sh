@@ -9,7 +9,7 @@ set -e
 source "$(dirname "$0")/../box_echo.sh"
 
 # Default values
-DEFAULT_MONITOR_INTERVAL=10800  # 3 hours in seconds
+DEFAULT_MONITOR_INTERVAL=60  # 1 hour in minutes
 DEFAULT_WAIT_FOR_MEDIA="true"
 DEFAULT_PORT=7889
 
@@ -23,30 +23,31 @@ prompt_basic_config() {
     
     # Monitor interval
     box_echo "Monitor Interval: How often should Trailarr check for new content?"
+    echo "  - Minimum is 10"
     echo "  - This determines how frequently the app scans for new movies/shows"
     echo "  - Shorter intervals = more responsive but higher system load"
     echo "  - Longer intervals = less system load but slower to detect new content"
     echo ""
     echo "Common values:"
-    echo "  - 3600 (1 hour)"
-    echo "  - 7200 (2 hours)" 
-    echo "  - 10800 (3 hours) [recommended]"
-    echo "  - 21600 (6 hours)"
+    echo "  - 60 (1 hour, default)"
+    echo "  - 120 (2 hours)" 
+    echo "  - 180 (3 hours) [recommended]"
+    echo "  - 360 (6 hours)"
     echo ""
     
     while true; do
-        read -p "Enter monitor interval in seconds [$DEFAULT_MONITOR_INTERVAL]: " monitor_interval
+        read -rp "Enter monitor interval in minutes [$DEFAULT_MONITOR_INTERVAL]: " monitor_interval
         monitor_interval=${monitor_interval:-$DEFAULT_MONITOR_INTERVAL}
         
-        if [[ "$monitor_interval" =~ ^[0-9]+$ ]] && [ "$monitor_interval" -gt 0 ]; then
+        if [[ "$monitor_interval" =~ ^[0-9]+$ ]] && [ "$monitor_interval" -gt 9 ]; then
             export MONITOR_INTERVAL="$monitor_interval"
             break
         else
-            echo "Please enter a valid positive number"
+            echo "Please enter a valid number greater than 10"
         fi
     done
     
-    box_echo "✓ Monitor interval set to $monitor_interval seconds ($(($monitor_interval / 3600)) hours)"
+    box_echo "✓ Monitor interval set to $monitor_interval minutes"
     
     # Wait for media
     box_echo ""
@@ -56,7 +57,7 @@ prompt_basic_config() {
     echo ""
     
     while true; do
-        read -p "Wait for media files before downloading trailers? [Y/n]: " wait_choice
+        read -rp "Wait for media files before downloading trailers? [Y/n]: " wait_choice
         wait_choice=${wait_choice:-Y}
         
         case "$wait_choice" in
@@ -79,7 +80,7 @@ prompt_basic_config() {
     # Port configuration
     box_echo ""
     while true; do
-        read -p "Web interface port [$DEFAULT_PORT]: " port
+        read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
         
         if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -gt 1023 ] && [ "$port" -lt 65536 ]; then
@@ -102,7 +103,7 @@ configure_gpu_settings() {
     fi
     
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
-        box_echo "No supported GPUs detected. Hardware acceleration will be disabled."
+        box_echo "No supported GPUs detected. Hardware acceleration not enabled."
         export ENABLE_HWACCEL="false"
         export HWACCEL_TYPE="none"
         return 0
@@ -119,7 +120,7 @@ configure_gpu_settings() {
     
     # Ask if user wants to enable hardware acceleration
     while true; do
-        read -p "Enable GPU hardware acceleration? [Y/n]: " hwaccel_choice
+        read -rp "Enable GPU hardware acceleration? [Y/n]: " hwaccel_choice
         hwaccel_choice=${hwaccel_choice:-Y}
         
         case "$hwaccel_choice" in
@@ -152,7 +153,7 @@ configure_gpu_settings() {
         echo ""
         
         while true; do
-            read -p "Select GPU (1-${#AVAILABLE_GPUS[@]}): " gpu_choice
+            read -rp "Select GPU (1-${#AVAILABLE_GPUS[@]}): " gpu_choice
             
             if [[ "$gpu_choice" =~ ^[0-9]+$ ]] && [ "$gpu_choice" -ge 1 ] && [ "$gpu_choice" -le ${#AVAILABLE_GPUS[@]} ]; then
                 selected_index=$((gpu_choice - 1))
@@ -202,7 +203,7 @@ write_configuration() {
 # Application Settings
 APP_PORT=${APP_PORT:-7889}
 APP_DATA_DIR=/var/lib/trailarr
-MONITOR_INTERVAL=${MONITOR_INTERVAL:-10800}
+MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
 WAIT_FOR_MEDIA=${WAIT_FOR_MEDIA:-true}
 
 # Hardware Acceleration
@@ -226,7 +227,7 @@ display_summary() {
     box_echo "=========================================================================="
     box_echo "Application Port: ${APP_PORT}"
     box_echo "Data Directory: /var/lib/trailarr"
-    box_echo "Monitor Interval: ${MONITOR_INTERVAL} seconds ($(($MONITOR_INTERVAL / 3600)) hours)"
+    box_echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
     box_echo "Wait for Media: ${WAIT_FOR_MEDIA}"
     box_echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
     if [ "$ENABLE_HWACCEL" = "true" ]; then
