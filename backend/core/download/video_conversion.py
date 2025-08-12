@@ -452,7 +452,7 @@ def get_ffmpeg_cmd(
             elif stream.codec_type == "subtitle":
                 _subtitle_stream = stream
     ffmpeg_cmd: list[str] = [
-        "ffmpeg",
+        app_settings.ffmpeg_path,
         "-hide_banner",
         # "-loglevel",
         # "repeat+level+warning",

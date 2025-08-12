@@ -147,7 +147,7 @@ def _download_with_ytdlp(
     Returns:
         str: Success message if the video is downloaded successfully
     """
-    ytdlp_cmd: list[str] = ["yt-dlp", "-o", file_path]
+    ytdlp_cmd: list[str] = [app_settings.ytdlp_path, "-o", file_path]
     ytdlp_cmd.extend(_get_ytdl_options(profile))
     ytdlp_cmd.append(url)
     # Download the video

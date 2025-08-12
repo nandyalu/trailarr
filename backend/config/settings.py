@@ -147,7 +147,9 @@ def get_ytdlp_version() -> str:
 
         # Check for different yt-dlp installation paths
         _ytdlp_paths = [
-            "/opt/trailarr/venv/bin/yt-dlp",  # Bare metal
+            getenv_str("YTDLP_PATH", "/usr/local/bin/yt-dlp"),  # Configurable path
+            "/opt/trailarr/bin/yt-dlp",       # Bare metal local install
+            "/opt/trailarr/venv/bin/yt-dlp",  # Bare metal venv
             "/usr/local/bin/yt-dlp",         # Docker
             "yt-dlp"                         # System PATH
         ]
@@ -409,6 +411,24 @@ class _Config:
         - Default is empty string.
         - If a value is provided, app will start with that url_base as \
             root path."""
+
+    ffmpeg_path = str_property("FFMPEG_PATH", default="/usr/local/bin/ffmpeg")
+    """Path to ffmpeg binary.
+        - Default is /usr/local/bin/ffmpeg (Docker).
+        - For bare metal installations, this should point to local ffmpeg installation.
+        - Valid values are any valid file path to ffmpeg binary."""
+
+    ffprobe_path = str_property("FFPROBE_PATH", default="/usr/local/bin/ffprobe")
+    """Path to ffprobe binary.
+        - Default is /usr/local/bin/ffprobe (Docker).
+        - For bare metal installations, this should point to local ffprobe installation.
+        - Valid values are any valid file path to ffprobe binary."""
+
+    ytdlp_path = str_property("YTDLP_PATH", default="/usr/local/bin/yt-dlp")
+    """Path to yt-dlp binary.
+        - Default is /usr/local/bin/yt-dlp (Docker).
+        - For bare metal installations, this should point to local yt-dlp installation.
+        - Valid values are any valid file path to yt-dlp binary."""
 
     # def resolve_closest_resolution(self, value: str | int) -> int:
     #     """Resolve the closest resolution for the given value. \n

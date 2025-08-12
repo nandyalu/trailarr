@@ -77,7 +77,7 @@ check_nvidia_gpu() {
         # Get NVIDIA GPU information
         GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
         if [ -n "$GPU_INFO" ]; then
-            box_echo "✓ NVIDIA GPU detected: $GPU_INFO"
+            box_echo "✓ NVIDIA GPU detected with drivers: $GPU_INFO"
             box_echo "NVIDIA hardware acceleration (CUDA) is available."
             DETECTED_GPUS+=("NVIDIA")
             AVAILABLE_GPUS+=("nvidia")
@@ -89,6 +89,9 @@ check_nvidia_gpu() {
         NVIDIA_GPU=$(lspci | grep -i nvidia | head -1)
         if [ -n "$NVIDIA_GPU" ]; then
             box_echo "⚠ NVIDIA GPU detected but drivers not installed: $NVIDIA_GPU"
+            box_echo "To enable NVIDIA hardware acceleration, install drivers with:"
+            box_echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
+            box_echo "  (Reboot required after driver installation)"
             DETECTED_GPUS+=("NVIDIA (no drivers)")
         fi
     else
@@ -115,6 +118,10 @@ check_intel_gpu() {
                 if [ -n "$VAAPI_INFO" ]; then
                     box_echo "VAAPI capabilities detected (H.264, HEVC, VP8, VP9, AV1)"
                 fi
+            else
+                box_echo "vainfo not found. To enable Intel GPU acceleration, install VAAPI:"
+                echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
+                echo "  (App restart required after installation)"
             fi
         fi
     else
@@ -145,6 +152,10 @@ check_amd_gpu() {
                 if [ -n "$VAAPI_INFO" ]; then
                     box_echo "VAAPI capabilities detected (H.264, HEVC, AV1)"
                 fi
+            else
+                box_echo "vainfo not found. To enable AMD GPU acceleration, install VAAPI:"
+                echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
+                echo "  (App restart required after installation)"
             fi
         fi
     else
@@ -157,102 +168,47 @@ check_amd_gpu() {
     box_echo "--------------------------------------------------------------------------"
 }
 
-# Install NVIDIA drivers
-install_nvidia_drivers() {
-    box_echo "Installing NVIDIA drivers and CUDA runtime..."
+# Save GPU detection results to environment file
+save_gpu_env_vars() {
+    local data_dir="${APP_DATA_DIR:-/var/lib/trailarr}"
+    local env_file="$data_dir/.env"
     
-    # Add NVIDIA package repositories
-    if [ ! -f /etc/apt/sources.list.d/nvidia-container-toolkit.list ]; then
-        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-    fi
+    # Ensure data directory exists
+    mkdir -p "$data_dir"
+    touch "$env_file"
     
-    sudo apt-get update
-    
-    # Install NVIDIA drivers and CUDA
-    sudo apt-get install -y nvidia-driver nvidia-utils nvidia-cuda-toolkit || {
-        box_echo "Failed to install NVIDIA drivers, trying alternative method..."
-        # Try installing drivers from Ubuntu repositories
-        sudo apt-get install -y nvidia-driver-535 nvidia-utils-535 || {
-            box_echo "Warning: Could not install NVIDIA drivers automatically"
-            box_echo "Please install NVIDIA drivers manually using:"
-            box_echo "  sudo apt install nvidia-driver-535"
-            return 1
-        }
+    # Function to update or add environment variable
+    update_env_var() {
+        local var_name="$1"
+        local var_value="$2"
+        local env_file="$3"
+        
+        # Remove existing entry if it exists
+        grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
+        
+        # Add new entry
+        echo "${var_name}=${var_value}" >> "${env_file}.tmp"
+        
+        # Replace original file
+        mv "${env_file}.tmp" "$env_file"
     }
     
-    box_echo "✓ NVIDIA drivers installed successfully"
-    box_echo "Note: A reboot may be required for NVIDIA drivers to take effect"
-}
-
-# Install Intel GPU drivers and VAAPI support
-install_intel_drivers() {
-    box_echo "Installing Intel GPU drivers and VAAPI support..."
+    # Set GPU availability environment variables
+    update_env_var "GPU_AVAILABLE_NVIDIA" "$GPU_AVAILABLE_NVIDIA" "$env_file"
+    update_env_var "GPU_AVAILABLE_INTEL" "$GPU_AVAILABLE_INTEL" "$env_file"
+    update_env_var "GPU_AVAILABLE_AMD" "$GPU_AVAILABLE_AMD" "$env_file"
     
-    sudo apt-get update
-    sudo apt-get install -y \
-        intel-media-va-driver \
-        intel-media-va-driver-non-free \
-        i965-va-driver \
-        i965-va-driver-shaders \
-        libva2 \
-        libva-drm2 \
-        vainfo \
-        libdrm2 \
-        libmfx1 || {
-        box_echo "Warning: Some Intel GPU packages could not be installed"
-    }
+    # Set GPU device environment variables
+    update_env_var "GPU_DEVICE_NVIDIA" "$GPU_DEVICE_NVIDIA" "$env_file"
+    update_env_var "GPU_DEVICE_INTEL" "$GPU_DEVICE_INTEL" "$env_file"
+    update_env_var "GPU_DEVICE_AMD" "$GPU_DEVICE_AMD" "$env_file"
     
-    box_echo "✓ Intel GPU drivers installed successfully"
-}
-
-# Install AMD GPU drivers and VAAPI support
-install_amd_drivers() {
-    box_echo "Installing AMD GPU drivers and VAAPI support..."
-    
-    sudo apt-get update
-    sudo apt-get install -y \
-        mesa-va-drivers \
-        libva2 \
-        libva-drm2 \
-        vainfo \
-        libdrm2 || {
-        box_echo "Warning: Some AMD GPU packages could not be installed"
-    }
-    
-    box_echo "✓ AMD GPU drivers installed successfully"
-}
-
-# Add user to GPU groups
-setup_gpu_groups() {
-    box_echo "Setting up user groups for GPU access..."
-    
-    local username="$1"
-    if [ -z "$username" ]; then
-        username="$USER"
-    fi
-    
-    # Add user to render group if it exists
-    if getent group render > /dev/null 2>&1; then
-        sudo usermod -aG render "$username"
-        box_echo "Added $username to 'render' group"
-    fi
-    
-    # Add user to video group if it exists
-    if getent group video > /dev/null 2>&1; then
-        sudo usermod -aG video "$username"
-        box_echo "Added $username to 'video' group"
-    fi
-    
-    box_echo "✓ User group setup complete"
-    box_echo "Note: You may need to log out and back in for group changes to take effect"
+    box_echo "✓ GPU detection results saved to $env_file"
 }
 
 # Main GPU detection and setup function
 main() {
-    box_echo "GPU Detection and Driver Installation"
+    box_echo "GPU Detection for Trailarr"
     box_echo "=========================================================================="
     
     # Detect GPU devices
@@ -266,14 +222,24 @@ main() {
     if [ ${#DETECTED_GPUS[@]} -eq 0 ]; then
         box_echo "No supported GPUs detected. Hardware acceleration will not be available."
         box_echo "The application will run using software encoding/decoding."
-        return 0
+    else
+        box_echo "Summary: Detected GPUs: ${DETECTED_GPUS[*]}"
+        
+        if [ ${#DETECTED_GPUS[@]} -gt 0 ]; then
+            box_echo ""
+            box_echo "Note: If you plan to use hardware acceleration, ensure all necessary"
+            box_echo "drivers and tools are installed as shown above, then restart the app."
+        fi
     fi
     
-    box_echo "Summary: Detected GPUs: ${DETECTED_GPUS[*]}"
+    # Save GPU detection results to .env file
+    save_gpu_env_vars
     
     # Return the detected GPUs for use by the installer
     export DETECTED_GPUS
     export AVAILABLE_GPUS
+    
+    box_echo "=========================================================================="
 }
 
 # Run main function if script is executed directly

@@ -110,22 +110,34 @@ install_ytdlp_local() {
 setup_environment() {
     box_echo "Setting up environment variables for local binaries..."
     
-    # Create .env file if it doesn't exist
-    ENV_FILE="$INSTALL_DIR/.env"
+    # Create .env file in data directory, not install directory
+    DATA_DIR="${APP_DATA_DIR:-/var/lib/trailarr}"
+    ENV_FILE="$DATA_DIR/.env"
+    
+    # Ensure data directory exists
+    mkdir -p "$DATA_DIR"
     touch "$ENV_FILE"
     
-    # Remove any existing PATH entries for our bin directory
-    grep -v "PATH.*$BIN_DIR" "$ENV_FILE" > "$ENV_FILE.tmp" 2>/dev/null || touch "$ENV_FILE.tmp"
-    mv "$ENV_FILE.tmp" "$ENV_FILE"
-    
-    # Add our bin directory to PATH
-    echo "# Trailarr local binaries" >> "$ENV_FILE"
-    echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$ENV_FILE"
+    # Function to update or add environment variable
+    update_env_var() {
+        local var_name="$1"
+        local var_value="$2"
+        local env_file="$3"
+        
+        # Remove existing entry if it exists
+        grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
+        
+        # Add new entry
+        echo "${var_name}=${var_value}" >> "${env_file}.tmp"
+        
+        # Replace original file
+        mv "${env_file}.tmp" "$env_file"
+    }
     
     # Set specific paths for ffmpeg and yt-dlp
-    echo "export FFMPEG_PATH=\"$BIN_DIR/ffmpeg\"" >> "$ENV_FILE"
-    echo "export FFPROBE_PATH=\"$BIN_DIR/ffprobe\"" >> "$ENV_FILE"
-    echo "export YTDLP_PATH=\"$BIN_DIR/yt-dlp\"" >> "$ENV_FILE"
+    update_env_var "FFMPEG_PATH" "$BIN_DIR/ffmpeg" "$ENV_FILE"
+    update_env_var "FFPROBE_PATH" "$BIN_DIR/ffprobe" "$ENV_FILE"
+    update_env_var "YTDLP_PATH" "$BIN_DIR/yt-dlp" "$ENV_FILE"
     
     box_echo "✓ Environment variables configured in $ENV_FILE"
     box_echo "The application will use local binaries instead of system versions"

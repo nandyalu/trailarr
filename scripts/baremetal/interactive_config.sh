@@ -14,7 +14,8 @@ DEFAULT_WAIT_FOR_MEDIA="true"
 DEFAULT_PORT=7889
 
 # Configuration file
-CONFIG_FILE="/opt/trailarr/.env"
+DATA_DIR="${APP_DATA_DIR:-/var/lib/trailarr}"
+CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
@@ -170,30 +171,41 @@ configure_gpu_settings() {
         box_echo "✓ Using ${DETECTED_GPUS[0]} for hardware acceleration"
     fi
     
-    # Provide driver installation instructions
-    case "$HWACCEL_TYPE" in
-        "nvidia")
-            box_echo ""
-            box_echo "NVIDIA GPU selected. Please ensure NVIDIA drivers are installed:"
-            echo "  sudo apt install nvidia-driver-535"
-            echo "  (Reboot may be required)"
-            ;;
-        "intel")
-            box_echo ""
-            box_echo "Intel GPU selected. Required drivers will be installed automatically."
-            ;;
-        "amd")
-            box_echo ""
-            box_echo "AMD GPU selected. Required drivers will be installed automatically."
-            ;;
-    esac
+    # Provide driver installation instructions based on detected GPUs
+    if [ "$ENABLE_HWACCEL" = "true" ]; then
+        box_echo ""
+        box_echo "Hardware Acceleration Setup Instructions:"
+        case "$HWACCEL_TYPE" in
+            "nvidia")
+                box_echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"
+                box_echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
+                box_echo "  (Reboot required after driver installation)"
+                ;;
+            "intel")
+                box_echo "Intel GPU selected. Ensure VAAPI drivers are installed:"
+                box_echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
+                ;;
+            "amd")
+                box_echo "AMD GPU selected. Ensure VAAPI drivers are installed:"
+                box_echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
+                ;;
+        esac
+        box_echo "Note: After installing drivers, restart the Trailarr service to use hardware acceleration"
+    fi
     
     box_echo "=========================================================================="
 }
 
 # Function to write configuration to file
 write_configuration() {
+    # Use APP_DATA_DIR if set, otherwise use default
+    DATA_DIR="${APP_DATA_DIR:-/var/lib/trailarr}"
+    CONFIG_FILE="$DATA_DIR/.env"
+    
     box_echo "Writing configuration to $CONFIG_FILE..."
+    
+    # Ensure data directory exists
+    mkdir -p "$DATA_DIR"
     
     # Create .env file with configuration
     cat > "$CONFIG_FILE" << EOF
@@ -202,7 +214,7 @@ write_configuration() {
 
 # Application Settings
 APP_PORT=${APP_PORT:-7889}
-APP_DATA_DIR=/var/lib/trailarr
+APP_DATA_DIR=$DATA_DIR
 MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
 WAIT_FOR_MEDIA=${WAIT_FOR_MEDIA:-true}
 
@@ -226,7 +238,7 @@ display_summary() {
     box_echo "Configuration Summary"
     box_echo "=========================================================================="
     box_echo "Application Port: ${APP_PORT}"
-    box_echo "Data Directory: /var/lib/trailarr"
+    box_echo "Data Directory: $DATA_DIR"
     box_echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
     box_echo "Wait for Media: ${WAIT_FOR_MEDIA}"
     box_echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
@@ -252,6 +264,8 @@ main() {
     
     # Create install directory if it doesn't exist
     sudo mkdir -p "/opt/trailarr"
+    # Create data directory if it doesn't exist
+    sudo mkdir -p "$DATA_DIR"
     
     # Prompt for basic configuration
     prompt_basic_config
