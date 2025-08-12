@@ -207,6 +207,117 @@ install_python_deps() {
     print_message $GREEN "✓ Python dependencies installed"
 }
 
+# Function to add trailarr user to GPU groups for hardware access
+configure_gpu_user_permissions() {
+    box_echo "Configuring GPU permissions for trailarr user..."
+    
+    # Initialize array of GPU groups to add user to
+    local gpu_groups=()
+    local groups_found=""
+    
+    # Function to check if group exists in array
+    group_exists() {
+        local group_to_check="$1"
+        local group
+        for group in "${gpu_groups[@]}"; do
+            if [ "$group" = "$group_to_check" ]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+    
+    # Check for render group (for GPU access)
+    if getent group render > /dev/null 2>&1; then
+        gpu_groups+=("render")
+        groups_found="$groups_found render"
+    fi
+    
+    # Check for video group (for video device access)  
+    if getent group video > /dev/null 2>&1; then
+        gpu_groups+=("video")
+        groups_found="$groups_found video"
+    fi
+    
+    # Load GPU device information if available
+    if [ -f "$INSTALL_DIR/.env" ]; then
+        source "$INSTALL_DIR/.env"
+    fi
+    
+    # Check for specific DRI device groups for detected Intel/AMD GPUs
+    if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
+        box_echo "Checking groups for detected Intel/AMD GPU devices..."
+        
+        # Check Intel GPU device group if detected
+        if [ -n "$GPU_DEVICE_INTEL" ] && [ -e "$GPU_DEVICE_INTEL" ]; then
+            intel_gid=$(stat -c '%g' "$GPU_DEVICE_INTEL" 2>/dev/null)
+            if [[ -n "$intel_gid" ]]; then
+                if getent group "$intel_gid" > /dev/null 2>&1; then
+                    intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
+                else
+                    intel_group_name="gpuintel"
+                    box_echo "Creating group '$intel_group_name' with GID '$intel_gid'"
+                    sudo groupadd -g "$intel_gid" "$intel_group_name"
+                fi
+                
+                if ! group_exists "$intel_group_name"; then
+                    gpu_groups+=("$intel_group_name")
+                    groups_found="$groups_found $intel_group_name($intel_gid)"
+                fi
+            fi
+        fi
+        
+        # Check AMD GPU device group if detected
+        if [ -n "$GPU_DEVICE_AMD" ] && [ -e "$GPU_DEVICE_AMD" ]; then
+            amd_gid=$(stat -c '%g' "$GPU_DEVICE_AMD" 2>/dev/null)
+            if [[ -n "$amd_gid" ]]; then
+                if getent group "$amd_gid" > /dev/null 2>&1; then
+                    amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
+                else
+                    amd_group_name="gpuamd"
+                    box_echo "Creating group '$amd_group_name' with GID '$amd_gid'"
+                    sudo groupadd -g "$amd_gid" "$amd_group_name"
+                fi
+                
+                if ! group_exists "$amd_group_name"; then
+                    gpu_groups+=("$amd_group_name")
+                    groups_found="$groups_found $amd_group_name($amd_gid)"
+                fi
+            fi
+        fi
+    fi
+    
+    # Check for common GPU device group IDs (226, 128, 129) if they exist
+    for gid in 226 128 129; do
+        if getent group "$gid" > /dev/null 2>&1; then
+            group_name=$(getent group "$gid" | cut -d: -f1)
+            if ! group_exists "$group_name"; then
+                gpu_groups+=("$group_name")
+                groups_found="$groups_found $group_name($gid)"
+            fi
+        fi
+    done
+    
+    # Add trailarr user to identified GPU groups
+    if [ ${#gpu_groups[@]} -gt 0 ]; then
+        box_echo "GPU groups identified for trailarr user:$groups_found"
+        
+        for group in "${gpu_groups[@]}"; do
+            group_entry=$(getent group "$group")
+            if [ -n "$group_entry" ]; then
+                group_name=$(echo "$group_entry" | cut -d: -f1)
+                box_echo "Adding user 'trailarr' to group '$group_name'"
+                sudo usermod -aG "$group_name" trailarr
+            fi
+        done
+        
+        print_message $GREEN "✓ trailarr user added to GPU groups for hardware acceleration access"
+    else
+        box_echo "No GPU groups found for hardware acceleration"
+        print_message $YELLOW "! trailarr user will not have GPU hardware acceleration access"
+    fi
+}
+
 # Function to detect GPU hardware
 setup_gpu_hardware() {
     box_echo "Detecting GPU hardware..."
@@ -218,6 +329,9 @@ setup_gpu_hardware() {
         # Save results for interactive config
         echo "export DETECTED_GPUS=(${DETECTED_GPUS[*]})" > /tmp/gpu_detection_results
         echo "export AVAILABLE_GPUS=(${AVAILABLE_GPUS[*]})" >> /tmp/gpu_detection_results
+        
+        # Configure GPU user permissions after detection
+        configure_gpu_user_permissions
     else
         print_message $YELLOW "GPU setup script not found, skipping GPU configuration"
     fi
