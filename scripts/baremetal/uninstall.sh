@@ -63,7 +63,7 @@ prompt_data_preservation() {
     echo ""
     
     while true; do
-        read -p "Do you want to keep your data for future reinstalls? [Y/n]: " keep_data
+        read -rp "Do you want to keep your data for future reinstalls? [Y/n]: " keep_data
         keep_data=${keep_data:-Y}
         
         case "$keep_data" in
@@ -77,7 +77,7 @@ prompt_data_preservation() {
                 print_message $YELLOW "⚠ Data will be removed permanently"
                 
                 while true; do
-                    read -p "Are you sure you want to delete all data? [y/N]: " confirm_delete
+                    read -rp "Are you sure you want to delete all data? [y/N]: " confirm_delete
                     confirm_delete=${confirm_delete:-N}
                     
                     case "$confirm_delete" in
@@ -215,7 +215,7 @@ remove_user() {
 cleanup_packages() {
     echo ""
     while true; do
-        read -p "Remove Python packages installed specifically for Trailarr? [y/N]: " remove_packages
+        read -rp "Remove Python packages installed specifically for Trailarr? [y/N]: " remove_packages
         remove_packages=${remove_packages:-N}
         
         case "$remove_packages" in
@@ -243,9 +243,13 @@ display_completion() {
     
     if [ "$PRESERVE_DATA" = "true" ]; then
         echo "Data Preservation:"
-        if [ -d "$HOME/trailarr_backup_"* ]; then
-            echo "  - Backup created in: $HOME/trailarr_backup_*"
-        fi
+        for backup_dir in "$HOME"/trailarr_backup_*; do
+            if [ -d "$backup_dir" ]; then
+                echo "  - Backup created in: $backup_dir"
+                break  # Stop after the first match (optional)
+            fi
+        done
+
         if [ -d "$DATA_DIR" ]; then
             echo "  - Original data preserved in: $DATA_DIR"
         fi
