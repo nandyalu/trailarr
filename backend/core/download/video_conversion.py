@@ -181,7 +181,7 @@ def _get_video_options_nvidia(
             f"Downloaded video is already in required codec: '{vcodec}', "
             "copying stream without converting"
         )
-        video_options.append("copy")
+        return ["-i", input_file, "-c:v", "copy"]
     else:
         logger.debug(
             f"Converting video from '{video_stream.codec_name}' to"
@@ -272,7 +272,7 @@ def _get_video_options_vaapi(
             f"Downloaded video is already in required codec: '{vcodec}', "
             "copying stream without converting"
         )
-        video_options.append("copy")
+        return ["-i", input_file, "-c:v", "copy"]
     else:
         logger.debug(
             f"Converting video from '{video_stream.codec_name}' to"
@@ -291,7 +291,10 @@ def _get_video_options(
     use_vaapi: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
-    if vcodec == "copy":
+    _copy = False
+    if video_stream and video_stream.codec_name == vcodec:
+        _copy = True
+    if vcodec == "copy" or _copy:
         ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
         logger.debug("Copying video stream without converting")
         return ffmpeg_cmd
