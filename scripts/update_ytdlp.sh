@@ -41,11 +41,11 @@ check_and_update() {
         # Check if we're in Docker or bare metal environment
         if [ -f /opt/trailarr/venv/bin/pip ]; then
             # Bare metal installation - use virtual environment
-            /opt/trailarr/venv/bin/pip install --upgrade yt-dlp[default]
+            /opt/trailarr/venv/bin/pip install --upgrade yt-dlp[default,curl-cffi]
             YTDLP_VERSION=$(/opt/trailarr/venv/bin/yt-dlp --version)
         else
             # Docker installation - use system pip
-            pip install --upgrade yt-dlp[default]
+            pip install --upgrade yt-dlp[default,curl-cffi]
             YTDLP_VERSION=$(yt-dlp --version)
         fi
         
