@@ -191,13 +191,17 @@ install_python_deps() {
     else
         # Install basic dependencies if requirements.txt not found
         sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install \
-            fastapi \
-            uvicorn \
-            sqlmodel \
+            aiohttp \
+            aiofiles \
+            aiosqlite \
             alembic \
-            sqlite \
-            httpx \
-            python-multipart
+            apscheduler \
+            async-lru \
+            bcrypt \
+            fastapi[standard-no-fastapi-cloud-cli] \
+            pillow \
+            sqlmodel \
+            yt-dlp[default,curl-cffi]
     fi
     
     print_message $GREEN "✓ Python dependencies installed"
@@ -250,12 +254,11 @@ run_interactive_config() {
         sudo tee "$INSTALL_DIR/.env" > /dev/null << EOF
 APP_PORT=7889
 APP_DATA_DIR=$DATA_DIR
-MONITOR_INTERVAL=10800
+MONITOR_INTERVAL=60
 WAIT_FOR_MEDIA=true
 ENABLE_HWACCEL=false
 HWACCEL_TYPE=none
 INSTALLATION_MODE=baremetal
-TZ=UTC
 PYTHONPATH=$INSTALL_DIR/backend
 EOF
         sudo chown trailarr:trailarr "$INSTALL_DIR/.env"
