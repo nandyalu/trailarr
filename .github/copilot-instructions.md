@@ -10,17 +10,21 @@ Trailarr is a Dockerized application for downloading and managing trailers for R
 Execute these commands in order to set up the development environment:
 
 ```bash
-# Backend setup - NEVER CANCEL: Takes 65 seconds. Set timeout to 2+ minutes.
-cd backend
-pip install -r requirements.txt
+# Backend setup - NEVER CANCEL: Takes 120 seconds. Set timeout to 4+ minutes. Run from project root.
+cd .devcontainer/requirements
+pip install -r main.txt
 
-# Frontend setup - NEVER CANCEL: Takes 90 seconds. Set timeout to 3+ minutes.  
-cd ../frontend
+# Testing dependencies for backend - Takes 30 seconds. Set timeout to 4+ minutes. Run from project root.
+cd .devcontainer/requirements
+pip install -r testing.txt
+
+# Dependencies for documentation - Takes 30 seconds. Set timeout to 4+ minutes. Run from project root.
+cd .devcontainer/requirements
+pip install -r docs.txt
+
+# Frontend setup - NEVER CANCEL: Takes 90 seconds. Set timeout to 5+ minutes. Run from project root.
+cd frontend
 npm install
-
-# Testing dependencies for backend - Takes 30 seconds
-cd ../backend
-pip install -r ../.devcontainer/requirements/testing.txt
 ```
 
 ### Build Commands (Validated and Working)
@@ -75,7 +79,8 @@ The application requires database initialization before running:
 
 ```bash
 # Create config directory
-mkdir -p /tmp/trailarr-config
+mkdir -p /tmp/trailarr-config/logs
+mkdir -p /tmp/trailarr-config/web
 
 # Set environment variables
 export APP_DATA_DIR=/tmp/trailarr-config
@@ -120,7 +125,7 @@ alembic upgrade head
 ```
 
 ### Important Files to Check After Changes
-- **API Changes:** Always check `backend/export_openapi.py` and regenerate frontend API client
+- **API Changes:** Always check `backend/export_openapi.py` and regenerate frontend API client. Run `npm run openapi` to generate updated API client code (generates `/frontend/generated-sources`)
 - **Database Changes:** Check `backend/alembic/` for migrations
 - **Build Changes:** Check `Dockerfile` and frontend `package.json`
 - **Configuration:** Check `.vscode/tasks.json` for development commands
@@ -137,7 +142,7 @@ LOG_LEVEL=Info                   # Optional - logging level
 Use these VSCode tasks (defined in `.vscode/tasks.json`):
 - **Frontend build** - Builds Angular application 
 - **Fastapi run** - Starts FastAPI development server
-- **Generate OpenAPI Files** - Updates API client code
+- **Generate OpenAPI Files** - Updates OpenAPI files used in docs and frontend.
 - **Run FastAPI with startup script** - Full application startup
 
 ## Build Timing and Expectations
