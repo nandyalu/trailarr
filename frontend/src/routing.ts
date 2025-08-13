@@ -11,6 +11,7 @@ export const RouteSeries = 'series';
 export const RouteSettings = 'settings';
 export const RouteTasks = 'tasks';
 export const RouteGeneral = 'general';
+export const RoutePlex = 'plex';
 
 export const RouteParamConnectionId = 'connectionId';
 export const RouteParamMediaId = 'mediaId';
