@@ -127,7 +127,7 @@ end_message() {
         local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 10 ))
         local padding=""
         if (( pad_length > 0 )); then
-            padding=$(printf '%*s' "$pad_length")
+            padding=$(printf '%*s' "$pad_length" "")
         fi
         printf "\r${color_code}$message${NC}${padding}\n"
     else

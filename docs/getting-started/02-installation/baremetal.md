@@ -19,7 +19,7 @@ Trailarr can be installed directly on Debian-based systems without Docker. This 
 Run this single command to download and install Trailarr:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
 ```
 
 This command will:
@@ -132,7 +132,7 @@ sudo systemctl stop trailarr
 sudo cp -r /opt/trailarr /opt/trailarr.backup
 
 # Download and run the installer again
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
 
 # Start the service
 sudo systemctl start trailarr
@@ -233,7 +233,7 @@ sudo systemctl restart trailarr
 ### Quick Uninstall
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh | sudo bash
 ```
 
 The uninstaller will prompt you to preserve data for future reinstallations.
