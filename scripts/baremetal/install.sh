@@ -74,6 +74,7 @@ check_root() {
         print_message $YELLOW "Please run: sudo bash install.sh"
         exit 1
     fi
+    print_message $GREEN "✓ Running with sudo as user: $SUDO_USER"
 }
 
 # Function to check if distribution is supported
@@ -91,13 +92,14 @@ check_distribution() {
 install_system_deps() {
     box_echo "Installing system dependencies..."
     
-    sudo apt-get update
+    sudo apt-get update &>/dev/null
     sudo apt-get install -y \
         curl \
         wget \
         xz-utils \
+        unzip \
+        tar \
         git \
-        sqlite3 \
         pciutils \
         usbutils \
         ca-certificates \
@@ -140,7 +142,7 @@ create_user_and_dirs() {
 
 download_latest_release() {
     if [ ! -d "$INSTALL_DIR/trailarr" ]; then
-        print_message $YELLOW "! Trailarr source code not found. Downloading latest release source code..."
+        print_message $YELLOW "! Trailarr source code not found. Downloading latest release..."
 
         # Get the latest release info from GitHub API
         release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest)
