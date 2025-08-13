@@ -133,11 +133,11 @@ check_distribution() {
 install_system_deps() {
     start_message "$BLUE" "Installing system dependencies..."
 
-    sudo apt-get update &>/dev/null || {
+    apt-get update &>/dev/null || {
         end_message $RED "✗ Failed to update package list"
         exit 1
     }
-    sudo apt-get install -y \
+    apt-get install -y \
         curl \
         wget \
         xz-utils \
@@ -165,24 +165,24 @@ create_user_and_dirs() {
 
     # Create trailarr user if it doesn't exist
     if ! id "trailarr" &>/dev/null; then
-        sudo useradd -r -d "$INSTALL_DIR" -s /bin/bash -m trailarr
+        useradd -r -d "$INSTALL_DIR" -s /bin/bash -m trailarr
         end_message $GREEN "✓ Created 'trailarr' user"
     else
         end_message $YELLOW "! 'trailarr' user already exists"
     fi
     start_message "$BLUE" "Creating required directories"
     # Create necessary directories
-    sudo mkdir -p "$INSTALL_DIR"
-    sudo mkdir -p "$DATA_DIR"
-    sudo mkdir -p "$LOG_DIR"
-    sudo mkdir -p "$INSTALL_DIR/tmp"
-    sudo mkdir -p "$INSTALL_DIR/scripts"
-    sudo mkdir -p "$INSTALL_DIR/bin"
+    mkdir -p "$INSTALL_DIR"
+    mkdir -p "$DATA_DIR"
+    mkdir -p "$LOG_DIR"
+    mkdir -p "$INSTALL_DIR/tmp"
+    mkdir -p "$INSTALL_DIR/scripts"
+    mkdir -p "$INSTALL_DIR/bin"
     
     # Set ownership
-    sudo chown -R trailarr:trailarr "$INSTALL_DIR"
-    sudo chown -R trailarr:trailarr "$DATA_DIR"
-    sudo chown -R trailarr:trailarr "$LOG_DIR"
+    chown -R trailarr:trailarr "$INSTALL_DIR"
+    chown -R trailarr:trailarr "$DATA_DIR"
+    chown -R trailarr:trailarr "$LOG_DIR"
 
     end_message $GREEN "✓ Directories created and configured"
 }
@@ -250,16 +250,16 @@ copy_application_files() {
     start_message "$BLUE" "Copying application files..."
 
     # Copy source code
-    sudo cp -r "$SCRIPT_DIR/../../backend" "$INSTALL_DIR/"
-    sudo cp -r "$SCRIPT_DIR/../../frontend-build" "$INSTALL_DIR/"
-    sudo cp -r "$SCRIPT_DIR/../../assets" "$INSTALL_DIR/"
-    sudo cp -r "$SCRIPT_DIR/../../scripts" "$INSTALL_DIR/"
+    cp -r "$SCRIPT_DIR/../../backend" "$INSTALL_DIR/"
+    cp -r "$SCRIPT_DIR/../../frontend-build" "$INSTALL_DIR/"
+    cp -r "$SCRIPT_DIR/../../assets" "$INSTALL_DIR/"
+    cp -r "$SCRIPT_DIR/../../scripts" "$INSTALL_DIR/"
 
     # Copy configuration files
-    sudo cp "$SCRIPT_DIR/../../backend/requirements.txt" "$INSTALL_DIR/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/../../backend/requirements.txt" "$INSTALL_DIR/" 2>/dev/null || true
 
     # Set ownership
-    sudo chown -R trailarr:trailarr "$INSTALL_DIR"
+    chown -R trailarr:trailarr "$INSTALL_DIR"
 
     end_message $GREEN "✓ Application files copied"
 }
@@ -381,7 +381,7 @@ configure_gpu_user_permissions() {
                 else
                     intel_group_name="gpuintel"
                     print_message $BLUE "→ Creating group '$intel_group_name' with GID '$intel_gid'"
-                    sudo groupadd -g "$intel_gid" "$intel_group_name"
+                    groupadd -g "$intel_gid" "$intel_group_name"
                 fi
                 
                 if ! group_exists "$intel_group_name"; then
@@ -400,7 +400,7 @@ configure_gpu_user_permissions() {
                 else
                     amd_group_name="gpuamd"
                     print_message $BLUE "→ Creating group '$amd_group_name' with GID '$amd_gid'"
-                    sudo groupadd -g "$amd_gid" "$amd_group_name"
+                    groupadd -g "$amd_gid" "$amd_group_name"
                 fi
                 
                 if ! group_exists "$amd_group_name"; then
@@ -431,7 +431,7 @@ configure_gpu_user_permissions() {
             if [ -n "$group_entry" ]; then
                 group_name=$(echo "$group_entry" | cut -d: -f1)
                 print_message $BLUE "→ Adding user 'trailarr' to group '$group_name'"
-                sudo usermod -aG "$group_name" trailarr
+                usermod -aG "$group_name" trailarr
             fi
         done
         
@@ -486,7 +486,7 @@ run_interactive_config() {
     else
         print_message $YELLOW "→ Interactive config script not found, using defaults"
         # Create basic .env file
-        sudo tee "$DATA_DIR/.env" > /dev/null << EOF
+        tee "$DATA_DIR/.env" > /dev/null << EOF
 APP_PORT=7889
 APP_DATA_DIR=$DATA_DIR
 MONITOR_INTERVAL=60
@@ -496,7 +496,7 @@ HWACCEL_TYPE=none
 INSTALLATION_MODE=baremetal
 PYTHONPATH=$INSTALL_DIR/backend
 EOF
-        sudo chown trailarr:trailarr "$INSTALL_DIR/.env"
+        chown trailarr:trailarr "$INSTALL_DIR/.env"
     fi
     
     print_message $GREEN "✓ Configuration complete"
@@ -506,7 +506,7 @@ EOF
 create_systemd_service() {
     start_message $BLUE "Creating systemd service..."
 
-    sudo tee /etc/systemd/system/trailarr.service > /dev/null << EOF
+    tee /etc/systemd/system/trailarr.service > /dev/null << EOF
 [Unit]
 Description=Trailarr - Trailer downloader for Radarr and Sonarr
 Documentation=https://github.com/nandyalu/trailarr
@@ -541,19 +541,19 @@ WantedBy=multi-user.target
 EOF
     
     # Reload systemd and enable service
-    sudo systemctl daemon-reload
-    sudo systemctl enable trailarr
+    systemctl daemon-reload
+    systemctl enable trailarr
     
     end_message $GREEN "✓ Systemd service created and enabled"
     
     # Start the service
     start_message $BLUE "Starting Trailarr service..."
-    if sudo systemctl start trailarr; then
+    if systemctl start trailarr; then
         end_message $GREEN "✓ Trailarr service started successfully"
         
         # Wait a moment and check status
         sleep 3
-        if sudo systemctl is-active --quiet trailarr; then
+        if systemctl is-active --quiet trailarr; then
             print_message $GREEN "✓ Trailarr service is running"
         else
             print_message $YELLOW "⚠ Service started but may need time to initialize"
