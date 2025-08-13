@@ -5,8 +5,31 @@
 
 set -e
 
-# Source the common functions
-source "$(dirname "$0")/../box_echo.sh"
+# Source the common functions - first try baremetal logging, fallback to box_echo
+if [ -f "$(dirname "$0")/logging.sh" ]; then
+    source "$(dirname "$0")/logging.sh"
+    # If we're in a sub-script, we need to reuse the existing log file
+    if [ -z "$INSTALL_LOG_FILE" ]; then
+        INSTALL_LOG_FILE="$(pwd)/trailarr_install.log"
+        export INSTALL_LOG_FILE
+    fi
+else
+    source "$(dirname "$0")/../box_echo.sh"
+    # Define print_message and start_message/end_message for compatibility
+    print_message() { echo -e "$1$2\033[0m"; }
+    start_message() { echo -e "$1$2\033[0m"; }
+    end_message() { echo -e "$1$2\033[0m"; }
+    log_to_file() { echo "$1"; }
+    run_logged_command() { eval "$2"; }
+    update_env_var() { 
+        local var_name="$1"
+        local var_value="$2"
+        local env_file="$3"
+        grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
+        echo "${var_name}=${var_value}" >> "${env_file}.tmp"
+        mv "${env_file}.tmp" "$env_file"
+    }
+fi
 
 # Installation directory
 INSTALL_DIR="/opt/trailarr"
@@ -14,13 +37,15 @@ BIN_DIR="$INSTALL_DIR/bin"
 
 # Function to install ffmpeg locally (adapted from container script)
 install_ffmpeg_local() {
-    box_echo "Installing ffmpeg in application directory..."
+    start_message "$BLUE" "Installing ffmpeg..."
+    log_to_file "Starting ffmpeg installation to $BIN_DIR"
     
     # Create bin directory
     mkdir -p "$BIN_DIR"
     
     # Get the architecture of the system
     ARCH=$(dpkg --print-architecture 2>/dev/null || uname -m)
+    log_to_file "Detected architecture: $ARCH"
     
     if [ "$ARCH" == "amd64" ] || [ "$ARCH" == "x86_64" ]; then
         # Download the latest ffmpeg build for amd64
@@ -30,39 +55,52 @@ install_ffmpeg_local() {
         FFMPEG_URL="https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
     else
         # If the architecture is not supported, try to use system ffmpeg as fallback
-        box_echo "Unsupported architecture: $ARCH"
-        box_echo "Attempting to install system ffmpeg and copy to app directory..."
+        print_message "$YELLOW" "Unsupported architecture: $ARCH"
+        log_to_file "Unsupported architecture $ARCH, attempting system ffmpeg fallback"
         
         if command -v ffmpeg &> /dev/null; then
-            cp "$(which ffmpeg)" "$BIN_DIR/"
-            cp "$(which ffprobe)" "$BIN_DIR/"
-            box_echo "✓ Copied system ffmpeg to app directory"
-            return 0
+            if run_logged_command "Copy system ffmpeg" "cp \"$(which ffmpeg)\" \"$BIN_DIR/\" && cp \"$(which ffprobe)\" \"$BIN_DIR/\""; then
+                end_message "$GREEN" "✓ Copied system ffmpeg to app directory"
+                return 0
+            fi
         else
-            box_echo "Installing system ffmpeg..."
-            sudo apt-get update && sudo apt-get install -y ffmpeg
-            cp "$(which ffmpeg)" "$BIN_DIR/"
-            cp "$(which ffprobe)" "$BIN_DIR/"
-            box_echo "✓ Installed and copied system ffmpeg to app directory"
-            return 0
+            print_message "$BLUE" "Installing system ffmpeg..."
+            if run_logged_command "Install system ffmpeg" "apt-get update && apt-get install -y ffmpeg"; then
+                if run_logged_command "Copy installed ffmpeg" "cp \"$(which ffmpeg)\" \"$BIN_DIR/\" && cp \"$(which ffprobe)\" \"$BIN_DIR/\""; then
+                    end_message "$GREEN" "✓ Installed and copied system ffmpeg"
+                    return 0
+                fi
+            fi
         fi
+        end_message "$RED" "✗ Failed to install ffmpeg for unsupported architecture"
+        return 1
     fi
     
+    log_to_file "Using ffmpeg URL: $FFMPEG_URL"
+    
     # Download and install ffmpeg
-    box_echo "Downloading ffmpeg for $ARCH..."
     cd /tmp
-    curl -L -o ffmpeg.tar.xz "$FFMPEG_URL"
+    if ! run_logged_command "Download ffmpeg" "curl -L -o ffmpeg.tar.xz \"$FFMPEG_URL\""; then
+        end_message "$RED" "✗ Failed to download ffmpeg"
+        return 1
+    fi
     
     if [ ! -f ffmpeg.tar.xz ]; then
-        box_echo "Failed to download ffmpeg, falling back to system installation"
+        end_message "$RED" "✗ ffmpeg download file not found"
         return 1
     fi
     
     mkdir -p ffmpeg_extract
-    tar -xf ffmpeg.tar.xz -C ffmpeg_extract --strip-components=1
+    if ! run_logged_command "Extract ffmpeg" "tar -xf ffmpeg.tar.xz -C ffmpeg_extract --strip-components=1"; then
+        end_message "$RED" "✗ Failed to extract ffmpeg"
+        return 1
+    fi
     
     # Copy binaries to app bin directory
-    cp ffmpeg_extract/bin/* "$BIN_DIR/"
+    if ! run_logged_command "Install ffmpeg binaries" "cp ffmpeg_extract/bin/* \"$BIN_DIR/\""; then
+        end_message "$RED" "✗ Failed to copy ffmpeg binaries"
+        return 1
+    fi
     
     # Clean up
     rm -rf ffmpeg.tar.xz ffmpeg_extract
@@ -70,16 +108,18 @@ install_ffmpeg_local() {
     # Verify ffmpeg installation
     if [ -f "$BIN_DIR/ffmpeg" ]; then
         FFMPEG_VERSION=$("$BIN_DIR/ffmpeg" -version 2>&1 | head -n 1 | cut -d' ' -f3)
-        box_echo "✓ Successfully installed ffmpeg $FFMPEG_VERSION in $BIN_DIR"
+        log_to_file "ffmpeg installation verified: version $FFMPEG_VERSION"
+        end_message "$GREEN" "✓ Successfully installed ffmpeg $FFMPEG_VERSION"
     else
-        box_echo "Failed to install ffmpeg"
+        end_message "$RED" "✗ ffmpeg installation verification failed"
         return 1
     fi
 }
 
 # Function to verify yt-dlp installation (installed via pip)
 verify_ytdlp_pip() {
-    box_echo "Verifying yt-dlp installation via pip..."
+    start_message "$BLUE" "Verifying yt-dlp installation..."
+    log_to_file "Checking yt-dlp in virtual environment"
     
     # yt-dlp is installed via pip in the virtual environment during Python dependencies installation
     # We just need to get the path and verify it's working
@@ -88,18 +128,21 @@ verify_ytdlp_pip() {
     if [ -f "$VENV_YTDLP" ]; then
         if "$VENV_YTDLP" --version &> /dev/null; then
             YTDLP_VERSION=$("$VENV_YTDLP" --version)
-            box_echo "✓ yt-dlp verified from virtual environment: version $YTDLP_VERSION"
+            log_to_file "yt-dlp verified: version $YTDLP_VERSION"
+            end_message "$GREEN" "✓ yt-dlp verified (version $YTDLP_VERSION)"
             return 0
         fi
     fi
     
-    box_echo "yt-dlp not found in virtual environment"
+    end_message "$RED" "✗ yt-dlp not found in virtual environment"
+    log_to_file "ERROR: yt-dlp not found at $VENV_YTDLP"
     return 1
 }
 
 # Function to set up environment variables
 setup_environment() {
-    box_echo "Setting up environment variables for local binaries..."
+    start_message "$BLUE" "Setting up environment variables..."
+    log_to_file "Configuring environment variables for media tools"
     
     # Create .env file in data directory, not install directory
     DATA_DIR="${APP_DATA_DIR:-/var/lib/trailarr}"
@@ -109,34 +152,19 @@ setup_environment() {
     mkdir -p "$DATA_DIR"
     touch "$ENV_FILE"
     
-    # Function to update or add environment variable
-    update_env_var() {
-        local var_name="$1"
-        local var_value="$2"
-        local env_file="$3"
-        
-        # Remove existing entry if it exists
-        grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
-        
-        # Add new entry
-        echo "${var_name}=${var_value}" >> "${env_file}.tmp"
-        
-        # Replace original file
-        mv "${env_file}.tmp" "$env_file"
-    }
-    
-    # Set specific paths for ffmpeg and yt-dlp
+    # Set specific paths for ffmpeg and yt-dlp using the new update function
     update_env_var "FFMPEG_PATH" "$BIN_DIR/ffmpeg" "$ENV_FILE"
     update_env_var "FFPROBE_PATH" "$BIN_DIR/ffprobe" "$ENV_FILE"
     update_env_var "YTDLP_PATH" "$INSTALL_DIR/venv/bin/yt-dlp" "$ENV_FILE"
     
-    box_echo "✓ Environment variables configured in $ENV_FILE"
-    box_echo "The application will use local binaries instead of system versions"
+    log_to_file "Environment variables configured in $ENV_FILE"
+    end_message "$GREEN" "✓ Environment variables configured"
 }
 
 # Function to create update script for yt-dlp (pip version)
 create_update_script() {
-    box_echo "Creating yt-dlp update script..."
+    start_message "$BLUE" "Creating yt-dlp update script..."
+    log_to_file "Creating update script for yt-dlp"
     
     mkdir -p "$INSTALL_DIR/scripts"
     
@@ -175,22 +203,25 @@ fi
 EOF
     
     chmod +x "$INSTALL_DIR/scripts/update_ytdlp_local.sh"
-    box_echo "✓ Created yt-dlp update script at $INSTALL_DIR/scripts/update_ytdlp_local.sh"
+    log_to_file "Created yt-dlp update script at $INSTALL_DIR/scripts/update_ytdlp_local.sh"
+    end_message "$GREEN" "✓ Created yt-dlp update script"
 }
 
 # Main function
 main() {
-    box_echo "Installing ffmpeg locally and verifying yt-dlp"
-    box_echo "=========================================================================="
+    print_message "$BLUE" "Installing media processing tools..."
+    log_to_file "========== Media Tools Installation Started =========="
     
     # Install ffmpeg locally
     if ! install_ffmpeg_local; then
-        box_echo "Warning: ffmpeg installation failed"
+        print_message "$YELLOW" "Warning: ffmpeg installation failed"
+        log_to_file "WARNING: ffmpeg installation failed but continuing"
     fi
     
     # Verify yt-dlp installation (installed via pip)
     if ! verify_ytdlp_pip; then
-        box_echo "Warning: yt-dlp not properly installed via pip"
+        print_message "$YELLOW" "Warning: yt-dlp not properly installed via pip"
+        log_to_file "WARNING: yt-dlp verification failed"
     fi
     
     # Set up environment variables
@@ -199,12 +230,17 @@ main() {
     # Create update script
     create_update_script
     
-    box_echo "✓ Local binary installation complete"
-    box_echo "Installed binaries:"
-    box_echo "  ffmpeg: $BIN_DIR/ffmpeg"
-    box_echo "  ffprobe: $BIN_DIR/ffprobe"
-    box_echo "  yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
-    box_echo "=========================================================================="
+    print_message "$GREEN" "✓ Media tools installation complete"
+    print_message "$BLUE" "Installed tools:"
+    print_message "$BLUE" "  → ffmpeg: $BIN_DIR/ffmpeg"
+    print_message "$BLUE" "  → ffprobe: $BIN_DIR/ffprobe"
+    print_message "$BLUE" "  → yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
+    
+    log_to_file "Media tools installation completed successfully"
+    log_to_file "ffmpeg: $BIN_DIR/ffmpeg"
+    log_to_file "ffprobe: $BIN_DIR/ffprobe"
+    log_to_file "yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp"
+    log_to_file "========== Media Tools Installation Completed =========="
 }
 
 # Run main function if script is executed directly

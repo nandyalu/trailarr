@@ -3,7 +3,7 @@
 # Trailarr Bare Metal Installation Script for Debian-based systems
 # Modular installation with GPU support, Python 3.13.5, and interactive configuration
 
-# set -e
+set -e
 
 # Installation directories
 INSTALL_DIR="/opt/trailarr"
@@ -14,78 +14,8 @@ LOG_DIR="/var/log/trailarr"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BAREMETAL_SCRIPTS_DIR="$SCRIPT_DIR"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Function to print colored output
-print_message() {
-    local color=$1
-    local message=$2
-    echo -e "${color}${message}${NC}"
-}
-# Spinner characters
-SPINNER=( '-' '\' '|' '/' )
-SPINNER_PID=0
-SPINNER_MSG=""
-SPINNER_COLOR=""
-SPINNER_ACTIVE=false
-
-# Cleanup function to kill spinner on exit or interrupt
-cleanup_spinner() {
-    if $SPINNER_ACTIVE && [[ $SPINNER_PID -ne 0 ]]; then
-        # Check if process is running before kill/wait
-        if kill -0 "$SPINNER_PID" 2>/dev/null; then
-            kill "$SPINNER_PID" 2>/dev/null
-            # Wait for spinner to exit, but don't hang if already dead
-            timeout 2s wait "$SPINNER_PID" 2>/dev/null || true
-        fi
-        SPINNER_PID=0
-        SPINNER_ACTIVE=false
-    fi
-}
-
-# Trap signals to ensure spinner is cleaned up
-trap cleanup_spinner EXIT INT TERM
-
-# Function to show start message with spinner
-start_message() {
-    SPINNER_COLOR="$1"
-    SPINNER_MSG="$2"
-    SPINNER_ACTIVE=true
-    (
-        i=0
-        while true; do
-            printf "\r${SPINNER_COLOR}${SPINNER[i]} $SPINNER_MSG${NC}   "
-            i=$(( (i + 1) % 4 ))
-            sleep 0.2
-        done
-    ) &
-    SPINNER_PID=$!
-}
-
-# Function to stop spinner and show end message
-end_message() {
-    local color_code="$1"
-    local message="$2"
-    if $SPINNER_ACTIVE; then
-        cleanup_spinner
-        # Pad with spaces to overwrite longer spinner line
-        local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 10 ))
-        local padding=""
-        if (( pad_length > 0 )); then
-            padding=$(printf '%*s' "$pad_length")
-        fi
-        printf "\r${color_code}$message${NC}${padding}\n"
-    else
-        # No spinner was started, just print the message
-        printf "${color_code}$message${NC}\n"
-    fi
-    echo ""
-}
+# Source logging functions
+source "$SCRIPT_DIR/logging.sh"
 
 # Function to display installation banner
 display_banner() {
@@ -139,28 +69,22 @@ check_distribution() {
 install_system_deps() {
     start_message "$BLUE" "Installing system dependencies..."
 
-    apt-get update &>/dev/null || {
+    # Update package list with detailed logging
+    if run_logged_command "Update package list" "apt-get update"; then
+        log_to_file "Package list updated successfully"
+    else
         end_message $RED "✗ Failed to update package list"
         exit 1
-    }
-    apt-get install -y \
-        curl \
-        wget \
-        xz-utils \
-        unzip \
-        tar \
-        git \
-        pciutils \
-        usbutils \
-        ca-certificates \
-        build-essential \
-        libffi-dev \
-        libssl-dev \
-        systemd \
-        sudo &>/dev/null || {
-            end_message $RED "✗ Failed to install system dependencies"
-            exit 1
-        }
+    fi
+
+    # Install system dependencies with logging
+    local packages="curl wget xz-utils unzip tar git pciutils usbutils ca-certificates build-essential libffi-dev libssl-dev systemd sudo"
+    if run_logged_command "Install system packages" "apt-get install -y $packages"; then
+        log_to_file "System dependencies installed successfully"
+    else
+        end_message $RED "✗ Failed to install system dependencies"
+        exit 1
+    fi
 
     end_message $GREEN "✓ System dependencies installed"
 }
@@ -198,15 +122,22 @@ download_latest_release() {
         print_message "$BLUE" "Trailarr source code not found."
         start_message "$BLUE" "Downloading latest release"
 
-        # Get the latest release info from GitHub API
-        release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest)
+        # Get the latest release info from GitHub API with logging
+        log_to_file "Fetching latest release information from GitHub API"
+        local release_json
+        if ! release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest); then
+            end_message $RED "✗ Failed to fetch release information from GitHub"
+            exit 1
+        fi
 
         # Extract tag_name for version
         APP_VERSION=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
         export APP_VERSION
+        log_to_file "Latest version detected: $APP_VERSION"
 
-        # Write APP_VERSION to .env file
-        echo "APP_VERSION=$APP_VERSION" >> "$INSTALL_DIR/.env"
+        # Initialize .env file
+        touch "$INSTALL_DIR/.env"
+        update_env_var "APP_VERSION" "$APP_VERSION" "$INSTALL_DIR/.env"
 
         # Extract the source code zip URL
         src_archive_url=$(echo "$release_json" | grep "zipball_url" | grep "zip" | head -n1 | cut -d '"' -f4)
@@ -221,19 +152,23 @@ download_latest_release() {
             unpacker="unzip -o"
         fi
 
-        # Download and extract
-        curl -L -o "$INSTALL_DIR/trailarr-source.$archive_type" "$src_archive_url" || {
+        log_to_file "Downloading source archive: $src_archive_url"
+
+        # Download and extract with proper logging
+        if ! run_logged_command "Download Trailarr source" "curl -L -o \"$INSTALL_DIR/trailarr-source.$archive_type\" \"$src_archive_url\""; then
             end_message $RED "✗ Failed to download Trailarr source code"
             exit 1
-        }
+        fi
 
-        # Extract the downloaded archive
-        $unpacker "$INSTALL_DIR/trailarr-source.$archive_type" -d "$INSTALL_DIR/tmp-unpack" > /dev/null || {
+        # Extract the downloaded archive with logging
+        if ! run_logged_command "Extract Trailarr source" "$unpacker \"$INSTALL_DIR/trailarr-source.$archive_type\" -d \"$INSTALL_DIR/tmp-unpack\""; then
             end_message $RED "✗ Failed to extract Trailarr source code archive"
             exit 1
-        }
+        fi
+
         # Find the extracted folder (should be the only directory inside tmp-unpack)
         extracted_dir=$(find "$INSTALL_DIR/tmp-unpack" -mindepth 1 -maxdepth 1 -type d | head -n1)
+        log_to_file "Extracted directory: $extracted_dir"
 
         # Remove any existing target directory
         rm -rf "$INSTALL_DIR/trailarr"
@@ -244,6 +179,7 @@ download_latest_release() {
         # Clean up temp files
         rm -rf "$INSTALL_DIR/tmp-unpack"
         rm "$INSTALL_DIR/trailarr-source.$archive_type"
+        
         print_message $BLUE "→ Version: $APP_VERSION"
         SCRIPT_DIR="$INSTALL_DIR/trailarr/scripts/"
         end_message $GREEN "✓ Trailarr source code downloaded and extracted"
@@ -297,41 +233,41 @@ install_python_deps() {
         exit 1
     fi
     
-    # Create virtual environment
-    sudo -u trailarr "$PYTHON_EXECUTABLE" -m venv "$INSTALL_DIR/venv" 2>/dev/null || {
+    log_to_file "Using Python executable: $PYTHON_EXECUTABLE"
+    
+    # Create virtual environment with logging
+    if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
         end_message $RED "✗ Failed to create Python virtual environment"
         exit 1
-    }
+    fi
 
-    # Install dependencies
-    sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install --upgrade pip 2>/dev/null || {
+    # Install/upgrade pip with logging
+    if ! run_logged_command "Upgrade pip" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install --upgrade pip"; then
         end_message $RED "✗ Failed to install/upgrade pip"
         exit 1
-    }
+    fi
 
+    # Install dependencies
     if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
-        sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/backend/requirements.txt" 2>/dev/null || {
+        log_to_file "Installing dependencies from requirements.txt"
+        if ! run_logged_command "Install Python dependencies from requirements.txt" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install -r \"$INSTALL_DIR/backend/requirements.txt\""; then
             end_message $RED "✗ Failed to install Python dependencies"
             exit 1
-        }
+        fi
     else
         # Install basic dependencies if requirements.txt not found
-        sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install \
-            aiohttp \
-            aiofiles \
-            aiosqlite \
-            alembic \
-            apscheduler \
-            async-lru \
-            bcrypt \
-            fastapi[standard-no-fastapi-cloud-cli] \
-            pillow \
-            sqlmodel \
-            yt-dlp[default,curl-cffi] 2>/dev/null || {
-                end_message $RED "✗ Failed to install basic Python dependencies"
-                exit 1
-            }
+        log_to_file "requirements.txt not found, installing basic dependencies"
+        local basic_deps="aiohttp aiofiles aiosqlite alembic apscheduler async-lru bcrypt fastapi[standard-no-fastapi-cloud-cli] pillow sqlmodel yt-dlp[default,curl-cffi]"
+        if ! run_logged_command "Install basic Python dependencies" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install $basic_deps"; then
+            end_message $RED "✗ Failed to install basic Python dependencies"
+            exit 1
+        fi
     fi
+
+    # Save Python executable and related paths to .env file
+    update_env_var "PYTHON_EXECUTABLE" "$PYTHON_EXECUTABLE" "$DATA_DIR/.env"
+    update_env_var "PYTHON_VENV" "$INSTALL_DIR/venv" "$DATA_DIR/.env"
+    update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
 
     end_message $GREEN "✓ Python dependencies installed"
 }
@@ -490,18 +426,17 @@ run_interactive_config() {
         bash "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh"
     else
         print_message $YELLOW "→ Interactive config script not found, using defaults"
-        # Create basic .env file
-        tee "$DATA_DIR/.env" > /dev/null << EOF
-APP_PORT=7889
-APP_DATA_DIR=$DATA_DIR
-MONITOR_INTERVAL=60
-WAIT_FOR_MEDIA=true
-ENABLE_HWACCEL=false
-HWACCEL_TYPE=none
-INSTALLATION_MODE=baremetal
-PYTHONPATH=$INSTALL_DIR/backend
-EOF
-        chown trailarr:trailarr "$INSTALL_DIR/.env"
+        # Create basic .env file with proper variable handling
+        update_env_var "APP_PORT" "7889" "$DATA_DIR/.env"
+        update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
+        update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"
+        update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"
+        update_env_var "ENABLE_HWACCEL" "false" "$DATA_DIR/.env"
+        update_env_var "HWACCEL_TYPE" "none" "$DATA_DIR/.env"
+        update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
+        update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
+        
+        chown trailarr:trailarr "$DATA_DIR/.env"
     fi
     
     print_message $GREEN "✓ Configuration complete"
@@ -605,6 +540,9 @@ display_completion() {
 
 # Main installation function
 main() {
+    # Initialize logging first
+    init_logging
+    
     display_banner
     
     # Pre-installation checks
@@ -627,6 +565,9 @@ main() {
     rm -f /tmp/gpu_detection_results
     
     display_completion
+    
+    # Show log file location
+    show_log_location
 }
 
 # Run main installation
