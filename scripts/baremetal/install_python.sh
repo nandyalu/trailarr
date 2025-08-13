@@ -3,7 +3,7 @@
 # Python 3.13.5 Installation Script for Trailarr Bare Metal Installation
 # This script checks for Python 3.13.5 and installs it if not available
 
-set -e
+# set -e
 
 # Source the common functions
 source "$(dirname "$0")/../box_echo.sh"

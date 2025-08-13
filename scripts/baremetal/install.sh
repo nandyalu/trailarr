@@ -37,8 +37,13 @@ SPINNER_ACTIVE=false
 # Cleanup function to kill spinner on exit or interrupt
 cleanup_spinner() {
     if $SPINNER_ACTIVE && [[ $SPINNER_PID -ne 0 ]]; then
-        kill "$SPINNER_PID" 2>/dev/null
-        wait "$SPINNER_PID" 2>/dev/null
+        # Check if process is running before kill/wait
+        if kill -0 "$SPINNER_PID" 2>/dev/null; then
+            kill "$SPINNER_PID" 2>/dev/null
+            # Wait for spinner to exit, but don't hang if already dead
+            timeout 2s wait "$SPINNER_PID" 2>/dev/null || true
+        fi
+        SPINNER_PID=0
         SPINNER_ACTIVE=false
     fi
 }
@@ -69,7 +74,7 @@ end_message() {
     if $SPINNER_ACTIVE; then
         cleanup_spinner
         # Pad with spaces to overwrite longer spinner line
-        local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 3 ))
+        local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 10 ))
         local padding=""
         if (( pad_length > 0 )); then
             padding=$(printf '%*s' "$pad_length")
@@ -239,8 +244,7 @@ download_latest_release() {
         # Clean up temp files
         rm -rf "$INSTALL_DIR/tmp-unpack"
         rm "$INSTALL_DIR/trailarr-source.$archive_type"
-        echo " Version: $APP_VERSION"
-        echo " Trailarr source code downloaded and extracted successfully"
+        print_message $BLUE "→ Version: $APP_VERSION"
         SCRIPT_DIR="$INSTALL_DIR/trailarr/scripts/"
         end_message $GREEN "✓ Trailarr source code downloaded and extracted"
     fi
@@ -334,7 +338,7 @@ install_python_deps() {
 
 # Function to add trailarr user to GPU groups for hardware access
 configure_gpu_user_permissions() {
-    start_message $BLUE "Configuring GPU permissions for trailarr user..."
+    print_message $BLUE "→ Configuring GPU permissions for trailarr user"
 
     # Initialize array of GPU groups to add user to
     local gpu_groups=()
