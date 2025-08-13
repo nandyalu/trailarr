@@ -133,7 +133,10 @@ check_distribution() {
 install_system_deps() {
     start_message "$BLUE" "Installing system dependencies..."
 
-    sudo apt-get update &>/dev/null
+    sudo apt-get update &>/dev/null || {
+        end_message $RED "✗ Failed to update package list"
+        exit 1
+    }
     sudo apt-get install -y \
         curl \
         wget \
@@ -148,7 +151,10 @@ install_system_deps() {
         libffi-dev \
         libssl-dev \
         systemd \
-        sudo &>/dev/null
+        sudo &>/dev/null || {
+            end_message $RED "✗ Failed to install system dependencies"
+            exit 1
+        }
 
     end_message $GREEN "✓ System dependencies installed"
 }
