@@ -3,7 +3,7 @@
 # Trailarr Bare Metal Installation Script for Debian-based systems
 # Modular installation with GPU support, Python 3.13.5, and interactive configuration
 
-set -e
+# set -e
 
 # Installation directories
 INSTALL_DIR="/opt/trailarr"
@@ -79,6 +79,7 @@ end_message() {
         # No spinner was started, just print the message
         printf "${color_code}$message${NC}\n"
     fi
+    echo ""
 }
 
 # Function to display installation banner
