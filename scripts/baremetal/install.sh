@@ -93,13 +93,12 @@ install_system_deps() {
         sqlite3 \
         pciutils \
         usbutils \
-        tzdata \
         ca-certificates \
         build-essential \
         libffi-dev \
         libssl-dev \
         systemd \
-        sudo
+        sudo &>/dev/null
     
     print_message $GREEN "✓ System dependencies installed"
 }
@@ -111,9 +110,9 @@ create_user_and_dirs() {
     # Create trailarr user if it doesn't exist
     if ! id "trailarr" &>/dev/null; then
         sudo useradd -r -d "$INSTALL_DIR" -s /bin/bash -m trailarr
-        print_message $GREEN "✓ Created trailarr user"
+        print_message $GREEN "✓ Created 'trailarr' user"
     else
-        print_message $YELLOW "! trailarr user already exists"
+        print_message $YELLOW "! 'trailarr' user already exists"
     fi
     
     # Create necessary directories
@@ -132,6 +131,62 @@ create_user_and_dirs() {
     print_message $GREEN "✓ Directories created and configured"
 }
 
+download_latest_release() {
+    if [ ! -d "$INSTALL_DIR/trailarr" ]; then
+        print_message $YELLOW "! Trailarr source code not found. Downloading latest release source code..."
+
+        # Get the latest release info from GitHub API
+        release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest)
+
+        # Extract tag_name for version
+        APP_VERSION=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
+        export APP_VERSION
+
+        # Write APP_VERSION to .env file
+        echo "APP_VERSION=$APP_VERSION" >> "$INSTALL_DIR/.env"
+
+        # Extract the source code zip URL
+        src_archive_url=$(echo "$release_json" | grep "zipball_url" | grep "zip" | head -n1 | cut -d '"' -f4)
+
+        # Fallback to tar.gz if zip not found
+        if [ -z "$src_archive_url" ]; then
+            src_archive_url=$(echo "$release_json" | grep "tarball_url" | grep "tar.gz" | head -n1 | cut -d '"' -f4)
+            archive_type="tar.gz"
+            unpacker="tar -xzf"
+        else
+            archive_type="zip"
+            unpacker="unzip -o"
+        fi
+
+        # Download and extract
+        curl -L -o "$INSTALL_DIR/trailarr-source.$archive_type" "$src_archive_url" || {
+            print_message $RED "Failed to download Trailarr source code"
+            exit 1
+        }
+
+        # Extract the downloaded archive
+        $unpacker "$INSTALL_DIR/trailarr-source.$archive_type" -d "$INSTALL_DIR/tmp-unpack" > /dev/null || {
+            print_message $RED "Failed to extract Trailarr source code archive"
+            exit 1
+        }
+        # Find the extracted folder (should be the only directory inside tmp-unpack)
+        extracted_dir=$(find "$INSTALL_DIR/tmp-unpack" -mindepth 1 -maxdepth 1 -type d | head -n1)
+
+        # Remove any existing target directory
+        rm -rf "$INSTALL_DIR/trailarr"
+
+        # Move/rename the extracted folder
+        mv "$extracted_dir" "$INSTALL_DIR/trailarr"
+
+        # Clean up temp files
+        rm -rf "$INSTALL_DIR/tmp-unpack"
+        rm "$INSTALL_DIR/trailarr-source.$archive_type"
+        echo " Version: $APP_VERSION"
+        echo " Trailarr source code downloaded and extracted successfully"
+        SCRIPT_DIR="$INSTALL_DIR/trailarr/scripts/"
+    fi
+}
+
 # Function to copy application files
 copy_application_files() {
     box_echo "Copying application files..."
@@ -143,7 +198,6 @@ copy_application_files() {
     sudo cp -r "$SCRIPT_DIR/../scripts" "$INSTALL_DIR/"
     
     # Copy configuration files
-    sudo cp "$SCRIPT_DIR/../mkdocs.yml" "$INSTALL_DIR/" 2>/dev/null || true
     sudo cp "$SCRIPT_DIR/../requirements.txt" "$INSTALL_DIR/" 2>/dev/null || true
     
     # Set ownership
@@ -485,6 +539,7 @@ main() {
     # Installation steps
     install_system_deps
     create_user_and_dirs
+    download_latest_release
     copy_application_files
     install_python
     install_python_deps
