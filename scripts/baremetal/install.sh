@@ -60,11 +60,18 @@ EOF
     echo ""
 }
 
-# Function to check if running as root
+# Function to check if running as root or not with sudo
 check_root() {
-    if [[ $EUID -eq 0 ]]; then
-        print_message $RED "This script should not be run as root for security reasons."
-        print_message $YELLOW "Please run as a regular user with sudo privileges."
+    # Block direct root execution (not via sudo)
+    if [[ $EUID -eq 0 && -z "$SUDO_USER" ]]; then
+        print_message $RED "Do NOT run this script directly as root."
+        print_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
+        exit 1
+    fi
+    # Block non-sudo runs (must be run with sudo)
+    if [[ $EUID -ne 0 || -z "$SUDO_USER" ]]; then
+        print_message $RED "This script must be run with sudo."
+        print_message $YELLOW "Please run: sudo bash install.sh"
         exit 1
     fi
 }
