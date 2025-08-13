@@ -5,15 +5,16 @@
 
 set -e
 
-# Source the common functions - first try baremetal logging, fallback to interactive_echo
-if [ -f "$(dirname "$0")/logging.sh" ]; then
-    source "$(dirname "$0")/logging.sh"
+# Source the common functions - first try baremetal logging, fallback to box_echo
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/logging.sh" ]; then
+    source "$SCRIPT_DIR/logging.sh"
     # If we're in a sub-script, we need to reuse the existing log file
     if [ -z "$INSTALL_LOG_FILE" ]; then
         INSTALL_LOG_FILE="$(pwd)/trailarr_install.log"
         export INSTALL_LOG_FILE
     fi
-    # Use print_message for interactive prompts instead of interactive_echo
+    # Use print_message for interactive prompts instead of box_echo
     interactive_echo() { 
         local message="$1"
         local width=80
@@ -27,9 +28,9 @@ if [ -f "$(dirname "$0")/logging.sh" ]; then
         log_to_file "INTERACTIVE: $message"
     }
 else
-    source "$(dirname "$0")/../interactive_echo.sh"
-    # Use interactive_echo as interactive_echo for compatibility
-    interactive_echo() { interactive_echo "$1"; }
+    source "$SCRIPT_DIR/../box_echo.sh"
+    # Use box_echo as interactive_echo for compatibility
+    interactive_echo() { box_echo "$1"; }
     # Define print_message and start_message/end_message for compatibility
     print_message() { echo -e "$1$2\033[0m"; }
     start_message() { echo -e "$1$2\033[0m"; }
@@ -39,6 +40,7 @@ else
         local var_name="$1"
         local var_value="$2"
         local env_file="$3"
+        touch "$env_file"
         grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
         echo "${var_name}=${var_value}" >> "${env_file}.tmp"
         mv "${env_file}.tmp" "$env_file"
