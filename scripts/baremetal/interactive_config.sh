@@ -5,8 +5,45 @@
 
 set -e
 
-# Source the common functions
-source "$(dirname "$0")/../box_echo.sh"
+# Source the common functions - first try baremetal logging, fallback to interactive_echo
+if [ -f "$(dirname "$0")/logging.sh" ]; then
+    source "$(dirname "$0")/logging.sh"
+    # If we're in a sub-script, we need to reuse the existing log file
+    if [ -z "$INSTALL_LOG_FILE" ]; then
+        INSTALL_LOG_FILE="$(pwd)/trailarr_install.log"
+        export INSTALL_LOG_FILE
+    fi
+    # Use print_message for interactive prompts instead of interactive_echo
+    interactive_echo() { 
+        local message="$1"
+        local width=80
+        local padding="|  "
+        local end_padding="  |"
+        local line_length=$((width - ${#padding} - ${#end_padding}))
+        
+        while IFS= read -r line; do
+            printf "%s%-${line_length}s%s\n" "$padding" "$line" "$end_padding"
+        done <<< "$(echo "$message" | fold -sw $line_length)"
+        log_to_file "INTERACTIVE: $message"
+    }
+else
+    source "$(dirname "$0")/../interactive_echo.sh"
+    # Use interactive_echo as interactive_echo for compatibility
+    interactive_echo() { interactive_echo "$1"; }
+    # Define print_message and start_message/end_message for compatibility
+    print_message() { echo -e "$1$2\033[0m"; }
+    start_message() { echo -e "$1$2\033[0m"; }
+    end_message() { echo -e "$1$2\033[0m"; }
+    log_to_file() { echo "$1"; }
+    update_env_var() { 
+        local var_name="$1"
+        local var_value="$2"
+        local env_file="$3"
+        grep -v "^${var_name}=" "$env_file" > "${env_file}.tmp" 2>/dev/null || touch "${env_file}.tmp"
+        echo "${var_name}=${var_value}" >> "${env_file}.tmp"
+        mv "${env_file}.tmp" "$env_file"
+    }
+fi
 
 # Default values
 DEFAULT_MONITOR_INTERVAL=60  # 1 hour in minutes
@@ -19,11 +56,11 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    box_echo "Basic Application Configuration"
-    box_echo "=========================================================================="
+    interactive_echo "Basic Application Configuration"
+    interactive_echo "=========================================================================="
     
     # Monitor interval
-    box_echo "Monitor Interval: How often should Trailarr check for new content?"
+    interactive_echo "Monitor Interval: How often should Trailarr check for new content?"
     echo "  - Minimum is 10"
     echo "  - This determines how frequently the app scans for new movies/shows"
     echo "  - Shorter intervals = more responsive but higher system load"
@@ -48,11 +85,11 @@ prompt_basic_config() {
         fi
     done
     
-    box_echo "✓ Monitor interval set to $monitor_interval minutes"
+    interactive_echo "✓ Monitor interval set to $monitor_interval minutes"
     
     # Wait for media
-    box_echo ""
-    box_echo "Wait for Media: Should Trailarr wait for media files to be available before downloading trailers?"
+    interactive_echo ""
+    interactive_echo "Wait for Media: Should Trailarr wait for media files to be available before downloading trailers?"
     echo "  - true: Wait until movie/show files exist before downloading trailers (recommended)"
     echo "  - false: Download trailers immediately when items are added to Radarr/Sonarr"
     echo ""
@@ -64,12 +101,12 @@ prompt_basic_config() {
         case "$wait_choice" in
             [Yy]|[Yy][Ee][Ss])
                 export WAIT_FOR_MEDIA="true"
-                box_echo "✓ Will wait for media files before downloading trailers"
+                interactive_echo "✓ Will wait for media files before downloading trailers"
                 break
                 ;;
             [Nn]|[Nn][Oo])
                 export WAIT_FOR_MEDIA="false"
-                box_echo "✓ Will download trailers immediately when items are added"
+                interactive_echo "✓ Will download trailers immediately when items are added"
                 break
                 ;;
             *)
@@ -79,21 +116,21 @@ prompt_basic_config() {
     done
     
     # Port configuration
-    box_echo ""
+    interactive_echo ""
     while true; do
         read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
         
         if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -gt 1023 ] && [ "$port" -lt 65536 ]; then
             export APP_PORT="$port"
-            box_echo "✓ Web interface will be available on port $port"
+            interactive_echo "✓ Web interface will be available on port $port"
             break
         else
             echo "Please enter a valid port number (1024-65535)"
         fi
     done
     
-    box_echo "=========================================================================="
+    interactive_echo "=========================================================================="
 }
 
 # Function to configure GPU settings
@@ -104,16 +141,16 @@ configure_gpu_settings() {
     fi
     
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
-        box_echo "No supported GPUs detected. Hardware acceleration not enabled."
+        interactive_echo "No supported GPUs detected. Hardware acceleration not enabled."
         export ENABLE_HWACCEL="false"
         export HWACCEL_TYPE="none"
         return 0
     fi
     
-    box_echo "GPU Hardware Acceleration Configuration"
-    box_echo "=========================================================================="
+    interactive_echo "GPU Hardware Acceleration Configuration"
+    interactive_echo "=========================================================================="
     
-    box_echo "Detected GPUs: ${DETECTED_GPUS[*]}"
+    interactive_echo "Detected GPUs: ${DETECTED_GPUS[*]}"
     echo ""
     echo "Hardware acceleration can significantly improve video processing performance"
     echo "but may require additional system setup and drivers."
@@ -132,7 +169,7 @@ configure_gpu_settings() {
             [Nn]|[Nn][Oo])
                 export ENABLE_HWACCEL="false"
                 export HWACCEL_TYPE="none"
-                box_echo "✓ Hardware acceleration disabled"
+                interactive_echo "✓ Hardware acceleration disabled"
                 return 0
                 ;;
             *)
@@ -143,8 +180,8 @@ configure_gpu_settings() {
     
     # If multiple GPUs are available, ask user to choose
     if [ ${#AVAILABLE_GPUS[@]} -gt 1 ]; then
-        box_echo ""
-        box_echo "Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration."
+        interactive_echo ""
+        interactive_echo "Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration."
         echo "Please select which GPU to use:"
         echo ""
         
@@ -159,7 +196,7 @@ configure_gpu_settings() {
             if [[ "$gpu_choice" =~ ^[0-9]+$ ]] && [ "$gpu_choice" -ge 1 ] && [ "$gpu_choice" -le ${#AVAILABLE_GPUS[@]} ]; then
                 selected_index=$((gpu_choice - 1))
                 export HWACCEL_TYPE="${AVAILABLE_GPUS[$selected_index]}"
-                box_echo "✓ Selected ${DETECTED_GPUS[$selected_index]} for hardware acceleration"
+                interactive_echo "✓ Selected ${DETECTED_GPUS[$selected_index]} for hardware acceleration"
                 break
             else
                 echo "Please enter a number between 1 and ${#AVAILABLE_GPUS[@]}"
@@ -168,37 +205,37 @@ configure_gpu_settings() {
     else
         # Only one GPU available
         export HWACCEL_TYPE="${AVAILABLE_GPUS[0]}"
-        box_echo "✓ Using ${DETECTED_GPUS[0]} for hardware acceleration"
+        interactive_echo "✓ Using ${DETECTED_GPUS[0]} for hardware acceleration"
     fi
     
     # Provide driver installation instructions based on detected GPUs
     if [ "$ENABLE_HWACCEL" = "true" ]; then
-        box_echo ""
-        box_echo "Hardware Acceleration Setup Instructions:"
+        interactive_echo ""
+        interactive_echo "Hardware Acceleration Setup Instructions:"
         case "$HWACCEL_TYPE" in
             "nvidia")
-                box_echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
-                box_echo "  (Reboot required after driver installation)"
+                interactive_echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"
+                interactive_echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
+                interactive_echo "  (Reboot required after driver installation)"
                 ;;
             "intel")
-                box_echo "Intel GPU selected. Ensure VAAPI drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
+                interactive_echo "Intel GPU selected. Ensure VAAPI drivers are installed:"
+                interactive_echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
                 ;;
             "amd")
-                box_echo "AMD GPU selected. Ensure VAAPI drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
+                interactive_echo "AMD GPU selected. Ensure VAAPI drivers are installed:"
+                interactive_echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
                 ;;
         esac
-        box_echo "Note: After installing drivers, restart the Trailarr service to use hardware acceleration"
+        interactive_echo "Note: After installing drivers, restart the Trailarr service to use hardware acceleration"
     fi
     
-    box_echo "=========================================================================="
+    interactive_echo "=========================================================================="
 }
 
 # Function to write configuration to file
 write_configuration() {    
-    box_echo "Writing configuration to $CONFIG_FILE..."
+    interactive_echo "Writing configuration to $CONFIG_FILE..."
     
     # Ensure data directory exists
     mkdir -p "$DATA_DIR"
@@ -226,23 +263,23 @@ TZ=${TZ:-UTC}
 PYTHONPATH=/opt/trailarr/backend
 EOF
     
-    box_echo "✓ Configuration written to $CONFIG_FILE"
+    interactive_echo "✓ Configuration written to $CONFIG_FILE"
 }
 
 # Function to display configuration summary
 display_summary() {
-    box_echo "Configuration Summary"
-    box_echo "=========================================================================="
-    box_echo "Application Port: ${APP_PORT}"
-    box_echo "Data Directory: $DATA_DIR"
-    box_echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
-    box_echo "Wait for Media: ${WAIT_FOR_MEDIA}"
-    box_echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
+    interactive_echo "Configuration Summary"
+    interactive_echo "=========================================================================="
+    interactive_echo "Application Port: ${APP_PORT}"
+    interactive_echo "Data Directory: $DATA_DIR"
+    interactive_echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
+    interactive_echo "Wait for Media: ${WAIT_FOR_MEDIA}"
+    interactive_echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
     if [ "$ENABLE_HWACCEL" = "true" ]; then
-        box_echo "GPU Type: ${HWACCEL_TYPE}"
+        interactive_echo "GPU Type: ${HWACCEL_TYPE}"
     fi
-    box_echo "Installation Mode: baremetal"
-    box_echo "=========================================================================="
+    interactive_echo "Installation Mode: baremetal"
+    interactive_echo "=========================================================================="
     
     echo ""
     echo "After installation completes, you can:"
@@ -255,8 +292,8 @@ display_summary() {
 
 # Main function
 main() {
-    box_echo "Interactive Configuration Setup"
-    box_echo "=========================================================================="
+    interactive_echo "Interactive Configuration Setup"
+    interactive_echo "=========================================================================="
     
     # Create install directory if it doesn't exist
     sudo mkdir -p "/opt/trailarr"
@@ -275,7 +312,7 @@ main() {
     # Display summary
     display_summary
     
-    box_echo "✓ Interactive configuration complete"
+    interactive_echo "✓ Interactive configuration complete"
 }
 
 # Run main function if script is executed directly
