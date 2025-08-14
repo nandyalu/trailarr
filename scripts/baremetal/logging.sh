@@ -75,10 +75,19 @@ PROGRESS_COLOR=""
 PROGRESS_CHARS=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
 PROGRESS_INDEX=0
 
+# Global variable to store number of temp lines
+TEMP_STATUS_LINES=0
+
 # Function to clean the current line using tput
 clear_line() {
-    tput cr 2>/dev/null || printf "\r"
-    tput el 2>/dev/null || printf "\033[K"
+    # tput cr 2>/dev/null || printf "\r"
+    # tput el 2>/dev/null || printf "\033[K"
+    # Move cursor up and clear each temp line
+    for ((i=0; i<TEMP_STATUS_LINES; i++)); do
+        tput cuu1   # Move cursor up one line
+        tput el     # Clear the line
+    done
+    TEMP_STATUS_LINES=0
 }
 
 # Function to print colored output to terminal and log to file
@@ -144,6 +153,8 @@ show_temp_status() {
     clear_line
     printf "${color}%s${NC}" "$message"
     log_to_file "TEMP: $message"
+    # Count lines in message
+    TEMP_STATUS_LINES=$(echo -e "$message" | wc -l)
 }
 
 # Function to show permanent status (like end_message but without clearing progress)

@@ -78,7 +78,7 @@ Common values:
     log_to_file "Monitor interval set to $monitor_interval minutes"
     
     # Wait for media
-    local wait_for_media_msg="Wait for Media Configuration\n
+    local wait_for_media_msg="Wait for Media Configuration
 Should Trailarr wait for media files to be available before downloading trailers?
   - Yes: Wait until movie/show files exist before downloading trailers (recommended)
   - No: Download trailers immediately when items are added to Radarr/Sonarr
@@ -109,7 +109,7 @@ Should Trailarr wait for media files to be available before downloading trailers
     done
     
     # Port configuration
-    show_temp_status "$BLUE" "Port Configuration"
+    # show_temp_status "$BLUE" "Port Configuration"
     while true; do
         read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
@@ -144,8 +144,8 @@ configure_gpu_settings() {
         return 0
     fi
 
-    local gpu_selection_msg="GPU Hardware Acceleration Configuration\n
-Detected GPUs: ${DETECTED_GPUS[*]}\n
+    local gpu_selection_msg="GPU Hardware Acceleration Configuration
+Detected GPUs: ${DETECTED_GPUS[*]}
 Hardware acceleration can significantly improve video processing performance
 but may require additional system setup and drivers.
 "
@@ -177,7 +177,7 @@ but may require additional system setup and drivers.
     
     # If multiple GPUs are available, ask user to choose
     if [ ${#AVAILABLE_GPUS[@]} -gt 1 ]; then
-        local gpu_selection_choice_msg="GPU Selection:\n
+        local gpu_selection_choice_msg="GPU Selection:
 Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration.
 Please select which GPU to use:
 "
