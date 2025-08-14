@@ -5,10 +5,10 @@
 
 # Initialize logging - call this first in the main script
 init_logging() {
-    # Set log file in current directory where script is being run
-    INSTALL_LOG_FILE="$(pwd)/trailarr_install.log"
+    # Set log file in /tmp directory which is always writable
+    INSTALL_LOG_FILE="/tmp/trailarr_install.log"
     
-    # Create/truncate log file
+    # Create/truncate log file with proper permissions
     cat > "$INSTALL_LOG_FILE" << EOF
 Trailarr Bare Metal Installation Log
 ====================================
@@ -18,6 +18,9 @@ User: $(whoami)
 Sudo User: ${SUDO_USER:-N/A}
 
 EOF
+    
+    # Set proper permissions for the log file
+    chmod 644 "$INSTALL_LOG_FILE"
     
     # Log environment info
     {
