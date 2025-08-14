@@ -175,8 +175,36 @@ update_env_var() {
     
     log_to_file "ENV UPDATE: Setting $var_name in $env_file"
     
-    # Create file if it doesn't exist
-    touch "$env_file"
+    # Create file if it doesn't exist with proper permissions
+    if [ ! -f "$env_file" ]; then
+        # Create directory if it doesn't exist
+        mkdir -p "$(dirname "$env_file")"
+        
+        # Create file with proper ownership for trailarr user
+        touch "$env_file"
+        
+        # Set proper ownership if we have sudo privileges and trailarr user exists
+        if [ "$EUID" -eq 0 ] && getent passwd trailarr > /dev/null 2>&1; then
+            chown trailarr:trailarr "$env_file"
+            log_to_file "ENV CREATE: Created $env_file with trailarr ownership"
+        elif [ "$EUID" -ne 0 ] && [ -f "$env_file" ]; then
+            # If we're not root but file exists, check if we can write to it
+            if [ ! -w "$env_file" ]; then
+                log_to_file "ENV ERROR: Cannot write to $env_file - permission denied"
+                # Try to fix via sudo if available
+                if command -v sudo > /dev/null 2>&1 && getent passwd trailarr > /dev/null 2>&1; then
+                    sudo chown trailarr:trailarr "$env_file" 2>/dev/null || true
+                    log_to_file "ENV FIX: Attempted to fix ownership of $env_file"
+                fi
+            fi
+        fi
+    fi
+    
+    # Ensure we can write to the file before proceeding
+    if [ ! -w "$env_file" ]; then
+        log_to_file "ENV ERROR: Cannot write to $env_file after creation attempts"
+        return 1
+    fi
     
     # Check if variable already exists with the same value
     if grep -q "^${var_name}=${var_value}$" "$env_file" 2>/dev/null; then
