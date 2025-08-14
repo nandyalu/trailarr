@@ -19,8 +19,8 @@ Sudo User: ${SUDO_USER:-N/A}
 
 EOF
     
-    # Set proper permissions for the log file
-    chmod 644 "$INSTALL_LOG_FILE"
+    # Set proper permissions for the log file (world-writable since multiple users need access)
+    chmod 666 "$INSTALL_LOG_FILE"
     
     # Log environment info
     {
