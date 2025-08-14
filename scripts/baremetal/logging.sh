@@ -136,8 +136,8 @@ end_message() {
     # Log completion to file
     log_to_file "END: $message"
     
+    clear_line
     if $PROGRESS_ACTIVE; then
-        clear_line
         PROGRESS_ACTIVE=false
     fi
     
