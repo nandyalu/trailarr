@@ -146,7 +146,7 @@ copy_application_files() {
 
 # Function to run Python installation
 install_python() {
-    start_message "$BLUE" "Setting up Python 3.13.5..."
+    # start_message "$BLUE" "Setting up Python 3.13.5..."
     
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_python.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_python.sh"
@@ -155,7 +155,7 @@ install_python() {
         exit 1
     fi
 
-    end_message $GREEN "✓ Python 3.13.5 setup complete"
+    # end_message $GREEN "✓ Python 3.13.5 setup complete"
 }
 
 # Function to install Python dependencies
@@ -324,7 +324,7 @@ configure_gpu_user_permissions() {
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    start_message $BLUE "Detecting GPU hardware..."
+    print_message $BLUE "Detecting GPU hardware..."
 
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
@@ -345,7 +345,7 @@ setup_gpu_hardware() {
 
 # Function to install media tools (ffmpeg, yt-dlp)
 install_media_tools() {
-    start_message $BLUE "Installing media processing tools..."
+    print_message $BLUE "Installing media processing tools..."
     
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
@@ -354,7 +354,7 @@ install_media_tools() {
         exit 1
     fi
 
-    end_message $GREEN "✓ Media tools installed"
+    # end_message $GREEN "✓ Media tools installed"
 }
 
 # Function to run interactive configuration
@@ -424,7 +424,7 @@ EOF
     end_message $GREEN "✓ Systemd service created and enabled"
     
     # Start the service
-    start_message $BLUE "Starting Trailarr service..."
+    print_message $BLUE "Starting Trailarr service..."
     if systemctl start trailarr; then
         end_message $GREEN "✓ Trailarr service started successfully"
         

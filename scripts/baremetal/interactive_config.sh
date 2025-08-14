@@ -43,7 +43,7 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    start_message "$BLUE" "Configuring basic application settings..."
+    print_message "$BLUE" "Configuring basic application settings..."
     
     # Monitor interval
     print_message "$BLUE" "Monitor Interval: How often should Trailarr check for new content?"
@@ -127,7 +127,7 @@ configure_gpu_settings() {
     fi
     
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
-        start_message "$BLUE" "Configuring GPU settings..."
+        print_message "$BLUE" "Configuring GPU settings..."
         log_to_file "No supported GPUs detected. Hardware acceleration not enabled."
         export ENABLE_HWACCEL="false"
         export HWACCEL_TYPE="none"
@@ -135,7 +135,7 @@ configure_gpu_settings() {
         return 0
     fi
     
-    start_message "$BLUE" "Configuring GPU hardware acceleration..."
+    print_message "$BLUE" "Configuring GPU hardware acceleration..."
     
     print_message "$BLUE" "Detected GPUs: ${DETECTED_GPUS[*]}"
     echo ""
@@ -252,12 +252,12 @@ PYTHONPATH=/opt/trailarr/backend
 EOF
     
     log_to_file "Configuration written to $CONFIG_FILE"
-    end_message "$GREEN" "✓ Configuration saved"
+    end_message "$GREEN" "✓ Configuration written to $CONFIG_FILEved"
 }
 
 # Function to display configuration summary
 display_summary() {
-    start_message "$BLUE" "Displaying configuration summary..."
+    # print_message "$BLUE" "Displaying configuration summary..."
     
     echo ""
     echo "Configuration Summary:"
@@ -281,20 +281,18 @@ display_summary() {
     echo "  - Access web interface: http://localhost:${APP_PORT}"
     echo ""
     
-    end_message "$GREEN" "✓ Configuration summary displayed"
+    # end_message "$GREEN" "✓ Configuration summary displayed"
 }
 
 # Main function
 main() {
-    start_message "$BLUE" "Starting interactive configuration..."
+    print_message "$BLUE" "Starting interactive configuration..."
     
     # Create install directory if it doesn't exist
     sudo mkdir -p "/opt/trailarr"
     # Create data directory if it doesn't exist
     sudo mkdir -p "$DATA_DIR"
-    
-    end_message "$GREEN" "✓ Interactive configuration setup complete"
-    
+        
     # Prompt for basic configuration
     prompt_basic_config
     
