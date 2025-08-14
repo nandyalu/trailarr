@@ -80,8 +80,8 @@ TEMP_STATUS_LINES=0
 
 # Function to clean the current line using tput
 clear_line() {
-    # tput cr 2>/dev/null || printf "\r"
-    # tput el 2>/dev/null || printf "\033[K"
+    tput cr 2>/dev/null || printf "\r"
+    tput el 2>/dev/null || printf "\033[K"
     # Move cursor up and clear each temp line
     for ((i=0; i<TEMP_STATUS_LINES; i++)); do
         tput cuu1   # Move cursor up one line
@@ -115,10 +115,6 @@ start_message() {
     # Log start to file
     log_to_file "START: $PROGRESS_MSG"
 
-    # Print spinner on same line
-    printf "\r"
-    tput el
-
     # Show initial progress message
     printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[0]}" "$PROGRESS_MSG"
 }
@@ -127,9 +123,6 @@ start_message() {
 update_progress() {
     if $PROGRESS_ACTIVE; then
         PROGRESS_INDEX=$(( (PROGRESS_INDEX + 1) % ${#PROGRESS_CHARS[@]} ))
-        # clear_line
-        printf "\r"
-        tput el
         printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[PROGRESS_INDEX]}" "$PROGRESS_MSG"
     fi
 }
