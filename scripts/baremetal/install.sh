@@ -213,7 +213,7 @@ install_python_deps() {
 
 # Function to add trailarr user to GPU groups for hardware access
 configure_gpu_user_permissions() {
-    print_message $BLUE "→ Configuring GPU permissions for trailarr user"
+    show_temp_status $BLUE "→ Configuring GPU permissions for trailarr user"
 
     # Initialize array of GPU groups to add user to
     local gpu_groups=()
@@ -250,7 +250,7 @@ configure_gpu_user_permissions() {
     
     # Check for specific DRI device groups for detected Intel/AMD GPUs
     if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
-        print_message $BLUE "→ Checking groups for detected Intel/AMD GPU devices"
+        show_temp_status $BLUE "→ Checking groups for detected Intel/AMD GPU devices"
 
         # Check Intel GPU device group if detected
         if [ -n "$GPU_DEVICE_INTEL" ] && [ -e "$GPU_DEVICE_INTEL" ]; then
@@ -260,7 +260,7 @@ configure_gpu_user_permissions() {
                     intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
                 else
                     intel_group_name="gpuintel"
-                    print_message $BLUE "→ Creating group '$intel_group_name' with GID '$intel_gid'"
+                    show_temp_status $BLUE "→ Creating group '$intel_group_name' with GID '$intel_gid'"
                     groupadd -g "$intel_gid" "$intel_group_name"
                 fi
                 
@@ -279,7 +279,7 @@ configure_gpu_user_permissions() {
                     amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
                 else
                     amd_group_name="gpuamd"
-                    print_message $BLUE "→ Creating group '$amd_group_name' with GID '$amd_gid'"
+                    show_temp_status $BLUE "→ Creating group '$amd_group_name' with GID '$amd_gid'"
                     groupadd -g "$amd_gid" "$amd_group_name"
                 fi
                 
@@ -304,13 +304,13 @@ configure_gpu_user_permissions() {
     
     # Add trailarr user to identified GPU groups
     if [ ${#gpu_groups[@]} -gt 0 ]; then
-        print_message $BLUE "→ GPU groups identified for trailarr user:$groups_found"
+        show_temp_status $BLUE "→ GPU groups identified for trailarr user:$groups_found"
 
         for group in "${gpu_groups[@]}"; do
             group_entry=$(getent group "$group")
             if [ -n "$group_entry" ]; then
                 group_name=$(echo "$group_entry" | cut -d: -f1)
-                print_message $BLUE "→ Adding user 'trailarr' to group '$group_name'"
+                show_temp_status $BLUE "→ Adding user 'trailarr' to group '$group_name'"
                 usermod -aG "$group_name" trailarr
             fi
         done
@@ -324,7 +324,7 @@ configure_gpu_user_permissions() {
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    start_message "$BLUE" "Detecting GPU hardware"
+    show_temp_status "$BLUE" "Detecting GPU hardware"
 
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only

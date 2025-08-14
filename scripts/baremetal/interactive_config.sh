@@ -43,23 +43,24 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    start_message "$BLUE" "Configuring basic application settings"
+    print_message "$BLUE" "Configuring basic application settings"
     
     # Monitor interval
-    end_message "$BLUE" "Monitor Interval Configuration"
-    echo ""
-    echo "How often should Trailarr check for new content?"
-    echo "  - Minimum is 10 minutes"
-    echo "  - This determines how frequently the app scans for new movies/shows"
-    echo "  - Shorter intervals = more responsive but higher system load"
-    echo "  - Longer intervals = less system load but slower to detect new content"
-    echo ""
-    echo "Common values:"
-    echo "  - 60 (1 hour, default) [recommended]"
-    echo "  - 120 (2 hours)" 
-    echo "  - 180 (3 hours)"
-    echo "  - 360 (6 hours)"
-    echo ""
+    local monitor_msg="Monitor Interval Configuration\n
+How often should Trailarr check for new content?
+  - Minimum is 10 minutes
+  - This determines how frequently the app scans for new movies/shows
+  - Shorter intervals = more responsive but higher system load
+  - Longer intervals = less system load but slower to detect new content
+
+Common values:
+  - 60 (1 hour, default) [recommended]
+  - 120 (2 hours)
+  - 180 (3 hours)
+  - 360 (6 hours)
+
+"
+    show_temp_status "$BLUE" "$monitor_msg"
     
     while true; do
         read -rp "Enter monitor interval in minutes [$DEFAULT_MONITOR_INTERVAL]: " monitor_interval
@@ -77,14 +78,12 @@ prompt_basic_config() {
     log_to_file "Monitor interval set to $monitor_interval minutes"
     
     # Wait for media
-    echo ""
-    start_message "$BLUE" "Configuring media wait behavior"
-    end_message "$BLUE" "Wait for Media Configuration"
-    echo ""
-    echo "Should Trailarr wait for media files to be available before downloading trailers?"
-    echo "  - true: Wait until movie/show files exist before downloading trailers (recommended)"
-    echo "  - false: Download trailers immediately when items are added to Radarr/Sonarr"
-    echo ""
+    local wait_for_media_msg="Wait for Media Configuration\n
+Should Trailarr wait for media files to be available before downloading trailers?
+  - Yes: Wait until movie/show files exist before downloading trailers (recommended)
+  - No: Download trailers immediately when items are added to Radarr/Sonarr
+"
+    show_temp_status "$BLUE" "$wait_for_media_msg"
     
     while true; do
         read -rp "Wait for media files before downloading trailers? [Y/n]: " wait_choice
@@ -110,10 +109,7 @@ prompt_basic_config() {
     done
     
     # Port configuration
-    echo ""
-    start_message "$BLUE" "Configuring web interface port"
-    end_message "$BLUE" "Port Configuration"
-    echo ""
+    show_temp_status "$BLUE" "Port Configuration"
     while true; do
         read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
@@ -138,7 +134,7 @@ configure_gpu_settings() {
         source "/tmp/gpu_detection_results"
     fi
     
-    start_message "$BLUE" "Configuring GPU settings"
+    print_message "$BLUE" "Configuring GPU settings"
     
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
         log_to_file "No supported GPUs detected. Hardware acceleration not enabled."
@@ -147,14 +143,13 @@ configure_gpu_settings() {
         end_message "$YELLOW" "! No supported GPUs detected - hardware acceleration disabled"
         return 0
     fi
-    
-    end_message "$BLUE" "GPU Hardware Acceleration Configuration"
-    echo ""
-    echo "Detected GPUs: ${DETECTED_GPUS[*]}"
-    echo ""
-    echo "Hardware acceleration can significantly improve video processing performance"
-    echo "but may require additional system setup and drivers."
-    echo ""
+
+    local gpu_selection_msg="GPU Hardware Acceleration Configuration\n
+Detected GPUs: ${DETECTED_GPUS[*]}\n
+Hardware acceleration can significantly improve video processing performance
+but may require additional system setup and drivers.
+"
+    show_temp_status "$BLUE" "$gpu_selection_msg"
     
     # Ask if user wants to enable hardware acceleration
     while true; do
@@ -182,18 +177,15 @@ configure_gpu_settings() {
     
     # If multiple GPUs are available, ask user to choose
     if [ ${#AVAILABLE_GPUS[@]} -gt 1 ]; then
-        echo ""
-        start_message "$BLUE" "Selecting GPU for hardware acceleration"
-        end_message "$BLUE" "GPU Selection"
-        echo ""
-        echo "Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration."
-        echo "Please select which GPU to use:"
-        echo ""
-        
+        local gpu_selection_choice_msg="GPU Selection:\n
+Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration.
+Please select which GPU to use:
+"
+
         for i in "${!AVAILABLE_GPUS[@]}"; do
-            echo "  $((i+1)). ${DETECTED_GPUS[$i]}"
+            gpu_selection_choice_msg="${gpu_selection_choice_msg}\n  $((i+1)). ${DETECTED_GPUS[$i]}"
         done
-        echo ""
+        show_temp_status "$BLUE" "$gpu_selection_choice_msg"
         
         while true; do
             read -rp "Select GPU (1-${#AVAILABLE_GPUS[@]}): " gpu_choice
@@ -217,10 +209,7 @@ configure_gpu_settings() {
     
     # Provide driver installation instructions based on detected GPUs
     if [ "$ENABLE_HWACCEL" = "true" ]; then
-        echo ""
-        start_message "$BLUE" "Showing hardware acceleration setup instructions"
-        end_message "$BLUE" "Hardware Acceleration Setup Instructions"
-        echo ""
+        show_temp_status "$BLUE" "Hardware Acceleration Setup Instructions"
         case "$HWACCEL_TYPE" in
             "nvidia")
                 echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"

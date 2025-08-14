@@ -44,7 +44,7 @@ PYTHON_BIN="$PYTHON_DIR/bin/python3"
 
 # Function to check if system Python 3.13.5 is available
 check_system_python() {
-    print_message "$BLUE" "Checking for system Python $PYTHON_VERSION..."
+    show_temp_status "$BLUE" "Checking for system Python $PYTHON_VERSION..."
     log_to_file "Starting system Python check for version $PYTHON_VERSION"
     
     # List of python commands to check
@@ -55,7 +55,7 @@ check_system_python() {
             log_to_file "Found $CMD with version $SYSTEM_PYTHON_VERSION"
             # Compare major.minor.patch
             if [ "$SYSTEM_PYTHON_VERSION" = "$PYTHON_VERSION" ]; then
-                print_message "$GREEN" "✓ Found system Python $PYTHON_VERSION at $(which $CMD)"
+                show_temp_status "$GREEN" "✓ Found system Python $PYTHON_VERSION at $(which $CMD)"
                 export PYTHON_EXECUTABLE="$(which $CMD)"
                 log_to_file "Using system Python: $PYTHON_EXECUTABLE"
                 return 0
@@ -63,7 +63,7 @@ check_system_python() {
                 # Check if version is greater than required
                 # Use sort -V for version comparison
                 if printf '%s\n%s\n' "$PYTHON_VERSION" "$SYSTEM_PYTHON_VERSION" | sort -V -C; then
-                    print_message "$GREEN" "✓ Found system Python $SYSTEM_PYTHON_VERSION (>= $PYTHON_VERSION) at $(which $CMD)"
+                    show_temp_status "$GREEN" "✓ Found system Python $SYSTEM_PYTHON_VERSION (>= $PYTHON_VERSION) at $(which $CMD)"
                     export PYTHON_EXECUTABLE="$(which $CMD)"
                     log_to_file "Using newer system Python: $PYTHON_EXECUTABLE"
                     return 0
@@ -73,7 +73,7 @@ check_system_python() {
             fi
         fi
     done
-    print_message "$YELLOW" "System Python $PYTHON_VERSION or newer not found, will install locally"
+    show_temp_status "$YELLOW" "System Python $PYTHON_VERSION or newer not found, will install locally"
     log_to_file "No suitable system Python found, proceeding with local installation"
     return 1
 }
@@ -169,7 +169,7 @@ ensure_pip() {
 
 # Main function
 main() {
-    print_message "$BLUE" "Python $PYTHON_VERSION Installation Check"
+    show_temp_status "$BLUE" "Python $PYTHON_VERSION Installation Check"
     log_to_file "========== Python Installation Process Started =========="
     
     # Check if we already have the right Python version
@@ -188,9 +188,9 @@ main() {
     # Ensure pip is available
     ensure_pip
     
-    print_message "$GREEN" "Python setup complete!"
     print_message "$GREEN" "→ Python executable: $PYTHON_EXECUTABLE"
     print_message "$GREEN" "→ Python version: $($PYTHON_EXECUTABLE --version)"
+    print_message "$GREEN" "✓ Python setup complete!"
     
     log_to_file "Python setup completed successfully"
     log_to_file "Final Python executable: $PYTHON_EXECUTABLE"
