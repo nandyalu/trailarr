@@ -40,22 +40,6 @@ display_startup_banner() {
     box_echo "--------------------------------------------------------------------------"
 }
 
-# Configure timezone (adapted from container scripts)
-configure_timezone() {
-    box_echo "Current date time: $(date)"
-    box_echo "Setting TimeZone to ${TZ}"
-    
-    # Try to set timezone (may not work without sudo)
-    if command -v timedatectl &> /dev/null; then
-        timedatectl set-timezone "${TZ}" 2>/dev/null || box_echo "Warning: Could not set timezone (may require root privileges)"
-    else
-        box_echo "Warning: timedatectl not available, timezone not changed"
-    fi
-    
-    box_echo "Current date time after update: $(date)"
-    box_echo "--------------------------------------------------------------------------"
-}
-
 # Setup directories (adapted from container scripts)
 setup_directories() {
     box_echo "Creating required directories"
@@ -160,7 +144,6 @@ load_gpu_status() {
 # Main pre-start function
 main() {
     display_startup_banner
-    configure_timezone
     setup_directories
     load_environment
     update_ytdlp

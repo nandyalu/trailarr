@@ -53,9 +53,9 @@ prompt_basic_config() {
     echo "  - Longer intervals = less system load but slower to detect new content"
     echo ""
     echo "Common values:"
-    echo "  - 60 (1 hour, default)"
+    echo "  - 60 (1 hour, default) [recommended]"
     echo "  - 120 (2 hours)" 
-    echo "  - 180 (3 hours) [recommended]"
+    echo "  - 180 (3 hours)"
     echo "  - 360 (6 hours)"
     echo ""
     
