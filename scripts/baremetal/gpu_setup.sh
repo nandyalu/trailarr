@@ -263,17 +263,19 @@ main() {
     
     # Summary
     if [ ${#DETECTED_GPUS[@]} -eq 0 ]; then
-        print_message "$YELLOW" "No supported GPUs detected. Hardware acceleration will not be available."
-        print_message "$YELLOW" "The application will run using software encoding/decoding."
+        echo " "
+        print_message "$YELLOW" "No supported GPUs detected. Hardware acceleration will not be available.
+The application will run using software encoding/decoding."
         log_to_file "No GPUs detected - software encoding will be used"
     else
+        echo " "
         print_message "$GREEN" "Summary: Detected GPUs: ${DETECTED_GPUS[*]}"
         log_to_file "GPU detection summary: ${DETECTED_GPUS[*]}"
         
         if [ ${#DETECTED_GPUS[@]} -gt 0 ]; then
-            print_message "$BLUE" ""
-            print_message "$BLUE" "Note: If you plan to use hardware acceleration, ensure all necessary"
-            print_message "$BLUE" "drivers and tools are installed as shown above, then restart the app."
+            echo " "
+            print_message "$BLUE" "Note: If you plan to use hardware acceleration, ensure all necessary
+drivers and tools are installed as shown above, then restart the app."
         fi
     fi
     
