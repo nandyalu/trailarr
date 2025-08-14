@@ -13,6 +13,7 @@ LOG_DIR="/var/log/trailarr"
 # Script directory (current directory where install.sh is located)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BAREMETAL_SCRIPTS_DIR="$SCRIPT_DIR"
+TRAILARR_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Source logging functions
 source "$SCRIPT_DIR/logging.sh"
@@ -117,87 +118,24 @@ create_user_and_dirs() {
     end_message $GREEN "✓ Directories created and configured"
 }
 
-download_latest_release() {
-    if [ ! -d "$INSTALL_DIR/trailarr" ]; then
-        print_message "$BLUE" "Trailarr source code not found."
-        start_message "$BLUE" "Downloading latest release"
-
-        # Get the latest release info from GitHub API with logging
-        log_to_file "Fetching latest release information from GitHub API"
-        local release_json
-        if ! release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest); then
-            end_message $RED "✗ Failed to fetch release information from GitHub"
-            exit 1
-        fi
-
-        # Extract tag_name for version
-        APP_VERSION=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
-        export APP_VERSION
-        log_to_file "Latest version detected: $APP_VERSION"
-
-        # Initialize .env file
-        touch "$INSTALL_DIR/.env"
-        update_env_var "APP_VERSION" "$APP_VERSION" "$INSTALL_DIR/.env"
-
-        # Extract the source code zip URL
-        src_archive_url=$(echo "$release_json" | grep "zipball_url" | grep "zip" | head -n1 | cut -d '"' -f4)
-
-        # Fallback to tar.gz if zip not found
-        if [ -z "$src_archive_url" ]; then
-            src_archive_url=$(echo "$release_json" | grep "tarball_url" | grep "tar.gz" | head -n1 | cut -d '"' -f4)
-            archive_type="tar.gz"
-            unpacker="tar -xzf"
-        else
-            archive_type="zip"
-            unpacker="unzip -o"
-        fi
-
-        log_to_file "Downloading source archive: $src_archive_url"
-
-        # Download and extract with proper logging
-        if ! run_logged_command "Download Trailarr source" "curl -L -o \"$INSTALL_DIR/trailarr-source.$archive_type\" \"$src_archive_url\""; then
-            end_message $RED "✗ Failed to download Trailarr source code"
-            exit 1
-        fi
-
-        # Extract the downloaded archive with logging
-        if ! run_logged_command "Extract Trailarr source" "$unpacker \"$INSTALL_DIR/trailarr-source.$archive_type\" -d \"$INSTALL_DIR/tmp-unpack\""; then
-            end_message $RED "✗ Failed to extract Trailarr source code archive"
-            exit 1
-        fi
-
-        # Find the extracted folder (should be the only directory inside tmp-unpack)
-        extracted_dir=$(find "$INSTALL_DIR/tmp-unpack" -mindepth 1 -maxdepth 1 -type d | head -n1)
-        log_to_file "Extracted directory: $extracted_dir"
-
-        # Remove any existing target directory
-        rm -rf "$INSTALL_DIR/trailarr"
-
-        # Move/rename the extracted folder
-        mv "$extracted_dir" "$INSTALL_DIR/trailarr"
-
-        # Clean up temp files
-        rm -rf "$INSTALL_DIR/tmp-unpack"
-        rm "$INSTALL_DIR/trailarr-source.$archive_type"
-        
-        print_message $BLUE "→ Version: $APP_VERSION"
-        SCRIPT_DIR="$INSTALL_DIR/trailarr/scripts/"
-        end_message $GREEN "✓ Trailarr source code downloaded and extracted"
-    fi
-}
-
 # Function to copy application files
 copy_application_files() {
     start_message "$BLUE" "Copying application files..."
 
-    # Copy source code
-    cp -r "$SCRIPT_DIR/../../backend" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../frontend-build" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../assets" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../scripts" "$INSTALL_DIR/"
+    # Check if source directories exist before copying
+    for dir in backend frontend-build assets scripts; do
+        if [ ! -d "${TRAILARR_DIR}/$dir" ]; then
+            end_message $RED "✗ Source directory ${TRAILARR_DIR}/$dir does not exist"
+            end_message $RED "✗ Try running the install script again from project root!"
+            exit 1
+        fi
+    done
 
-    # Copy configuration files
-    cp "$SCRIPT_DIR/../../backend/requirements.txt" "$INSTALL_DIR/" 2>/dev/null || true
+    # Copy source code
+    cp -r "${TRAILARR_DIR}/backend" "$INSTALL_DIR/"
+    cp -r "${TRAILARR_DIR}/frontend-build" "$INSTALL_DIR/"
+    cp -r "${TRAILARR_DIR}/assets" "$INSTALL_DIR/"
+    cp -r "${TRAILARR_DIR}/scripts" "$INSTALL_DIR/"
 
     # Set ownership
     chown -R trailarr:trailarr "$INSTALL_DIR"
@@ -550,7 +488,6 @@ main() {
     # Installation steps
     install_system_deps
     create_user_and_dirs
-    download_latest_release
     copy_application_files
     install_python
     install_python_deps
