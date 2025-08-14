@@ -174,7 +174,7 @@ main() {
     
     # Check if we already have the right Python version
     if check_system_python; then
-        print_message "$GREEN" "Using system Python installation"
+        print_message "$GREEN" "✓ Using system Python installation"
         log_to_file "Using system Python: $PYTHON_EXECUTABLE"
     else
         # Install Python locally
@@ -184,12 +184,12 @@ main() {
             return 1
         fi
     fi
+    print_message "$GREEN" "→ Python executable: $PYTHON_EXECUTABLE"
+    print_message "$GREEN" "→ Python version: $($PYTHON_EXECUTABLE --version)"
     
     # Ensure pip is available
     ensure_pip
     
-    print_message "$GREEN" "→ Python executable: $PYTHON_EXECUTABLE"
-    print_message "$GREEN" "→ Python version: $($PYTHON_EXECUTABLE --version)"
     print_message "$GREEN" "✓ Python setup complete!"
     
     log_to_file "Python setup completed successfully"
