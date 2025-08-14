@@ -43,7 +43,7 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    print_message "$BLUE" "Configuring basic application settings"
+    print_message "$BLUE" "=> Configuring basic application settings"
     
     # Monitor interval
     local monitor_msg="Monitor Interval Configuration\n
@@ -109,7 +109,14 @@ Should Trailarr wait for media files to be available before downloading trailers
     done
     
     # Port configuration
-    # show_temp_status "$BLUE" "Port Configuration"
+    show_temp_status "$BLUE" "Port Configuration
+    Default is 7889
+- You can change it to a different port as needed
+- Make sure the port is not being used by another program.
+    # To check if port is in use, run below commands
+    sudo netstat -tlnp | grep :7889
+    sudo lsof -i :7889
+"
     while true; do
         read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
@@ -133,9 +140,9 @@ configure_gpu_settings() {
     if [ -f "/tmp/gpu_detection_results" ]; then
         source "/tmp/gpu_detection_results"
     fi
-    
-    print_message "$BLUE" "Configuring GPU settings"
-    
+
+    print_message "$BLUE" "=> Configuring GPU settings"
+
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
         log_to_file "No supported GPUs detected. Hardware acceleration not enabled."
         export ENABLE_HWACCEL="false"
@@ -297,17 +304,14 @@ display_summary() {
 
 # Main function
 main() {
-    start_message "$BLUE" "Starting interactive configuration"
+    # start_message "$BLUE" "Starting interactive configuration"
     
     # Create install directory if it doesn't exist
     sudo mkdir -p "/opt/trailarr"
     # Create data directory if it doesn't exist
     sudo mkdir -p "$DATA_DIR"
     
-    end_message "$BLUE" "Interactive Configuration Setup"
-    echo ""
-    echo "Starting interactive configuration for Trailarr..."
-    echo ""
+    show_status "$BLUE" "=> Configuration Setup"
         
     # Prompt for basic configuration
     prompt_basic_config

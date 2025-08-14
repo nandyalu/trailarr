@@ -94,11 +94,11 @@ clear_line() {
 print_message() {
     local color=$1
     local message=$2
-    
+    clear_line
     # Clear any active progress display
-    if $PROGRESS_ACTIVE; then
-        clear_line
-    fi
+    # if $PROGRESS_ACTIVE; then
+    #     clear_line
+    # fi
     
     # Print the message
     printf "${color}%s${NC}\n" "$message"
