@@ -397,11 +397,11 @@ setup_gpu_hardware() {
         
         # Configure GPU user permissions after detection
         configure_gpu_user_permissions
+        
+        end_message $GREEN "✓ GPU hardware detection complete"
     else
         end_message $YELLOW "→ GPU setup script not found, skipping GPU configuration"
     fi
-
-    end_message $GREEN "✓ GPU hardware detection complete"
 }
 
 # Function to install media tools (ffmpeg, yt-dlp)
@@ -420,11 +420,10 @@ install_media_tools() {
 
 # Function to run interactive configuration
 run_interactive_config() {
-    print_message $BLUE "Starting interactive configuration..."
-    
     if [ -f "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh" ]; then
         bash "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh"
     else
+        start_message "$BLUE" "Setting up default configuration..."
         print_message $YELLOW "→ Interactive config script not found, using defaults"
         # Create basic .env file with proper variable handling
         update_env_var "APP_PORT" "7889" "$DATA_DIR/.env"
@@ -437,9 +436,8 @@ run_interactive_config() {
         update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
         
         chown trailarr:trailarr "$DATA_DIR/.env"
+        end_message $GREEN "✓ Default configuration applied"
     fi
-    
-    print_message $GREEN "✓ Configuration complete"
 }
 
 # Function to create and start systemd service

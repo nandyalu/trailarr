@@ -211,7 +211,6 @@ EOF
 
 # Main function
 main() {
-    print_message "$BLUE" "Installing media processing tools..."
     log_to_file "========== Media Tools Installation Started =========="
     
     # Install ffmpeg locally
