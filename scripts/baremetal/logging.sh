@@ -80,7 +80,6 @@ TEMP_STATUS_LINES=0
 
 # Function to clean the current line using tput
 clear_line() {
-    sleep 1
     tput cr 2>/dev/null || printf "\r"
     tput el 2>/dev/null || printf "\033[K"
     # Move cursor up and clear each temp line
@@ -103,7 +102,6 @@ print_message() {
     
     # Print the message
     printf "${color}%s${NC}\n" "$message"
-    echo ""
     log_to_file "INFO: $message"
 }
 
@@ -118,7 +116,6 @@ start_message() {
     log_to_file "START: $PROGRESS_MSG"
 
     # Show initial progress message
-    echo ""
     printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[0]}" "$PROGRESS_MSG"
 }
 
@@ -127,7 +124,6 @@ update_progress() {
     if $PROGRESS_ACTIVE; then
         PROGRESS_INDEX=$(( (PROGRESS_INDEX + 1) % ${#PROGRESS_CHARS[@]} ))
         clear_line
-        echo ""
         printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[PROGRESS_INDEX]}" "$PROGRESS_MSG"
     fi
 }
@@ -156,7 +152,11 @@ show_temp_status() {
     local message="$2"
     
     clear_line
-    printf "${color}%s${NC}" "$message"
+    # printf "${color}%s${NC}" "====> $message"
+    # Prepend "===> " to each line and print
+    while IFS= read -r line; do
+        printf "${color}===> %s${NC}\n" "$line"
+    done <<< "$(echo -e "$message")"
     log_to_file "TEMP: $message"
     # Count lines in message
     TEMP_STATUS_LINES=$(echo -e "$message" | wc -l)
