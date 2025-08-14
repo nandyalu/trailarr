@@ -123,6 +123,7 @@ start_message() {
 update_progress() {
     if $PROGRESS_ACTIVE; then
         PROGRESS_INDEX=$(( (PROGRESS_INDEX + 1) % ${#PROGRESS_CHARS[@]} ))
+        clear_line
         printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[PROGRESS_INDEX]}" "$PROGRESS_MSG"
     fi
 }
