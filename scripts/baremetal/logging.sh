@@ -91,7 +91,7 @@ trap cleanup_spinner EXIT INT TERM
 print_message() {
     local color=$1
     local message=$2
-    local pad_length=$((80 - $(#message)))
+    local pad_length=$((80 - ${#message}))
     local padding=""
     if (( pad_length > 0 )); then
         padding=$(printf '%*s' "$pad_length" "")
