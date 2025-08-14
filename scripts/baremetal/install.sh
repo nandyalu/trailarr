@@ -34,8 +34,8 @@ display_banner() {
 
 EOF
     print_message $GREEN "Trailarr Version: $TRAILARR_VERSION"
-    print_message $BLUE "Installing Trailarr directly on your system for maximum performance"
-    print_message $BLUE "with native GPU hardware acceleration support"
+    print_message $BLUE "Installing Trailarr directly on your system for maximum performance
+with native GPU hardware acceleration support"
     echo ""
 }
 
@@ -324,7 +324,7 @@ configure_gpu_user_permissions() {
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    print_message "$BLUE" "=> Detecting GPU hardware"
+    # print_message "$BLUE" "=> Detecting GPU hardware"
 
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
@@ -336,8 +336,8 @@ setup_gpu_hardware() {
         
         # Configure GPU user permissions after detection
         configure_gpu_user_permissions
-        
-        end_message $GREEN "✓ GPU hardware detection complete"
+
+        end_message $GREEN "✓ GPU hardware detection and setup complete"
     else
         end_message $YELLOW "→ GPU setup script not found, skipping GPU configuration"
     fi
@@ -497,7 +497,7 @@ main() {
     install_python
     print_message "$BLUE" "=> Installing Python Dependencies"
     install_python_deps
-    print_message "$BLUE" "=> Setting Up GPU Hardware"
+    print_message "$BLUE" "=> GPU Hardware Detection and Setup"
     setup_gpu_hardware
     print_message "$BLUE" "=> Installing Media Tools"
     install_media_tools
