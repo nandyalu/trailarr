@@ -104,6 +104,7 @@ download_latest_release() {
     # Extract tag_name for version
     local app_version=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
     print_message "$GREEN" "→ Latest version: $app_version"
+    export TRAILARR_VERSION="$app_version"
     
     # Extract the source code zip URL
     local src_archive_url=$(echo "$release_json" | grep "zipball_url" | head -n1 | cut -d '"' -f4)

@@ -33,6 +33,7 @@ display_banner() {
                     Bare Metal Installation Script
 
 EOF
+    print_message $GREEN "Trailarr Version: $TRAILARR_VERSION"
     print_message $BLUE "Installing Trailarr directly on your system for maximum performance"
     print_message $BLUE "with native GPU hardware acceleration support"
     echo ""
