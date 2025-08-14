@@ -11,7 +11,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
     source "$SCRIPT_DIR/logging.sh"
     # If we're in a sub-script, we need to reuse the existing log file
     if [ -z "$INSTALL_LOG_FILE" ]; then
-        INSTALL_LOG_FILE="$(pwd)/trailarr_install.log"
+        INSTALL_LOG_FILE="/tmp/trailarr_install.log"
         export INSTALL_LOG_FILE
     fi
 else
