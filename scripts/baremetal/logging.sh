@@ -2,6 +2,7 @@
 
 # Common logging functions for Trailarr bare metal installation
 # Provides both terminal output (user-friendly) and file logging (verbose)
+# Uses tput for better terminal control and clean message display
 
 # Initialize logging - call this first in the main script
 init_logging() {
@@ -32,6 +33,10 @@ EOF
     } >> "$INSTALL_LOG_FILE"
     
     export INSTALL_LOG_FILE
+    
+    # Initialize tput capabilities
+    TERM_COLS=$(tput cols 2>/dev/null || echo 80)
+    export TERM_COLS
 }
 
 # Function to write to log file only
@@ -63,65 +68,58 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Spinner state
-SPINNER=( '-' '\' '|' '/' )
-SPINNER_PID=0
-SPINNER_MSG=""
-SPINNER_COLOR=""
-SPINNER_ACTIVE=false
+# Progress state
+PROGRESS_ACTIVE=false
+PROGRESS_MSG=""
+PROGRESS_COLOR=""
+PROGRESS_CHARS=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
+PROGRESS_INDEX=0
 
-# Cleanup function to kill spinner on exit or interrupt
-cleanup_spinner() {
-    if $SPINNER_ACTIVE && [[ $SPINNER_PID -ne 0 ]]; then
-        # Check if process is running before kill/wait
-        if kill -0 "$SPINNER_PID" 2>/dev/null; then
-            kill "$SPINNER_PID" 2>/dev/null
-            # Wait for spinner to exit, but don't hang if already dead
-            timeout 2s wait "$SPINNER_PID" 2>/dev/null || true
-        fi
-        SPINNER_PID=0
-        SPINNER_ACTIVE=false
-    fi
+# Function to clean the current line using tput
+clear_line() {
+    tput cr 2>/dev/null || printf "\r"
+    tput el 2>/dev/null || printf "\033[K"
 }
-
-# Trap signals to ensure spinner is cleaned up
-trap cleanup_spinner EXIT INT TERM
 
 # Function to print colored output to terminal and log to file
 print_message() {
     local color=$1
     local message=$2
-    local pad_length=$((80 - ${#message}))
-    local padding=""
-    if (( pad_length > 0 )); then
-        padding=$(printf '%*s' "$pad_length" "")
+    
+    # Clear any active progress display
+    if $PROGRESS_ACTIVE; then
+        clear_line
     fi
-    echo -e "${color}${message}${padding}${NC}"
+    
+    # Print the message
+    printf "${color}%s${NC}\n" "$message"
     log_to_file "INFO: $message"
 }
 
-# Function to show start message with spinner (user sees spinner, file gets detailed log)
+# Function to show start message with progress animation
 start_message() {
-    SPINNER_COLOR="$1"
-    SPINNER_MSG="$2"
-    SPINNER_ACTIVE=true
+    PROGRESS_COLOR="$1"
+    PROGRESS_MSG="$2"
+    PROGRESS_ACTIVE=true
+    PROGRESS_INDEX=0
     
     # Log start to file
-    log_to_file "START: $SPINNER_MSG"
+    log_to_file "START: $PROGRESS_MSG"
     
-    # Start spinner for user
-    (
-        i=0
-        while true; do
-            printf "\r${SPINNER_COLOR}${SPINNER[i]} $SPINNER_MSG${NC}   "
-            i=$(( (i + 1) % 4 ))
-            sleep 0.2
-        done
-    ) &
-    SPINNER_PID=$!
+    # Show initial progress message
+    printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[0]}" "$PROGRESS_MSG"
 }
 
-# Function to stop spinner and show end message
+# Function to update progress animation (call this in loops for long operations)
+update_progress() {
+    if $PROGRESS_ACTIVE; then
+        PROGRESS_INDEX=$(( (PROGRESS_INDEX + 1) % ${#PROGRESS_CHARS[@]} ))
+        clear_line
+        printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[PROGRESS_INDEX]}" "$PROGRESS_MSG"
+    fi
+}
+
+# Function to stop progress and show end message
 end_message() {
     local color_code="$1"
     local message="$2"
@@ -129,23 +127,36 @@ end_message() {
     # Log completion to file
     log_to_file "END: $message"
     
-    if $SPINNER_ACTIVE; then
-        cleanup_spinner
-        # Pad with spaces to overwrite longer spinner line
-        local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 10 ))
-        local padding=""
-        if (( pad_length > 0 )); then
-            padding=$(printf '%*s' "$pad_length" "")
-        fi
-        printf "\r${color_code}$message${NC}${padding}\n"
-    else
-        # No spinner was started, just print the message
-        printf "${color_code}$message${NC}\n"
+    if $PROGRESS_ACTIVE; then
+        clear_line
+        PROGRESS_ACTIVE=false
     fi
-    echo ""
+    
+    # Print the final message
+    printf "${color_code}%s${NC}\n" "$message"
 }
 
-# Function to run a command with output logging (user sees minimal output, file gets all output)
+# Function to show temporary status that will be replaced
+show_temp_status() {
+    local color="$1"
+    local message="$2"
+    
+    clear_line
+    printf "${color}%s${NC}" "$message"
+    log_to_file "TEMP: $message"
+}
+
+# Function to show permanent status (like end_message but without clearing progress)
+show_status() {
+    local color="$1"
+    local message="$2"
+    
+    clear_line
+    printf "${color}%s${NC}\n" "$message"
+    log_to_file "STATUS: $message"
+}
+
+# Function to run a command with output logging and progress animation
 run_logged_command() {
     local description="$1"
     local command="$2"
@@ -153,6 +164,67 @@ run_logged_command() {
     local error_msg="$4"
     
     log_to_file "COMMAND START: $description - Running: $command"
+    
+    # Start progress animation if not already active
+    local was_active=$PROGRESS_ACTIVE
+    if ! $PROGRESS_ACTIVE; then
+        start_message "$BLUE" "$description"
+    fi
+    
+    # Run command and capture output
+    local output
+    local exit_code
+    local temp_output="/tmp/cmd_output_$$"
+    
+    # Run command in background and capture output
+    (eval "$command" > "$temp_output" 2>&1) &
+    local cmd_pid=$!
+    
+    # Update progress while command runs
+    while kill -0 $cmd_pid 2>/dev/null; do
+        if $PROGRESS_ACTIVE; then
+            update_progress
+        fi
+        sleep 0.1
+    done
+    
+    # Wait for command to complete and get exit code
+    wait $cmd_pid
+    exit_code=$?
+    
+    # Read the output
+    if [ -f "$temp_output" ]; then
+        output=$(cat "$temp_output")
+        rm -f "$temp_output"
+    fi
+    
+    # Log the full output
+    log_command_output "$command" "$output"
+    
+    if [ $exit_code -eq 0 ]; then
+        log_to_file "COMMAND SUCCESS: $description"
+        if ! $was_active; then
+            end_message "$GREEN" "✓ $description completed"
+        fi
+        return 0
+    else
+        log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
+        if ! $was_active; then
+            end_message "$RED" "✗ $description failed"
+        fi
+        return $exit_code
+    fi
+}
+
+# Function to run a simple command with just progress indication
+run_command_with_progress() {
+    local description="$1"
+    local command="$2"
+    
+    log_to_file "COMMAND START: $description - Running: $command"
+    
+    # Show progress
+    start_message "$BLUE" "$description"
     
     # Run command and capture output
     local output
@@ -165,9 +237,11 @@ run_logged_command() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND SUCCESS: $description"
+        end_message "$GREEN" "✓ $description"
         return 0
     else
         log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
+        end_message "$RED" "✗ $description failed"
         return $exit_code
     fi
 }

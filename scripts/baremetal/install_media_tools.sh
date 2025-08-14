@@ -39,7 +39,6 @@ BIN_DIR="$INSTALL_DIR/bin"
 
 # Function to install ffmpeg locally (adapted from container script)
 install_ffmpeg_local() {
-    start_message "$BLUE" "Installing ffmpeg..."
     log_to_file "Starting ffmpeg installation to $BIN_DIR"
     
     # Create bin directory
@@ -111,16 +110,15 @@ install_ffmpeg_local() {
     if [ -f "$BIN_DIR/ffmpeg" ]; then
         FFMPEG_VERSION=$("$BIN_DIR/ffmpeg" -version 2>&1 | head -n 1 | cut -d' ' -f3)
         log_to_file "ffmpeg installation verified: version $FFMPEG_VERSION"
-        end_message "$GREEN" "✓ Successfully installed ffmpeg $FFMPEG_VERSION"
+        show_temp_status "$GREEN" "✓ Successfully installed ffmpeg $FFMPEG_VERSION"
     else
-        end_message "$RED" "✗ ffmpeg installation verification failed"
+        log_to_file "ERROR: ffmpeg installation verification failed"
         return 1
     fi
 }
 
 # Function to verify yt-dlp installation (installed via pip)
 verify_ytdlp_pip() {
-    start_message "$BLUE" "Verifying yt-dlp installation..."
     log_to_file "Checking yt-dlp in virtual environment"
     
     # yt-dlp is installed via pip in the virtual environment during Python dependencies installation
@@ -131,19 +129,17 @@ verify_ytdlp_pip() {
         if "$VENV_YTDLP" --version &> /dev/null; then
             YTDLP_VERSION=$("$VENV_YTDLP" --version)
             log_to_file "yt-dlp verified: version $YTDLP_VERSION"
-            end_message "$GREEN" "✓ yt-dlp verified (version $YTDLP_VERSION)"
+            show_temp_status "$GREEN" "✓ yt-dlp verified (version $YTDLP_VERSION)"
             return 0
         fi
     fi
     
-    end_message "$RED" "✗ yt-dlp not found in virtual environment"
     log_to_file "ERROR: yt-dlp not found at $VENV_YTDLP"
     return 1
 }
 
 # Function to set up environment variables
 setup_environment() {
-    start_message "$BLUE" "Setting up environment variables..."
     log_to_file "Configuring environment variables for media tools"
     
     # Create .env file in data directory, not install directory
@@ -160,12 +156,11 @@ setup_environment() {
     update_env_var "YTDLP_PATH" "$INSTALL_DIR/venv/bin/yt-dlp" "$ENV_FILE"
     
     log_to_file "Environment variables configured in $ENV_FILE"
-    end_message "$GREEN" "✓ Environment variables configured"
+    show_temp_status "$GREEN" "✓ Environment variables configured"
 }
 
 # Function to create update script for yt-dlp (pip version)
 create_update_script() {
-    start_message "$BLUE" "Creating yt-dlp update script..."
     log_to_file "Creating update script for yt-dlp"
     
     mkdir -p "$INSTALL_DIR/scripts"
@@ -206,7 +201,7 @@ EOF
     
     chmod +x "$INSTALL_DIR/scripts/update_ytdlp_local.sh"
     log_to_file "Created yt-dlp update script at $INSTALL_DIR/scripts/update_ytdlp_local.sh"
-    end_message "$GREEN" "✓ Created yt-dlp update script"
+    show_temp_status "$GREEN" "✓ Created yt-dlp update script"
 }
 
 # Main function
@@ -215,14 +210,14 @@ main() {
     
     # Install ffmpeg locally
     if ! install_ffmpeg_local; then
-        print_message "$YELLOW" "Warning: ffmpeg installation failed"
         log_to_file "WARNING: ffmpeg installation failed but continuing"
+        return 1
     fi
     
     # Verify yt-dlp installation (installed via pip)
     if ! verify_ytdlp_pip; then
-        print_message "$YELLOW" "Warning: yt-dlp not properly installed via pip"
         log_to_file "WARNING: yt-dlp verification failed"
+        return 1
     fi
     
     # Set up environment variables
@@ -231,12 +226,7 @@ main() {
     # Create update script
     create_update_script
     
-    print_message "$GREEN" "✓ Media tools installation complete"
-    print_message "$BLUE" "Installed tools:"
-    print_message "$BLUE" "  → ffmpeg: $BIN_DIR/ffmpeg"
-    print_message "$BLUE" "  → ffprobe: $BIN_DIR/ffprobe"
-    print_message "$BLUE" "  → yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
-    
+    # Final summary for log file only
     log_to_file "Media tools installation completed successfully"
     log_to_file "ffmpeg: $BIN_DIR/ffmpeg"
     log_to_file "ffprobe: $BIN_DIR/ffprobe"

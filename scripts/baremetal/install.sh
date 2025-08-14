@@ -324,7 +324,7 @@ configure_gpu_user_permissions() {
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    print_message $BLUE "Detecting GPU hardware..."
+    start_message "$BLUE" "Detecting GPU hardware"
 
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
@@ -345,16 +345,15 @@ setup_gpu_hardware() {
 
 # Function to install media tools (ffmpeg, yt-dlp)
 install_media_tools() {
-    print_message $BLUE "Installing media processing tools..."
+    start_message $BLUE "Installing media processing tools"
     
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
+        end_message $GREEN "✓ Media tools installed"
     else
         end_message $RED "✗ Media tools installation script not found"
         exit 1
     fi
-
-    # end_message $GREEN "✓ Media tools installed"
 }
 
 # Function to run interactive configuration

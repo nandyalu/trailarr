@@ -39,7 +39,6 @@ AVAILABLE_GPUS=()
 
 # Function to detect and map GPU devices dynamically (adapted from container script)
 detect_gpu_devices() {
-    print_message "$BLUE" "Detecting available GPU devices..."
     log_to_file "Starting GPU device detection"
     
     # Initialize device mappings
