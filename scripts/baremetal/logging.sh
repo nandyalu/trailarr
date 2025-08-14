@@ -103,6 +103,7 @@ print_message() {
     # Print the message
     echo " "
     printf "${color}%s${NC}\n" "$message"
+    echo " "
     log_to_file "INFO: $message"
 }
 
