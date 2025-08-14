@@ -112,13 +112,13 @@ tail -f /var/lib/trailarr/logs/app.log
 
 Most of the options can be changed from the web UI after installation.
 
-!!! warning
-   `APP_DATA_DIR` cannot be changed as installer depends on that!
+!!! warning ""
+    `APP_DATA_DIR` cannot be changed as installer depends on that!
 
 Main Configuration File is located in `/var/lib/trailarr/.env` if you want to modify later.
 
-!!! note 
-   Restart Trailarr service after configuration change.
+!!! note ""
+    Restart Trailarr service after configuration change.
 
 ## Maintenance
 
