@@ -324,7 +324,7 @@ configure_gpu_user_permissions() {
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    show_temp_status "$BLUE" "Detecting GPU hardware"
+    print_message "$BLUE" "=> Detecting GPU hardware"
 
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
@@ -482,18 +482,29 @@ main() {
     display_banner
     
     # Pre-installation checks
+    print_message "$BLUE" "=> Pre-installation checks"
     check_root
     check_distribution
     
     # Installation steps
+    print_message "$BLUE" "=> System Dependencies"
     install_system_deps
+    print_message "$BLUE" "=> Creating User and Directories"
     create_user_and_dirs
+    print_message "$BLUE" "=> Copying Application Files"
     copy_application_files
+    print_message "$BLUE" "=> Installing Python"
     install_python
+    print_message "$BLUE" "=> Installing Python Dependencies"
     install_python_deps
+    print_message "$BLUE" "=> Setting Up GPU Hardware"
     setup_gpu_hardware
+    print_message "$BLUE" "=> Installing Media Tools"
     install_media_tools
+    print_message "$BLUE" "=> Trailarr Configuration"
     run_interactive_config
+    print_message "$BLUE" "=> Installation Complete"
+    print_message "$BLUE" "=> Creating Systemd Service for autostart"
     create_systemd_service
     
     # Clean up temporary files
