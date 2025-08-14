@@ -144,6 +144,7 @@ end_message() {
     
     # Print the final message
     printf "${color_code}%s${NC}\n" "$message"
+    echo ""
 }
 
 # Function to show temporary status that will be replaced
