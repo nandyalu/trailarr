@@ -18,7 +18,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
-print_message() {
+show_message() {
     local color=$1
     local message=$2
     echo -e "${color}${message}${NC}"

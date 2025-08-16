@@ -4,6 +4,328 @@
 # Provides both terminal output (user-friendly) and file logging (verbose)
 # Uses tput for better terminal control and clean message display
 
+# Global variable to store the PID of the spinner process.
+SPINNER_PID=""
+# Global variable to store the current spinner message.
+SPINNER_MSG=""
+# Global variable to count the number of messages logged below the spinner.
+LOG_COUNT=0
+# Global array to store persistent messages as "color:message" strings.
+PERSISTENT_MESSAGES=()
+# Global variable to store the start time of the current spinner.
+START_TIME=""
+
+# --- Color Definitions ---
+# These variables map color names to their tput color codes.
+# You can use these variables in your function calls for better readability.
+BLACK=0
+RED=1
+GREEN=2
+YELLOW=3
+BLUE=4
+MAGENTA=5
+CYAN=6
+WHITE=7
+NC='\033[0m' # No Color
+
+# Function to clean up the terminal on script exit or interruption.
+# This ensures the spinner is stopped and the cursor is visible.
+cleanup() {
+    # Check if a spinner process exists and is running
+    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+        # Kill the background spinner process
+        kill "$SPINNER_PID" 2>/dev/null
+        # Wait for the process to terminate
+        wait "$SPINNER_PID" 2>/dev/null
+    fi
+    # Restore cursor visibility
+    tput cnorm
+}
+
+# Trap common termination signals and call the cleanup function
+trap cleanup INT TERM EXIT
+
+# Function to reset the log counter and persistent message array for a new task.
+reset_state() {
+    LOG_COUNT=0
+    PERSISTENT_MESSAGES=()
+    SPINNER_MSG=""
+}
+
+# Function to stop the previous spinner gracefully.
+# This is an internal helper function.
+_finalize_previous_spinner() {
+    # Only proceed if a spinner is actually running
+    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+        # Kill the background spinner process
+        kill "$SPINNER_PID" 2> /dev/null
+        # Wait for the process to ensure it's terminated
+        wait "$SPINNER_PID" 2>/dev/null
+        
+        # Restore the cursor to the initial saved position (the spinner's line)
+        tput rc
+        
+        # Clear the entire screen from the current cursor position to the end.
+        tput ed
+        
+        # Calculate the final elapsed time
+        local final_time=$(( $(date +%s) - START_TIME ))
+
+        # Print a final message for the automatically stopped task.
+        local term_width=$(tput cols)
+        local msg_core="✓ ${SPINNER_MSG}"
+        local final_time_str="(${final_time}s)"
+        local line_content="${msg_core} ${final_time_str}"
+        local effective_width=$((term_width > 80 ? 80 : term_width))
+        local padding=$((effective_width - ${#line_content}))
+        
+        tput bold; tput smul
+        tput setaf "$GREEN"
+        echo -n "$msg_core"
+        if [ "$padding" -gt 0 ]; then
+            printf "%*s" "$padding" " "
+        fi
+        echo -n "$final_time_str"
+        tput sgr0
+        
+        # Add post-padding to clear the rest of the line if > 80 cols
+        local post_padding=$((term_width - effective_width))
+        if [ "$post_padding" -gt 0 ]; then
+            printf "%*s" "$post_padding" " "
+        fi
+        echo ""
+
+        # Loop through and print all persistent messages with their stored color
+        for p_msg in "${PERSISTENT_MESSAGES[@]}"; do
+            local color_code="${p_msg%%:*}"
+            local message="${p_msg#*:}"
+            tput setaf "$color_code"
+            echo "$message"
+            tput sgr0
+        done
+        
+        # Show the cursor again
+        tput cnorm
+        
+        # Add a new line to separate tasks cleanly
+        echo ""
+        
+        # Reset state for the next task
+        reset_state
+    fi
+}
+
+# Function to start the spinner animation
+# Usage: start_spinner "Your message here"
+start_spinner() {
+    # If a spinner is already running, finalize it before starting a new one
+    _finalize_previous_spinner
+
+    # Add a new line to separate tasks
+    echo ""
+
+    # Hide the cursor to prevent it from interfering with the spinner
+    tput civis
+
+    # Store the message provided as an argument
+    SPINNER_MSG="$1"
+    
+    # An array of spinner characters
+    local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+
+    # Get the start time in seconds since the epoch and store it globally
+    START_TIME=$(date +%s)
+    
+    # Save the initial cursor position of the spinner's line
+    tput sc
+    
+    # Run the spinner logic in a background process
+    (
+        local i=0
+        while :
+        do
+            # Calculate elapsed time in seconds
+            local elapsed_time=$(( $(date +%s) - START_TIME ))
+            local timer_str="(${elapsed_time}s)"
+
+            # Restore the cursor to the saved spinner position
+            tput rc
+            
+            # Get terminal width for padding
+            local term_width=$(tput cols)
+            local line_content_core="${spinner_chars[i]} ${SPINNER_MSG}"
+            local effective_width=$((term_width > 80 ? 80 : term_width))
+            local padding=$((effective_width - ${#line_content_core} - ${#timer_str}))
+            
+            # Apply bold and underline formatting
+            tput bold; tput smul
+            tput setaf "$BLUE"
+            
+            # Print the spinner and message
+            echo -n "${line_content_core}"
+            
+            # Add padding to push the timer to the right
+            if [ "$padding" -gt 0 ]; then
+                printf "%*s" "$padding" " "
+            fi
+            
+            # Print the timer in a different color
+            tput setaf "$BLUE"
+            echo -n "${timer_str}"
+            tput sgr0
+            
+            # Add post-padding to clear the rest of the line if > 80 cols
+            local post_padding=$((term_width - effective_width))
+            if [ "$post_padding" -gt 0 ]; then
+                printf "%*s" "$post_padding" " "
+            fi
+            
+            # Move to the next character in the array, looping back to the start
+            i=$(( (i+1) % ${#spinner_chars[@]} ))
+            
+            # Sleep for a short duration to control the speed of the animation
+            sleep 0.1
+        done
+    ) &
+    
+    # Save the PID of the background process so we can kill it later
+    SPINNER_PID=$!
+}
+
+# Function to stop the spinner and show a final message
+# Usage: stop_spinner "Your message here"
+stop_spinner() {
+    local msg="$1"
+    
+    # If a spinner is running, kill it gracefully
+    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+        # Kill the background spinner process
+        kill "$SPINNER_PID" 2> /dev/null
+        # Wait for the process to ensure it's terminated
+        wait "$SPINNER_PID" 2>/dev/null
+    fi
+    
+    # Restore the cursor to the initial saved position (the spinner's line)
+    tput rc
+    
+    # Clear the entire screen from the current cursor position to the end.
+    tput ed
+    
+    # Calculate the final elapsed time
+    local final_time=$(( $(date +%s) - START_TIME ))
+
+    # Print a final message to the terminal with a checkmark.
+    local term_width=$(tput cols)
+    local msg_core="✓ ${msg}"
+    local final_time_str="(${final_time}s)"
+    local line_content="${msg_core} ${final_time_str}"
+    local effective_width=$((term_width > 80 ? 80 : term_width))
+    local padding=$((effective_width - ${#line_content}))
+    
+    tput bold; tput smul
+    tput setaf "$GREEN"
+    echo -n "$msg_core"
+    if [ "$padding" -gt 0 ]; then
+        printf "%*s" "$padding" " "
+    fi
+    echo -n "$final_time_str"
+    tput sgr0
+    
+    # Add post-padding to clear the rest of the line if > 80 cols
+    local post_padding=$((term_width - effective_width))
+    if [ "$post_padding" -gt 0 ]; then
+        printf "%*s" "$post_padding" " "
+    fi
+    echo ""
+
+    # Loop through and print all persistent messages with their stored color
+    for p_msg in "${PERSISTENT_MESSAGES[@]}"; do
+        local color_code="${p_msg%%:*}"
+        local message="${p_msg#*:}"
+        tput setaf "$color_code"
+        echo "$message"
+        tput sgr0
+    done
+
+    # Show the cursor again
+    tput cnorm
+    
+    # Reset state for the next task
+    reset_state
+}
+
+# Function to print a message to the console without disturbing the spinner.
+# This is for real-time messages that are not persistent.
+# Usage: log_and_spinner ["color_code"] "Your message here"
+log_and_spinner() {
+    local color_code=""
+    local msg=""
+    if [ "$#" -eq 1 ]; then
+        color_code="$CYAN"
+        msg="$1"
+    else
+        color_code="$1"
+        msg="$2"
+    fi
+    
+    tput rc
+    tput cud $((LOG_COUNT + 1))
+    
+    local term_width=$(tput cols)
+    local msg_len=${#msg}
+    local padding=$((term_width - msg_len))
+
+    tput setaf "$color_code"
+    echo -n "$msg"
+    
+    if [ "$padding" -gt 0 ]; then
+        printf "%*s" "$padding" " "
+    fi
+    echo ""
+
+    tput sgr0
+    
+    tput rc
+    
+    LOG_COUNT=$((LOG_COUNT + 1))
+}
+
+# Function to store a message that will be printed when the spinner stops.
+# This function will either store the message if a spinner is running or
+# print it directly if no spinner is active.
+# Usage: show_message ["color_code"] "Your message here"
+show_message() {
+    local color_code=""
+    local msg=""
+    if [ "$#" -eq 1 ]; then
+        color_code="$BLUE"
+        msg="$1"
+    else
+        color_code="$1"
+        msg="$2"
+    fi
+    
+    # Check if the spinner is running
+    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+        # Log it to the screen immediately
+        log_and_spinner "$color_code" "$msg"
+        # Store it for later
+        PERSISTENT_MESSAGES+=("$color_code:$msg")
+    else
+        local term_width=$(tput cols)
+        local msg_len=${#msg}
+        local padding=$((term_width - msg_len))
+        
+        tput setaf "$color_code"
+        echo -n "$msg"
+        if [ "$padding" -gt 0 ]; then
+            printf "%*s" "$padding" " "
+        fi
+        echo ""
+        tput sgr0
+    fi
+}
+
 # Initialize logging - call this first in the main script
 init_logging() {
     # Set log file in /tmp directory which is always writable
@@ -39,6 +361,38 @@ EOF
     export TERM_COLS
 }
 
+# --- Original Logging Function Wrappers ---
+# These functions wrap the new, more robust functions to maintain compatibility with existing scripts.
+
+# Function to start a message with a spinner
+start_message() {
+    start_spinner "$1"
+}
+
+# Function to display a temporary status message without a spinner
+show_temp_status() {
+    log_and_spinner "$1" "$2"
+}
+
+# Function to show a final status message and stop the spinner
+end_message() {
+    stop_spinner "$1"
+}
+
+# Function to display a persistent message
+# show_message() {
+#     show_message "$1" "$2"
+# }
+
+# Alias for print_message, to maintain backward compatibility
+show_status() {
+    show_message "$1" "$2"
+}
+
+# The update_progress function is no longer needed as the new spinner
+# automatically updates its own progress.
+
+
 # Function to write to log file only
 log_to_file() {
     local message="$1"
@@ -61,119 +415,6 @@ log_command_output() {
     fi
 }
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Progress state
-PROGRESS_ACTIVE=false
-PROGRESS_MSG=""
-PROGRESS_COLOR=""
-PROGRESS_CHARS=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
-PROGRESS_INDEX=0
-
-# Global variable to store number of temp lines
-TEMP_STATUS_LINES=0
-
-# Function to clean the current line using tput
-clear_line() {
-    tput cr 2>/dev/null || printf "\r"
-    tput el 2>/dev/null || printf "\033[K"
-    # Move cursor up and clear each temp line
-    for ((i=0; i<TEMP_STATUS_LINES; i++)); do
-        tput cuu1   # Move cursor up one line
-        tput el     # Clear the line
-    done
-    TEMP_STATUS_LINES=0
-}
-
-# Function to print colored output to terminal and log to file
-print_message() {
-    local color=$1
-    local message=$2
-    clear_line
-    # Clear any active progress display
-    # if $PROGRESS_ACTIVE; then
-    #     clear_line
-    # fi
-    
-    # Print the message
-    echo " "
-    printf "${color}%s${NC}\n" "$message"
-    echo " "
-    log_to_file "INFO: $message"
-}
-
-# Function to show start message with progress animation
-start_message() {
-    PROGRESS_COLOR="$1"
-    PROGRESS_MSG="$2"
-    PROGRESS_ACTIVE=true
-    PROGRESS_INDEX=0
-    
-    # Log start to file
-    log_to_file "START: $PROGRESS_MSG"
-
-    # Show initial progress message
-    printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[0]}" "$PROGRESS_MSG"
-}
-
-# Function to update progress animation (call this in loops for long operations)
-update_progress() {
-    if $PROGRESS_ACTIVE; then
-        PROGRESS_INDEX=$(( (PROGRESS_INDEX + 1) % ${#PROGRESS_CHARS[@]} ))
-        clear_line
-        printf "${PROGRESS_COLOR}%s %s${NC}" "${PROGRESS_CHARS[PROGRESS_INDEX]}" "$PROGRESS_MSG"
-    fi
-}
-
-# Function to stop progress and show end message
-end_message() {
-    local color_code="$1"
-    local message="$2"
-    
-    # Log completion to file
-    log_to_file "END: $message"
-    
-    clear_line
-    if $PROGRESS_ACTIVE; then
-        PROGRESS_ACTIVE=false
-    fi
-    
-    # Print the final message
-    printf "${color_code}%s${NC}\n" "$message"
-    echo ""
-}
-
-# Function to show temporary status that will be replaced
-show_temp_status() {
-    local color="$1"
-    local message="$2"
-    
-    clear_line
-    # printf "${color}%s${NC}" "====> $message"
-    # Prepend "===> " to each line and print
-    while IFS= read -r line; do
-        printf "${color}===> %s${NC}\n" "$line"
-    done <<< "$(echo -e "$message")"
-    log_to_file "TEMP: $message"
-    # Count lines in message
-    TEMP_STATUS_LINES=$(echo -e "$message" | wc -l)
-}
-
-# Function to show permanent status (like end_message but without clearing progress)
-show_status() {
-    local color="$1"
-    local message="$2"
-    
-    clear_line
-    printf "${color}%s${NC}\n" "$message"
-    log_to_file "STATUS: $message"
-}
-
 # Function to run a command with output logging and progress animation
 run_logged_command() {
     local description="$1"
@@ -183,11 +424,7 @@ run_logged_command() {
     
     log_to_file "COMMAND START: $description - Running: $command"
     
-    # Start progress animation if not already active
-    local was_active=$PROGRESS_ACTIVE
-    if ! $PROGRESS_ACTIVE; then
-        start_message "$BLUE" "$description"
-    fi
+    start_spinner "$description"
     
     # Run command and capture output
     local output
@@ -198,15 +435,7 @@ run_logged_command() {
     (eval "$command" > "$temp_output" 2>&1) &
     local cmd_pid=$!
     
-    # Update progress while command runs
-    while kill -0 $cmd_pid 2>/dev/null; do
-        if $PROGRESS_ACTIVE; then
-            update_progress
-        fi
-        sleep 0.1
-    done
-    
-    # Wait for command to complete and get exit code
+    # Wait for command to complete
     wait $cmd_pid
     exit_code=$?
     
@@ -221,15 +450,11 @@ run_logged_command() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND SUCCESS: $description"
-        if ! $was_active; then
-            end_message "$GREEN" "✓ $description completed"
-        fi
+        stop_spinner "✓ $success_msg"
         return 0
     else
         log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
-        if ! $was_active; then
-            end_message "$RED" "✗ $description failed"
-        fi
+        stop_spinner "✗ $error_msg"
         return $exit_code
     fi
 }
@@ -242,7 +467,7 @@ run_command_with_progress() {
     log_to_file "COMMAND START: $description - Running: $command"
     
     # Show progress
-    start_message "$BLUE" "$description"
+    start_spinner "$description"
     
     # Run command and capture output
     local output
@@ -255,11 +480,11 @@ run_command_with_progress() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND SUCCESS: $description"
-        end_message "$GREEN" "✓ $description"
+        stop_spinner "✓ $description"
         return 0
     else
         log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
-        end_message "$RED" "✗ $description failed"
+        stop_spinner "✗ $description failed"
         return $exit_code
     fi
 }
@@ -325,8 +550,8 @@ update_env_var() {
 
 # Function to display final log file location
 show_log_location() {
-    print_message "$GREEN" ""
-    print_message "$GREEN" "📄 Complete installation log saved to: $INSTALL_LOG_FILE"
-    print_message "$GREEN" "   Use this file for troubleshooting or debugging if needed."
-    print_message "$GREEN" ""
+    show_message "$GREEN" ""
+    show_message "$GREEN" "📄 Complete installation log saved to: $INSTALL_LOG_FILE"
+    show_message "$GREEN" "   Use this file for troubleshooting or debugging if needed."
+    show_message "$GREEN" ""
 }

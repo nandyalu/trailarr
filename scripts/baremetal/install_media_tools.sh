@@ -17,7 +17,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
 else
     source "$SCRIPT_DIR/../box_echo.sh"
     # Define print_message and start_message/end_message for compatibility
-    print_message() { echo -e "$1$2\033[0m"; }
+    show_message() { echo -e "$1\033[0m"; }
     start_message() { echo -e "$1$2\033[0m"; }
     end_message() { echo -e "$1$2\033[0m"; }
     log_to_file() { echo "$1"; }
@@ -56,7 +56,7 @@ install_ffmpeg_local() {
         FFMPEG_URL="https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
     else
         # If the architecture is not supported, try to use system ffmpeg as fallback
-        print_message "$YELLOW" "Unsupported architecture: $ARCH"
+        show_message "$YELLOW" "Unsupported architecture: $ARCH"
         log_to_file "Unsupported architecture $ARCH, attempting system ffmpeg fallback"
         
         if command -v ffmpeg &> /dev/null; then
@@ -65,7 +65,7 @@ install_ffmpeg_local() {
                 return 0
             fi
         else
-            print_message "$BLUE" "Installing system ffmpeg..."
+            show_message "Installing system ffmpeg..."
             if run_logged_command "Install system ffmpeg" "apt-get update && apt-get install -y ffmpeg"; then
                 if run_logged_command "Copy installed ffmpeg" "cp \"$(which ffmpeg)\" \"$BIN_DIR/\" && cp \"$(which ffprobe)\" \"$BIN_DIR/\""; then
                     end_message "$GREEN" "✓ Installed and copied system ffmpeg"

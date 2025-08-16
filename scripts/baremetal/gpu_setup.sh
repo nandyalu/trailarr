@@ -17,7 +17,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
 else
     source "$SCRIPT_DIR/../box_echo.sh"
     # Define print_message and start_message/end_message for compatibility
-    print_message() { echo -e "$1$2\033[0m"; }
+    show_message() { echo -e "$1\033[0m"; }
     start_message() { echo -e "$1$2\033[0m"; }
     end_message() { echo -e "$1$2\033[0m"; }
     log_to_file() { echo "$1"; }
@@ -109,13 +109,13 @@ check_nvidia_gpu() {
         # Get NVIDIA GPU information
         GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
         if [ -n "$GPU_INFO" ]; then
-            print_message "$GREEN" "✓ NVIDIA GPU detected with drivers: $GPU_INFO"
-            print_message "$GREEN" "  → NVIDIA hardware acceleration (CUDA) is available"
+            show_message "$GREEN" "✓ NVIDIA GPU detected with drivers: $GPU_INFO"
+            show_message "$GREEN" "  → NVIDIA hardware acceleration (CUDA) is available"
             log_to_file "NVIDIA GPU found with drivers: $GPU_INFO"
             DETECTED_GPUS+=("NVIDIA")
             AVAILABLE_GPUS+=("nvidia")
             if [ -n "$GPU_DEVICE_NVIDIA" ]; then
-                print_message "$BLUE" "  → NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
+                show_message "  → NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
                 log_to_file "NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
             fi
             end_message "$GREEN" "✓ NVIDIA GPU ready"
@@ -123,11 +123,11 @@ check_nvidia_gpu() {
     elif [ "$GPU_AVAILABLE_NVIDIA" = "potential" ]; then
         NVIDIA_GPU=$(lspci | grep -i nvidia | head -1)
         if [ -n "$NVIDIA_GPU" ]; then
-            print_message "$YELLOW" "⚠ NVIDIA GPU detected but drivers not installed:"
-            print_message "$YELLOW" "  $NVIDIA_GPU"
-            print_message "$YELLOW" "  To enable NVIDIA hardware acceleration, install drivers with:"
-            print_message "$YELLOW" "    sudo apt update && sudo apt install -y nvidia-driver-535"
-            print_message "$YELLOW" "    (Reboot required after driver installation)"
+            show_message "$YELLOW" "⚠ NVIDIA GPU detected but drivers not installed:"
+            show_message "$YELLOW" "  $NVIDIA_GPU"
+            show_message "$YELLOW" "  To enable NVIDIA hardware acceleration, install drivers with:"
+            show_message "$YELLOW" "    sudo apt update && sudo apt install -y nvidia-driver-535"
+            show_message "$YELLOW" "    (Reboot required after driver installation)"
             log_to_file "NVIDIA GPU detected without drivers: $NVIDIA_GPU"
             DETECTED_GPUS+=("NVIDIA (no drivers)")
             end_message "$YELLOW" "! NVIDIA GPU needs drivers"
@@ -147,8 +147,8 @@ check_intel_gpu() {
         # Check for Intel GPU using lspci
         INTEL_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC')
         if [ -n "$INTEL_GPU" ]; then
-            print_message "$GREEN" "✓ Intel GPU detected: $INTEL_GPU"
-            print_message "$BLUE" "  → Intel GPU device: $GPU_DEVICE_INTEL"
+            show_message "$GREEN" "✓ Intel GPU detected: $INTEL_GPU"
+            show_message "  → Intel GPU device: $GPU_DEVICE_INTEL"
             log_to_file "Intel GPU found: $INTEL_GPU"
             log_to_file "Intel GPU device: $GPU_DEVICE_INTEL"
             DETECTED_GPUS+=("Intel")
@@ -158,13 +158,13 @@ check_intel_gpu() {
             if command -v vainfo &> /dev/null; then
                 VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_INTEL" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|VP8|VP9|AV1")
                 if [ -n "$VAAPI_INFO" ]; then
-                    print_message "$GREEN" "  → VAAPI capabilities detected (H.264, HEVC, VP8, VP9, AV1)"
+                    show_message "$GREEN" "  → VAAPI capabilities detected (H.264, HEVC, VP8, VP9, AV1)"
                     log_to_file "Intel VAAPI capabilities detected"
                 fi
             else
-                print_message "$YELLOW" "  → vainfo not found. To enable Intel GPU acceleration, install VAAPI:"
-                print_message "$YELLOW" "    sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
-                print_message "$YELLOW" "    (App restart required after installation)"
+                show_message "$YELLOW" "  → vainfo not found. To enable Intel GPU acceleration, install VAAPI:"
+                show_message "$YELLOW" "    sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
+                show_message "$YELLOW" "    (App restart required after installation)"
                 log_to_file "Intel GPU detected but vainfo not available"
             fi
             end_message "$GREEN" "✓ Intel GPU ready"
@@ -189,8 +189,8 @@ check_amd_gpu() {
         # Check for AMD GPU using lspci
         AMD_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon')
         if [ -n "$AMD_GPU" ]; then
-            print_message "$GREEN" "✓ AMD GPU detected: $AMD_GPU"
-            print_message "$BLUE" "  → AMD GPU device: $GPU_DEVICE_AMD"
+            show_message "$GREEN" "✓ AMD GPU detected: $AMD_GPU"
+            show_message "  → AMD GPU device: $GPU_DEVICE_AMD"
             log_to_file "AMD GPU found: $AMD_GPU"
             log_to_file "AMD GPU device: $GPU_DEVICE_AMD"
             DETECTED_GPUS+=("AMD")
@@ -200,13 +200,13 @@ check_amd_gpu() {
             if command -v vainfo &> /dev/null; then
                 VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_AMD" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|AV1")
                 if [ -n "$VAAPI_INFO" ]; then
-                    print_message "$GREEN" "  → VAAPI capabilities detected (H.264, HEVC, AV1)"
+                    show_message "$GREEN" "  → VAAPI capabilities detected (H.264, HEVC, AV1)"
                     log_to_file "AMD VAAPI capabilities detected"
                 fi
             else
-                print_message "$YELLOW" "  → vainfo not found. To enable AMD GPU acceleration, install VAAPI:"
-                print_message "$YELLOW" "    sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
-                print_message "$YELLOW" "    (App restart required after installation)"
+                show_message "$YELLOW" "  → vainfo not found. To enable AMD GPU acceleration, install VAAPI:"
+                show_message "$YELLOW" "    sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
+                show_message "$YELLOW" "    (App restart required after installation)"
                 log_to_file "AMD GPU detected but vainfo not available"
             fi
             end_message "$GREEN" "✓ AMD GPU ready"
@@ -250,7 +250,7 @@ save_gpu_env_vars() {
 
 # Main GPU detection and setup function
 main() {
-    print_message "$BLUE" "GPU Detection for Trailarr"
+    show_message "GPU Detection for Trailarr"
     log_to_file "========== GPU Detection Process Started =========="
     
     # Detect GPU devices
@@ -264,17 +264,17 @@ main() {
     # Summary
     if [ ${#DETECTED_GPUS[@]} -eq 0 ]; then
         echo " "
-        print_message "$YELLOW" "No supported GPUs detected. Hardware acceleration will not be available.
+        show_message "$YELLOW" "No supported GPUs detected. Hardware acceleration will not be available.
 The application will run using software encoding/decoding."
         log_to_file "No GPUs detected - software encoding will be used"
     else
         echo " "
-        print_message "$GREEN" "Summary: Detected GPUs: ${DETECTED_GPUS[*]}"
+        show_message "$GREEN" "Summary: Detected GPUs: ${DETECTED_GPUS[*]}"
         log_to_file "GPU detection summary: ${DETECTED_GPUS[*]}"
         
         if [ ${#DETECTED_GPUS[@]} -gt 0 ]; then
             echo " "
-            print_message "$BLUE" "Note: If you plan to use hardware acceleration, ensure all necessary
+            show_message "Note: If you plan to use hardware acceleration, ensure all necessary
 drivers and tools are installed as shown above, then restart the app."
         fi
     fi
@@ -287,7 +287,7 @@ drivers and tools are installed as shown above, then restart the app."
     export AVAILABLE_GPUS
     
     log_to_file "========== GPU Detection Process Completed =========="
-    print_message "$GREEN" "GPU detection complete"
+    show_message "$GREEN" "GPU detection complete"
 }
 
 # Run main function if script is executed directly

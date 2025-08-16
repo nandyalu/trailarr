@@ -14,10 +14,11 @@ YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 # Simple logging function for bootstrap
-print_message() {
-    local color="$1"
-    local message="$2"
-    printf "${color}${message}${NC}\n"
+show_message() {
+    local message="$1"
+    tput setaf 6
+    printf "${message}\n"
+    tput sgr0
 }
 
 # Function to display installation banner
@@ -35,8 +36,8 @@ display_banner() {
                 Bootstrap Installation Script
 
 EOF
-    print_message "$BLUE" "Downloading and installing Trailarr for maximum performance"
-    print_message "$BLUE" "with native GPU hardware acceleration support"
+    show_message "Downloading and installing Trailarr for maximum performance"
+    show_message "with native GPU hardware acceleration support"
     echo ""
 }
 
@@ -44,21 +45,21 @@ EOF
 check_root() {
     # Block direct root execution (not via sudo)
     if [[ $EUID -eq 0 && -z "$SUDO_USER" ]]; then
-        print_message "$RED" "Do NOT run this script directly as root."
-        print_message "$YELLOW" "Please run as a regular user with sudo: sudo bash bootstrap_install.sh"
+        show_message "$RED" "Do NOT run this script directly as root."
+        show_message "$YELLOW" "Please run as a regular user with sudo: sudo bash bootstrap_install.sh"
         exit 1
     fi
     # Block non-sudo runs (must be run with sudo)
     if [[ $EUID -ne 0 || -z "$SUDO_USER" ]]; then
-        print_message "$RED" "This script must be run with sudo."
-        print_message "$YELLOW" "Please run: sudo bash bootstrap_install.sh"
+        show_message "$RED" "This script must be run with sudo."
+        show_message "$YELLOW" "Please run: sudo bash bootstrap_install.sh"
         exit 1
     fi
 }
 
 # Function to check system requirements
 check_requirements() {
-    print_message "$BLUE" "Checking system requirements..."
+    show_message "Checking system requirements..."
     
     # Check for required commands
     local missing_commands=()
@@ -69,41 +70,41 @@ check_requirements() {
     done
     
     if [[ ${#missing_commands[@]} -gt 0 ]]; then
-        print_message "$RED" "Missing required commands: ${missing_commands[*]}"
-        print_message "$YELLOW" "Please install them with: apt update && apt install -y ${missing_commands[*]}"
+        show_message "$RED" "Missing required commands: ${missing_commands[*]}"
+        show_message "$YELLOW" "Please install them with: apt update && apt install -y ${missing_commands[*]}"
         exit 1
     fi
     
     # Check for Debian-based system
     if [[ ! -f /etc/debian_version ]]; then
-        print_message "$RED" "This installer is designed for Debian-based systems only."
-        print_message "$YELLOW" "Please check the documentation for alternative installation methods."
+        show_message "$RED" "This installer is designed for Debian-based systems only."
+        show_message "$YELLOW" "Please check the documentation for alternative installation methods."
         exit 1
     fi
     
-    print_message "$GREEN" "✓ System requirements met"
+    show_message "$GREEN" "✓ System requirements met"
 }
 
 # Function to download latest release
 download_latest_release() {
-    print_message "$BLUE" "Downloading latest Trailarr release..."
+    show_message "Downloading latest Trailarr release..."
     
     # Create temporary directory
     local temp_dir="/tmp/trailarr-bootstrap-$$"
     mkdir -p "$temp_dir"
     
     # Get the latest release info from GitHub API
-    print_message "$BLUE" "Fetching latest release information..."
+    show_message "Fetching latest release information..."
     local release_json
     if ! release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest); then
-        print_message "$RED" "✗ Failed to fetch release information from GitHub"
+        show_message "$RED" "✗ Failed to fetch release information from GitHub"
         rm -rf "$temp_dir"
         exit 1
     fi
     
     # Extract tag_name for version
     local app_version=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
-    print_message "$GREEN" "→ Latest version: $app_version"
+    show_message "$GREEN" "→ Latest version: $app_version"
     export TRAILARR_VERSION="$app_version"
     
     # Extract the source code zip URL
@@ -118,20 +119,20 @@ download_latest_release() {
         unpacker="tar -xzf"
     fi
     
-    print_message "$BLUE" "Downloading source archive..."
+    show_message "Downloading source archive..."
     
     # Download the source archive
     if ! curl -L -o "$temp_dir/trailarr-source.$archive_type" "$src_archive_url"; then
-        print_message "$RED" "✗ Failed to download Trailarr source code"
+        show_message "$RED" "✗ Failed to download Trailarr source code"
         rm -rf "$temp_dir"
         exit 1
     fi
     
-    print_message "$BLUE" "Extracting source archive..."
+    show_message "Extracting source archive..."
     
     # Extract the downloaded archive
     if ! $unpacker "$temp_dir/trailarr-source.$archive_type" -d "$temp_dir/"; then
-        print_message "$RED" "✗ Failed to extract Trailarr source code archive"
+        show_message "$RED" "✗ Failed to extract Trailarr source code archive"
         rm -rf "$temp_dir"
         exit 1
     fi
@@ -140,12 +141,12 @@ download_latest_release() {
     local extracted_dir=$(find "$temp_dir" -mindepth 1 -maxdepth 1 -type d | head -n1)
     
     if [[ -z "$extracted_dir" ]]; then
-        print_message "$RED" "✗ No extracted directory found"
+        show_message "$RED" "✗ No extracted directory found"
         rm -rf "$temp_dir"
         exit 1
     fi
     
-    print_message "$GREEN" "✓ Source code downloaded and extracted"
+    show_message "$GREEN" "✓ Source code downloaded and extracted"
     
     # Store paths for later use
     export TRAILARR_SOURCE_DIR="$extracted_dir"
@@ -154,13 +155,13 @@ download_latest_release() {
 
 # Function to run the actual installation
 run_installation() {
-    print_message "$BLUE" "Starting Trailarr installation..."
+    show_message "Starting Trailarr installation..."
     
     local install_script="$TRAILARR_SOURCE_DIR/scripts/baremetal/install.sh"
     
     if [[ ! -f "$install_script" ]]; then
-        print_message "$RED" "✗ Installation script not found in downloaded source"
-        print_message "$RED" "Expected: $install_script"
+        show_message "$RED" "✗ Installation script not found in downloaded source"
+        show_message "$RED" "Expected: $install_script"
         cleanup_temp_files
         exit 1
     fi
@@ -168,25 +169,25 @@ run_installation() {
     # Make sure the install script is executable
     chmod +x "$install_script"
     
-    print_message "$GREEN" "✓ Running installation script..."
+    show_message "$GREEN" "✓ Running installation script..."
     echo ""
     
     # Run the installation script
     # Pass through any arguments that were passed to this bootstrap script
     if ! bash "$install_script" "$@"; then
-        print_message "$RED" "✗ Installation failed"
+        show_message "$RED" "✗ Installation failed"
         cleanup_temp_files
         exit 1
     fi
     
     cleanup_temp_files
-    print_message "$GREEN" "✓ Trailarr installation completed successfully!"
+    show_message "$GREEN" "✓ Trailarr installation completed successfully!"
 }
 
 # Function to clean up temporary files
 cleanup_temp_files() {
     if [[ -n "$TRAILARR_TEMP_DIR" && -d "$TRAILARR_TEMP_DIR" ]]; then
-        print_message "$BLUE" "Cleaning up temporary files..."
+        show_message "Cleaning up temporary files..."
         rm -rf "$TRAILARR_TEMP_DIR"
     fi
 }

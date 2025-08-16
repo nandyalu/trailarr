@@ -17,7 +17,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
 else
     source "$SCRIPT_DIR/../box_echo.sh"
     # Define print_message and start_message/end_message for compatibility
-    print_message() { echo -e "$1$2\033[0m"; }
+    show_message() { echo -e "$1\033[0m"; }
     start_message() { echo -e "$1$2\033[0m"; }
     end_message() { echo -e "$1$2\033[0m"; }
     log_to_file() { echo "$1"; }
@@ -174,23 +174,23 @@ main() {
     
     # Check if we already have the right Python version
     if check_system_python; then
-        print_message "$GREEN" "✓ Using system Python installation"
+        show_message "$GREEN" "✓ Using system Python installation"
         log_to_file "Using system Python: $PYTHON_EXECUTABLE"
     else
         # Install Python locally
         if ! install_python_locally; then
-            print_message "$RED" "Failed to install Python $PYTHON_VERSION"
+            show_message "$RED" "Failed to install Python $PYTHON_VERSION"
             log_to_file "ERROR: Python installation failed"
             return 1
         fi
     fi
-    print_message "$GREEN" "→ Python executable: $PYTHON_EXECUTABLE"
-    print_message "$GREEN" "→ Python version: $($PYTHON_EXECUTABLE --version)"
+    show_message "$GREEN" "→ Python executable: $PYTHON_EXECUTABLE"
+    show_message "$GREEN" "→ Python version: $($PYTHON_EXECUTABLE --version)"
     
     # Ensure pip is available
     ensure_pip
     
-    print_message "$GREEN" "✓ Python setup complete!"
+    show_message "$GREEN" "✓ Python setup complete!"
     
     log_to_file "Python setup completed successfully"
     log_to_file "Final Python executable: $PYTHON_EXECUTABLE"

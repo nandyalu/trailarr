@@ -17,7 +17,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
 else
     source "$SCRIPT_DIR/../box_echo.sh"
     # Define print_message and start_message/end_message for compatibility
-    print_message() { echo -e "$1$2\033[0m"; }
+    show_message() { echo -e "$1\033[0m"; }
     start_message() { echo -e "$1$2\033[0m"; }
     end_message() { echo -e "$1$2\033[0m"; }
     log_to_file() { echo "$1"; }
@@ -43,7 +43,7 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    print_message "$BLUE" "=> Configuring basic application settings"
+    show_message "=> Configuring basic application settings"
     
     # Monitor interval
     local monitor_msg="Monitor Interval Configuration\n
@@ -141,7 +141,7 @@ configure_gpu_settings() {
         source "/tmp/gpu_detection_results"
     fi
 
-    print_message "$BLUE" "=> Configuring GPU settings"
+    show_message "=> Configuring GPU settings"
 
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
         log_to_file "No supported GPUs detected. Hardware acceleration not enabled."
@@ -275,7 +275,7 @@ EOF
 
 # Function to display configuration summary
 display_summary() {
-    # print_message "$BLUE" "Displaying configuration summary..."
+    # show_message "Displaying configuration summary..."
     
     echo ""
     echo "Configuration Summary:"
