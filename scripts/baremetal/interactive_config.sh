@@ -6,7 +6,14 @@
 set -e
 
 # Source the common functions
-source "$(dirname "$0")/../box_echo.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/logging.sh"
+
+# If we're in a sub-script, we need to reuse the existing log file
+if [ -z "$INSTALL_LOG_FILE" ]; then
+    INSTALL_LOG_FILE="/tmp/trailarr_install.log"
+    export INSTALL_LOG_FILE
+fi
 
 # Default values
 DEFAULT_MONITOR_INTERVAL=60  # 1 hour in minutes
@@ -19,22 +26,23 @@ CONFIG_FILE="$DATA_DIR/.env"
 
 # Function to prompt for configuration values
 prompt_basic_config() {
-    box_echo "Basic Application Configuration"
-    box_echo "=========================================================================="
+    start_message "Configuring basic application settings"
     
     # Monitor interval
-    box_echo "Monitor Interval: How often should Trailarr check for new content?"
-    echo "  - Minimum is 10"
-    echo "  - This determines how frequently the app scans for new movies/shows"
-    echo "  - Shorter intervals = more responsive but higher system load"
-    echo "  - Longer intervals = less system load but slower to detect new content"
-    echo ""
-    echo "Common values:"
-    echo "  - 60 (1 hour, default)"
-    echo "  - 120 (2 hours)" 
-    echo "  - 180 (3 hours) [recommended]"
-    echo "  - 360 (6 hours)"
-    echo ""
+    show_message ""
+    show_message "Monitor Interval Configuration"
+    show_message ""
+    show_message "How often should Trailarr check for new content?"
+    show_message "  - Minimum is 10 minutes"
+    show_message "  - This determines how frequently the app scans for new movies/shows"
+    show_message "  - Shorter intervals = more responsive but higher system load"
+    show_message ""
+    show_message "Common values:"
+    show_message "  - 60 (1 hour, default) [recommended]"
+    show_message "  - 120 (2 hours)"
+    show_message "  - 180 (3 hours)"
+    show_message "  - 360 (6 hours)"
+    show_message ""
     
     while true; do
         read -rp "Enter monitor interval in minutes [$DEFAULT_MONITOR_INTERVAL]: " monitor_interval
@@ -42,20 +50,23 @@ prompt_basic_config() {
         
         if [[ "$monitor_interval" =~ ^[0-9]+$ ]] && [ "$monitor_interval" -gt 9 ]; then
             export MONITOR_INTERVAL="$monitor_interval"
+            show_message $GREEN "✓ Monitor interval set to $monitor_interval minutes"
             break
         else
             echo "Please enter a valid number greater than 10"
         fi
     done
     
-    box_echo "✓ Monitor interval set to $monitor_interval minutes"
+    log_to_file "Monitor interval set to $monitor_interval minutes"
     
     # Wait for media
-    box_echo ""
-    box_echo "Wait for Media: Should Trailarr wait for media files to be available before downloading trailers?"
-    echo "  - true: Wait until movie/show files exist before downloading trailers (recommended)"
-    echo "  - false: Download trailers immediately when items are added to Radarr/Sonarr"
-    echo ""
+    show_message ""
+    show_message "Wait for Media Configuration"
+    show_message ""
+    show_message "Should Trailarr wait for media files to be available before downloading trailers?"
+    show_message "  - Yes: Wait until movie/show files exist before downloading trailers (recommended)"
+    show_message "  - No: Download trailers immediately when items are added to Radarr/Sonarr"
+    show_message ""
     
     while true; do
         read -rp "Wait for media files before downloading trailers? [Y/n]: " wait_choice
@@ -64,12 +75,14 @@ prompt_basic_config() {
         case "$wait_choice" in
             [Yy]|[Yy][Ee][Ss])
                 export WAIT_FOR_MEDIA="true"
-                box_echo "✓ Will wait for media files before downloading trailers"
+                show_message $GREEN "✓ Will wait for media files before downloading trailers"
+                log_to_file "Will wait for media files before downloading trailers"
                 break
                 ;;
             [Nn]|[Nn][Oo])
                 export WAIT_FOR_MEDIA="false"
-                box_echo "✓ Will download trailers immediately when items are added"
+                show_message $GREEN "✓ Will download trailers immediately when items are added"
+                log_to_file "Will download trailers immediately when items are added"
                 break
                 ;;
             *)
@@ -79,21 +92,33 @@ prompt_basic_config() {
     done
     
     # Port configuration
-    box_echo ""
+    show_message ""
+    show_message "Port Configuration"
+    show_message ""
+    show_message "Default is 7889"
+    show_message "- You can change it to a different port as needed"
+    show_message "- Make sure the port is not being used by another program"
+    show_message ""
+    show_message "# To check if port is in use, run below commands"
+    show_message "sudo netstat -tlnp | grep :7889"
+    show_message "sudo lsof -i :7889"
+    show_message ""
+    
     while true; do
         read -rp "Web interface port [$DEFAULT_PORT]: " port
         port=${port:-$DEFAULT_PORT}
         
         if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -gt 1023 ] && [ "$port" -lt 65536 ]; then
             export APP_PORT="$port"
-            box_echo "✓ Web interface will be available on port $port"
+            show_message $GREEN "✓ Web interface will be available on port $port"
+            log_to_file "Web interface will be available on port $port"
             break
         else
             echo "Please enter a valid port number (1024-65535)"
         fi
     done
     
-    box_echo "=========================================================================="
+    end_message "Basic configuration complete"
 }
 
 # Function to configure GPU settings
@@ -102,22 +127,25 @@ configure_gpu_settings() {
     if [ -f "/tmp/gpu_detection_results" ]; then
         source "/tmp/gpu_detection_results"
     fi
-    
+
+    start_message "Configuring GPU settings"
+
     if [ ${#AVAILABLE_GPUS[@]} -eq 0 ]; then
-        box_echo "No supported GPUs detected. Hardware acceleration not enabled."
+        log_to_file "No supported GPUs detected. Hardware acceleration not enabled."
         export ENABLE_HWACCEL="false"
         export HWACCEL_TYPE="none"
+        show_message $YELLOW "! No supported GPUs detected - hardware acceleration disabled"
+        end_message "GPU configuration complete (hardware acceleration disabled)"
         return 0
     fi
-    
-    box_echo "GPU Hardware Acceleration Configuration"
-    box_echo "=========================================================================="
-    
-    box_echo "Detected GPUs: ${DETECTED_GPUS[*]}"
-    echo ""
-    echo "Hardware acceleration can significantly improve video processing performance"
-    echo "but may require additional system setup and drivers."
-    echo ""
+
+    show_message ""
+    show_message "GPU Hardware Acceleration Configuration"
+    show_message ""
+    show_message "Detected GPUs: ${DETECTED_GPUS[*]}"
+    show_message "Hardware acceleration can significantly improve video processing performance"
+    show_message "but may require additional system setup and drivers."
+    show_message ""
     
     # Ask if user wants to enable hardware acceleration
     while true; do
@@ -127,12 +155,15 @@ configure_gpu_settings() {
         case "$hwaccel_choice" in
             [Yy]|[Yy][Ee][Ss])
                 export ENABLE_HWACCEL="true"
+                show_message $GREEN "✓ Hardware acceleration enabled"
                 break
                 ;;
             [Nn]|[Nn][Oo])
                 export ENABLE_HWACCEL="false"
                 export HWACCEL_TYPE="none"
-                box_echo "✓ Hardware acceleration disabled"
+                log_to_file "Hardware acceleration disabled by user choice"
+                show_message $GREEN "✓ Hardware acceleration disabled"
+                end_message "GPU configuration complete (hardware acceleration disabled)"
                 return 0
                 ;;
             *)
@@ -143,15 +174,17 @@ configure_gpu_settings() {
     
     # If multiple GPUs are available, ask user to choose
     if [ ${#AVAILABLE_GPUS[@]} -gt 1 ]; then
-        box_echo ""
-        box_echo "Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration."
-        echo "Please select which GPU to use:"
-        echo ""
-        
+        show_message ""
+        show_message "GPU Selection:"
+        show_message ""
+        show_message "Multiple GPUs detected. Trailarr can only use one GPU for hardware acceleration."
+        show_message "Please select which GPU to use:"
+        show_message ""
+
         for i in "${!AVAILABLE_GPUS[@]}"; do
-            echo "  $((i+1)). ${DETECTED_GPUS[$i]}"
+            show_message "  $((i+1)). ${DETECTED_GPUS[$i]}"
         done
-        echo ""
+        show_message ""
         
         while true; do
             read -rp "Select GPU (1-${#AVAILABLE_GPUS[@]}): " gpu_choice
@@ -159,7 +192,8 @@ configure_gpu_settings() {
             if [[ "$gpu_choice" =~ ^[0-9]+$ ]] && [ "$gpu_choice" -ge 1 ] && [ "$gpu_choice" -le ${#AVAILABLE_GPUS[@]} ]; then
                 selected_index=$((gpu_choice - 1))
                 export HWACCEL_TYPE="${AVAILABLE_GPUS[$selected_index]}"
-                box_echo "✓ Selected ${DETECTED_GPUS[$selected_index]} for hardware acceleration"
+                show_message $GREEN "✓ Selected ${DETECTED_GPUS[$selected_index]} for hardware acceleration"
+                log_to_file "Selected ${DETECTED_GPUS[$selected_index]} for hardware acceleration"
                 break
             else
                 echo "Please enter a number between 1 and ${#AVAILABLE_GPUS[@]}"
@@ -168,42 +202,47 @@ configure_gpu_settings() {
     else
         # Only one GPU available
         export HWACCEL_TYPE="${AVAILABLE_GPUS[0]}"
-        box_echo "✓ Using ${DETECTED_GPUS[0]} for hardware acceleration"
+        show_message $GREEN "✓ Using ${DETECTED_GPUS[0]} for hardware acceleration"
+        log_to_file "Using ${DETECTED_GPUS[0]} for hardware acceleration"
     fi
     
     # Provide driver installation instructions based on detected GPUs
     if [ "$ENABLE_HWACCEL" = "true" ]; then
-        box_echo ""
-        box_echo "Hardware Acceleration Setup Instructions:"
+        show_message ""
+        show_message "Hardware Acceleration Setup Instructions"
+        show_message ""
         case "$HWACCEL_TYPE" in
             "nvidia")
-                box_echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
-                box_echo "  (Reboot required after driver installation)"
+                echo "NVIDIA GPU selected. Ensure NVIDIA drivers are installed:"
+                echo "  sudo apt update && sudo apt install -y nvidia-driver-535"
+                echo "  (Reboot required after driver installation)"
                 ;;
             "intel")
-                box_echo "Intel GPU selected. Ensure VAAPI drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
+                echo "Intel GPU selected. Ensure VAAPI drivers are installed:"
+                echo "  sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo"
                 ;;
             "amd")
-                box_echo "AMD GPU selected. Ensure VAAPI drivers are installed:"
-                box_echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
+                echo "AMD GPU selected. Ensure VAAPI drivers are installed:"
+                echo "  sudo apt update && sudo apt install -y mesa-va-drivers vainfo"
                 ;;
         esac
-        box_echo "Note: After installing drivers, restart the Trailarr service to use hardware acceleration"
+        echo ""
+        echo "Note: After installing drivers, restart the Trailarr service to use hardware acceleration"
     fi
     
-    box_echo "=========================================================================="
+    end_message "GPU configuration complete"
 }
 
 # Function to write configuration to file
 write_configuration() {    
-    box_echo "Writing configuration to $CONFIG_FILE..."
+    start_message "Writing configuration to file"
     
     # Ensure data directory exists
+    show_temp_message "Creating data directory"
     mkdir -p "$DATA_DIR"
     
     # Create .env file with configuration
+    show_temp_message "Writing configuration file"
     cat > "$CONFIG_FILE" << EOF
 # Trailarr Bare Metal Configuration
 # Generated on $(date)
@@ -226,23 +265,25 @@ TZ=${TZ:-UTC}
 PYTHONPATH=/opt/trailarr/backend
 EOF
     
-    box_echo "✓ Configuration written to $CONFIG_FILE"
+    log_to_file "Configuration written to $CONFIG_FILE"
+    end_message "Configuration written to file"
 }
 
 # Function to display configuration summary
 display_summary() {
-    box_echo "Configuration Summary"
-    box_echo "=========================================================================="
-    box_echo "Application Port: ${APP_PORT}"
-    box_echo "Data Directory: $DATA_DIR"
-    box_echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
-    box_echo "Wait for Media: ${WAIT_FOR_MEDIA}"
-    box_echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
+    echo ""
+    echo "Configuration Summary:"
+    echo "======================================"
+    echo "Application Port: ${APP_PORT}"
+    echo "Data Directory: $DATA_DIR"
+    echo "Monitor Interval: ${MONITOR_INTERVAL} minutes"
+    echo "Wait for Media: ${WAIT_FOR_MEDIA}"
+    echo "Hardware Acceleration: ${ENABLE_HWACCEL}"
     if [ "$ENABLE_HWACCEL" = "true" ]; then
-        box_echo "GPU Type: ${HWACCEL_TYPE}"
+        echo "GPU Type: ${HWACCEL_TYPE}"
     fi
-    box_echo "Installation Mode: baremetal"
-    box_echo "=========================================================================="
+    echo "Installation Mode: baremetal"
+    echo "======================================"
     
     echo ""
     echo "After installation completes, you can:"
@@ -255,14 +296,19 @@ display_summary() {
 
 # Main function
 main() {
-    box_echo "Interactive Configuration Setup"
-    box_echo "=========================================================================="
-    
     # Create install directory if it doesn't exist
     sudo mkdir -p "/opt/trailarr"
     # Create data directory if it doesn't exist
     sudo mkdir -p "$DATA_DIR"
     
+    start_message "Starting interactive configuration"
+    
+    show_message ""
+    show_message "Interactive Configuration Setup"
+    show_message ""
+    show_message "Starting interactive configuration for Trailarr..."
+    show_message ""
+        
     # Prompt for basic configuration
     prompt_basic_config
     
@@ -275,7 +321,7 @@ main() {
     # Display summary
     display_summary
     
-    box_echo "✓ Interactive configuration complete"
+    end_message "Interactive configuration complete"
 }
 
 # Run main function if script is executed directly

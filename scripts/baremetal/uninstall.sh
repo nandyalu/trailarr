@@ -10,19 +10,40 @@ INSTALL_DIR="/opt/trailarr"
 DATA_DIR="/var/lib/trailarr"
 LOG_DIR="/var/log/trailarr"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Function to print colored output
-print_message() {
-    local color=$1
-    local message=$2
-    echo -e "${color}${message}${NC}"
-}
+# Try to source logging functions if available, otherwise use simple echo
+if [ -f "$SCRIPT_DIR/logging.sh" ]; then
+    source "$SCRIPT_DIR/logging.sh"
+    INSTALL_LOG_FILE="/tmp/trailarr_uninstall.log"
+    export INSTALL_LOG_FILE
+    init_logging
+else
+    # Fallback logging functions
+    RED=1
+    GREEN=2  
+    YELLOW=3
+    BLUE=4
+    show_message() {
+        local color=""
+        local msg=""
+        if [ "$#" -eq 1 ]; then
+            msg="$1"
+        else
+            if [[ "$1" =~ ^[0-9]+$ ]]; then
+                color="$1"
+                msg="$2"
+            else
+                msg="$1"
+            fi
+        fi
+        echo "$msg"
+    }
+    start_message() { echo "$1"; }
+    end_message() { echo "$1"; }
+    show_temp_message() { echo "$2"; }
+fi
 
 # Function to display uninstall banner
 display_banner() {
@@ -39,15 +60,15 @@ display_banner() {
                      Bare Metal Uninstall Script          
                                              
 EOF
-    print_message $YELLOW "This will remove Trailarr from your system"
+    show_message $YELLOW "This will remove Trailarr from your system"
     echo ""
 }
 
 # Function to check if running as root
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        print_message $RED "This script should not be run as root."
-        print_message $YELLOW "Please run as a regular user with sudo privileges."
+        show_message $RED "This script should not be run as root."
+        show_message $YELLOW "Please run as a regular user with sudo privileges."
         exit 1
     fi
 }
@@ -70,12 +91,12 @@ prompt_data_preservation() {
         case "$keep_data" in
             [Yy]|[Yy][Ee][Ss])
                 export PRESERVE_DATA="true"
-                print_message $GREEN "✓ Data will be preserved"
+                show_message $GREEN "✓ Data will be preserved"
                 break
                 ;;
             [Nn]|[Nn][Oo])
                 export PRESERVE_DATA="false"
-                print_message $YELLOW "⚠ Data will be removed permanently"
+                show_message $YELLOW "⚠ Data will be removed permanently"
                 
                 while true; do
                     read -rp "Are you sure you want to delete all data? [y/N]: " confirm_delete
@@ -87,7 +108,7 @@ prompt_data_preservation() {
                             ;;
                         [Nn]|[Nn][Oo])
                             export PRESERVE_DATA="true"
-                            print_message $GREEN "✓ Data will be preserved"
+                            show_message $GREEN "✓ Data will be preserved"
                             break 2
                             ;;
                         *)
@@ -109,107 +130,130 @@ create_data_backup() {
         return 0
     fi
     
-    print_message $BLUE "Creating data backup..."
+    start_message "Creating data backup"
     
     BACKUP_DIR="$HOME/trailarr_backup_$(date +%Y%m%d_%H%M%S)"
+    show_temp_message "Creating backup directory"
     mkdir -p "$BACKUP_DIR"
     
     # Backup data directory
     if [ -d "$DATA_DIR" ]; then
+        show_temp_message "Backing up data directory"
         sudo cp -r "$DATA_DIR" "$BACKUP_DIR/data"
         sudo chown -R "$USER:$USER" "$BACKUP_DIR/data"
     fi
     
     # Backup configuration
     if [ -f "$INSTALL_DIR/.env" ]; then
+        show_temp_message "Backing up configuration"
         sudo cp "$INSTALL_DIR/.env" "$BACKUP_DIR/config.env"
         sudo chown "$USER:$USER" "$BACKUP_DIR/config.env"
     fi
     
-    print_message $GREEN "✓ Data backed up to: $BACKUP_DIR"
+    show_message $GREEN "✓ Data backed up to: $BACKUP_DIR"
     echo "You can restore this data during a future installation"
+    end_message "Data backup complete"
 }
 
 # Function to stop and disable service
 stop_service() {
-    print_message $BLUE "Stopping Trailarr service..."
+    start_message "Stopping Trailarr service"
     
     if systemctl is-active --quiet trailarr 2>/dev/null; then
+        show_temp_message "Stopping trailarr service"
         sudo systemctl stop trailarr
-        print_message $GREEN "✓ Trailarr service stopped"
+        show_message $GREEN "✓ Trailarr service stopped"
     else
-        print_message $YELLOW "! Trailarr service is not running"
+        show_message $YELLOW "! Trailarr service is not running"
     fi
     
     if systemctl is-enabled --quiet trailarr 2>/dev/null; then
+        show_temp_message "Disabling trailarr service"
         sudo systemctl disable trailarr
-        print_message $GREEN "✓ Trailarr service disabled"
+        show_message $GREEN "✓ Trailarr service disabled"
     else
-        print_message $YELLOW "! Trailarr service is not enabled"
+        show_message $YELLOW "! Trailarr service is not enabled"
     fi
+    
+    end_message "Service stopped and disabled"
 }
 
 # Function to remove systemd service
 remove_systemd_service() {
-    print_message $BLUE "Removing systemd service..."
+    start_message "Removing systemd service"
     
     if [ -f "/etc/systemd/system/trailarr.service" ]; then
+        show_temp_message "Removing service file"
         sudo rm -f "/etc/systemd/system/trailarr.service"
+        show_temp_message "Reloading systemd daemon"
         sudo systemctl daemon-reload
-        print_message $GREEN "✓ Systemd service removed"
+        show_message $GREEN "✓ Systemd service removed"
     else
-        print_message $YELLOW "! Systemd service file not found"
+        show_message $YELLOW "! Systemd service file not found"
     fi
+    
+    end_message "Systemd service cleanup complete"
 }
 
 # Function to remove application files
 remove_application() {
-    print_message $BLUE "Removing application files..."
+    start_message "Removing application files"
     
     if [ -d "$INSTALL_DIR" ]; then
+        show_temp_message "Removing installation directory"
         sudo rm -rf "$INSTALL_DIR"
-        print_message $GREEN "✓ Application files removed"
+        show_message $GREEN "✓ Application files removed"
     else
-        print_message $YELLOW "! Application directory not found"
+        show_message $YELLOW "! Application directory not found"
     fi
+    
+    end_message "Application files removed"
 }
 
 # Function to remove data
 remove_data() {
     if [ "$PRESERVE_DATA" = "true" ]; then
-        print_message $BLUE "Preserving data directory: $DATA_DIR"
+        show_message $BLUE "Preserving data directory: $DATA_DIR"
         return 0
     fi
     
-    print_message $BLUE "Removing data files..."
+    start_message "Removing data files"
     
     if [ -d "$DATA_DIR" ]; then
+        show_temp_message "Removing data directory"
         sudo rm -rf "$DATA_DIR"
-        print_message $GREEN "✓ Data directory removed"
+        show_message $GREEN "✓ Data directory removed"
     else
-        print_message $YELLOW "! Data directory not found"
+        show_message $YELLOW "! Data directory not found"
     fi
     
     if [ -d "$LOG_DIR" ]; then
+        show_temp_message "Removing log directory"
         sudo rm -rf "$LOG_DIR"
-        print_message $GREEN "✓ Log directory removed"
+        show_message $GREEN "✓ Log directory removed"
     else
-        print_message $YELLOW "! Log directory not found"
+        show_message $YELLOW "! Log directory not found"
     fi
+    
+    end_message "Data removal complete"
 }
 
 # Function to remove user
 remove_user() {
-    print_message $BLUE "Removing trailarr user..."
+    start_message "Removing trailarr user"
     
     if id "trailarr" &>/dev/null; then
-        sudo userdel trailarr 2>/dev/null || {
-            print_message $YELLOW "! Could not remove trailarr user (may have active processes)"
-        }
-        print_message $GREEN "✓ Trailarr user removed"
+        show_temp_message "Removing trailarr user account"
+        if sudo userdel trailarr 2>/dev/null; then
+            show_message $GREEN "✓ Trailarr user removed"
+        else
+            show_message $YELLOW "! Could not remove trailarr user (may have active processes)"
+        fi
     else
-        print_message $YELLOW "! Trailarr user does not exist"
+        show_message $YELLOW "! Trailarr user does not exist"
     fi
+    
+    end_message "User cleanup complete"
 }
 
 # Function to clean up system packages (optional)
@@ -221,12 +265,12 @@ cleanup_packages() {
         
         case "$remove_packages" in
             [Yy]|[Yy][Ee][Ss])
-                print_message $BLUE "Note: This will only remove packages if they were installed in Trailarr's directory"
-                print_message $BLUE "System Python packages will not be affected"
+                show_message $BLUE "Note: This will only remove packages if they were installed in Trailarr's directory"
+                show_message $BLUE "System Python packages will not be affected"
                 break
                 ;;
             [Nn]|[Nn][Oo])
-                print_message $BLUE "Keeping system packages intact"
+                show_message $BLUE "Keeping system packages intact"
                 break
                 ;;
             *)
@@ -238,9 +282,9 @@ cleanup_packages() {
 
 # Function to display completion message
 display_completion() {
-    print_message $GREEN ""
-    print_message $GREEN "🗑️  Trailarr uninstallation completed"
-    print_message $GREEN ""
+    show_message $GREEN ""
+    show_message $GREEN "🗑️  Trailarr uninstallation completed"
+    show_message $GREEN ""
     
     if [ "$PRESERVE_DATA" = "true" ]; then
         echo "Data Preservation:"
@@ -276,7 +320,7 @@ main() {
     
     # Check if Trailarr is installed
     if [ ! -d "$INSTALL_DIR" ] && [ ! -f "/etc/systemd/system/trailarr.service" ]; then
-        print_message $YELLOW "Trailarr does not appear to be installed on this system"
+        show_message $YELLOW "Trailarr does not appear to be installed on this system"
         exit 0
     fi
     

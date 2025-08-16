@@ -3,7 +3,7 @@
 # Trailarr Bare Metal Installation Script for Debian-based systems
 # Modular installation with GPU support, Python 3.13.5, and interactive configuration
 
-# set -e
+set -e
 
 # Installation directories
 INSTALL_DIR="/opt/trailarr"
@@ -13,79 +13,10 @@ LOG_DIR="/var/log/trailarr"
 # Script directory (current directory where install.sh is located)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BAREMETAL_SCRIPTS_DIR="$SCRIPT_DIR"
+TRAILARR_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Function to print colored output
-print_message() {
-    local color=$1
-    local message=$2
-    echo -e "${color}${message}${NC}"
-}
-# Spinner characters
-SPINNER=( '-' '\' '|' '/' )
-SPINNER_PID=0
-SPINNER_MSG=""
-SPINNER_COLOR=""
-SPINNER_ACTIVE=false
-
-# Cleanup function to kill spinner on exit or interrupt
-cleanup_spinner() {
-    if $SPINNER_ACTIVE && [[ $SPINNER_PID -ne 0 ]]; then
-        # Check if process is running before kill/wait
-        if kill -0 "$SPINNER_PID" 2>/dev/null; then
-            kill "$SPINNER_PID" 2>/dev/null
-            # Wait for spinner to exit, but don't hang if already dead
-            timeout 2s wait "$SPINNER_PID" 2>/dev/null || true
-        fi
-        SPINNER_PID=0
-        SPINNER_ACTIVE=false
-    fi
-}
-
-# Trap signals to ensure spinner is cleaned up
-trap cleanup_spinner EXIT INT TERM
-
-# Function to show start message with spinner
-start_message() {
-    SPINNER_COLOR="$1"
-    SPINNER_MSG="$2"
-    SPINNER_ACTIVE=true
-    (
-        i=0
-        while true; do
-            printf "\r${SPINNER_COLOR}${SPINNER[i]} $SPINNER_MSG${NC}   "
-            i=$(( (i + 1) % 4 ))
-            sleep 0.2
-        done
-    ) &
-    SPINNER_PID=$!
-}
-
-# Function to stop spinner and show end message
-end_message() {
-    local color_code="$1"
-    local message="$2"
-    if $SPINNER_ACTIVE; then
-        cleanup_spinner
-        # Pad with spaces to overwrite longer spinner line
-        local pad_length=$(( ${#SPINNER_MSG} - ${#message} + 10 ))
-        local padding=""
-        if (( pad_length > 0 )); then
-            padding=$(printf '%*s' "$pad_length")
-        fi
-        printf "\r${color_code}$message${NC}${padding}\n"
-    else
-        # No spinner was started, just print the message
-        printf "${color_code}$message${NC}\n"
-    fi
-    echo ""
-}
+# Source logging functions
+source "$SCRIPT_DIR/logging.sh"
 
 # Function to display installation banner
 display_banner() {
@@ -102,8 +33,9 @@ display_banner() {
                     Bare Metal Installation Script
 
 EOF
-    print_message $BLUE "Installing Trailarr directly on your system for maximum performance"
-    print_message $BLUE "with native GPU hardware acceleration support"
+    show_message $GREEN "Trailarr Version: $TRAILARR_VERSION"
+    show_message $BLUE "Installing Trailarr directly on your system for maximum performance
+with native GPU hardware acceleration support"
     echo ""
 }
 
@@ -111,72 +43,75 @@ EOF
 check_root() {
     # Block direct root execution (not via sudo)
     if [[ $EUID -eq 0 && -z "$SUDO_USER" ]]; then
-        print_message $RED "Do NOT run this script directly as root."
-        print_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
+        show_message $RED "Do NOT run this script directly as root."
+        show_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
         exit 1
     fi
     # Block non-sudo runs (must be run with sudo)
     if [[ $EUID -ne 0 || -z "$SUDO_USER" ]]; then
-        print_message $RED "This script must be run with sudo."
-        print_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
+        show_message $RED "This script must be run with sudo."
+        show_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
         exit 1
     fi
-    print_message $GREEN "✓ Running with sudo as user: $SUDO_USER"
+    show_message $GREEN "✓ Running with sudo as user: $SUDO_USER"
 }
 
 # Function to check if distribution is supported
 check_distribution() {
     if [ ! -f /etc/debian_version ]; then
-        print_message $RED "This installation script only supports Debian-based distributions."
-        print_message $YELLOW "Please use Docker installation for other distributions."
+        show_message $RED "This installation script only supports Debian-based distributions."
+        show_message $YELLOW "Please use Docker installation for other distributions."
         exit 1
     fi
     
-    print_message $GREEN "✓ Debian-based distribution detected"
+    show_message $GREEN "✓ Debian-based distribution detected"
 }
 
 # Function to install system dependencies
 install_system_deps() {
-    start_message "$BLUE" "Installing system dependencies..."
+    start_message "Installing system dependencies"
 
-    apt-get update &>/dev/null || {
-        end_message $RED "✗ Failed to update package list"
+    # Update package list with detailed logging
+    show_temp_message "Updating package list"
+    if run_logged_command "Update package list" "apt-get update"; then
+        log_to_file "Package list updated successfully"
+        show_temp_message $GREEN "✓ Package list updated"
+    else
+        show_message $RED "✗ Failed to update package list"
+        end_message "Failed to update package list"
         exit 1
-    }
-    apt-get install -y \
-        curl \
-        wget \
-        xz-utils \
-        unzip \
-        tar \
-        git \
-        pciutils \
-        usbutils \
-        ca-certificates \
-        build-essential \
-        libffi-dev \
-        libssl-dev \
-        systemd \
-        sudo &>/dev/null || {
-            end_message $RED "✗ Failed to install system dependencies"
-            exit 1
-        }
+    fi
 
-    end_message $GREEN "✓ System dependencies installed"
+    # Install system dependencies with logging
+    local packages="curl wget xz-utils unzip tar git pciutils usbutils ca-certificates build-essential libffi-dev libssl-dev systemd sudo"
+    show_temp_message "Installing system packages"
+    if run_logged_command "Install system packages" "apt-get install -y $packages"; then
+        log_to_file "System dependencies installed successfully"
+        show_temp_message $GREEN "✓ System packages installed"
+    else
+        show_message $RED "✗ Failed to install system dependencies"
+        end_message "Failed to install system dependencies"
+        exit 1
+    fi
+
+    end_message "System dependencies installed"
 }
 
 # Function to create trailarr user and directories
 create_user_and_dirs() {
-    start_message "$BLUE" "Creating trailarr user"
+    start_message "Creating trailarr user and directories"
 
     # Create trailarr user if it doesn't exist
+    show_temp_message "Checking for trailarr user"
     if ! id "trailarr" &>/dev/null; then
+        show_temp_message "Creating trailarr user"
         useradd -r -d "$INSTALL_DIR" -s /bin/bash -m trailarr
-        end_message $GREEN "✓ Created 'trailarr' user"
+        show_message $GREEN "✓ Created 'trailarr' user"
     else
-        end_message $YELLOW "! 'trailarr' user already exists"
+        show_message $YELLOW "! 'trailarr' user already exists"
     fi
-    start_message "$BLUE" "Creating required directories"
+    
+    show_temp_message "Creating required directories"
     # Create necessary directories
     mkdir -p "$INSTALL_DIR"
     mkdir -p "$DATA_DIR"
@@ -190,155 +125,119 @@ create_user_and_dirs() {
     chown -R trailarr:trailarr "$DATA_DIR"
     chown -R trailarr:trailarr "$LOG_DIR"
 
-    end_message $GREEN "✓ Directories created and configured"
-}
-
-download_latest_release() {
-    if [ ! -d "$INSTALL_DIR/trailarr" ]; then
-        print_message "$BLUE" "Trailarr source code not found."
-        start_message "$BLUE" "Downloading latest release"
-
-        # Get the latest release info from GitHub API
-        release_json=$(curl -s https://api.github.com/repos/nandyalu/trailarr/releases/latest)
-
-        # Extract tag_name for version
-        APP_VERSION=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
-        export APP_VERSION
-
-        # Write APP_VERSION to .env file
-        echo "APP_VERSION=$APP_VERSION" >> "$INSTALL_DIR/.env"
-
-        # Extract the source code zip URL
-        src_archive_url=$(echo "$release_json" | grep "zipball_url" | grep "zip" | head -n1 | cut -d '"' -f4)
-
-        # Fallback to tar.gz if zip not found
-        if [ -z "$src_archive_url" ]; then
-            src_archive_url=$(echo "$release_json" | grep "tarball_url" | grep "tar.gz" | head -n1 | cut -d '"' -f4)
-            archive_type="tar.gz"
-            unpacker="tar -xzf"
-        else
-            archive_type="zip"
-            unpacker="unzip -o"
-        fi
-
-        # Download and extract
-        curl -L -o "$INSTALL_DIR/trailarr-source.$archive_type" "$src_archive_url" || {
-            end_message $RED "✗ Failed to download Trailarr source code"
-            exit 1
-        }
-
-        # Extract the downloaded archive
-        $unpacker "$INSTALL_DIR/trailarr-source.$archive_type" -d "$INSTALL_DIR/tmp-unpack" > /dev/null || {
-            end_message $RED "✗ Failed to extract Trailarr source code archive"
-            exit 1
-        }
-        # Find the extracted folder (should be the only directory inside tmp-unpack)
-        extracted_dir=$(find "$INSTALL_DIR/tmp-unpack" -mindepth 1 -maxdepth 1 -type d | head -n1)
-
-        # Remove any existing target directory
-        rm -rf "$INSTALL_DIR/trailarr"
-
-        # Move/rename the extracted folder
-        mv "$extracted_dir" "$INSTALL_DIR/trailarr"
-
-        # Clean up temp files
-        rm -rf "$INSTALL_DIR/tmp-unpack"
-        rm "$INSTALL_DIR/trailarr-source.$archive_type"
-        print_message $BLUE "→ Version: $APP_VERSION"
-        SCRIPT_DIR="$INSTALL_DIR/trailarr/scripts/"
-        end_message $GREEN "✓ Trailarr source code downloaded and extracted"
-    fi
+    end_message "Directories created and configured"
 }
 
 # Function to copy application files
 copy_application_files() {
-    start_message "$BLUE" "Copying application files..."
+    start_message "Copying application files"
+
+    # Check if source directories exist before copying
+    show_temp_message "Verifying source directories"
+    for dir in backend frontend-build assets scripts; do
+        if [ ! -d "${TRAILARR_DIR}/$dir" ]; then
+            show_message $RED "✗ Source directory ${TRAILARR_DIR}/$dir does not exist"
+            show_message $RED "✗ Try running the install script again from project root!"
+            end_message "Source directories missing"
+            exit 1
+        fi
+    done
 
     # Copy source code
-    cp -r "$SCRIPT_DIR/../../backend" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../frontend-build" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../assets" "$INSTALL_DIR/"
-    cp -r "$SCRIPT_DIR/../../scripts" "$INSTALL_DIR/"
-
-    # Copy configuration files
-    cp "$SCRIPT_DIR/../../backend/requirements.txt" "$INSTALL_DIR/" 2>/dev/null || true
+    show_temp_message "Copying backend files"
+    cp -r "${TRAILARR_DIR}/backend" "$INSTALL_DIR/"
+    show_temp_message "Copying frontend files"
+    cp -r "${TRAILARR_DIR}/frontend-build" "$INSTALL_DIR/"
+    show_temp_message "Copying assets"
+    cp -r "${TRAILARR_DIR}/assets" "$INSTALL_DIR/"
+    show_temp_message "Copying scripts"
+    cp -r "${TRAILARR_DIR}/scripts" "$INSTALL_DIR/"
 
     # Set ownership
+    show_temp_message "Setting file ownership"
     chown -R trailarr:trailarr "$INSTALL_DIR"
 
-    end_message $GREEN "✓ Application files copied"
+    end_message "Application files copied"
 }
 
 # Function to run Python installation
 install_python() {
-    start_message "$BLUE" "Setting up Python 3.13.5..."
-    
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_python.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_python.sh"
     else
-        end_message $RED "✗ Python installation script not found"
+        show_message $RED "✗ Python installation script not found"
+        end_message "Python installation script not found"
         exit 1
     fi
-
-    end_message $GREEN "✓ Python 3.13.5 setup complete"
 }
 
 # Function to install Python dependencies
 install_python_deps() {
-    start_message "$BLUE" "Installing Python dependencies..."
+    start_message "Installing Python dependencies"
 
     # Source the Python executable from .env
+    show_temp_message "Loading Python environment configuration"
     if [ -f "$INSTALL_DIR/.env" ]; then
         source "$INSTALL_DIR/.env"
     fi
     
     if [ -z "$PYTHON_EXECUTABLE" ]; then
-        end_message $RED "✗ Python executable not found in environment"
+        show_message $RED "✗ Python executable not found in environment"
+        end_message "Python executable not found"
         exit 1
     fi
     
-    # Create virtual environment
-    sudo -u trailarr "$PYTHON_EXECUTABLE" -m venv "$INSTALL_DIR/venv" 2>/dev/null || {
-        end_message $RED "✗ Failed to create Python virtual environment"
+    log_to_file "Using Python executable: $PYTHON_EXECUTABLE"
+    
+    # Create virtual environment with logging
+    show_temp_message "Creating Python virtual environment"
+    if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
+        show_message $RED "✗ Failed to create Python virtual environment"
+        end_message "Failed to create virtual environment"
         exit 1
-    }
-
-    # Install dependencies
-    sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install --upgrade pip 2>/dev/null || {
-        end_message $RED "✗ Failed to install/upgrade pip"
-        exit 1
-    }
-
-    if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
-        sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/backend/requirements.txt" 2>/dev/null || {
-            end_message $RED "✗ Failed to install Python dependencies"
-            exit 1
-        }
-    else
-        # Install basic dependencies if requirements.txt not found
-        sudo -u trailarr "$INSTALL_DIR/venv/bin/pip" install \
-            aiohttp \
-            aiofiles \
-            aiosqlite \
-            alembic \
-            apscheduler \
-            async-lru \
-            bcrypt \
-            fastapi[standard-no-fastapi-cloud-cli] \
-            pillow \
-            sqlmodel \
-            yt-dlp[default,curl-cffi] 2>/dev/null || {
-                end_message $RED "✗ Failed to install basic Python dependencies"
-                exit 1
-            }
     fi
 
-    end_message $GREEN "✓ Python dependencies installed"
+    # Install/upgrade pip with logging
+    show_temp_message "Upgrading pip"
+    if ! run_logged_command "Upgrade pip" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install --upgrade pip"; then
+        show_message $RED "✗ Failed to install/upgrade pip"
+        end_message "Failed to upgrade pip"
+        exit 1
+    fi
+
+    # Install dependencies
+    if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
+        log_to_file "Installing dependencies from requirements.txt"
+        show_temp_message "Installing Python dependencies from requirements.txt"
+        if ! run_logged_command "Install Python dependencies from requirements.txt" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install -r \"$INSTALL_DIR/backend/requirements.txt\""; then
+            show_message $RED "✗ Failed to install Python dependencies"
+            end_message "Failed to install Python dependencies"
+            exit 1
+        fi
+    else
+        # Install basic dependencies if requirements.txt not found
+        log_to_file "requirements.txt not found, installing basic dependencies"
+        show_temp_message "Installing basic Python dependencies"
+        local basic_deps="aiohttp aiofiles aiosqlite alembic apscheduler async-lru bcrypt fastapi[standard-no-fastapi-cloud-cli] pillow sqlmodel yt-dlp[default,curl-cffi]"
+        if ! run_logged_command "Install basic Python dependencies" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install $basic_deps"; then
+            show_message $RED "✗ Failed to install basic Python dependencies"
+            end_message "Failed to install basic dependencies"
+            exit 1
+        fi
+    fi
+
+    # Save Python executable and related paths to .env file
+    show_temp_message "Configuring environment variables"
+    update_env_var "PYTHON_EXECUTABLE" "$PYTHON_EXECUTABLE" "$DATA_DIR/.env"
+    update_env_var "PYTHON_VENV" "$INSTALL_DIR/venv" "$DATA_DIR/.env"
+    update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
+
+    end_message "Python dependencies installed"
 }
 
 # Function to add trailarr user to GPU groups for hardware access
 configure_gpu_user_permissions() {
-    print_message $BLUE "→ Configuring GPU permissions for trailarr user"
+    show_temp_message "Configuring GPU permissions for trailarr user"
 
     # Initialize array of GPU groups to add user to
     local gpu_groups=()
@@ -375,7 +274,7 @@ configure_gpu_user_permissions() {
     
     # Check for specific DRI device groups for detected Intel/AMD GPUs
     if [ -n "$GPU_DEVICE_INTEL" ] || [ -n "$GPU_DEVICE_AMD" ]; then
-        print_message $BLUE "→ Checking groups for detected Intel/AMD GPU devices"
+        show_temp_message "Checking groups for detected Intel/AMD GPU devices"
 
         # Check Intel GPU device group if detected
         if [ -n "$GPU_DEVICE_INTEL" ] && [ -e "$GPU_DEVICE_INTEL" ]; then
@@ -385,7 +284,7 @@ configure_gpu_user_permissions() {
                     intel_group_name=$(getent group "$intel_gid" | cut -d: -f1)
                 else
                     intel_group_name="gpuintel"
-                    print_message $BLUE "→ Creating group '$intel_group_name' with GID '$intel_gid'"
+                    show_temp_message "Creating group '$intel_group_name' with GID '$intel_gid'"
                     groupadd -g "$intel_gid" "$intel_group_name"
                 fi
                 
@@ -404,7 +303,7 @@ configure_gpu_user_permissions() {
                     amd_group_name=$(getent group "$amd_gid" | cut -d: -f1)
                 else
                     amd_group_name="gpuamd"
-                    print_message $BLUE "→ Creating group '$amd_group_name' with GID '$amd_gid'"
+                    show_temp_message "Creating group '$amd_group_name' with GID '$amd_gid'"
                     groupadd -g "$amd_gid" "$amd_group_name"
                 fi
                 
@@ -429,28 +328,25 @@ configure_gpu_user_permissions() {
     
     # Add trailarr user to identified GPU groups
     if [ ${#gpu_groups[@]} -gt 0 ]; then
-        print_message $BLUE "→ GPU groups identified for trailarr user:$groups_found"
+        show_temp_message "GPU groups identified for trailarr user:$groups_found"
 
         for group in "${gpu_groups[@]}"; do
             group_entry=$(getent group "$group")
             if [ -n "$group_entry" ]; then
                 group_name=$(echo "$group_entry" | cut -d: -f1)
-                print_message $BLUE "→ Adding user 'trailarr' to group '$group_name'"
+                show_temp_message "Adding user 'trailarr' to group '$group_name'"
                 usermod -aG "$group_name" trailarr
             fi
         done
         
-        end_message $GREEN "✓ trailarr user added to GPU groups for hardware acceleration access"
+        show_message $GREEN "✓ trailarr user added to GPU groups for hardware acceleration access"
     else
-        print_message $YELLOW "→ No GPU groups found for hardware acceleration"
-        end_message $YELLOW "! trailarr user will not have GPU hardware acceleration access"
+        show_message $YELLOW "! No GPU groups found for hardware acceleration"
     fi
 }
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
-    start_message $BLUE "Detecting GPU hardware..."
-
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
         source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
@@ -461,56 +357,52 @@ setup_gpu_hardware() {
         
         # Configure GPU user permissions after detection
         configure_gpu_user_permissions
-    else
-        end_message $YELLOW "→ GPU setup script not found, skipping GPU configuration"
-    fi
 
-    end_message $GREEN "✓ GPU hardware detection complete"
+        show_message $GREEN "✓ GPU hardware detection and setup complete"
+    else
+        show_message $YELLOW "! GPU setup script not found, skipping GPU configuration"
+    fi
 }
 
 # Function to install media tools (ffmpeg, yt-dlp)
 install_media_tools() {
-    start_message $BLUE "Installing media processing tools..."
-    
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
+        show_message $GREEN "✓ Media tools installed"
     else
-        end_message $RED "✗ Media tools installation script not found"
+        show_message $RED "✗ Media tools installation script not found"
         exit 1
     fi
-
-    end_message $GREEN "✓ Media tools installed"
 }
 
 # Function to run interactive configuration
 run_interactive_config() {
-    print_message $BLUE "Starting interactive configuration..."
-    
     if [ -f "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh" ]; then
         bash "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh"
     else
-        print_message $YELLOW "→ Interactive config script not found, using defaults"
-        # Create basic .env file
-        tee "$DATA_DIR/.env" > /dev/null << EOF
-APP_PORT=7889
-APP_DATA_DIR=$DATA_DIR
-MONITOR_INTERVAL=60
-WAIT_FOR_MEDIA=true
-ENABLE_HWACCEL=false
-HWACCEL_TYPE=none
-INSTALLATION_MODE=baremetal
-PYTHONPATH=$INSTALL_DIR/backend
-EOF
-        chown trailarr:trailarr "$INSTALL_DIR/.env"
+        start_message "Setting up default configuration"
+        show_message $YELLOW "! Interactive config script not found, using defaults"
+        # Create basic .env file with proper variable handling
+        show_temp_message "Creating default configuration"
+        update_env_var "APP_PORT" "7889" "$DATA_DIR/.env"
+        update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
+        update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"
+        update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"
+        update_env_var "ENABLE_HWACCEL" "false" "$DATA_DIR/.env"
+        update_env_var "HWACCEL_TYPE" "none" "$DATA_DIR/.env"
+        update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
+        update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
+        
+        chown trailarr:trailarr "$DATA_DIR/.env"
+        end_message "Default configuration applied"
     fi
-    
-    print_message $GREEN "✓ Configuration complete"
 }
 
 # Function to create and start systemd service
 create_systemd_service() {
-    start_message $BLUE "Creating systemd service..."
+    start_message "Creating systemd service"
 
+    show_temp_message "Creating service configuration"
     tee /etc/systemd/system/trailarr.service > /dev/null << EOF
 [Unit]
 Description=Trailarr - Trailer downloader for Radarr and Sonarr
@@ -546,35 +438,38 @@ WantedBy=multi-user.target
 EOF
     
     # Reload systemd and enable service
+    show_temp_message "Enabling systemd service"
     systemctl daemon-reload
     systemctl enable trailarr
     
-    end_message $GREEN "✓ Systemd service created and enabled"
+    show_message $GREEN "✓ Systemd service created and enabled"
     
     # Start the service
-    start_message $BLUE "Starting Trailarr service..."
+    show_temp_message "Starting Trailarr service"
     if systemctl start trailarr; then
-        end_message $GREEN "✓ Trailarr service started successfully"
+        show_message $GREEN "✓ Trailarr service started successfully"
         
         # Wait a moment and check status
         sleep 3
         if systemctl is-active --quiet trailarr; then
-            print_message $GREEN "✓ Trailarr service is running"
+            show_message $GREEN "✓ Trailarr service is running"
         else
-            print_message $YELLOW "⚠ Service started but may need time to initialize"
-            print_message $YELLOW "Check status with: sudo systemctl status trailarr"
+            show_message $YELLOW "⚠ Service started but may need time to initialize"
+            show_message $YELLOW "Check status with: sudo systemctl status trailarr"
         fi
     else
-        print_message $YELLOW "⚠ Failed to start service automatically"
-        print_message $YELLOW "You can start it manually with: sudo systemctl start trailarr"
+        show_message $YELLOW "⚠ Failed to start service automatically"
+        show_message $YELLOW "You can start it manually with: sudo systemctl start trailarr"
     fi
+    
+    end_message "Systemd service configured"
 }
 
 # Function to display completion message
 display_completion() {
-    print_message $GREEN ""
-    print_message $GREEN "🎉 Trailarr installation completed successfully!"
-    print_message $GREEN ""
+    show_message ""
+    show_message $GREEN "🎉 Trailarr installation completed successfully!"
+    show_message ""
     
     # Source configuration for summary
     if [ -f "$INSTALL_DIR/.env" ]; then
@@ -594,8 +489,8 @@ display_completion() {
     echo ""
     
     if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
-        print_message $YELLOW "Note: GPU hardware acceleration is enabled for $HWACCEL_TYPE."
-        print_message $YELLOW "Ensure required drivers are installed for optimal performance."
+        show_message $YELLOW "Note: GPU hardware acceleration is enabled for $HWACCEL_TYPE."
+        show_message $YELLOW "Ensure required drivers are installed for optimal performance."
     fi
     
     echo "For support and documentation, visit:"
@@ -605,28 +500,49 @@ display_completion() {
 
 # Main installation function
 main() {
+    # Initialize logging first
+    init_logging
+    
     display_banner
     
     # Pre-installation checks
+    start_message "Pre-installation checks"
     check_root
     check_distribution
+    end_message "Pre-installation checks complete"
     
     # Installation steps
     install_system_deps
     create_user_and_dirs
-    download_latest_release
     copy_application_files
+    
+    start_message "Setting up Python environment"
     install_python
+    end_message "Python environment ready"
+    
     install_python_deps
+    
+    start_message "GPU hardware detection and setup"
     setup_gpu_hardware
+    end_message "GPU hardware setup complete"
+    
+    start_message "Installing media processing tools"
     install_media_tools
+    end_message "Media processing tools installed"
+    
+    start_message "Configuring Trailarr"
     run_interactive_config
+    end_message "Trailarr configuration complete"
+    
     create_systemd_service
     
     # Clean up temporary files
     rm -f /tmp/gpu_detection_results
     
     display_completion
+    
+    # Show log file location
+    show_log_location
 }
 
 # Run main installation

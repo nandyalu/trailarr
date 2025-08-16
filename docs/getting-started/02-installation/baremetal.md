@@ -10,7 +10,7 @@ Trailarr can be installed directly on Debian-based systems without Docker. This 
     - Internet connection for downloading dependencies
 
 !!! warning "Python Version"
-    The application requires Python 3.13.5. The installer will automatically detect and install this version if not available on your system.
+    The application requires Python 3.13.5 or newer. The installer will automatically detect and install this version within the Trailarr installation if not available on your system.
 
 ## Quick Installation
 
@@ -19,7 +19,7 @@ Trailarr can be installed directly on Debian-based systems without Docker. This 
 Run this single command to download and install Trailarr:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
 ```
 
 This command will:
@@ -37,7 +37,7 @@ If you prefer to review the code first:
 ```bash
 git clone https://github.com/nandyalu/trailarr.git
 cd trailarr
-./scripts/baremetal/install.sh
+./install.sh
 ```
 
 The installer will guide you through installation process.
@@ -112,13 +112,13 @@ tail -f /var/lib/trailarr/logs/app.log
 
 Most of the options can be changed from the web UI after installation.
 
-!!! warning
-   `APP_DATA_DIR` cannot be changed as installer depends on that!
+!!! warning ""
+    `APP_DATA_DIR` cannot be changed as installer depends on that!
 
 Main Configuration File is located in `/var/lib/trailarr/.env` if you want to modify later.
 
-!!! note 
-   Restart Trailarr service after configuration change.
+!!! note ""
+    Restart Trailarr service after configuration change.
 
 ## Maintenance
 
@@ -132,7 +132,7 @@ sudo systemctl stop trailarr
 sudo cp -r /opt/trailarr /opt/trailarr.backup
 
 # Download and run the installer again
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
 
 # Start the service
 sudo systemctl start trailarr
@@ -233,7 +233,7 @@ sudo systemctl restart trailarr
 ### Quick Uninstall
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh | sudo bash
 ```
 
 The uninstaller will prompt you to preserve data for future reinstallations.
