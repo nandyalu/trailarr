@@ -264,8 +264,14 @@ log_and_spinner() {
         color_code="$CYAN"
         msg="$1"
     else
-        color_code="$1"
-        msg="$2"
+        # Check if first argument is a number (color code)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            color_code="$1"
+            msg="$2"
+        else
+            color_code="$CYAN"
+            msg="$1"
+        fi
     fi
     
     tput rc
@@ -301,8 +307,14 @@ show_message() {
         color_code="$BLUE"
         msg="$1"
     else
-        color_code="$1"
-        msg="$2"
+        # Check if first argument is a number (color code)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            color_code="$1"
+            msg="$2"
+        else
+            color_code="$BLUE"
+            msg="$1"
+        fi
     fi
     
     # Check if the spinner is running
@@ -370,8 +382,28 @@ EOF
 # }
 
 # Function to display a temporary status message without a spinner
+show_temp_message() {
+    local color_code=""
+    local msg=""
+    if [ "$#" -eq 1 ]; then
+        color_code="$CYAN"
+        msg="$1"
+    else
+        # Check if first argument is a number (color code)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            color_code="$1"
+            msg="$2"
+        else
+            color_code="$CYAN"
+            msg="$1"
+        fi
+    fi
+    log_and_spinner "$color_code" "$msg"
+}
+
+# Backward compatibility alias
 show_temp_status() {
-    log_and_spinner "$1" "$2"
+    show_temp_message "$1" "$2"
 }
 
 # Function to show a final status message and stop the spinner
