@@ -36,14 +36,15 @@ cleanup() {
         # Kill the background spinner process
         kill "$SPINNER_PID" 2>/dev/null
         # Wait for the process to terminate
-        wait "$SPINNER_PID" 2>/dev/null
+        wait "$SPINNER_PID" 2>/dev/null || true
     fi
     # Restore cursor visibility
     tput cnorm
+    exit 0
 }
 
 # Trap common termination signals and call the cleanup function
-trap cleanup INT TERM EXIT
+trap cleanup INT TERM ERR
 
 # Function to reset the log counter and persistent message array for a new task.
 reset_state() {
@@ -60,8 +61,8 @@ _finalize_previous_spinner() {
         # Kill the background spinner process
         kill "$SPINNER_PID" 2> /dev/null
         # Wait for the process to ensure it's terminated
-        wait "$SPINNER_PID" 2>/dev/null
-        
+        wait "$SPINNER_PID" 2>/dev/null || true
+
         # Restore the cursor to the initial saved position (the spinner's line)
         tput rc
         
@@ -202,7 +203,7 @@ stop_spinner() {
         # Kill the background spinner process
         kill "$SPINNER_PID" 2> /dev/null
         # Wait for the process to ensure it's terminated
-        wait "$SPINNER_PID" 2>/dev/null
+        wait "$SPINNER_PID" 2>/dev/null || true
     fi
     
     # Restore the cursor to the initial saved position (the spinner's line)
