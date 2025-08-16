@@ -116,8 +116,8 @@ _finalize_previous_spinner() {
 }
 
 # Function to start the spinner animation
-# Usage: start_spinner "Your message here"
-start_spinner() {
+# Usage: start_message "Your message here"
+start_message() {
     # If a spinner is already running, finalize it before starting a new one
     _finalize_previous_spinner
 
@@ -365,9 +365,9 @@ EOF
 # These functions wrap the new, more robust functions to maintain compatibility with existing scripts.
 
 # Function to start a message with a spinner
-start_message() {
-    start_spinner "$1"
-}
+# start_message() {
+#     start_message "$1"
+# }
 
 # Function to display a temporary status message without a spinner
 show_temp_status() {
@@ -424,7 +424,7 @@ run_logged_command() {
     
     log_to_file "COMMAND START: $description - Running: $command"
     
-    start_spinner "$description"
+    start_message "$description"
     
     # Run command and capture output
     local output
@@ -467,7 +467,7 @@ run_command_with_progress() {
     log_to_file "COMMAND START: $description - Running: $command"
     
     # Show progress
-    start_spinner "$description"
+    start_message "$description"
     
     # Run command and capture output
     local output
