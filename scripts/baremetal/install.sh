@@ -34,8 +34,8 @@ display_banner() {
 
 EOF
     show_message $GREEN "Trailarr Version: $TRAILARR_VERSION"
-    show_message $BLUE "Installing Trailarr directly on your system for maximum performance
-with native GPU hardware acceleration support"
+    show_message $BLUE "Installing Trailarr directly on your system for maximum performance"
+    show_message $BLUE "with native GPU hardware acceleration support"
     echo ""
 }
 
@@ -44,16 +44,18 @@ check_root() {
     # Block direct root execution (not via sudo)
     if [[ $EUID -eq 0 && -z "$SUDO_USER" ]]; then
         show_message $RED "Do NOT run this script directly as root."
-        show_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
+        show_message $YELLOW "Please run as a regular user with sudo:"
+        show_message $YELLOW ">>>    sudo bash install.sh"
         exit 1
     fi
     # Block non-sudo runs (must be run with sudo)
     if [[ $EUID -ne 0 || -z "$SUDO_USER" ]]; then
         show_message $RED "This script must be run with sudo."
-        show_message $YELLOW "Please run as a regular user with sudo: sudo bash install.sh"
+        show_message $YELLOW "Please run as a regular user with sudo:"
+        show_message $YELLOW ">>>    sudo bash install.sh"
         exit 1
     fi
-    show_message $GREEN "✓ Running with sudo as user: $SUDO_USER"
+    show_message $GREEN "Running with sudo as user: $SUDO_USER"
 }
 
 # Function to check if distribution is supported
@@ -64,51 +66,45 @@ check_distribution() {
         exit 1
     fi
     
-    show_message $GREEN "✓ Debian-based distribution detected"
+    show_message $GREEN "Debian-based distribution detected"
 }
 
 # Function to install system dependencies
 install_system_deps() {
-    start_message "Installing system dependencies"
-
     # Update package list with detailed logging
     show_temp_message "Updating package list"
     if run_logged_command "Update package list" "apt-get update"; then
-        log_to_file "Package list updated successfully"
-        show_temp_message $GREEN "✓ Package list updated"
+        show_message $GREEN "Package list updated successfully"
     else
-        show_message $RED "✗ Failed to update package list"
-        end_message "Failed to update package list"
+        show_message $RED "Failed to update package list"
+        end_message $RED "Failed to update package list"
         exit 1
     fi
 
     # Install system dependencies with logging
     local packages="curl wget xz-utils unzip tar git pciutils usbutils ca-certificates build-essential libffi-dev libssl-dev systemd sudo"
-    show_temp_message "Installing system packages"
-    if run_logged_command "Install system packages" "apt-get install -y $packages"; then
-        log_to_file "System dependencies installed successfully"
-        show_temp_message $GREEN "✓ System packages installed"
+    show_temp_message "Installing system dependencies"
+    if run_logged_command "Install system dependencies" "apt-get install -y $packages"; then
+        show_message $GREEN "System dependencies installed successfully"
     else
-        show_message $RED "✗ Failed to install system dependencies"
-        end_message "Failed to install system dependencies"
+        show_message $RED "Failed to install system dependencies"
+        end_message $RED "Failed to install system dependencies"
         exit 1
     fi
-
-    end_message "System dependencies installed"
 }
 
 # Function to create trailarr user and directories
 create_user_and_dirs() {
-    start_message "Creating trailarr user and directories"
+    show_temp_message "Creating trailarr user and directories"
 
     # Create trailarr user if it doesn't exist
     show_temp_message "Checking for trailarr user"
     if ! id "trailarr" &>/dev/null; then
         show_temp_message "Creating trailarr user"
         useradd -r -d "$INSTALL_DIR" -s /bin/bash -m trailarr
-        show_message $GREEN "✓ Created 'trailarr' user"
+        show_message $GREEN "Created 'trailarr' user"
     else
-        show_message $YELLOW "! 'trailarr' user already exists"
+        show_message $YELLOW "'trailarr' user already exists"
     fi
     
     show_temp_message "Creating required directories"
@@ -125,20 +121,20 @@ create_user_and_dirs() {
     chown -R trailarr:trailarr "$DATA_DIR"
     chown -R trailarr:trailarr "$LOG_DIR"
 
-    end_message "Directories created and configured"
+    show_message "Directories created and configured"
 }
 
 # Function to copy application files
 copy_application_files() {
-    start_message "Copying application files"
+    show_temp_message "Copying application files"
 
     # Check if source directories exist before copying
     show_temp_message "Verifying source directories"
     for dir in backend frontend-build assets scripts; do
         if [ ! -d "${TRAILARR_DIR}/$dir" ]; then
-            show_message $RED "✗ Source directory ${TRAILARR_DIR}/$dir does not exist"
-            show_message $RED "✗ Try running the install script again from project root!"
-            end_message "Source directories missing"
+            show_message $RED "Source directory ${TRAILARR_DIR}/$dir does not exist"
+            show_message $RED "Try running the install script again from project root!"
+            end_message $RED "Source directories missing"
             exit 1
         fi
     done
@@ -157,23 +153,24 @@ copy_application_files() {
     show_temp_message "Setting file ownership"
     chown -R trailarr:trailarr "$INSTALL_DIR"
 
-    end_message "Application files copied"
+    show_message "Application files copied"
 }
 
 # Function to run Python installation
 install_python() {
+    show_temp_message "Running Python installation"
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_python.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_python.sh"
     else
-        show_message $RED "✗ Python installation script not found"
-        end_message "Python installation script not found"
+        show_message $RED "Python installation script not found"
+        end_message $RED "Python installation script not found"
         exit 1
     fi
 }
 
 # Function to install Python dependencies
 install_python_deps() {
-    start_message "Installing Python dependencies"
+    show_temp_message "Installing Python dependencies"
 
     # Source the Python executable from .env
     show_temp_message "Loading Python environment configuration"
@@ -182,8 +179,8 @@ install_python_deps() {
     fi
     
     if [ -z "$PYTHON_EXECUTABLE" ]; then
-        show_message $RED "✗ Python executable not found in environment"
-        end_message "Python executable not found"
+        show_message $RED "Python executable not found in environment"
+        end_message $RED "Python executable not found"
         exit 1
     fi
     
@@ -192,26 +189,26 @@ install_python_deps() {
     # Create virtual environment with logging
     show_temp_message "Creating Python virtual environment"
     if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
-        show_message $RED "✗ Failed to create Python virtual environment"
-        end_message "Failed to create virtual environment"
+        show_message $RED "Failed to create Python virtual environment"
+        end_message $RED "Failed to create virtual environment"
         exit 1
     fi
 
     # Install/upgrade pip with logging
     show_temp_message "Upgrading pip"
-    if ! run_logged_command "Upgrade pip" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install --upgrade pip"; then
-        show_message $RED "✗ Failed to install/upgrade pip"
-        end_message "Failed to upgrade pip"
+    if ! run_logged_command "Upgrading pip" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install --upgrade pip"; then
+        show_message $RED "Failed to install/upgrade pip"
+        end_message $YELLOW "Failed to upgrade pip"
         exit 1
     fi
 
     # Install dependencies
     if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
         log_to_file "Installing dependencies from requirements.txt"
-        show_temp_message "Installing Python dependencies from requirements.txt"
+        show_temp_message "Installing Python dependencies"
         if ! run_logged_command "Install Python dependencies from requirements.txt" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install -r \"$INSTALL_DIR/backend/requirements.txt\""; then
-            show_message $RED "✗ Failed to install Python dependencies"
-            end_message "Failed to install Python dependencies"
+            show_message $RED "Failed to install Python dependencies"
+            end_message $RED "Failed to install Python dependencies"
             exit 1
         fi
     else
@@ -220,8 +217,8 @@ install_python_deps() {
         show_temp_message "Installing basic Python dependencies"
         local basic_deps="aiohttp aiofiles aiosqlite alembic apscheduler async-lru bcrypt fastapi[standard-no-fastapi-cloud-cli] pillow sqlmodel yt-dlp[default,curl-cffi]"
         if ! run_logged_command "Install basic Python dependencies" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install $basic_deps"; then
-            show_message $RED "✗ Failed to install basic Python dependencies"
-            end_message "Failed to install basic dependencies"
+            show_message $RED "Failed to install basic Python dependencies"
+            end_message $RED "Failed to install basic dependencies"
             exit 1
         fi
     fi
@@ -232,7 +229,7 @@ install_python_deps() {
     update_env_var "PYTHON_VENV" "$INSTALL_DIR/venv" "$DATA_DIR/.env"
     update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
 
-    end_message "Python dependencies installed"
+    show_message "Python dependencies installed"
 }
 
 # Function to add trailarr user to GPU groups for hardware access
@@ -339,28 +336,37 @@ configure_gpu_user_permissions() {
             fi
         done
         
-        show_message $GREEN "✓ trailarr user added to GPU groups for hardware acceleration access"
+        show_message $GREEN "trailarr user added to GPU groups for hardware acceleration access"
     else
-        show_message $YELLOW "! No GPU groups found for hardware acceleration"
+        show_message $YELLOW "No GPU groups found for hardware acceleration"
     fi
 }
 
 # Function to detect GPU hardware
 setup_gpu_hardware() {
+    show_temp_message "Detecting GPU hardware for Trailarr"
+    sleep 3
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
+        show_temp_message "Running GPU detection script"
+        sleep 3
         source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
-        
+        show_temp_message "GPU detection script completed"
+        sleep 3
         # Save results for interactive config
         echo "export DETECTED_GPUS=(${DETECTED_GPUS[*]})" > /tmp/gpu_detection_results
         echo "export AVAILABLE_GPUS=(${AVAILABLE_GPUS[*]})" >> /tmp/gpu_detection_results
         
         # Configure GPU user permissions after detection
+        show_temp_message "Configuring GPU user permissions"
+        sleep 3
         configure_gpu_user_permissions
+        show_temp_message "GPU user permissions configured"
 
-        show_message $GREEN "✓ GPU hardware detection and setup complete"
+        show_message $GREEN "GPU hardware detection and setup complete"
     else
-        show_message $YELLOW "! GPU setup script not found, skipping GPU configuration"
+        sleep 3
+        show_message $YELLOW "GPU setup script not found, skipping GPU configuration"
     fi
 }
 
@@ -368,9 +374,9 @@ setup_gpu_hardware() {
 install_media_tools() {
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
         sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
-        show_message $GREEN "✓ Media tools installed"
+        show_message $GREEN "Media tools installed"
     else
-        show_message $RED "✗ Media tools installation script not found"
+        end_message $RED "Media tools installation script not found"
         exit 1
     fi
 }
@@ -380,29 +386,26 @@ run_interactive_config() {
     if [ -f "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh" ]; then
         bash "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh"
     else
-        start_message "Setting up default configuration"
-        show_message $YELLOW "! Interactive config script not found, using defaults"
+        show_temp_message "Setting up default configuration"
+        show_message $YELLOW "Interactive config script not found, using defaults"
         # Create basic .env file with proper variable handling
         show_temp_message "Creating default configuration"
         update_env_var "APP_PORT" "7889" "$DATA_DIR/.env"
         update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
         update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"
         update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"
-        update_env_var "ENABLE_HWACCEL" "false" "$DATA_DIR/.env"
-        update_env_var "HWACCEL_TYPE" "none" "$DATA_DIR/.env"
         update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
         update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
         
         chown trailarr:trailarr "$DATA_DIR/.env"
-        end_message "Default configuration applied"
+        show_message "Default configuration applied"
     fi
 }
 
 # Function to create and start systemd service
 create_systemd_service() {
-    start_message "Creating systemd service"
+    show_temp_message "Creating systemd service"
 
-    show_temp_message "Creating service configuration"
     tee /etc/systemd/system/trailarr.service > /dev/null << EOF
 [Unit]
 Description=Trailarr - Trailer downloader for Radarr and Sonarr
@@ -442,27 +445,29 @@ EOF
     systemctl daemon-reload
     systemctl enable trailarr
     
-    show_message $GREEN "✓ Systemd service created and enabled"
+    show_message $GREEN "Systemd service created and enabled"
     
     # Start the service
     show_temp_message "Starting Trailarr service"
     if systemctl start trailarr; then
-        show_message $GREEN "✓ Trailarr service started successfully"
+        show_message $GREEN "Trailarr service started successfully"
         
         # Wait a moment and check status
         sleep 3
         if systemctl is-active --quiet trailarr; then
-            show_message $GREEN "✓ Trailarr service is running"
+            show_message $GREEN "Trailarr service is running"
         else
-            show_message $YELLOW "⚠ Service started but may need time to initialize"
-            show_message $YELLOW "Check status with: sudo systemctl status trailarr"
+            show_message $YELLOW "Service started but may need time to initialize"
+            show_message $YELLOW "Check status with: "
+            show_message $YELLOW ">>>    sudo systemctl status trailarr"
         fi
     else
-        show_message $YELLOW "⚠ Failed to start service automatically"
-        show_message $YELLOW "You can start it manually with: sudo systemctl start trailarr"
+        show_message $YELLOW "Failed to start service automatically"
+        show_message $YELLOW "You can start it manually with: "
+        show_message $YELLOW ">>>    sudo systemctl start trailarr"
     fi
     
-    end_message "Systemd service configured"
+    show_message "Systemd service configured"
 }
 
 # Function to display completion message
@@ -476,26 +481,24 @@ display_completion() {
         source "$INSTALL_DIR/.env"
     fi
     
-    echo "Installation Summary:"
-    echo "  - Installation Directory: $INSTALL_DIR"
-    echo "  - Data Directory: $DATA_DIR"
-    echo "  - Web Interface: http://localhost:${APP_PORT:-7889}"
-    echo "  - Service User: trailarr"
-    echo ""
-    echo "Next Steps:"
-    echo "  1. Check service status: sudo systemctl status trailarr"
-    echo "  2. View logs:           sudo journalctl -u trailarr -f"
-    echo "  3. Access web interface: http://localhost:${APP_PORT:-7889}"
-    echo ""
-    
-    if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
-        show_message $YELLOW "Note: GPU hardware acceleration is enabled for $HWACCEL_TYPE."
-        show_message $YELLOW "Ensure required drivers are installed for optimal performance."
-    fi
-    
-    echo "For support and documentation, visit:"
-    echo "  https://github.com/nandyalu/trailarr"
-    echo ""
+    show_message "Installation Summary:"
+    show_message "  - Installation Directory: $INSTALL_DIR"
+    show_message "  - Data Directory: $DATA_DIR"
+    show_message "  - Web Interface: http://localhost:${APP_PORT:-7889}"
+    show_message "  - Service User: trailarr"
+    show_message ""
+    show_message "Next Steps:"
+    show_message "  1. Check service status:"
+    show_message ">>>    sudo systemctl status trailarr"
+    show_message "  2. View logs:"
+    show_message ">>>    sudo journalctl -u trailarr -f"
+    show_message "  3. Access web interface: "
+    show_message ">>>    http://localhost:${APP_PORT:-7889}"
+    show_message ""
+
+    show_message "For support and documentation, visit:"
+    show_message "  https://github.com/nandyalu/trailarr"
+    show_message ""
 }
 
 # Main installation function
@@ -512,29 +515,39 @@ main() {
     end_message "Pre-installation checks complete"
     
     # Installation steps
+    start_message "Installing Dependencies"
     install_system_deps
+    end_message "System dependencies installed successfully"
+
+    # Setup User and Directories
+    start_message "Creating user and setting up directories"
     create_user_and_dirs
     copy_application_files
-    
+    end_message "User created and directories set up"
+
+    # Install Python and dependencies
     start_message "Setting up Python environment"
     install_python
+    install_python_deps
     end_message "Python environment ready"
     
-    install_python_deps
-    
+    # GPU Detection
     start_message "GPU hardware detection and setup"
     setup_gpu_hardware
-    end_message "GPU hardware setup complete"
+    end_message "GPU hardware detection and setup complete"
     
     start_message "Installing media processing tools"
     install_media_tools
     end_message "Media processing tools installed"
     
-    start_message "Configuring Trailarr"
+    show_message "Configuring Trailarr"
     run_interactive_config
-    end_message "Trailarr configuration complete"
+    show_message "Trailarr configuration complete"
     
+    # Create systemd service
+    start_message "Setting up systemd service"
     create_systemd_service
+    end_message "Systemd service created and enabled"
     
     # Clean up temporary files
     rm -f /tmp/gpu_detection_results

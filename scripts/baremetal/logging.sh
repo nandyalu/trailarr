@@ -28,18 +28,31 @@ CYAN=6
 WHITE=7
 NC='\033[0m' # No Color
 
+# Function to kill spinner [if running] gracefully without causing error
+_kill_spinner() {
+    # Check if a spinner process exists and is running
+    local _spin_pid="$SPINNER_PID"
+    SPINNER_PID="" # Reset Spinner PID so that other's won't trigger to kill it
+    if [ -n "$_spin_pid" ] && kill -0 "$_spin_pid" 2>/dev/null; then
+        # Kill the background spinner process
+        kill "$_spin_pid" 2>/dev/null
+        # Wait for the process to terminate
+        wait "$_spin_pid" 2>/dev/null || true
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 # Function to clean up the terminal on script exit or interruption.
 # This ensures the spinner is stopped and the cursor is visible.
 cleanup() {
-    # Check if a spinner process exists and is running
-    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
-        # Kill the background spinner process
-        kill "$SPINNER_PID" 2>/dev/null
-        # Wait for the process to terminate
-        wait "$SPINNER_PID" 2>/dev/null || true
-    fi
-    # Restore cursor visibility
+    # Check if a spinner process exists and is running and kill it
+    local killed_spinner=$(_kill_spinner)
+    # Reset colors and Restore cursor visibility
+    tput sgr0
     tput cnorm
+    log_to_file "Script terminated. Spinner killed: $killed_spinner"
     exit 0
 }
 
@@ -57,18 +70,17 @@ reset_state() {
 # This is an internal helper function.
 _finalize_previous_spinner() {
     # Only proceed if a spinner is actually running
-    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
-        # Kill the background spinner process
-        kill "$SPINNER_PID" 2> /dev/null
-        # Wait for the process to ensure it's terminated
-        wait "$SPINNER_PID" 2>/dev/null || true
-
+    local _killed_spinner=$(_kill_spinner)
+    if [ "$_killed_spinner" = "true" ]; then
         # Restore the cursor to the initial saved position (the spinner's line)
         tput rc
         
         # Clear the entire screen from the current cursor position to the end.
         tput ed
-        
+
+        # Clear the line
+        tput el
+
         # Calculate the final elapsed time
         local final_time=$(( $(date +%s) - START_TIME ))
 
@@ -87,6 +99,7 @@ _finalize_previous_spinner() {
             printf "%*s" "$padding" " "
         fi
         echo -n "$final_time_str"
+        log_to_file "Final message(stopped): $msg_core"
         tput sgr0
         
         # Add post-padding to clear the rest of the line if > 80 cols
@@ -100,6 +113,9 @@ _finalize_previous_spinner() {
         for p_msg in "${PERSISTENT_MESSAGES[@]}"; do
             local color_code="${p_msg%%:*}"
             local message="${p_msg#*:}"
+            local result=$(_parse_status_message "$color_code" "$message" "$CYAN")
+            color_code="${result%%:*}"
+            message="${result#*:}"
             tput setaf "$color_code"
             echo "$message"
             tput sgr0
@@ -116,6 +132,47 @@ _finalize_previous_spinner() {
     fi
 }
 
+# Function to parse the status message and extract color code and message
+# This is an internal helper function.
+# Accepts args from original function call and an extra default color
+# Example: _parse_status_message "$@" "$GREEN"
+# Example: _parse_status_message "message" "default color to use"
+# Example: _parse_status_message "color" "message" "default color to use"
+_parse_status_message() {
+    local color_code
+    local msg
+    local default_color="$3"
+    if [ "$#" -eq 1 ] || [ "$#" -eq 2 -a -z "$2" ]; then
+        color_code="${default_color:-$GREEN}"
+        msg="$1"
+    else
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            color_code="$1"
+            msg="$2"
+        else
+            color_code="${default_color:-$GREEN}"
+            msg="$1"
+        fi
+    fi
+
+    # Add a symbol based on color (BLUE - '➜'; CYAN - '➜'; GREEN - ✓; YELLOW - ⚠; RED - ✗)
+    if [[ "$msg" =~ ^(➜\ |✓\ |⚠\ |✗\ ) ]]; then
+        msg="$msg"
+    elif [ "$color_code" -eq "$BLUE" ]; then
+        msg="➜ $msg"
+    elif [ "$color_code" -eq "$CYAN" ]; then
+        msg="➜ $msg"
+    elif [ "$color_code" -eq "$GREEN" ]; then
+        msg="✓ $msg"
+    elif [ "$color_code" -eq "$YELLOW" ]; then
+        msg="⚠ $msg"
+    elif [ "$color_code" -eq "$RED" ]; then
+        msg="✗ $msg"
+    fi
+
+    echo "$color_code:$msg"
+}
+
 # Function to start the spinner animation
 # Usage: start_message "Your message here"
 start_message() {
@@ -130,6 +187,7 @@ start_message() {
 
     # Store the message provided as an argument
     SPINNER_MSG="$1"
+    log_to_file "START: $SPINNER_MSG"
     
     # An array of spinner characters
     local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
@@ -137,9 +195,14 @@ start_message() {
     # Get the start time in seconds since the epoch and store it globally
     START_TIME=$(date +%s)
     
+    # Add 5 new lines of 80 columns to ensure the spinner has enough space
+    for _ in {1..5}; do
+        echo "                                                                                "
+    done
+    tput cuu 5  # Up 5 lines to the spinner's line
     # Save the initial cursor position of the spinner's line
     tput sc
-    
+
     # Run the spinner logic in a background process
     (
         local i=0
@@ -151,7 +214,9 @@ start_message() {
 
             # Restore the cursor to the saved spinner position
             tput rc
-            
+
+            # tput el  # Clear the line
+
             # Get terminal width for padding
             local term_width=$(tput cols)
             local line_content_core="${spinner_chars[i]} ${SPINNER_MSG}"
@@ -194,30 +259,30 @@ start_message() {
 }
 
 # Function to stop the spinner and show a final message
-# Usage: stop_spinner "Your message here"
-stop_spinner() {
-    local msg="$1"
-    
+# Usage: end_message "Your message here"
+end_message() {
     # If a spinner is running, kill it gracefully
-    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
-        # Kill the background spinner process
-        kill "$SPINNER_PID" 2> /dev/null
-        # Wait for the process to ensure it's terminated
-        wait "$SPINNER_PID" 2>/dev/null || true
-    fi
-    
+    local _killed_spinner=$(_kill_spinner)
+
+    local result=$(_parse_status_message "$@" "$GREEN")
+    local color_code="${result%%:*}"
+    local msg="${result#*:}"
+    log_to_file "END: $msg"
+
     # Restore the cursor to the initial saved position (the spinner's line)
     tput rc
     
     # Clear the entire screen from the current cursor position to the end.
     tput ed
+
+    # tput el  # Clear the line
     
     # Calculate the final elapsed time
     local final_time=$(( $(date +%s) - START_TIME ))
 
     # Print a final message to the terminal with a checkmark.
     local term_width=$(tput cols)
-    local msg_core="✓ ${msg}"
+    local msg_core="${msg}"
     local final_time_str="(${final_time}s)"
     local line_content="${msg_core} ${final_time_str}"
     local effective_width=$((term_width > 80 ? 80 : term_width))
@@ -243,8 +308,13 @@ stop_spinner() {
     for p_msg in "${PERSISTENT_MESSAGES[@]}"; do
         local color_code="${p_msg%%:*}"
         local message="${p_msg#*:}"
+        # If message contains >>> text to italic
+        if [[ "$message" == *'>>>'* ]]; then
+            tput sitm
+        fi
+        tput el  # Clear the line
         tput setaf "$color_code"
-        echo "$message"
+        echo "  $message"
         tput sgr0
     done
 
@@ -257,31 +327,26 @@ stop_spinner() {
 
 # Function to print a message to the console without disturbing the spinner.
 # This is for real-time messages that are not persistent.
-# Usage: log_and_spinner ["color_code"] "Your message here"
-log_and_spinner() {
-    local color_code=""
-    local msg=""
-    if [ "$#" -eq 1 ]; then
-        color_code="$CYAN"
-        msg="$1"
-    else
-        # Check if first argument is a number (color code)
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
-            color_code="$1"
-            msg="$2"
-        else
-            color_code="$CYAN"
-            msg="$1"
-        fi
-    fi
-    
+# Usage: show_temp_message ["color_code"] "Your message here"
+show_temp_message() {
+    local result=$(_parse_status_message "$@" "$CYAN")
+    local color_code="${result%%:*}"
+    local msg="  ${result#*:}" # Add some space before the message text
+    log_to_file "TEMP: $msg"
+
     tput rc
     tput cud $((LOG_COUNT + 1))
-    
+
+    # If msg contains >>> set text to italic
+    if [[ "$msg" == *'>>>'* ]]; then
+        tput sitm
+    fi
+
     local term_width=$(tput cols)
     local msg_len=${#msg}
     local padding=$((term_width - msg_len))
 
+    tput el  # Clear the line
     tput setaf "$color_code"
     echo -n "$msg"
     
@@ -300,28 +365,18 @@ log_and_spinner() {
 # Function to store a message that will be printed when the spinner stops.
 # This function will either store the message if a spinner is running or
 # print it directly if no spinner is active.
+# These messages are persistent, they persist even after spinner stops.
 # Usage: show_message ["color_code"] "Your message here"
 show_message() {
-    local color_code=""
-    local msg=""
-    if [ "$#" -eq 1 ]; then
-        color_code="$BLUE"
-        msg="$1"
-    else
-        # Check if first argument is a number (color code)
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
-            color_code="$1"
-            msg="$2"
-        else
-            color_code="$BLUE"
-            msg="$1"
-        fi
-    fi
+    local result=$(_parse_status_message "$@" "$CYAN")
+    local color_code="${result%%:*}"
+    local msg="${result#*:}"
+    log_to_file "STATUS: $msg"
     
     # Check if the spinner is running
     if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
         # Log it to the screen immediately
-        log_and_spinner "$color_code" "$msg"
+        show_temp_message "$color_code" "$msg"
         # Store it for later
         PERSISTENT_MESSAGES+=("$color_code:$msg")
     else
@@ -329,6 +384,7 @@ show_message() {
         local msg_len=${#msg}
         local padding=$((term_width - msg_len))
         
+        tput el  # Clear the line
         tput setaf "$color_code"
         echo -n "$msg"
         if [ "$padding" -gt 0 ]; then
@@ -382,35 +438,7 @@ EOF
 #     start_message "$1"
 # }
 
-# Function to display a temporary status message without a spinner
-show_temp_message() {
-    local color_code=""
-    local msg=""
-    if [ "$#" -eq 1 ]; then
-        color_code="$CYAN"
-        msg="$1"
-    else
-        # Check if first argument is a number (color code)
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
-            color_code="$1"
-            msg="$2"
-        else
-            color_code="$CYAN"
-            msg="$1"
-        fi
-    fi
-    log_and_spinner "$color_code" "$msg"
-}
-
 # Backward compatibility alias
-show_temp_status() {
-    show_temp_message "$1" "$2"
-}
-
-# Function to show a final status message and stop the spinner
-end_message() {
-    stop_spinner "$1"
-}
 
 # Function to display a persistent message
 # show_message() {
@@ -418,9 +446,9 @@ end_message() {
 # }
 
 # Alias for print_message, to maintain backward compatibility
-show_status() {
-    show_message "$1" "$2"
-}
+# show_status() {
+#     show_message "$1" "$2"
+# }
 
 # The update_progress function is no longer needed as the new spinner
 # automatically updates its own progress.
@@ -443,7 +471,7 @@ log_command_output() {
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] Command: $command"
             echo "Output:"
             echo "$output"
-            echo "---"
+            echo "------------------------------------------------------------"
         } >> "$INSTALL_LOG_FILE"
     fi
 }
@@ -452,12 +480,10 @@ log_command_output() {
 run_logged_command() {
     local description="$1"
     local command="$2"
-    local success_msg="$3"
-    local error_msg="$4"
     
-    log_to_file "COMMAND START: $description - Running: $command"
+    log_to_file "COMMAND (START): $description - Running: $command"
     
-    start_message "$description"
+    show_message "$description"
     
     # Run command and capture output
     local output
@@ -482,12 +508,10 @@ run_logged_command() {
     log_command_output "$command" "$output"
     
     if [ $exit_code -eq 0 ]; then
-        log_to_file "COMMAND SUCCESS: $description"
-        stop_spinner "✓ $success_msg"
+        log_to_file "COMMAND (SUCCESS): $description"
         return 0
     else
-        log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
-        stop_spinner "✗ $error_msg"
+        log_to_file "COMMAND (FAILED): $description (exit code: $exit_code)"
         return $exit_code
     fi
 }
@@ -497,7 +521,7 @@ run_command_with_progress() {
     local description="$1"
     local command="$2"
     
-    log_to_file "COMMAND START: $description - Running: $command"
+    log_to_file "COMMAND (START): $description - Running: $command"
     
     # Show progress
     start_message "$description"
@@ -512,12 +536,12 @@ run_command_with_progress() {
     log_command_output "$command" "$output"
     
     if [ $exit_code -eq 0 ]; then
-        log_to_file "COMMAND SUCCESS: $description"
-        stop_spinner "✓ $description"
+        log_to_file "COMMAND (SUCCESS): $description"
+        end_message "$description"
         return 0
     else
-        log_to_file "COMMAND FAILED: $description (exit code: $exit_code)"
-        stop_spinner "✗ $description failed"
+        log_to_file "COMMAND (FAILED): $description (exit code: $exit_code)"
+        end_message "$RED" "$description failed"
         return $exit_code
     fi
 }
@@ -553,6 +577,10 @@ update_env_var() {
                 fi
             fi
         fi
+
+        # Write header to .env file
+        echo "# Trailarr Bare Metal Configuration" > "$env_file"
+        echo "# Generated on $(date)" >> "$env_file"
     fi
     
     # Ensure we can write to the file before proceeding

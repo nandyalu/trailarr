@@ -46,7 +46,7 @@ install_ffmpeg_local() {
         if command -v ffmpeg &> /dev/null; then
             show_temp_message "Copying system ffmpeg"
             if run_logged_command "Copy system ffmpeg" "cp \"$(which ffmpeg)\" \"$BIN_DIR/\" && cp \"$(which ffprobe)\" \"$BIN_DIR/\""; then
-                show_message $GREEN "✓ Copied system ffmpeg to app directory"
+                show_message $GREEN "Copied system ffmpeg to app directory"
                 return 0
             fi
         else
@@ -54,12 +54,12 @@ install_ffmpeg_local() {
             if run_logged_command "Install system ffmpeg" "apt-get update && apt-get install -y ffmpeg"; then
                 show_temp_message "Copying installed ffmpeg"
                 if run_logged_command "Copy installed ffmpeg" "cp \"$(which ffmpeg)\" \"$BIN_DIR/\" && cp \"$(which ffprobe)\" \"$BIN_DIR/\""; then
-                    show_message $GREEN "✓ Installed and copied system ffmpeg"
+                    show_message $GREEN "Installed and copied system ffmpeg"
                     return 0
                 fi
             fi
         fi
-        show_message $RED "✗ Failed to install ffmpeg for unsupported architecture"
+        show_message $RED "Failed to install ffmpeg for unsupported architecture"
         return 1
     fi
     
@@ -69,26 +69,26 @@ install_ffmpeg_local() {
     cd /tmp
     show_temp_message "Downloading ffmpeg"
     if ! run_logged_command "Download ffmpeg" "curl -L -o ffmpeg.tar.xz \"$FFMPEG_URL\""; then
-        show_message $RED "✗ Failed to download ffmpeg"
+        show_message $RED "Failed to download ffmpeg"
         return 1
     fi
     
     if [ ! -f ffmpeg.tar.xz ]; then
-        show_message $RED "✗ ffmpeg download file not found"
+        show_message $RED "Downloaded ffmpeg file not found"
         return 1
     fi
     
     show_temp_message "Extracting ffmpeg"
     mkdir -p ffmpeg_extract
     if ! run_logged_command "Extract ffmpeg" "tar -xf ffmpeg.tar.xz -C ffmpeg_extract --strip-components=1"; then
-        show_message $RED "✗ Failed to extract ffmpeg"
+        show_message $RED "Failed to extract ffmpeg"
         return 1
     fi
     
     # Copy binaries to app bin directory
     show_temp_message "Installing ffmpeg binaries"
     if ! run_logged_command "Install ffmpeg binaries" "cp ffmpeg_extract/bin/* \"$BIN_DIR/\""; then
-        show_message $RED "✗ Failed to copy ffmpeg binaries"
+        show_message $RED "Failed to copy ffmpeg binaries"
         return 1
     fi
     
@@ -99,9 +99,9 @@ install_ffmpeg_local() {
     if [ -f "$BIN_DIR/ffmpeg" ]; then
         FFMPEG_VERSION=$("$BIN_DIR/ffmpeg" -version 2>&1 | head -n 1 | cut -d' ' -f3)
         log_to_file "ffmpeg installation verified: version $FFMPEG_VERSION"
-        show_message $GREEN "✓ Successfully installed ffmpeg $FFMPEG_VERSION"
+        show_message $GREEN "Successfully installed ffmpeg $FFMPEG_VERSION"
     else
-        log_to_file "ERROR: ffmpeg installation verification failed"
+        show_message $RED "ERROR: ffmpeg installation verification failed"
         return 1
     fi
 }
@@ -118,13 +118,11 @@ verify_ytdlp_pip() {
     if [ -f "$VENV_YTDLP" ]; then
         if "$VENV_YTDLP" --version &> /dev/null; then
             YTDLP_VERSION=$("$VENV_YTDLP" --version)
-            log_to_file "yt-dlp verified: version $YTDLP_VERSION"
-            show_message $GREEN "✓ yt-dlp verified (version $YTDLP_VERSION)"
+            show_message $GREEN "yt-dlp verified (version $YTDLP_VERSION)"
             return 0
         fi
     fi
-    
-    log_to_file "ERROR: yt-dlp not found at $VENV_YTDLP"
+    show_message $RED "ERROR: yt-dlp not found at $VENV_YTDLP"
     return 1
 }
 
@@ -147,14 +145,11 @@ setup_environment() {
     update_env_var "FFPROBE_PATH" "$BIN_DIR/ffprobe" "$ENV_FILE"
     update_env_var "YTDLP_PATH" "$INSTALL_DIR/venv/bin/yt-dlp" "$ENV_FILE"
     
-    log_to_file "Environment variables configured in $ENV_FILE"
-    show_message $GREEN "✓ Environment variables configured"
+    show_message $GREEN "Environment variables configured in $ENV_FILE"
 }
 
 # Function to create update script for yt-dlp (pip version)
-create_update_script() {
-    log_to_file "Creating update script for yt-dlp"
-    
+create_update_script() {    
     show_temp_message "Creating yt-dlp update script"
     mkdir -p "$INSTALL_DIR/scripts"
     
@@ -187,37 +182,37 @@ if [ $? -eq 0 ]; then
     NEW_VERSION=$("$VENV_DIR/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
     echo "✓ yt-dlp updated to version $NEW_VERSION"
 else
-    echo "Failed to update yt-dlp"
+    echo " Failed to update yt-dlp"
     exit 1
 fi
 EOF
     
     chmod +x "$INSTALL_DIR/scripts/update_ytdlp_local.sh"
     log_to_file "Created yt-dlp update script at $INSTALL_DIR/scripts/update_ytdlp_local.sh"
-    show_message $GREEN "✓ Created yt-dlp update script"
+    show_message $GREEN "Created yt-dlp update script"
 }
 
 # Main function
 main() {
     log_to_file "========== Media Tools Installation Started =========="
     
-    start_message "Installing media processing tools"
+    show_temp_message "Installing media processing tools"
     
     # Install ffmpeg locally
     show_temp_message "Installing ffmpeg"
     if ! install_ffmpeg_local; then
         log_to_file "WARNING: ffmpeg installation failed but continuing"
-        show_message $RED "✗ ffmpeg installation failed"
-        end_message "Media tools installation failed"
-        return 1
+        show_message $RED "ffmpeg installation failed"
+        end_message $RED "Media tools installation failed"
+        exit 1
     fi
     
     # Verify yt-dlp installation (installed via pip)
     if ! verify_ytdlp_pip; then
         log_to_file "WARNING: yt-dlp verification failed"
-        show_message $RED "✗ yt-dlp verification failed"
-        end_message "Media tools installation failed"
-        return 1
+        show_message $RED "yt-dlp verification failed"
+        end_message $RED "Media tools installation failed"
+        exit 1
     fi
     
     # Set up environment variables
@@ -228,23 +223,15 @@ main() {
     
     # Final summary for display
     show_message ""
-    show_message "Media tools installation complete"
+    show_message "Media tools installation completed successfully"
     show_message "Installed tools:"
-    show_message "  → ffmpeg: $BIN_DIR/ffmpeg"
-    show_message "  → ffprobe: $BIN_DIR/ffprobe"
-    show_message "  → yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
+    show_message "    ffmpeg: $BIN_DIR/ffmpeg"
+    show_message "    ffprobe: $BIN_DIR/ffprobe"
+    show_message "    yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
     
-    # Final summary for log file only
-    log_to_file "Media tools installation completed successfully"
-    log_to_file "ffmpeg: $BIN_DIR/ffmpeg"
-    log_to_file "ffprobe: $BIN_DIR/ffprobe"
-    log_to_file "yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp"
+    show_message "Media tools installation complete"
     log_to_file "========== Media Tools Installation Completed =========="
-    
-    end_message "Media tools installation complete"
 }
 
-# Run main function if script is executed directly
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
-fi
+# Run main function
+main "$@"

@@ -99,7 +99,7 @@ else
         show_message $GREEN "✓ Backup restored successfully!"
     fi
     show_message $RED "Check logs for details and fix the issue before restarting"
-    end_message "Database migration failed"
+    end_message $RED "Database migration failed"
     exit 1
 fi
 
