@@ -1,4 +1,3 @@
-
 import {Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -30,18 +29,24 @@ export class TopnavComponent implements OnInit {
 
   protected readonly RouteHome = RouteHome;
 
+  clearSearchResults() {
+    this.searchResults = [];
+    this.searchQuery = '';
+    this.selectedId = -1;
+    this.selectedIndex = -1;
+  }
+
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.searchResults = [];
-      this.selectedId = -1;
-      this.selectedIndex = -1;
+      this.clearSearchResults();
     }
   }
 
   @HostListener('document:mousemove', ['$event'])
   disableSelection(event: Event) {
     if (this.searchResults.length > 0) {
+      this.searchQuery = '';
       this.selectedId = -1;
       this.selectedIndex = -1;
     }
@@ -64,9 +69,7 @@ export class TopnavComponent implements OnInit {
     }
     if (this.searchResults.length > 0) {
       if (event.key === 'Escape') {
-        this.searchResults = [];
-        this.selectedId = -1;
-        this.selectedIndex = -1;
+        this.clearSearchResults();
         return;
       }
       let firstId = this.searchResults[0].id;
@@ -98,7 +101,7 @@ export class TopnavComponent implements OnInit {
       } else if (event.key === 'Enter') {
         // const selectedResult = this.searchResults[this.selectedIndex];
         this.router.navigate([RouteMedia, this.selectedId]);
-        this.searchResults = [];
+        this.clearSearchResults();
         return;
       }
     }
