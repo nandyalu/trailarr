@@ -98,6 +98,8 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _format += f"/bestvideo{_vres}+bestaudio{_acodec}"
     # Format 3: Best video and audio with the given resolution and any codecs
     _format += f"/bestvideo{_vres}+bestaudio"
+    # Format 4: Best video and audio with any resolution and codecs
+    _format += "/bestvideo*+bestaudio*/best"
     _options.append(_format)
     logger.debug(f"Using format: {_format}")
 
