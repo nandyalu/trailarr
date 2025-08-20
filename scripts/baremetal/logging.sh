@@ -157,7 +157,7 @@ _parse_status_message() {
 
     # Add a symbol based on color (BLUE - '➜'; CYAN - '➜'; GREEN - ✓; YELLOW - ⚠; RED - ✗)
     if [[ "$msg" =~ ^(➜\ |✓\ |⚠\ |✗\ ) ]]; then
-        # Do nothing, message already has symbol
+        : # Do nothing, message already has symbol
     elif [ "$color_code" -eq "$BLUE" ]; then
         msg="➜ $msg"
     elif [ "$color_code" -eq "$CYAN" ]; then
