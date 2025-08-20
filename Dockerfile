@@ -29,7 +29,7 @@ RUN chmod +x /tmp/install_ffmpeg.sh && \
     /tmp/install_ffmpeg.sh
 
 # Stage 2 - Final image
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # Copy gosu from builder stage
 COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu

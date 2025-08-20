@@ -10,7 +10,8 @@ The bare metal installation provides native system integration with optimal perf
 
 ### Main Installation Scripts
 
-- **`install.sh`** - Main installation script with comprehensive setup
+- **`bootstrap_install.sh`** - Standalone bootstrap script that downloads source and runs installation
+- **`install.sh`** - Main installation script with comprehensive setup (requires all dependencies)
 - **`uninstall.sh`** - Complete uninstallation with data preservation options
 
 ### Modular Components
@@ -29,7 +30,7 @@ The bare metal installation provides native system integration with optimal perf
 Users can install Trailarr by running:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
 ```
 
 ### Installation Steps
@@ -110,7 +111,7 @@ curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | 
 
 ```bash
 # Download and run installer
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
 
 # Or download source and run locally
 git clone https://github.com/nandyalu/trailarr.git
@@ -141,7 +142,7 @@ sudo systemctl stop trailarr
 
 ```bash
 # Download and run uninstaller
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh | sudo bash
 
 # Or run from source
 ./scripts/baremetal/uninstall.sh
