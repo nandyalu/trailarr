@@ -142,7 +142,7 @@ _parse_status_message() {
     local color_code
     local msg
     local default_color="$3"
-    if [ "$#" -eq 1 ] || ( [ "$#" -eq 2 ] && [ -z "$2" ] ); then
+    if [ "$#" -eq 1 ] || { [ "$#" -eq 2 ] && [ -z "$2" ]; }; then
         color_code="${default_color:-$GREEN}"
         msg="$1"
     else
