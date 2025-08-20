@@ -291,7 +291,9 @@ def _get_video_options(
     use_vaapi: bool,
     video_stream: StreamInfo | None = None,
 ) -> list[str]:
-    if vcodec == "copy" or (video_stream and video_stream.codec_name == vcodec):
+    if vcodec == "copy" or (
+        video_stream and video_stream.codec_name == vcodec
+    ):
         ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v", "copy"]
         logger.debug("Copying video stream without converting")
         return ffmpeg_cmd
@@ -478,6 +480,15 @@ def get_ffmpeg_cmd(
         ffmpeg_cmd.extend(
             _get_subtitle_options(profile.subtitles_format, _subtitle_stream)
         )
+    else:
+        if _subtitle_stream:
+            # Copy subtitles if not enabled, but exist in downloaded video
+            logger.debug(
+                "Subtitles are not enabled, but subtitles stream exists in "
+                "the downloaded video, copying subtitles stream without "
+                "converting"
+            )
+            ffmpeg_cmd.extend(["-c:s", "copy"])
     # # Add web optimized options if enabled
     # ffmpeg_cmd.extend(_get_web_optimized_options())
     # Add output file
