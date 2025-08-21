@@ -160,6 +160,9 @@ copy_application_files() {
 install_python_and_deps() {
     show_temp_message "Installing uv package manager and Python dependencies"
     
+    # Define the uv installation path
+    UV_INSTALL_PATH="$INSTALL_DIR/.local/bin"
+
     # Install uv for trailarr user
     show_temp_message "Installing uv package manager"
     if ! run_logged_command "Install uv for trailarr user" "sudo -u trailarr bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'"; then
@@ -169,9 +172,9 @@ install_python_and_deps() {
     fi
     
     # Add uv to PATH for trailarr user
-    local trailarr_path="$INSTALL_DIR/.local/bin"
-    run_logged_command "Add uv to trailarr PATH" "echo 'export PATH=\"\$trailarr_path:\$PATH\"' >> $INSTALL_DIR/.bashrc" || true
-
+    # Note: Use double quotes to expand INSTALL_DIR, but escape the dollar in $PATH
+    run_logged_command "Add uv to trailarr PATH" "sudo -u trailarr bash -c 'echo \"export PATH=\\\"\$HOME/.local/bin:\\\$PATH\\\"\" >> \$HOME/.bashrc'" || true
+    
     # Navigate to backend directory and run uv sync
     show_temp_message "Creating Python venv and installing dependencies with uv sync"
     cmd="source ~/.bashrc && cd \"$INSTALL_DIR/backend\" && uv sync --no-cache-dir"
