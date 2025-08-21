@@ -34,7 +34,7 @@ env:
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-  APP_VERSION: $(date +'%y%m%d')-nightly
+  APP_VERSION: $(date +'%y%m%d%H%M')-nightly
 
 
 jobs:
