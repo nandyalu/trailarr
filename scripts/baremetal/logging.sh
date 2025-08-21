@@ -83,10 +83,20 @@ _kill_spinner() {
 cleanup() {
     # Check if a spinner process exists and is running and kill it
     local killed_spinner=$(_kill_spinner)
+    if [ "$killed_spinner" = "true" ]; then
+        echo ""
+        # Clear the entire screen from the current cursor position to the end.
+        tput ed
+        # Clear the line
+        tput el
+    fi
     # Reset colors and Restore cursor visibility
     tput sgr0
     tput cnorm
     log_to_file "Script terminated. Spinner killed: $killed_spinner"
+    # Show final message
+    echo "Installation aborted."
+    show_log_location
     exit 0
 }
 
@@ -168,7 +178,7 @@ _finalize_previous_spinner() {
 }
 
 # Function to parse the status message and extract color code and message
-# This is an internal helper function.
+# This is an internal helper function that handles a flexible number of arguments.
 # Accepts args from original function call and an extra default color
 # Example: _parse_status_message "$@" "$GREEN"
 # Example: _parse_status_message "message" "default color to use"
@@ -176,33 +186,58 @@ _finalize_previous_spinner() {
 _parse_status_message() {
     local color_code
     local msg
-    local default_color="$3"
-    if [ "$#" -eq 1 ] || { [ "$#" -eq 2 ] && [ -z "$2" ]; }; then
-        color_code="${default_color:-$GREEN}"
-        msg="$1"
-    else
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
+    
+    local default_color="${@: -1}" # Gets the last argument as the default color
+
+    case "$#" in
+        2)
+            # Case: _parse_status_message "message" "default_color"
+            msg="$1"
+            color_code="${default_color}"
+            ;;
+        3)
+            # Case: _parse_status_message "color_code" "message" "default_color"
             color_code="$1"
             msg="$2"
-        else
-            color_code="${default_color:-$GREEN}"
-            msg="$1"
-        fi
-    fi
+            ;;
+        *)
+            # Default case: Flexible parsing for any other argument count
+            # Check if the first argument is a number (color code)
+            if [[ "$1" =~ ^[0-9]+$ ]]; then
+                color_code="$1"
+                msg="$2"
+            else
+                msg="$1"
+                color_code="${default_color}"
+            fi
+            ;;
+    esac
 
-    # Add a symbol based on color (BLUE - '➜'; CYAN - '➜'; GREEN - ✓; YELLOW - ⚠; RED - ✗)
-    if [[ "$msg" =~ ^(➜\ |✓\ |⚠\ |✗\ ) ]]; then
-        : # Do nothing, message already has symbol
-    elif [ "$color_code" -eq "$BLUE" ]; then
-        msg="➜ $msg"
-    elif [ "$color_code" -eq "$CYAN" ]; then
-        msg="➜ $msg"
-    elif [ "$color_code" -eq "$GREEN" ]; then
-        msg="✓ $msg"
-    elif [ "$color_code" -eq "$YELLOW" ]; then
-        msg="⚠ $msg"
-    elif [ "$color_code" -eq "$RED" ]; then
-        msg="✗ $msg"
+    # If the message is empty, use the white color code
+    if [ -z "$msg" ]; then
+        color_code="$WHITE"
+    fi
+    
+    # Add a symbol only if the message is not empty and doesn't already have one
+    if [[ -n "$msg" && ! "$msg" =~ ^(➜|✓|⚠|✗)\  ]]; then
+        case "$color_code" in
+            "$BLUE" | "$CYAN")
+                msg="➜ $msg"
+                ;;
+            "$GREEN")
+                msg="✓ $msg"
+                ;;
+            "$YELLOW")
+                msg="⚠ $msg"
+                ;;
+            "$RED")
+                msg="✗ $msg"
+                ;;
+            *)
+                # Handle any other color codes without a symbol
+                :
+                ;;
+        esac
     fi
 
     echo "$color_code:$msg"

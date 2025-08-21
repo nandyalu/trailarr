@@ -178,7 +178,6 @@ main() {
     # Create data directory if it doesn't exist
     sudo mkdir -p "$DATA_DIR"
     
-    start_message "Trailarr Configuration"
     show_message ""
     show_message "Starting interactive configuration for Trailarr..."
     show_message ""
