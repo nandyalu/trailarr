@@ -388,7 +388,7 @@ User=trailarr
 Group=trailarr
 WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
-Environment=PATH=/opt/trailarr/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PATH=/opt/trailarr/.local/bin:/opt/trailarr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=$INSTALL_DIR/.env
 ExecStartPre=$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh

@@ -110,9 +110,9 @@ install_ffmpeg_local() {
 verify_ytdlp_pip() {
     log_to_file "Checking yt-dlp in virtual environment"
     
-    # yt-dlp is installed via pip in the virtual environment during Python dependencies installation
+    # yt-dlp is installed via uv sync in the virtual environment during Python dependencies installation
     # We just need to get the path and verify it's working
-    VENV_YTDLP="$INSTALL_DIR/venv/bin/yt-dlp"
+    VENV_YTDLP="$INSTALL_DIR/.venv/bin/yt-dlp"
     
     show_temp_message "Verifying yt-dlp installation"
     if [ -f "$VENV_YTDLP" ]; then
@@ -227,7 +227,7 @@ main() {
     show_message "Installed tools:"
     show_message "    ffmpeg: $BIN_DIR/ffmpeg"
     show_message "    ffprobe: $BIN_DIR/ffprobe"
-    show_message "    yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
+    show_message "    yt-dlp: $INSTALL_DIR/.venv/bin/yt-dlp (via uv sync)"
     
     show_message "Media tools installation complete"
     log_to_file "========== Media Tools Installation Completed =========="
