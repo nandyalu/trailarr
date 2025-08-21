@@ -98,6 +98,8 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _format += f"/bestvideo{_vres}+bestaudio{_acodec}"
     # Format 3: Best video and audio with the given resolution and any codecs
     _format += f"/bestvideo{_vres}+bestaudio"
+    # Format 4: Best video and audio with any resolution and codecs
+    _format += "/bestvideo*+bestaudio*/best"
     _options.append(_format)
     logger.debug(f"Using format: {_format}")
 
@@ -105,7 +107,7 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     if profile.subtitles_enabled:
         _options.append("--write-auto-subs")
         _options.append("--embed-subs")
-        _options.append("--sub-lang")
+        _options.append("--sub-langs")
         _options.append(profile.subtitles_language)
     # Fragment retries option - Not needed as default is 10
     # _options.append("--fragment-retries")

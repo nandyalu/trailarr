@@ -216,17 +216,30 @@ def move_trailer_to_folder(
         )
         os.chmod(dst_folder_path, dst_permissions)
 
-    # Construct the new filename and move the file
+    # Construct the new filename
     dst_file_path = get_trailer_path(src_path, dst_folder_path, media, profile)
     logger.debug(f"Moving trailer from '{src_path}' to '{dst_file_path}'")
-    shutil.move(src_path, dst_file_path)
 
-    # Set the moved file's permissions to match the destination folder's permissions
-    logger.debug(
-        f"Setting permissions for file: '{dst_file_path}' to"
-        f" '{oct(dst_permissions)}'"
-    )
-    os.chmod(dst_file_path, dst_permissions)
+    # Fixes https://github.com/nandyalu/trailarr/issues/285
+    # Sometimes shutil.move fails when app only has write permissions without modify
+    # The actual file will be moved but attributes won't be set in those cases
+    try:
+        # Move the file to destination
+        shutil.move(src_path, dst_file_path)
+        # Set the moved file's permissions to match the destination folder's permissions
+        logger.debug(
+            f"Setting permissions for file: '{dst_file_path}' to"
+            f" '{oct(dst_permissions)}'"
+        )
+        os.chmod(dst_file_path, dst_permissions)
+    except Exception as e:
+        # Check if file is copied to destination
+        if not os.path.exists(dst_file_path):
+            logger.error(
+                f"Failed to move trailer file to {dst_file_path}: {e}"
+            )
+            return False
+
     logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
     return True
 

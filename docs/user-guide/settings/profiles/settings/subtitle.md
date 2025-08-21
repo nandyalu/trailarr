@@ -30,3 +30,6 @@ A valid ISO 639-1 language code is required. See [ISO 639-1 language codes](http
 
 !!! info
     Multiple languages can be set with a comma separated list. For example, `en,es,fr`.
+
+!!! info
+    You can also set it to `all` to download all available subtitles.

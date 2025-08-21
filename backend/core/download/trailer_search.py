@@ -178,7 +178,7 @@ def search_yt_for_trailer(
     # Set options
     filter_func = partial(_yt_search_filter, profile=profile, exclude=exclude)
     options = {
-        "format": "bestvideo[height<=?1080]+bestaudio",
+        "format": "bv[height<=?1080]+ba/bv+ba/b",
         "match_filter": filter_func,
         "noplaylist": True,
         "extract_flat": "discard_in_playlist",
