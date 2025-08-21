@@ -151,6 +151,12 @@ main() {
         fi
     fi
     
+    # Export for use by other scripts and save to .env
+    export PYTHON_EXECUTABLE
+
+    # Save to .env file using the new function
+    update_env_var "PYTHON_EXECUTABLE" "$PYTHON_EXECUTABLE" "$INSTALL_DIR/.env"
+
     show_message $GREEN "Python setup complete!"
     
     log_to_file "========== Python Installation Process Completed =========="
