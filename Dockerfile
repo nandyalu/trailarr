@@ -18,10 +18,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Set the working directory
 WORKDIR /app
 
-# Install pip requirements
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install Python dependencies using uv
 COPY ./backend/requirements.txt .
-RUN python -m pip install --no-cache-dir --disable-pip-version-check \
-    --upgrade -r /app/requirements.txt
+RUN uv pip install --system --no-cache --native-tls --requirement /app/requirements.txt
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
@@ -34,6 +36,9 @@ FROM python:3.13-slim
 # Copy gosu from builder stage
 COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu
 RUN chmod +x /usr/local/bin/gosu
+
+# Copy uv from python-deps stage to make it available in final image
+COPY --from=python-deps /usr/local/bin/uv /usr/local/bin/uv
 
 # Install HW Acceleration drivers and libraries
 COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh

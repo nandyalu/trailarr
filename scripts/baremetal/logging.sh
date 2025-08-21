@@ -28,6 +28,40 @@ CYAN=6
 WHITE=7
 NC='\033[0m' # No Color
 
+# Check terminal capabilities and set safe defaults
+check_terminal_capabilities() {
+    # Check if we can get terminal dimensions
+    if ! command -v tput &> /dev/null; then
+        echo "Warning: tput not available, using basic output" >&2
+        TERMINAL_CAPABLE=false
+        return 1
+    fi
+    
+    # Try to get terminal dimensions
+    if ! TERM_HEIGHT=$(tput lines 2>/dev/null) || [ -z "$TERM_HEIGHT" ]; then
+        TERM_HEIGHT=24  # Default height
+    fi
+    
+    if ! TERM_WIDTH=$(tput cols 2>/dev/null) || [ -z "$TERM_WIDTH" ]; then
+        TERM_WIDTH=80   # Default width
+    fi
+    
+    # Ensure minimum dimensions
+    if [ "$TERM_HEIGHT" -lt 10 ]; then
+        TERM_HEIGHT=10
+    fi
+    
+    if [ "$TERM_WIDTH" -lt 40 ]; then
+        TERM_WIDTH=40
+    fi
+    
+    TERMINAL_CAPABLE=true
+    export TERM_HEIGHT TERM_WIDTH TERMINAL_CAPABLE
+}
+
+# Initialize terminal capabilities
+check_terminal_capabilities
+
 # Function to kill spinner [if running] gracefully without causing error
 _kill_spinner() {
     # Check if a spinner process exists and is running
@@ -195,11 +229,20 @@ start_message() {
     # Get the start time in seconds since the epoch and store it globally
     START_TIME=$(date +%s)
     
-    # Add 5 new lines of 80 columns to ensure the spinner has enough space
-    for _ in {1..5}; do
-        echo "                                                                                "
+    # Use the global terminal dimensions from capability check
+    local available_lines=$((TERM_HEIGHT - 10))  # Reserve 10 lines for safety
+    local spinner_lines=5
+    
+    # Adjust spinner lines based on available space
+    if [ "$available_lines" -lt 5 ]; then
+        spinner_lines=$((available_lines > 1 ? available_lines : 1))
+    fi
+    
+    # Add spinner_lines of space to ensure the spinner has enough room
+    for i in $(seq 1 $spinner_lines); do
+        echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
     done
-    tput cuu 5  # Up 5 lines to the spinner's line
+    tput cuu $spinner_lines  # Move up to the spinner's line
     # Save the initial cursor position of the spinner's line
     tput sc
 
@@ -217,10 +260,9 @@ start_message() {
 
             # tput el  # Clear the line
 
-            # Get terminal width for padding
-            local term_width=$(tput cols)
+            # Get terminal width for padding using global variable
             local line_content_core="${spinner_chars[i]} ${SPINNER_MSG}"
-            local effective_width=$((term_width > 80 ? 80 : term_width))
+            local effective_width=$((TERM_WIDTH > 80 ? 80 : TERM_WIDTH))
             local padding=$((effective_width - ${#line_content_core} - ${#timer_str}))
             
             # Apply bold and underline formatting
@@ -241,7 +283,7 @@ start_message() {
             tput sgr0
             
             # Add post-padding to clear the rest of the line if > 80 cols
-            local post_padding=$((term_width - effective_width))
+            local post_padding=$((TERM_WIDTH - effective_width))
             if [ "$post_padding" -gt 0 ]; then
                 printf "%*s" "$post_padding" " "
             fi
@@ -281,11 +323,10 @@ end_message() {
     local final_time=$(( $(date +%s) - START_TIME ))
 
     # Print a final message to the terminal with a checkmark.
-    local term_width=$(tput cols)
     local msg_core="${msg}"
     local final_time_str="(${final_time}s)"
     local line_content="${msg_core} ${final_time_str}"
-    local effective_width=$((term_width > 80 ? 80 : term_width))
+    local effective_width=$((TERM_WIDTH > 80 ? 80 : TERM_WIDTH))
     local padding=$((effective_width - ${#line_content}))
     
     tput bold; tput smul
@@ -298,7 +339,7 @@ end_message() {
     tput sgr0
     
     # Add post-padding to clear the rest of the line if > 80 cols
-    local post_padding=$((term_width - effective_width))
+    local post_padding=$((TERM_WIDTH - effective_width))
     if [ "$post_padding" -gt 0 ]; then
         printf "%*s" "$post_padding" " "
     fi

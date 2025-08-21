@@ -186,38 +186,33 @@ install_python_deps() {
     
     log_to_file "Using Python executable: $PYTHON_EXECUTABLE"
     
-    # Create virtual environment with logging
-    show_temp_message "Creating Python virtual environment"
-    if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
-        show_message $RED "Failed to create Python virtual environment"
-        end_message $RED "Failed to create virtual environment"
-        exit 1
+    # Install dependencies with uv (venv might already be created by install_python.sh or we create it here)
+    if [ ! -d "$INSTALL_DIR/venv" ]; then
+        # Create virtual environment if not already created by uv in install_python.sh
+        show_temp_message "Creating Python virtual environment"
+        if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
+            show_message $RED "Failed to create Python virtual environment"
+            end_message $RED "Failed to create virtual environment"
+            exit 1
+        fi
     fi
 
-    # Install/upgrade pip with logging
-    show_temp_message "Upgrading pip"
-    if ! run_logged_command "Upgrading pip" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install --upgrade pip"; then
-        show_message $RED "Failed to install/upgrade pip"
-        end_message $YELLOW "Failed to upgrade pip"
-        exit 1
-    fi
-
-    # Install dependencies
+    # Install dependencies using uv
     if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
-        log_to_file "Installing dependencies from requirements.txt"
-        show_temp_message "Installing Python dependencies"
-        if ! run_logged_command "Install Python dependencies from requirements.txt" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install -r \"$INSTALL_DIR/backend/requirements.txt\""; then
-            show_message $RED "Failed to install Python dependencies"
+        log_to_file "Installing dependencies from requirements.txt using uv"
+        show_temp_message "Installing Python dependencies with uv"
+        if ! run_logged_command "Install Python dependencies with uv" "cd \"$INSTALL_DIR\" && sudo -u trailarr uv pip install --requirement \"$INSTALL_DIR/backend/requirements.txt\""; then
+            show_message $RED "Failed to install Python dependencies with uv"
             end_message $RED "Failed to install Python dependencies"
             exit 1
         fi
     else
         # Install basic dependencies if requirements.txt not found
-        log_to_file "requirements.txt not found, installing basic dependencies"
-        show_temp_message "Installing basic Python dependencies"
+        log_to_file "requirements.txt not found, installing basic dependencies with uv"
+        show_temp_message "Installing basic Python dependencies with uv"
         local basic_deps="aiohttp aiofiles aiosqlite alembic apscheduler async-lru bcrypt fastapi[standard-no-fastapi-cloud-cli] pillow sqlmodel yt-dlp[default,curl-cffi]"
-        if ! run_logged_command "Install basic Python dependencies" "sudo -u trailarr \"$INSTALL_DIR/venv/bin/pip\" install $basic_deps"; then
-            show_message $RED "Failed to install basic Python dependencies"
+        if ! run_logged_command "Install basic Python dependencies with uv" "cd \"$INSTALL_DIR\" && sudo -u trailarr uv pip install $basic_deps"; then
+            show_message $RED "Failed to install basic Python dependencies with uv"
             end_message $RED "Failed to install basic dependencies"
             exit 1
         fi
@@ -470,6 +465,28 @@ EOF
     show_message "Systemd service configured"
 }
 
+# Function to install Trailarr CLI
+install_trailarr_cli() {
+    show_temp_message "Installing Trailarr CLI command"
+    
+    # Copy the CLI script to system path
+    if [ -f "$INSTALL_DIR/scripts/baremetal/trailarr_cli.sh" ]; then
+        cp "$INSTALL_DIR/scripts/baremetal/trailarr_cli.sh" /usr/local/bin/trailarr
+        chmod +x /usr/local/bin/trailarr
+        show_message $GREEN "Trailarr CLI installed successfully"
+        show_message $BLUE "You can now use commands like:"
+        show_message $BLUE "  trailarr run       - Start Trailarr"
+        show_message $BLUE "  trailarr stop      - Stop Trailarr"
+        show_message $BLUE "  trailarr restart   - Restart Trailarr"
+        show_message $BLUE "  trailarr status    - Check status"
+        show_message $BLUE "  trailarr logs      - View logs"
+        show_message $BLUE "  trailarr update    - Update to latest version"
+        show_message $BLUE "  trailarr uninstall - Uninstall Trailarr"
+    else
+        show_message $YELLOW "CLI script not found, skipping CLI installation"
+    fi
+}
+
 # Function to display completion message
 display_completion() {
     show_message ""
@@ -548,6 +565,11 @@ main() {
     start_message "Setting up systemd service"
     create_systemd_service
     end_message "Systemd service created and enabled"
+    
+    # Install Trailarr CLI
+    start_message "Installing Trailarr CLI"
+    install_trailarr_cli
+    end_message "Trailarr CLI installed"
     
     # Clean up temporary files
     rm -f /tmp/gpu_detection_results

@@ -16,8 +16,15 @@ WORKDIR /app
 
 # Install Python Packages
 COPY .devcontainer/requirements/*.txt /app/requirements/
-RUN python -m pip install --no-cache-dir --disable-pip-version-check \
-    --upgrade -r /app/requirements/docs.txt -r /app/requirements/main.txt -r /app/requirements/testing.txt
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install Python dependencies using uv
+RUN uv pip install --system --no-cache --native-tls \
+    --requirement /app/requirements/docs.txt \
+    --requirement /app/requirements/main.txt \
+    --requirement /app/requirements/testing.txt
 
 # Download and extract the custom FFmpeg build from yt-dlp
 RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
