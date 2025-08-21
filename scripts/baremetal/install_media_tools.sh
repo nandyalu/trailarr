@@ -17,7 +17,7 @@ fi
 
 # Installation directory
 INSTALL_DIR="/opt/trailarr"
-BIN_DIR="$INSTALL_DIR/bin"
+BIN_DIR="$INSTALL_DIR/.local/bin"
 
 # Function to install ffmpeg locally (adapted from container script)
 install_ffmpeg_local() {
