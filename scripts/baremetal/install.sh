@@ -172,12 +172,12 @@ install_python_and_deps() {
     fi
     
     # Add uv to PATH for trailarr user
-    # Note: Use double quotes to expand INSTALL_DIR, but escape the dollar in $PATH
-    run_logged_command "Add uv to trailarr PATH" "sudo -u trailarr bash -c 'echo \"export PATH=\\\"\$HOME/.local/bin:\\\$PATH\\\"\" >> \$HOME/.bashrc'" || true
+    show_message "Add uv to trailarr PATH"
+    sudo -u trailarr bash -c 'echo export PATH="\$HOME/.local/bin:\$PATH" >> $HOME/.bashrc'
     
     # Navigate to backend directory and run uv sync
     show_temp_message "Creating Python venv and installing dependencies with uv sync"
-    cmd="source ~/.bashrc && cd \"$INSTALL_DIR/backend\" && uv sync --no-cache-dir"
+    cmd="cd \"$INSTALL_DIR/backend\" && \"$INSTALL_DIR/.local/bin/uv\" sync --no-cache-dir"
     if ! run_logged_command "Create venv and install Python dependencies with uv sync" "sudo -u trailarr bash -c '$cmd'"; then
         show_message $RED "Failed to create venv and install Python dependencies with uv"
         end_message $RED "Failed to install Python dependencies"
@@ -388,6 +388,7 @@ User=trailarr
 Group=trailarr
 WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
+Environment=PATH=/opt/trailarr/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=$INSTALL_DIR/.env
 ExecStartPre=$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh
