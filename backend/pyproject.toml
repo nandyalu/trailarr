@@ -18,7 +18,7 @@ dependencies = [
     "yt-dlp[curl-cffi,default]>=2025.8.20",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "aioresponses==0.7.8",
     "hypothesis==6.130.11",

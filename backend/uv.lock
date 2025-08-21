@@ -1789,7 +1789,7 @@ dependencies = [
     { name = "yt-dlp", extra = ["curl-cffi", "default"] },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "aioresponses" },
     { name = "hypothesis" },
@@ -1821,37 +1821,44 @@ testing = [
 requires-dist = [
     { name = "aiofiles", specifier = "==24.1.0" },
     { name = "aiohttp", specifier = "==3.12.14" },
-    { name = "aioresponses", marker = "extra == 'dev'", specifier = "==0.7.8" },
-    { name = "aioresponses", marker = "extra == 'testing'", specifier = "==0.7.8" },
     { name = "aiosqlite", specifier = "==0.21.0" },
     { name = "alembic", specifier = "==1.16.4" },
     { name = "apscheduler", specifier = "==3.11.0" },
     { name = "async-lru", specifier = "==2.0.5" },
     { name = "bcrypt", specifier = "==4.3.0" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.116.1" },
-    { name = "hypothesis", marker = "extra == 'dev'", specifier = "==6.130.11" },
-    { name = "hypothesis", marker = "extra == 'testing'", specifier = "==6.130.11" },
-    { name = "mkdocs-git-revision-date-localized-plugin", marker = "extra == 'dev'", specifier = "==1.4.7" },
-    { name = "mkdocs-git-revision-date-localized-plugin", marker = "extra == 'docs'", specifier = "==1.4.7" },
-    { name = "mkdocs-github-changelog", marker = "extra == 'dev'", specifier = "==0.1.0" },
-    { name = "mkdocs-github-changelog", marker = "extra == 'docs'", specifier = "==0.1.0" },
-    { name = "mkdocs-glightbox", marker = "extra == 'dev'", specifier = "==0.4.0" },
-    { name = "mkdocs-glightbox", marker = "extra == 'docs'", specifier = "==0.4.0" },
-    { name = "mkdocs-material", marker = "extra == 'dev'", specifier = "==9.6.15" },
-    { name = "mkdocs-material", marker = "extra == 'docs'", specifier = "==9.6.15" },
     { name = "pillow", specifier = "==11.3.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = "==8.4.1" },
-    { name = "pytest", marker = "extra == 'testing'", specifier = "==8.4.1" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = "==1.1.0" },
-    { name = "pytest-asyncio", marker = "extra == 'testing'", specifier = "==1.1.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = "==6.2.1" },
-    { name = "pytest-cov", marker = "extra == 'testing'", specifier = "==6.2.1" },
-    { name = "schemathesis", marker = "extra == 'dev'", specifier = "==4.0.2" },
-    { name = "schemathesis", marker = "extra == 'testing'", specifier = "==4.0.2" },
     { name = "sqlmodel", specifier = "==0.0.24" },
     { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = ">=2025.8.20" },
 ]
-provides-extras = ["dev", "testing", "docs"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "aioresponses", specifier = "==0.7.8" },
+    { name = "hypothesis", specifier = "==6.130.11" },
+    { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
+    { name = "mkdocs-github-changelog", specifier = "==0.1.0" },
+    { name = "mkdocs-glightbox", specifier = "==0.4.0" },
+    { name = "mkdocs-material", specifier = "==9.6.15" },
+    { name = "pytest", specifier = "==8.4.1" },
+    { name = "pytest-asyncio", specifier = "==1.1.0" },
+    { name = "pytest-cov", specifier = "==6.2.1" },
+    { name = "schemathesis", specifier = "==4.0.2" },
+]
+docs = [
+    { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
+    { name = "mkdocs-github-changelog", specifier = "==0.1.0" },
+    { name = "mkdocs-glightbox", specifier = "==0.4.0" },
+    { name = "mkdocs-material", specifier = "==9.6.15" },
+]
+testing = [
+    { name = "aioresponses", specifier = "==0.7.8" },
+    { name = "hypothesis", specifier = "==6.130.11" },
+    { name = "pytest", specifier = "==8.4.1" },
+    { name = "pytest-asyncio", specifier = "==1.1.0" },
+    { name = "pytest-cov", specifier = "==6.2.1" },
+    { name = "schemathesis", specifier = "==4.0.2" },
+]
 
 [[package]]
 name = "typer"
