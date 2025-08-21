@@ -174,8 +174,8 @@ install_python_and_deps() {
 
     # Navigate to backend directory and run uv sync
     show_temp_message "Creating Python venv and installing dependencies with uv sync"
-    cmd="cd \"$INSTALL_DIR/backend\" && uv sync --no-cache-dir"
-    if ! run_logged_command "Create venv and install Python dependencies with uv sync" "sudo -u trailarr env PATH=\"$trailarr_path:\$PATH\" $cmd"; then
+    cmd="source ~/.bashrc && cd \"$INSTALL_DIR/backend\" && uv sync --no-cache-dir"
+    if ! run_logged_command "Create venv and install Python dependencies with uv sync" "sudo -u trailarr bash -c '$cmd'"; then
         show_message $RED "Failed to create venv and install Python dependencies with uv"
         end_message $RED "Failed to install Python dependencies"
         exit 1
