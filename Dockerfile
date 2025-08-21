@@ -15,6 +15,9 @@ FROM python:3.13-slim AS python-deps
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# Install ca-certificates for SSL
+RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /app
 
