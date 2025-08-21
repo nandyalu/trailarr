@@ -565,7 +565,7 @@ run_logged_command() {
     
     log_to_file "COMMAND (START): $description - Running: $command"
     
-    show_message "$description"
+    show_temp_message "$description"
     
     # Run command and capture output
     local output
@@ -591,6 +591,7 @@ run_logged_command() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND (SUCCESS): $description"
+        show_message "$GREEN" "$description completed successfully"
         return 0
     else
         log_to_file "COMMAND (FAILED): $description (exit code: $exit_code)"
