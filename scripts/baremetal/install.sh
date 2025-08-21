@@ -315,27 +315,23 @@ configure_gpu_user_permissions() {
 # Function to detect GPU hardware
 setup_gpu_hardware() {
     show_temp_message "Detecting GPU hardware for Trailarr"
-    sleep 3
     if [ -f "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh" ]; then
         # Run GPU detection only
         show_temp_message "Running GPU detection script"
-        sleep 3
         source "$BAREMETAL_SCRIPTS_DIR/gpu_setup.sh"
         show_temp_message "GPU detection script completed"
-        sleep 3
+        
         # Save results for interactive config
         echo "export DETECTED_GPUS=(${DETECTED_GPUS[*]})" > /tmp/gpu_detection_results
         echo "export AVAILABLE_GPUS=(${AVAILABLE_GPUS[*]})" >> /tmp/gpu_detection_results
         
         # Configure GPU user permissions after detection
         show_temp_message "Configuring GPU user permissions"
-        sleep 3
         configure_gpu_user_permissions
         show_temp_message "GPU user permissions configured"
 
         show_message $GREEN "GPU hardware detection and setup complete"
     else
-        sleep 3
         show_message $YELLOW "GPU setup script not found, skipping GPU configuration"
     fi
 }
@@ -522,15 +518,16 @@ main() {
     install_python_and_deps
     end_message "Python environment ready"
     
-    # GPU Detection
-    start_message "GPU hardware detection and setup"
-    setup_gpu_hardware
-    end_message "GPU hardware detection and setup complete"
+    # # GPU Detection
+    # start_message "GPU hardware detection and setup"
+    # setup_gpu_hardware
+    # end_message "GPU hardware detection and setup complete"
     
     start_message "Installing media processing tools"
     install_media_tools
     end_message "Media processing tools installed"
     
+    show_message ""
     show_message "Configuring Trailarr"
     run_interactive_config
     show_message "Trailarr configuration complete"

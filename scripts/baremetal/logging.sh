@@ -98,6 +98,7 @@ reset_state() {
     LOG_COUNT=0
     PERSISTENT_MESSAGES=()
     SPINNER_MSG=""
+    START_TIME=""
 }
 
 # Function to stop the previous spinner gracefully.
@@ -223,28 +224,33 @@ start_message() {
     SPINNER_MSG="$1"
     log_to_file "START: $SPINNER_MSG"
     
-    # An array of spinner characters
-    local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
-
     # Get the start time in seconds since the epoch and store it globally
     START_TIME=$(date +%s)
+
+    # An array of spinner characters
+    local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
     
-    # Use the global terminal dimensions from capability check
-    local available_lines=$((TERM_HEIGHT - 10))  # Reserve 10 lines for safety
-    local spinner_lines=5
-    
-    # Adjust spinner lines based on available space
-    if [ "$available_lines" -lt 5 ]; then
-        spinner_lines=$((available_lines > 1 ? available_lines : 1))
-    fi
-    
-    # Add spinner_lines of space to ensure the spinner has enough room
-    for i in $(seq 1 $spinner_lines); do
-        echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
-    done
-    tput cuu $spinner_lines  # Move up to the spinner's line
-    # Save the initial cursor position of the spinner's line
+    # Only print one spinner line
+    echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
+    tput cuu 1
     tput sc
+
+    # # Use the global terminal dimensions from capability check
+    # local available_lines=$((TERM_HEIGHT - 10))  # Reserve 10 lines for safety
+    # local spinner_lines=5
+    
+    # # Adjust spinner lines based on available space
+    # if [ "$available_lines" -lt 5 ]; then
+    #     spinner_lines=$((available_lines > 1 ? available_lines : 1))
+    # fi
+    
+    # # Add spinner_lines of space to ensure the spinner has enough room
+    # for i in $(seq 1 $spinner_lines); do
+    #     echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
+    # done
+    # tput cuu $spinner_lines  # Move up to the spinner's line
+    # # Save the initial cursor position of the spinner's line
+    # tput sc
 
     # Run the spinner logic in a background process
     (
