@@ -112,7 +112,7 @@ verify_ytdlp_pip() {
     
     # yt-dlp is installed via uv sync in the virtual environment during Python dependencies installation
     # We just need to get the path and verify it's working
-    VENV_YTDLP="$INSTALL_DIR/.venv/bin/yt-dlp"
+    VENV_YTDLP="$INSTALL_DIR/backend/.venv/bin/yt-dlp"
     
     show_temp_message "Verifying yt-dlp installation"
     if [ -f "$VENV_YTDLP" ]; then
@@ -143,8 +143,8 @@ setup_environment() {
     show_temp_message "Configuring environment variables"
     update_env_var "FFMPEG_PATH" "$BIN_DIR/ffmpeg" "$ENV_FILE"
     update_env_var "FFPROBE_PATH" "$BIN_DIR/ffprobe" "$ENV_FILE"
-    update_env_var "YTDLP_PATH" "$INSTALL_DIR/venv/bin/yt-dlp" "$ENV_FILE"
-    
+    update_env_var "YTDLP_PATH" "$INSTALL_DIR/backend/.venv/bin/yt-dlp" "$ENV_FILE"
+
     show_message $GREEN "Environment variables configured in $ENV_FILE"
 }
 
@@ -160,9 +160,9 @@ create_update_script() {
 set -e
 
 INSTALL_DIR="/opt/trailarr"
-VENV_DIR="$INSTALL_DIR/venv"
+VENV_DIR="$INSTALL_DIR/backend/.venv"
 
-echo "Updating yt-dlp via pip..."
+echo "Updating yt-dlp via uv sync..."
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "Error: Virtual environment not found at $VENV_DIR"
