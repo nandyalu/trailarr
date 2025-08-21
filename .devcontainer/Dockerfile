@@ -20,9 +20,9 @@ COPY backend /app/backend
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Install Python dependencies using uv sync with all dev dependencies
+# Install Python dependencies using uv pip install with all dev dependencies
 WORKDIR /app/backend
-RUN uv sync --no-cache --native-tls --group dev --group docs --group testing
+RUN uv pip install --no-cache --native-tls --system -r pyproject.toml --group dev --group docs --group testing
 
 # Download and extract the custom FFmpeg build from yt-dlp
 RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
