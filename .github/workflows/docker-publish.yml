@@ -52,7 +52,7 @@ jobs:
         with:
           # Cache key based on requirements.txt and Dockerfile
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ hashFiles('requirements.txt', 'Dockerfile') }}
+          key: ${{ runner.os }}-docker-${{ hashFiles('backend/pyproject.toml', 'Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-docker-
 

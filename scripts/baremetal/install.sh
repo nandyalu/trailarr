@@ -156,75 +156,45 @@ copy_application_files() {
     show_message "Application files copied"
 }
 
-# Function to run Python installation
-install_python() {
-    show_temp_message "Running Python installation"
-    if [ -f "$BAREMETAL_SCRIPTS_DIR/install_python.sh" ]; then
-        sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_python.sh"
-    else
-        show_message $RED "Python installation script not found"
-        end_message $RED "Python installation script not found"
+# Function to install Python and dependencies with uv
+install_python_and_deps() {
+    show_temp_message "Installing uv package manager and Python dependencies"
+    
+    # Install uv for trailarr user
+    show_temp_message "Installing uv package manager"
+    if ! run_logged_command "Install uv for trailarr user" "sudo -u trailarr bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'"; then
+        show_message $RED "Failed to install uv"
+        end_message $RED "uv installation failed"
         exit 1
     fi
-}
-
-# Function to install Python dependencies
-install_python_deps() {
-    show_temp_message "Installing Python dependencies"
-
-    # Source the Python executable from .env
-    show_temp_message "Loading Python environment configuration"
-    if [ -f "$INSTALL_DIR/.env" ]; then
-        source "$INSTALL_DIR/.env"
+    
+    # Add uv to PATH for trailarr user
+    run_logged_command "Add uv to trailarr PATH" "echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> /home/trailarr/.bashrc" || true
+    
+    # Navigate to backend directory and run uv sync
+    show_temp_message "Installing Python dependencies with uv sync"
+    if ! run_logged_command "Install Python dependencies with uv sync" "cd \"$INSTALL_DIR/backend\" && sudo -u trailarr PATH=\"/home/trailarr/.local/bin:\$PATH\" uv sync"; then
+        show_message $RED "Failed to install Python dependencies with uv"
+        end_message $RED "Failed to install Python dependencies"
+        exit 1
     fi
     
-    if [ -z "$PYTHON_EXECUTABLE" ]; then
-        show_message $RED "Python executable not found in environment"
+    # Get the Python executable from the created venv
+    PYTHON_EXECUTABLE="$INSTALL_DIR/backend/.venv/bin/python"
+    
+    if [ ! -f "$PYTHON_EXECUTABLE" ]; then
+        show_message $RED "Python executable not found in created venv"
         end_message $RED "Python executable not found"
         exit 1
     fi
     
-    log_to_file "Using Python executable: $PYTHON_EXECUTABLE"
-    
-    # Install dependencies with uv (venv might already be created by install_python.sh or we create it here)
-    if [ ! -d "$INSTALL_DIR/venv" ]; then
-        # Create virtual environment if not already created by uv in install_python.sh
-        show_temp_message "Creating Python virtual environment"
-        if ! run_logged_command "Create Python virtual environment" "sudo -u trailarr \"$PYTHON_EXECUTABLE\" -m venv \"$INSTALL_DIR/venv\""; then
-            show_message $RED "Failed to create Python virtual environment"
-            end_message $RED "Failed to create virtual environment"
-            exit 1
-        fi
-    fi
-
-    # Install dependencies using uv
-    if [ -f "$INSTALL_DIR/backend/requirements.txt" ]; then
-        log_to_file "Installing dependencies from requirements.txt using uv"
-        show_temp_message "Installing Python dependencies with uv"
-        if ! run_logged_command "Install Python dependencies with uv" "cd \"$INSTALL_DIR\" && sudo -u trailarr uv pip install --requirement \"$INSTALL_DIR/backend/requirements.txt\""; then
-            show_message $RED "Failed to install Python dependencies with uv"
-            end_message $RED "Failed to install Python dependencies"
-            exit 1
-        fi
-    else
-        # Install basic dependencies if requirements.txt not found
-        log_to_file "requirements.txt not found, installing basic dependencies with uv"
-        show_temp_message "Installing basic Python dependencies with uv"
-        local basic_deps="aiohttp aiofiles aiosqlite alembic apscheduler async-lru bcrypt fastapi[standard-no-fastapi-cloud-cli] pillow sqlmodel yt-dlp[default,curl-cffi]"
-        if ! run_logged_command "Install basic Python dependencies with uv" "cd \"$INSTALL_DIR\" && sudo -u trailarr uv pip install $basic_deps"; then
-            show_message $RED "Failed to install basic Python dependencies with uv"
-            end_message $RED "Failed to install basic dependencies"
-            exit 1
-        fi
-    fi
-
     # Save Python executable and related paths to .env file
     show_temp_message "Configuring environment variables"
     update_env_var "PYTHON_EXECUTABLE" "$PYTHON_EXECUTABLE" "$DATA_DIR/.env"
-    update_env_var "PYTHON_VENV" "$INSTALL_DIR/venv" "$DATA_DIR/.env"
+    update_env_var "PYTHON_VENV" "$INSTALL_DIR/backend/.venv" "$DATA_DIR/.env"
     update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
 
-    show_message "Python dependencies installed"
+    show_message "Python dependencies installed with uv"
 }
 
 # Function to add trailarr user to GPU groups for hardware access
@@ -413,7 +383,6 @@ User=trailarr
 Group=trailarr
 WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
-Environment=APP_DATA_DIR=$DATA_DIR
 EnvironmentFile=$INSTALL_DIR/.env
 ExecStartPre=$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh
@@ -544,8 +513,7 @@ main() {
 
     # Install Python and dependencies
     start_message "Setting up Python environment"
-    install_python
-    install_python_deps
+    install_python_and_deps
     end_message "Python environment ready"
     
     # GPU Detection

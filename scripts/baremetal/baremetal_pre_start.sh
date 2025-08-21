@@ -102,8 +102,8 @@ update_ytdlp() {
         else
             show_message $YELLOW "⚠ yt-dlp update failed"
         fi
-    elif [ -f "$INSTALL_DIR/venv/bin/yt-dlp" ]; then
-        YTDLP_VERSION=$("$INSTALL_DIR/venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
+    elif [ -f "$INSTALL_DIR/backend/.venv/bin/yt-dlp" ]; then
+        YTDLP_VERSION=$("$INSTALL_DIR/backend/.venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
         show_message $GREEN "✓ yt-dlp version: $YTDLP_VERSION"
     else
         show_message $YELLOW "⚠ yt-dlp not found in virtual environment"

@@ -66,7 +66,7 @@ fi
 end_message "Database backup complete"
 
 # Determine Python executable
-PYTHON_EXEC="$INSTALL_DIR/venv/bin/python"
+PYTHON_EXEC="$INSTALL_DIR/backend/.venv/bin/python"
 if [ ! -f "$PYTHON_EXEC" ]; then
     # Fallback to system Python if virtual environment doesn't exist
     if [ -n "$PYTHON_EXECUTABLE" ] && [ -f "$PYTHON_EXECUTABLE" ]; then
@@ -81,8 +81,8 @@ start_message "Running database migrations with Alembic"
 show_message "Using Python: $PYTHON_EXEC"
 cd "$INSTALL_DIR/backend"
 
-if [ -f "$INSTALL_DIR/venv/bin/alembic" ]; then
-    ALEMBIC_CMD="$INSTALL_DIR/venv/bin/alembic"
+if [ -f "$INSTALL_DIR/backend/.venv/bin/alembic" ]; then
+    ALEMBIC_CMD="$INSTALL_DIR/backend/.venv/bin/alembic"
 else
     ALEMBIC_CMD="$PYTHON_EXEC -m alembic"
 fi
@@ -112,8 +112,8 @@ echo ""
 cd "$INSTALL_DIR/backend"
 
 # Determine uvicorn executable
-if [ -f "$INSTALL_DIR/venv/bin/uvicorn" ]; then
-    UVICORN_CMD="$INSTALL_DIR/venv/bin/uvicorn"
+if [ -f "$INSTALL_DIR/backend/.venv/bin/uvicorn" ]; then
+    UVICORN_CMD="$INSTALL_DIR/backend/.venv/bin/uvicorn"
 else
     UVICORN_CMD="$PYTHON_EXEC -m uvicorn"
 fi

@@ -24,9 +24,12 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Install Python dependencies using uv
-COPY ./backend/requirements.txt .
-RUN uv pip install --system --no-cache --native-tls --requirement /app/requirements.txt
+# Copy backend with pyproject.toml for dependency installation
+COPY ./backend /app/backend
+
+# Install Python dependencies using uv sync
+WORKDIR /app/backend
+RUN uv sync --no-cache --native-tls
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
@@ -82,6 +85,9 @@ COPY ./assets /app/assets
 
 # Copy the backend
 COPY ./backend /app/backend
+
+# Copy the installed Python virtual environment from python-deps stage
+COPY --from=python-deps /app/backend/.venv /app/backend/.venv
 
 # Copy the frontend built files
 COPY ./frontend-build /app/frontend-build
