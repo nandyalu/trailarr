@@ -169,12 +169,13 @@ install_python_and_deps() {
     fi
     
     # Add uv to PATH for trailarr user
-    run_logged_command "Add uv to trailarr PATH" "echo 'export PATH=\"\$INSTALL_DIR/.local/bin:\$PATH\"' >> $INSTALL_DIR/.bashrc" || true
-    
+    local trailarr_path="$INSTALL_DIR/.local/bin"
+    run_logged_command "Add uv to trailarr PATH" "echo 'export PATH=\"\$trailarr_path:\$PATH\"' >> $INSTALL_DIR/.bashrc" || true
+
     # Navigate to backend directory and run uv sync
     show_temp_message "Creating Python venv and installing dependencies with uv sync"
-    cmd="cd \"$INSTALL_DIR/backend\" && sudo -u trailarr PATH=\"$INSTALL_DIR/.local/bin:\$PATH\" uv sync --python=3.13"
-    if ! run_logged_command "Create venv and install Python dependencies with uv sync" "$cmd"; then
+    cmd="cd \"$INSTALL_DIR/backend\" && uv sync --no-cache-dir"
+    if ! run_logged_command "Create venv and install Python dependencies with uv sync" "sudo -u trailarr env PATH=\"$trailarr_path:\$PATH\" $cmd"; then
         show_message $RED "Failed to create venv and install Python dependencies with uv"
         end_message $RED "Failed to install Python dependencies"
         exit 1
