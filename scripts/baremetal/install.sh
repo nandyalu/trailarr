@@ -121,7 +121,7 @@ create_user_and_dirs() {
     chown -R trailarr:trailarr "$DATA_DIR"
     chown -R trailarr:trailarr "$LOG_DIR"
 
-    show_message "Directories created and configured"
+    show_message "$GREEN" "Directories created and configured"
 }
 
 # Function to copy application files
@@ -153,7 +153,7 @@ copy_application_files() {
     show_temp_message "Setting file ownership"
     chown -R trailarr:trailarr "$INSTALL_DIR"
 
-    show_message "Application files copied"
+    show_message "$GREEN" "Application files copied"
 }
 
 # Function to install Python and dependencies with uv
@@ -170,11 +170,13 @@ install_python_and_deps() {
         end_message $RED "uv installation failed"
         exit 1
     fi
+    show_message $GREEN "uv installed successfully"
     
     # Add uv to PATH for trailarr user
-    show_message "Add uv to trailarr PATH"
+    show_temp_message "Adding uv to trailarr PATH"
     sudo -u trailarr bash -c 'echo export PATH="\$HOME/.local/bin:\$PATH" >> $HOME/.bashrc'
-    
+    show_message $GREEN "uv added to PATH for trailarr user"
+
     # Navigate to backend directory and run uv sync
     show_temp_message "Creating Python venv and installing dependencies with uv sync"
     cmd="cd \"$INSTALL_DIR/backend\" && \"$INSTALL_DIR/.local/bin/uv\" sync --no-cache-dir"
@@ -183,6 +185,7 @@ install_python_and_deps() {
         end_message $RED "Failed to install Python dependencies"
         exit 1
     fi
+    show_message $GREEN "Python dependencies installed successfully with uv"
     
     # Get the Python executable from the created venv
     PYTHON_EXECUTABLE="$INSTALL_DIR/backend/.venv/bin/python"
@@ -198,8 +201,9 @@ install_python_and_deps() {
     update_env_var "PYTHON_EXECUTABLE" "$PYTHON_EXECUTABLE" "$DATA_DIR/.env"
     update_env_var "PYTHON_VENV" "$INSTALL_DIR/backend/.venv" "$DATA_DIR/.env"
     update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
+    show_message $GREEN "Python environment configured in $DATA_DIR/.env"
 
-    show_message "Python dependencies installed with uv"
+    show_message $GREEN "Python dependencies installed with uv"
 }
 
 # Function to add trailarr user to GPU groups for hardware access
@@ -338,8 +342,11 @@ setup_gpu_hardware() {
 
 # Function to install media tools (ffmpeg, yt-dlp)
 install_media_tools() {
+    show_temp_message "Installing media processing tools (ffmpeg, yt-dlp)"
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
-        sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
+        bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
+        # Set ownership of installed binaries to trailarr user
+        chown -R trailarr:trailarr "$INSTALL_DIR/.local/bin"
         show_message $GREEN "Media tools installed"
     else
         end_message $RED "Media tools installation script not found"

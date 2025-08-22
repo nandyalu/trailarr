@@ -512,30 +512,6 @@ EOF
     export TERM_COLS
 }
 
-# --- Original Logging Function Wrappers ---
-# These functions wrap the new, more robust functions to maintain compatibility with existing scripts.
-
-# Function to start a message with a spinner
-# start_message() {
-#     start_message "$1"
-# }
-
-# Backward compatibility alias
-
-# Function to display a persistent message
-# show_message() {
-#     show_message "$1" "$2"
-# }
-
-# Alias for print_message, to maintain backward compatibility
-# show_status() {
-#     show_message "$1" "$2"
-# }
-
-# The update_progress function is no longer needed as the new spinner
-# automatically updates its own progress.
-
-
 # Function to write to log file only
 log_to_file() {
     local message="$1"
@@ -591,7 +567,7 @@ run_logged_command() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND (SUCCESS): $description"
-        show_message "$GREEN" "$description completed successfully"
+        # show_message "$GREEN" "$description completed successfully"
         return 0
     else
         log_to_file "COMMAND (FAILED): $description (exit code: $exit_code)"
