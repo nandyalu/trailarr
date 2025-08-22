@@ -344,9 +344,7 @@ setup_gpu_hardware() {
 install_media_tools() {
     show_temp_message "Installing media processing tools (ffmpeg, yt-dlp)"
     if [ -f "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh" ]; then
-        bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
-        # Set ownership of installed binaries to trailarr user
-        chown -R trailarr:trailarr "$INSTALL_DIR/.local/bin"
+        sudo -u trailarr bash "$BAREMETAL_SCRIPTS_DIR/install_media_tools.sh"
         show_message $GREEN "Media tools installed"
     else
         end_message $RED "Media tools installation script not found"
