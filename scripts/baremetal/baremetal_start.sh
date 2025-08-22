@@ -4,13 +4,12 @@
 # This script starts the main Trailarr application for bare metal installations
 
 set -e
+echo "+==============================================================================+"
 
 # Installation directories
 INSTALL_DIR="/opt/trailarr"
 SCRIPTS_DIR="$INSTALL_DIR/scripts"
-
-# Source the logging functions
-source "$SCRIPTS_DIR/baremetal/logging.sh"
+DATA_DIR="/var/lib/trailarr"
 
 # Initialize logging for runtime  
 INSTALL_LOG_FILE="/var/log/trailarr/start.log"
@@ -24,46 +23,49 @@ export APP_PORT=${APP_PORT:-7889}
 export PYTHONPATH="$INSTALL_DIR/backend"
 
 # Load environment variables from .env file if it exists
-if [ -f "$INSTALL_DIR/.env" ]; then
-    source "$INSTALL_DIR/.env"
+if [ -f "$DATA_DIR/.env" ]; then
+    source "$DATA_DIR/.env"
 fi
 
 # Update PATH for local binaries
-if [ -d "$INSTALL_DIR/bin" ]; then
-    export PATH="$INSTALL_DIR/bin:$PATH"
+if [ -d "$INSTALL_DIR/.local/bin" ]; then
+    export PATH="$INSTALL_DIR/.local/bin:$PATH"
+fi
+if [ -d "$INSTALL_DIR/backend/.venv/bin" ]; then
+    export PATH="$INSTALL_DIR/backend/.venv/bin:$PATH"
 fi
 
-show_message "Running application as user: $(whoami)"
-show_message "Python path: $PYTHONPATH"
-show_message "App data directory: $APP_DATA_DIR"
+echo "Running application as user: $(whoami)"
+echo "App data directory: $APP_DATA_DIR"
 
-show_message "--------------------------------------------------------------------------"
+echo "--------------------------------------------------------------------------"
 # Backup database before running migrations
-start_message "Backing up database before running migrations"
+echo "Backing up database before running migrations"
 BACKUPS_DIR="${APP_DATA_DIR}/backups"
 NEW_DB="${BACKUPS_DIR}/trailarr_$(date +%Y%m%d%H%M%S).db"
 OLD_DB="${APP_DATA_DIR}/trailarr.db"
 
 if [ -f "$OLD_DB" ]; then
-    show_temp_message "Creating database backup"
+    echo "Creating database backup"
     mkdir -p "${BACKUPS_DIR}"
     cp "$OLD_DB" "$NEW_DB"
-    show_message $GREEN "✓ Database backup created successfully!"
+    echo "✓ Database backup created successfully!"
     
     # Keep only the most recent 30 backups and delete the rest
-    show_temp_message "Cleaning up old backups (keeping most recent 30)"
+    echo "Cleaning up old backups (keeping most recent 30)"
     BACKUP_COUNT=$(find "$BACKUPS_DIR" -type f -name "trailarr_*.db" 2>/dev/null | wc -l)
     if [ "$BACKUP_COUNT" -gt 30 ]; then
         find "$BACKUPS_DIR" -type f -name "trailarr_*.db" -exec ls -t {} + | tail -n +31 | xargs rm -f
         DEL_COUNT=$((BACKUP_COUNT - 30))
-        show_message $GREEN "$DEL_COUNT old backups deleted successfully!"
+        echo "$DEL_COUNT old backups deleted successfully!"
     else
-        show_message "Less than 30 backups exist ($BACKUP_COUNT), no backups deleted."
+        echo "Less than 30 backups exist ($BACKUP_COUNT), no backups deleted."
     fi
 else
-    show_message $YELLOW "No existing database found, skipping backup"
+    echo $YELLOW "No existing database found, skipping backup"
 fi
-end_message "Database backup complete"
+echo "Database backup complete"
+echo "--------------------------------------------------------------------------"
 
 # Determine Python executable
 PYTHON_EXEC="$INSTALL_DIR/backend/.venv/bin/python"
@@ -77,8 +79,8 @@ if [ ! -f "$PYTHON_EXEC" ]; then
 fi
 
 # Run Alembic migrations
-start_message "Running database migrations with Alembic"
-show_message "Using Python: $PYTHON_EXEC"
+echo "Running database migrations with Alembic"
+echo "Using Python: $PYTHON_EXEC"
 cd "$INSTALL_DIR/backend"
 
 if [ -f "$INSTALL_DIR/backend/.venv/bin/alembic" ]; then
@@ -87,25 +89,27 @@ else
     ALEMBIC_CMD="$PYTHON_EXEC -m alembic"
 fi
 
-show_temp_message "Running Alembic migrations"
+echo "Running Alembic migrations"
 if $ALEMBIC_CMD upgrade head; then
-    show_message $GREEN "✓ Database migrations ran successfully!"
-    end_message "Database migrations complete"
+    echo "✓ Database migrations ran successfully!"
+    echo "Database migrations complete"
+    echo "--------------------------------------------------------------------------"
 else
-    show_message $RED "✗ Database migrations failed!"
+    echo "✗ Database migrations failed!"
     if [ -f "$NEW_DB" ] && [ -f "$OLD_DB" ]; then
-        show_temp_message "Restoring backup"
+        echo "Restoring backup"
         cp "$NEW_DB" "$OLD_DB"
-        show_message $GREEN "✓ Backup restored successfully!"
+        echo "✓ Backup restored successfully!"
     fi
-    show_message $RED "Check logs for details and fix the issue before restarting"
-    end_message $RED "Database migration failed"
+    echo "Check logs for details and fix the issue before restarting"
+    echo "--------------------------------------------------------------------------"
     exit 1
 fi
 
 # Start FastAPI application
-show_message "Starting Trailarr application on port $APP_PORT..."
-show_message "Web interface will be available at: http://localhost:$APP_PORT"
+echo "+==============================================================================+"
+echo "Starting Trailarr application on port $APP_PORT..."
+echo "Web interface will be available at: http://localhost:$APP_PORT"
 echo "+==============================================================================+"
 echo ""
 

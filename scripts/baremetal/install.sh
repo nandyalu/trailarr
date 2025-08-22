@@ -390,19 +390,19 @@ Group=trailarr
 WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
 Environment=PATH=/opt/trailarr/.local/bin:/opt/trailarr/backend/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-EnvironmentFile=$INSTALL_DIR/.env
+EnvironmentFile=$DATA_DIR/.env
 ExecStartPre=$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh
 Restart=always
-RestartSec=10
+RestartSec=60
 TimeoutStopSec=30
 
 # Security settings
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=$DATA_DIR $LOG_DIR $INSTALL_DIR/tmp
-ProtectHome=true
+ReadWritePaths=$DATA_DIR $LOG_DIR $INSTALL_DIR
+#ProtectHome=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
