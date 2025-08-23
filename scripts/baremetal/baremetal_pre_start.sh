@@ -73,19 +73,19 @@ load_environment() {
     echo "Loading environment configuration"
     
     # Load environment from .env file
-    if [ -f "$INSTALL_DIR/.env" ]; then
-        source "$INSTALL_DIR/.env"
-        echo "✓ Environment loaded from $INSTALL_DIR/.env"
+    if [ -f "$DATA_DIR/.env" ]; then
+        source "$DATA_DIR/.env"
+        echo "✓ Environment loaded from $DATA_DIR/.env"
     else
         echo "⚠ No .env file found, using defaults"
     fi
     
     # Export Python path
-    export PYTHONPATH="${INSTALL_DIR}/backend"
+    export PYTHONPATH="${DATA_DIR}/backend"
     
     # Update PATH for local binaries
-    if [ -d "$INSTALL_DIR/bin" ]; then
-        export PATH="$INSTALL_DIR/bin:$PATH"
+    if [ -d "$DATA_DIR/bin" ]; then
+        export PATH="$DATA_DIR/bin:$PATH"
         echo "✓ Local binaries added to PATH"
     fi
     
