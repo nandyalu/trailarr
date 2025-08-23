@@ -265,10 +265,12 @@ start_message() {
     # An array of spinner characters
     local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
     
-    # Only print one spinner line
-    echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
-    tput cuu 1
+    # Save current cursor position before adding spinner line
     tput sc
+    # Print one line for spinner and move back to it
+    echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
+    # Move back to the saved position
+    tput rc
 
     # # Use the global terminal dimensions from capability check
     # local available_lines=$((TERM_HEIGHT - 10))  # Reserve 10 lines for safety
@@ -298,8 +300,9 @@ start_message() {
 
             # Restore the cursor to the saved spinner position
             tput rc
-
-            # tput el  # Clear the line
+            
+            # Clear the entire line first
+            tput el
 
             # Get terminal width for padding using global variable
             local line_content_core="${spinner_chars[i]} ${SPINNER_MSG}"

@@ -143,50 +143,130 @@ update_service() {
     check_installation
     
     show_message "$BLUE" "Updating Trailarr to the latest version..."
+    show_message "$YELLOW" "This will preserve your configuration and database."
     
     # Stop the service
     show_message "$BLUE" "Stopping Trailarr service..."
     systemctl stop "$SERVICE_NAME" || true
     
-    # Create backup of current installation
+    # Create backup of current installation (excluding data directory)
     BACKUP_DIR="/tmp/trailarr_backup_$(date +%Y%m%d_%H%M%S)"
     show_message "$BLUE" "Creating backup at $BACKUP_DIR..."
-    cp -r "$INSTALL_DIR" "$BACKUP_DIR"
+    mkdir -p "$BACKUP_DIR"
     
-    # Download and run the installation script
-    show_message "$BLUE" "Downloading latest installation script..."
-    TEMP_SCRIPT="/tmp/trailarr_update_install.sh"
+    # Backup only the application files, not user data
+    cp -r "$INSTALL_DIR/backend" "$BACKUP_DIR/" 2>/dev/null || true
+    cp -r "$INSTALL_DIR/frontend-build" "$BACKUP_DIR/" 2>/dev/null || true
+    cp -r "$INSTALL_DIR/assets" "$BACKUP_DIR/" 2>/dev/null || true
+    cp -r "$INSTALL_DIR/scripts" "$BACKUP_DIR/" 2>/dev/null || true
     
-    if ! curl -L -o "$TEMP_SCRIPT" "https://raw.githubusercontent.com/$GITHUB_REPO/main/install.sh"; then
-        show_message "$RED" "Failed to download installation script."
+    # Backup user data separately (configuration and database)
+    DATA_BACKUP_DIR="/var/lib/trailarr/backups/update_$(date +%Y%m%d_%H%M%S)"
+    show_message "$BLUE" "Creating user data backup at $DATA_BACKUP_DIR..."
+    mkdir -p "$DATA_BACKUP_DIR"
+    cp -r "/var/lib/trailarr/.env" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    cp -r "/var/lib/trailarr/trailarr.db" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    cp -r "/var/lib/trailarr/config" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    chown -R trailarr:trailarr "$DATA_BACKUP_DIR"
+    
+    # Download the latest release files instead of running the installer
+    show_message "$BLUE" "Downloading latest Trailarr release..."
+    TEMP_DIR="/tmp/trailarr_update_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$TEMP_DIR"
+    
+    # Download the latest release archive
+    if ! curl -L -o "$TEMP_DIR/trailarr-latest.tar.gz" "https://github.com/$GITHUB_REPO/archive/refs/heads/main.tar.gz"; then
+        show_message "$RED" "Failed to download latest release."
         show_message "$YELLOW" "Backup available at: $BACKUP_DIR"
         exit 1
     fi
     
-    chmod +x "$TEMP_SCRIPT"
-    
-    show_message "$BLUE" "Running update installation..."
-    if ! "$TEMP_SCRIPT"; then
-        show_message "$RED" "Update failed! Restoring backup..."
-        rm -rf "$INSTALL_DIR"
-        mv "$BACKUP_DIR" "$INSTALL_DIR"
-        systemctl start "$SERVICE_NAME"
-        show_message "$RED" "Update failed and backup restored."
+    # Extract the release
+    show_message "$BLUE" "Extracting release files..."
+    cd "$TEMP_DIR"
+    if ! tar -xzf "trailarr-latest.tar.gz"; then
+        show_message "$RED" "Failed to extract release files."
+        show_message "$YELLOW" "Backup available at: $BACKUP_DIR"
         exit 1
     fi
     
-    # Clean up
-    rm -f "$TEMP_SCRIPT"
+    # Find the extracted directory
+    EXTRACT_DIR=$(find "$TEMP_DIR" -name "trailarr-main" -type d | head -1)
+    if [ -z "$EXTRACT_DIR" ]; then
+        show_message "$RED" "Failed to find extracted release directory."
+        show_message "$YELLOW" "Backup available at: $BACKUP_DIR"
+        exit 1
+    fi
+    
+    # Update application files only (preserve user data)
+    show_message "$BLUE" "Updating application files..."
+    
+    # Update backend
+    if [ -d "$EXTRACT_DIR/backend" ]; then
+        rm -rf "$INSTALL_DIR/backend"
+        cp -r "$EXTRACT_DIR/backend" "$INSTALL_DIR/"
+    fi
+    
+    # Update frontend
+    if [ -d "$EXTRACT_DIR/frontend-build" ]; then
+        rm -rf "$INSTALL_DIR/frontend-build"
+        cp -r "$EXTRACT_DIR/frontend-build" "$INSTALL_DIR/"
+    fi
+    
+    # Update assets
+    if [ -d "$EXTRACT_DIR/assets" ]; then
+        rm -rf "$INSTALL_DIR/assets"
+        cp -r "$EXTRACT_DIR/assets" "$INSTALL_DIR/"
+    fi
+    
+    # Update scripts
+    if [ -d "$EXTRACT_DIR/scripts" ]; then
+        rm -rf "$INSTALL_DIR/scripts"
+        cp -r "$EXTRACT_DIR/scripts" "$INSTALL_DIR/"
+    fi
+    
+    # Set proper ownership
+    chown -R trailarr:trailarr "$INSTALL_DIR"
+    
+    # Update Python dependencies with uv sync
+    show_message "$BLUE" "Updating Python dependencies..."
+    cd "$INSTALL_DIR/backend"
+    if [ -f "$INSTALL_DIR/.local/bin/uv" ]; then
+        UV_CMD="$INSTALL_DIR/.local/bin/uv"
+    else
+        UV_CMD="uv"
+    fi
+    
+    if sudo -u trailarr $UV_CMD sync --no-cache-dir; then
+        show_message "$GREEN" "Dependencies updated successfully"
+    else
+        show_message "$YELLOW" "Failed to update dependencies, but application files updated"
+    fi
+    
+    # Update CLI script
+    if [ -f "$INSTALL_DIR/scripts/baremetal/trailarr_cli.sh" ]; then
+        cp "$INSTALL_DIR/scripts/baremetal/trailarr_cli.sh" /usr/local/bin/trailarr
+        chmod +x /usr/local/bin/trailarr
+    fi
+    
+    # Clean up temporary files
+    rm -rf "$TEMP_DIR"
     rm -rf "$BACKUP_DIR"
     
     show_message "$GREEN" "Trailarr updated successfully!"
+    show_message "$GREEN" "Your configuration and database have been preserved."
+    show_message "$BLUE" "User data backup created at: $DATA_BACKUP_DIR"
+    
+    # Start the service
     show_message "$BLUE" "Starting Trailarr service..."
     systemctl start "$SERVICE_NAME"
     
     if systemctl is-active --quiet "$SERVICE_NAME"; then
         show_message "$GREEN" "Trailarr service started successfully!"
+        show_message "$BLUE" "Update completed successfully!"
     else
-        show_message "$YELLOW" "Update completed but service failed to start. Check logs."
+        show_message "$YELLOW" "Update completed but service failed to start. Check logs with:"
+        show_message "$YELLOW" "  sudo journalctl -u trailarr -f"
     fi
 }
 

@@ -39,6 +39,104 @@ echo "Running application as user: $(whoami)"
 echo "App data directory: $APP_DATA_DIR"
 
 echo "--------------------------------------------------------------------------"
+# GPU Detection for runtime environment variables
+echo "Detecting GPU hardware for runtime configuration"
+
+# Function to detect GPU devices and set environment variables
+detect_gpu_runtime() {
+    # Initialize GPU environment variables
+    export GPU_AVAILABLE_NVIDIA="false"
+    export GPU_AVAILABLE_INTEL="false" 
+    export GPU_AVAILABLE_AMD="false"
+    export GPU_DEVICE_NVIDIA=""
+    export GPU_DEVICE_INTEL=""
+    export GPU_DEVICE_AMD=""
+
+    # Check for NVIDIA GPU
+    if command -v nvidia-smi &> /dev/null; then
+        if nvidia-smi > /dev/null 2>&1; then
+            export GPU_AVAILABLE_NVIDIA="true"
+            GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
+            echo "✓ NVIDIA GPU detected: $GPU_INFO"
+            echo "  CUDA hardware acceleration available"
+        fi
+    elif lspci | grep -i nvidia &> /dev/null; then
+        echo "⚠ NVIDIA GPU hardware detected but drivers not installed"
+        echo "  Install NVIDIA drivers: sudo apt install nvidia-driver-xxx"
+        echo "  Then reboot and restart Trailarr"
+    fi
+
+    # Check for Intel GPU
+    if lspci | grep -i "vga.*intel\|display.*intel" &> /dev/null; then
+        export GPU_AVAILABLE_INTEL="true"
+        echo "✓ Intel GPU detected"
+        echo "  Install Intel GPU tools: sudo apt install intel-media-va-driver vainfo"
+        
+        # Find Intel GPU device
+        for device in /dev/dri/renderD*; do
+            if [ -e "$device" ]; then
+                syspath=$(udevadm info --query=path --name="$device" 2>/dev/null || echo "")
+                if [ -n "$syspath" ]; then
+                    fullpath="/sys$syspath/device"
+                    if [ -f "$fullpath/vendor" ]; then
+                        vendor=$(cat "$fullpath/vendor")
+                        if [ "$vendor" = "0x8086" ]; then
+                            export GPU_DEVICE_INTEL="$device"
+                            break
+                        fi
+                    fi
+                fi
+            fi
+        done
+    fi
+
+    # Check for AMD GPU  
+    if lspci | grep -i "vga.*amd\|display.*amd\|vga.*ati\|display.*ati" &> /dev/null; then
+        export GPU_AVAILABLE_AMD="true"
+        echo "✓ AMD GPU detected"
+        echo "  Install AMD GPU tools: sudo apt install mesa-va-drivers vainfo"
+        
+        # Find AMD GPU device
+        for device in /dev/dri/renderD*; do
+            if [ -e "$device" ]; then
+                syspath=$(udevadm info --query=path --name="$device" 2>/dev/null || echo "")
+                if [ -n "$syspath" ]; then
+                    fullpath="/sys$syspath/device"
+                    if [ -f "$fullpath/vendor" ]; then
+                        vendor=$(cat "$fullpath/vendor")
+                        if [ "$vendor" = "0x1002" ] || [ "$vendor" = "0x1022" ]; then
+                            export GPU_DEVICE_AMD="$device"
+                            break
+                        fi
+                    fi
+                fi
+            fi
+        done
+    fi
+
+    # Update .env file with GPU detection results
+    if [ -f "$DATA_DIR/.env" ]; then
+        # Use a simple approach to update .env file
+        sed -i '/^GPU_AVAILABLE_NVIDIA=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_AVAILABLE_INTEL=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_AVAILABLE_AMD=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_NVIDIA=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_INTEL=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_AMD=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        
+        echo "GPU_AVAILABLE_NVIDIA=$GPU_AVAILABLE_NVIDIA" >> "$DATA_DIR/.env"
+        echo "GPU_AVAILABLE_INTEL=$GPU_AVAILABLE_INTEL" >> "$DATA_DIR/.env"
+        echo "GPU_AVAILABLE_AMD=$GPU_AVAILABLE_AMD" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_NVIDIA=$GPU_DEVICE_NVIDIA" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_INTEL=$GPU_DEVICE_INTEL" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_AMD=$GPU_DEVICE_AMD" >> "$DATA_DIR/.env"
+    fi
+}
+
+# Run GPU detection
+detect_gpu_runtime
+echo "GPU detection complete"
+echo "--------------------------------------------------------------------------"
 # Backup database before running migrations
 echo "Backing up database before running migrations"
 BACKUPS_DIR="${APP_DATA_DIR}/backups"

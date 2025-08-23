@@ -95,22 +95,49 @@ load_environment() {
     echo "--------------------------------------------------------------------------"
 }
 
-# Update yt-dlp if update script exists
+# Update yt-dlp using uv sync 
 update_ytdlp() {
     echo "Checking yt-dlp version and updates"
     
-    if [ -f "$INSTALL_DIR/scripts/update_ytdlp_local.sh" ]; then
-        echo "Running yt-dlp update script"
-        if bash "$INSTALL_DIR/scripts/update_ytdlp_local.sh"; then
-            echo "✓ yt-dlp update completed"
+    # Check if UPDATE_YTDLP is enabled
+    UPDATE_YTDLP=${UPDATE_YTDLP:-false}
+    update_ytdlp_lower=$(echo "$UPDATE_YTDLP" | tr '[:upper:]' '[:lower:]')
+    
+    if [ "$update_ytdlp_lower" = "true" ] || [ "$update_ytdlp_lower" = "1" ]; then
+        echo "UPDATE_YTDLP is set to true. Updating yt-dlp with uv sync..."
+        
+        # Navigate to backend directory and run uv sync to update dependencies
+        cd "$INSTALL_DIR/backend"
+        if [ -f "$INSTALL_DIR/.local/bin/uv" ]; then
+            UV_CMD="$INSTALL_DIR/.local/bin/uv"
         else
-            echo "⚠ yt-dlp update failed"
+            UV_CMD="uv"  # Fallback to system uv
         fi
-    elif [ -f "$INSTALL_DIR/backend/.venv/bin/yt-dlp" ]; then
-        YTDLP_VERSION=$("$INSTALL_DIR/backend/.venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
-        echo "✓ yt-dlp version: $YTDLP_VERSION"
+        
+        # Run uv sync to update all dependencies including yt-dlp
+        if $UV_CMD sync --no-cache-dir; then
+            echo "✓ Dependencies updated with uv sync"
+            if [ -f "$INSTALL_DIR/backend/.venv/bin/yt-dlp" ]; then
+                YTDLP_VERSION=$("$INSTALL_DIR/backend/.venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
+                echo "✓ yt-dlp updated to version: $YTDLP_VERSION"
+                
+                # Save updated version to environment
+                if [ -f "$DATA_DIR/.env" ]; then
+                    sed -i '/^YTDLP_VERSION=/d' "$DATA_DIR/.env" 2>/dev/null || true
+                    echo "YTDLP_VERSION=$YTDLP_VERSION" >> "$DATA_DIR/.env"
+                fi
+            fi
+        else
+            echo "⚠ Failed to update dependencies with uv sync"
+        fi
     else
-        echo "⚠ yt-dlp not found in virtual environment"
+        # Just check current version
+        if [ -f "$INSTALL_DIR/backend/.venv/bin/yt-dlp" ]; then
+            YTDLP_VERSION=$("$INSTALL_DIR/backend/.venv/bin/yt-dlp" --version 2>/dev/null || echo "unknown")
+            echo "✓ Current yt-dlp version: $YTDLP_VERSION"
+        else
+            echo "⚠ yt-dlp not found in virtual environment"
+        fi
     fi
     
     echo "yt-dlp check complete"

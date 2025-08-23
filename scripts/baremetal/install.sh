@@ -354,23 +354,53 @@ install_media_tools() {
 
 # Function to run interactive configuration
 run_interactive_config() {
-    if [ -f "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh" ]; then
-        bash "$BAREMETAL_SCRIPTS_DIR/interactive_config.sh"
-    else
-        show_temp_message "Setting up default configuration"
-        show_message $YELLOW "Interactive config script not found, using defaults"
-        # Create basic .env file with proper variable handling
-        show_temp_message "Creating default configuration"
-        update_env_var "APP_PORT" "7889" "$DATA_DIR/.env"
-        update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
-        update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"
-        update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"
-        update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
-        update_env_var "PYTHONPATH" "$INSTALL_DIR/backend" "$DATA_DIR/.env"
+    show_message ""
+    show_message "Setting up Trailarr configuration..."
+    show_message ""
+    
+    # Ask for port number only
+    local default_port=7889
+    local port
+    
+    while true; do
+        echo -n "Web interface port [$default_port]: "
+        read -r port
+        port=${port:-$default_port}
         
-        chown trailarr:trailarr "$DATA_DIR/.env"
-        show_message "Default configuration applied"
-    fi
+        if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -gt 1023 ] && [ "$port" -lt 65536 ]; then
+            break
+        else
+            show_message $RED "Invalid port: '$port'"
+            show_message $YELLOW "Please enter a valid port number (1024-65535)"
+        fi
+    done
+    
+    show_message $GREEN "Web interface port set to: $port"
+    
+    # Set all other values to defaults without asking
+    show_temp_message "Setting up default configuration"
+    
+    # Create .env file with configuration
+    update_env_var "APP_VERSION" "${APP_VERSION:-0.0.0}" "$DATA_DIR/.env"
+    update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
+    update_env_var "APP_PORT" "$port" "$DATA_DIR/.env"
+    update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
+    update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"  # 1 hour default
+    update_env_var "PYTHONPATH" "/opt/trailarr/backend" "$DATA_DIR/.env"
+    update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"  # Default to wait for media
+    
+    # Set timezone
+    TZ=$(timedatectl | grep "Time zone" | awk '{print $3}' 2>/dev/null || echo "UTC")
+    update_env_var "TZ" "$TZ" "$DATA_DIR/.env"
+    
+    # Set ownership
+    chown trailarr:trailarr "$DATA_DIR/.env"
+    
+    show_message $GREEN "Configuration saved to '$DATA_DIR/.env'"
+    show_message $BLUE "Default settings applied:"
+    show_message $BLUE "  - Monitor interval: 60 minutes (can be changed in web UI)"
+    show_message $BLUE "  - Wait for media: enabled (can be changed in web UI)"
+    show_message $BLUE "  - All other settings: defaults (configurable in web UI)"
 }
 
 # Function to create and start systemd service
