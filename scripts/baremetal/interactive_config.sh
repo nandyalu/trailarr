@@ -133,6 +133,7 @@ write_configuration() {
     
     # Create .env file with configuration
     show_temp_message "Writing configuration file"
+    update_env_var "APP_VERSION" "${APP_VERSION:-0.0.0}" "$DATA_DIR/.env"
     update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
     update_env_var "APP_PORT" "$APP_PORT" "$DATA_DIR/.env"
     update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
@@ -145,7 +146,8 @@ write_configuration() {
     update_env_var "GPU_DEVICE_NVIDIA" "$GPU_DEVICE_NVIDIA" "$DATA_DIR/.env"
     update_env_var "GPU_DEVICE_INTEL" "$GPU_DEVICE_INTEL" "$DATA_DIR/.env"
     update_env_var "GPU_DEVICE_AMD" "$GPU_DEVICE_AMD" "$DATA_DIR/.env"
-    
+    TZ=$(timedatectl | grep "Time zone" | awk '{print $3}')
+    update_env_var "TZ" "$TZ" "$DATA_DIR/.env"
     show_message $GREEN "Configuration written to '$CONFIG_FILE'"
 }
 
