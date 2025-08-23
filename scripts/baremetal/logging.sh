@@ -187,7 +187,7 @@ _parse_status_message() {
     local color_code
     local msg
     
-    local default_color="${@: -1}" # Gets the last argument as the default color
+    local default_color="${!#}" # Gets the last argument as the default color
 
     case "$#" in
         2)
@@ -240,7 +240,7 @@ _parse_status_message() {
         esac
     fi
 
-    echo "$color_code:$msg"
+    printf "%s\n" "$color_code:$msg"
 }
 
 # Function to start the spinner animation
