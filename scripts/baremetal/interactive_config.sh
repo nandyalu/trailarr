@@ -133,7 +133,7 @@ write_configuration() {
     
     # Create .env file with configuration
     show_temp_message "Writing configuration file"
-    update_env_var "APP_DATA_DIR" "$APP_DATA_DIR" "$DATA_DIR/.env"
+    update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
     update_env_var "APP_PORT" "$APP_PORT" "$DATA_DIR/.env"
     update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
     update_env_var "MONITOR_INTERVAL" "$MONITOR_INTERVAL" "$DATA_DIR/.env"
