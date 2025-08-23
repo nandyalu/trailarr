@@ -145,7 +145,6 @@ write_configuration() {
     update_env_var "GPU_DEVICE_NVIDIA" "$GPU_DEVICE_NVIDIA" "$DATA_DIR/.env"
     update_env_var "GPU_DEVICE_INTEL" "$GPU_DEVICE_INTEL" "$DATA_DIR/.env"
     update_env_var "GPU_DEVICE_AMD" "$GPU_DEVICE_AMD" "$DATA_DIR/.env"
-    update_env_var "TZ" "$TZ" "$DATA_DIR/.env"
     
     show_message $GREEN "Configuration written to '$CONFIG_FILE'"
 }

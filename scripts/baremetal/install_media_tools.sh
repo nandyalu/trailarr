@@ -119,6 +119,7 @@ verify_ytdlp_pip() {
         if "$VENV_YTDLP" --version &> /dev/null; then
             YTDLP_VERSION=$("$VENV_YTDLP" --version)
             show_message $GREEN "yt-dlp verified (version $YTDLP_VERSION)"
+            update_env_var "YTDLP_VERSION" "$YTDLP_VERSION" "$DATA_DIR/.env"
             return 0
         fi
     fi
