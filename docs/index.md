@@ -53,7 +53,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Installation & Setup
 
-See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
+Trailarr can be installed using Docker (recommended) or directly on Debian based systems. See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
 
 We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D){:target="_blank"} that explains Trailarr installation and setup on Unraid.
 

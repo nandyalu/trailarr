@@ -37,7 +37,7 @@ If you prefer to review the code first:
 ```bash
 git clone https://github.com/nandyalu/trailarr.git
 cd trailarr
-./install.sh
+sudo bash ./install.sh
 ```
 
 The installer will guide you through installation process.
@@ -49,18 +49,18 @@ After installation, files are organized as follows:
 
 ```
 /opt/trailarr/              # Application installation
+├── .local/bin/             # Local binaries (ffmpeg, uv)
 ├── backend/                # Python application code
+├── backend/.venv/          # Python virtual environment
 ├── frontend-build/         # Web interface files
 ├── assets/                 # Static assets and images
-├── scripts/                # Maintenance and startup scripts
-├── bin/                    # Local binaries (ffmpeg, yt-dlp)
-├── venv/                   # Python virtual environment
-└── python/                 # Local Python installation (if needed)
+└── scripts/                # Maintenance and startup scripts
 
 /var/lib/trailarr/          # Application data
 ├── logs/                   # Application logs
 ├── backups/                # Automatic database backups
 ├── web/images/             # Image files used in Trailarr
+├── tmp/                    # Temporary download files
 ├── .env                    # Configuration Environment Variables
 └── trailarr.db             # SQLite database
 
@@ -103,9 +103,6 @@ sudo journalctl -u trailarr -n 50
 
 # Follow logs in real-time
 sudo journalctl -u trailarr -f
-
-# View application logs
-tail -f /var/lib/trailarr/logs/app.log
 ```
 
 ## Configuration
@@ -113,7 +110,7 @@ tail -f /var/lib/trailarr/logs/app.log
 Most of the options can be changed from the web UI after installation.
 
 !!! warning ""
-    `APP_DATA_DIR` cannot be changed as installer depends on that!
+    `APP_DATA_DIR` is set to `/opt/trailarr` and cannot be changed as installer depends on that!
 
 Main Configuration File is located in `/var/lib/trailarr/.env` if you want to modify later.
 
@@ -143,7 +140,8 @@ sudo systemctl start trailarr
 yt-dlp is automatically updated during startup (if enabled), or manually using below command:
 
 ```bash
-sudo -u trailarr /opt/trailarr/scripts/update_ytdlp_local.sh
+cd /opt/trailarr/backend
+sudo -u trailarr /opt/trailarr/.local/bin/uv sync --no-cache-dir
 ```
 
 ### Database Backups
