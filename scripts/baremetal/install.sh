@@ -290,7 +290,7 @@ WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
 Environment=PATH=/opt/trailarr/.local/bin:/opt/trailarr/backend/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=$DATA_DIR/.env
-ExecStartPre=+ $INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
+ExecStartPre=+$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh
 Restart=always
 RestartSec=60
