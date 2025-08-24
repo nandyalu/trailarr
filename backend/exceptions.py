@@ -16,6 +16,12 @@ class DownloadFailedError(Exception):
     pass
 
 
+class FileMoveFailedError(Exception):
+    """Raised when a file move operation fails"""
+
+    pass
+
+
 class FolderPathEmptyError(Exception):
     """Raised when a folder path is empty or invalid"""
 
