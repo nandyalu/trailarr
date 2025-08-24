@@ -107,6 +107,9 @@ create_user_and_dirs() {
         show_message $YELLOW "'trailarr' user already exists"
     fi
 
+    # Add current user group to trailarr user
+    usermod -aG "$USER" trailarr
+
     show_temp_message "Cleaning up existing install directories"
     rm -rf "$INSTALL_DIR"/*
 
