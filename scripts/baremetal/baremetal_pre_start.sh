@@ -59,11 +59,11 @@ setup_directories() {
     
     # Set proper permissions
     echo "Setting directory permissions"
-    chown trailarr:trailarr "${APP_DATA_DIR}"
-    chown trailarr:trailarr "${INSTALL_DIR}"
+    chown -R trailarr:trailarr "${APP_DATA_DIR}"
+    chown -R trailarr:trailarr "${INSTALL_DIR}"
     chmod -R 755 "${APP_DATA_DIR}" 2>/dev/null || true
+    chmod -R 755 "${APP_DATA_DIR}/tmp" 2>/dev/null || true
     chmod -R 755 "${INSTALL_DIR}/assets" 2>/dev/null || true
-    chmod -R 755 "${INSTALL_DIR}/tmp" 2>/dev/null || true
     
     echo "Directory setup complete"
     echo "--------------------------------------------------------------------------"
