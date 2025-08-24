@@ -54,7 +54,9 @@ REDOC_URL = "redoc"
 SWAGGER_URL = "docs"
 
 # Check if the static directory exists, if not create it
-static_dir = os.path.abspath("/app/assets")
+static_dir = os.path.abspath("/opt/trailarr/assets")
+if not os.path.exists(static_dir):
+    static_dir = os.path.abspath("/app/assets")
 if not os.path.exists(static_dir):
     logging.info(
         "API Documentation folder does not exist! API Documentation will not "
