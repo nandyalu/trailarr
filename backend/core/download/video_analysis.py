@@ -331,7 +331,7 @@ def remove_silence_at_end(file_path: str) -> str:
         logger.info("No silence detected at end of video")
         return file_path
     # Remove silence from the end of the video
-    tmp_dir = "/opt/trailarr/tmp"
+    tmp_dir = "/var/lib/trailarr/tmp"
     if not os.path.exists(tmp_dir):
         tmp_dir = "/app/tmp"
     output_file = f"{tmp_dir}/trimmed_{os.path.basename(file_path)}"

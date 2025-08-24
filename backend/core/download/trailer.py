@@ -62,7 +62,7 @@ def __download_and_verify_trailer(
         f"Downloading trailer for {media.title} [{media.id}] from"
         f" {trailer_url}"
     )
-    tmp_dir = "/opt/trailarr/tmp"
+    tmp_dir = "/var/lib/trailarr/tmp"
     if not os.path.exists(tmp_dir):
         tmp_dir = "/app/tmp"
     tmp_output_file = f"{tmp_dir}/{media.id}-trailer.%(ext)s"

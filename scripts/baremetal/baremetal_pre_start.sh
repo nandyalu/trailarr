@@ -55,8 +55,7 @@ setup_directories() {
     mkdir -p "${APP_DATA_DIR}/logs"
     mkdir -p "${APP_DATA_DIR}/backups"
     mkdir -p "${APP_DATA_DIR}/web/images"
-    mkdir -p "${APP_DATA_DIR}/config"
-    mkdir -p "${INSTALL_DIR}/tmp"
+    mkdir -p "${APP_DATA_DIR}/tmp"
     
     # Set proper permissions
     echo "Setting directory permissions"

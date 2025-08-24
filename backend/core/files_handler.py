@@ -557,7 +557,7 @@ class FilesHandler:
             bool: True if the '/tmp' directory is cleaned up successfully, False otherwise.
         """
         try:
-            tmp_dir = "/opt/trailarr/tmp"
+            tmp_dir = "/var/lib/trailarr/tmp"
             if not os.path.exists(tmp_dir):
                 tmp_dir = "/app/tmp"
 
