@@ -39,7 +39,7 @@ jobs:
       #     restore-keys: |
       #       mkdocs-material-
       - name: Install Dependencies
-        run: uv sync --group docs
+        run: uv pip install --no-cache --native-tls --system -r backend/pyproject.toml --group docs
         # run: pip install mkdocs-material mkdocs-git-revision-date-localized-plugin mkdocs_github_changelog mkdocs-glightbox
       
       - name: Build and Deploy
