@@ -240,7 +240,8 @@ _parse_status_message() {
         esac
     fi
 
-    printf "%s\n" "$color_code:$msg"
+    # shellcheck disable=SC2005
+    echo "$color_code:$msg"
 }
 
 # Function to start the spinner animation

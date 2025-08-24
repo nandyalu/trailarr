@@ -108,7 +108,12 @@ create_user_and_dirs() {
     fi
 
     show_temp_message "Cleaning up existing install directories"
-    rm -rf "$INSTALL_DIR"/*
+    if [[ -n "$INSTALL_DIR" && "$INSTALL_DIR" != "/" && -d "$INSTALL_DIR" ]]; then
+        rm -rf "${INSTALL_DIR:?}"
+        show_message $GREEN "Deleted $INSTALL_DIR"
+    else
+        show_message $YELLOW "Existing installation not found. Skipping..."
+    fi
 
     show_temp_message "Creating required directories"
     # Create necessary directories
