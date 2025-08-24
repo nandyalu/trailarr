@@ -82,7 +82,7 @@ install_system_deps() {
     fi
 
     # Install system dependencies with logging
-    local packages="curl wget xz-utils unzip tar git pciutils usbutils ca-certificates build-essential libffi-dev libssl-dev systemd sudo"
+    local packages="curl wget xz-utils unzip tar git pciutils udev usbutils ca-certificates build-essential libffi-dev libssl-dev systemd sudo"
     show_temp_message "Installing system dependencies"
     if run_logged_command "Install system dependencies" "apt-get install -y $packages"; then
         show_message $GREEN "System dependencies installed successfully"
@@ -421,7 +421,7 @@ WorkingDirectory=$INSTALL_DIR
 Environment=PYTHONPATH=$INSTALL_DIR/backend
 Environment=PATH=/opt/trailarr/.local/bin:/opt/trailarr/backend/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=$DATA_DIR/.env
-ExecStartPre=$INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
+ExecStartPre=+ $INSTALL_DIR/scripts/baremetal/baremetal_pre_start.sh
 ExecStart=$INSTALL_DIR/scripts/baremetal/baremetal_start.sh
 Restart=always
 RestartSec=60

@@ -52,7 +52,8 @@ show_usage() {
     echo "  stop       Stop the Trailarr service"
     echo "  restart    Restart the Trailarr service"
     echo "  status     Show the status of Trailarr service"
-    echo "  logs       Show recent logs from Trailarr service"
+    echo "  logs       Show recent logs from Trailarr service."
+    echo "             Optionally provide line count. Defaults to 50"
     echo "  update     Update Trailarr to the latest version"
     echo "  uninstall  Uninstall Trailarr and its service"
     echo ""
@@ -60,6 +61,7 @@ show_usage() {
     echo "  sudo trailarr run"
     echo "  sudo trailarr status"
     echo "  sudo trailarr logs"
+    echo "  sudo trailarr logs 100"
     echo ""
 }
 
@@ -130,11 +132,15 @@ show_status() {
 
 # Function to show logs
 show_logs() {
+    lines_count=$1
     check_installation
-    
-    echo "Trailarr Service Logs (last 50 lines):"
+    if [ -z "$lines_count" ]; then
+        lines_count=50
+    fi
+
+    echo "Trailarr Service Logs (last $lines_count lines):"
     echo "======================================="
-    journalctl -u "$SERVICE_NAME" -n 50 --no-pager
+    journalctl -u "$SERVICE_NAME" -n "$lines_count" --no-pager
 }
 
 # Function to update Trailarr
@@ -166,7 +172,7 @@ update_service() {
     mkdir -p "$DATA_BACKUP_DIR"
     cp -r "/var/lib/trailarr/.env" "$DATA_BACKUP_DIR/" 2>/dev/null || true
     cp -r "/var/lib/trailarr/trailarr.db" "$DATA_BACKUP_DIR/" 2>/dev/null || true
-    cp -r "/var/lib/trailarr/config" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    cp -r "/var/lib/trailarr/logs" "$DATA_BACKUP_DIR/" 2>/dev/null || true
     chown -R trailarr:trailarr "$DATA_BACKUP_DIR"
     
     # Download the latest release files instead of running the installer
@@ -340,7 +346,9 @@ case "${1:-}" in
         show_status
         ;;
     "logs")
-        show_logs
+        # $2 is the optional number argument
+        num="${2:-50}"  # If $2 is not set, num will be 50
+        show_logs "$num"
         ;;
     "update")
         update_service

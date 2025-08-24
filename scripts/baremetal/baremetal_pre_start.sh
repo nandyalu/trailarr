@@ -35,7 +35,7 @@ export INSTALLATION_MODE=${INSTALLATION_MODE:-"baremetal"}
 # Use modular banner display (adapted from container scripts)
 display_startup_banner() {
     echo ""
-    echo "               App Version: ${APP_VERSION}"
+    echo "               Trailarr Version: ${APP_VERSION}"
     echo ""
     echo "--------------------------------------------------------------------------"
     echo "Starting Trailarr (Bare Metal) with the following configuration:"
@@ -103,7 +103,7 @@ update_ytdlp() {
     UPDATE_YTDLP=${UPDATE_YTDLP:-false}
     update_ytdlp_lower=$(echo "$UPDATE_YTDLP" | tr '[:upper:]' '[:lower:]')
     
-    if [ "$update_ytdlp_lower" = "true" ] || [ "$update_ytdlp_lower" = "1" ]; then
+    if [ "$update_ytdlp_lower" = "true" ] || [ "$update_ytdlp_lower" = "1" ] || [ "$update_ytdlp_lower" = "yes" ]; then
         echo "UPDATE_YTDLP is set to true. Updating yt-dlp with uv sync..."
         
         # Navigate to backend directory and run uv sync to update dependencies
@@ -144,45 +144,183 @@ update_ytdlp() {
     echo "--------------------------------------------------------------------------"
 }
 
+# Check and report NVIDIA GPU status
+check_nvidia_gpu() {
+    echo "Checking for NVIDIA GPU availability..."
+    # Check for NVIDIA GPU using nvidia-smi
+    if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
+        # Get NVIDIA GPU information
+        GPU_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader,nounits 2>/dev/null | head -1)
+        if [ -n "$GPU_INFO" ]; then
+            export GPU_AVAILABLE_NVIDIA="true"
+            echo "NVIDIA GPU detected: $GPU_INFO"
+            echo "NVIDIA hardware acceleration (CUDA) is available."
+            if [ -n "$GPU_DEVICE_NVIDIA" ]; then
+                echo "NVIDIA GPU device: $GPU_DEVICE_NVIDIA"
+            fi
+        else
+            echo "NVIDIA GPU not detected - no device information available."
+            export GPU_AVAILABLE_NVIDIA="false"
+        fi
+    else
+        if command -v nvidia-smi &> /dev/null; then
+            echo "NVIDIA GPU not detected - nvidia-smi failed or no GPU found."
+        else
+            echo "nvidia-smi command not found. NVIDIA GPU not detected."
+        fi
+    fi
+}
+
+# Check and report Intel GPU status
+check_intel_gpu() {
+    echo "Checking for Intel GPU availability and group access..."
+    if [ "$GPU_AVAILABLE_INTEL" = "true" ]; then
+        # Check for Intel GPU using lspci
+        INTEL_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' Intel| ARC')
+        if [ -n "$INTEL_GPU" ]; then
+            echo "Intel GPU detected: $INTEL_GPU"
+            echo "Intel GPU device: $GPU_DEVICE_INTEL"
+
+            # Dynamically get the group that owns the render node
+            if [ -e "$GPU_DEVICE_INTEL" ]; then
+                group_owner=$(stat -c '%g' "$GPU_DEVICE_INTEL" 2>/dev/null)
+                echo "Intel render device owned by group: $group_owner"
+                
+                if id -nG "trailarr" | grep -qw "$group_owner"; then
+                    echo "trailarr user already in group '$group_owner'."
+                else
+                    echo "Adding trailarr user to group '$group_owner' for GPU access."
+                    usermod -aG "$group_owner" trailarr
+                fi
+                
+                # Now that permissions are set, check for VAAPI capabilities
+                echo "Intel hardware acceleration (VAAPI) is available."
+                if command -v vainfo &> /dev/null; then
+                    VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_INTEL" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|VP8|VP9|AV1")
+                    if [ -n "$VAAPI_INFO" ]; then
+                        echo "VAAPI capabilities detected (H.264, HEVC, VP8, VP9, AV1):"
+                        echo "$VAAPI_INFO" | while read -r line; do echo "   $line"; done
+                    fi
+                fi
+            else
+                echo "ERROR: Could not find render device for Intel GPU at '$GPU_DEVICE_INTEL'."
+            fi
+        else
+            echo "Intel GPU device detected but not found in PCI devices."
+        fi
+    fi
+}
+
+# Check and report AMD GPU status
+check_amd_gpu() {
+    echo "Checking for AMD GPU availability and group access..."
+    if [ "$GPU_AVAILABLE_AMD" = "true" ]; then
+        # Check for AMD GPU using lspci
+        AMD_GPU=$(lspci | grep -iE 'Display|VGA|3D' | grep -iE ' AMD| ATI| Radeon')
+        if [ -n "$AMD_GPU" ]; then
+            echo "AMD GPU detected: $AMD_GPU"
+            echo "AMD GPU device: $GPU_DEVICE_AMD"
+
+            # Dynamically get the group that owns the render node
+            if [ -e "$GPU_DEVICE_AMD" ]; then
+                group_owner=$(stat -c '%G' "$GPU_DEVICE_AMD")
+                echo "AMD render device owned by group: $group_owner"
+
+                if id -nG "trailarr" | grep -qw "$group_owner"; then
+                    echo "trailarr user already in group '$group_owner'."
+                else
+                    echo "Adding trailarr user to group '$group_owner' for GPU access."
+                    usermod -aG "$group_owner" trailarr
+                fi
+                
+                # Now that permissions are set, check for VAAPI capabilities
+                echo "AMD hardware acceleration (VAAPI) is available."
+                if command -v vainfo &> /dev/null; then
+                    VAAPI_INFO=$(vainfo --display drm --device "$GPU_DEVICE_AMD" 2>/dev/null | grep -i "VAProfile" | grep -iE "H264|HEVC|AV1")
+                    if [ -n "$VAAPI_INFO" ]; then
+                        echo "VAAPI capabilities detected (H.264, HEVC, AV1):"
+                        echo "$VAAPI_INFO" | while read -r line; do echo "   $line"; done
+                    fi
+                fi
+            else
+                echo "ERROR: Could not find render device for AMD GPU at '$GPU_DEVICE_AMD'."
+            fi
+        else
+            echo "AMD GPU device detected but not found in PCI devices."
+        fi
+    fi
+}
+
 # Load GPU status from environment file (already set by gpu_setup.sh during installation)
 load_gpu_status() {
-    echo "Loading GPU hardware acceleration status"
+    echo "Detecting available GPUs"
     
-    # GPU availability is already set in .env file by gpu_setup.sh during installation
-    # We just need to export them for the application
-    export GPU_AVAILABLE_NVIDIA="${GPU_AVAILABLE_NVIDIA:-false}"
-    export GPU_AVAILABLE_INTEL="${GPU_AVAILABLE_INTEL:-false}"
-    export GPU_AVAILABLE_AMD="${GPU_AVAILABLE_AMD:-false}"
+    # Initialize device mappings
+    export GPU_DEVICE_NVIDIA=""
+    export GPU_DEVICE_INTEL=""
+    export GPU_DEVICE_AMD=""
     
-    if [ "$ENABLE_HWACCEL" = "true" ] && [ "$HWACCEL_TYPE" != "none" ]; then
-        case "$HWACCEL_TYPE" in
-            "nvidia")
-                if [ "$GPU_AVAILABLE_NVIDIA" = "true" ] && command -v nvidia-smi &> /dev/null; then
-                    echo "✓ NVIDIA GPU acceleration enabled and available"
-                else
-                    echo "⚠ NVIDIA GPU acceleration enabled but may not be available"
+    # Initialize availability flags
+    export GPU_AVAILABLE_NVIDIA="false"
+    export GPU_AVAILABLE_INTEL="false"
+    export GPU_AVAILABLE_AMD="false"
+
+    # Check for DRI devices and map them to specific GPUs
+    if [ -d /dev/dri ]; then
+        for device in /dev/dri/renderD*; do
+            if [ -e "$device" ]; then
+                # Get sysfs path
+                syspath=$(udevadm info --query=path --name="$device")
+                fullpath="/sys$syspath/device"
+
+                # Check if the device has a vendor file
+                if [ -f "$fullpath/vendor" ]; then
+                    vendor=$(cat "$fullpath/vendor")
+                    # NVIDIA: 10de, Intel: 8086, AMD: 1002
+                    # PCI Vendor IDS: https://pci-ids.ucw.cz/
+                    case "$vendor" in
+                        0x10de)
+                            [ -z "$GPU_DEVICE_NVIDIA" ] && export GPU_DEVICE_NVIDIA="$device"
+                            export GPU_AVAILABLE_NVIDIA="true"
+                            check_nvidia_gpu
+                            ;;
+                        0x8086)
+                            [ -z "$GPU_DEVICE_INTEL" ] && export GPU_DEVICE_INTEL="$device"
+                            export GPU_AVAILABLE_INTEL="true"
+                            check_intel_gpu
+                            ;;
+                        0x1002|0x1022)
+                            [ -z "$GPU_DEVICE_AMD" ] && export GPU_DEVICE_AMD="$device"
+                            export GPU_AVAILABLE_AMD="true"
+                            check_amd_gpu
+                            ;;
+                    esac
                 fi
-                ;;
-            "intel")
-                if [ "$GPU_AVAILABLE_INTEL" = "true" ]; then
-                    echo "✓ Intel GPU acceleration enabled and available"
-                else
-                    echo "⚠ Intel GPU acceleration enabled but may not be available"
-                fi
-                ;;
-            "amd")
-                if [ "$GPU_AVAILABLE_AMD" = "true" ]; then
-                    echo "✓ AMD GPU acceleration enabled and available"
-                else
-                    echo "⚠ AMD GPU acceleration enabled but may not be available"
-                fi
-                ;;
-        esac
+            fi
+        done
     else
-        echo "GPU hardware acceleration disabled"
+        echo "No GPU devices detected!"
+    fi
+
+    # Update .env file with GPU detection results
+    if [ -f "$DATA_DIR/.env" ]; then
+        # Use a simple approach to update .env file
+        sed -i '/^GPU_AVAILABLE_NVIDIA=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_AVAILABLE_INTEL=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_AVAILABLE_AMD=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_NVIDIA=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_INTEL=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        sed -i '/^GPU_DEVICE_AMD=/d' "$DATA_DIR/.env" 2>/dev/null || true
+        
+        echo "GPU_AVAILABLE_NVIDIA=$GPU_AVAILABLE_NVIDIA" >> "$DATA_DIR/.env"
+        echo "GPU_AVAILABLE_INTEL=$GPU_AVAILABLE_INTEL" >> "$DATA_DIR/.env"
+        echo "GPU_AVAILABLE_AMD=$GPU_AVAILABLE_AMD" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_NVIDIA=$GPU_DEVICE_NVIDIA" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_INTEL=$GPU_DEVICE_INTEL" >> "$DATA_DIR/.env"
+        echo "GPU_DEVICE_AMD=$GPU_DEVICE_AMD" >> "$DATA_DIR/.env"
     fi
     
-    echo "GPU status loaded"
+    echo "✓ GPU detection completed"
     echo "--------------------------------------------------------------------------"
 }
 
