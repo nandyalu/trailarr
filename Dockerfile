@@ -15,13 +15,21 @@ FROM python:3.13-slim AS python-deps
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# Install ca-certificates for SSL
+RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /app
 
-# Install pip requirements
-COPY ./backend/requirements.txt .
-RUN python -m pip install --no-cache-dir --disable-pip-version-check \
-    --upgrade -r /app/requirements.txt
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy backend with pyproject.toml for dependency installation
+COPY ./backend /app/backend
+
+# Install Python dependencies using uv pip install
+WORKDIR /app/backend
+RUN uv pip install --no-cache --native-tls --system -r pyproject.toml
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
@@ -34,6 +42,9 @@ FROM python:3.13-slim
 # Copy gosu from builder stage
 COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu
 RUN chmod +x /usr/local/bin/gosu
+
+# Copy uv, ffmpeg and Python dependencies from python-deps stage to make it available in final image
+COPY --from=python-deps /usr/local/ /usr/local/
 
 # Install HW Acceleration drivers and libraries
 COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
@@ -75,11 +86,14 @@ COPY ./assets /app/assets
 # Copy the backend
 COPY ./backend /app/backend
 
+# # Copy the installed Python virtual environment from python-deps stage
+# COPY --from=python-deps /app/backend/.venv /app/backend/.venv
+
 # Copy the frontend built files
 COPY ./frontend-build /app/frontend-build
 
-# Copy the installed Python dependencies and ffmpeg
-COPY --from=python-deps /usr/local/ /usr/local/
+# # Copy the installed Python dependencies and ffmpeg
+# COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path
 ENV PYTHONPATH=/app/backend

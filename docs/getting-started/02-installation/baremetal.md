@@ -1,6 +1,6 @@
 # Bare Metal Installation
 
-Trailarr can be installed directly on Debian-based systems without Docker. This installation method provides optimal performance with native GPU hardware acceleration support, making it ideal for environments where Docker GPU passthrough is complex (such as Proxmox LXC containers).
+Trailarr supports native installation on Debian-based systems (Ubuntu, Debian) for users who prefer direct system installation over Docker containers.
 
 !!! info "System Requirements"
     - Debian-based Linux distribution (Ubuntu 20.04+, Debian 11+, etc.)
@@ -37,7 +37,7 @@ If you prefer to review the code first:
 ```bash
 git clone https://github.com/nandyalu/trailarr.git
 cd trailarr
-./install.sh
+sudo bash ./install.sh
 ```
 
 The installer will guide you through installation process.
@@ -49,18 +49,18 @@ After installation, files are organized as follows:
 
 ```
 /opt/trailarr/              # Application installation
+├── .local/bin/             # Local binaries (ffmpeg, uv)
 ├── backend/                # Python application code
+├── backend/.venv/          # Python virtual environment
 ├── frontend-build/         # Web interface files
 ├── assets/                 # Static assets and images
-├── scripts/                # Maintenance and startup scripts
-├── bin/                    # Local binaries (ffmpeg, yt-dlp)
-├── venv/                   # Python virtual environment
-└── python/                 # Local Python installation (if needed)
+└── scripts/                # Maintenance and startup scripts
 
 /var/lib/trailarr/          # Application data
 ├── logs/                   # Application logs
 ├── backups/                # Automatic database backups
 ├── web/images/             # Image files used in Trailarr
+├── tmp/                    # Temporary download files
 ├── .env                    # Configuration Environment Variables
 └── trailarr.db             # SQLite database
 
@@ -70,6 +70,30 @@ After installation, files are organized as follows:
 /etc/systemd/system/        # Service configuration
 └── trailarr.service        # Systemd service file
 ```
+
+## Hardware Acceleration
+
+The installer will detect your GPU hardware and provide installation commands for necessary drivers:
+
+### NVIDIA GPUs
+```bash
+sudo apt update && sudo apt install -y nvidia-driver-<diver-version>
+# Replace <driver-version> with the version you want to install. Ex: nvidia-drivers-535
+# Reboot required after installation
+```
+It's best to find the appropriate install method for your system and install them.
+
+### Intel GPUs
+```bash
+sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo
+```
+
+### AMD GPUs
+```bash
+sudo apt update && sudo apt install -y mesa-va-drivers vainfo
+```
+
+**Note**: After installing GPU drivers, restart the Trailarr service to enable hardware acceleration.
 
 ## Service Management
 
@@ -103,9 +127,6 @@ sudo journalctl -u trailarr -n 50
 
 # Follow logs in real-time
 sudo journalctl -u trailarr -f
-
-# View application logs
-tail -f /var/lib/trailarr/logs/app.log
 ```
 
 ## Configuration
@@ -113,7 +134,7 @@ tail -f /var/lib/trailarr/logs/app.log
 Most of the options can be changed from the web UI after installation.
 
 !!! warning ""
-    `APP_DATA_DIR` cannot be changed as installer depends on that!
+    `APP_DATA_DIR` is set to `/opt/trailarr` and cannot be changed as installer depends on that!
 
 Main Configuration File is located in `/var/lib/trailarr/.env` if you want to modify later.
 
@@ -134,7 +155,7 @@ sudo cp -r /opt/trailarr /opt/trailarr.backup
 # Download and run the installer again
 curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
 
-# Start the service
+# Start the service (if not already running)
 sudo systemctl start trailarr
 ```
 
@@ -143,7 +164,8 @@ sudo systemctl start trailarr
 yt-dlp is automatically updated during startup (if enabled), or manually using below command:
 
 ```bash
-sudo -u trailarr /opt/trailarr/scripts/update_ytdlp_local.sh
+cd /opt/trailarr/backend
+sudo -u trailarr /opt/trailarr/.local/bin/uv sync --no-cache-dir
 ```
 
 ### Database Backups

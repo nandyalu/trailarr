@@ -88,7 +88,7 @@ async def trailer_cleanup():
                 trailer_path, media.id, db_manager
             )
             continue
-    # Cleanup any residual files left in '/app/tmp' directory
-    logger.debug("Cleaning up '/app/tmp' directory...")
+    # Cleanup any residual files left in temporary directory
+    logger.debug("Cleaning up temporary directory...")
     await FilesHandler.cleanup_tmp_dir()
     return None

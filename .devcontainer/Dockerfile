@@ -14,10 +14,15 @@ RUN chmod +x /tmp/install_drivers.sh && \
 # Set the working directory
 WORKDIR /app
 
-# Install Python Packages
-COPY .devcontainer/requirements/*.txt /app/requirements/
-RUN python -m pip install --no-cache-dir --disable-pip-version-check \
-    --upgrade -r /app/requirements/docs.txt -r /app/requirements/main.txt -r /app/requirements/testing.txt
+# Copy backend with pyproject.toml for dependency installation
+COPY backend /app/backend
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install Python dependencies using uv pip install with all dev dependencies
+WORKDIR /app/backend
+RUN uv pip install --no-cache --native-tls --system -r pyproject.toml --group dev --group docs --group testing
 
 # Download and extract the custom FFmpeg build from yt-dlp
 RUN curl -L -o /tmp/ffmpeg.tar.xz "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \

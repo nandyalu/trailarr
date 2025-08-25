@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import os
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
@@ -61,7 +62,10 @@ def __download_and_verify_trailer(
         f"Downloading trailer for {media.title} [{media.id}] from"
         f" {trailer_url}"
     )
-    tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
+    tmp_dir = "/var/lib/trailarr/tmp"
+    if not os.path.exists(tmp_dir):
+        tmp_dir = "/app/tmp"
+    tmp_output_file = f"{tmp_dir}/{media.id}-trailer.%(ext)s"
     output_file = download_video(trailer_url, tmp_output_file, profile)
     tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
     if not trailer_file.verify_download(

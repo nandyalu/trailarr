@@ -17,7 +17,7 @@ fi
 
 # Installation directory
 INSTALL_DIR="/opt/trailarr"
-BIN_DIR="$INSTALL_DIR/bin"
+BIN_DIR="$INSTALL_DIR/.local/bin"
 
 # Function to install ffmpeg locally (adapted from container script)
 install_ffmpeg_local() {
@@ -110,15 +110,16 @@ install_ffmpeg_local() {
 verify_ytdlp_pip() {
     log_to_file "Checking yt-dlp in virtual environment"
     
-    # yt-dlp is installed via pip in the virtual environment during Python dependencies installation
+    # yt-dlp is installed via uv sync in the virtual environment during Python dependencies installation
     # We just need to get the path and verify it's working
-    VENV_YTDLP="$INSTALL_DIR/venv/bin/yt-dlp"
+    VENV_YTDLP="$INSTALL_DIR/backend/.venv/bin/yt-dlp"
     
     show_temp_message "Verifying yt-dlp installation"
     if [ -f "$VENV_YTDLP" ]; then
         if "$VENV_YTDLP" --version &> /dev/null; then
             YTDLP_VERSION=$("$VENV_YTDLP" --version)
             show_message $GREEN "yt-dlp verified (version $YTDLP_VERSION)"
+            update_env_var "YTDLP_VERSION" "$YTDLP_VERSION" "$DATA_DIR/.env"
             return 0
         fi
     fi
@@ -143,8 +144,8 @@ setup_environment() {
     show_temp_message "Configuring environment variables"
     update_env_var "FFMPEG_PATH" "$BIN_DIR/ffmpeg" "$ENV_FILE"
     update_env_var "FFPROBE_PATH" "$BIN_DIR/ffprobe" "$ENV_FILE"
-    update_env_var "YTDLP_PATH" "$INSTALL_DIR/venv/bin/yt-dlp" "$ENV_FILE"
-    
+    update_env_var "YTDLP_PATH" "$INSTALL_DIR/backend/.venv/bin/yt-dlp" "$ENV_FILE"
+
     show_message $GREEN "Environment variables configured in $ENV_FILE"
 }
 
@@ -160,9 +161,9 @@ create_update_script() {
 set -e
 
 INSTALL_DIR="/opt/trailarr"
-VENV_DIR="$INSTALL_DIR/venv"
+VENV_DIR="$INSTALL_DIR/backend/.venv"
 
-echo "Updating yt-dlp via pip..."
+echo "Updating yt-dlp via uv sync..."
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "Error: Virtual environment not found at $VENV_DIR"
@@ -227,7 +228,7 @@ main() {
     show_message "Installed tools:"
     show_message "    ffmpeg: $BIN_DIR/ffmpeg"
     show_message "    ffprobe: $BIN_DIR/ffprobe"
-    show_message "    yt-dlp: $INSTALL_DIR/venv/bin/yt-dlp (via pip)"
+    show_message "    yt-dlp: $INSTALL_DIR/.venv/bin/yt-dlp (via uv sync)"
     
     show_message "Media tools installation complete"
     log_to_file "========== Media Tools Installation Completed =========="

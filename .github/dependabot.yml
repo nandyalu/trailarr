@@ -6,21 +6,13 @@
 
 version: 2
 updates:
-  # Maintain dependencies for pip - devcontainer
+  # Maintain dependencies for pyproject.toml - backend
   - package-ecosystem: "pip"
-    directory: "/.devcontainer"
+    directory: "/backend"
     schedule:
       interval: daily
     target-branch: "dev"
     open-pull-requests-limit: 5 # Limit the number of open PRs
-
-  # Maintain dependencies for pip - backend
-  # - package-ecosystem: "pip"
-  #   directory: "/backend"
-  #   schedule:
-  #     interval: weekly
-  #   target-branch: "main"
-  #   open-pull-requests-limit: 3 # Limit the number of open PRs
 
   # Maintain dependencies for npm - frontend (Angular and rxjs only)
   # - package-ecosystem: "npm"

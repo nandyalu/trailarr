@@ -7,7 +7,11 @@ from config.settings import app_settings
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download import video_analysis
-from exceptions import FolderNotFoundError, FolderPathEmptyError
+from exceptions import (
+    FileMoveFailedError,
+    FolderNotFoundError,
+    FolderPathEmptyError,
+)
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -235,10 +239,14 @@ def move_trailer_to_folder(
     except Exception as e:
         # Check if file is copied to destination
         if not os.path.exists(dst_file_path):
-            logger.error(
+            # Try setting permissions on source file first and then normal copying
+            os.chmod(src_path, dst_permissions)
+            shutil.copyfile(src_path, dst_file_path)
+
+        if not os.path.exists(dst_file_path):
+            raise FileMoveFailedError(
                 f"Failed to move trailer file to {dst_file_path}: {e}"
             )
-            return False
 
     logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
     return True

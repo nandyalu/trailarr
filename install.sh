@@ -105,7 +105,7 @@ download_latest_release() {
     # Extract tag_name for version
     local app_version=$(echo "$release_json" | grep '"tag_name":' | head -n1 | cut -d '"' -f4)
     show_message "$GREEN" "→ Latest version: $app_version"
-    export TRAILARR_VERSION="$app_version"
+    export APP_VERSION="$app_version"
     
     # Extract the source code zip URL
     local src_archive_url=$(echo "$release_json" | grep "zipball_url" | head -n1 | cut -d '"' -f4)
@@ -155,8 +155,14 @@ download_latest_release() {
 
 # Function to run the actual installation
 run_installation() {
+    show_message "Stopping Trailarr services..."
+    systemctl stop trailarr &>/dev/null || true
+    systemctl disable trailarr &>/dev/null || true
+    show_message "$GREEN" "✓ Stopped and disabled Trailarr services"
+
     show_message "Starting Trailarr installation..."
-    
+
+    local install_dir="$TRAILARR_SOURCE_DIR"
     local install_script="$TRAILARR_SOURCE_DIR/scripts/baremetal/install.sh"
     
     if [[ ! -f "$install_script" ]]; then
@@ -167,7 +173,8 @@ run_installation() {
     fi
     
     # Make sure the install script is executable
-    chmod +x "$install_script"
+    chmod +x "$install_dir/scripts/*.sh"
+    chmod +x "$install_dir/scripts/baremetal/*.sh"
     
     show_message "$GREEN" "✓ Running installation script..."
     echo ""

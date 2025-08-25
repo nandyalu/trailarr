@@ -28,6 +28,40 @@ CYAN=6
 WHITE=7
 NC='\033[0m' # No Color
 
+# Check terminal capabilities and set safe defaults
+check_terminal_capabilities() {
+    # Check if we can get terminal dimensions
+    if ! command -v tput &> /dev/null; then
+        echo "Warning: tput not available, using basic output" >&2
+        TERMINAL_CAPABLE=false
+        return 1
+    fi
+    
+    # Try to get terminal dimensions
+    if ! TERM_HEIGHT=$(tput lines 2>/dev/null) || [ -z "$TERM_HEIGHT" ]; then
+        TERM_HEIGHT=24  # Default height
+    fi
+    
+    if ! TERM_WIDTH=$(tput cols 2>/dev/null) || [ -z "$TERM_WIDTH" ]; then
+        TERM_WIDTH=80   # Default width
+    fi
+    
+    # Ensure minimum dimensions
+    if [ "$TERM_HEIGHT" -lt 10 ]; then
+        TERM_HEIGHT=10
+    fi
+    
+    if [ "$TERM_WIDTH" -lt 40 ]; then
+        TERM_WIDTH=40
+    fi
+    
+    TERMINAL_CAPABLE=true
+    export TERM_HEIGHT TERM_WIDTH TERMINAL_CAPABLE
+}
+
+# Initialize terminal capabilities
+check_terminal_capabilities
+
 # Function to kill spinner [if running] gracefully without causing error
 _kill_spinner() {
     # Check if a spinner process exists and is running
@@ -49,10 +83,20 @@ _kill_spinner() {
 cleanup() {
     # Check if a spinner process exists and is running and kill it
     local killed_spinner=$(_kill_spinner)
+    if [ "$killed_spinner" = "true" ]; then
+        echo ""
+        # Clear the entire screen from the current cursor position to the end.
+        tput ed
+        # Clear the line
+        tput el
+    fi
     # Reset colors and Restore cursor visibility
     tput sgr0
     tput cnorm
     log_to_file "Script terminated. Spinner killed: $killed_spinner"
+    # Show final message
+    echo "Installation aborted."
+    show_log_location
     exit 0
 }
 
@@ -64,6 +108,7 @@ reset_state() {
     LOG_COUNT=0
     PERSISTENT_MESSAGES=()
     SPINNER_MSG=""
+    START_TIME=""
 }
 
 # Function to stop the previous spinner gracefully.
@@ -133,7 +178,7 @@ _finalize_previous_spinner() {
 }
 
 # Function to parse the status message and extract color code and message
-# This is an internal helper function.
+# This is an internal helper function that handles a flexible number of arguments.
 # Accepts args from original function call and an extra default color
 # Example: _parse_status_message "$@" "$GREEN"
 # Example: _parse_status_message "message" "default color to use"
@@ -141,35 +186,61 @@ _finalize_previous_spinner() {
 _parse_status_message() {
     local color_code
     local msg
-    local default_color="$3"
-    if [ "$#" -eq 1 ] || { [ "$#" -eq 2 ] && [ -z "$2" ]; }; then
-        color_code="${default_color:-$GREEN}"
-        msg="$1"
-    else
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
+    
+    local default_color="${!#}" # Gets the last argument as the default color
+
+    case "$#" in
+        2)
+            # Case: _parse_status_message "message" "default_color"
+            msg="$1"
+            color_code="${default_color}"
+            ;;
+        3)
+            # Case: _parse_status_message "color_code" "message" "default_color"
             color_code="$1"
             msg="$2"
-        else
-            color_code="${default_color:-$GREEN}"
-            msg="$1"
-        fi
+            ;;
+        *)
+            # Default case: Flexible parsing for any other argument count
+            # Check if the first argument is a number (color code)
+            if [[ "$1" =~ ^[0-9]+$ ]]; then
+                color_code="$1"
+                msg="$2"
+            else
+                msg="$1"
+                color_code="${default_color}"
+            fi
+            ;;
+    esac
+
+    # If the message is empty, use the white color code
+    if [ -z "$msg" ]; then
+        color_code="$WHITE"
+    fi
+    
+    # Add a symbol only if the message is not empty and doesn't already have one
+    if [[ -n "$msg" && ! "$msg" =~ ^(➜|✓|⚠|✗)\  ]]; then
+        case "$color_code" in
+            "$BLUE" | "$CYAN")
+                msg="➜ $msg"
+                ;;
+            "$GREEN")
+                msg="✓ $msg"
+                ;;
+            "$YELLOW")
+                msg="⚠ $msg"
+                ;;
+            "$RED")
+                msg="✗ $msg"
+                ;;
+            *)
+                # Handle any other color codes without a symbol
+                :
+                ;;
+        esac
     fi
 
-    # Add a symbol based on color (BLUE - '➜'; CYAN - '➜'; GREEN - ✓; YELLOW - ⚠; RED - ✗)
-    if [[ "$msg" =~ ^(➜\ |✓\ |⚠\ |✗\ ) ]]; then
-        : # Do nothing, message already has symbol
-    elif [ "$color_code" -eq "$BLUE" ]; then
-        msg="➜ $msg"
-    elif [ "$color_code" -eq "$CYAN" ]; then
-        msg="➜ $msg"
-    elif [ "$color_code" -eq "$GREEN" ]; then
-        msg="✓ $msg"
-    elif [ "$color_code" -eq "$YELLOW" ]; then
-        msg="⚠ $msg"
-    elif [ "$color_code" -eq "$RED" ]; then
-        msg="✗ $msg"
-    fi
-
+    # shellcheck disable=SC2005
     echo "$color_code:$msg"
 }
 
@@ -189,19 +260,35 @@ start_message() {
     SPINNER_MSG="$1"
     log_to_file "START: $SPINNER_MSG"
     
-    # An array of spinner characters
-    local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
-
     # Get the start time in seconds since the epoch and store it globally
     START_TIME=$(date +%s)
+
+    # An array of spinner characters
+    local spinner_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
     
-    # Add 5 new lines of 80 columns to ensure the spinner has enough space
-    for _ in {1..5}; do
-        echo "                                                                                "
-    done
-    tput cuu 5  # Up 5 lines to the spinner's line
-    # Save the initial cursor position of the spinner's line
+    # Save current cursor position before adding spinner line
     tput sc
+    # Print one line for spinner and move back to it
+    echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
+    # Move back to the saved position
+    tput rc
+
+    # # Use the global terminal dimensions from capability check
+    # local available_lines=$((TERM_HEIGHT - 10))  # Reserve 10 lines for safety
+    # local spinner_lines=5
+    
+    # # Adjust spinner lines based on available space
+    # if [ "$available_lines" -lt 5 ]; then
+    #     spinner_lines=$((available_lines > 1 ? available_lines : 1))
+    # fi
+    
+    # # Add spinner_lines of space to ensure the spinner has enough room
+    # for i in $(seq 1 $spinner_lines); do
+    #     echo "$(printf "%*s" $((TERM_WIDTH > 80 ? 80 : TERM_WIDTH)) " ")"
+    # done
+    # tput cuu $spinner_lines  # Move up to the spinner's line
+    # # Save the initial cursor position of the spinner's line
+    # tput sc
 
     # Run the spinner logic in a background process
     (
@@ -214,13 +301,13 @@ start_message() {
 
             # Restore the cursor to the saved spinner position
             tput rc
+            
+            # Clear the entire line first
+            tput el
 
-            # tput el  # Clear the line
-
-            # Get terminal width for padding
-            local term_width=$(tput cols)
+            # Get terminal width for padding using global variable
             local line_content_core="${spinner_chars[i]} ${SPINNER_MSG}"
-            local effective_width=$((term_width > 80 ? 80 : term_width))
+            local effective_width=$((TERM_WIDTH > 80 ? 80 : TERM_WIDTH))
             local padding=$((effective_width - ${#line_content_core} - ${#timer_str}))
             
             # Apply bold and underline formatting
@@ -241,7 +328,7 @@ start_message() {
             tput sgr0
             
             # Add post-padding to clear the rest of the line if > 80 cols
-            local post_padding=$((term_width - effective_width))
+            local post_padding=$((TERM_WIDTH - effective_width))
             if [ "$post_padding" -gt 0 ]; then
                 printf "%*s" "$post_padding" " "
             fi
@@ -281,11 +368,10 @@ end_message() {
     local final_time=$(( $(date +%s) - START_TIME ))
 
     # Print a final message to the terminal with a checkmark.
-    local term_width=$(tput cols)
     local msg_core="${msg}"
     local final_time_str="(${final_time}s)"
     local line_content="${msg_core} ${final_time_str}"
-    local effective_width=$((term_width > 80 ? 80 : term_width))
+    local effective_width=$((TERM_WIDTH > 80 ? 80 : TERM_WIDTH))
     local padding=$((effective_width - ${#line_content}))
     
     tput bold; tput smul
@@ -298,7 +384,7 @@ end_message() {
     tput sgr0
     
     # Add post-padding to clear the rest of the line if > 80 cols
-    local post_padding=$((term_width - effective_width))
+    local post_padding=$((TERM_WIDTH - effective_width))
     if [ "$post_padding" -gt 0 ]; then
         printf "%*s" "$post_padding" " "
     fi
@@ -430,30 +516,6 @@ EOF
     export TERM_COLS
 }
 
-# --- Original Logging Function Wrappers ---
-# These functions wrap the new, more robust functions to maintain compatibility with existing scripts.
-
-# Function to start a message with a spinner
-# start_message() {
-#     start_message "$1"
-# }
-
-# Backward compatibility alias
-
-# Function to display a persistent message
-# show_message() {
-#     show_message "$1" "$2"
-# }
-
-# Alias for print_message, to maintain backward compatibility
-# show_status() {
-#     show_message "$1" "$2"
-# }
-
-# The update_progress function is no longer needed as the new spinner
-# automatically updates its own progress.
-
-
 # Function to write to log file only
 log_to_file() {
     local message="$1"
@@ -483,7 +545,7 @@ run_logged_command() {
     
     log_to_file "COMMAND (START): $description - Running: $command"
     
-    show_message "$description"
+    show_temp_message "$description"
     
     # Run command and capture output
     local output
@@ -509,6 +571,7 @@ run_logged_command() {
     
     if [ $exit_code -eq 0 ]; then
         log_to_file "COMMAND (SUCCESS): $description"
+        # show_message "$GREEN" "$description completed successfully"
         return 0
     else
         log_to_file "COMMAND (FAILED): $description (exit code: $exit_code)"

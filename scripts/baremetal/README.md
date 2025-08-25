@@ -16,10 +16,7 @@ The bare metal installation provides native system integration with optimal perf
 
 ### Modular Components
 
-- **`install_python.sh`** - Python 3.13.5 installation and setup
-- **`gpu_setup.sh`** - GPU detection and driver installation
 - **`install_media_tools.sh`** - yt-dlp and ffmpeg installation in app directory
-- **`interactive_config.sh`** - Interactive configuration prompts
 - **`baremetal_pre_start.sh`** - Pre-start environment setup
 - **`baremetal_start.sh`** - Application startup script
 
@@ -41,7 +38,7 @@ curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/barem
 4. **Python Installation** - Installs Python 3.13.5 (system or local)
 5. **GPU Detection** - Detects and configures GPU hardware acceleration
 6. **Media Tools** - Installs ffmpeg and yt-dlp locally in app directory
-7. **Interactive Config** - Prompts for application settings and GPU preferences
+7. **Configuration** - Sets up default configuration with port selection
 8. **Driver Installation** - Installs required GPU drivers system-wide
 9. **Service Creation** - Creates and configures systemd service
 
@@ -50,18 +47,19 @@ curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/barem
 ```
 /opt/trailarr/              # Application installation
 ├── backend/                # Python application
+│   └── .venv/             # Python virtual environment (created by uv)
 ├── frontend-build/         # Web interface
 ├── assets/                 # Static assets
 ├── scripts/                # All scripts including modular ones
-├── bin/                    # Local binaries (ffmpeg, yt-dlp)
-├── venv/                   # Python virtual environment
-├── tmp/                    # Temporary files
-└── .env                    # Configuration file
+├── bin/                   # Local binaries (ffmpeg, yt-dlp)
+├── .local/bin/            # uv package manager
+└── tmp/                   # Temporary files
 
 /var/lib/trailarr/          # Data directory
 ├── logs/                   # Application logs
 ├── backups/                # Database backups
 ├── web/images/             # Downloaded trailers
+├── .env                   # Configuration file
 └── trailarr.db            # SQLite database
 
 /var/log/trailarr/          # System logs
@@ -91,12 +89,11 @@ curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/barem
 - **Auto-update** mechanism for yt-dlp
 - **Architecture detection** for optimal ffmpeg builds
 
-### Interactive Configuration
+### Configuration Management
 
-- **Monitor interval** setting (how often to check for new content)
-- **Wait for media** option (download trailers immediately or wait for files)
-- **GPU selection** when multiple hardware acceleration options available
-- **Port configuration** for web interface
+- **Simplified setup** with default settings and port selection only
+- **Web UI configuration** for advanced settings after installation
+- **Environment file** for persistent configuration storage
 
 ### Service Integration
 
