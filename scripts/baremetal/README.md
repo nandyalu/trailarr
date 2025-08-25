@@ -16,8 +16,6 @@ The bare metal installation provides native system integration with optimal perf
 
 ### Modular Components
 
-- **`install_python.sh`** - Python 3.13.5 installation and setup
-- **`gpu_setup.sh`** - GPU detection and driver installation
 - **`install_media_tools.sh`** - yt-dlp and ffmpeg installation in app directory
 - **`baremetal_pre_start.sh`** - Pre-start environment setup
 - **`baremetal_start.sh`** - Application startup script

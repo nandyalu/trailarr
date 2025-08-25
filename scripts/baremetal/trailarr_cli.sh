@@ -170,8 +170,8 @@ update_service() {
     DATA_BACKUP_DIR="/var/lib/trailarr/backups/update_$(date +%Y%m%d_%H%M%S)"
     show_message "$BLUE" "Creating user data backup at $DATA_BACKUP_DIR..."
     mkdir -p "$DATA_BACKUP_DIR"
-    cp -r "/var/lib/trailarr/.env" "$DATA_BACKUP_DIR/" 2>/dev/null || true
-    cp -r "/var/lib/trailarr/trailarr.db" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    cp "/var/lib/trailarr/.env" "$DATA_BACKUP_DIR/" 2>/dev/null || true
+    cp "/var/lib/trailarr/trailarr.db" "$DATA_BACKUP_DIR/" 2>/dev/null || true
     cp -r "/var/lib/trailarr/logs" "$DATA_BACKUP_DIR/" 2>/dev/null || true
     chown -R trailarr:trailarr "$DATA_BACKUP_DIR"
     

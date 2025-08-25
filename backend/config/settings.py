@@ -11,7 +11,9 @@ ENV_PATH = f"{APP_DATA_DIR}/.env"
 
 if os.getcwd().startswith("/app/backend"):
     APP_MODE = "Docker"
-elif os.path.exists("/opt/trailarr/backend") and os.getcwd().startswith("/opt/trailarr"):
+elif os.path.exists("/opt/trailarr/backend") and os.getcwd().startswith(
+    "/opt/trailarr"
+):
     APP_MODE = "Bare Metal"
 else:
     APP_MODE = "Standalone"
@@ -147,16 +149,22 @@ def get_ytdlp_version() -> str:
 
         # Check for different yt-dlp installation paths
         _ytdlp_paths = [
-            getenv_str("YTDLP_PATH", "/usr/local/bin/yt-dlp"),  # Configurable path
-            "/opt/trailarr/bin/yt-dlp",       # Bare metal local install
+            getenv_str(
+                "YTDLP_PATH", "/usr/local/bin/yt-dlp"
+            ),  # Configurable path
+            "/opt/trailarr/bin/yt-dlp",  # Bare metal local install
             "/opt/trailarr/venv/bin/yt-dlp",  # Bare metal venv
-            "/usr/local/bin/yt-dlp",         # Docker
-            "yt-dlp"                         # System PATH
+            "/usr/local/bin/yt-dlp",  # Docker
+            "yt-dlp",  # System PATH
         ]
-        
+
         for _ytdlp_path in _ytdlp_paths:
             try:
-                _ver = check_output([_ytdlp_path, "--version"]).decode("utf-8").strip()
+                _ver = (
+                    check_output([_ytdlp_path, "--version"])
+                    .decode("utf-8")
+                    .strip()
+                )
                 break
             except (FileNotFoundError, OSError):
                 continue
@@ -220,6 +228,9 @@ class _Config:
         self.webui_password = os.getenv(
             "WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD
         )
+        # If the webui_password is empty, set it to the default
+        if self.webui_password == "":
+            self.webui_password = self._DEFAULT_WEBUI_PASSWORD
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
         self.trailer_max_duration = ""
 
@@ -418,7 +429,9 @@ class _Config:
         - For bare metal installations, this should point to local ffmpeg installation.
         - Valid values are any valid file path to ffmpeg binary."""
 
-    ffprobe_path = str_property("FFPROBE_PATH", default="/usr/local/bin/ffprobe")
+    ffprobe_path = str_property(
+        "FFPROBE_PATH", default="/usr/local/bin/ffprobe"
+    )
     """Path to ffprobe binary.
         - Default is /usr/local/bin/ffprobe (Docker).
         - For bare metal installations, this should point to local ffprobe installation.

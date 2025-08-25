@@ -85,9 +85,9 @@ load_environment() {
     export PYTHONPATH="${DATA_DIR}/backend"
     
     # Update PATH for local binaries
-    if [ -d "$DATA_DIR/bin" ]; then
-        export PATH="$DATA_DIR/bin:$PATH"
-        echo "✓ Local binaries added to PATH"
+    if [ -d "$INSTALL_DIR/.local/bin" ]; then
+        export PATH="$INSTALL_DIR/.local/bin:$PATH"
+        echo "✓ Local binaries added to PATH: $INSTALL_DIR/.local/bin"
     fi
     
     echo "Environment configuration loaded"
@@ -250,8 +250,8 @@ check_amd_gpu() {
     fi
 }
 
-# Load GPU status from environment file (already set by gpu_setup.sh during installation)
-load_gpu_status() {
+# Detect GPU status and set environment variables
+detect_gpu_status() {
     echo "Detecting available GPUs"
     
     # Initialize device mappings
@@ -330,8 +330,8 @@ main() {
     setup_directories
     load_environment
     update_ytdlp
-    load_gpu_status
-    
+    detect_gpu_status
+
     echo "Pre-start checks complete - ready to start application"
     echo "=========================================================================="
 }
