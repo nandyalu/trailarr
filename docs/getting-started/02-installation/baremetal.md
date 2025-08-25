@@ -1,6 +1,6 @@
 # Bare Metal Installation
 
-Trailarr can be installed directly on Debian-based systems without Docker. This installation method provides optimal performance with native GPU hardware acceleration support, making it ideal for environments where Docker GPU passthrough is complex (such as Proxmox LXC containers).
+Trailarr supports native installation on Debian-based systems (Ubuntu, Debian) for users who prefer direct system installation over Docker containers.
 
 !!! info "System Requirements"
     - Debian-based Linux distribution (Ubuntu 20.04+, Debian 11+, etc.)
@@ -71,6 +71,30 @@ After installation, files are organized as follows:
 └── trailarr.service        # Systemd service file
 ```
 
+## Hardware Acceleration
+
+The installer will detect your GPU hardware and provide installation commands for necessary drivers:
+
+### NVIDIA GPUs
+```bash
+sudo apt update && sudo apt install -y nvidia-driver-<diver-version>
+# Replace <driver-version> with the version you want to install. Ex: nvidia-drivers-535
+# Reboot required after installation
+```
+It's best to find the appropriate install method for your system and install them.
+
+### Intel GPUs
+```bash
+sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo
+```
+
+### AMD GPUs
+```bash
+sudo apt update && sudo apt install -y mesa-va-drivers vainfo
+```
+
+**Note**: After installing GPU drivers, restart the Trailarr service to enable hardware acceleration.
+
 ## Service Management
 
 ### Starting and Stopping
@@ -131,7 +155,7 @@ sudo cp -r /opt/trailarr /opt/trailarr.backup
 # Download and run the installer again
 curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
 
-# Start the service
+# Start the service (if not already running)
 sudo systemctl start trailarr
 ```
 
