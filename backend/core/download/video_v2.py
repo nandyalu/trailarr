@@ -76,6 +76,7 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _options.append("--no-playlist")
     _options.append("--progress-delta")
     _options.append("3")  # Update progress every 3 seconds
+    _options.append("--force-overwrites")  # Override files if exists
 
     # Add Format preferences
     _options.append("-f")

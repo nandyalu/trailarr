@@ -6,7 +6,7 @@ readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==24.1.0",
-    "aiohttp==3.12.14",
+    "aiohttp==3.12.15",
     "aiosqlite==0.21.0",
     "alembic==1.16.4",
     "apscheduler==3.11.0",
@@ -15,33 +15,33 @@ dependencies = [
     "fastapi[standard-no-fastapi-cloud-cli]==0.116.1",
     "pillow==11.3.0",
     "sqlmodel==0.0.24",
-    "yt-dlp[curl-cffi,default]>=2025.8.20",
+    "yt-dlp[curl-cffi,default]>=2025.8.22",
 ]
 
 [dependency-groups]
 dev = [
     "aioresponses==0.7.8",
-    "hypothesis==6.130.11",
+    "hypothesis==6.138.5",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
     "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.15",
+    "mkdocs-material==9.6.18",
     "pytest==8.4.1",
     "pytest-asyncio==1.1.0",
     "pytest-cov==6.2.1",
-    "schemathesis==4.0.2",
+    "schemathesis==4.1.2",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
     "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.15",
+    "mkdocs-material==9.6.18",
 ]
 testing = [
     "aioresponses==0.7.8",
-    "hypothesis==6.130.11",
+    "hypothesis==6.138.5",
     "pytest==8.4.1",
     "pytest-asyncio==1.1.0",
     "pytest-cov==6.2.1",
-    "schemathesis==4.0.2",
+    "schemathesis==4.1.2",
 ]
