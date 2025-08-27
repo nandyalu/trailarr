@@ -456,6 +456,7 @@ def get_ffmpeg_cmd(
     ffmpeg_cmd: list[str] = [
         app_settings.ffmpeg_path,
         "-hide_banner",
+        "-y",
         # "-loglevel",
         # "repeat+level+warning",
     ]
