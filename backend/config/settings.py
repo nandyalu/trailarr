@@ -9,15 +9,6 @@ from config import app_logger_opts
 APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/config"))
 ENV_PATH = f"{APP_DATA_DIR}/.env"
 
-if os.getcwd().startswith("/app/backend"):
-    APP_MODE = "Docker"
-elif os.path.exists("/opt/trailarr/backend") and os.getcwd().startswith(
-    "/opt/trailarr"
-):
-    APP_MODE = "Bare Metal"
-else:
-    APP_MODE = "Standalone"
-
 
 def _save_to_env(key: str, value: str | int | bool) -> None:
     """Save the given key-value pair to the environment variables. \n
@@ -238,7 +229,7 @@ class _Config:
         return {
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
-            "app_mode": APP_MODE,
+            "app_mode": self.app_mode,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
             "gpu_available_amd": self.gpu_available_amd,
@@ -300,9 +291,9 @@ class _Config:
     def app_mode(self) -> str:
         """App Running Mode:
         - Docker
-        - Standalone
+        - Direct Linux
         """
-        return APP_MODE
+        return os.getenv("APP_MODE", "Direct")
 
     @property
     def log_level(self):
