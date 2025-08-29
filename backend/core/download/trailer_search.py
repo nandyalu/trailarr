@@ -226,13 +226,15 @@ def get_video_id(
     media: MediaRead,
     profile: TrailerProfileRead,
     exclude: list[str] | None = None,
+    search_length: int = 10
 ) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
     Args:
         media (MediaRead): Media object.
         profile (TrailerProfileRead): The trailer profile to use.
-        exclude (list[str], Optional=None): List of video ids to exclude. \n
+        exclude (list[str], Optional=None): List of video ids to exclude.
+        search_length (int, Optional=10): Number of search results to return.
     Returns:
         str|None: Youtube video id / None if not found."""
     video_id = ""
@@ -245,7 +247,6 @@ def get_video_id(
         media.youtube_trailer_id = video_id
         return video_id
     # Search for trailer on youtube, until a max of 30 search results
-    search_length = 10
     video_id = search_yt_for_trailer(
         media, profile, exclude, search_length=search_length
     )
@@ -262,8 +263,9 @@ def get_video_id(
             f" '{profile.customfilter.filter_name}'. Retrying with longer"
             " search length."
         )
-        video_id = search_yt_for_trailer(
+        video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
         )
-    media.youtube_trailer_id = video_id
+    if video_id:
+        media.youtube_trailer_id = video_id
     return video_id
