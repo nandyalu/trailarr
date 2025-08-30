@@ -89,7 +89,7 @@ Username: admin
 Password: trailarr
 ```
 
-If you forget your password, set this environment variable to ` ` (empty string) to reset the password for the web interface to default.
+If you forget your password, set this environment variable to `' '` (empty string) to reset the password for the web interface to default.
 
 ```yaml
     environment:

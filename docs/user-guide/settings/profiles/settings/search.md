@@ -61,26 +61,34 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 |:-------:|:--------:|:-------:|:-----------------------------:|
 | String  | No       | (empty) | Comma-separated list of words |
 
-Enter a comma separated list of words that should be included in the title when searching for trailers. This can be useful for finding specific versions or edits of trailers.
+**Purpose**: Specify words that MUST be present in trailer titles. Use `,` for AND logic, `||` for OR logic, and placeholders for dynamic values.
 
-- Words separated by `,` (comma) needs to be present in the video title. Generates an `AND` condition.
-- At least one of the words separated by `||` needs to be present in the video title. Generates an `OR` condition.
+**How it Works**:
+
+- Words separated by `,` (comma): All words must be present. Generates an `AND` condition.
+- Words separated by `||` (double pipe): At least one of the words must be present. Generates an `OR` condition.
+- Spaces are ignored: All spaces before and after an operator (`,`, `||`) are ignored. Two words separated by a space are considered a single search term.
 - You can also use placeholders from [Search Query](#search-query) and they will be replaced.
-- All spaces before and after an operator (`,`, `||`) are ignored.
-- Two words separated by a space are considered a single search term.
 - Search is case-insensitive. Meaning `German||English,Trailer` is equal to `german||english,trailer`.
+- Order: placeholders are replaced first, followed by `,` processing, and then `||` are processed.
 
-Ex: `movie, german trailer || deutsch trailer` is equal to `movie,german trailer||deutsch trailer`.
-This will become `(movie) AND ((german trailer) OR (deutsch trailer))` and matches the below video titles:
+**Examples**:
 
-- `The Matrix movie GERMAN Trailer`
-- `The matrix deutsch trailer movie`
-- `The matrix 1999 German trailer  movie`
+- `movie, german trailer || deutsch trailer` -> `(movie) AND ((german trailer) OR (deutsch trailer))`
+    -> Matches titles containing "movie" AND either "german trailer" OR "deutsch trailer".
+    -> Same as `movie,german trailer||deutsch trailer`.
+    -> Example matches:
+        - `The Matrix (1999) - movie German Trailer`
+        - `The Matrix (1999) - movie Deutsch Trailer - Official`
 
+- `official,teaser` -> `(official) AND (teaser)`
+    -> Matches titles containing "official" AND "teaser".
+    -> Example matches:
+        - `The Matrix (1999) - Official Teaser`
+        - `The Matrix (1999) - Teaser Official`
 
-
-!!! warning "All Words Must Be Present"
-    A video is considered a match only if all the words in the list are present in the title of the trailer. If any word is missing, the trailer will be skipped. For example, `official,teaser` will be matched if title is `The Matrix (1999) - Official Trailer`.
+!!! tip "All Words Must Be Present"
+    If any required word is missing from the title, the trailer will be skipped.
 
 ## Exclude Words in Title
 
@@ -88,26 +96,35 @@ This will become `(movie) AND ((german trailer) OR (deutsch trailer))` and match
 |:-------:|:--------:|:-------:|:-----------------------------:|
 | String  | No       | (empty) | Comma-separated list of words |
 
-Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, `teaser,clip,featurette`.
+**Purpose**: Specify words that MUST NOT be present in trailer titles. Use `,` for OR logic, `&&` for AND logic, and placeholders for dynamic values.
 
-- At least one of the words separated by `,` (comma) needs to be present in the video title. Generates an `OR` condition.
-- All words separated by `&&` needs to be present in the video title. Generates an `AND` condition.
+**How it Works**:
+
+- Words separated by `,` (comma): At least one of the words must be present. Generates an `OR` condition.
+- Words separated by `&&` (double ampersand): All words must be present. Generates an `AND` condition.
+- Spaces are ignored: All spaces before and after an operator (`,`, `&&`) are ignored. Two words separated by a space are considered a single search term.
 - You can also use placeholders from [Search Query](#search-query) and they will be replaced.
-- All spaces before and after an operator (`,`, `&&`) are ignored.
-- Two words separated by a space are considered a single search term.
 - Search is case-insensitive. Meaning `German&&Review,Comment` is equal to `german&&review,comment`.
+- Order: placeholders are replaced first, followed by `,` processing, and then `&&` are processed.
 
-Ex: `comment, fan && review` is equal to `comment,fan&&review`.
-This will become `(comment) OR ((fan) AND (review))` and matches the below video titles for ignoring:
+**Examples**:
 
-- `The Matrix movie GERMAN comment`
-- `The Matrix movie GERMAN fanmade trailer`
-- `The matrix movie deutsch trailer - fan review`
-- `The matrix 1999 German trailer  comment | review`
+- `comment, fan && review` -> `(comment) OR ((fan) AND (review))`
+    -> Matches titles containing "comment" OR both "fan" AND "review".
+    -> Same as `comment,fan&&review`.
+    -> Example matches (ignored for download):
+        - `The Matrix (1999) - Comment`
+        - `The Matrix (1999) - Fan Review`
 
+- `teaser,clip,featurette` -> `(teaser) OR (clip) OR (featurette)`
+    -> Matches titles containing "teaser" OR "clip" OR "featurette".
+    -> Example matches (ignored for download):
+        - `The Matrix (1999) - Teaser`
+        - `The Matrix (1999) - Clip`
+        - `The Matrix (1999) - Featurette`
 
-!!! warning "All Words Must Be Absent"
-    Unlike `Include Words in Title`, if any of the words in this list are present in the title of the trailer, it will be skipped.
+!!! tip "All Words Must Be Absent"
+    If any excluded word is present in the title, the trailer will be skipped.
 
 ## Yt-dlp Extra Options
 
