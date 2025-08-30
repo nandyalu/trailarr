@@ -31,6 +31,61 @@ def extract_youtube_id(url: str) -> str | None:
         return None
 
 
+def __replace_media_options(
+    query: str,
+    media: MediaRead,
+) -> str:
+    if not query or not media:
+        return query
+    # Convert media object to dictionary for formatting
+    format_opts = media.model_dump()
+    format_opts["is_movie"] = "movie" if media.is_movie else "series"
+    # Remove year from search query if 0
+    format_opts["year"] = "" if media.year == 0 else media.year
+    # Replace the media filename with the filename without extension
+    _filename_wo_ext, _ = os.path.splitext(media.media_filename)
+    format_opts["media_filename"] = _filename_wo_ext
+    # Replace language code with language name
+    format_opts["language"] = language_names.get(
+        media.language, media.language
+    )
+    # Replacing supplied options in query
+    _query = query.format(**format_opts)
+    # Remove extra spaces and trailing spaces
+    _query = re.sub(r'\s+', ' ', _query).strip()
+    return _query
+
+
+def __has_all_words(words: list[str], title: str) -> bool:
+    """Check if the title contains all of the words in the list."""
+    for word in words:
+        if not word.strip():
+            continue
+        if '||' in word:
+            subwords = word.split('||')
+            if not __has_any_words(subwords, title):
+                return False
+        elif word.lower().strip() not in title.lower():
+            return False
+    return True
+
+
+def __has_any_words(words: list[str], title: str) -> bool:
+    """Check if the title contains any of the words in the list."""
+    for word in words:
+        if not word.strip():
+            if len(words) == 1:
+                return True
+            continue
+        if '&&' in word:
+            subwords = word.split('&&')
+            if __has_all_words(subwords, title):
+                return True
+        elif word.lower().strip() in title.lower():
+            return True
+    return False
+
+
 def __has_included_words(include_words: str, title: str) -> bool:
     """Check if the title contains all of the included words."""
     if not include_words:
@@ -39,13 +94,7 @@ def __has_included_words(include_words: str, title: str) -> bool:
     include_list = [w.strip() for w in include_words.split(",") if w.strip()]
     if not include_list:
         return True
-    for word in include_list:
-        if word.lower() not in title.lower():
-            logger.debug(
-                f"Included word '{word}' not found in title '{title}'"
-            )
-            return False
-    return True
+    return __has_all_words(include_list, title)
 
 
 def __has_excluded_words(exclude_words: str, title: str) -> bool:
@@ -56,17 +105,14 @@ def __has_excluded_words(exclude_words: str, title: str) -> bool:
     exclude_list = [w.strip() for w in exclude_words.split(",") if w.strip()]
     if not exclude_list:
         return False
-    for word in exclude_list:
-        if word.lower() in title.lower():
-            logger.debug(f"Excluded word '{word}' found in title '{title}'")
-            return True
-    return False
+    return __has_any_words(exclude_list, title)
 
 
 def _yt_search_filter(
     info: dict,
     *,
     incomplete,
+    media: MediaRead,
     profile: TrailerProfileRead,
     exclude: list[str] | None,
 ):
@@ -93,10 +139,14 @@ def _yt_search_filter(
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
     # Check if the title contains all of the included words
-    if not __has_included_words(profile.include_words, title):
+    _include_words = __replace_media_options(profile.include_words, media)
+    if not __has_included_words(_include_words, title):
+        logger.debug(f"Skipping video missing included words: {id}")
         return "The video does not contain all of the included words"
     # Filter out videos with excluded words
-    if __has_excluded_words(profile.exclude_words, title):
+    _exclude_words = __replace_media_options(profile.exclude_words, media)
+    if __has_excluded_words(_exclude_words, title):
+        logger.debug(f"Skipping video containing excluded words: {id}")
         return "The video contains an excluded word"
 
 
@@ -106,23 +156,7 @@ def get_search_query(
     search_length: int = 10,
 ) -> str:
     # Construct search query with keywords for 5 search results
-    search_query_format = profile.search_query
-    # Convert media object to dictionary for formatting
-    format_opts = media.model_dump()
-    format_opts["is_movie"] = "movie" if media.is_movie else "series"
-    # Remove year from search query if 0
-    format_opts["year"] = "" if media.year == 0 else media.year
-    # Replace the media filename with the filename without extension
-    _filename_wo_ext, _ = os.path.splitext(media.media_filename)
-    format_opts["media_filename"] = _filename_wo_ext
-    # Replace language code with language name
-    format_opts["language"] = language_names.get(
-        media.language, media.language
-    )
-    # Get search query by replacing supplied options
-    search_query = search_query_format.format(**format_opts)
-    # Remove extra spaces and trailing spaces
-    search_query = search_query.replace("  ", " ").strip()
+    search_query = __replace_media_options(profile.search_query, media)
     # Add ytsearch5: prefix to search query
     if search_length < 10:
         search_length = 10
@@ -176,7 +210,7 @@ def search_yt_for_trailer(
         str | None: Youtube video id / None if not found."""
     logger.debug(f"Searching youtube for trailer for '{media.title}'...")
     # Set options
-    filter_func = partial(_yt_search_filter, profile=profile, exclude=exclude)
+    filter_func = partial(_yt_search_filter, media=media, profile=profile, exclude=exclude)
     options = {
         "format": "bv[height<=?1080]+ba/bv+ba/b",
         "match_filter": filter_func,
