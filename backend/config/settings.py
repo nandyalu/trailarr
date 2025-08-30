@@ -216,11 +216,11 @@ class _Config:
         self.monitor_interval = getenv_int("MONITOR_INTERVAL", 60)
         self.wait_for_media = getenv_bool("WAIT_FOR_MEDIA", False)
 
-        self.webui_password = os.getenv(
-            "WEBUI_PASSWORD", self._DEFAULT_WEBUI_PASSWORD
-        )
         # If the webui_password is empty, set it to the default
-        if self.webui_password == "":
+        # Handle whitespace and empty strings (even improperly escaped quotes)
+        _webui_password = self.webui_password.replace('"', '').replace("'", "")
+        _webui_password = _webui_password.replace("\t", "").strip()
+        if not _webui_password:
             self.webui_password = self._DEFAULT_WEBUI_PASSWORD
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
         self.trailer_max_duration = ""
