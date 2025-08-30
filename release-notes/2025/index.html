@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v053-beta-august-27-2025" class="md-skip">
+        <a href="#v054-beta-august-30-2025" class="md-skip">
           Skip to content
         </a>
       
@@ -1839,6 +1839,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v054-beta-august-30-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.5.4-beta - August 30 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v053-beta-august-27-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.5.3-beta - August 27 2025
@@ -2144,6 +2153,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v054-beta-august-30-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.5.4-beta - August 30 2025
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v053-beta-august-27-2025" class="md-nav__link">
     <span class="md-ellipsis">
       v0.5.3-beta - August 27 2025
@@ -2281,6 +2299,23 @@
 
   <h1>2025</h1>
 
+<h2 id="v054-beta-august-30-2025"><strong>v0.5.4-beta</strong> - <em>August 30 2025</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <code>&amp;&amp;</code> and <code>||</code> logical operators, and media placeholders to <code>Include Words</code> and <code>Exclude Words</code> in <code>Profile Search Settings</code>. See <a href="https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/">Profile Search</a> for more details. Fixes <a href="https://github.com/nandyalu/trailarr/issues/304" target="_blank">#304</a>.</li>
+<li>Requests to Radarr/Sonarr APIs will now include <code>ssl=False</code> to ensure compatibility with SSL and non-SSL endpoints.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed a bug that caused download to fail when <code>srt</code> is selected with <code>mp4</code> as <code>mp4</code> does not support <code>srt</code> subtitles. Those will be converted to <code>mov_text</code> now. Fixes <a href="https://github.com/nandyalu/trailarr/issues/293" target="_blank">#293</a>.</li>
+<li>Added the <code>yt-dlp</code> update process to the startup script to update when enabled.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Made the password reset env <code>WEBUI_PASSWORD</code> parsing more robust to detect improperly escaped quotes. Setting <code>WEBUI_PASSWORD=''</code> or <code>WEBUI_PASSWORD=""</code> will also work and reset the password to default (<code>trailarr</code>). Related to <a href="https://github.com/nandyalu/trailarr/issues/291" target="_blank">#291</a>.</li>
+<li>Updated <code>yt-dlp</code> to <code>2025.8.27</code> and various other python libraries.</li>
+<li>Updated relevant documentation.</li>
+</ul>
 <h2 id="v053-beta-august-27-2025"><strong>v0.5.3-beta</strong> - <em>August 27 2025</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -2288,7 +2323,7 @@
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
-<li>Fixed a bug in that raised an error after resetting Web UI password using <code>WEBUI_PASSWORD=''</code> Env variable. Fixes <a href="https://github.com/nandyalu/trailarr/issues/291" target="_blank">#291</a>.</li>
+<li>Fixed a bug that raised an error after resetting Web UI password using <code>WEBUI_PASSWORD=''</code> Env variable. Fixes <a href="https://github.com/nandyalu/trailarr/issues/291" target="_blank">#291</a>.</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
 <ul>
@@ -2610,7 +2645,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 27, 2025 22:48:28 UTC">August 27, 2025 22:48:28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 21:49:11 UTC">August 30, 2025 21:49:11</span>
   </span>
 
     

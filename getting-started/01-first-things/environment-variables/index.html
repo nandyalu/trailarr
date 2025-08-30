@@ -2240,10 +2240,13 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Username:<span class="w"> </span>admin
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Password:<span class="w"> </span>trailarr
 </span></code></pre></div>
-<p>If you forget your password, set this environment variable to <code>''</code> (empty string) to reset the password for the web interface to default.</p>
+<p>If you forget your password, set this environment variable to <code>' '</code> (empty string) to reset the password for the web interface to default.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WEBUI_PASSWORD=&#39;&#39;</span><span class="w"> </span><span class="c1"># This will reset the password to default</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WEBUI_PASSWORD=</span><span class="w"> </span><span class="c1"># This will reset the password to default</span>
 </span></code></pre></div>
+<div class="admonition tip">
+<p>App tries to parse the improperly escaped quotes to try and reset the password, but if it's not working, try setting it to a space like <code>WEBUI_PASSWORD=' '</code>.</p>
+</div>
 <p>To change the password, go to <code>Settings &gt; About &gt; Password</code> in web interface. </p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
@@ -2293,7 +2296,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="June 29, 2025 09:36:18 UTC">June 29, 2025 09:36:18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 21:49:11 UTC">August 30, 2025 21:49:11</span>
   </span>
 
     
