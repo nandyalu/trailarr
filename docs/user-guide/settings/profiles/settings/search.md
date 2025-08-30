@@ -75,6 +75,7 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 **Examples**:
 
 - `movie, german trailer || deutsch trailer` -> `(movie) AND ((german trailer) OR (deutsch trailer))`
+
     -> Matches titles containing "movie" AND either "german trailer" OR "deutsch trailer".
     -> Same as `movie,german trailer||deutsch trailer`.
     -> Example matches:
@@ -82,6 +83,7 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
         - `The Matrix (1999) - movie Deutsch Trailer - Official`
 
 - `official,teaser` -> `(official) AND (teaser)`
+
     -> Matches titles containing "official" AND "teaser".
     -> Example matches:
         - `The Matrix (1999) - Official Teaser`
@@ -110,6 +112,7 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 **Examples**:
 
 - `comment, fan && review` -> `(comment) OR ((fan) AND (review))`
+
     -> Matches titles containing "comment" OR both "fan" AND "review".
     -> Same as `comment,fan&&review`.
     -> Example matches (ignored for download):
@@ -117,6 +120,7 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
         - `The Matrix (1999) - Fan Review`
 
 - `teaser,clip,featurette` -> `(teaser) OR (clip) OR (featurette)`
+
     -> Matches titles containing "teaser" OR "clip" OR "featurette".
     -> Example matches (ignored for download):
         - `The Matrix (1999) - Teaser`
