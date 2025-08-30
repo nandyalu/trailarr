@@ -89,12 +89,15 @@ Username: admin
 Password: trailarr
 ```
 
-If you forget your password, set this environment variable to `''` (empty string) to reset the password for the web interface to default.
+If you forget your password, set this environment variable to ` ` (empty string) to reset the password for the web interface to default.
 
 ```yaml
     environment:
-        - WEBUI_PASSWORD='' # This will reset the password to default
+        - WEBUI_PASSWORD= # This will reset the password to default
 ```
+
+!!! tip ""
+    App tries to parse the improperly escaped quotes to try and reset the password, but if it's not working, try setting it to a space like `WEBUI_PASSWORD=' '`.
 
 To change the password, go to `Settings > About > Password` in web interface. 
 
