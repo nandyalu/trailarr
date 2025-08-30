@@ -47,10 +47,15 @@ class AsyncRequestManager:
         fixed_path = parsed_url.path.replace("//", "/").rstrip("/")
         url = urlunparse(parsed_url._replace(path=fixed_path))
         headers = {"X-Api-Key": self.api_key}
+        # if ssl_context and ca_cert_path:
+        #     ssl_context = ssl.create_default_context(cafile=ca_cert_path)
+        # else:
+        #     ssl_context = False
+        ssl_context = False
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.request(
-                    method, url, headers=headers, params=params, data=data
+                    method, url, headers=headers, params=params, data=data, ssl=ssl_context
                 ) as client_response:
                     # client_response.raise_for_status()
                     response = await self._process_response(client_response)

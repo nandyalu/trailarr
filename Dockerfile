@@ -59,6 +59,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     TZ="America/New_York" \
     APP_NAME="Trailarr" \
+    APP_MODE="Docker" \
     APP_PORT=7889 \
     APP_DATA_DIR="/config" \
     PUID=1000 \
