@@ -215,6 +215,7 @@ These are examples. You **must** update these.
 
 !!! important "Use UNIQUE container folder paths"
     **Make sure these paths are unique and do not conflict with any other container's paths.**
+    
     **What does this mean?**
     Let's say you used below configuration:
 
@@ -238,7 +239,7 @@ These are examples. You **must** update these.
     You can use something like below to get around this:
 
     ```yaml hl_lines="9 11"
-    # DO NOT USE THIS
+    # USE THIS INSTEAD
     services:
       trailarr:
         image: nandyalu/trailarr:latest

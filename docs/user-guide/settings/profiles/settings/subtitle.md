@@ -15,6 +15,9 @@ Enable this setting to download subtitles for trailers, if available.
 
 Select the format of the subtitles to download. Available options are `srt`, `vtt`.
 
+!!! note ""
+    Mp4 does not support `srt`, so `mov_text` will be used instead. 
+
 !!! info
     App will download subtitles in the available format and then convert it to the selected format using Ffmpeg.
 

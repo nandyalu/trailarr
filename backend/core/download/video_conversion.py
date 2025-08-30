@@ -34,6 +34,7 @@ _AUDIO_CODECS = {
 }
 
 _SUBTITLES_CODECS = {
+    "mov_text": "mov_text",
     "srt": "srt",
     "vtt": "webvtt",
 }
@@ -478,8 +479,12 @@ def get_ffmpeg_cmd(
     )
     # Set subtitle specific options
     if profile.subtitles_enabled:
+        # If video format is mp4, replace srt with mov_text
+        _profile_subs = profile.subtitles_format
+        if profile.video_format == "mp4" and profile.subtitles_format == "srt":
+            _profile_subs = "mov_text"
         ffmpeg_cmd.extend(
-            _get_subtitle_options(profile.subtitles_format, _subtitle_stream)
+            _get_subtitle_options(_profile_subs, _subtitle_stream)
         )
     else:
         if _subtitle_stream:

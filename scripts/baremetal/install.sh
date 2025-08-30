@@ -257,6 +257,7 @@ run_interactive_config() {
     # Create .env file with configuration
     update_env_var "APP_VERSION" "${APP_VERSION:-0.0.0}" "$DATA_DIR/.env"
     update_env_var "APP_DATA_DIR" "$DATA_DIR" "$DATA_DIR/.env"
+    update_env_var "APP_MODE" "Direct Linux" "$DATA_DIR/.env"
     update_env_var "APP_PORT" "$port" "$DATA_DIR/.env"
     update_env_var "INSTALLATION_MODE" "baremetal" "$DATA_DIR/.env"
     update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"  # 1 hour default
