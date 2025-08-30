@@ -2338,25 +2338,37 @@
 </tr>
 </tbody>
 </table>
-<p>Enter a comma separated list of words that should be included in the title when searching for trailers. This can be useful for finding specific versions or edits of trailers.</p>
+<p><strong>Purpose</strong>: Specify words that MUST be present in trailer titles. Use <code>,</code> for AND logic, <code>||</code> for OR logic, and placeholders for dynamic values.</p>
+<p><strong>How it Works</strong>:</p>
 <ul>
-<li>Words separated by <code>,</code> (comma) needs to be present in the video title. Generates an <code>AND</code> condition.</li>
-<li>At least one of the words separated by <code>||</code> needs to be present in the video title. Generates an <code>OR</code> condition.</li>
+<li>Words separated by <code>,</code> (comma): All words must be present. Generates an <code>AND</code> condition.</li>
+<li>Words separated by <code>||</code> (double pipe): At least one of the words must be present. Generates an <code>OR</code> condition.</li>
+<li>Spaces are ignored: All spaces before and after an operator (<code>,</code>, <code>||</code>) are ignored. Two words separated by a space are considered a single search term.</li>
 <li>You can also use placeholders from <a href="#search-query">Search Query</a> and they will be replaced.</li>
-<li>All spaces before and after an operator (<code>,</code>, <code>||</code>) are ignored.</li>
-<li>Two words separated by a space are considered a single search term.</li>
 <li>Search is case-insensitive. Meaning <code>German||English,Trailer</code> is equal to <code>german||english,trailer</code>.</li>
+<li>Order: placeholders are replaced first, followed by <code>,</code> processing, and then <code>||</code> are processed.</li>
 </ul>
-<p>Ex: <code>movie, german trailer || deutsch trailer</code> is equal to <code>movie,german trailer||deutsch trailer</code>.
-This will become <code>(movie) AND ((german trailer) OR (deutsch trailer))</code> and matches the below video titles:</p>
+<p><strong>Examples</strong>:</p>
 <ul>
-<li><code>The Matrix movie GERMAN Trailer</code></li>
-<li><code>The matrix deutsch trailer movie</code></li>
-<li><code>The matrix 1999 German trailer  movie</code></li>
+<li>
+<p><code>movie, german trailer || deutsch trailer</code> -&gt; <code>(movie) AND ((german trailer) OR (deutsch trailer))</code>
+    -&gt; Matches titles containing "movie" AND either "german trailer" OR "deutsch trailer".
+    -&gt; Same as <code>movie,german trailer||deutsch trailer</code>.
+    -&gt; Example matches:
+        - <code>The Matrix (1999) - movie German Trailer</code>
+        - <code>The Matrix (1999) - movie Deutsch Trailer - Official</code></p>
+</li>
+<li>
+<p><code>official,teaser</code> -&gt; <code>(official) AND (teaser)</code>
+    -&gt; Matches titles containing "official" AND "teaser".
+    -&gt; Example matches:
+        - <code>The Matrix (1999) - Official Teaser</code>
+        - <code>The Matrix (1999) - Teaser Official</code></p>
+</li>
 </ul>
-<div class="admonition warning">
+<div class="admonition tip">
 <p class="admonition-title">All Words Must Be Present</p>
-<p>A video is considered a match only if all the words in the list are present in the title of the trailer. If any word is missing, the trailer will be skipped. For example, <code>official,teaser</code> will be matched if title is <code>The Matrix (1999) - Official Trailer</code>.</p>
+<p>If any required word is missing from the title, the trailer will be skipped.</p>
 </div>
 <h2 id="exclude-words-in-title">Exclude Words in Title</h2>
 <table>
@@ -2377,26 +2389,38 @@ This will become <code>(movie) AND ((german trailer) OR (deutsch trailer))</code
 </tr>
 </tbody>
 </table>
-<p>Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, <code>teaser,clip,featurette</code>.</p>
+<p><strong>Purpose</strong>: Specify words that MUST NOT be present in trailer titles. Use <code>,</code> for OR logic, <code>&amp;&amp;</code> for AND logic, and placeholders for dynamic values.</p>
+<p><strong>How it Works</strong>:</p>
 <ul>
-<li>At least one of the words separated by <code>,</code> (comma) needs to be present in the video title. Generates an <code>OR</code> condition.</li>
-<li>All words separated by <code>&amp;&amp;</code> needs to be present in the video title. Generates an <code>AND</code> condition.</li>
+<li>Words separated by <code>,</code> (comma): At least one of the words must be present. Generates an <code>OR</code> condition.</li>
+<li>Words separated by <code>&amp;&amp;</code> (double ampersand): All words must be present. Generates an <code>AND</code> condition.</li>
+<li>Spaces are ignored: All spaces before and after an operator (<code>,</code>, <code>&amp;&amp;</code>) are ignored. Two words separated by a space are considered a single search term.</li>
 <li>You can also use placeholders from <a href="#search-query">Search Query</a> and they will be replaced.</li>
-<li>All spaces before and after an operator (<code>,</code>, <code>&amp;&amp;</code>) are ignored.</li>
-<li>Two words separated by a space are considered a single search term.</li>
 <li>Search is case-insensitive. Meaning <code>German&amp;&amp;Review,Comment</code> is equal to <code>german&amp;&amp;review,comment</code>.</li>
+<li>Order: placeholders are replaced first, followed by <code>,</code> processing, and then <code>&amp;&amp;</code> are processed.</li>
 </ul>
-<p>Ex: <code>comment, fan &amp;&amp; review</code> is equal to <code>comment,fan&amp;&amp;review</code>.
-This will become <code>(comment) OR ((fan) AND (review))</code> and matches the below video titles for ignoring:</p>
+<p><strong>Examples</strong>:</p>
 <ul>
-<li><code>The Matrix movie GERMAN comment</code></li>
-<li><code>The Matrix movie GERMAN fanmade trailer</code></li>
-<li><code>The matrix movie deutsch trailer - fan review</code></li>
-<li><code>The matrix 1999 German trailer  comment | review</code></li>
+<li>
+<p><code>comment, fan &amp;&amp; review</code> -&gt; <code>(comment) OR ((fan) AND (review))</code>
+    -&gt; Matches titles containing "comment" OR both "fan" AND "review".
+    -&gt; Same as <code>comment,fan&amp;&amp;review</code>.
+    -&gt; Example matches (ignored for download):
+        - <code>The Matrix (1999) - Comment</code>
+        - <code>The Matrix (1999) - Fan Review</code></p>
+</li>
+<li>
+<p><code>teaser,clip,featurette</code> -&gt; <code>(teaser) OR (clip) OR (featurette)</code>
+    -&gt; Matches titles containing "teaser" OR "clip" OR "featurette".
+    -&gt; Example matches (ignored for download):
+        - <code>The Matrix (1999) - Teaser</code>
+        - <code>The Matrix (1999) - Clip</code>
+        - <code>The Matrix (1999) - Featurette</code></p>
+</li>
 </ul>
-<div class="admonition warning">
+<div class="admonition tip">
 <p class="admonition-title">All Words Must Be Absent</p>
-<p>Unlike <code>Include Words in Title</code>, if any of the words in this list are present in the title of the trailer, it will be skipped.</p>
+<p>If any excluded word is present in the title, the trailer will be skipped.</p>
 </div>
 <h2 id="yt-dlp-extra-options">Yt-dlp Extra Options</h2>
 <table>
@@ -2445,7 +2469,7 @@ This will become <code>(comment) OR ((fan) AND (review))</code> and matches the 
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 21:00:55 UTC">August 30, 2025 21:00:55</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 21:34:14 UTC">August 30, 2025 21:34:14</span>
   </span>
 
     
