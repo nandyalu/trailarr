@@ -15,7 +15,7 @@ dependencies = [
     "fastapi[standard-no-fastapi-cloud-cli]==0.116.1",
     "pillow==11.3.0",
     "sqlmodel==0.0.24",
-    "yt-dlp[curl-cffi,default]>=2025.8.22",
+    "yt-dlp[curl-cffi,default]==2025.8.27",
 ]
 
 [dependency-groups]

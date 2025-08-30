@@ -93,16 +93,16 @@ wheels = [
 
 [[package]]
 name = "alembic"
-version = "1.16.4"
+version = "1.16.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mako" },
     { name = "sqlalchemy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/52/72e791b75c6b1efa803e491f7cbab78e963695e76d4ada05385252927e76/alembic-1.16.4.tar.gz", hash = "sha256:efab6ada0dd0fae2c92060800e0bf5c1dc26af15a10e02fb4babff164b4725e2", size = 1968161, upload-time = "2025-07-10T16:17:20.192Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/ca/4dc52902cf3491892d464f5265a81e9dff094692c8a049a3ed6a05fe7ee8/alembic-1.16.5.tar.gz", hash = "sha256:a88bb7f6e513bd4301ecf4c7f2206fe93f9913f9b48dac3b78babde2d6fe765e", size = 1969868, upload-time = "2025-08-27T18:02:05.668Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/62/96b5217b742805236614f05904541000f55422a6060a90d7fd4ce26c172d/alembic-1.16.4-py3-none-any.whl", hash = "sha256:b05e51e8e82efc1abd14ba2af6392897e145930c3e0a2faf2b0da2f7f7fd660d", size = 247026, upload-time = "2025-07-10T16:17:21.845Z" },
+    { url = "https://files.pythonhosted.org/packages/39/4a/4c61d4c84cfd9befb6fa08a702535b27b21fff08c946bc2f6139decbf7f7/alembic-1.16.5-py3-none-any.whl", hash = "sha256:e845dfe090c5ffa7b92593ae6687c5cb1a101e91fa53868497dbd79847f9dbe3", size = 247355, upload-time = "2025-08-27T18:02:07.37Z" },
 ]
 
 [[package]]
@@ -720,15 +720,15 @@ wheels = [
 
 [[package]]
 name = "hypothesis"
-version = "6.138.5"
+version = "6.138.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
     { name = "sortedcontainers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/78/20891a13e0a540e04892027905ce2eceae34603ced87411e18b67b92beb6/hypothesis-6.138.5.tar.gz", hash = "sha256:e890ff0a91e93fa99e26a5653eecdefb87dae096eb0c1d712a66d6d5c60573fb", size = 463437, upload-time = "2025-08-27T15:19:52.693Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/ca/c5c9e8bade4b09c9f4e61b6d9d6877e5a25c6d1177cffea41572d74728cf/hypothesis-6.138.7.tar.gz", hash = "sha256:e3adc2df34d8e5d5a1f2b3aff399327544525137acfecbac3b0343c189e52126", size = 463466, upload-time = "2025-08-28T10:34:00.081Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/16/f78d0c802e093ecede1d0208472bce213d70fc10e59b2fcf840c72292dcd/hypothesis-6.138.5-py3-none-any.whl", hash = "sha256:1345d140c3c0c9df30f04c1bac625bb24041fe634a68ae3999038f90193cbc9c", size = 530317, upload-time = "2025-08-27T15:19:49.033Z" },
+    { url = "https://files.pythonhosted.org/packages/91/50/3a4320c24b95ead76a1970f9cc568e3ec3e1dd065951f6a900e2b8066ff7/hypothesis-6.138.7-py3-none-any.whl", hash = "sha256:ec96ad34a50fa638491b5c08a37344db57765a9d7cdc863a38aadf27d52c317c", size = 530400, upload-time = "2025-08-28T10:33:56.315Z" },
 ]
 
 [[package]]
@@ -1620,7 +1620,7 @@ wheels = [
 
 [[package]]
 name = "schemathesis"
-version = "4.1.2"
+version = "4.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backoff" },
@@ -1644,9 +1644,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "werkzeug" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/b2/37db1b9af1337ee1969c1fdfa98bb767f6b02a1333648a2b398b8d688793/schemathesis-4.1.2.tar.gz", hash = "sha256:88305f08a26dc707aca7bce9123b408fa9dcf9a50c9fd9b5f0203fdadf2ec8e1", size = 57739903, upload-time = "2025-08-25T12:17:24.978Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/fe/f3cd597cca73779d6aa25149ff9ce8e140190349abe2ccd6e1f4e6bf34e7/schemathesis-4.1.3.tar.gz", hash = "sha256:871aa87e35f256cb482af10c51a1e6d45a136278ee58fcd2572a475db50f240d", size = 57740033, upload-time = "2025-08-28T06:34:31.65Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/46/c23fb9c531b6090be5992e6c80c28146346e4167ed13798bdebce257afcb/schemathesis-4.1.2-py3-none-any.whl", hash = "sha256:dce4b18d1ed7b86873916f231a4ca7dc400452be2c593e9cc439a45ae4fe1ad6", size = 314113, upload-time = "2025-08-25T12:17:22.289Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/4c/282c14c9276bec0168f5397ea9b85d4f1137e534336c8b6345a8af729755/schemathesis-4.1.3-py3-none-any.whl", hash = "sha256:1e5af2d0f45ea4339177bbf130b69160b3601d78c5a4df1e4d18abe52b72e975", size = 314184, upload-time = "2025-08-28T06:34:29.08Z" },
 ]
 
 [[package]]
@@ -1823,20 +1823,20 @@ requires-dist = [
     { name = "aiofiles", specifier = "==24.1.0" },
     { name = "aiohttp", specifier = "==3.12.15" },
     { name = "aiosqlite", specifier = "==0.21.0" },
-    { name = "alembic", specifier = "==1.16.4" },
+    { name = "alembic", specifier = "==1.16.5" },
     { name = "apscheduler", specifier = "==3.11.0" },
     { name = "async-lru", specifier = "==2.0.5" },
     { name = "bcrypt", specifier = "==4.3.0" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.116.1" },
     { name = "pillow", specifier = "==11.3.0" },
     { name = "sqlmodel", specifier = "==0.0.24" },
-    { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = ">=2025.8.22" },
+    { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = "==2025.8.27" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "aioresponses", specifier = "==0.7.8" },
-    { name = "hypothesis", specifier = "==6.138.5" },
+    { name = "hypothesis", specifier = "==6.138.7" },
     { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
     { name = "mkdocs-github-changelog", specifier = "==0.1.0" },
     { name = "mkdocs-glightbox", specifier = "==0.4.0" },
@@ -1844,7 +1844,7 @@ dev = [
     { name = "pytest", specifier = "==8.4.1" },
     { name = "pytest-asyncio", specifier = "==1.1.0" },
     { name = "pytest-cov", specifier = "==6.2.1" },
-    { name = "schemathesis", specifier = "==4.1.2" },
+    { name = "schemathesis", specifier = "==4.1.3" },
 ]
 docs = [
     { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
@@ -1854,11 +1854,11 @@ docs = [
 ]
 testing = [
     { name = "aioresponses", specifier = "==0.7.8" },
-    { name = "hypothesis", specifier = "==6.138.5" },
+    { name = "hypothesis", specifier = "==6.138.7" },
     { name = "pytest", specifier = "==8.4.1" },
     { name = "pytest-asyncio", specifier = "==1.1.0" },
     { name = "pytest-cov", specifier = "==6.2.1" },
-    { name = "schemathesis", specifier = "==4.1.2" },
+    { name = "schemathesis", specifier = "==4.1.3" },
 ]
 
 [[package]]

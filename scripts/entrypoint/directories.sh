@@ -28,8 +28,4 @@ setup_directories() {
     chmod -R 755 /app/assets
     mkdir -p /app/tmp && chmod -R 755 /app/tmp
     box_echo "--------------------------------------------------------------------------";
-
-    # Check if the appdata folder has .env file and Check if there is a env variable 'UPDATE_YTDLP' set to true
-    /app/scripts/update_ytdlp.sh $APP_DATA_DIR
-    box_echo "--------------------------------------------------------------------------";
 }
