@@ -300,6 +300,7 @@ def get_video_id(
         video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
         )
+    
     if video_id:
         media.youtube_trailer_id = video_id
     return video_id
