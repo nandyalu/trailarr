@@ -2341,17 +2341,17 @@
 <p>Enter a comma separated list of words that should be included in the title when searching for trailers. This can be useful for finding specific versions or edits of trailers.</p>
 <ul>
 <li>Words separated by <code>,</code> (comma) needs to be present in the video title. Generates an <code>AND</code> condition.</li>
-<li>Atleast one of the words separated by <code>||</code> needs to be present in the video title. Generates an <code>OR</code> condition.</li>
+<li>At least one of the words separated by <code>||</code> needs to be present in the video title. Generates an <code>OR</code> condition.</li>
 <li>You can also use placeholders from <a href="#search-query">Search Query</a> and they will be replaced.</li>
 <li>All spaces before and after an operator (<code>,</code>, <code>||</code>) are ignored.</li>
 <li>Two words separated by a space are considered a single search term.</li>
 <li>Search is case-insensitive. Meaning <code>German||English,Trailer</code> is equal to <code>german||english,trailer</code>.</li>
 </ul>
-<p>Ex: <code>movie, german trailer || deutsh trailer</code> is equal to <code>movie,german trailer||deutsh trailer</code>.
-This will become <code>(movie) AND ((german trailer) OR (deutsh trailer))</code> and matches the below video titles:</p>
+<p>Ex: <code>movie, german trailer || deutsch trailer</code> is equal to <code>movie,german trailer||deutsch trailer</code>.
+This will become <code>(movie) AND ((german trailer) OR (deutsch trailer))</code> and matches the below video titles:</p>
 <ul>
 <li><code>The Matrix movie GERMAN Trailer</code></li>
-<li><code>The matrix deutsh trailer movie</code></li>
+<li><code>The matrix deutsch trailer movie</code></li>
 <li><code>The matrix 1999 German trailer  movie</code></li>
 </ul>
 <div class="admonition warning">
@@ -2379,7 +2379,7 @@ This will become <code>(movie) AND ((german trailer) OR (deutsh trailer))</code>
 </table>
 <p>Enter a comma separated list of words to exclude from the title of the trailers. If the title of the trailer contains any of the words in the list, the trailer will be skipped. For example, <code>teaser,clip,featurette</code>.</p>
 <ul>
-<li>Atleast one of the words separated by <code>,</code> (comma) needs to be present in the video title. Generates an <code>OR</code> condition.</li>
+<li>At least one of the words separated by <code>,</code> (comma) needs to be present in the video title. Generates an <code>OR</code> condition.</li>
 <li>All words separated by <code>&amp;&amp;</code> needs to be present in the video title. Generates an <code>AND</code> condition.</li>
 <li>You can also use placeholders from <a href="#search-query">Search Query</a> and they will be replaced.</li>
 <li>All spaces before and after an operator (<code>,</code>, <code>&amp;&amp;</code>) are ignored.</li>
@@ -2391,7 +2391,7 @@ This will become <code>(comment) OR ((fan) AND (review))</code> and matches the 
 <ul>
 <li><code>The Matrix movie GERMAN comment</code></li>
 <li><code>The Matrix movie GERMAN fanmade trailer</code></li>
-<li><code>The matrix movie deutsh trailer - fan review</code></li>
+<li><code>The matrix movie deutsch trailer - fan review</code></li>
 <li><code>The matrix 1999 German trailer  comment | review</code></li>
 </ul>
 <div class="admonition warning">
@@ -2445,7 +2445,7 @@ This will become <code>(comment) OR ((fan) AND (review))</code> and matches the 
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 08:54:33 UTC">August 30, 2025 08:54:33</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 30, 2025 21:00:55 UTC">August 30, 2025 21:00:55</span>
   </span>
 
     
