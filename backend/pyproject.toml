@@ -24,8 +24,8 @@ dev = [
     "hypothesis==6.138.7",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.18",
+    "mkdocs-glightbox==0.5.1",
+    "mkdocs-material==9.6.20",
     "pytest==8.4.1",
     "pytest-asyncio==1.1.0",
     "pytest-cov==6.2.1",
@@ -34,8 +34,8 @@ dev = [
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.18",
+    "mkdocs-glightbox==0.5.1",
+    "mkdocs-material==9.6.20",
 ]
 testing = [
     "aioresponses==0.7.8",
