@@ -7,8 +7,6 @@
 </p> -->
 ![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png)
 
-abcdefg
-
 [![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/) 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
 [![Angular](https://img.shields.io/badge/angular-20.3.1-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
