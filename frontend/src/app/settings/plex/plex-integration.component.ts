@@ -29,6 +29,7 @@ export class PlexIntegrationComponent implements OnDestroy {
   readonly errorMessage = signal<string>('');
   readonly token = signal<string>('');
   readonly serverAddress = signal<string>('');
+  readonly clientIdentifier = signal<string>('');
 
   // Computed properties for UI states
   readonly isInitial = computed(() => this.authState() === 'initial');
@@ -47,10 +48,13 @@ export class PlexIntegrationComponent implements OnDestroy {
     this.authState.set('pending');
     this.errorMessage.set('');
 
+    const clientId = 'trailarr-' + Date.now();
     const request: AuthStartRequest = {
-      client_identifier: 'trailarr-' + Date.now(),
+      client_identifier: clientId,
       product_name: 'Trailarr'
     };
+
+    this.clientIdentifier.set(clientId);
 
     this.plexService.startAuth(request).subscribe({
       next: (response) => {
@@ -78,7 +82,7 @@ export class PlexIntegrationComponent implements OnDestroy {
     // Poll every 2 seconds
     this.pollingSubscription = interval(2000)
       .pipe(
-        switchMap(() => this.plexService.pollForToken(pin)),
+        switchMap(() => this.plexService.pollForToken(pin, this.clientIdentifier())),
         takeWhile((response: AuthPollResponse) => response.status === 'pending', true)
       )
       .subscribe({
@@ -124,6 +128,7 @@ export class PlexIntegrationComponent implements OnDestroy {
     this.authUrl.set('');
     this.token.set('');
     this.serverAddress.set('');
+    this.clientIdentifier.set('');
     this.errorMessage.set('');
   }
 

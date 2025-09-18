@@ -75,12 +75,13 @@ async def start_auth_flow(client_identifier: str, product_name: str) -> Dict[str
         raise
 
 
-async def poll_for_token(pin: str) -> Dict[str, Any]:
+async def poll_for_token(pin: str, client_identifier: str) -> Dict[str, Any]:
     """
     Poll the Plex API to check if the user has authenticated with the PIN.
     
     Args:
         pin: The PIN code to check
+        client_identifier: Unique identifier for the client application
         
     Returns:
         Dict containing:
@@ -95,6 +96,7 @@ async def poll_for_token(pin: str) -> Dict[str, Any]:
     
     headers = {
         "Accept": "application/json",
+        "X-Plex-Client-Identifier": client_identifier,
     }
     
     url = PLEX_TOKEN_URL.format(pin=pin)

@@ -108,7 +108,7 @@ async def start_plex_auth(request: AuthStartRequest) -> AuthStartResponse:
         },
     },
 )
-async def poll_plex_token(pin: str) -> AuthPollResponse:
+async def poll_plex_token(pin: str, client_identifier: str) -> AuthPollResponse:
     """
     Poll for Plex authentication token.
     
@@ -116,7 +116,7 @@ async def poll_plex_token(pin: str) -> AuthPollResponse:
     """
     try:
         logging.debug(f"Polling Plex token for PIN: {pin}")
-        result = await poll_for_token(pin)
+        result = await poll_for_token(pin, client_identifier)
         return AuthPollResponse(**result)
     except Exception as e:
         logging.error(f"Failed to poll Plex token: {e}")

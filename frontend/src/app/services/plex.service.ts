@@ -57,7 +57,7 @@ export interface ExtrasResponse {
 })
 export class PlexService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl + '/plex';
+  private readonly baseUrl = environment.apiUrl + 'plex';
 
   /**
    * Start the Plex authentication flow.
@@ -69,8 +69,8 @@ export class PlexService {
   /**
    * Poll for authentication token using PIN.
    */
-  pollForToken(pin: string): Observable<AuthPollResponse> {
-    return this.http.get<AuthPollResponse>(`${this.baseUrl}/auth/poll/${pin}`);
+  pollForToken(pin: string, clientIdentifier: string): Observable<AuthPollResponse> {
+    return this.http.get<AuthPollResponse>(`${this.baseUrl}/auth/poll/${pin}?client_identifier=${encodeURIComponent(clientIdentifier)}`);
   }
 
   /**
