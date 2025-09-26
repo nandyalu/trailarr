@@ -11,7 +11,7 @@ dependencies = [
     "alembic==1.16.5",
     "apscheduler==3.11.0",
     "async-lru==2.0.5",
-    "bcrypt==4.3.0",
+    "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.116.2",
     "pillow==11.3.0",
     "sqlmodel==0.0.24",
