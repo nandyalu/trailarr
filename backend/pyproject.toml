@@ -12,7 +12,7 @@ dependencies = [
     "apscheduler==3.11.0",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.116.2",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.117.1",
     "pillow==11.3.0",
     "sqlmodel==0.0.24",
     "yt-dlp[curl-cffi,default]==2025.9.5",
