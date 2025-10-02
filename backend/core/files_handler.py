@@ -97,7 +97,6 @@ class FilesHandler:
     """Utility class to handle files and folders."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
