@@ -29,7 +29,7 @@ dev = [
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
-    "schemathesis==4.3.1",
+    "schemathesis==4.3.3",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
@@ -43,5 +43,5 @@ testing = [
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
-    "schemathesis==4.3.1",
+    "schemathesis==4.3.3",
 ]
