@@ -21,7 +21,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "aioresponses==0.7.8",
-    "hypothesis==6.141.0",
+    "hypothesis==6.142.1",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
     "mkdocs-glightbox==0.5.1",
@@ -39,7 +39,7 @@ docs = [
 ]
 testing = [
     "aioresponses==0.7.8",
-    "hypothesis==6.141.0",
+    "hypothesis==6.142.1",
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
