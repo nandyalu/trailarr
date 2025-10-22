@@ -14,7 +14,9 @@ from exceptions import DownloadFailedError
 logger = ModuleLogger("TrailersDownloader")
 
 
-def __update_media_status(media: MediaRead, type: MonitorStatus):
+def __update_media_status(
+    media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
+):
     """Update the media status in the database."""
     db_manager = MediaDatabaseManager()
     if type == MonitorStatus.DOWNLOADING:
@@ -25,11 +27,14 @@ def __update_media_status(media: MediaRead, type: MonitorStatus):
             yt_id=media.youtube_trailer_id,
         )
     elif type == MonitorStatus.DOWNLOADED:
+        monitor_status = True
+        if profile.stop_monitoring:
+            monitor_status = False
         update = MediaUpdateDC(
             id=media.id,
-            monitor=False,
+            monitor=monitor_status,
             status=MonitorStatus.DOWNLOADED,
-            trailer_exists=True,
+            trailer_exists=media.trailer_exists or profile.is_trailer,
             downloaded_at=datetime.now(timezone.utc),
             yt_id=media.youtube_trailer_id,
         )
@@ -114,12 +119,12 @@ async def download_trailer(
         raise DownloadFailedError(f"No trailer found for {media.title}")
 
     try:
-        __update_media_status(media, MonitorStatus.DOWNLOADING)
+        __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
         # Download the trailer and verify
         output_file = __download_and_verify_trailer(media, video_id, profile)
         # Move the trailer to the media folder (create subfolder if needed)
         trailer_file.move_trailer_to_folder(output_file, media, profile)
-        __update_media_status(media, MonitorStatus.DOWNLOADED)
+        __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"
             f" from ({video_id})"
@@ -129,7 +134,7 @@ async def download_trailer(
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
-        __update_media_status(media, MonitorStatus.MISSING)
+        __update_media_status(media, MonitorStatus.MISSING, profile)
         if retry_count > 0:
             logger.info(
                 f"Retrying download for {media.title}... ({3 - retry_count}/3)"

@@ -98,6 +98,10 @@ class _TrailerProfileBase(AppSQLModel):
         sa_column=Column(String, server_default=text("('')"), nullable=False),
     )
     # Filter id to apply to select this profile
+    stop_monitoring: bool = False
+    is_trailer: bool = True
+    custom_folder: str = "{media_folder}"
+    notify_plex: bool = False
 
 
 class TrailerProfile(_TrailerProfileBase, table=True):
@@ -179,6 +183,9 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "always_search",
             "embed_metadata",
             "remove_silence",
+            "stop_monitoring",
+            "is_trailer",
+            "notify_plex",
         ]
 
     @classmethod
@@ -201,6 +208,9 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "always_search",
         "embed_metadata",
         "remove_silence",
+        "stop_monitoring",
+        "is_trailer",
+        "notify_plex",
         mode="before",
     )
     @classmethod
@@ -254,6 +264,15 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if bool(v.strip()):
             return v
         raise ValueError("Folder Name cannot be empty!")
+
+    @field_validator("custom_folder", mode="after")
+    @classmethod
+    def validate_custom_folder(cls, v: str) -> str:
+        try:
+            v.format(**VALID_FILE_DICT, media_folder="media_folder")
+        except Exception as e:
+            raise ValueError(f"Invalid custom folder template: '{v}'. {e}")
+        return v
 
     @field_validator("audio_format", mode="after")
     @classmethod
