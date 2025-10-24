@@ -98,7 +98,7 @@ class _TrailerProfileBase(AppSQLModel):
         sa_column=Column(String, server_default=text("('')"), nullable=False),
     )
     # Filter id to apply to select this profile
-    stop_monitoring: bool = False
+    stop_monitoring: bool = True
     is_trailer: bool = True
     custom_folder: str = "{media_folder}"
     notify_plex: bool = False

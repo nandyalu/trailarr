@@ -27,20 +27,28 @@ def _find_matching_profiles(
 
 
 def _is_valid_media(
-    db_media: MediaRead, skipped_titles: dict[str, list[str]]
+    db_media: MediaRead,
+    skipped_titles: dict[str, list[str]],
+    check_folder: bool = True,
 ) -> bool:
     """Check if a media item is valid for downloading."""
-    if db_media.folder_path is None:
-        skipped_titles["missing_folder_path"].append(db_media.title)
+    if check_folder:
+        if db_media.folder_path is None:
+            skipped_titles["missing_folder_path"].append(db_media.title)
+            return False
+
+        if not FilesHandler.check_folder_exists(db_media.folder_path):
+            skipped_titles["missing_folder_path"].append(db_media.title)
+            return False
+
+    if not app_settings.wait_for_media:
+        return True
+
+    if not db_media.folder_path:
+        skipped_titles["media_not_found"].append(db_media.title)
         return False
 
-    if not FilesHandler.check_folder_exists(db_media.folder_path):
-        skipped_titles["missing_folder_path"].append(db_media.title)
-        return False
-
-    if app_settings.wait_for_media and not FilesHandler.check_media_exists(
-        db_media.folder_path
-    ):
+    if not FilesHandler.check_media_exists(db_media.folder_path):
         skipped_titles["media_not_found"].append(db_media.title)
         return False
 
@@ -71,11 +79,13 @@ async def download_missing_trailers() -> None:
 
     while True:
         db_manager = MediaDatabaseManager()
-        db_media_list = db_manager.read_all_monitored()
+        db_media_list = db_manager.read_all(None, "monitored")
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
         if not trailer_profiles:
-            logger.warning("No TrailerProfiles found, skipping download trailers")
+            logger.warning(
+                "No TrailerProfiles found, skipping download trailers"
+            )
             return
 
         enabled_profiles: list[TrailerProfileRead] = [
@@ -83,14 +93,18 @@ async def download_missing_trailers() -> None:
         ]
 
         if not enabled_profiles:
-            logger.warning("No enabled TrailerProfiles found, skipping download")
+            logger.warning(
+                "No enabled TrailerProfiles found, skipping download"
+            )
             return
 
         media_to_process = None
         matching_profiles_for_media = []
 
         for db_media in db_media_list:
-            matching_profiles = _find_matching_profiles(db_media, enabled_profiles)
+            matching_profiles = _find_matching_profiles(
+                db_media, enabled_profiles
+            )
             if matching_profiles:
                 media_to_process = db_media
                 matching_profiles_for_media = matching_profiles
@@ -120,11 +134,11 @@ async def _process_single_media_item(
     """Process a single media item and download all matching trailers."""
     successful_downloads = 0
     skipped_items = 0
-    if not _is_valid_media(media, {}):
-        # TODO: Handle skipped titles
-        return successful_downloads, skipped_items + 1
 
     for profile in profiles:
+        check_folder = profile.custom_folder == "{media_folder}"
+        if not _is_valid_media(media, {}, check_folder):
+            return successful_downloads, skipped_items + 1
         try:
             download_successful = await trailer_downloader.download_trailer(
                 media, profile
@@ -134,7 +148,7 @@ async def _process_single_media_item(
                 if profile.stop_monitoring:
                     logger.info(
                         f"Stopping monitoring for {media.title} after"
-                        f" successful download with profile:"
+                        " successful download with profile:"
                         f" {profile.customfilter.filter_name}"
                     )
                     break

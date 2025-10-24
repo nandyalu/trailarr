@@ -14,7 +14,6 @@ import sqlmodel
 import sqlmodel.sql.sqltypes
 from app_logger import ModuleLogger
 
-
 # revision identifiers, used by Alembic.
 revision: str = "f59986f4b718"
 down_revision: Union[str, None] = "9606084facbe"
@@ -35,7 +34,7 @@ def upgrade() -> None:
                 "stop_monitoring",
                 sa.Boolean(),
                 nullable=False,
-                server_default="0",
+                server_default="1",
             )
         )
         batch_op.add_column(
