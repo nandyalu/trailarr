@@ -12,29 +12,27 @@ dependencies = [
     "apscheduler==3.11.0",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.119.0",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.120.0",
     "pillow==12.0.0",
     "sqlmodel==0.0.27",
-    "yt-dlp[curl-cffi,default]==2025.10.14",
+    "yt-dlp[curl-cffi,default]==2025.10.22",
 ]
 
 [dependency-groups]
 dev = [
     "aioresponses==0.7.8",
-    "hypothesis==6.142.1",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.5.1",
+    "mkdocs-glightbox==0.5.2",
     "mkdocs-material==9.6.22",
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
-    "schemathesis==4.3.3",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.5.1",
+    "mkdocs-glightbox==0.5.2",
     "mkdocs-material==9.6.22",
 ]
 testing = [
@@ -43,5 +41,5 @@ testing = [
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
-    "schemathesis==4.3.3",
+    "schemathesis==4.3.6",
 ]
