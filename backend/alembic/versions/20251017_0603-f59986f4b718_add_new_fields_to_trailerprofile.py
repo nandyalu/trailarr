@@ -60,6 +60,10 @@ def upgrade() -> None:
 
     # Re-enable foreign keys after migrations
     op.execute("PRAGMA foreign_keys=ON")
+    logger.info(
+        "Additional options added to Profile: stop_monitoring, is_trailer,"
+        " custom_folder, notify_plex"
+    )
 
 
 def downgrade() -> None:
