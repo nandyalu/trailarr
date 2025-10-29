@@ -1,22 +1,29 @@
-<p align="center">
+<!-- <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-512-lg.png">
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-light-512-lg.png">
     <img alt="Trailarr logo with name" src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png" width=50%>
   </picture>
+</p> -->
+![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png)
+
+<hr>
+
+<p align="center">
+  <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
+  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.120.0-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-20.3.7-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://github.com/nandyalu/trailarr" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
-[![Python](https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python)](https://www.python.org/) 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com) 
-[![Angular](https://img.shields.io/badge/angular-20.3.7-%23DD0031.svg?style=flat&logo=angular)](https://angular.dev/) 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/nandyalu/trailarr)
-
-[![Docker Build](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml) 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
-[![CodeFactor](https://www.codefactor.io/repository/github/nandyalu/trailarr/badge)](https://www.codefactor.io/repository/github/nandyalu/trailarr)
-[![Docker Pulls](https://badgen.net/docker/pulls/nandyalu/trailarr?icon=docker&label=pulls)](https://hub.docker.com/r/nandyalu/trailarr/) 
-[![GitHub Issues](https://img.shields.io/github/issues/nandyalu/trailarr?logo=github&link=https%3A%2F%2Fgithub.com%2Fnandyalu%2Ftrailarr%2Fissues)](https://github.com/nandyalu/trailarr/issues) 
-[![GitHub last commit](https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github&link=https%3A%2F%2Fgithub.com%2Fnandyalu%2Ftrailarr%2Fissues)](https://github.com/nandyalu/trailarr/commits/)
+<p align="center">
+  <a href="https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml" target="_blank"><img src="https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg" alt="Docker Build"></a>
+  <a href="https://github.com/psf/black" target="_blank"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
+  <a href="https://www.codefactor.io/repository/github/nandyalu/trailarr" target="_blank"><img src="https://www.codefactor.io/repository/github/nandyalu/trailarr/badge" alt="CodeFactor"></a>
+  <a href="https://hub.docker.com/r/nandyalu/trailarr/" target="_blank"><img src="https://badgen.net/docker/pulls/nandyalu/trailarr?icon=docker&label=pulls" alt="Docker Pulls"></a>
+  <a href="https://github.com/nandyalu/trailarr/issues" target="_blank"><img src="https://img.shields.io/github/issues/nandyalu/trailarr?logo=github" alt="GitHub Issues"></a>
+  <a href="https://github.com/nandyalu/trailarr/commits/" target="_blank"><img src="https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github" alt="GitHub last commit"></a>
+</p>
 
 
 Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/) libraries.
