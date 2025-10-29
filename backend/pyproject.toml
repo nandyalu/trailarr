@@ -37,9 +37,7 @@ docs = [
 ]
 testing = [
     "aioresponses==0.7.8",
-    "hypothesis==6.142.1",
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==7.0.0",
-    "schemathesis==4.3.6",
 ]

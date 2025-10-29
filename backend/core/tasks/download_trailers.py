@@ -132,19 +132,25 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         except Exception:
             skipped_titles["invalid_media_id"].append(media_id)
             continue
-        if db_media.folder_path is None:
-            skipped_titles["missing_folder_path"].append(db_media.title)
-            continue
-        if not FilesHandler.check_folder_exists(db_media.folder_path):
-            skipped_titles["missing_folder_path"].append(db_media.title)
-            continue
-        if db_media.trailer_exists:
-            skipped_titles["trailer_exists"].append(db_media.title)
-            continue
-        if app_settings.wait_for_media:
-            if not FilesHandler.check_media_exists(db_media.folder_path):
-                skipped_titles["media_not_found"].append(db_media.title)
+        check_folder = profile.custom_folder == "{media_folder}"
+        if check_folder:
+            if db_media.folder_path is None:
+                skipped_titles["missing_folder_path"].append(db_media.title)
                 continue
+            if not FilesHandler.check_folder_exists(db_media.folder_path):
+                skipped_titles["missing_folder_path"].append(db_media.title)
+                continue
+            if db_media.trailer_exists:
+                skipped_titles["trailer_exists"].append(db_media.title)
+                continue
+        if app_settings.wait_for_media:
+            if check_folder:
+                if not db_media.folder_path:
+                    skipped_titles["media_not_found"].append(db_media.title)
+                    continue
+                if not FilesHandler.check_media_exists(db_media.folder_path):
+                    skipped_titles["media_not_found"].append(db_media.title)
+                    continue
         media_trailer_list.append(db_media)
 
     # Log skipped media titles

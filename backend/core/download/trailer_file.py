@@ -191,18 +191,26 @@ def move_trailer_to_folder(
         raise FolderNotFoundError(folder_path=media.folder_path)
 
     # Get the destination path, create subfolder if enabled
-    if profile.folder_enabled:
-        folder_name = profile.folder_name.strip()
-        if not folder_name:
-            logger.debug(
-                "Folder name is empty, using default folder name: 'Trailers'"
-            )
-            folder_name = "Trailers"
-        # Create a separate folder for trailers if enabled
-        dst_folder_path = os.path.join(media.folder_path, folder_name)
+    if profile.custom_folder == "{media_folder}":
+        if profile.folder_enabled:
+            folder_name = profile.folder_name.strip()
+            if not folder_name:
+                logger.debug(
+                    "Folder name is empty, using default folder name:"
+                    " 'Trailers'"
+                )
+                folder_name = "Trailers"
+            # Create a separate folder for trailers if enabled
+            dst_folder_path = os.path.join(media.folder_path, folder_name)
+        else:
+            # Else, move the trailer to the media folder
+            dst_folder_path = media.folder_path
     else:
-        # Else, move the trailer to the media folder
-        dst_folder_path = media.folder_path
+        # Format the custom folder path
+        title_opts = media.model_dump()
+        title_opts["media_folder"] = media.folder_path
+        dst_folder_path = profile.custom_folder.format(**title_opts)
+
     # Get destination permissions
     dst_permissions = get_folder_permissions(dst_folder_path)
 

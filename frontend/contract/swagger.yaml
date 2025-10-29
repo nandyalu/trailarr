@@ -3332,6 +3332,22 @@ components:
           type: string
           title: Ytdlp Extra Options
           default: ''
+        stop_monitoring:
+          type: boolean
+          title: Stop Monitoring
+          default: true
+        is_trailer:
+          type: boolean
+          title: Is Trailer
+          default: true
+        custom_folder:
+          type: string
+          title: Custom Folder
+          default: '{media_folder}'
+        notify_plex:
+          type: boolean
+          title: Notify Plex
+          default: false
         id:
           anyOf:
             - type: integer
@@ -3441,6 +3457,22 @@ components:
           type: string
           title: Ytdlp Extra Options
           default: ''
+        stop_monitoring:
+          type: boolean
+          title: Stop Monitoring
+          default: true
+        is_trailer:
+          type: boolean
+          title: Is Trailer
+          default: true
+        custom_folder:
+          type: string
+          title: Custom Folder
+          default: '{media_folder}'
+        notify_plex:
+          type: boolean
+          title: Notify Plex
+          default: false
         id:
           type: integer
           title: Id
