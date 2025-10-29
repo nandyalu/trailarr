@@ -37,7 +37,7 @@
       <app-text-setting
         name="Priority"
         description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 1000."
-        descriptionExtra="When multiple profiles match, the one with the highest priority will be used."
+        descriptionExtra="When multiple profiles match, the one with the highest priority will be used first."
         [isNumberType]="true"
         [isLongInput]="false"
         [placeholder]="'Priority'"
@@ -47,6 +47,21 @@
         [value]="profile()?.priority ?? 0"
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('priority', $event)"
+      />
+      <app-options-setting
+        name="Trailer Profile"
+        description="Mark the downloaded file as a trailer."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.is_trailer"
+        (optionChange)="profileService.updateSetting('is_trailer', $event)"
+      />
+      <app-options-setting
+        name="Stop Monitoring"
+        description="Stop monitoring media that use this profile after successful download."
+        descriptionExtra="Set this to 'false' for non-trailer Profiles and 'true' for trailer Profiles."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.stop_monitoring"
+        (optionChange)="profileService.updateSetting('stop_monitoring', $event)"
       />
     </div>
   </details>
@@ -96,6 +111,19 @@
         [value]="profile()?.folder_name ?? ''"
         [disabled]="!profile()?.folder_enabled"
         (onSubmit)="profileService.updateSetting('folder_name', $event)"
+      />
+      <app-text-setting
+        name="Custom Save Folder Path"
+        description="Custom path to save trailer file."
+        descriptionExtra="Default is '{media_folder}'. Use this to save downloaded trailers to a different location."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Custom Save Folder Path'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="100"
+        [value]="profile()?.custom_folder ?? ''"
+        (onSubmit)="profileService.updateSetting('custom_folder', $event)"
       />
       <app-options-setting
         name="Embed Metadata"
