@@ -34,22 +34,22 @@ def _is_valid_media(
     """Check if a media item is valid for downloading."""
     if check_folder:
         if db_media.folder_path is None:
-            skipped_titles["missing_folder_path"].append(db_media.title)
+            # skipped_titles["missing_folder_path"].append(db_media.title)
             return False
 
         if not FilesHandler.check_folder_exists(db_media.folder_path):
-            skipped_titles["missing_folder_path"].append(db_media.title)
+            # skipped_titles["missing_folder_path"].append(db_media.title)
             return False
 
     if not app_settings.wait_for_media:
         return True
 
     if not db_media.folder_path:
-        skipped_titles["media_not_found"].append(db_media.title)
+        # skipped_titles["media_not_found"].append(db_media.title)
         return False
 
     if not FilesHandler.check_media_exists(db_media.folder_path):
-        skipped_titles["media_not_found"].append(db_media.title)
+        # skipped_titles["media_not_found"].append(db_media.title)
         return False
 
     return True
