@@ -91,6 +91,38 @@ This setting allows you to enable or disable the folder creation for the trailer
 This setting allows you to specify the name of the folder where the trailer files will be saved. If `Folder Enabled` is set to `false`, this setting will be ignored.
 
 
+## Custom Save Folder Path
+
+| Type   | Required | Default        | Valid Values                           |
+|:------:|:--------:|:--------------:|:--------------------------------------:|
+| String | No       | {media_folder} | Any valid file path                    |
+
+This setting allows you to specify a custom save path for the trailer files. Default is `{media_folder}`, which saves the trailers in the same folder as the media item.
+
+You can use the following placeholders in the custom save folder path:
+
+| Placeholder          | Description                                                                                                   |
+|---------------------:|:--------------------------------------------------------------------------------------------------------------|
+| clean_title          | Cleaned title of the media. Eg: 'thematrix'                                                                   |
+| imdb_id              | IMDB ID of the media. Eg: 'tt0133093'                                                                         |
+| is_movie             | 'movie' if the media is a movie, 'series' if the media is a series.                                           |
+| language             | Language of the media in Radarr/Sonarr. Eg: 'English'                                                         |
+| media_filename       | Filename of the media, Movies only, Series will empty. Eg: 'The.Matrix.1999.1080p.BluRay.x264.DTS-FGT'        |
+| media_folder         | Folder path of the media item. Eg: '/media/movies/The Matrix (1999)'                                          |
+| studio               | Studio of the media. Eg: 'Village Roadshow Pictures'                                                          |
+| title                | Title of the media. Eg: 'The Matrix'                                                                          |
+| title_slug           | TMDB ID for Movies and a hash seperated title for Series. Eg: '603' (movie) or 'the-big-bang-theory' (series) |
+| txdb_id              | TMDB ID for Movies, TVDB ID for Series. Eg: '603'                                                             |
+| year                 | Year of the media. Eg: '1999'                                                                                 |
+| acodec               | Audio codec of the media. Eg: 'aac'                                                                           |
+| resolution           | Resolution of the media. Eg: '1080p'                                                                          |
+| vcodec               | Video codec of the media. Eg: 'h264'                                                                          |
+| youtube_id           | YouTube ID of the trailer. Eg: 'KbWtUJjMj3Y'                                                                  |
+
+!!! info
+    Filename will be cleaned to remove restricted characters `<>:"/\\|?*\x00-\x1F` to ensure compatibility with filesystems.
+
+
 ## Embed Metadata
 
 | Type    | Required | Default | Valid Values  |
