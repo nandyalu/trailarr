@@ -67,11 +67,15 @@ Trailarr uses profiles as follows:
 - When running the `Download Missing Trailers` task (which runs periodically). 
     - If no profiles are available, the task will not run.
     - Profiles with high priority will be used first.
-    - The task will use the first profile that matches all the filters for each media item.
+    - The task will find all profiles that match all the filters for each media item. Then it will start downloading videos for each Profile one by one (in order of priority) until a Profile with `Stop Monitoring = true` successfully downloads a trailer.
     - Media items that does not match any profiles will not be processed.
     - Media items that matches a profile but does not have a valid Media folder or `monitor` set to `false` will not be processed.
 
 The next sections will explain the settings and filters available in profiles. You can instead skip to the [Examples](examples.md) page to see some examples of profiles and how they can be used.
+
+
+!!! tip "Multiple Profiles - Multiple Downloads"
+    You can create multiple profiles to download multiple trailers for the same media item. For example, you can create one profile (with `Stop Monitoring = false`) to download a trailer in Spanish and another profile (with `Stop Monitoring = true`) to download an English trailer for the same movie/series and stop monitoring it afterwards.
 
 
 !!! help "Trailarr is evolving"

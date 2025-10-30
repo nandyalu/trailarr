@@ -38,6 +38,8 @@ This setting determines the order in which profile is applied when multiple prof
 
 This setting indicates whether the profile is intended for trailers. When set to `true`, the profile will be used specifically for downloading and processing trailers. When set to `false`, it will be used for other downloads (like extras).
 
+This setting will save the downloaded video id as the trailer id for the media after a successful download. So, if you are creating a profile to download additional videos (like extras or optional other language trailers), set this to `false`.
+
 ## Stop Monitoring
 
 | Type    | Required | Default | Valid Values  |

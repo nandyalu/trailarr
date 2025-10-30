@@ -6,7 +6,7 @@ Once your connections are set up:
 
 1.  **Initial Sync:** Trailarr will begin to sync media items from all your configured and enabled connections. This process involves fetching lists of your movies and series.
 2.  **Trailer Scan:** It will then scan your existing library (based on your path mappings) to see which trailers you already have.
-3.  **Magic Happens (Downloads):** Trailarr includes a scheduled task, "Download Missing Trailers," which typically runs every hour by default (this can often be configured in `Settings > Tasks`). This task will identify media items missing trailers (according to your profiles) and attempt to download them.
+3.  **Magic Happens (Downloads):** Trailarr includes a scheduled task, "Download Missing Trailers," which typically runs every hour by default (this can be configured in `Settings > General` by changing the `Monitor Interval`). This task will identify media items missing trailers (according to your profiles) and attempt to download them.
 
 
 ## How does Trailarr work
