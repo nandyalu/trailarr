@@ -317,11 +317,11 @@ def download_video(
         url (str): URL of the video
         file_path (str): Output file path template with %(ext)s
         profile (TrailerProfileRead): Trailer profile used for downloading
+    Returns:
+        str: The downloaded (and converted) video file path
     Raises:
         DownloadFailedError: Error while downloading video
         ConversionFailedError: Error while converting video
-    Returns:
-        str: Success message if the video is downloaded successfully
     """
     # try:
     # Get the file name from the file path

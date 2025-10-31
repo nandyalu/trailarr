@@ -24,20 +24,25 @@ def __update_media_status(
             id=media.id,
             monitor=True,
             status=MonitorStatus.DOWNLOADING,
-            yt_id=media.youtube_trailer_id,
         )
+        if profile.is_trailer:
+            # Save the youtube ID for trailers only
+            update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.DOWNLOADED:
-        monitor_status = True
+        _monitor = True
         if profile.stop_monitoring:
-            monitor_status = False
+            # Stop monitoring after download if set in profile
+            _monitor = False
         update = MediaUpdateDC(
             id=media.id,
-            monitor=monitor_status,
+            monitor=_monitor,
             status=MonitorStatus.DOWNLOADED,
             trailer_exists=media.trailer_exists or profile.is_trailer,
             downloaded_at=datetime.now(timezone.utc),
-            yt_id=media.youtube_trailer_id,
         )
+        if profile.is_trailer:
+            # Save the youtube ID for trailers only
+            update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.MISSING:
         update = MediaUpdateDC(
             id=media.id,
@@ -70,12 +75,9 @@ def __download_and_verify_trailer(
     tmp_dir = "/var/lib/trailarr/tmp"
     if not os.path.exists(tmp_dir):
         tmp_dir = "/app/tmp"
-    tmp_output_file = f"{tmp_dir}/{media.id}-trailer.%(ext)s"
-    output_file = download_video(trailer_url, tmp_output_file, profile)
-    tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
-    if not trailer_file.verify_download(
-        tmp_output_file, output_file, media.title, profile
-    ):
+    output_file = f"{tmp_dir}/{media.id}-trailer.{profile.file_format}"
+    output_file = download_video(trailer_url, output_file, profile)
+    if not trailer_file.verify_download(output_file, media.title, profile):
         raise DownloadFailedError("Trailer verification failed")
     if profile.remove_silence:
         output_file = video_analysis.remove_silence_at_end(output_file)

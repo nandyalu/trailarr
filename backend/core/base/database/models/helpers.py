@@ -44,7 +44,7 @@ class MediaReadDC(AppSQLModel):
     trailer_exists: bool
 
 
-@dataclass(eq=False, frozen=True, repr=False, slots=True)
+@dataclass(eq=False, repr=False, slots=True)
 class MediaUpdateDC:
     id: int
     monitor: bool

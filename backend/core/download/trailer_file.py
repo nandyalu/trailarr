@@ -181,17 +181,18 @@ def move_trailer_to_folder(
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
         raise FileNotFoundError(f"Trailer file not found at: {src_path}")
-    # Check if media folder path exists
-    if not media.folder_path:
-        raise FolderPathEmptyError(
-            "Folder path is empty or not set for media:"
-            f" {media.title} [{media.id}]"
-        )
-    if not os.path.exists(media.folder_path):
-        raise FolderNotFoundError(folder_path=media.folder_path)
 
     # Get the destination path, create subfolder if enabled
     if profile.custom_folder == "{media_folder}":
+        # If custom folder is set to media folder, use media folder path
+        # Check if media folder path exists
+        if not media.folder_path:
+            raise FolderPathEmptyError(
+                "Folder path is empty or not set for media:"
+                f" {media.title} [{media.id}]"
+            )
+        if not os.path.exists(media.folder_path):
+            raise FolderNotFoundError(folder_path=media.folder_path)
         if profile.folder_enabled:
             folder_name = profile.folder_name.strip()
             if not folder_name:
@@ -209,6 +210,14 @@ def move_trailer_to_folder(
         # Format the custom folder path
         title_opts = media.model_dump()
         title_opts["media_folder"] = media.folder_path
+        # Replace the media filename with the filename without extension
+        _filename_wo_ext, _ = os.path.splitext(media.media_filename)
+        title_opts["media_filename"] = _filename_wo_ext
+        title_opts["youtube_id"] = media.youtube_trailer_id
+        title_opts["resolution"] = f"{profile.video_resolution}p"
+        title_opts["vcodec"] = profile.video_format
+        title_opts["acodec"] = profile.audio_format
+        title_opts["ext"] = profile.file_format
         dst_folder_path = profile.custom_folder.format(**title_opts)
 
     # Get destination permissions
@@ -261,17 +270,15 @@ def move_trailer_to_folder(
 
 
 def verify_download(
-    tmp_output_file: str,
-    output_file: str,
+    file_path: str,
     title: str,
     profile: TrailerProfileRead,
 ) -> bool:
     """Verify if the trailer is downloaded successfully. \n
     Also checks if the trailer has audio and video streams. \n
     Args:
-        tmp_output_file (str): Temporary output file path.
-        output_file (str): Output file path.
-        title (str): Title of the media.
+        file_path (str): Path of the trailer file to verify.
+        title (str): Title of the media (for logging purposes).
         profile (TrailerProfileRead): Trailer Profile used to download. \n
     Returns:
         bool: True if trailer is downloaded successfully, False otherwise."""
@@ -279,20 +286,20 @@ def verify_download(
     # This check is to ensure that correct file is downloaded
     # and not a partial file like a video only or audio only file
     # which wouldn't match the actual file extension
-    if not output_file or not os.path.exists(tmp_output_file):
+    if not file_path or not os.path.exists(file_path):
         trailer_downloaded = False
     else:
         # Verify the trailer has audio and video streams
         trailer_downloaded = video_analysis.verify_trailer_streams(
-            output_file, profile.min_duration, profile.max_duration
+            file_path, profile.min_duration, profile.max_duration
         )
         if not trailer_downloaded:
             logger.debug(
                 f"Trailer has either no audio or video streams: {title}"
             )
-            logger.debug(f"Deleting failed trailer file: {output_file}")
+            logger.debug(f"Deleting failed trailer file: {file_path}")
             try:
-                os.remove(output_file)
+                os.remove(file_path)
             except Exception as e:
                 logger.exception(f"Failed to delete trailer file: {e}")
     return trailer_downloaded
