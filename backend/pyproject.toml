@@ -5,43 +5,39 @@ description = "railarr is a Docker application to download and manage trailers f
 readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
-    "aiofiles==24.1.0",
-    "aiohttp==3.12.15",
+    "aiofiles==25.1.0",
+    "aiohttp==3.13.2",
     "aiosqlite==0.21.0",
-    "alembic==1.16.5",
+    "alembic==1.17.1",
     "apscheduler==3.11.0",
     "async-lru==2.0.5",
-    "bcrypt==4.3.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.116.1",
-    "pillow==11.3.0",
-    "sqlmodel==0.0.24",
-    "yt-dlp[curl-cffi,default]==2025.8.27",
+    "bcrypt==5.0.0",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.120.2",
+    "pillow==12.0.0",
+    "sqlmodel==0.0.27",
+    "yt-dlp[curl-cffi,default]==2025.10.22",
 ]
 
 [dependency-groups]
 dev = [
     "aioresponses==0.7.8",
-    "hypothesis==6.138.7",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.18",
-    "pytest==8.4.1",
-    "pytest-asyncio==1.1.0",
-    "pytest-cov==6.2.1",
-    "schemathesis==4.1.3",
+    "mkdocs-glightbox==0.5.2",
+    "mkdocs-material==9.6.22",
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "pytest-cov==7.0.0",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-github-changelog==0.1.0",
-    "mkdocs-glightbox==0.4.0",
-    "mkdocs-material==9.6.18",
+    "mkdocs-glightbox==0.5.2",
+    "mkdocs-material==9.6.22",
 ]
 testing = [
     "aioresponses==0.7.8",
-    "hypothesis==6.138.7",
-    "pytest==8.4.1",
-    "pytest-asyncio==1.1.0",
-    "pytest-cov==6.2.1",
-    "schemathesis==4.1.3",
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "pytest-cov==7.0.0",
 ]

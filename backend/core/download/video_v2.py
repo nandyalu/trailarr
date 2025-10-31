@@ -137,6 +137,26 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     return _options
 
 
+def _find_downloaded_file(file_path: str) -> str | None:
+    """Find the downloaded file with the given file path.\n
+    File extension should be one of:
+        `.avi`, `.mkv`, `.mp4`, `.webm`
+    Args:
+        file_path (str): Output file path template with %(ext)s
+    Returns:
+        str|None: The downloaded file path if found, None otherwise
+    """
+    dir_name = os.path.dirname(file_path)
+    base_name = os.path.basename(file_path).replace("%(ext)s", "")
+    VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
+
+    if os.path.exists(dir_name):
+        for file in os.listdir(dir_name):
+            if file.startswith(base_name) and file.endswith(VIDEO_EXTENSIONS):
+                return os.path.join(dir_name, file)
+    return None
+
+
 def _download_with_ytdlp(
     url: str, file_path: str, profile: TrailerProfileRead
 ) -> str:
@@ -193,6 +213,11 @@ def _download_with_ytdlp(
             msg = f"yt-dlp command failed with exit code {result.returncode}"
             raise DownloadFailedError(f"Error downloading video. {msg}")
 
+        # Find the downloaded file
+        downloaded_file = _find_downloaded_file(file_path)
+        if not downloaded_file:
+            raise DownloadFailedError("Downloaded file not found")
+
     except subprocess.TimeoutExpired:
         msg = "yt-dlp download timed out after 15 minutes"
         raise DownloadFailedError(msg)
@@ -201,8 +226,7 @@ def _download_with_ytdlp(
         raise DownloadFailedError(msg)
 
     logger.info("Video downloaded successfully")
-    return file_path.replace("%(ext)s", profile.file_format)
-    # return "Video downloaded successfully"
+    return downloaded_file
 
 
 def _convert_video(
@@ -293,11 +317,11 @@ def download_video(
         url (str): URL of the video
         file_path (str): Output file path template with %(ext)s
         profile (TrailerProfileRead): Trailer profile used for downloading
+    Returns:
+        str: The downloaded (and converted) video file path
     Raises:
         DownloadFailedError: Error while downloading video
         ConversionFailedError: Error while converting video
-    Returns:
-        str: Success message if the video is downloaded successfully
     """
     # try:
     # Get the file name from the file path
@@ -313,15 +337,11 @@ def download_video(
     logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
 
     # Add the file extension from download file to the output file
-    converted_file_path = file_path.replace(
-        "%(ext)s", download_file_path.split(".")[-1]
-    )
+    converted_file_path = file_path.replace("%(ext)s", profile.file_format)
+
     # Convert the video to the desired format
     _convert_video(profile, download_file_path, converted_file_path)
     logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
     os.remove(download_file_path)
-    # except Exception as e:
-    #     logger.error(f"Error downloading video: {e}")
-    #     return ""
     logger.info("Video download and conversion completed successfully")
     return converted_file_path

@@ -14,7 +14,9 @@ from exceptions import DownloadFailedError
 logger = ModuleLogger("TrailersDownloader")
 
 
-def __update_media_status(media: MediaRead, type: MonitorStatus):
+def __update_media_status(
+    media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
+):
     """Update the media status in the database."""
     db_manager = MediaDatabaseManager()
     if type == MonitorStatus.DOWNLOADING:
@@ -22,17 +24,25 @@ def __update_media_status(media: MediaRead, type: MonitorStatus):
             id=media.id,
             monitor=True,
             status=MonitorStatus.DOWNLOADING,
-            yt_id=media.youtube_trailer_id,
         )
+        if profile.is_trailer:
+            # Save the youtube ID for trailers only
+            update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.DOWNLOADED:
+        _monitor = True
+        if profile.stop_monitoring:
+            # Stop monitoring after download if set in profile
+            _monitor = False
         update = MediaUpdateDC(
             id=media.id,
-            monitor=False,
+            monitor=_monitor,
             status=MonitorStatus.DOWNLOADED,
-            trailer_exists=True,
+            trailer_exists=media.trailer_exists or profile.is_trailer,
             downloaded_at=datetime.now(timezone.utc),
-            yt_id=media.youtube_trailer_id,
         )
+        if profile.is_trailer:
+            # Save the youtube ID for trailers only
+            update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.MISSING:
         update = MediaUpdateDC(
             id=media.id,
@@ -65,12 +75,9 @@ def __download_and_verify_trailer(
     tmp_dir = "/var/lib/trailarr/tmp"
     if not os.path.exists(tmp_dir):
         tmp_dir = "/app/tmp"
-    tmp_output_file = f"{tmp_dir}/{media.id}-trailer.%(ext)s"
-    output_file = download_video(trailer_url, tmp_output_file, profile)
-    tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
-    if not trailer_file.verify_download(
-        tmp_output_file, output_file, media.title, profile
-    ):
+    output_file = f"{tmp_dir}/{media.id}-trailer.{profile.file_format}"
+    output_file = download_video(trailer_url, output_file, profile)
+    if not trailer_file.verify_download(output_file, media.title, profile):
         raise DownloadFailedError("Trailer verification failed")
     if profile.remove_silence:
         output_file = video_analysis.remove_silence_at_end(output_file)
@@ -114,12 +121,12 @@ async def download_trailer(
         raise DownloadFailedError(f"No trailer found for {media.title}")
 
     try:
-        __update_media_status(media, MonitorStatus.DOWNLOADING)
+        __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
         # Download the trailer and verify
         output_file = __download_and_verify_trailer(media, video_id, profile)
         # Move the trailer to the media folder (create subfolder if needed)
         trailer_file.move_trailer_to_folder(output_file, media, profile)
-        __update_media_status(media, MonitorStatus.DOWNLOADED)
+        __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"
             f" from ({video_id})"
@@ -129,7 +136,7 @@ async def download_trailer(
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
-        __update_media_status(media, MonitorStatus.MISSING)
+        __update_media_status(media, MonitorStatus.MISSING, profile)
         if retry_count > 0:
             logger.info(
                 f"Retrying download for {media.title}... ({3 - retry_count}/3)"
