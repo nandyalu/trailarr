@@ -76,6 +76,7 @@ async def download_missing_trailers() -> None:
 
     successful_downloads = 0
     skipped_items = 0
+    processed_media_ids = set()  # Track processed media to avoid reprocessing
 
     while True:
         db_manager = MediaDatabaseManager()
@@ -102,6 +103,12 @@ async def download_missing_trailers() -> None:
         matching_profiles_for_media = []
 
         for db_media in db_media_list:
+            # Skip media that already have trailers
+            if db_media.trailer_exists:
+                continue
+            # Skip media that was already processed in this run
+            if db_media.id in processed_media_ids:
+                continue
             matching_profiles = _find_matching_profiles(
                 db_media, enabled_profiles
             )
@@ -113,6 +120,9 @@ async def download_missing_trailers() -> None:
         if not media_to_process:
             logger.info("No more media items to process.")
             break
+
+        # Mark this media as processed
+        processed_media_ids.add(media_to_process.id)
 
         # Process the found media item
         downloads, skips = await _process_single_media_item(
