@@ -81,6 +81,7 @@ def get_trailer_filename(
     # Replace the media filename with the filename without extension
     _filename_wo_ext, _ = os.path.splitext(media.media_filename)
     title_opts["media_filename"] = _filename_wo_ext
+    title_opts["is_movie"] = "movie" if media.is_movie else "series"
     title_opts["youtube_id"] = media.youtube_trailer_id
     title_opts["resolution"] = f"{profile.video_resolution}p"
     title_opts["vcodec"] = profile.video_format
@@ -213,6 +214,7 @@ def move_trailer_to_folder(
         # Replace the media filename with the filename without extension
         _filename_wo_ext, _ = os.path.splitext(media.media_filename)
         title_opts["media_filename"] = _filename_wo_ext
+        title_opts["is_movie"] = "movie" if media.is_movie else "series"
         title_opts["youtube_id"] = media.youtube_trailer_id
         title_opts["resolution"] = f"{profile.video_resolution}p"
         title_opts["vcodec"] = profile.video_format
