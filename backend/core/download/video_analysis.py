@@ -205,7 +205,6 @@ def get_silence_timestamps(
         timestamps (tuple[float|None, float|None]): Silence start and end timestamps \
             if found, None otherwise.
     """
-    # time = datetime.now()
     logger.debug(f"Getting silence timestamps for: {file_path}")
     try:
         # Get silence timestamps using ffmpeg silencedetect filter
@@ -227,10 +226,21 @@ def get_silence_timestamps(
         )
         silence_start = None
         silence_end = None
+        duration = None
         logger.debug(
             f"Silence detection completed for: {file_path}, parsing results..."
         )
         for line in result.stderr.split("\n"):
+            line = line.lower().strip()
+            if duration is None and "duration" in line:
+                duration_match = re.search(
+                    r"duration: (\d+):(\d+):(\d+\.\d+)", line
+                )
+                if duration_match:
+                    hours = int(duration_match.group(1))
+                    minutes = int(duration_match.group(2))
+                    seconds = float(duration_match.group(3))
+                    duration = (hours * 3600) + (minutes * 60) + seconds
             if "silence_start" in line:
                 silence_start = float(
                     re.search(r"silence_start: (\d+\.\d+)", line).group(1)  # type: ignore
@@ -239,23 +249,38 @@ def get_silence_timestamps(
                 silence_end = float(
                     re.search(r"silence_end: (\d+\.\d+)", line).group(1)  # type: ignore
                 )
-            if silence_start is not None and silence_end is not None:
-                logger.debug(
-                    "Silence detected at end of video. "
-                    f"Timestamps Start: {silence_start}, End: {silence_end}"
-                )
-                break
+        if not silence_start or not silence_end or not duration:
+            logger.debug(f"No silence detected in the video: {file_path}")
+            return None, None
+
+        # If silence is not found within the last 30 seconds, set silence timestamps to None
+        if silence_end < duration - 30.0:
+            logger.debug(
+                "Silence end timestamp is not within the last 30 seconds of"
+                f" the video: {file_path}. Ignoring detected silence."
+            )
+            return None, None
+
         # Add 2 seconds to silence start to avoid cutting the audio abruptly
-        silence_start = (
-            silence_start + 2.0 if silence_start is not None else None
+        silence_start = silence_start + 2.0
+
+        # If detected silence is less than 3 seconds from the end, ignore it
+        if duration - silence_start < 3.0:
+            logger.debug(
+                "Silence end timestamp is less than 3 seconds from the"
+                f" end of the video: {file_path}. Ignoring detected silence."
+            )
+            return None, None
+
+        logger.debug(
+            f"Silence detected from {silence_start} to {silence_end} "
+            f"in video: {file_path} of duration {duration}"
         )
         return silence_start, silence_end
     except Exception as e:
         logger.exception(
             f"Exception while detecting silence in video: {str(e)}"
         )
-    # timeTook = datetime.now() - time
-    # print(f"Time took: {timeTook}")
     return None, None
 
 
