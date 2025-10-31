@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.5.0
+  version: 0.5.2
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -3336,10 +3336,6 @@ components:
           type: boolean
           title: Stop Monitoring
           default: true
-        is_trailer:
-          type: boolean
-          title: Is Trailer
-          default: true
         custom_folder:
           type: string
           title: Custom Folder
@@ -3460,10 +3456,6 @@ components:
         stop_monitoring:
           type: boolean
           title: Stop Monitoring
-          default: true
-        is_trailer:
-          type: boolean
-          title: Is Trailer
           default: true
         custom_folder:
           type: string
