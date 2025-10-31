@@ -99,7 +99,6 @@ class _TrailerProfileBase(AppSQLModel):
     )
     # Filter id to apply to select this profile
     stop_monitoring: bool = True
-    is_trailer: bool = True
     custom_folder: str = "{media_folder}"
     notify_plex: bool = False
 
@@ -184,7 +183,6 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "embed_metadata",
             "remove_silence",
             "stop_monitoring",
-            "is_trailer",
             "notify_plex",
         ]
 
@@ -209,7 +207,6 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "embed_metadata",
         "remove_silence",
         "stop_monitoring",
-        "is_trailer",
         "notify_plex",
         mode="before",
     )
