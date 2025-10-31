@@ -25,23 +25,23 @@ def __update_media_status(
             monitor=True,
             status=MonitorStatus.DOWNLOADING,
         )
-        if profile.is_trailer:
-            # Save the youtube ID for trailers only
+        if profile.stop_monitoring:
+            # Save the youtube ID for trailers only (stop_monitoring = True)
             update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.DOWNLOADED:
         _monitor = True
         if profile.stop_monitoring:
-            # Stop monitoring after download if set in profile
+            # Stop monitoring after download if set in profile and save youtube ID
             _monitor = False
         update = MediaUpdateDC(
             id=media.id,
             monitor=_monitor,
             status=MonitorStatus.DOWNLOADED,
-            trailer_exists=media.trailer_exists or profile.is_trailer,
+            trailer_exists=profile.stop_monitoring,
             downloaded_at=datetime.now(timezone.utc),
         )
-        if profile.is_trailer:
-            # Save the youtube ID for trailers only
+        if profile.stop_monitoring:
+            # Save the youtube ID for trailers only (stop_monitoring = True)
             update.yt_id = media.youtube_trailer_id
     elif type == MonitorStatus.MISSING:
         update = MediaUpdateDC(
