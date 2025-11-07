@@ -1,8 +1,8 @@
-"""add download model
+"""Add download model
 
 Revision ID: 19d5fca9612f
-Revises: 178c6a8ea923
-Create Date: 2025-07-18 07:35:46.433926
+Revises: b213e0443c1b
+Create Date: 2025-11-06 21:15:46.433926
 
 """
 
@@ -14,10 +14,9 @@ import sqlmodel
 import sqlmodel.sql.sqltypes
 from app_logger import ModuleLogger
 
-
 # revision identifiers, used by Alembic.
 revision: str = "19d5fca9612f"
-down_revision: Union[str, None] = "178c6a8ea923"
+down_revision: Union[str, None] = "b213e0443c1b"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -72,7 +71,7 @@ def upgrade() -> None:
             name=op.f("fk_download_media_id_media"),
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint("id", name=op.f("download_pkc")),
+        sa.PrimaryKeyConstraint("id", name=op.f("downloads_pkc")),
     )
     # ### end Alembic commands ###
 
