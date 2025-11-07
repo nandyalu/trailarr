@@ -1,14 +1,9 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
 
-from sqlalchemy.orm import Mapped
-from sqlmodel import Field, Relationship
+from sqlmodel import Field
 
 from core.base.database.models.base import AppSQLModel
-
-if TYPE_CHECKING:
-    from core.base.database.models.media import Media
 
 
 def get_current_time():
@@ -56,34 +51,6 @@ class Download(DownloadBase, table=True):
     media_id: int | None = Field(
         default=None, foreign_key="media.id", ondelete="CASCADE"
     )
-    
-    media: Mapped["Media"] = Relationship(back_populates="downloads")
-
-    @classmethod
-    def model_validate(
-        cls,
-        obj: "Download | DownloadCreate | DownloadRead | dict[str, Any]",
-        *,
-        strict: bool | None = None,
-        from_attributes: bool | None = None,
-        context: dict[str, Any] | None = None,
-        update: dict[str, Any] | None = None,
-    ) -> "Download":
-        """
-        Validate the Download model. \n
-        This method ensures that the nested models are validated
-        correctly before validating the Download itself.
-        """
-        if isinstance(obj, cls):
-            # If obj is already a Download instance, return it
-            return obj
-        return super().model_validate(
-            obj,
-            strict=strict,
-            from_attributes=from_attributes,
-            context=context,
-            update=update,
-        )
 
 
 class DownloadCreate(DownloadBase):

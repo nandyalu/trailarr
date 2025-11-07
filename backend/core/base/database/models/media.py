@@ -1,17 +1,11 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
 
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
-from sqlmodel import Field, Integer, Relationship
+from sqlmodel import Field, Integer
 
 from core.base.database.models.base import AppSQLModel
-from core.base.database.models.download import (
-    Download,
-    DownloadCreate,
-    DownloadRead,
-)
 
 
 def get_current_time():
@@ -114,47 +108,6 @@ class Media(MediaBase, table=True):
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
 
-    downloads: list[Download] = Relationship(
-        back_populates="media", cascade_delete=True
-    )
-
-    # # Overriding the model_validate method to ensure
-    # # that the Downloads are validated correctly.
-    # # This is necessary because the Media has nested models.
-    @classmethod
-    def model_validate(
-        cls,
-        obj: "Media | MediaCreate | MediaRead | dict[str, Any]",
-        *,
-        strict: bool | None = None,
-        from_attributes: bool | None = None,
-        context: dict[str, Any] | None = None,
-        update: dict[str, Any] | None = None,
-    ) -> "Media":
-        """
-        Validate the Media model. \n
-        This method ensures that the nested models are validated
-        correctly before validating the Media itself.
-        """
-        if isinstance(obj, dict):
-            # If obj is a dict, convert it to MediaCreate
-            obj = MediaCreate.model_validate(obj)
-        db_downloads: list[Download] = []
-        if isinstance(obj, cls):
-            # If obj is already a Media instance, return it
-            db_downloads = obj.downloads
-        else:
-            db_downloads = [Download.model_validate(d) for d in obj.downloads]
-        _validated_obj = super().model_validate(
-            obj.model_dump(),
-            strict=strict,
-            from_attributes=from_attributes,
-            context=context,
-            update=update,
-        )
-        _validated_obj.downloads = db_downloads
-        return _validated_obj
-
 
 class MediaCreate(MediaBase):
     """Media model for creating a new media objects. \n
@@ -169,7 +122,7 @@ class MediaCreate(MediaBase):
     - arr_monitored: False
     """
 
-    downloads: list[DownloadCreate] = []
+    pass
 
 
 class MediaRead(MediaBase):
@@ -179,7 +132,6 @@ class MediaRead(MediaBase):
     added_at: datetime
     updated_at: datetime
     downloaded_at: datetime | None
-    downloads: list[DownloadRead] = []
 
 
 class MediaUpdate(MediaBase):
