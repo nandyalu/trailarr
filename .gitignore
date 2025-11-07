@@ -5,7 +5,7 @@ trailarr.db
 !frontend-build/
 git-filter-repo
 restart_stack.py
-config/logs/*.db
+config/
 backend/frontend/
 
 ## GITHUB GENERATED
