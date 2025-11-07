@@ -1,10 +1,14 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from sqlmodel import Field
+from sqlalchemy.orm import Mapped
+from sqlmodel import Field, Relationship
 
 from core.base.database.models.base import AppSQLModel
+
+if TYPE_CHECKING:
+    from core.base.database.models.media import Media
 
 
 def get_current_time():
@@ -52,6 +56,8 @@ class Download(DownloadBase, table=True):
     media_id: int | None = Field(
         default=None, foreign_key="media.id", ondelete="CASCADE"
     )
+    
+    media: Mapped["Media"] = Relationship(back_populates="downloads")
 
     @classmethod
     def model_validate(

@@ -114,7 +114,9 @@ class Media(MediaBase, table=True):
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
 
-    downloads: list[Download] = Relationship(cascade_delete=True)
+    downloads: list[Download] = Relationship(
+        back_populates="media", cascade_delete=True
+    )
 
     # # Overriding the model_validate method to ensure
     # # that the Downloads are validated correctly.
