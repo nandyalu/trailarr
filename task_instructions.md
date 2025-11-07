@@ -1,7 +1,7 @@
 # Trailer Download Tracking Implementation Task
 
 ## Objective
-Implement a trailer download tracking system for the Trailarr application that records metadata about downloaded trailers in a database, allowing users to view download history and details for each media item.
+Implement a trailer download tracking system for the Trailarr application that records comprehensive metadata about downloaded trailers in a database, including video/audio stream information, allowing users to view detailed download history for each media item.
 
 ## Prerequisites
 - Start from the main branch (commit: f1b22b35030da9a142415d8d623c33b14c6a0001 or latest)
@@ -20,7 +20,8 @@ Create a new file with the following structure:
 from __future__ import annotations
 from datetime import datetime, timezone
 
-from sqlmodel import Field
+from sqlmodel import Field, JSON, Column
+from sqlalchemy import String
 
 from core.base.database.models.base import AppSQLModel
 
@@ -42,18 +43,19 @@ class DownloadBase(AppSQLModel):
     path: str
     file_name: str
     size: int
-    updated_at: datetime
-    resolution: str
-    video_format: str
-    audio_format: str
-    audio_channels: str
-    file_format: str
-    duration: int = 0
-    subtitles: str = "unk"
-    added_at: datetime = Field(default_factory=get_current_time)
-    profile_id: int
+    resolution: str  # e.g., "1080p", "2160p"
+    file_format: str  # e.g., "mp4", "mkv", "webm"
+    video_format: str  # e.g., "h264", "h265", "av1"
+    audio_format: str  # e.g., "aac", "ac3", "opus"
+    audio_language: str | None = None  # e.g., "eng", "tel"
+    subtitle_format: str | None = None  # e.g., "srt", "ass", or None
+    subtitle_language: str | None = None  # e.g., "eng", or None
+    duration: int = 0  # Duration in seconds
     youtube_id: str
     file_exists: bool = True
+    profile_name: str  # Name of the TrailerProfile used
+    added_at: datetime  # When trailer was downloaded (from file)
+    updated_at: datetime  # When file was last modified (from file)
 
 
 class Download(DownloadBase, table=True):
@@ -66,9 +68,7 @@ class Download(DownloadBase, table=True):
     """
     
     id: int | None = Field(default=None, primary_key=True)
-    media_id: int | None = Field(
-        default=None, foreign_key="media.id", ondelete="CASCADE"
-    )
+    media_id: int = Field(foreign_key="media.id", ondelete="CASCADE")
 
 
 class DownloadCreate(DownloadBase):
@@ -77,7 +77,7 @@ class DownloadCreate(DownloadBase):
     """
     
     id: int | None = None
-    media_id: int | None = None
+    media_id: int
 
 
 class DownloadRead(DownloadBase):
@@ -87,136 +87,30 @@ class DownloadRead(DownloadBase):
     
     id: int
     media_id: int
+
+
+class DownloadUpdate(AppSQLModel):
+    """
+    Model for updating Download.
+    Only updatable fields should be included.
+    """
+    
+    file_exists: bool | None = None
+    updated_at: datetime | None = None
 ```
 
 **Key Points:**
 - Keep it simple - no bidirectional relationships with Media model
 - Only `media_id` as foreign key with CASCADE delete
 - Use Python 3.13 type hints (`int | None`, not `Optional[int]`)
+- Includes comprehensive metadata: resolution, codecs, languages, duration
+- `profile_name` stores the TrailerProfile name used for download
+- `added_at` and `updated_at` extracted from file metadata
 
-### 2. Create Download Service (`backend/core/download/service.py`)
+### 2. Update VideoInfo Model (`backend/core/download/video_analysis.py`)
 
-Create a service to record new trailer downloads:
+**Update the VideoInfo class to include additional fields:**
 
-```python
-import os
-from datetime import datetime, timezone
-
-from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
-from core.base.database.models.download import DownloadCreate
-from core.download.video_analysis import get_media_info
-
-logger = ModuleLogger("DownloadService")
-
-
-async def record_new_trailer_download(
-    media_id: int,
-    profile_id: int,
-    file_path: str,
-    youtube_video_id: str,
-) -> None:
-    """
-    Records a new trailer download in the database.
-
-    Args:
-        media_id (int): The ID of the media.
-        profile_id (int): The ID of the profile used for the download.
-        file_path (str): The path to the downloaded file.
-        youtube_video_id (str): The YouTube video ID of the trailer.
-    """
-    logger.info(f"Recording new trailer download for media {media_id}")
-    try:
-        # Get file stats
-        file_stat = os.stat(file_path)
-
-        # Get media info
-        media_info = get_media_info(file_path)
-        if not media_info:
-            logger.error(f"Failed to get media info for {file_path}")
-            return
-
-        # Extract video and audio info
-        video_stream = next(
-            (s for s in media_info.streams if s.codec_type == "video"), None
-        )
-        audio_stream = next(
-            (s for s in media_info.streams if s.codec_type == "audio"), None
-        )
-        subtitle_streams = [
-            s.language for s in media_info.streams if s.codec_type == "subtitle"
-        ]
-
-        # Create download record
-        download = DownloadCreate(
-            path=file_path,
-            file_name=os.path.basename(file_path),
-            size=file_stat.st_size,
-            updated_at=datetime.fromtimestamp(
-                file_stat.st_mtime, tz=timezone.utc
-            ),
-            resolution=f"{video_stream.coded_width}x{video_stream.coded_height}"
-            if video_stream
-            else "N/A",
-            video_format=video_stream.codec_name if video_stream else "N/A",
-            audio_format=audio_stream.codec_name if audio_stream else "N/A",
-            audio_channels=str(audio_stream.audio_channels)
-            if audio_stream
-            else "N/A",
-            file_format=media_info.format_name,
-            duration=media_info.duration_seconds,
-            subtitles=",".join(subtitle_streams) or "unk",
-            added_at=datetime.now(timezone.utc),
-            profile_id=profile_id,
-            media_id=media_id,
-            youtube_id=youtube_video_id,
-            file_exists=True,
-        )
-
-        # Save to database
-        db_manager = MediaDatabaseManager()
-        db_manager.create_download(download)
-        logger.info(f"Successfully recorded new trailer download for media {media_id}")
-
-    except Exception as e:
-        logger.error(
-            f"Failed to record new trailer download for media {media_id}: {e}"
-        )
-```
-
-### 3. Update Database Manager (`backend/core/base/database/manager/base.py`)
-
-**Add import at the top:**
-```python
-from core.base.database.models.download import Download, DownloadCreate
-```
-
-**Add method at the end of the `MediaDatabaseManager` class:**
-```python
-@manage_session
-def create_download(
-    self,
-    download_create: DownloadCreate,
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Create a new download object in the database.\n
-    Args:
-        download_create (DownloadCreate): The download object to create.\n
-        _session (Session, Optional): A session to use for the database connection.\n
-            Default is None, in which case a new session will be created.\n
-    Returns:
-        None
-    """
-    db_download = Download.model_validate(download_create)
-    _session.add(db_download)
-    _session.commit()
-    return
-```
-
-### 4. Enhance VideoInfo for YouTube ID Extraction (`backend/core/download/video_analysis.py`)
-
-**Add `youtube_id` field to VideoInfo class:**
 ```python
 class VideoInfo(BaseModel):
     name: str
@@ -226,23 +120,28 @@ class VideoInfo(BaseModel):
     size: int = 0
     bitrate: str = "0 bps"
     streams: list[StreamInfo]
-    youtube_id: str | None = None  # ADD THIS LINE
+    youtube_id: str | None = None  # ADD THIS
+    created_at: datetime | None = None  # ADD THIS - file creation time
+    updated_at: datetime | None = None  # ADD THIS - file modification time
 ```
 
-**Update `get_media_info` function to extract YouTube ID:**
+**Update `get_media_info` function to extract these fields:**
 
 In the `entries_required` variable, add format_tags:
 ```python
 entries_required = (
     "format=format_name,duration,size,bit_rate :"
-    " format_tags=comment,description,synopsis,YouTube,youtube_id :"  # ADD THIS
+    " format_tags=comment,description,synopsis,YouTube,youtube_id,creation_time :"  # ADD THESE
     " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
     " : stream_tags=language,duration,name"
 )
 ```
 
-After parsing format info and before creating VideoInfo object, add YouTube ID extraction:
+After parsing format info and before creating VideoInfo object, add extraction:
 ```python
+import os
+from pathlib import Path
+
 format: dict[str, str] = info.get("format", {})
 format_tags: dict[str, str] = format.get("tags", {})
 
@@ -257,6 +156,20 @@ for tag_key in ["youtube_id", "YouTube", "comment", "description", "synopsis"]:
             youtube_id = match.group(1)
             break
 
+# Get file timestamps
+file_path_obj = Path(file_path)
+file_stat = file_path_obj.stat()
+created_at = datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc)
+updated_at = datetime.fromtimestamp(file_stat.st_mtime, tz=timezone.utc)
+
+# Alternatively, try to get creation_time from format tags
+creation_time_str = format_tags.get("creation_time")
+if creation_time_str:
+    try:
+        created_at = datetime.fromisoformat(creation_time_str.replace('Z', '+00:00'))
+    except:
+        pass  # Use file stat time if parsing fails
+
 # Create VideoInfo object
 video_info = VideoInfo(
     name=os.path.basename(file_path),
@@ -267,8 +180,411 @@ video_info = VideoInfo(
     bitrate=convert_bitrate(format.get("bit_rate", "0")),
     streams=[],
     youtube_id=youtube_id,  # ADD THIS
+    created_at=created_at,  # ADD THIS
+    updated_at=updated_at,  # ADD THIS
 )
 ```
+
+### 3. Create Separate Database Manager for Downloads
+
+Create a dedicated database manager structure for Download operations.
+
+**File: `backend/core/base/database/manager/download/__init__.py`**
+
+```python
+from .base import DownloadDatabaseManager
+
+__all__ = ["DownloadDatabaseManager"]
+```
+
+**File: `backend/core/base/database/manager/download/base.py`**
+
+```python
+from .create import DownloadCreateMixin
+from .read import DownloadReadMixin
+from .update import DownloadUpdateMixin
+from .delete import DownloadDeleteMixin
+
+
+class DownloadDatabaseManager(
+    DownloadCreateMixin,
+    DownloadReadMixin,
+    DownloadUpdateMixin,
+    DownloadDeleteMixin,
+):
+    """
+    Database manager for CRUD operations on Download objects.\n
+    Combines all download database operations from separate mixins.
+    """
+    
+    __model_name = "Download"
+```
+
+**File: `backend/core/base/database/manager/download/create.py`**
+
+```python
+from sqlmodel import Session
+
+from core.base.database.models.download import Download, DownloadCreate, DownloadRead
+from core.base.database.utils.engine import manage_session
+from app_logger import logger
+
+
+class DownloadCreateMixin:
+    """Mixin for create operations on Download objects."""
+    
+    @manage_session
+    def create(
+        self,
+        download_create: DownloadCreate,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> DownloadRead:
+        """Create a new download record in the database.\n
+        Args:
+            download_create (DownloadCreate): The download object to create.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+                Default is None, in which case a new session will be created.\n
+        Returns:
+            DownloadRead: The created download object.
+        """
+        try:
+            db_download = Download.model_validate(download_create)
+            _session.add(db_download)
+            _session.commit()
+            _session.refresh(db_download)
+            return DownloadRead.model_validate(db_download)
+        except Exception as e:
+            logger.error(f"Error creating download: {e}")
+            _session.rollback()
+            raise
+```
+
+**File: `backend/core/base/database/manager/download/read.py`**
+
+```python
+from sqlmodel import Session, select
+
+from core.base.database.models.download import Download, DownloadRead
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from app_logger import logger
+
+
+class DownloadReadMixin:
+    """Mixin for read operations on Download objects."""
+    
+    __model_name = "Download"
+    
+    @manage_session
+    def read(
+        self,
+        download_id: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> DownloadRead:
+        """Read a download by ID from the database.\n
+        Args:
+            download_id (int): The ID of the download to read.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            DownloadRead: The download object.
+        Raises:
+            ItemNotFoundError: If download not found.
+        """
+        db_download = _session.get(Download, download_id)
+        if not db_download:
+            raise ItemNotFoundError(self.__model_name, download_id)
+        return DownloadRead.model_validate(db_download)
+    
+    @manage_session
+    def read_all_for_media(
+        self,
+        media_id: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[DownloadRead]:
+        """Get all downloads for a specific media item.\n
+        Args:
+            media_id (int): The ID of the media to get downloads for.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            list[DownloadRead]: List of download objects for the media item.
+        """
+        statement = select(Download).where(Download.media_id == media_id)
+        downloads = _session.exec(statement).all()
+        return [DownloadRead.model_validate(d) for d in downloads]
+    
+    @manage_session
+    def read_all(
+        self,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> list[DownloadRead]:
+        """Get all downloads from the database.\n
+        Args:
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            list[DownloadRead]: List of all download objects.
+        """
+        statement = select(Download)
+        downloads = _session.exec(statement).all()
+        return [DownloadRead.model_validate(d) for d in downloads]
+```
+
+**File: `backend/core/base/database/manager/download/update.py`**
+
+```python
+from datetime import datetime, timezone
+from sqlmodel import Session
+
+from core.base.database.models.download import Download, DownloadUpdate, DownloadRead
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from app_logger import logger
+
+
+class DownloadUpdateMixin:
+    """Mixin for update operations on Download objects."""
+    
+    __model_name = "Download"
+    
+    @manage_session
+    def update(
+        self,
+        download_id: int,
+        download_update: DownloadUpdate,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> DownloadRead:
+        """Update a download in the database.\n
+        Args:
+            download_id (int): The ID of the download to update.\n
+            download_update (DownloadUpdate): The download update object.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            DownloadRead: The updated download object.
+        Raises:
+            ItemNotFoundError: If download not found.
+        """
+        db_download = _session.get(Download, download_id)
+        if not db_download:
+            raise ItemNotFoundError(self.__model_name, download_id)
+        
+        # Update only provided fields
+        update_data = download_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_download, key, value)
+        
+        _session.add(db_download)
+        _session.commit()
+        _session.refresh(db_download)
+        return DownloadRead.model_validate(db_download)
+    
+    @manage_session
+    def mark_as_deleted(
+        self,
+        download_id: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> DownloadRead:
+        """Mark a download as deleted (file no longer exists).\n
+        Args:
+            download_id (int): The ID of the download to mark as deleted.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            DownloadRead: The updated download object.
+        Raises:
+            ItemNotFoundError: If download not found.
+        """
+        update = DownloadUpdate(
+            file_exists=False,
+            updated_at=datetime.now(timezone.utc)
+        )
+        return self.update(download_id, update, _session=_session)
+```
+
+**File: `backend/core/base/database/manager/download/delete.py`**
+
+```python
+from sqlmodel import Session
+
+from core.base.database.models.download import Download
+from core.base.database.utils.engine import manage_session
+from exceptions import ItemNotFoundError
+from app_logger import logger
+
+
+class DownloadDeleteMixin:
+    """Mixin for delete operations on Download objects."""
+    
+    __model_name = "Download"
+    
+    @manage_session
+    def delete(
+        self,
+        download_id: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> None:
+        """Delete a download from the database.\n
+        Args:
+            download_id (int): The ID of the download to delete.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Raises:
+            ItemNotFoundError: If download not found.
+        """
+        db_download = _session.get(Download, download_id)
+        if not db_download:
+            raise ItemNotFoundError(self.__model_name, download_id)
+        
+        _session.delete(db_download)
+        _session.commit()
+    
+    @manage_session
+    def delete_all_for_media(
+        self,
+        media_id: int,
+        *,
+        _session: Session = None,  # type: ignore
+    ) -> int:
+        """Delete all downloads for a specific media item.\n
+        Args:
+            media_id (int): The ID of the media whose downloads to delete.\n
+            _session (Session, Optional): A session to use for the database connection.\n
+        Returns:
+            int: Number of downloads deleted.
+        """
+        from sqlmodel import select
+        
+        statement = select(Download).where(Download.media_id == media_id)
+        downloads = _session.exec(statement).all()
+        count = len(downloads)
+        
+        for download in downloads:
+            _session.delete(download)
+        
+        _session.commit()
+        return count
+```
+
+### 4. Create Download Service (`backend/core/download/service.py`)
+
+Create a service to record new trailer downloads with enhanced metadata extraction:
+
+```python
+import os
+from datetime import datetime, timezone
+
+from app_logger import ModuleLogger
+from core.base.database.manager.download import DownloadDatabaseManager
+from core.base.database.models.download import DownloadCreate
+from core.download.video_analysis import get_media_info
+
+logger = ModuleLogger("DownloadService")
+
+
+def get_resolution_label(width: int, height: int) -> str:
+    """Convert resolution dimensions to standard labels (e.g., 1080p, 2160p)."""
+    if height >= 2160:
+        return "2160p"  # 4K
+    elif height >= 1440:
+        return "1440p"  # 2K
+    elif height >= 1080:
+        return "1080p"  # Full HD
+    elif height >= 720:
+        return "720p"   # HD
+    elif height >= 480:
+        return "480p"   # SD
+    else:
+        return f"{height}p"
+
+
+async def record_new_trailer_download(
+    media_id: int,
+    profile_name: str,
+    file_path: str,
+    youtube_video_id: str,
+) -> None:
+    """
+    Records a new trailer download in the database with comprehensive metadata.
+
+    Args:
+        media_id (int): The ID of the media.
+        profile_name (str): The name of the TrailerProfile used for download.
+        file_path (str): The path to the downloaded file.
+        youtube_video_id (str): The YouTube video ID of the trailer.
+    """
+    logger.info(f"Recording new trailer download for media {media_id}")
+    try:
+        # Get media info using ffprobe
+        media_info = get_media_info(file_path)
+        if not media_info:
+            logger.error(f"Failed to get media info for {file_path}")
+            return
+
+        # Extract video stream info
+        video_stream = next(
+            (s for s in media_info.streams if s.codec_type == "video"), None
+        )
+        
+        # Extract audio stream info (prefer first audio stream)
+        audio_stream = next(
+            (s for s in media_info.streams if s.codec_type == "audio"), None
+        )
+        
+        # Extract subtitle stream info (if any)
+        subtitle_stream = next(
+            (s for s in media_info.streams if s.codec_type == "subtitle"), None
+        )
+
+        # Determine resolution label
+        resolution = "unknown"
+        if video_stream:
+            resolution = get_resolution_label(
+                video_stream.coded_width,
+                video_stream.coded_height
+            )
+
+        # Create download record with comprehensive metadata
+        download = DownloadCreate(
+            path=file_path,
+            file_name=os.path.basename(file_path),
+            size=media_info.size,
+            resolution=resolution,
+            file_format=media_info.format_name.split(',')[0],  # Get primary format
+            video_format=video_stream.codec_name if video_stream else "N/A",
+            audio_format=audio_stream.codec_name if audio_stream else "N/A",
+            audio_language=audio_stream.language if audio_stream and audio_stream.language else None,
+            subtitle_format=subtitle_stream.codec_name if subtitle_stream else None,
+            subtitle_language=subtitle_stream.language if subtitle_stream and subtitle_stream.language else None,
+            duration=media_info.duration_seconds,
+            youtube_id=youtube_video_id,
+            file_exists=True,
+            profile_name=profile_name,
+            media_id=media_id,
+            added_at=media_info.created_at or datetime.now(timezone.utc),
+            updated_at=media_info.updated_at or datetime.now(timezone.utc),
+        )
+
+        # Save to database using dedicated download manager
+        db_manager = DownloadDatabaseManager()
+        db_manager.create(download)
+        logger.info(f"Successfully recorded new trailer download for media {media_id}")
+
+    except Exception as e:
+        logger.error(
+            f"Failed to record new trailer download for media {media_id}: {e}"
+        )
+```
+
+**Key Changes from Original:**
+- Uses `DownloadDatabaseManager` instead of `MediaDatabaseManager`
+- Takes `profile_name` (string) instead of `profile_id` (int)
+- Extracts resolution as standard label (1080p, 2160p, etc.)
+- Extracts audio and subtitle language information
+- Uses `created_at` and `updated_at` from VideoInfo
+- More robust codec extraction from streams
 
 ### 5. Integrate Download Tracking in Trailer Download (`backend/core/download/trailer.py`)
 
@@ -290,10 +606,10 @@ try:
     final_file_path = trailer_file.move_trailer_to_folder(output_file, media, profile)  # CAPTURE RETURN VALUE
     __update_media_status(media, MonitorStatus.DOWNLOADED)
     
-    # ADD THIS BLOCK:
+    # ADD THIS BLOCK - Record the download with profile name:
     await record_new_trailer_download(
         media_id=media.id,
-        profile_id=profile.id,
+        profile_name=profile.name,  # Use profile.name instead of profile.id
         file_path=final_file_path,
         youtube_video_id=video_id,
     )
@@ -347,18 +663,19 @@ def upgrade() -> None:
         sa.Column("path", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("file_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("size", sa.Integer(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("resolution", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("file_format", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("video_format", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("audio_format", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("audio_channels", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("file_format", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("audio_language", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("subtitle_format", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("subtitle_language", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("duration", sa.Integer(), nullable=False),
-        sa.Column("subtitles", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("added_at", sa.DateTime(), nullable=False),
-        sa.Column("profile_id", sa.Integer(), nullable=False),
         sa.Column("youtube_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("file_exists", sa.Boolean(), nullable=False),
+        sa.Column("profile_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("added_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("media_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -390,6 +707,7 @@ def downgrade() -> None:
 **Important:** 
 - Set `down_revision` to `"b213e0443c1b"` (the latest migration in main branch)
 - Generate a unique revision ID (12 random alphanumeric characters)
+- Note the updated columns matching the new Download model structure
 
 ### 7. Testing
 
@@ -427,26 +745,32 @@ After implementation:
 - Each download contains metadata: resolution, codecs, duration, file size, etc.
 - CASCADE delete ensures orphaned downloads are cleaned up
 - Clean, maintainable code without complex relationships
+- Separate database operations for better organization
 
 ## File Summary
 
 ### New Files to Create:
-1. `backend/core/base/database/models/download.py` - Download model
-2. `backend/core/download/service.py` - Download recording service
-3. `backend/alembic/versions/20251107_HHMM-{id}_add_download_model.py` - Migration
-4. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.ts` - Downloads display component
-5. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.html` - Downloads template
-6. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.scss` - Downloads styles
+1. `backend/core/base/database/models/download.py` - Download model with comprehensive metadata
+2. `backend/core/base/database/manager/download/__init__.py` - Download manager package init
+3. `backend/core/base/database/manager/download/base.py` - Download manager base class
+4. `backend/core/base/database/manager/download/create.py` - Create operations mixin
+5. `backend/core/base/database/manager/download/read.py` - Read operations mixin
+6. `backend/core/base/database/manager/download/update.py` - Update operations mixin
+7. `backend/core/base/database/manager/download/delete.py` - Delete operations mixin
+8. `backend/core/download/service.py` - Download recording service
+9. `backend/alembic/versions/20251107_HHMM-{id}_add_download_model.py` - Migration
+10. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.ts` - Downloads display component
+11. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.html` - Downloads template
+12. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.scss` - Downloads styles
 
 ### Files to Modify:
-1. `backend/core/base/database/manager/base.py` - Add create_download method
-2. `backend/core/download/video_analysis.py` - Add YouTube ID extraction
-3. `backend/core/download/trailer.py` - Integrate download recording
-4. `backend/api/v1/media.py` - Add downloads API endpoint
-5. `frontend/src/app/models/media.ts` - Add Download interface and downloads array to Media
-6. `frontend/src/app/services/media.service.ts` - Add getDownloads method
-7. `frontend/src/app/media/media-details/media-details.component.html` - Add downloads section
-8. `frontend/src/app/media/media-details/media-details.component.ts` - Import MediaDownloadsComponent
+1. `backend/core/download/video_analysis.py` - Add youtube_id, created_at, updated_at to VideoInfo
+2. `backend/core/download/trailer.py` - Integrate download recording
+3. `backend/api/v1/media.py` - Add downloads API endpoint
+4. `frontend/src/app/models/media.ts` - Update Download interface to match new structure
+5. `frontend/src/app/services/media.service.ts` - Add getDownloads method
+6. `frontend/src/app/media/media-details/media-details.component.html` - Add downloads section
+7. `frontend/src/app/media/media-details/media-details.component.ts` - Import MediaDownloadsComponent
 
 ---
 
@@ -456,6 +780,7 @@ After implementation:
 
 Add the following imports at the top:
 ```python
+from core.base.database.manager.download import DownloadDatabaseManager
 from core.base.database.models.download import DownloadRead
 ```
 
@@ -476,10 +801,37 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         HTTPException: If media item not found or error retrieving downloads.
     """
     try:
-        db_handler = MediaDatabaseManager()
+        # Verify media exists first
+        media_db_handler = MediaDatabaseManager()
+        media = media_db_handler.read(media_id)
+        if not media:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Media with id {media_id} not found"
+            )
         
-        # Verify media exists
-        media = db_handler.read(media_id)
+        # Get downloads for this media using dedicated download manager
+        download_db_handler = DownloadDatabaseManager()
+        downloads = download_db_handler.read_all_for_media(media_id)
+        return downloads
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting downloads for media {media_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving downloads: {str(e)}"
+        )
+```
+
+**Note:** This uses `DownloadDatabaseManager` instead of adding methods to `MediaDatabaseManager`, keeping concerns separated.
+
+---
+
+## Frontend Implementation (Angular 20 with Signals)
+
+### 9. Update Media Model (`frontend/src/app/models/media.ts`)
         if not media:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -498,44 +850,15 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving downloads: {str(e)}"
         )
-```
-
-### 9. Add get_downloads_for_media Method to Database Manager
-
-In `backend/core/base/database/manager/base.py`, add this method after the `create_download` method:
-
-```python
-@manage_session
-def get_downloads_for_media(
-    self,
-    media_id: int,
-    *,
-    _session: Session = None,  # type: ignore
-) -> list[DownloadRead]:
-    """Get all downloads for a specific media item.\n
-    Args:
-        media_id (int): The ID of the media to get downloads for.\n
-        _session (Session, Optional): A session to use for the database connection.\n
-            Default is None, in which case a new session will be created.\n
-    Returns:
-        list[DownloadRead]: List of download objects for the media item.
-    """
-    from core.base.database.models.download import DownloadRead
-    
-    statement = select(Download).where(Download.media_id == media_id)
-    downloads = _session.exec(statement).all()
-    return [DownloadRead.model_validate(d) for d in downloads]
-```
-
-Also add the `select` import if not already present at the top of the file.
+**Note:** This uses `DownloadDatabaseManager` instead of adding methods to `MediaDatabaseManager`, keeping concerns separated.
 
 ---
 
 ## Frontend Implementation (Angular 20 with Signals)
 
-### 10. Update Media Model (`frontend/src/app/models/media.ts`)
+### 9. Update Media Model (`frontend/src/app/models/media.ts`)
 
-The Download interface and downloads array should already be in the Media interface (they appear to exist already based on the current code). Verify this structure exists:
+Update the Download interface to match the new backend structure:
 
 ```typescript
 export interface Download {
@@ -543,9 +866,29 @@ export interface Download {
   path: string;
   file_name: string;
   size: number;
-  updated_at: Date;
-  resolution: string;
-  video_format: string;
+  resolution: string;  // e.g., "1080p", "2160p"
+  file_format: string;  // e.g., "mp4", "mkv"
+  video_format: string;  // e.g., "h264", "h265"
+  audio_format: string;  // e.g., "aac", "ac3"
+  audio_language: string | null;  // e.g., "eng", "tel"
+  subtitle_format: string | null;  // e.g., "srt", "ass"
+  subtitle_language: string | null;  // e.g., "eng"
+  duration: number;  // in seconds
+  youtube_id: string;
+  file_exists: boolean;
+  profile_name: string;  // Name of the TrailerProfile used
+  media_id: number;
+  added_at: Date;  // When trailer was downloaded
+  updated_at: Date;  // When file was last modified
+}
+
+export interface Media {
+  // ... existing fields ...
+  downloads: Download[];  // ADD THIS if not present
+}
+```
+
+### 10. Add Downloads Service Method (`frontend/src/app/services/media.service.ts`)
   audio_format: string;
   audio_channels: string;
   file_format: string;
