@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List
+
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
 from sqlalchemy.orm import Mapped
 from sqlmodel import Field, Integer, Relationship

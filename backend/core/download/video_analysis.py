@@ -34,6 +34,7 @@ class VideoInfo(BaseModel):
     size: int = 0
     bitrate: str = "0 bps"
     streams: list[StreamInfo]
+    youtube_id: str | None = None
 
 
 def convert_duration(duration_seconds: str) -> str:
@@ -68,6 +69,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate :"
+        " format_tags=comment,description,synopsis,YouTube,youtube_id :"
         " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
         " : stream_tags=language,duration,name"
     )
@@ -98,6 +100,21 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         # If command ran successfully, parse the output
         info = json.loads(result.stdout)
         format: dict[str, str] = info.get("format", {})
+        format_tags: dict[str, str] = format.get("tags", {})
+        
+        # Extract YouTube ID from format tags (comment, description, synopsis, or YouTube field)
+        youtube_id = None
+        for tag_key in ["youtube_id", "YouTube", "comment", "description", "synopsis"]:
+            tag_value = format_tags.get(tag_key, "")
+            if tag_value:
+                # Try to extract YouTube video ID from the tag value
+                # YouTube IDs are 11 characters long
+                import re
+                match = re.search(r'(?:v=|/)([A-Za-z0-9_-]{11})', tag_value)
+                if match:
+                    youtube_id = match.group(1)
+                    break
+        
         # Create VideoInfo object
         video_info = VideoInfo(
             name=os.path.basename(file_path),
@@ -107,6 +124,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             size=int(format.get("size", "0")),
             bitrate=convert_bitrate(format.get("bit_rate", "0")),
             streams=[],
+            youtube_id=youtube_id,
         )
         # Loop through streams and create StreamInfo objects
         for stream in info["streams"]:

@@ -1,8 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import List
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
 
 from core.base.database.models.base import AppSQLModel
 

@@ -105,6 +105,7 @@ async def download_trailer(
 
     # Get the video ID, search if needed
     video_id = trailer_search.get_video_id(media, profile, exclude)
+    media.youtube_trailer_id = video_id
 
     if not video_id:
         raise DownloadFailedError(f"No trailer found for {media.title}")
@@ -130,7 +131,7 @@ async def download_trailer(
         await websockets.ws_manager.broadcast(msg, "Success")
         return True
     except Exception as e:
-        logger.error(f"Failed to download trailer: {e}")
+        logger.exception(f"Failed to download trailer: {e}")
         __update_media_status(media, MonitorStatus.MISSING)
         if retry_count > 0:
             logger.info(

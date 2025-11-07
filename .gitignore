@@ -5,6 +5,8 @@ trailarr.db
 !frontend-build/
 git-filter-repo
 restart_stack.py
+config/logs/*.db
+backend/frontend/
 
 ## GITHUB GENERATED
 # Byte-compiled / optimized / DLL files
@@ -129,7 +131,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-# .env
+.env
+*.env
 .venv
 env/
 venv/
