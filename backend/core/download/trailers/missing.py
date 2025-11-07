@@ -176,7 +176,6 @@ async def _process_single_media_item(
                     logger.info(
                         f"Stopping monitoring for {media.title} after"
                         f" successful download with profile: {_profile_name}"
-                        f" {_profile_name}"
                     )
                     break
         except DownloadFailedError:

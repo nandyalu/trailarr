@@ -109,7 +109,6 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             if tag_value:
                 # Try to extract YouTube video ID from the tag value
                 # YouTube IDs are 11 characters long
-                import re
                 match = re.search(r'(?:v=|/)([A-Za-z0-9_-]{11})', tag_value)
                 if match:
                     youtube_id = match.group(1)
