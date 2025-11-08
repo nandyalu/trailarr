@@ -1,9 +1,7 @@
 from sqlmodel import col, desc, select, Session
-from core.base.database.manager.media import logger
 from core.base.database.manager.media.base import BaseMediaManager
 from core.base.database.models.media import Media, MediaRead
 from core.base.database.utils.engine import manage_session
-from exceptions import ItemNotFoundError
 
 _base = BaseMediaManager()
 
@@ -56,33 +54,6 @@ class ReadMediaManager:
         return _base._convert_to_read_list(db_media_list)
 
     @manage_session
-    def read_all_by_connection(
-        self,
-        connection_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> list[MediaRead]:
-        """Get all media objects from the database for a given connection.\n
-        Args:
-            connection_id (int): The id of the connection to get media items for.
-            _session (Session) [Optional]: A session to use for the database connection.\n
-                Default is None, in which case a new session will be created.\n
-        Returns:
-            list[MediaRead]: List of MediaRead objects.
-        """
-        try:
-            _base._check_connection_exists(connection_id, session=_session)
-        except ItemNotFoundError:
-            logger.debug(
-                f"Connection with id {connection_id} doesn't exist in the database."
-                " Returning empty list."
-            )
-            return []
-        statement = select(Media).where(Media.connection_id == connection_id)
-        db_media_list = _session.exec(statement).all()
-        return _base._convert_to_read_list(db_media_list)
-
-    @manage_session
     def read_recent(
         self,
         limit: int = 100,
@@ -108,7 +79,11 @@ class ReadMediaManager:
         statement = select(Media)
         if movies_only is not None:
             statement = statement.where(col(Media.is_movie).is_(movies_only))
-        statement = statement.order_by(desc(Media.added_at)).offset(offset).limit(limit)
+        statement = (
+            statement.order_by(desc(Media.added_at))
+            .offset(offset)
+            .limit(limit)
+        )
         db_media_list = _session.exec(statement).all()
         return _base._convert_to_read_list(db_media_list)
 

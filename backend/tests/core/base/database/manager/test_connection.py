@@ -1,8 +1,8 @@
 import pytest
 
 # from database.crud.connection import connectionCRUD.ConnectionDatabaseHandler
-import core.base.database.manager.connection as connectionCRUD
-from core.base.database.manager.connection import validate_connection
+import core.base.database.manager.connection as db_manager
+import core.base.database.manager.connection.base as db_manager_base
 from core.base.database.models.connection import (
     ArrType,
     ConnectionBase,
@@ -46,7 +46,6 @@ CONN_ID_2 = 2
 
 
 class TestConnectionDatabaseHandler:
-    db_handler = connectionCRUD.ConnectionDatabaseManager()
 
     @pytest.fixture(autouse=True, scope="function")
     def session_fixture(self, monkeypatch):
@@ -55,16 +54,20 @@ class TestConnectionDatabaseHandler:
             return VALIDATE_SUCCESS_MSG
 
         # Mock the validate_connection function to return a success message
+        # Note: We have to match the actual module path where
+        # validate_connection is defined for monkeypatching to work
         monkeypatch.setattr(
-            "core.base.database.manager.connection.validate_connection",
+            db_manager_base,
+            "validate_connection",
             mock_result_success,
         )
+        # db_manager.validate_connection = mock_result_success
 
     @pytest.mark.asyncio
     async def test_create_connection(self):
 
         # Call the create_connection method and assert the return value
-        result, id = await self.db_handler.create(connection)
+        result, id = await db_manager.create(connection)
         assert result == VALIDATE_SUCCESS_MSG
         assert id >= 1
 
@@ -76,24 +79,24 @@ class TestConnectionDatabaseHandler:
         # Mock the validate_connection function to raise an InvalidResponseError
         # This overrides the previous mock that was set in the autouse fixture
         monkeypatch.setattr(
-            "core.base.database.manager.connection.validate_connection",
+            db_manager_base,
+            "validate_connection",
             mock_result_fail,
         )
         # Call the create_connection method and assert the return value
-        with pytest.raises(Exception) as exc_info:
-            await self.db_handler.create(connection)
+        with pytest.raises(InvalidResponseError) as exc_info:
+            await db_manager.create(connection)
 
         assert str(exc_info.value) == VALIDATE_FAIL_MESSAGE
-        assert exc_info.type.__name__ == "InvalidResponseError"
 
     @pytest.mark.asyncio
     async def test_read_connection(self):
         # Call the create_connection method and assert the return value
-        await self.db_handler.create(connection)
+        await db_manager.create(connection)
         # self.test_create_connection()
 
         # Call the read_connection method and assert the return values match
-        result = self.db_handler.read(CONN_ID_1)
+        result = db_manager.read(CONN_ID_1)
         assert result.id == CONN_ID_1
         assert result.name == connection.name
         assert result.arr_type == connection.arr_type
@@ -103,24 +106,23 @@ class TestConnectionDatabaseHandler:
 
     def test_read_connection_fail(self):
         # Call the read_connection method and assert an ItemNotFoundError is raised
-        with pytest.raises(Exception) as exc_info:
-            self.db_handler.read(1_000)
+        with pytest.raises(ItemNotFoundError) as exc_info:
+            db_manager.read(1_000)
 
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(1_000)
-        assert exc_info.type.__name__ == "ItemNotFoundError"
 
     @pytest.mark.asyncio
     async def test_read_connection_exists(self):
         # Call the create_connection method and assert the return value
         await self.test_create_connection()
 
-        # Call the check_if_exists method and assert the return value
-        result = self.db_handler.check_if_exists(CONN_ID_1)
+        # Call the `exists` method and assert the return value
+        result = db_manager.exists(CONN_ID_1)
         assert result is True
 
     def test_read_connection_not_exists(self):
-        # Call the check_if_exists method and assert the return value
-        result = self.db_handler.check_if_exists(1_000)
+        # Call the `exists` method and assert the return value
+        result = db_manager.exists(1_000)
         assert result is False
 
     @pytest.mark.asyncio
@@ -129,13 +131,11 @@ class TestConnectionDatabaseHandler:
         await self.test_create_connection()
 
         # Call the update_connection method and assert the return value
-        update_result = await self.db_handler.update(
-            CONN_ID_1, connection_update
-        )
+        update_result = await db_manager.update(CONN_ID_1, connection_update)
         # assert update_result == UPDATE_SUCCESS_MESSAGE
 
         # Call the read_connection method and assert the return values match
-        # update_result = self.db_handler.read(CONN_ID_1)
+        # update_result = db_manager.read(CONN_ID_1)
         assert update_result.id == CONN_ID_1
         assert update_result.name == connection.name
         assert update_result.arr_type == connection.arr_type
@@ -149,11 +149,10 @@ class TestConnectionDatabaseHandler:
         await self.test_create_connection()
 
         # Call the update_connection method and assert the return value
-        with pytest.raises(Exception) as exc_info:
-            await self.db_handler.update(1_000, connection_update)
+        with pytest.raises(ItemNotFoundError) as exc_info:
+            await db_manager.update(1_000, connection_update)
 
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(1_000)
-        assert exc_info.type.__name__ == "ItemNotFoundError"
 
     @pytest.mark.asyncio
     async def test_delete_connection(self):
@@ -166,23 +165,21 @@ class TestConnectionDatabaseHandler:
         # that rely on the first connection being present (movie / series CRUD tests)
 
         # Call the delete_connection method and assert the return value
-        delete_result = self.db_handler.delete(CONN_ID_2)
+        delete_result = db_manager.delete(CONN_ID_2)
         assert delete_result is True
 
         # Call the read_connection method and assert an ItemNotFoundError is raised
-        with pytest.raises(Exception) as exc_info:
-            self.db_handler.read(CONN_ID_2)
+        with pytest.raises(ItemNotFoundError) as exc_info:
+            db_manager.read(CONN_ID_2)
 
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(CONN_ID_2)
-        assert exc_info.type.__name__ == "ItemNotFoundError"
 
     def test_delete_connection_fail(self):
         # Call the delete_connection method and assert an ItemNotFoundError is raised
-        with pytest.raises(Exception) as exc_info:
-            self.db_handler.delete(1000)
+        with pytest.raises(ItemNotFoundError) as exc_info:
+            db_manager.delete(1000)
 
         assert str(exc_info.value) == NO_CONN_MESSAGE.format(1000)
-        assert exc_info.type.__name__ == "ItemNotFoundError"
 
 
 class TestConnectionValidation:
@@ -191,7 +188,7 @@ class TestConnectionValidation:
     async def test_validate_connection_no_connection(self):
         # Call the validate_connection function with no connection
         with pytest.raises(ItemNotFoundError) as exceptions:
-            await validate_connection(None)  # type: ignore
+            await db_manager.validate_connection(None)  # type: ignore
 
         # Assert that the correct error message is raised
         assert str(exceptions.value) == "Connection with id 0 not found"
@@ -215,7 +212,7 @@ class TestConnectionValidation:
             RadarrManager, "get_system_status", mock_result_success
         )
         # Call validate_connection function with the mock connection and assert return value
-        result = await validate_connection(connection)
+        result = await db_manager.validate_connection(connection)
         assert result == "Success message"
 
     @pytest.mark.asyncio
@@ -241,7 +238,7 @@ class TestConnectionValidation:
 
         # Call the validate_connection function with the mock connection
         with pytest.raises(InvalidResponseError) as exceptions:
-            await validate_connection(connection)
+            await db_manager.validate_connection(connection)
 
         # Assert that the correct error message is raised
         assert str(exceptions.value) == "Error message"
@@ -269,7 +266,7 @@ class TestConnectionValidation:
 
         # Call the validate_connection function with the mock connection
         with pytest.raises(InvalidResponseError) as exceptions:
-            await validate_connection(connection)
+            await db_manager.validate_connection(connection)
 
         # Assert that the correct error message is raised
         assert str(exceptions.value) == "Error message"

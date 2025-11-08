@@ -4,7 +4,7 @@ from typing import Protocol, Sequence
 from sqlmodel import Session, col, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
-from core.base.database.manager.connection import ConnectionDatabaseManager
+import core.base.database.manager.connection as connection_manager
 from core.base.database.models.media import (
     Media,
     MediaCreate,
@@ -161,9 +161,7 @@ class MediaDatabaseManager:
         Returns:
             list[MediaRead]: List of MediaRead objects.
         """
-        try:
-            self._check_connection_exists(connection_id, session=_session)
-        except ItemNotFoundError:
+        if not connection_manager.exists(connection_id, _session=_session):
             logger.debug(
                 f"Connection with id {connection_id} doesn't exist in the"
                 " database. Returning empty list."
@@ -762,23 +760,6 @@ class MediaDatabaseManager:
             session.add(db_media)
             return db_media, True, False
 
-    def _check_connection_exists(
-        self, connection_id: int, session: Session
-    ) -> None:
-        """🚨This is a private method🚨 \n
-        Check if a connection exists in the database.\n
-        Args:
-            connection_id (int): The id of the connection to check.
-            session (Session): A session to use for the database connection.\n
-        Raises:
-            ItemNotFoundError: If the connection with provided connection_id is invalid.
-        """
-        if not ConnectionDatabaseManager().check_if_exists(
-            connection_id, _session=session
-        ):
-            raise ItemNotFoundError("Connection", connection_id)
-        return
-
     def _check_connection_exists_bulk(
         self, media_items: list[MediaCreate], session: Session
     ) -> None:
@@ -792,7 +773,8 @@ class MediaDatabaseManager:
         """
         connection_ids = {media.connection_id for media in media_items}
         for connection_id in connection_ids:
-            self._check_connection_exists(connection_id, session=session)
+            if not connection_manager.exists(connection_id, _session=session):
+                raise ItemNotFoundError("Connection", connection_id)
         return
 
     def _convert_to_read_list(

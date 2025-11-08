@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
-from core.base.database.manager.connection import ConnectionDatabaseManager
+import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import ArrType, ConnectionRead
 from core.radarr.connection_manager import RadarrConnectionManager
 from core.sonarr.connection_manager import SonarrConnectionManager
@@ -14,13 +14,13 @@ logger = ModuleLogger("APIRefreshTasks")
 async def api_refresh() -> None:
     logger.info("Refreshing data from APIs")
     # Get all connections from database
-    connnections = ConnectionDatabaseManager().read_all()
-    if len(connnections) == 0:
+    connections = connection_manager.read_all()
+    if len(connections) == 0:
         logger.warning("No connections found in the database")
         return
 
     # Refresh data from API for each connection
-    for connection in connnections:
+    for connection in connections:
         await api_refresh_by_id(connection, image_refresh=False)
 
     # Refresh images after API refresh to download/update images for new media
@@ -28,7 +28,9 @@ async def api_refresh() -> None:
     logger.info("API Refresh completed!")
 
 
-async def api_refresh_by_id(connection: ConnectionRead, image_refresh=True) -> None:
+async def api_refresh_by_id(
+    connection: ConnectionRead, image_refresh=True
+) -> None:
     logger.info(f"Refreshing data from API for connection: {connection.name}")
     # Get connection manager based on connection type
     if connection.arr_type == ArrType.SONARR:
@@ -37,7 +39,8 @@ async def api_refresh_by_id(connection: ConnectionRead, image_refresh=True) -> N
         connection_db_manager = RadarrConnectionManager(connection)
     else:
         logger.warning(
-            f"Invalid connection type: {connection.arr_type} for connection: {connection}"
+            f"Invalid connection type: {connection.arr_type} for connection:"
+            f" {connection}"
         )
         return
 
@@ -64,7 +67,7 @@ def api_refresh_by_id_job(connection_id: int):
     logger.info(f"Refreshing data from API for connection ID: {connection_id}")
     # Get connection from database
     try:
-        connection = ConnectionDatabaseManager().read(connection_id)
+        connection = connection_manager.read(connection_id)
     except Exception as e:
         msg = f"Failed to get connection with ID: {connection_id}"
         logger.error(f"{msg}. Error: {e}")

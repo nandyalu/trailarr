@@ -1,6 +1,6 @@
 from app_logger import ModuleLogger
 from core.base.database.manager.base import MediaDatabaseManager
-from core.base.database.manager.connection import ConnectionDatabaseManager
+import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import ArrType
 from core.files_handler import FilesHandler
 from core.radarr.connection_manager import RadarrConnectionManager
@@ -28,8 +28,7 @@ async def scan_disk_for_trailers() -> None:
     root_folders: set[str] = set()
 
     # Get all connections from the database
-    connection_db_handler = ConnectionDatabaseManager()
-    all_connections = connection_db_handler.read_all()
+    all_connections = connection_manager.read_all()
 
     # Get all root folders for each connection from API
     for connection in all_connections:

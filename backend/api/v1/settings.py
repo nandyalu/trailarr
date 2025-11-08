@@ -3,10 +3,8 @@ from fastapi import APIRouter
 from api.v1.models import Settings, UpdateLogin, UpdateSetting
 from api.v1 import authentication
 from config.settings import app_settings
-from core.base.database.manager.general import (
-    GeneralDatabaseManager,
-    ServerStats,
-)
+from core.base.database.manager.general import ServerStats
+from core.base.database.manager.general import get_stats as get_generic_stats
 
 settings_router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -18,7 +16,7 @@ async def get_settings() -> Settings:
 
 @settings_router.get("/stats")
 async def get_stats() -> ServerStats:
-    return GeneralDatabaseManager().get_stats()
+    return get_generic_stats()
 
 
 @settings_router.put("/update")
