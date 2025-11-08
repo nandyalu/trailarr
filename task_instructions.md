@@ -53,7 +53,7 @@ class DownloadBase(AppSQLModel):
     duration: int = 0  # Duration in seconds
     youtube_id: str
     file_exists: bool = True
-    profile_name: str  # Name of the TrailerProfile used
+    profile_id: str  # ID of the TrailerProfile used
     added_at: datetime  # When trailer was downloaded (from file)
     updated_at: datetime  # When file was last modified (from file)
 
@@ -104,7 +104,7 @@ class DownloadUpdate(AppSQLModel):
 - Only `media_id` as foreign key with CASCADE delete
 - Use Python 3.13 type hints (`int | None`, not `Optional[int]`)
 - Includes comprehensive metadata: resolution, codecs, languages, duration
-- `profile_name` stores the TrailerProfile name used for download
+- `profile_id` stores the ID of the TrailerProfile used for download
 - `added_at` and `updated_at` extracted from file metadata
 
 ### 2. Update VideoInfo Model (`backend/core/download/video_analysis.py`)
@@ -131,13 +131,13 @@ In the `entries_required` variable, add format_tags:
 ```python
 entries_required = (
     "format=format_name,duration,size,bit_rate :"
-    " format_tags=comment,description,synopsis,YouTube,youtube_id,creation_time :"  # ADD THESE
+    " format_tags=comment,purl,artist,description,synopsis,YouTube,youtube_id,creation_time :"  # ADD THESE
     " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
     " : stream_tags=language,duration,name"
 )
 ```
 
-After parsing format info and before creating VideoInfo object, add extraction:
+After parsing format info and before creating VideoInfo object, add extraction (extract_youtube_id function is in trailer_search.py file, we might need to refactor into an utils file to avoid circular imports):
 ```python
 import os
 from pathlib import Path
@@ -147,28 +147,16 @@ format_tags: dict[str, str] = format.get("tags", {})
 
 # Extract YouTube ID from format tags
 youtube_id = None
-for tag_key in ["youtube_id", "YouTube", "comment", "description", "synopsis"]:
-    tag_value = format_tags.get(tag_key, "")
-    if tag_value:
-        # YouTube IDs are 11 characters long
-        match = re.search(r'(?:v=|/)([A-Za-z0-9_-]{11})', tag_value)
-        if match:
-            youtube_id = match.group(1)
-            break
+for tag_value in format_tags.values():
+    youtube_id = extract_youtube_id(tag_value)
+    if youtube_id:
+        break
 
 # Get file timestamps
 file_path_obj = Path(file_path)
 file_stat = file_path_obj.stat()
-created_at = datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc)
-updated_at = datetime.fromtimestamp(file_stat.st_mtime, tz=timezone.utc)
-
-# Alternatively, try to get creation_time from format tags
-creation_time_str = format_tags.get("creation_time")
-if creation_time_str:
-    try:
-        created_at = datetime.fromisoformat(creation_time_str.replace('Z', '+00:00'))
-    except:
-        pass  # Use file stat time if parsing fails
+created_at = datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc) or datetime.now(timezone.utc)
+updated_at = datetime.fromtimestamp(file_stat.st_mtime, tz=timezone.utc) or datetime.now(timezone.utc)
 
 # Create VideoInfo object
 video_info = VideoInfo(
@@ -192,32 +180,75 @@ Create a dedicated database manager structure for Download operations.
 **File: `backend/core/base/database/manager/download/__init__.py`**
 
 ```python
-from .base import DownloadDatabaseManager
+from core.base.database.manager.download.create import create
+from core.base.database.manager.download.delete import (
+    delete,
+    delete_all_for_media,
+)
+from core.base.database.manager.download.read import (
+    get,
+    get_all,
+    get_by_media_id,
+    get_by_profile_id,
+)
+from core.base.database.manager.download.update import update
 
-__all__ = ["DownloadDatabaseManager"]
+__ALL__ = [
+    create,
+    delete,
+    delete_all_for_media,
+    get,
+    get_all,
+    get_by_media_id,
+    get_by_profile_id,
+    update,
+]
 ```
 
 **File: `backend/core/base/database/manager/download/base.py`**
 
 ```python
-from .create import DownloadCreateMixin
-from .read import DownloadReadMixin
-from .update import DownloadUpdateMixin
-from .delete import DownloadDeleteMixin
+from typing import Sequence
+
+from core.base.database.models.download import (
+    Download,
+    DownloadRead,
+)
 
 
-class DownloadDatabaseManager(
-    DownloadCreateMixin,
-    DownloadReadMixin,
-    DownloadUpdateMixin,
-    DownloadDeleteMixin,
-):
+def convert_to_read_item(
+    db_download: Download,
+) -> DownloadRead:
     """
-    Database manager for CRUD operations on Download objects.\n
-    Combines all download database operations from separate mixins.
+    Convert a Download database object to a DownloadRead object.
+    Args:
+        db_download (Download): Download database object
+    Returns:
+        DownloadRead: DownloadRead object
     """
-    
-    __model_name = "Download"
+    download_read = DownloadRead.model_validate(db_download)
+    return download_read
+
+
+def convert_to_read_list(
+    db_download_list: Sequence[Download],
+) -> list[DownloadRead]:
+    """
+    Convert a list of Download database objects to a list of \
+        DownloadRead objects.
+    Args:
+        db_download_list (list[Download]): List of Download\
+            database objects
+    Returns:
+        list[DownloadRead]: List of DownloadRead objects
+    """
+    if not db_download_list or len(db_download_list) == 0:
+        return []
+    download_read_list: list[DownloadRead] = []
+    for db_download in db_download_list:
+        download_read = DownloadRead.model_validate(db_download)
+        download_read_list.append(download_read)
+    return download_read_list
 ```
 
 **File: `backend/core/base/database/manager/download/create.py`**
@@ -225,247 +256,289 @@ class DownloadDatabaseManager(
 ```python
 from sqlmodel import Session
 
-from core.base.database.models.download import Download, DownloadCreate, DownloadRead
+from app_logger import ModuleLogger
+from core.base.database.manager.download.base import convert_to_read_item
+
+from core.base.database.models.download import (
+    Download,
+    DownloadCreate,
+    DownloadRead,
+)
 from core.base.database.utils.engine import manage_session
-from app_logger import logger
+
+logger = ModuleLogger("DownloadManager")
 
 
-class DownloadCreateMixin:
-    """Mixin for create operations on Download objects."""
-    
-    @manage_session
-    def create(
-        self,
-        download_create: DownloadCreate,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> DownloadRead:
-        """Create a new download record in the database.\n
-        Args:
-            download_create (DownloadCreate): The download object to create.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-                Default is None, in which case a new session will be created.\n
-        Returns:
-            DownloadRead: The created download object.
-        """
-        try:
-            db_download = Download.model_validate(download_create)
-            _session.add(db_download)
-            _session.commit()
-            _session.refresh(db_download)
-            return DownloadRead.model_validate(db_download)
-        except Exception as e:
-            logger.error(f"Error creating download: {e}")
-            _session.rollback()
-            raise
+@manage_session
+def create(
+    download_create: DownloadCreate,
+    *,
+    _session: Session = None,  # type: ignore
+) -> DownloadRead:
+    """
+    Create a new download.
+    Args:
+        download_create (DownloadCreate): DownloadCreate model
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        DownloadRead: DownloadRead object
+    Raises:
+        ValidationError: If the input data is not valid.
+    """
+    # Create a db Download object
+    db_download = Download.model_validate(download_create)
+    # Save to database
+    _session.add(db_download)
+    _session.commit()
+    _session.refresh(db_download)
+    logger.info(f"Created download: {db_download.file_name}")
+    return convert_to_read_item(db_download)
 ```
 
 **File: `backend/core/base/database/manager/download/read.py`**
 
 ```python
 from sqlmodel import Session, select
-
-from core.base.database.models.download import Download, DownloadRead
+from core.base.database.manager.download.base import (
+    convert_to_read_item,
+    convert_to_read_list,
+)
+from core.base.database.models.download import (
+    Download,
+    DownloadRead,
+)
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
-from app_logger import logger
 
 
-class DownloadReadMixin:
-    """Mixin for read operations on Download objects."""
-    
-    __model_name = "Download"
-    
-    @manage_session
-    def read(
-        self,
-        download_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> DownloadRead:
-        """Read a download by ID from the database.\n
-        Args:
-            download_id (int): The ID of the download to read.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            DownloadRead: The download object.
-        Raises:
-            ItemNotFoundError: If download not found.
-        """
-        db_download = _session.get(Download, download_id)
-        if not db_download:
-            raise ItemNotFoundError(self.__model_name, download_id)
-        return DownloadRead.model_validate(db_download)
-    
-    @manage_session
-    def read_all_for_media(
-        self,
-        media_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> list[DownloadRead]:
-        """Get all downloads for a specific media item.\n
-        Args:
-            media_id (int): The ID of the media to get downloads for.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            list[DownloadRead]: List of download objects for the media item.
-        """
-        statement = select(Download).where(Download.media_id == media_id)
-        downloads = _session.exec(statement).all()
-        return [DownloadRead.model_validate(d) for d in downloads]
-    
-    @manage_session
-    def read_all(
-        self,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> list[DownloadRead]:
-        """Get all downloads from the database.\n
-        Args:
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            list[DownloadRead]: List of all download objects.
-        """
-        statement = select(Download)
-        downloads = _session.exec(statement).all()
-        return [DownloadRead.model_validate(d) for d in downloads]
+@manage_session
+def get(
+    download_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> DownloadRead:
+    """
+    Get a download by ID.
+    Args:
+        download_id (int): The ID of the download to retrieve.
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        DownloadRead: The download (read-only).
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+    """
+    db_download = _session.get(Download, download_id)
+    if db_download is None:
+        raise ItemNotFoundError(model_name="Download", id=download_id)
+    return convert_to_read_item(db_download)
+
+
+@manage_session
+def get_all(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadRead]:
+    """
+    Get all downloads.
+    Args:
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[DownloadRead]: List of downloads (read-only).
+    """
+    statement = select(Download)
+    db_downloads = _session.exec(statement).all()
+    return convert_to_read_list(db_downloads)
+
+
+@manage_session
+def get_by_media_id(
+    media_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadRead]:
+    """
+    Get all downloads for a specific media ID.
+    Args:
+        media_id (int): The media ID to filter downloads by.
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[DownloadRead]: List of downloads (read-only).
+    """
+    statement = select(Download).where(Download.media_id == media_id)
+    db_downloads = _session.exec(statement).all()
+    return convert_to_read_list(db_downloads)
+
+
+@manage_session
+def get_by_profile_id(
+    profile_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadRead]:
+    """
+    Get all downloads for a specific profile ID.
+    Args:
+        profile_id (int): The profile ID to filter downloads by.
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[DownloadRead]: List of downloads (read-only).
+    """
+    statement = select(Download).where(Download.profile_id == profile_id)
+    db_downloads = _session.exec(statement).all()
+    return convert_to_read_list(db_downloads)
 ```
 
 **File: `backend/core/base/database/manager/download/update.py`**
 
 ```python
-from datetime import datetime, timezone
 from sqlmodel import Session
 
-from core.base.database.models.download import Download, DownloadUpdate, DownloadRead
+from app_logger import ModuleLogger
+from core.base.database.manager.download.base import (
+    convert_to_read_item,
+)
+from core.base.database.models.download import (
+    Download,
+    DownloadCreate,
+    DownloadRead,
+)
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
-from app_logger import logger
+
+logger = ModuleLogger("DownloadManager")
 
 
-class DownloadUpdateMixin:
-    """Mixin for update operations on Download objects."""
-    
-    __model_name = "Download"
-    
-    @manage_session
-    def update(
-        self,
-        download_id: int,
-        download_update: DownloadUpdate,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> DownloadRead:
-        """Update a download in the database.\n
-        Args:
-            download_id (int): The ID of the download to update.\n
-            download_update (DownloadUpdate): The download update object.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            DownloadRead: The updated download object.
-        Raises:
-            ItemNotFoundError: If download not found.
-        """
-        db_download = _session.get(Download, download_id)
-        if not db_download:
-            raise ItemNotFoundError(self.__model_name, download_id)
-        
-        # Update only provided fields
-        update_data = download_update.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(db_download, key, value)
-        
-        _session.add(db_download)
-        _session.commit()
-        _session.refresh(db_download)
-        return DownloadRead.model_validate(db_download)
-    
-    @manage_session
-    def mark_as_deleted(
-        self,
-        download_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> DownloadRead:
-        """Mark a download as deleted (file no longer exists).\n
-        Args:
-            download_id (int): The ID of the download to mark as deleted.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            DownloadRead: The updated download object.
-        Raises:
-            ItemNotFoundError: If download not found.
-        """
-        update = DownloadUpdate(
-            file_exists=False,
-            updated_at=datetime.now(timezone.utc)
-        )
-        return self.update(download_id, update, _session=_session)
+@manage_session
+def update(
+    download_id: int,
+    download_create: DownloadCreate,
+    *,
+    _session: Session = None,  # type: ignore
+) -> DownloadRead:
+    """
+    Update a download in the database.
+    Args:
+        download_id (int): The ID of the download to update.
+        download_create (DownloadCreate): The new data for the download.
+        _session (Session, optional): A session to use for the database connection. Defaults to None.
+    Returns:
+        DownloadRead: The updated download.
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+        ValueError: If the download is invalid.
+    """
+    # Get the existing download from the database
+    download_db = _session.get(Download, download_id)
+    if download_db is None:
+        raise ItemNotFoundError(model_name="Download", id=download_id)
+
+    # Update the fields of the existing download
+    _update_data = download_create.model_dump(exclude_unset=True)
+    download_db.sqlmodel_update(_update_data)
+
+    # Validate the updated download
+    Download.model_validate(download_db)
+
+    # Commit the changes to the database
+    # _session.add(download_db)
+    _session.commit()
+    _session.refresh(download_db)
+    logger.info(f"Updated download: {download_db.path}")
+    return convert_to_read_item(download_db)
+
+
+@manage_session
+def mark_as_deleted(
+    download_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """
+    Mark a download as deleted in the database.
+    Args:
+        download_id (int): The ID of the download to mark as deleted.
+        _session (Session, optional): A session to use for the database connection. Defaults to None.
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+    """
+    # Get the existing download from the database
+    download_db = _session.get(Download, download_id)
+    if download_db is None:
+        raise ItemNotFoundError(model_name="Download", id=download_id)
+
+    # Mark the download as deleted
+    download_db.is_deleted = True
+
+    # Commit the changes to the database
+    _session.add(download_db)
+    _session.commit()
+    logger.info(f"Marked download as deleted: {download_db.path}")
 ```
 
 **File: `backend/core/base/database/manager/download/delete.py`**
 
 ```python
-from sqlmodel import Session
+from sqlmodel import Session, select
 
+from app_logger import ModuleLogger
 from core.base.database.models.download import Download
 from core.base.database.utils.engine import manage_session
 from exceptions import ItemNotFoundError
-from app_logger import logger
+
+logger = ModuleLogger("DownloadManager")
 
 
-class DownloadDeleteMixin:
-    """Mixin for delete operations on Download objects."""
-    
-    __model_name = "Download"
-    
-    @manage_session
-    def delete(
-        self,
-        download_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> None:
-        """Delete a download from the database.\n
-        Args:
-            download_id (int): The ID of the download to delete.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Raises:
-            ItemNotFoundError: If download not found.
-        """
-        db_download = _session.get(Download, download_id)
-        if not db_download:
-            raise ItemNotFoundError(self.__model_name, download_id)
-        
-        _session.delete(db_download)
-        _session.commit()
-    
-    @manage_session
-    def delete_all_for_media(
-        self,
-        media_id: int,
-        *,
-        _session: Session = None,  # type: ignore
-    ) -> int:
-        """Delete all downloads for a specific media item.\n
-        Args:
-            media_id (int): The ID of the media whose downloads to delete.\n
-            _session (Session, Optional): A session to use for the database connection.\n
-        Returns:
-            int: Number of downloads deleted.
-        """
-        from sqlmodel import select
-        
-        statement = select(Download).where(Download.media_id == media_id)
-        downloads = _session.exec(statement).all()
-        count = len(downloads)
-        
-        for download in downloads:
-            _session.delete(download)
-        
-        _session.commit()
-        return count
+@manage_session
+def delete(id: int, *, _session: Session = None) -> bool:  # type: ignore
+    """
+    Delete a download by id.
+    Args:
+        id (int): The id of the download to delete.
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        bool: True if the download was deleted successfully.
+    Raises:
+        ItemNotFoundError: If the download with the given id does not exist.
+    """
+    db_download = _session.get(Download, id)
+    if not db_download:
+        raise ItemNotFoundError("Download", id)
+
+    # Delete the download
+    _session.delete(db_download)
+    _session.commit()
+    logger.info(f"Deleted download record: {db_download.file_name}")
+    return True
+
+
+@manage_session
+def delete_all_for_media(
+    media_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> int:
+    """Delete all downloads for a specific media item.\n
+    Args:
+        media_id (int): The ID of the media whose downloads to delete.\n
+        _session (Session, Optional): A session to use for the database connection.\n
+    Returns:
+        int: Number of downloads deleted.
+    """
+    statement = select(Download).where(Download.media_id == media_id)
+    downloads = _session.exec(statement).all()
+    count = len(downloads)
+
+    for download in downloads:
+        _session.delete(download)
+
+    _session.commit()
+    return count
 ```
 
 ### 4. Create Download Service (`backend/core/download/service.py`)
@@ -477,32 +550,54 @@ import os
 from datetime import datetime, timezone
 
 from app_logger import ModuleLogger
-from core.base.database.manager.download import DownloadDatabaseManager
+import core.base.database.manager.download as download_manager
 from core.base.database.models.download import DownloadCreate
 from core.download.video_analysis import get_media_info
 
 logger = ModuleLogger("DownloadService")
 
+DEFAULT_RESOLUTION = 1080
+VALID_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
+RESOLUTION_DICT = {
+    "SD": 360,
+    "FSD": 480,
+    "HD": 720,
+    "FHD": 1080,
+    "QHD": 1440,
+    "UHD": 2160,
+}
 
 def get_resolution_label(width: int, height: int) -> str:
-    """Convert resolution dimensions to standard labels (e.g., 1080p, 2160p)."""
-    if height >= 2160:
-        return "2160p"  # 4K
-    elif height >= 1440:
-        return "1440p"  # 2K
-    elif height >= 1080:
-        return "1080p"  # Full HD
-    elif height >= 720:
-        return "720p"   # HD
-    elif height >= 480:
-        return "480p"   # SD
-    else:
-        return f"{height}p"
+    """Convert resolution dimensions to standard labels (e.g., 1080p, 2160p).
+    Gets the closest standard resolution label based on height."""
+    resolution = DEFAULT_RESOLUTION
+    if isinstance(height, int):
+        resolution = height
+
+    if isinstance(height, str):
+        # Check if value is like HD/UHD etc.
+        if height.upper() in RESOLUTION_DICT:
+            return RESOLUTION_DICT[height.upper()]
+        # Else, Convert to lowercase and remove 'p' from the end if present
+        resolution = height.lower()
+        resolution = resolution.rstrip("p")
+        if not resolution.isdigit():
+            return DEFAULT_RESOLUTION
+        resolution = int(resolution)
+
+    # If resolution is valid, return it
+    if resolution in VALID_RESOLUTIONS:
+        return resolution
+    # Find the closest resolution. Ex: 1079 -> 1080
+    closest_resolution = min(
+        VALID_RESOLUTIONS, key=lambda res: abs(res - resolution)
+    )
+    return closest_resolution
 
 
 async def record_new_trailer_download(
     media_id: int,
-    profile_name: str,
+    profile_id: int,
     file_path: str,
     youtube_video_id: str,
 ) -> None:
@@ -511,7 +606,7 @@ async def record_new_trailer_download(
 
     Args:
         media_id (int): The ID of the media.
-        profile_name (str): The name of the TrailerProfile used for download.
+        profile_id (int): The ID of the TrailerProfile used for download.
         file_path (str): The path to the downloaded file.
         youtube_video_id (str): The YouTube video ID of the trailer.
     """
@@ -561,15 +656,14 @@ async def record_new_trailer_download(
             duration=media_info.duration_seconds,
             youtube_id=youtube_video_id,
             file_exists=True,
-            profile_name=profile_name,
+            profile_id=profile.id,
             media_id=media_id,
             added_at=media_info.created_at or datetime.now(timezone.utc),
             updated_at=media_info.updated_at or datetime.now(timezone.utc),
         )
 
         # Save to database using dedicated download manager
-        db_manager = DownloadDatabaseManager()
-        db_manager.create(download)
+        download_manager.create(download)
         logger.info(f"Successfully recorded new trailer download for media {media_id}")
 
     except Exception as e:
@@ -577,14 +671,6 @@ async def record_new_trailer_download(
             f"Failed to record new trailer download for media {media_id}: {e}"
         )
 ```
-
-**Key Changes from Original:**
-- Uses `DownloadDatabaseManager` instead of `MediaDatabaseManager`
-- Takes `profile_name` (string) instead of `profile_id` (int)
-- Extracts resolution as standard label (1080p, 2160p, etc.)
-- Extracts audio and subtitle language information
-- Uses `created_at` and `updated_at` from VideoInfo
-- More robust codec extraction from streams
 
 ### 5. Integrate Download Tracking in Trailer Download (`backend/core/download/trailer.py`)
 
@@ -609,7 +695,7 @@ try:
     # ADD THIS BLOCK - Record the download with profile name:
     await record_new_trailer_download(
         media_id=media.id,
-        profile_name=profile.name,  # Use profile.name instead of profile.id
+        profile_id=profile.id,
         file_path=final_file_path,
         youtube_video_id=video_id,
     )
@@ -673,7 +759,7 @@ def upgrade() -> None:
         sa.Column("duration", sa.Integer(), nullable=False),
         sa.Column("youtube_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("file_exists", sa.Boolean(), nullable=False),
-        sa.Column("profile_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("profile_id", sa.Integer(), nullable=False),
         sa.Column("added_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
@@ -724,7 +810,7 @@ The migration should run successfully without errors.
 
 1. **Keep It Simple:** No bidirectional relationships between Media and Download models
 2. **CASCADE Delete:** The foreign key constraint ensures downloads are deleted when media is deleted
-3. **Query Approach:** To get downloads for a media item, query directly: `session.query(Download).filter(Download.media_id == media_id).all()`
+3. **Get Downloads:** To get downloads for a media item, use `get_by_media_id` from `core.base.database.manager.download`
 4. **Python 3.13:** Use modern type hints (`list`, `dict`, `int | None`)
 5. **No model_validate Overrides:** Keep models simple without custom validation logic
 
@@ -751,12 +837,12 @@ After implementation:
 
 ### New Files to Create:
 1. `backend/core/base/database/models/download.py` - Download model with comprehensive metadata
-2. `backend/core/base/database/manager/download/__init__.py` - Download manager package init
-3. `backend/core/base/database/manager/download/base.py` - Download manager base class
-4. `backend/core/base/database/manager/download/create.py` - Create operations mixin
-5. `backend/core/base/database/manager/download/read.py` - Read operations mixin
-6. `backend/core/base/database/manager/download/update.py` - Update operations mixin
-7. `backend/core/base/database/manager/download/delete.py` - Delete operations mixin
+2. `backend/core/base/database/manager/download/__init__.py` - Download manager package init with all operations that can be imported to use from other modules
+3. `backend/core/base/database/manager/download/base.py` - Base conversion functions
+4. `backend/core/base/database/manager/download/create.py` - Create operations
+5. `backend/core/base/database/manager/download/read.py` - Read operations
+6. `backend/core/base/database/manager/download/update.py` - Update operations
+7. `backend/core/base/database/manager/download/delete.py` - Delete operations
 8. `backend/core/download/service.py` - Download recording service
 9. `backend/alembic/versions/20251107_HHMM-{id}_add_download_model.py` - Migration
 10. `frontend/src/app/media/media-details/media-downloads/media-downloads.component.ts` - Downloads display component
@@ -780,7 +866,7 @@ After implementation:
 
 Add the following imports at the top:
 ```python
-from core.base.database.manager.download import DownloadDatabaseManager
+import core.base.database.manager.download as download_db_manager
 from core.base.database.models.download import DownloadRead
 ```
 
@@ -811,8 +897,7 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
             )
         
         # Get downloads for this media using dedicated download manager
-        download_db_handler = DownloadDatabaseManager()
-        downloads = download_db_handler.read_all_for_media(media_id)
+        downloads = download_db_manager.read_all_for_media(media_id)
         return downloads
         
     except HTTPException:
@@ -825,32 +910,7 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         )
 ```
 
-**Note:** This uses `DownloadDatabaseManager` instead of adding methods to `MediaDatabaseManager`, keeping concerns separated.
-
----
-
-## Frontend Implementation (Angular 20 with Signals)
-
-### 9. Update Media Model (`frontend/src/app/models/media.ts`)
-        if not media:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Media with id {media_id} not found"
-            )
-        
-        # Get downloads for this media
-        downloads = db_handler.get_downloads_for_media(media_id)
-        return downloads
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting downloads for media {media_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving downloads: {str(e)}"
-        )
-**Note:** This uses `DownloadDatabaseManager` instead of adding methods to `MediaDatabaseManager`, keeping concerns separated.
+**Note:** This uses `core.base.database.manager.download` instead of adding methods to `MediaDatabaseManager`, keeping concerns separated.
 
 ---
 
@@ -876,7 +936,7 @@ export interface Download {
   duration: number;  // in seconds
   youtube_id: string;
   file_exists: boolean;
-  profile_name: string;  // Name of the TrailerProfile used
+  profile_id: number;  // ID of the TrailerProfile used
   media_id: number;
   added_at: Date;  // When trailer was downloaded
   updated_at: Date;  // When file was last modified
@@ -889,14 +949,78 @@ export interface Media {
 ```
 
 ### 10. Add Downloads Service Method (`frontend/src/app/services/media.service.ts`)
-  audio_format: string;
-  audio_channels: string;
-  file_format: string;
-  duration: number;
-  subtitles: string;
-  added_at: Date;
-  profile_id: number;
-  media_id: number;
+
+Add this method to the MediaService class:
+
+```typescript
+/**
+ * Get downloads for a specific media item
+ */
+getDownloads(mediaId: number): Observable<Download[]> {
+  return this.httpClient.get<Download[]>(`${this.mediaUrl}${mediaId}/downloads`);
+}
+
+/**
+ * Scan and refresh downloads for a media item
+ */
+scanMediaDownloads(mediaId: number): Observable<string> {
+  return this.httpClient.post<string>(`${this.mediaUrl}${mediaId}/scan`, {});
+}
+```
+
+Don't forget to import Download at the top:
+```typescript
+import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia, Download} from '../models/media';
+```
+
+### 12. Create Media Downloads Component
+
+**File: `frontend/src/app/media/media-details/media-downloads/media-downloads.component.ts`**
+
+```typescript
+import {Component, computed, effect, inject, input, resource, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MediaService} from 'src/app/services/media.service';
+import {WebsocketService} from 'src/app/services/websocket.service';
+import {bytesToSize, durationToTime} from 'src/app/helpers/converters';
+import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
+import {Download} from 'src/app/models/media';
+
+@Component({
+  selector: 'app-media-downloads',
+  standalone: true,
+  imports: [CommonModule, LoadIndicatorComponent],
+  templateUrl: './media-downloads.component.html',
+  styleUrls: ['./media-downloads.component.scss'],
+})
+export class MediaDownloadsComponent {
+  private readonly mediaService = inject(MediaService);
+  private readonly webSocketService = inject(WebsocketService);
+
+  mediaId = input.required<number>();
+
+  // Use resource signal to fetch downloads
+  downloadsResource = resource<Download[], {mediaId: number}>({
+    request: () => ({mediaId: this.mediaId()}),
+    loader: async ({request}) => {
+      return await this.mediaService.getDownloads(request.mediaId).toPromise() ?? [];
+    },
+  });
+
+  isLoading = computed(() => this.downloadsResource.isLoading());
+  downloads = computed(() => this.downloadsResource.value() ?? []);
+  hasDownloads = computed(() => this.downloads().length > 0);
+
+  bytesToSize = bytesToSize;
+  durationToTime = durationToTime;
+
+  refreshDownloads() {
+    this.downloadsResource.reload();
+  }
+
+  getYouTubeUrl(youtubeId: string): string {
+    return `https://www.youtube.com/watch?v=${youtubeId}`;
+  }
   youtube_id: string;
   file_exists: boolean;
 }

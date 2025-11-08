@@ -3,9 +3,11 @@ import os
 import re
 import subprocess
 import json
+from typing import Any
 
 from pydantic import BaseModel
 
+from backend.core.download.trailer_search import extract_youtube_id
 from config.settings import app_settings
 from app_logger import ModuleLogger
 
@@ -69,8 +71,8 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate :"
-        " format_tags=comment,description,synopsis,YouTube,youtube_id :"
-        " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
+        " format_tags=artist,comment,purl,description,synopsis,YouTube,youtube_id"
+        " : stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
         " : stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
@@ -99,21 +101,16 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
         # If command ran successfully, parse the output
         info = json.loads(result.stdout)
-        format: dict[str, str] = info.get("format", {})
+        format: dict[str, Any] = info.get("format", {})
         format_tags: dict[str, str] = format.get("tags", {})
-        
-        # Extract YouTube ID from format tags (comment, description, synopsis, or YouTube field)
-        youtube_id = None
-        for tag_key in ["youtube_id", "YouTube", "comment", "description", "synopsis"]:
-            tag_value = format_tags.get(tag_key, "")
-            if tag_value:
-                # Try to extract YouTube video ID from the tag value
-                # YouTube IDs are 11 characters long
-                match = re.search(r'(?:v=|/)([A-Za-z0-9_-]{11})', tag_value)
-                if match:
-                    youtube_id = match.group(1)
-                    break
-        
+
+        # Extract YouTube ID from format tags
+        youtube_id: str | None = None
+        for tag_value in format_tags.values():
+            youtube_id = extract_youtube_id(tag_value)
+            if youtube_id:
+                break
+
         # Create VideoInfo object
         video_info = VideoInfo(
             name=os.path.basename(file_path),
