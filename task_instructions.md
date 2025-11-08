@@ -795,7 +795,191 @@ def downgrade() -> None:
 - Generate a unique revision ID (12 random alphanumeric characters)
 - Note the updated columns matching the new Download model structure
 
-### 7. Testing
+### 7. Update Disk Scanner for Download Tracking (`backend/core/tasks/files_scan.py`)
+
+The `scan_disk_for_trailers` function needs to be updated to work with the new download tracking system. This function scans all root folders for existing trailers and updates the database accordingly.
+
+**Key Updates Needed:**
+
+1. **Import the download manager:**
+```python
+from core.base.database.manager.download import (
+    create as create_download,
+    get_all as get_all_downloads,
+    mark_as_deleted,
+)
+```
+
+2. **Update the scan_disk_for_trailers function:**
+
+```python
+async def scan_disk_for_trailers() -> None:
+    """Scan the disk for trailers and update the database with download records."""
+    logger.info("Scanning disk for trailers.")
+    
+    # Get all existing downloads
+    all_downloads = get_all_downloads()
+    existing_paths = {d.path for d in all_downloads}
+    
+    # Get all media items
+    db_handler = MediaDatabaseManager()
+    all_media = db_handler.read_all()
+    
+    # Get all connection root folders
+    connection_db_handler = ConnectionDatabaseManager()
+    all_connections = connection_db_handler.read_all()
+    
+    root_folders: set[str] = set()
+    for connection in all_connections:
+        arr_manager = None
+        if connection.arr_type == ArrType.RADARR:
+            arr_manager = RadarrConnectionManager(connection)
+        elif connection.arr_type == ArrType.SONARR:
+            arr_manager = SonarrConnectionManager(connection)
+        if arr_manager:
+            root_folders.update(await arr_manager.get_rootfolders())
+    
+    # Scan for trailers in all root folders
+    for root_folder in root_folders:
+        for trailer_path in await FilesHandler.scan_root_folders_for_trailers(
+            root_folder
+        ):
+            # Skip if already tracked
+            if trailer_path in existing_paths:
+                continue
+            
+            logger.info(f"Found new trailer: {trailer_path}")
+            
+            # Find matching media by folder path
+            media_match = next(
+                (
+                    m
+                    for m in all_media
+                    if m.folder_path and trailer_path.startswith(m.folder_path)
+                ),
+                None,
+            )
+            
+            if not media_match:
+                logger.warning(f"No media found for trailer: {trailer_path}")
+                continue
+            
+            # Extract metadata from the trailer file
+            media_info = get_media_info(trailer_path)
+            if not media_info:
+                logger.warning(f"Could not extract info from: {trailer_path}")
+                continue
+            
+            # Determine YouTube ID - use extracted one or fallback to media's known ID
+            youtube_id = media_info.youtube_id or "unknown"
+            if youtube_id == "unknown" and media_match.youtube_trailer_id:
+                # Check if file was recently created (within 1 hour of download)
+                if media_match.downloaded_at:
+                    time_diff = abs((media_info.created_at - media_match.downloaded_at).total_seconds())
+                    if time_diff < 3600:  # Within 1 hour
+                        youtube_id = media_match.youtube_trailer_id
+            
+            # Determine profile name - use "Unknown" for untracked trailers
+            profile_name = "Unknown"
+            
+            # Record the trailer download
+            await record_new_trailer_download(
+                media_id=media_match.id,
+                profile_name=profile_name,
+                file_path=trailer_path,
+                youtube_video_id=youtube_id,
+            )
+    
+    # Mark downloads as non-existent if file is deleted
+    for download in all_downloads:
+        if not os.path.exists(download.path):
+            logger.info(f"Trailer file deleted: {download.path}")
+            mark_as_deleted(download.id)
+    
+    logger.info("Finished scanning disk for trailers.")
+```
+
+**Key Changes:**
+- Uses `get_all_downloads()` to get existing downloads
+- Records new trailers using `record_new_trailer_download()`
+- Extracts YouTube ID from video metadata using `media_info.youtube_id`
+- Falls back to media's known `youtube_trailer_id` if file was recently downloaded
+- Uses "Unknown" as profile_name for untracked trailers
+- Marks downloads as deleted (not hard delete) when file is missing
+
+3. **Update scan_and_refresh_downloads function:**
+
+```python
+async def scan_and_refresh_downloads(media_id: int) -> None:
+    """Scan and refresh the downloads for a specific media item."""
+    logger.info(f"Scanning and refreshing downloads for media {media_id}")
+    
+    # Get media and its downloads
+    db_handler = MediaDatabaseManager()
+    media = db_handler.read(media_id)
+    
+    if not media or not media.folder_path:
+        logger.warning(f"No folder path for media {media_id}")
+        return
+    
+    # Get existing downloads for this media
+    from core.base.database.manager.download import get_by_media_id
+    existing_downloads = get_by_media_id(media_id)
+    existing_paths = {d.path for d in existing_downloads}
+    
+    # Scan for trailers in media folder
+    for trailer_path in await FilesHandler.scan_root_folders_for_trailers(
+        media.folder_path
+    ):
+        # Skip if already tracked
+        if trailer_path in existing_paths:
+            continue
+        
+        logger.info(f"Found new trailer for media {media_id}: {trailer_path}")
+        
+        # Extract metadata
+        media_info = get_media_info(trailer_path)
+        if not media_info:
+            continue
+        
+        # Determine YouTube ID
+        youtube_id = media_info.youtube_id or "unknown"
+        if youtube_id == "unknown" and media.youtube_trailer_id:
+            if media.downloaded_at:
+                time_diff = abs((media_info.created_at - media.downloaded_at).total_seconds())
+                if time_diff < 3600:
+                    youtube_id = media.youtube_trailer_id
+        
+        # Record the download
+        await record_new_trailer_download(
+            media_id=media.id,
+            profile_name="Unknown",
+            file_path=trailer_path,
+            youtube_video_id=youtube_id,
+        )
+    
+    # Mark downloads as non-existent if file is deleted
+    for download in existing_downloads:
+        if not os.path.exists(download.path):
+            logger.info(f"Trailer file deleted: {download.path}")
+            from core.base.database.manager.download import mark_as_deleted
+            mark_as_deleted(download.id)
+    
+    # Update media trailer_exists status
+    remaining_downloads = [d for d in existing_downloads if os.path.exists(d.path)]
+    has_trailers = len(remaining_downloads) > 0
+    db_handler.update_trailer_exists(media.id, has_trailers)
+    
+    logger.info(f"Finished scanning and refreshing downloads for media {media_id}")
+```
+
+**Key Features:**
+- Scans only the specific media's folder
+- Adds newly found trailers to database
+- Marks deleted files appropriately
+- Updates media's `trailer_exists` flag based on remaining files
+
+### 8. Testing
 
 After implementation, test the migration:
 
@@ -852,17 +1036,18 @@ After implementation:
 ### Files to Modify:
 1. `backend/core/download/video_analysis.py` - Add youtube_id, created_at, updated_at to VideoInfo
 2. `backend/core/download/trailer.py` - Integrate download recording
-3. `backend/api/v1/media.py` - Add downloads API endpoint
-4. `frontend/src/app/models/media.ts` - Update Download interface to match new structure
-5. `frontend/src/app/services/media.service.ts` - Add getDownloads method
-6. `frontend/src/app/media/media-details/media-details.component.html` - Add downloads section
-7. `frontend/src/app/media/media-details/media-details.component.ts` - Import MediaDownloadsComponent
+3. `backend/core/tasks/files_scan.py` - Update scan_disk_for_trailers and scan_and_refresh_downloads
+4. `backend/api/v1/media.py` - Add downloads API endpoint
+5. `frontend/src/app/models/media.ts` - Update Download interface to match new structure
+6. `frontend/src/app/services/media.service.ts` - Add getDownloads method
+7. `frontend/src/app/media/media-details/media-details.component.html` - Add downloads section
+8. `frontend/src/app/media/media-details/media-details.component.ts` - Import MediaDownloadsComponent
 
 ---
 
 ## Backend API Implementation
 
-### 8. Add Downloads API Endpoint (`backend/api/v1/media.py`)
+### 9. Add Downloads API Endpoint (`backend/api/v1/media.py`)
 
 Add the following imports at the top:
 ```python
@@ -916,7 +1101,7 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
 
 ## Frontend Implementation (Angular 20 with Signals)
 
-### 9. Update Media Model (`frontend/src/app/models/media.ts`)
+### 10. Update Media Model (`frontend/src/app/models/media.ts`)
 
 Update the Download interface to match the new backend structure:
 
@@ -946,31 +1131,6 @@ export interface Media {
   // ... existing fields ...
   downloads: Download[];  // ADD THIS if not present
 }
-```
-
-### 10. Add Downloads Service Method (`frontend/src/app/services/media.service.ts`)
-
-Add this method to the MediaService class:
-
-```typescript
-/**
- * Get downloads for a specific media item
- */
-getDownloads(mediaId: number): Observable<Download[]> {
-  return this.httpClient.get<Download[]>(`${this.mediaUrl}${mediaId}/downloads`);
-}
-
-/**
- * Scan and refresh downloads for a media item
- */
-scanMediaDownloads(mediaId: number): Observable<string> {
-  return this.httpClient.post<string>(`${this.mediaUrl}${mediaId}/scan`, {});
-}
-```
-
-Don't forget to import Download at the top:
-```typescript
-import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia, Download} from '../models/media';
 ```
 
 ### 12. Create Media Downloads Component
