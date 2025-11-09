@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.download import video_analysis
 from core.files_handler import FilesHandler, FolderInfo
 
@@ -256,6 +256,5 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
         # Media id is provided, if file is trailer, update db
         if "trailer" in path:
             logger.info(f"Updating trailer status for media_id: {media_id}")
-            db = MediaDatabaseManager()
-            db.update_trailer_exists(media_id, False)
+            media_manager.update_trailer_exists(media_id, False)
     return deleted_status

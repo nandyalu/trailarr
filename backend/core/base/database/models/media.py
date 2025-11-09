@@ -138,6 +138,7 @@ class MediaUpdate(MediaBase):
     - updated_at: current time [if any field is updated]
     """
 
+    id: int
     connection_id: int | None = None  # type: ignore
     arr_id: int | None = None  # type: ignore
     title: str | None = None  # type: ignore

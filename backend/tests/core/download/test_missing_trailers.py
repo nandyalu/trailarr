@@ -81,8 +81,8 @@ async def test_download_missing_trailers_prevents_infinite_loop():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.MediaDatabaseManager"
-    ) as mock_db_manager_class, patch(
+        "core.download.trailers.missing.media_manager.read_all"
+    ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
     ) as mock_trailerprofile, patch(
         "core.download.trailers.missing._process_single_media_item"
@@ -90,10 +90,6 @@ async def test_download_missing_trailers_prevents_infinite_loop():
 
         # Configure settings
         mock_settings.monitor_enabled = True
-
-        # Configure database manager mock
-        mock_db_manager = MagicMock()
-        mock_db_manager_class.return_value = mock_db_manager
 
         media = MediaRead(
             id=1,
@@ -126,7 +122,7 @@ async def test_download_missing_trailers_prevents_infinite_loop():
 
         # Database always returns the same media item
         # This simulates the scenario where download fails and media remains monitored
-        mock_db_manager.read_all.return_value = [media]
+        mock_db_manager_read_all.return_value = [media]
 
         # Configure trailer profiles
         mock_profile = MagicMock()
@@ -146,7 +142,7 @@ async def test_download_missing_trailers_prevents_infinite_loop():
         assert mock_process.call_count == 1
 
         # Verify read_all was called at least twice (to confirm loop ran multiple times)
-        assert mock_db_manager.read_all.call_count >= 2
+        assert mock_db_manager_read_all.call_count >= 2
 
 
 @pytest.mark.asyncio
@@ -155,8 +151,8 @@ async def test_download_missing_trailers_monitoring_disabled():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.MediaDatabaseManager"
-    ) as mock_db_manager_class:
+        "core.download.trailers.missing.media_manager.read_all"
+    ) as mock_db_manager_read_all:
 
         # Configure settings - monitoring disabled
         mock_settings.monitor_enabled = False
@@ -165,7 +161,7 @@ async def test_download_missing_trailers_monitoring_disabled():
         await download_missing_trailers()
 
         # Verify database was never queried since monitoring is disabled
-        mock_db_manager_class.assert_not_called()
+        mock_db_manager_read_all.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -174,8 +170,8 @@ async def test_download_missing_trailers_no_profiles():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.MediaDatabaseManager"
-    ) as mock_db_manager_class, patch(
+        "core.download.trailers.missing.media_manager.read_all"
+    ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
     ) as mock_trailerprofile:
 
@@ -183,9 +179,9 @@ async def test_download_missing_trailers_no_profiles():
         mock_settings.monitor_enabled = True
 
         # Configure database manager mock
-        mock_db_manager = MagicMock()
-        mock_db_manager_class.return_value = mock_db_manager
-        mock_db_manager.read_all.return_value = []
+        # mock_db_manager = MagicMock()
+        # mock_db_manager_class.return_value = mock_db_manager
+        mock_db_manager_read_all.return_value = []
 
         # No profiles
         mock_trailerprofile.get_trailerprofiles.return_value = []
@@ -194,4 +190,4 @@ async def test_download_missing_trailers_no_profiles():
         await download_missing_trailers()
 
         # Function should exit early, so read_all should be called only once
-        assert mock_db_manager.read_all.call_count == 1
+        assert mock_db_manager_read_all.call_count == 1

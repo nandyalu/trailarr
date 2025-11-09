@@ -1,4 +1,4 @@
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaImage
 from core.base.database.models.media import MediaUpdate
 from core.download.image import refresh_media_images
@@ -31,14 +31,13 @@ async def refresh_images(recent_only: bool = False):
 async def refresh_and_save_media_images(
     is_movie: bool, recent_only: bool = False
 ):
-    db_manager = MediaDatabaseManager()
     if recent_only:
         # Get all media from the database that have been added/updated \
         # in the last 24 hours
-        db_media_list = db_manager.read_recent(movies_only=is_movie)
+        db_media_list = media_manager.read_recent(movies_only=is_movie)
     else:
         # Get all media from the database
-        db_media_list = db_manager.read_all(movies_only=is_movie)
+        db_media_list = media_manager.read_all(movies_only=is_movie)
     media_image_list: list[MediaImage] = []
     logger.debug(
         "Refreshing images for"
@@ -70,15 +69,13 @@ async def refresh_and_save_media_images(
         if media_image.id in media_update_dict:
             media_update = media_update_dict[media_image.id]
         else:
-            media_update = MediaUpdate()
+            media_update = MediaUpdate(id=media_image.id)
         if media_image.is_poster:
             media_update.poster_path = media_image.image_path
         else:
             media_update.fanart_path = media_image.image_path
         media_update_dict[media_image.id] = media_update
-    media_update_tuples = [
-        (id, update_obj) for id, update_obj in media_update_dict.items()
-    ]
+    update_list = [update_obj for update_obj in media_update_dict.values()]
     # Save changes to database
-    db_manager.update_bulk(media_update_tuples)
+    media_manager.update_bulk(update_list)
     return

@@ -1,6 +1,6 @@
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
 import core.base.database.manager.connection as connection_manager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ArrType
 from core.files_handler import FilesHandler
 from core.radarr.connection_manager import RadarrConnectionManager
@@ -16,8 +16,7 @@ async def scan_disk_for_trailers() -> None:
     """
     logger.info("Scanning disk for trailers.")
     # # Get all media from the database
-    db_handler = MediaDatabaseManager()
-    all_media = db_handler.read_all()
+    all_media = media_manager.read_all()
 
     # # Get all root folders from the media folders
     # root_folders: set[str] = set()
@@ -63,7 +62,7 @@ async def scan_disk_for_trailers() -> None:
             updated_media.append((media.id, _trailer_exists))
 
     # Update the database with the new trailer status
-    db_handler.update_trailer_exists_bulk(updated_media)
+    media_manager.update_trailer_exists_bulk(updated_media)
     if len(updated_media) == 0:
         logger.info("Media trailer statuses are up to date.")
         return None

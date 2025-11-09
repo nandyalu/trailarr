@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailer import download_trailer
@@ -50,9 +50,8 @@ def download_trailer_by_id(
     """
     _type = "Media"
     retry_count = 3
-    db_manager = MediaDatabaseManager()
     # Check if media with the given ID exists
-    media = db_manager.read(media_id)
+    media = media_manager.read(media_id)
     _type = "Movie" if media.is_movie else "Series"
     # Check if trailer profile with the given ID exists
     profile = trailerprofile.get_trailerprofile(profile_id)
@@ -118,7 +117,6 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         ItemNotFoundError: If the trailer profile with the given ID is not found.
     """
     profile = trailerprofile.get_trailerprofile(profile_id)
-    db_manager = MediaDatabaseManager()
     media_trailer_list: list[MediaRead] = []
     skipped_titles = {
         "invalid_media_id": [],
@@ -128,7 +126,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     }
     for media_id in media_ids:
         try:
-            db_media = db_manager.read(media_id)
+            db_media = media_manager.read(media_id)
         except Exception:
             skipped_titles["invalid_media_id"].append(media_id)
             continue

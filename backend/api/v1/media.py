@@ -4,7 +4,7 @@ from api.v1 import websockets
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
 from core.files_handler import FilesHandler, FolderInfo
@@ -46,8 +46,7 @@ async def get_all_media(
     Returns:
         list[MediaRead]: List of media objects. \n
     """
-    db_handler = MediaDatabaseManager()
-    media = db_handler.read_all(
+    media = media_manager.read_all(
         movies_only=movies_only,
         filter_by=filter_by,
         sort_by=sort_by,
@@ -72,8 +71,7 @@ async def get_recent_media(
     Returns:
     - list[MediaRead]: List of media objects.
     """
-    db_handler = MediaDatabaseManager()
-    media = db_handler.read_recent(limit, offset, movies_only=movies_only)
+    media = media_manager.read_recent(limit, offset, movies_only=movies_only)
     return media
 
 
@@ -85,8 +83,7 @@ async def get_updated_after(seconds: int) -> list[MediaRead]:
     Returns:
         list[MediaRead]: List of media objects. \n
     """
-    db_handler = MediaDatabaseManager()
-    media = db_handler.read_updated_after(seconds)
+    media = media_manager.read_updated_after(seconds)
     return media
 
 
@@ -101,9 +98,8 @@ async def get_recently_downloaded(
     Returns:
         list[MediaRead]: List of media objects. \n
     """
-    db_handler = MediaDatabaseManager()
-    media_list = db_handler.read_recently_downloaded(limit, offset)
-    return media_list
+    media = media_manager.read_recently_downloaded(limit, offset)
+    return media
 
 
 @media_router.get("/search", tags=["Search"])
@@ -114,8 +110,7 @@ async def search_media(query: str) -> list[SearchMedia]:
     Returns:
         list[SearchMedia]: List of search media objects. \n
     """
-    db_handler = MediaDatabaseManager()
-    media_list = db_handler.search(query)
+    media_list = media_manager.search(query)
     search_media_list: list[SearchMedia] = []
     for media in media_list:
         media_data = media.model_dump()
@@ -141,9 +136,8 @@ async def get_media_by_id(media_id: int) -> MediaRead:
     Returns:
         MediaRead: Media object. \n
     """
-    db_handler = MediaDatabaseManager()
     try:
-        media = db_handler.read(media_id)
+        media = media_manager.read(media_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
@@ -168,9 +162,8 @@ async def get_media_files(media_id: int) -> FolderInfo | str:
     Returns:
         FolderInfo|str: Folder information or error message. \n
     """
-    db_handler = MediaDatabaseManager()
     try:
-        media = db_handler.read(media_id)
+        media = media_manager.read(media_id)
         if not media.folder_path:
             raise Exception("Media has no folder path!")
         files_handler = FilesHandler()
@@ -231,9 +224,8 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
         str: Monitoring message.
     """
     logger.info(f"Monitoring media with ID: {media_id}")
-    db_handler = MediaDatabaseManager()
     try:
-        msg, is_success = db_handler.update_monitoring(media_id, monitor)
+        msg, is_success = media_manager.update_monitoring(media_id, monitor)
         logger.info(msg)
         await websockets.ws_manager.broadcast(
             msg, "Success" if is_success else "Error"
@@ -288,9 +280,8 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Invalid YouTube ID!",
         )
-    db_handler = MediaDatabaseManager()
     try:
-        db_handler.update_ytid(media_id, yt_id)
+        media_manager.update_ytid(media_id, yt_id)
         msg = f"YouTube ID for media with ID: {media_id} has been updated."
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success")
@@ -320,12 +311,11 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
     logger.info(f"Searching for trailer for media with ID: {media_id}")
-    db_handler = MediaDatabaseManager()
-    media = db_handler.read(media_id)
+    media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
 
     if yt_id := trailer_search.search_yt_for_trailer(media, profile):
-        db_handler.update_ytid(media_id, yt_id)
+        media_manager.update_ytid(media_id, yt_id)
         msg = (
             f"Trailer found for media '{media.title}' [{media.id}] as"
             f" ({yt_id})"
@@ -357,9 +347,8 @@ async def delete_media_trailer(media_id: int) -> str:
         str: Deleting trailer message.
     """
     logger.info(f"Deleting trailer for media with ID: {media_id}")
-    db_handler = MediaDatabaseManager()
     try:
-        media = db_handler.read(media_id)
+        media = media_manager.read(media_id)
         if not media.trailer_exists:
             msg = (
                 f"Media '{media.title}' [{media.id}] has no trailer to delete"
@@ -379,7 +368,7 @@ async def delete_media_trailer(media_id: int) -> str:
             )
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        db_handler.update_trailer_exists(media_id, False)
+        media_manager.update_trailer_exists(media_id, False)
         msg = (
             f"Trailer for media '{media.title}' [{media.id}] has been deleted."
         )
@@ -418,14 +407,13 @@ async def batch_update_media(update: BatchUpdate) -> None:
         str: Monitoring message.
     """
     logger.info(f"Monitoring media with IDs: {update.media_ids}")
-    db_handler = MediaDatabaseManager()
     try:
         msg = ""
         if update.action == "monitor":
-            db_handler.update_monitoring_bulk(update.media_ids, True)
+            media_manager.update_monitoring_bulk(update.media_ids, True)
             msg = f"{len(update.media_ids)} Media are now monitored"
         elif update.action == "unmonitor":
-            db_handler.update_monitoring_bulk(update.media_ids, False)
+            media_manager.update_monitoring_bulk(update.media_ids, False)
             msg = f"{len(update.media_ids)} Media are now unmonitored"
         elif update.action == "delete":
             for media_id in update.media_ids:

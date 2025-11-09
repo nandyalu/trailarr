@@ -3,7 +3,7 @@ import os
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
@@ -18,7 +18,6 @@ def __update_media_status(
     media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
 ):
     """Update the media status in the database."""
-    db_manager = MediaDatabaseManager()
     if type == MonitorStatus.DOWNLOADING:
         update = MediaUpdateDC(
             id=media.id,
@@ -59,7 +58,7 @@ def __update_media_status(
     else:
         # Handle other statuses if needed
         return None
-    db_manager.update_media_status(update)
+    media_manager.update_media_status(update)
     return None
 
 

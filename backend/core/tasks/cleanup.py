@@ -1,6 +1,6 @@
 from app_logger import ModuleLogger
 from config.logs import manager as logs_manager
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MonitorStatus
 from core.download import video_analysis
@@ -26,21 +26,17 @@ async def delete_old_logs():
 async def delete_trailer_and_monitor(
     trailer_path: str,
     media_id: int,
-    db_manager: MediaDatabaseManager | None = None,
 ):
     """
     Delete the trailer file and set the monitor status to True. \n
     Args:
         trailer_path (str): Path to the trailer file. \n
         media_id (int): ID of the media. \n
-        db_manager (MediaDatabaseManager | None): Instance of MediaDatabaseManager. \n
     Returns:
         None
     """
-    if not db_manager:
-        db_manager = MediaDatabaseManager()
     await FilesHandler.delete_file(trailer_path)
-    db_manager.update_media_status(
+    media_manager.update_media_status(
         MediaUpdateDC(
             id=media_id,
             monitor=True,
@@ -58,8 +54,7 @@ async def trailer_cleanup():
     """
     logger.info("Running trailer cleanup task...")
     # Get all media from the database and filter out the ones that have no trailers
-    db_manager = MediaDatabaseManager()
-    db_media_list = db_manager.read_all()
+    db_media_list = media_manager.read_all()
     media_with_trailers = [
         media for media in db_media_list if media.trailer_exists is True
     ]
@@ -84,9 +79,7 @@ async def trailer_cleanup():
             logger.info(
                 f"Deleting trailer with missing audio/video for {media.title}"
             )
-            await delete_trailer_and_monitor(
-                trailer_path, media.id, db_manager
-            )
+            await delete_trailer_and_monitor(trailer_path, media.id)
             continue
     # Cleanup any residual files left in temporary directory
     logger.debug("Cleaning up temporary directory...")
