@@ -574,19 +574,19 @@ class FilesHandler:
             return False
 
     @staticmethod
-    async def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
+    async def scan_root_folders_for_trailers(root_media_dir: str) -> list[str]:
         """Find all folders containing trailers in the specified root folders.\n
         Finds trailers in the media folder and also in a 'trailer' folder\n
         Args:
             root_media_dir (str): The root directory to search for trailers.\n
         Returns:
-            set[str]: Set of folder paths containing trailers."""
+            list[str]: Set of folder paths containing trailers."""
         logger.debug(f"Scanning '{root_media_dir}' for trailers.")
         if not FilesHandler.check_folder_exists(root_media_dir):
             logger.warning(
                 f"Root media directory '{root_media_dir}' is not a directory."
             )
-            return set()
+            return []
         inline_trailers = set()
         folder_trailers = set()
         count = 0
@@ -631,7 +631,8 @@ class FilesHandler:
             f" {len(inline_trailers)} (inline) trailers."
         )
         logger.info(msg)
-        return inline_trailers.union(folder_trailers)
+        # return inline_trailers.union(folder_trailers)
+        return [r for r in results if r]
 
     @staticmethod
     async def rename_file_fol(old_path: str, new_path: str) -> bool:

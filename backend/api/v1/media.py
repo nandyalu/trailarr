@@ -4,9 +4,12 @@ from api.v1 import websockets
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
+import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
+from core.base.database.models.download import DownloadRead
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
+from core.download.trailers import utils as trailer_utils
 from core.files_handler import FilesHandler, FolderInfo
 from core.tasks.download_trailers import (
     batch_download_trailers,
@@ -146,6 +149,44 @@ async def get_media_by_id(media_id: int) -> MediaRead:
 
 
 @media_router.get(
+    "/{media_id}/downloads",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        }
+    },
+)
+async def get_media_downloads(media_id: int) -> list[DownloadRead]:
+    """Get all downloads for a specific media item.
+    Args:
+        media_id (int): The ID of the media item.
+    Returns:
+        list[DownloadRead]: List of download objects for the media item.
+    """
+    try:
+        # Verify media exists first
+        media = media_manager.read(media_id)
+        if not media:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Media with id {media_id} not found",
+            )
+
+        # Get downloads for this media using dedicated download manager
+        downloads = download_manager.read_by_media_id(media_id)
+        return downloads
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
+@media_router.get(
     "/{media_id}/files",
     status_code=status.HTTP_200_OK,
     responses={
@@ -265,7 +306,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     logger.info(f"Updating YouTube ID for media with ID: {media_id}")
     # Check if yt_id is a URL and extract the ID
     if yt_id and yt_id.startswith("http"):
-        _yt_id = trailer_search.extract_youtube_id(yt_id)
+        _yt_id = trailer_utils.extract_youtube_id(yt_id)
         if not _yt_id:
             msg = "Invalid YouTube URL/ID!"
             await websockets.ws_manager.broadcast(msg, "Error")

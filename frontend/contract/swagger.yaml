@@ -3543,6 +3543,9 @@ components:
         name:
           type: string
           title: Name
+        file_path:
+          type: string
+          title: File Path
         format_name:
           type: string
           title: Format Name
@@ -3567,11 +3570,31 @@ components:
             $ref: '#/components/schemas/StreamInfo'
           type: array
           title: Streams
+        youtube_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Youtube Id
+        youtube_channel:
+          type: string
+          title: Youtube Channel
+          default: unknownchannel
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
       type: object
       required:
         - name
+        - file_path
         - format_name
         - streams
+        - created_at
+        - updated_at
       title: VideoInfo
   securitySchemes:
     APIKeyQuery:

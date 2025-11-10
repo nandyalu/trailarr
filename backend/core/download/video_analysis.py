@@ -1,13 +1,16 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+from pathlib import Path
 import re
 import subprocess
 import json
+from typing import Any
 
 from pydantic import BaseModel
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+from core.download.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("VideoAnalysis")
 
@@ -28,12 +31,17 @@ class StreamInfo(BaseModel):
 class VideoInfo(BaseModel):
 
     name: str
+    file_path: str
     format_name: str
     duration_seconds: int = 0
     duration: str = "0:00:00"
     size: int = 0
     bitrate: str = "0 bps"
     streams: list[StreamInfo]
+    youtube_id: str | None = None
+    youtube_channel: str = "unknownchannel"
+    created_at: datetime
+    updated_at: datetime
 
 
 def convert_duration(duration_seconds: str) -> str:
@@ -68,7 +76,8 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate :"
-        " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
+        " format_tags=comment,purl,artist,description,synopsis,YouTube,youtube_id,creation_time"
+        " : stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
         " : stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
@@ -97,16 +106,41 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
         # If command ran successfully, parse the output
         info = json.loads(result.stdout)
-        format: dict[str, str] = info.get("format", {})
+        format: dict[str, Any] = info.get("format", {})
+        format_tags: dict[str, str] = format.get("tags", {})
+
+        # Extract YouTube ID from format tags
+        youtube_id = None
+        for tag_value in format_tags.values():
+            youtube_id = extract_youtube_id(tag_value)
+            if youtube_id:
+                break
+        youtube_channel = format_tags.get("artist", "unknownchannel")
+
+        # Get file timestamps
+        file_path_obj = Path(file_path)
+        file_stat = file_path_obj.stat()
+        created_at = datetime.fromtimestamp(
+            file_stat.st_ctime, tz=timezone.utc
+        ) or datetime.now(timezone.utc)
+        updated_at = datetime.fromtimestamp(
+            file_stat.st_mtime, tz=timezone.utc
+        ) or datetime.now(timezone.utc)
+
         # Create VideoInfo object
         video_info = VideoInfo(
             name=os.path.basename(file_path),
+            file_path=file_path,
             format_name=str(format.get("format_name", "N/A")),
             duration_seconds=int(float(format.get("duration", "0"))),
             duration=convert_duration(format.get("duration", "0")),
             size=int(format.get("size", "0")),
             bitrate=convert_bitrate(format.get("bit_rate", "0")),
             streams=[],
+            youtube_id=youtube_id,
+            youtube_channel=youtube_channel,
+            created_at=created_at,
+            updated_at=updated_at,
         )
         # Loop through streams and create StreamInfo objects
         for stream in info["streams"]:
