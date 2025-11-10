@@ -26,7 +26,7 @@ dev = [
     "mkdocs-glightbox==0.5.2",
     "mkdocs-material==9.6.22",
     "pytest==9.0.0",
-    "pytest-asyncio==1.2.0",
+    "pytest-asyncio==1.3.0",
     "pytest-cov==7.0.0",
 ]
 docs = [
@@ -38,6 +38,6 @@ docs = [
 testing = [
     "aioresponses==0.7.8",
     "pytest==9.0.0",
-    "pytest-asyncio==1.2.0",
+    "pytest-asyncio==1.3.0",
     "pytest-cov==7.0.0",
 ]
