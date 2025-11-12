@@ -6,7 +6,6 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.base.database.models.connection import ArrType
 from core.download.trailers.service import record_new_trailer_download
-from core.download.video_analysis import VideoInfo, get_media_info
 from core.files_handler import FilesHandler
 from core.radarr.connection_manager import RadarrConnectionManager
 from core.sonarr.connection_manager import SonarrConnectionManager
@@ -50,28 +49,6 @@ def find_matching_media(
     return None
 
 
-def find_youtube_id(media_info: VideoInfo, media_match: MediaRead) -> str:
-    """Find the YouTube ID for a trailer based on its path.
-    Args:
-        trailer_path (str): The path of the trailer file.
-        all_media (list[MediaRead]): List of all media items.
-    Returns:
-        str: The YouTube ID if found, else `unknown0000`.
-    """
-    youtube_id = media_info.youtube_id or "unknown0000"
-    if youtube_id == "unknown0000" and media_match.youtube_trailer_id:
-        # Check if file was recently created (within 1 hour of download)
-        if media_match.downloaded_at:
-            time_diff = abs(
-                (
-                    media_info.created_at - media_match.downloaded_at
-                ).total_seconds()
-            )
-            if time_diff < 3600:  # Within 1 hour
-                youtube_id = media_match.youtube_trailer_id
-    return youtube_id
-
-
 async def scan_disk_for_trailers() -> None:
     """Scan the disk for trailers and update the database with download records."""
     logger.info("Scanning disk for trailers.")
@@ -92,12 +69,12 @@ async def scan_disk_for_trailers() -> None:
         for trailer_path in await FilesHandler.scan_root_folders_for_trailers(
             root_folder
         ):
+            found_paths.add(trailer_path)
             # Skip if already tracked
             if trailer_path in existing_paths:
-                found_paths.add(trailer_path)
                 continue
 
-            logger.info(f"Found new trailer: {trailer_path}")
+            logger.debug(f"Found new trailer: {trailer_path}")
 
             # Find matching media by folder path
             media_match = find_matching_media(trailer_path, all_media)
@@ -106,26 +83,15 @@ async def scan_disk_for_trailers() -> None:
                 # logger.warning(f"No media found for trailer: {trailer_path}")
                 continue
 
-            # Extract metadata from the trailer file
-            media_info = get_media_info(trailer_path)
-            if not media_info:
-                # logger.warning(f"Could not extract info from: {trailer_path}")
-                continue
-
-            # Determine YouTube ID - use extracted one or fallback to media's known ID
-            youtube_id = find_youtube_id(media_info, media_match)
-
             # Record the trailer download
-            await record_new_trailer_download(
-                media_match.id, 0, trailer_path, youtube_id, media_info
-            )
+            await record_new_trailer_download(media_match, 0, trailer_path)
 
     # Mark downloads as non-existent if file is deleted
     for download in all_downloads:
         if download.path in found_paths:
             continue
         if not os.path.exists(download.path):
-            logger.info(f"Trailer file deleted: {download.path}")
+            logger.debug(f"Trailer file deleted for download: {download.path}")
             download_manager.mark_as_deleted(download.id)
 
     logger.info("Finished scanning disk for trailers.")

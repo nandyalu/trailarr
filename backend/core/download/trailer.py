@@ -131,7 +131,7 @@ async def download_trailer(
         __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
         # Record the download in the database
         await record_new_trailer_download(
-            media.id, profile.id, final_path, video_id
+            media, profile.id, final_path, video_id
         )
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"

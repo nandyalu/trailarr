@@ -5,7 +5,9 @@
   }
   @if (selectedMedia_) {
     <div class="media-details-card">
-      <div class="media-fanart-overlay" [style]="'background-image: url(' + selectedMedia_.fanart_path + ');'"></div>
+      @if (selectedMedia_.fanart_path) {
+        <div class="media-fanart-overlay" [style]="'background-image: url(' + selectedMedia_.fanart_path + ');'"></div>
+      }
       <div class="media-poster" [class.sm-none]="!selectedMedia_.poster_path" title="{{ selectedMedia_.title }} Poster">
         <img
           src="{{ selectedMedia_.poster_path || 'assets/poster-lg.png' }}"
@@ -293,6 +295,10 @@
   }
 </div>
 @if (selectedMedia_) {
+  <!-- Show Media Downloads -->
+  <div class="media-details-container">
+    <media-downloads [downloads]="selectedMedia_.downloads"></media-downloads>
+  </div>
   <!-- Show Media Files -->
   <div class="media-details-container">
     <media-files [mediaId]="mediaId()"></media-files>

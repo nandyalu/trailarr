@@ -111,27 +111,31 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
         # Extract YouTube ID from format tags
         youtube_id = None
-        for tag_value in format_tags.values():
-            youtube_id = extract_youtube_id(tag_value)
-            if youtube_id:
+        youtube_channel = "unknownchannel"
+        for tag_key, tag_value in format_tags.items():
+            if tag_key.lower().strip() == "artist":
+                youtube_channel = tag_value or "unknownchannel"
+                continue
+            if not youtube_id:
+                youtube_id = extract_youtube_id(tag_value)
+            if youtube_id and youtube_channel != "unknownchannel":
                 break
-        youtube_channel = format_tags.get("artist", "unknownchannel")
 
         # Get file timestamps
         file_path_obj = Path(file_path)
         file_stat = file_path_obj.stat()
         created_at = datetime.fromtimestamp(
-            file_stat.st_ctime, tz=timezone.utc
+            file_stat.st_mtime, tz=timezone.utc
         ) or datetime.now(timezone.utc)
         updated_at = datetime.fromtimestamp(
-            file_stat.st_mtime, tz=timezone.utc
+            file_stat.st_ctime, tz=timezone.utc
         ) or datetime.now(timezone.utc)
 
         # Create VideoInfo object
         video_info = VideoInfo(
             name=os.path.basename(file_path),
             file_path=file_path,
-            format_name=str(format.get("format_name", "N/A")),
+            format_name=os.path.splitext(file_path)[1].lower().strip("."),
             duration_seconds=int(float(format.get("duration", "0"))),
             duration=convert_duration(format.get("duration", "0")),
             size=int(format.get("size", "0")),

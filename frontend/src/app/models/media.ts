@@ -1,3 +1,26 @@
+export interface Download {
+  id: number;
+  path: string;
+  file_name: string;
+  file_hash: string;
+  size: number;
+  resolution: number; // e.g., 1080, 2160
+  file_format: string; // e.g., "mp4", "mkv"
+  video_format: string; // e.g., "h264", "h265"
+  audio_format: string; // e.g., "aac", "ac3"
+  audio_language: string | null; // e.g., "eng", "tel"
+  subtitle_format: string | null; // e.g., "srt", "ass"
+  subtitle_language: string | null; // e.g., "eng"
+  duration: number; // in seconds
+  youtube_id: string;
+  youtube_channel: string;
+  file_exists: boolean;
+  profile_id: number; // ID of the TrailerProfile used
+  media_id: number;
+  added_at: Date; // When trailer was downloaded
+  updated_at: Date; // When file was last modified
+}
+
 export interface Media {
   is_movie: boolean;
   connection_id: number;
@@ -29,6 +52,7 @@ export interface Media {
   added_at: Date;
   updated_at: Date;
   downloaded_at: Date;
+  downloads: Download[];
 
   // Additional properties
   isImageLoaded: boolean;
