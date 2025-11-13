@@ -197,7 +197,7 @@ if login_enabled:
     @trailarr_api.get(
         "/{rest_of_path:path}",
         include_in_schema=False,
-        dependencies=[Depends(validate_login)],
+        dependencies=[Depends(validate_api_key)],
     )
     async def serve_frontend(rest_of_path: str = ""):
         return await get_frontend(rest_of_path)

@@ -1,7 +1,9 @@
 import {Routes} from '@angular/router';
 import {RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteParamMediaId, RouteSeries, RouteSettings, RouteTasks} from '../routing';
+import {LoginComponent} from './login/login.component';
 
 export const routes: Routes = [
+  {path: 'login', component: LoginComponent},
   {path: RouteMedia, redirectTo: RouteHome, pathMatch: 'full'},
   {path: RouteHome, loadChildren: () => import('./media/routes')},
   {path: `${RouteMedia}/:${RouteParamMediaId}`, loadChildren: () => import('./media/media-details/routes')},

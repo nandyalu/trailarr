@@ -8,24 +8,24 @@ exports[`SettingsComponent renders 1`] = `
     >
       <a
         class="setnav-btn"
-        ng-reflect-router-link="connections"
-        ng-reflect-router-link-active="active"
+        routerlinkactive="active"
+      >
+        General
+      </a>
+      <a
+        class="setnav-btn"
         routerlinkactive="active"
       >
         Connections
       </a>
       <a
         class="setnav-btn"
-        ng-reflect-router-link="trailer"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
-        Trailer
+        Profiles
       </a>
       <a
         class="setnav-btn"
-        ng-reflect-router-link="about"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         About

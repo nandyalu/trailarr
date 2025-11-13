@@ -1,8 +1,11 @@
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "core*", "config*", "alembic*"]
+
 [project]
 name = "Trailarr"
 version = "0.6.0"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
-readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==25.1.0",
@@ -16,6 +19,8 @@ dependencies = [
     "pillow==12.0.0",
     "sqlmodel==0.0.27",
     "yt-dlp[curl-cffi,default]==2025.11.12",
+    "python-jose==3.3.0",
+    "passlib[bcrypt]==1.7.4",
 ]
 
 [dependency-groups]

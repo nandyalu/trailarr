@@ -8,8 +8,6 @@ exports[`SidenavComponent renders 1`] = `
     >
       <a
         class="sidenav-button"
-        ng-reflect-router-link="home"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg
@@ -29,8 +27,6 @@ exports[`SidenavComponent renders 1`] = `
       </a>
       <a
         class="sidenav-button"
-        ng-reflect-router-link="movies"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg
@@ -50,8 +46,6 @@ exports[`SidenavComponent renders 1`] = `
       </a>
       <a
         class="sidenav-button"
-        ng-reflect-router-link="series"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg
@@ -71,8 +65,6 @@ exports[`SidenavComponent renders 1`] = `
       </a>
       <a
         class="sidenav-button"
-        ng-reflect-router-link="tasks"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg
@@ -92,8 +84,6 @@ exports[`SidenavComponent renders 1`] = `
       </a>
       <a
         class="sidenav-button"
-        ng-reflect-router-link="logs"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg
@@ -113,8 +103,6 @@ exports[`SidenavComponent renders 1`] = `
       </a>
       <a
         class="sidenav-button"
-        ng-reflect-router-link="settings"
-        ng-reflect-router-link-active="active"
         routerlinkactive="active"
       >
         <svg

@@ -1,17 +1,42 @@
+from datetime import timedelta
 from typing import Annotated
+
 import bcrypt
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, status
 from fastapi.security import (
     APIKeyHeader,
     APIKeyQuery,
     HTTPBasic,
     HTTPBasicCredentials,
+    OAuth2PasswordRequestForm,
 )
 
+from api.v1.token import Token, create_access_token, get_current_user
 from config.settings import app_settings
 
 # Dependency to validate HHTP Basic Authentication in frontend
 browser_security = HTTPBasic()
+
+router = APIRouter()
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
+    is_correct_username = verify_username(form_data.username)
+    is_correct_password = verify_password(form_data.password)
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": form_data.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # Hash a string using bcrypt
@@ -136,6 +161,7 @@ def validate_api_key(
     query_api_key: str | None = Depends(query_schema),
     header_api_key: str | None = Depends(header_scheme),
     trailarr_api_key: Annotated[str | None, Cookie()] = None,
+    token: str = Depends(get_current_user),
 ) -> bool:
     """Validates the API key provided in the query, header or cookie \n
     Args:
@@ -156,6 +182,9 @@ def validate_api_key(
         _api_key = trailarr_api_key
     # Check if the API key is valid
     if _api_key and verify_api_key(_api_key):
+        return True
+    # If we have a token, we are good
+    if token:
         return True
     # Raise an exception if the API key is missing
     raise HTTPException(status_code=401, detail="API key is missing")

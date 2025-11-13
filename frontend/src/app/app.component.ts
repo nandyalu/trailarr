@@ -6,6 +6,7 @@ import {msMinute} from 'src/util';
 import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
 import {SidenavComponent} from './nav/sidenav/sidenav.component';
 import {TopnavComponent} from './nav/topnav/topnav.component';
+import {AuthService} from './services/auth.service';
 import {MessageData, WebsocketService} from './services/websocket.service';
 
 @Component({
@@ -15,6 +16,7 @@ import {MessageData, WebsocketService} from './services/websocket.service';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnDestroy, OnInit {
+  private readonly authService = inject(AuthService);
   private readonly websocketService = inject(WebsocketService);
 
   protected messages = signal<MessageData[]>([]);
@@ -67,7 +69,7 @@ export class AppComponent implements OnDestroy, OnInit {
     // Unsubscribe from the websocket and toast messages
     this.toastSubscription?.unsubscribe();
     // Clear api_key from cookies
-    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    this.authService.logout();
   }
 
   ngOnDestroy() {
