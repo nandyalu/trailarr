@@ -16,7 +16,12 @@
         [checked]="option === selectedOption()"
         (change)="onOptionClick(option)"
       />
-      <span class="option-name">{{ option }}</span>
+      @if (option === '0') {
+        <!-- This is for Video Resolution with "best" option (value "0") -->
+        <span class="option-name">best</span>
+      } @else {
+        <span class="option-name">{{ option }}</span>
+      }
     </label>
   }
 </div>

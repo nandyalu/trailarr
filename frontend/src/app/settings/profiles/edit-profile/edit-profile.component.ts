@@ -61,7 +61,7 @@ export class EditProfileComponent {
   fileFormatOptions = ['mkv', 'mp4', 'webm'];
   audioFormatOptions = ['aac', 'ac3', 'eac3', 'flac', 'opus', 'copy'];
   videoFormatOptions = ['h264', 'h265', 'vp8', 'vp9', 'av1', 'copy'];
-  videoResolutionOptions = ['360', '480', '720', '1080', '1440', '2160'];
+  videoResolutionOptions = ['480', '720', '1080', '1440', '2160', '0']; // '0' for best
   subtitleFormatOptions = ['srt', 'vtt'];
 
   isLoading: boolean = false;
