@@ -901,6 +901,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/trim_video:
+    post:
+      tags:
+        - Files
+        - Media
+      summary: Trim Video
+      description: Trim the video file at the given timestamps.
+      operationId: trim_video_api_v1_files_trim_video_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: file_path
+          in: query
+          required: true
+          schema:
+            type: string
+            title: File Path
+        - name: output_file
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Output File
+        - name: start_timestamp
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: integer
+              - type: number
+              - type: string
+            title: Start Timestamp
+        - name: end_timestamp
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: integer
+              - type: number
+              - type: string
+            title: End Timestamp
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Trim Video Api V1 Files Trim Video Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/files/rename:
     post:
       tags:
@@ -1319,6 +1385,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MediaRead'
+        '401':
+          description: API key is missing
+        '404':
+          description: Media Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/downloads:
+    get:
+      tags:
+        - Media
+      summary: Get Media Downloads
+      description: "Get all downloads for a specific media item.\nArgs:\n    media_id\
+        \ (int): The ID of the media item.\nReturns:\n    list[DownloadRead]: List\
+        \ of download objects for the media item."
+      operationId: get_media_downloads_api_v1_media__media_id__downloads_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: media_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Media Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DownloadRead'
+                title: Response Get Media Downloads Api V1 Media  Media Id  Downloads
+                  Get
         '401':
           description: API key is missing
         '404':
@@ -2594,6 +2712,97 @@ components:
         - filters
       title: CustomFilterRead
       description: Model for reading CustomFilter.
+    DownloadRead:
+      properties:
+        path:
+          type: string
+          title: Path
+        file_name:
+          type: string
+          title: File Name
+        file_hash:
+          type: string
+          title: File Hash
+        size:
+          type: integer
+          title: Size
+        resolution:
+          type: integer
+          title: Resolution
+        file_format:
+          type: string
+          title: File Format
+        video_format:
+          type: string
+          title: Video Format
+        audio_format:
+          type: string
+          title: Audio Format
+        audio_language:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Audio Language
+        subtitle_format:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Subtitle Format
+        subtitle_language:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Subtitle Language
+        duration:
+          type: integer
+          title: Duration
+          default: 0
+        youtube_id:
+          type: string
+          title: Youtube Id
+          default: unknown0000
+        youtube_channel:
+          type: string
+          title: Youtube Channel
+          default: unknownchannel
+        file_exists:
+          type: boolean
+          title: File Exists
+          default: true
+        profile_id:
+          type: integer
+          title: Profile Id
+          default: 0
+        added_at:
+          type: string
+          format: date-time
+          title: Added At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        id:
+          type: integer
+          title: Id
+        media_id:
+          type: integer
+          title: Media Id
+      type: object
+      required:
+        - path
+        - file_name
+        - file_hash
+        - size
+        - resolution
+        - file_format
+        - video_format
+        - audio_format
+        - added_at
+        - updated_at
+        - id
+        - media_id
+      title: DownloadRead
+      description: Model for reading Download.
     ErrorResponse:
       properties:
         message:
@@ -2909,6 +3118,12 @@ components:
               format: date-time
             - type: 'null'
           title: Downloaded At
+        downloads:
+          items:
+            $ref: '#/components/schemas/DownloadRead'
+          type: array
+          title: Downloads
+          default: []
       type: object
       required:
         - connection_id

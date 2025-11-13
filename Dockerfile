@@ -51,6 +51,9 @@ COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
 RUN chmod +x /tmp/install_drivers.sh && \
     /tmp/install_drivers.sh
 
+# Install Deno for use with yt-dlp
+RUN curl -fsSL https://deno.land/install.sh | sh
+
 # ARG APP_VERSION, will be set during build by github actions
 ARG APP_VERSION=0.0.0-dev
 
