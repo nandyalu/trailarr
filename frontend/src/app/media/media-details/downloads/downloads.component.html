@@ -47,7 +47,7 @@
                 @if (download.subtitle_format) {
                   <span class="meta-separator">•</span>
                   <span class="meta-item">
-                    Subtitles: {{ download.subtitle_format }}
+                    {{ download.subtitle_format }}
                     @if (download.subtitle_language) {
                       ({{ download.subtitle_language }})
                     }
@@ -64,15 +64,15 @@
           <div class="download-profile">
             <span class="profile-label">Profile:</span>
             @if (download.profile_id === 0) {
-              <span class="profile-name">Unknown Profile</span>
+              <span class="profile-name">Unknown</span>
             } @else {
               @let profileAvailable = profilesMap().has(download.profile_id);
               @if (profileAvailable) {
                 <span class="profile-name link" [routerLink]="['/settings', 'profiles', download.profile_id]">
-                  {{ profilesMap().get(download.profile_id) || 'Deleted Profile' }}
+                  {{ profilesMap().get(download.profile_id) || 'Deleted' }}
                 </span>
               } @else {
-                <span class="profile-name">Deleted Profile</span>
+                <span class="profile-name">Deleted</span>
               }
             }
           </div>
