@@ -207,6 +207,41 @@ def get_video_info(file_path: str) -> video_analysis.VideoInfo | None:
 
 
 @files_router.post(
+    "/trim_video",
+    status_code=status.HTTP_200_OK,
+    description="Trim the video file at the given timestamps.",
+)
+def trim_video(
+    file_path: str,
+    output_file: str,
+    start_timestamp: int | float | str,
+    end_timestamp: int | float | str,
+) -> str:
+    """Trim the video file at the given timestamps.\n
+    Args:
+        file_path (str): Path of the video file.
+        output_file (str): Path to save the output file.
+        start_timestamp (int | float | str): Start timestamp to trim the video.
+        end_timestamp (int | float | str): End timestamp to trim the video. \n
+    Raises:
+        HTTPException (400): If the file path is invalid. \n
+    Returns:
+        str: Message indicating the status of the operation."""
+    if not _is_path_safe(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
+        )
+    try:
+        res = video_analysis.trim_video(
+            file_path, output_file, start_timestamp, end_timestamp
+        )
+    except Exception as e:
+        return str(e)
+    return "Video trimmed successfully." if res else "Video trim failed."
+
+
+@files_router.post(
     "/rename",
     status_code=status.HTTP_200_OK,
     description="Rename a file or folder.",

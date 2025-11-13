@@ -70,6 +70,31 @@ There are 3 actions buttons that can appear depending on the selected Media
 !!! warning
     This will Delete the trailer file on disk! Cannot be reversed!
 
+## Downloads Section
+
+![Media Downloads](media-downloads.png)
+
+This section shows the download history of the selected Media item.
+
+It shows the following details:
+- File Name
+- Video Resolution
+- Video Format
+- Audio Format (and language if set)
+- Subtitle Format (if any, and language if set)
+- File Size
+- Duration
+- Downloaded At (date and time)
+- Profile name used for download (clickable, opens the Profile details)
+- Link to the YouTube video (clickable, opens in new tab)
+
+!!! tip ""
+    If the trailer was downloaded using an older version of Trailarr ( `< 0.6.0-beta`), some of the above details may not be available.
+
+!!! tip ""
+    - Profile name is shown as `Unknown` if the trailer was downloaded using an older version of Trailarr ( `< 0.6.0-beta`) or outside of Trailarr.
+    - Profile name is shown as `Deleted` if the profile used for download has since been deleted.
+
 ## Files Section
 
 ![Media Details - Click to Open Files](media-files-click-to-open.png)
@@ -100,6 +125,12 @@ Plays the selected video in a dialog. Click outside the dialog to close video!
 - Video files only!
 
 Reads and displays the details of the video file such as file, video, audio and subtitle formats along with language and some other relevant information.
+
+### Trim Video
+
+- Video files only!
+
+Opens a dialog to trim the selected video file. You can set the start and end time to trim the video accordingly.
 
 ### View Text
 

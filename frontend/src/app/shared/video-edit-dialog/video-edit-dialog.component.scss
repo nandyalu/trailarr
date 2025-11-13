@@ -1,0 +1,188 @@
+.video-edit-dialog {
+  background: var(--color-surface-container-highest);
+  border-radius: 8px;
+  padding: 0;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-outline);
+    background: var(--color-surface-container-high);
+
+    h2 {
+      margin: 0;
+      color: var(--color-on-surface);
+    }
+
+    .close {
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: var(--color-surface-container);
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--color-on-surface);
+      }
+    }
+  }
+
+  .video-container {
+    padding: 1rem;
+    background: #000;
+    display: flex;
+    justify-content: center;
+
+    video {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 50vh;
+    }
+  }
+
+  .trim-controls {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .time-inputs-row {
+      display: flex;
+      gap: 1rem;
+
+      .time-input-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          font-weight: 600;
+          color: var(--color-on-surface);
+        }
+
+        .input-with-button {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          justify-content: center;
+
+          input {
+            // flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--color-outline);
+            border-radius: 4px;
+            background: var(--color-surface);
+            color: var(--color-on-surface);
+
+            &:focus {
+              outline: none;
+              border-color: var(--color-primary);
+            }
+          }
+
+          .small {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    .output-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 600;
+        color: var(--color-on-surface);
+      }
+
+      input[type='text'] {
+        padding: 0.5rem;
+        border: 1px solid var(--color-outline);
+        border-radius: 4px;
+        background: var(--color-surface);
+        color: var(--color-on-surface);
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+        }
+      }
+    }
+  }
+
+  .dialog-actions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-outline);
+    background: var(--color-surface-container-high);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+
+    .action-buttons {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+    }
+
+    .processing-text {
+      color: var(--color-on-surface-variant);
+      font-style: italic;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .video-edit-dialog {
+    width: 95vw;
+    max-height: 95vh;
+
+    .video-container video {
+      max-height: 40vh;
+    }
+
+    .trim-controls {
+      .time-inputs-row {
+        flex-direction: column;
+        gap: 1rem;
+
+        .time-input-group .input-with-button {
+          flex-direction: column;
+          align-items: stretch;
+
+          .small {
+            width: 100%;
+          }
+        }
+      }
+    }
+
+    .dialog-actions {
+      .action-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 1rem;
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
