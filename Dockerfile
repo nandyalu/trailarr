@@ -71,7 +71,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install tzdata and pciutils, set timezone
 RUN apt-get update && apt-get install -y \
-    curl 7z \
+    curl p7zip-full \
     tzdata \
     pciutils \
     udev \
