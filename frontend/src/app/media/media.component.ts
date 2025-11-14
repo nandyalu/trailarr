@@ -64,10 +64,12 @@ export class MediaComponent implements OnInit {
         this.moviesOnly.set(null);
     }
 
-    // Subscribe to WebSocket updates
-    this.webSocketService.toastMessage.subscribe(() => {
-      this.mediaService.mediaResource.reload();
-    });
+    // Subscribe to WebSocket updates - REDUNDANT WITH MEDIA SERVICE NOW
+    // this.webSocketService.toastMessage.subscribe((msg) => {
+    //   if (msg.reload === 'media') {
+    //     this.mediaService.mediaResource.reload();
+    //   }
+    // });
   }
 
   // Effects for reacting to changes

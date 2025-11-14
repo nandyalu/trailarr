@@ -269,12 +269,12 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
         msg, is_success = media_manager.update_monitoring(media_id, monitor)
         logger.info(msg)
         await websockets.ws_manager.broadcast(
-            msg, "Success" if is_success else "Error"
+            msg, "Success" if is_success else "Error", reload="media"
         )
         return msg
     except Exception as e:
         await websockets.ws_manager.broadcast(
-            "Error changing Monitor status!", "Error"
+            "Error changing Monitor status!", "Error", reload="media"
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
@@ -325,7 +325,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
         media_manager.update_ytid(media_id, yt_id)
         msg = f"YouTube ID for media with ID: {media_id} has been updated."
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return msg
     except Exception as e:
         raise HTTPException(
@@ -362,11 +362,11 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             f" ({yt_id})"
         )
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return yt_id
     msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
     logger.info(msg)
-    await websockets.ws_manager.broadcast(msg, "Error")
+    await websockets.ws_manager.broadcast(msg, "Error", reload="media")
     return ""
 
 
@@ -414,11 +414,11 @@ async def delete_media_trailer(media_id: int) -> str:
             f"Trailer for media '{media.title}' [{media.id}] has been deleted."
         )
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return msg
     except Exception as e:
         await websockets.ws_manager.broadcast(
-            "Error deleting trailer!", "Error"
+            "Error deleting trailer!", "Error", reload="media"
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
@@ -467,11 +467,13 @@ async def batch_update_media(update: BatchUpdate) -> None:
             batch_download_trailers(update.profile_id, update.media_ids)
         if msg:
             logger.info(msg)
-            await websockets.ws_manager.broadcast(msg, "Success")
+            await websockets.ws_manager.broadcast(
+                msg, "Success", reload="media"
+            )
             return
     except Exception as e:
         await websockets.ws_manager.broadcast(
-            f"Error updating Media! {e}", "Error"
+            f"Error updating Media! {e}", "Error", reload="media"
         )
         logger.error(e)
         raise HTTPException(

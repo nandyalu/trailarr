@@ -223,7 +223,9 @@ def _to_read_task_list(db_task_list: Sequence[TaskInfoDB]) -> list[TaskInfo]:
     return task_read_list
 
 
-def _to_read_queue_list(db_queue_list: Sequence[QueueInfoDB]) -> list[QueueInfo]:
+def _to_read_queue_list(
+    db_queue_list: Sequence[QueueInfoDB],
+) -> list[QueueInfo]:
     """-->>This is a private method<<-- \n
     Convert a list of TaskInfoDB objects to a list of TaskInfo objects.\n"""
     if not db_queue_list or len(db_queue_list) == 0:
@@ -241,7 +243,9 @@ def get_all_tasks() -> list[TaskInfo]:
         sequence: List of all tasks scheduled in the scheduler.
     """
     with _get_session() as session:
-        statement = select(TaskInfoDB).where(col(TaskInfoDB.scheduled).is_(True))
+        statement = select(TaskInfoDB).where(
+            col(TaskInfoDB.scheduled).is_(True)
+        )
         _jobs_list = session.exec(statement).all()
     return _to_read_task_list(_jobs_list)
 
@@ -335,11 +339,15 @@ def task_started_event(event: events.JobEvent) -> None:
     )
     update_queue(queue)
     cleanup_queue()  # Cleanup the finished queue items
-    websockets.broadcast(f"'{_task_name}' Task Started", type="Info")
+    websockets.broadcast(
+        f"'{_task_name}' Task Started", type="Info", reload="media"
+    )
     return
 
 
-def task_finished_event(event: events.JobEvent, status: str = "Finished") -> None:
+def task_finished_event(
+    event: events.JobEvent, status: str = "Finished"
+) -> None:
     """Event handler for task Finished/Error events."""
     _now = get_current_time()
     _task_id = event.job_id
@@ -379,9 +387,13 @@ def task_finished_event(event: events.JobEvent, status: str = "Finished") -> Non
     queue.status = status
     update_queue(queue)
     if status == "Finished":
-        websockets.broadcast(f"'{_task_name}' Task Finished", type="Success")
+        websockets.broadcast(
+            f"'{_task_name}' Task Finished", type="Success", reload="media"
+        )
     else:
-        websockets.broadcast(f"'{_task_name}' Task Error", type="Error")
+        websockets.broadcast(
+            f"'{_task_name}' Task Error", type="Error", reload="media"
+        )
     return
 
 

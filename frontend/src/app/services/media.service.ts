@@ -107,9 +107,10 @@ export class MediaService {
   constructor() {
     // Subscribe to WebSocket updates to reload media data when necessary
     this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
-      const msgText = msg.message.toLowerCase();
-      const checkForItems = ['media', 'trailer', 'task', 'download', 'batch', 'update', 'delete', 'monitor', 'unmonitor'];
-      if (checkForItems.some((term) => term && msgText.includes(term))) {
+      // const msgText = msg.message.toLowerCase();
+      // const checkForItems = ['media', 'trailer', 'task', 'download', 'batch', 'update', 'delete', 'monitor', 'unmonitor'];
+      // if (checkForItems.some((term) => term && msgText.includes(term))) {
+      if (msg.reload === 'media') {
         this.mediaResource.reload();
       }
     });

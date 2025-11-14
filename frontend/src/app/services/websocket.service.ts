@@ -5,6 +5,7 @@ import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 export interface MessageData {
   message: string;
   type: string;
+  reload?: string;
 }
 
 @Injectable({
@@ -51,7 +52,7 @@ export class WebsocketService {
   }
 
   public showToast(message: string, type: string = 'Success'): void {
-    this.toastMessage.next({message, type});
+    this.toastMessage.next({message, type, reload: 'none'});
   }
 
   close() {

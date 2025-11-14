@@ -1984,6 +1984,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/settings/logout:
+    post:
+      tags:
+        - Settings
+      summary: Logout
+      description: "Force user logout by clearing browser's cached Basic Auth credentials.\n\
+        This endpoint always returns 401 to force the browser to clear its\ncached\
+        \ authentication credentials.\n\nReturns:\n    dict: This will never return\
+        \ successfully, always raises 401"
+      operationId: logout_api_v1_settings_logout_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Logout Api V1 Settings Logout Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/logs/download:
     get:
       tags:
@@ -3287,6 +3326,9 @@ components:
         app_mode:
           type: string
           title: App Mode
+        app_theme:
+          type: string
+          title: App Theme
         gpu_available_amd:
           type: boolean
           title: Gpu Available Amd
@@ -3352,6 +3394,7 @@ components:
         - api_key
         - app_data_dir
         - app_mode
+        - app_theme
         - gpu_available_amd
         - gpu_available_intel
         - gpu_available_nvidia
