@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, ValidationError
 
-from api.v1.authentication import verify_password, verify_username
 from config.settings import app_settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -21,7 +20,9 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict, expires_delta: timedelta | None = None
+) -> str:
     """Creates a JWT access token. \n
     Args:
         data (dict): The data to encode in the token.
@@ -41,7 +42,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
-def verify_token(token: str, credentials_exception: HTTPException) -> TokenData:
+def verify_token(
+    token: str, credentials_exception: HTTPException
+) -> TokenData:
     """Verifies a JWT access token. \n
     Args:
         token (str): The token to verify.
@@ -50,10 +53,8 @@ def verify_token(token: str, credentials_exception: HTTPException) -> TokenData:
     Returns:
         TokenData: The decoded token data."""
     try:
-        payload = jwt.decode(
-            token, app_settings.api_key, algorithms=["HS256"]
-        )
-        username: str = payload.get("sub")
+        payload = jwt.decode(token, app_settings.api_key, algorithms=["HS256"])
+        username: str | None = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -63,7 +64,7 @@ def verify_token(token: str, credentials_exception: HTTPException) -> TokenData:
 
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)]
+    token: Annotated[str, Depends(oauth2_scheme)],
 ) -> TokenData:
     """Gets the current user from the JWT access token. \n
     Args:

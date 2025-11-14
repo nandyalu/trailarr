@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from config.logs.db_utils import flush_logs_to_db
 from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
-from api.v1.authentication import validate_api_key_cookie, validate_login
+from api.v1.authentication import validate_api_key_cookie, validate_api_key
 from app_logger import ModuleLogger
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
@@ -248,7 +248,7 @@ async def get_frontend(rest_of_path: str = ""):
 # Support both Docker (/app) and bare metal (/opt/trailarr) paths
 static_dirs = [
     "/opt/trailarr/frontend-build/browser",  # Bare metal
-    "/app/frontend-build/browser"            # Docker
+    "/app/frontend-build/browser",  # Docker
 ]
 
 static_dir = None
