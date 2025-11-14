@@ -218,7 +218,7 @@ class _Config:
 
         # If the webui_password is empty, set it to the default
         # Handle whitespace and empty strings (even improperly escaped quotes)
-        _webui_password = self.webui_password.replace('"', '').replace("'", "")
+        _webui_password = self.webui_password.replace('"', "").replace("'", "")
         _webui_password = _webui_password.replace("\t", "").strip()
         if not _webui_password:
             self.webui_password = self._DEFAULT_WEBUI_PASSWORD
@@ -230,6 +230,7 @@ class _Config:
             "api_key": self.api_key,
             "app_data_dir": APP_DATA_DIR,
             "app_mode": self.app_mode,
+            "app_theme": self.app_theme,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
             "gpu_available_amd": self.gpu_available_amd,
@@ -335,6 +336,13 @@ class _Config:
     #         value = self._DEFAULT_DB_URL
     #     self._database_url = value
     #     self._save_to_env("DATABASE_URL", self._database_url)
+
+    app_theme = str_property(
+        "APP_THEME", default="auto", valid_values=["light", "dark", "auto"]
+    )
+    """Application theme for the WebUI.
+        - Default is 'auto'.
+        - Valid values are 'light', 'dark', 'auto'."""
 
     monitor_enabled = bool_property("MONITOR_ENABLED", default=True)
     """Monitor enabled for the application.

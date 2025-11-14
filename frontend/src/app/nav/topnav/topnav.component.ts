@@ -1,8 +1,10 @@
-import {Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal} from '@angular/core';
+import {Component, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {SettingsService} from 'src/app/services/settings.service';
+import {WebsocketService} from 'src/app/services/websocket.service';
 import {RouteHome, RouteMedia} from 'src/routing';
 import {SearchMedia} from '../../models/media';
 import {MediaService} from '../../services/media.service';
@@ -19,6 +21,8 @@ export class TopnavComponent implements OnInit {
   private readonly mediaService = inject(MediaService);
   private readonly renderer = inject(Renderer2);
   private readonly router = inject(Router);
+  private readonly settingsService = inject(SettingsService);
+  private readonly websocketService = inject(WebsocketService);
 
   isDarkModeEnabled = true;
   searchQuery = signal('');
@@ -28,6 +32,22 @@ export class TopnavComponent implements OnInit {
   selectedId = signal(-1);
 
   protected readonly RouteHome = RouteHome;
+
+  // Get theme from settings and apply it
+  setThemeEffect = effect(() => {
+    let theme = this.settingsService.settingsResource.value()?.app_theme || 'auto';
+    theme = theme.toLowerCase().trim();
+    if (theme === 'auto') {
+      const darkTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      theme = darkTheme ? 'dark' : 'light';
+    }
+    this.renderer.setAttribute(document.documentElement, 'theme', theme);
+    this.renderer.removeClass(document.body, 'light');
+    this.renderer.removeClass(document.body, 'dark');
+    this.renderer.addClass(document.body, theme);
+    // console.log('Theme set to %s', theme);
+    // return;
+  });
 
   clearSearchResults() {
     this.searchResults.set([]);
@@ -113,48 +133,32 @@ export class TopnavComponent implements OnInit {
       // console.log('Search query: %s', value);
       this.onSearch(value);
     });
-
-    // Check if theme is already set in local storage
-    const theme = localStorage.getItem('theme');
-    if (theme) {
-      let darkTheme = theme === 'dark';
-      this.setTheme(darkTheme);
-      // console.log('LocalStorage: %s mode enabled', theme);
-    } else {
-      // Check if the user prefers dark mode
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // The user has indicated that they prefer a dark color scheme
-        this.setTheme(true);
-        // console.log('Media: Dark mode enabled');
-      } else {
-        // The user has indicated that they prefer a light color scheme
-        this.setTheme(false);
-        // console.log('Media: Light mode enabled');
-      }
-    }
-  }
-  onThemeChange(event: any) {
-    // if (event) {
-    //   this.setTheme(true);
-    // } else {
-    //   this.setTheme(false);
-    // }
-    this.setTheme(event ? true : false);
-    // let darkTheme = event.target.checked;
-    // this.setTheme(darkTheme);
-    return;
   }
 
-  setTheme(darkTheme: boolean = true) {
-    let theme = darkTheme ? 'dark' : 'light';
-    let oldTheme = darkTheme ? 'light' : 'dark';
-    this.isDarkModeEnabled = darkTheme;
-    this.renderer.setAttribute(document.documentElement, 'theme', theme);
-    this.renderer.removeClass(document.body, oldTheme);
-    this.renderer.addClass(document.body, theme);
-    localStorage.setItem('theme', theme);
-    // console.log('Theme set to %s', theme);
-    return;
+  logout() {
+    // Clear api_key from cookies first
+    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+    console.log('Logging out...');
+
+    // Close all subscriptions to WebSocket to avoid memory leaks
+    this.websocketService.close();
+
+    // Call logout endpoint to clear browser's Basic Auth credentials
+    // This will cause a 401 response which clears the browser's cached credentials
+    this.settingsService.logout().subscribe({
+      next: () => {
+        // This won't execute since logout always returns 401
+        console.log('Logout successful, reloading page...');
+        window.location.reload();
+      },
+      error: () => {
+        // The 401 response is expected - it clears the cached credentials
+        console.log('Browser credentials cleared, reloading page...');
+        // Force page reload to show login dialog
+        window.location.reload();
+      },
+    });
   }
 
   noSearchResult: SearchMedia = {

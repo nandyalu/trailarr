@@ -35,6 +35,13 @@
         [disabled]="false"
         (onSubmit)="updateSetting('monitor_interval', $event)"
       />
+      <app-options-setting
+        name="Theme"
+        description="Select application theme."
+        [options]="themeOptions"
+        [selectedOption]="settings()?.app_theme | titlecase"
+        (optionChange)="updateSetting('app_theme', $event)"
+      />
     </div>
   </details>
 </section>
