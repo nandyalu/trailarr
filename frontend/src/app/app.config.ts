@@ -1,8 +1,9 @@
 import {DATE_PIPE_DEFAULT_OPTIONS} from '@angular/common';
-import {provideHttpClient} from '@angular/common/http';
+import {HTTP_INTERCEPTORS, provideHttpClient} from '@angular/common/http';
 import {ApplicationConfig, ErrorHandler, importProvidersFrom} from '@angular/core';
 import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading} from '@angular/router';
 import {ApiModule} from 'generated-sources/openapi';
+import {AuthInterceptor} from './services/auth.interceptor';
 import {TimeagoModule} from 'ngx-timeago';
 import {routes} from './app.routes';
 import {GlobalErrorHandler} from './error-handler';
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     ),
     {provide: ErrorHandler, useClass: GlobalErrorHandler},
     provideHttpClient(),
-    // withInterceptors([authInterceptor]),
+    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
     {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium', timezone: 'UTC'}},
     importProvidersFrom(ApiModule.forRoot({rootUrl: ''}), TimeagoModule.forRoot()),
   ],

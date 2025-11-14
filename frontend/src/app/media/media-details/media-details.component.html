@@ -85,8 +85,7 @@
           }
           <span
             class="text-lg title-text"
-            appCopyToClipboard
-            [textToCopy]="selectedMedia_.title"
+            [appCopyToClipboard]="selectedMedia_.title"
             [title]="selectedMedia_.title"
             [style]="'view-transition-name: media-' + selectedMedia_.id + '-title'"
           >
@@ -151,7 +150,7 @@
           <span>
             <div class="labeled-text" [title]="selectedMedia_.folder_path">
               <span class="label">Path</span>
-              <span class="text-sm" appCopyToClipboard [textToCopy]="selectedMedia_.folder_path">
+              <span class="text-sm" [appCopyToClipboard]="selectedMedia_.folder_path">
                 <code>{{ selectedMedia_.folder_path }}</code>
               </span>
             </div>
