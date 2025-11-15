@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Generator, Sequence
 
+from pydantic import field_validator
+
 from api.v1 import websockets
 from apscheduler import events
 from apscheduler.schedulers.base import BaseScheduler
@@ -24,6 +26,14 @@ class TaskInfo(SQLModel):
     next_run: datetime | None = Field(default=None)
     scheduled: bool = Field(default=True)
 
+    @field_validator("last_run_start", "next_run", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        if isinstance(value, datetime) and value.tzinfo is None:
+            # Assume naive datetime loaded from DB is UTC
+            return value.replace(tzinfo=timezone.utc)
+        return value
+
 
 class TaskInfoDB(TaskInfo, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -37,6 +47,14 @@ class QueueInfo(SQLModel):
     # queued: datetime = Field(default_factory=get_current_time)
     started: datetime = Field(default_factory=get_current_time)
     status: str = Field(default="Queued")
+
+    @field_validator("finished", "started", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        if isinstance(value, datetime) and value.tzinfo is None:
+            # Assume naive datetime loaded from DB is UTC
+            return value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class QueueInfoDB(QueueInfo, table=True):
@@ -340,7 +358,7 @@ def task_started_event(event: events.JobEvent) -> None:
     update_queue(queue)
     cleanup_queue()  # Cleanup the finished queue items
     websockets.broadcast(
-        f"'{_task_name}' Task Started", type="Info", reload="media"
+        f"'{_task_name}' Task Started", type="Info", reload="media,tasks"
     )
     return
 
@@ -388,11 +406,13 @@ def task_finished_event(
     update_queue(queue)
     if status == "Finished":
         websockets.broadcast(
-            f"'{_task_name}' Task Finished", type="Success", reload="media"
+            f"'{_task_name}' Task Finished",
+            type="Success",
+            reload="media,tasks",
         )
     else:
         websockets.broadcast(
-            f"'{_task_name}' Task Error", type="Error", reload="media"
+            f"'{_task_name}' Task Error", type="Error", reload="media,tasks"
         )
     return
 

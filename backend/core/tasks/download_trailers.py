@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -79,7 +79,7 @@ def download_trailer_by_id(
         func=_download_trailer,
         args=(media, profile, retry_count),
         trigger="date",
-        run_date=datetime.now() + timedelta(seconds=1),
+        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id=f"download_trailer_by_id_{media_id}",
         name=f"Download Trailer for {media.title}",
         max_instances=1,
@@ -173,7 +173,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         func=_batch_download_task,
         args=(media_trailer_list, profile),
         trigger="date",
-        run_date=datetime.now() + timedelta(seconds=1),
+        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id="batch_download_trailers",
         name="Batch Download Trailers",
         max_instances=1,

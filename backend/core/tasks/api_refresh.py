@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import ArrType, ConnectionRead
 from core.radarr.connection_manager import RadarrConnectionManager
@@ -80,7 +80,7 @@ def api_refresh_by_id_job(connection_id: int):
         func=run_async,
         args=(connection,),
         trigger="date",
-        run_date=datetime.now() + timedelta(seconds=1),
+        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id=f"refresh_api_data_by_connection_{connection_id}",
         name=f"Arr Data Refresh for {connection.name}",
         max_instances=1,

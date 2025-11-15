@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 
+from pydantic import field_validator
 from sqlmodel import Field, Relationship
 
 from core.base.database.models.base import AppSQLModel
@@ -88,6 +89,11 @@ class ConnectionRead(ConnectionBase):
     id: int
     added_at: datetime
     path_mappings: list[PathMappingCRU]
+
+    @field_validator("added_at", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        return cls.set_timezone_to_utc(value)
 
 
 class ConnectionUpdate(AppSQLModel):

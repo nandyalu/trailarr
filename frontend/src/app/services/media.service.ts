@@ -110,7 +110,7 @@ export class MediaService {
       // const msgText = msg.message.toLowerCase();
       // const checkForItems = ['media', 'trailer', 'task', 'download', 'batch', 'update', 'delete', 'monitor', 'unmonitor'];
       // if (checkForItems.some((term) => term && msgText.includes(term))) {
-      if (msg.reload === 'media') {
+      if (msg.reload?.includes('media')) {
         this.mediaResource.reload();
       }
     });

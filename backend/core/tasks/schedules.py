@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -75,7 +75,7 @@ def refresh_api_data_job():
         minutes=app_settings.monitor_interval,
         id="hourly_refresh_api_data_job",
         name="Arr Data Refresh",
-        next_run_time=datetime.now() + timedelta(seconds=30),
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
         max_instances=1,
     )
     logger.info("API Refresh job scheduled!")
@@ -94,7 +94,7 @@ def image_refresh_job():
         hours=6,
         id="image_refresh_job",
         name="Image Refresh",
-        next_run_time=datetime.now() + timedelta(seconds=720),
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=720),
         max_instances=1,
     )
     logger.info("Image refresh job scheduled!")
@@ -113,7 +113,7 @@ def scan_disk_for_trailers_job():
         minutes=app_settings.monitor_interval,
         id="scan_disk_for_trailers_job",
         name="Scan Disk for Trailers",
-        next_run_time=datetime.now() + timedelta(seconds=480),
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=480),
         max_instances=1,
     )
     logger.info("Scan Disk for Trailers job scheduled!")
@@ -132,7 +132,7 @@ def update_check_job():
         days=1,
         id="docker_update_check_job",
         name="Docker Update Check",
-        next_run_time=datetime.now() + timedelta(seconds=240),
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=240),
         max_instances=1,
     )
     logger.info("Update Check job scheduled!")
@@ -151,7 +151,7 @@ def trailer_cleanup_job():
         days=1,
         id="cleanup_job",
         name="Cleanup Task",
-        next_run_time=datetime.now() + timedelta(hours=4),
+        next_run_time=datetime.now(timezone.utc) + timedelta(hours=4),
         max_instances=1,
     )
     logger.info("Cleanup job scheduled!")
@@ -170,7 +170,7 @@ def download_missing_trailers_job():
         minutes=app_settings.monitor_interval,
         id="download_missing_trailers_job",
         name="Download Missing Trailers",
-        next_run_time=datetime.now() + timedelta(seconds=900),
+        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=900),
         max_instances=1,
     )
     logger.info("Download Missing Trailers job scheduled!")
@@ -218,6 +218,8 @@ def run_task_now(task_id: str) -> str:
     if not _task:
         return "Unable to trigger task, Task with 'task_id' not found!"
     _name = _task.name
-    _next_run_time = datetime.now() + timedelta(seconds=1)  # Start in 1 second
+    _next_run_time = datetime.now(timezone.utc) + timedelta(
+        seconds=1
+    )  # Start in 1 second
     scheduler.modify_job(job_id=task_id, next_run_time=_next_run_time)
     return f"'{_name}' Task triggered successfully!"
