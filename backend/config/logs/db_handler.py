@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 import traceback
 from logging import LogRecord
@@ -65,7 +64,7 @@ class DatabaseLoggingHandler(logging.Handler):
                     _tb = get_synthetic_traceback()
 
             # Format timestamp and task name if available
-            _created = datetime.fromtimestamp(record.created)
+            # _created = datetime.fromtimestamp(record.created)
             _taskName = "General"
             if hasattr(record, "taskName"):
                 _taskName = record.taskName
@@ -89,7 +88,7 @@ class DatabaseLoggingHandler(logging.Handler):
 
             # Create a log record instance for the database
             log_record = AppLogRecord(
-                created=_created,
+                # created=_created,
                 loggername=_loggername,
                 level=record.levelname,  # type: ignore
                 message=_message,

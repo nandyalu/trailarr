@@ -2101,7 +2101,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AppLogRecord'
+                  $ref: '#/components/schemas/AppLogRecordRead'
                 title: Response Get Raw Logs Api V1 Logs Raw Get
         '401':
           description: API key is missing
@@ -2523,7 +2523,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AppLogRecord:
+    AppLogRecordRead:
       properties:
         id:
           type: integer
@@ -2535,7 +2535,6 @@ components:
         loggername:
           type: string
           title: Loggername
-          default: General
         level:
           $ref: '#/components/schemas/LogLevel'
         message:
@@ -2564,13 +2563,18 @@ components:
           title: Traceback
       type: object
       required:
+        - id
+        - created
+        - loggername
         - level
         - message
         - filename
         - lineno
         - taskname
-      title: AppLogRecord
-      description: A SQLModel representation of a log record for SQLite storage.
+        - mediaid
+        - traceback
+      title: AppLogRecordRead
+      description: A read model for log records with timezone correction.
     ArrType:
       type: string
       enum:

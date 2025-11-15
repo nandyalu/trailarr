@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
@@ -18,3 +19,10 @@ class AppSQLModel(SQLModel):
     """
 
     metadata = METADATA
+
+    @classmethod
+    def set_timezone_to_utc(cls, value):
+        if isinstance(value, datetime) and value.tzinfo is None:
+            # Assume naive datetime loaded from DB is UTC
+            return value.replace(tzinfo=timezone.utc)
+        return value
