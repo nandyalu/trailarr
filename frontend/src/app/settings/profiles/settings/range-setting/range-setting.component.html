@@ -1,4 +1,4 @@
-<div class="content-label">
+<div [class]="['content-label', 'text-' + colorType()]">
   <label [for]="inputId">{{ name() }}</label>
   <small>{{ description() }}</small>
   @if (descriptionExtra()) {

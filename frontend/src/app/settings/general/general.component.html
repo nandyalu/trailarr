@@ -101,6 +101,8 @@
           description="Use NVIDIA GPU for hardware acceleration."
           [options]="trueFalseOptions"
           [selectedOption]="settings()?.gpu_enabled_nvidia"
+          [colorType]="'warning'"
+          [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_nvidia', $event)"
         />
       }
@@ -110,6 +112,8 @@
           description="Use Intel GPU for hardware acceleration (VAAPI)."
           [options]="trueFalseOptions"
           [selectedOption]="settings()?.gpu_enabled_intel"
+          [colorType]="'warning'"
+          [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_intel', $event)"
         />
       }
@@ -119,6 +123,8 @@
           description="Use AMD GPU for hardware acceleration (AMF)."
           [options]="trueFalseOptions"
           [selectedOption]="settings()?.gpu_enabled_amd"
+          [colorType]="'warning'"
+          [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_amd', $event)"
         />
       }
@@ -128,6 +134,8 @@
         descriptionExtra="You need to restart the container to apply updates."
         [options]="trueFalseOptions"
         [selectedOption]="settings()?.update_ytdlp"
+        [colorType]="'warning'"
+        [colorTypeOption]="'true'"
         (optionChange)="updateSetting('update_ytdlp', $event)"
       />
       <app-text-setting
@@ -141,6 +149,7 @@
         [minLength]="0"
         [maxLength]="255"
         [value]="settings()?.url_base ?? ''"
+        [colorType]="'danger'"
         (onSubmit)="updateSetting('url_base', $event)"
       />
     </div>

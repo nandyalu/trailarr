@@ -36,7 +36,7 @@ svg {
   display: flex;
   background-color: var(--color-surface-container-high);
   border-radius: 10px;
-  border: 0.5px solid var(--color-outline);
+  // border: 0.5px solid var(--color-outline);
 }
 
 .option-label {
@@ -63,6 +63,31 @@ svg {
   font-weight: 600;
   color: var(--color-on-tertiary-container);
   transition: 0.3s ease;
+}
+
+.option__disabled {
+  // background-color: var(--color-surface-container-low);
+  opacity: 0.8;
+  cursor: not-allowed;
+  text-decoration: line-through 2px var(--color-danger);
+}
+
+.option__warning {
+  color: var(--color-warning);
+}
+
+.option__selected.option__warning {
+  background-color: var(--color-warning);
+  color: var(--color-warning-text);
+}
+
+.option__danger {
+  color: var(--color-error-container);
+}
+
+.option__selected.option__danger {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
 }
 
 input {

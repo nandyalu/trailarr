@@ -22,6 +22,7 @@ export class RangeSettingComponent {
   maxValue = input<number>(150);
   stepValue = input<number>(5);
   disabled = input<boolean>(false);
+  colorType = input<'default' | 'warning' | 'danger'>('default');
 
   oldValue = signal<string | number>('');
   onSubmit = output<string>();

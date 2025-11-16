@@ -92,6 +92,7 @@
         [selectedOption]="profile()?.folder_enabled"
         (optionChange)="profileService.updateSetting('folder_enabled', $event)"
       />
+      @if (profile()?.folder_enabled) {
       <app-text-setting
         name="Folder Name"
         description="Name of the folder to save trailer file."
@@ -105,6 +106,7 @@
         [disabled]="!profile()?.folder_enabled"
         (onSubmit)="profileService.updateSetting('folder_name', $event)"
       />
+      }
       <app-text-setting
         name="Custom Save Folder Path"
         description="Custom path to save trailer file."
@@ -157,6 +159,7 @@
         [stepValue]="1"
         [value]="profile()?.audio_volume_level ?? 100"
         [disabled]="false"
+        [colorType]="'warning'"
         (onSubmit)="profileService.updateSetting('audio_volume_level', $event)"
       />
     </div>
@@ -307,6 +310,7 @@
         [maxLength]="500"
         [value]="profile()?.ytdlp_extra_options ?? ''"
         [disabled]="false"
+        [colorType]="'warning'"
         (onSubmit)="profileService.updateSetting('ytdlp_extra_options', $event)"
       />
     </div>
