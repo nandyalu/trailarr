@@ -64,6 +64,126 @@ export class EditProfileComponent {
   videoResolutionOptions = ['480', '720', '1080', '1440', '2160', '0']; // '0' for best
   subtitleFormatOptions = ['srt', 'vtt'];
 
+  // Disabled options
+  protected readonly fileFormatsDisabled = computed(() => {
+    let _profile = this.profile();
+    let disabled: string[] = [];
+    if (!_profile) {
+      return disabled;
+    }
+    // Based on video formats
+    switch (_profile.video_format) {
+      case 'copy':
+        disabled.push('mp4');
+        disabled.push('webm');
+        break;
+      case 'h264':
+      case 'h265':
+        disabled.push('webm');
+        break;
+      case 'vp8':
+      case 'vp9':
+        disabled.push('mp4');
+        break;
+    }
+    // Based on audio formats
+    switch (_profile.audio_format) {
+      case 'copy':
+        disabled.push('mp4');
+        disabled.push('webm');
+        break;
+      case 'aac':
+      case 'ac3':
+      case 'eac3':
+      case 'flac':
+        disabled.push('webm');
+        break;
+    }
+    return disabled;
+  });
+  protected readonly videoFormatsDisabled = computed(() => {
+    let _profile = this.profile();
+    let disabled: string[] = [];
+    if (!_profile) {
+      return disabled;
+    }
+    // Based on file formats
+    switch (_profile.file_format) {
+      case 'mp4':
+        disabled.push('vp8');
+        disabled.push('vp9');
+        break;
+      case 'webm':
+        disabled.push('h264');
+        disabled.push('h265');
+        break;
+    }
+    return disabled;
+  });
+
+  protected readonly audioFormatsDisabled = computed(() => {
+    let _profile = this.profile();
+    let disabled: string[] = [];
+    if (!_profile) {
+      return disabled;
+    }
+    // Based on file formats
+    switch (_profile.file_format) {
+      case 'webm':
+        disabled.push('aac');
+        disabled.push('ac3');
+        disabled.push('eac3');
+        disabled.push('flac');
+        break;
+    }
+    return disabled;
+  });
+
+  protected readonly invalidFormatsWarning = computed(() => {
+    let _profile = this.profile();
+    if (!_profile) {
+      return []; // No profile, no warnings
+    }
+    let warnings: string[] = [];
+    // Check for invalid file format based on video format
+    switch (_profile.video_format) {
+      case 'copy':
+        if (_profile.file_format !== 'mkv') {
+          warnings.push('Video format "copy" requires file format "mkv".');
+        }
+        break;
+      case 'h264':
+      case 'h265':
+        if (_profile.file_format === 'webm') {
+          warnings.push(`Video format "${_profile.video_format}" is not compatible with file format "webm".`);
+        }
+        break;
+      case 'vp8':
+      case 'vp9':
+        if (_profile.file_format === 'mp4') {
+          warnings.push(`Video format "${_profile.video_format}" is not compatible with file format "mp4".`);
+        }
+        break;
+    }
+    // Check for invalid file format based on audio format
+    switch (_profile.audio_format) {
+      case 'copy':
+        if (_profile.file_format !== 'mkv') {
+          warnings.push('Audio format "copy" requires file format "mkv".');
+        }
+        break;
+      case 'aac':
+      case 'ac3':
+      case 'eac3':
+      case 'flac':
+        if (_profile.file_format === 'webm') {
+          warnings.push(`Audio format "${_profile.audio_format}" is not compatible with file format "webm".`);
+        }
+        break;
+    }
+    return warnings;
+  });
+
   isLoading: boolean = false;
   emptyCustomFilter = {
     id: null,

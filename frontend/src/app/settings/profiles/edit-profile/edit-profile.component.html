@@ -21,6 +21,15 @@
   <span class="text">Delete</span>
 </button>
 <hr />
+@if (invalidFormatsWarning().length > 0) {
+  <div class="border-warning sticky-warning">
+    <ul>
+      @for (message of invalidFormatsWarning(); track $index) {
+        <li>{{ message }}</li>
+      }
+    </ul>
+  </div>
+}
 <!-- General Settings -->
 <section>
   <details open>
@@ -70,6 +79,7 @@
         description="Final file format(extension) of the trailer file."
         [options]="fileFormatOptions"
         [selectedOption]="profile()?.file_format"
+        [disabledOptions]="fileFormatsDisabled()"
         (optionChange)="profileService.updateSetting('file_format', $event)"
       />
       <app-text-setting
@@ -93,19 +103,19 @@
         (optionChange)="profileService.updateSetting('folder_enabled', $event)"
       />
       @if (profile()?.folder_enabled) {
-      <app-text-setting
-        name="Folder Name"
-        description="Name of the folder to save trailer file."
-        [isNumberType]="false"
-        [isLongInput]="true"
-        [placeholder]="'Folder Name'"
-        [autocomplete]="'off'"
-        [minLength]="1"
-        [maxLength]="50"
-        [value]="profile()?.folder_name ?? ''"
-        [disabled]="!profile()?.folder_enabled"
-        (onSubmit)="profileService.updateSetting('folder_name', $event)"
-      />
+        <app-text-setting
+          name="Folder Name"
+          description="Name of the folder to save trailer file."
+          [isNumberType]="false"
+          [isLongInput]="true"
+          [placeholder]="'Folder Name'"
+          [autocomplete]="'off'"
+          [minLength]="1"
+          [maxLength]="50"
+          [value]="profile()?.folder_name ?? ''"
+          [disabled]="!profile()?.folder_enabled"
+          (onSubmit)="profileService.updateSetting('folder_name', $event)"
+        />
       }
       <app-text-setting
         name="Custom Save Folder Path"
@@ -147,6 +157,7 @@
         name="Audio Format"
         description="Final audio format(codec) of the trailer file."
         [options]="audioFormatOptions"
+        [disabledOptions]="audioFormatsDisabled()"
         [selectedOption]="profile()?.audio_format"
         (optionChange)="profileService.updateSetting('audio_format', $event)"
       />
@@ -175,6 +186,7 @@
         name="Video Format"
         description="Final video format(codec) of the trailer file."
         [options]="videoFormatOptions"
+        [disabledOptions]="videoFormatsDisabled()"
         [selectedOption]="profile()?.video_format"
         (optionChange)="profileService.updateSetting('video_format', $event)"
       />
@@ -334,7 +346,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (filter of profile()?.customfilter?.filters; track filter) {
+            @for (filter of profile()?.customfilter?.filters; track filter.id) {
               <tr>
                 <td>{{ filter.filter_by }}</td>
                 <td>{{ filter.filter_condition }}</td>
