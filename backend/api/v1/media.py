@@ -33,9 +33,9 @@ async def get_all_media(
     Args:
         movies_only (bool, Optional=None):
             Flag to get only movies.
-            - If `True`, it will return only `movies`.
-            - If `False`, it will return only `series`.
-            - If `None`, it will return all media items. \n
+                - If `True`, it will return only `movies`.
+                - If `False`, it will return only `series`.
+                - If `None`, it will return all media items. \n
         filter_by (str, Optional=`all`):
             Filter the media items by a column value. Available filters are
             - `all`

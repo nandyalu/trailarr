@@ -24,18 +24,6 @@ UNSAFE_PATHS = [
     "/var",
 ]
 
-UNSAFE_PATHS = [
-    ".",
-    "/app",
-    "/bin",
-    "/boot",
-    "/etc",
-    "/lib",
-    "/sbin",
-    "/usr",
-    "/var",
-]
-
 
 def _is_path_safe(path: str) -> bool:
     """Check if the path is safe.\n
@@ -59,7 +47,7 @@ def _is_path_safe(path: str) -> bool:
 async def get_files(path: str) -> FolderInfo | None:
     """Get files in a directory.\n
     Args:
-        path (str): Path to the directory.
+        path (str): Path to the directory. \n
     Returns:
         FolderInfo|None: Folder information or None if folder doesn't exist. \n
     Raises:
