@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
+from config.logging_context import get_new_trace_id, with_logging_context
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
 import core.base.database.manager.media as media_manager
@@ -19,10 +20,13 @@ from exceptions import (
 logger = ModuleLogger("TrailerDownloadTasks")
 
 
+@with_logging_context
 def _download_trailer(
     media: MediaRead,
     profile: TrailerProfileRead,
     retry_count: int,
+    *,
+    trace_id: str,
 ) -> None:
     """Run the async task in a separate event loop."""
     new_loop = asyncio.new_event_loop()
@@ -78,6 +82,7 @@ def download_trailer_by_id(
     scheduler.add_job(
         func=_download_trailer,
         args=(media, profile, retry_count),
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="date",
         run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id=f"download_trailer_by_id_{media_id}",
@@ -93,9 +98,12 @@ def download_trailer_by_id(
     return msg
 
 
+@with_logging_context
 def _batch_download_task(
     media_list: list[MediaRead],
     profile: TrailerProfileRead,
+    *,
+    trace_id: str,
 ) -> None:
     """Run the async task in a separate event loop."""
     new_loop = asyncio.new_event_loop()
@@ -172,6 +180,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     scheduler.add_job(
         func=_batch_download_task,
         args=(media_trailer_list, profile),
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="date",
         run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id="batch_download_trailers",

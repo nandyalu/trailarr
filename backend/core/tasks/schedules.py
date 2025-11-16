@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
+from config.logging_context import get_new_trace_id, with_logging_context
 from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
@@ -16,7 +17,8 @@ from core.updates.docker_check import check_for_updates
 logger = ModuleLogger("BackgroundTasks")
 
 
-def run_async(task) -> None:
+@with_logging_context
+def run_async(task, *, trace_id: str) -> None:
     """Run the async task in a separate event loop."""
     new_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(new_loop)
@@ -25,40 +27,44 @@ def run_async(task) -> None:
     return
 
 
-def _check_for_update():
+def _check_for_update(*, trace_id: str):
     """Check for updates to the Docker image."""
-    run_async(check_for_updates)
+    run_async(check_for_updates, trace_id=trace_id)
     return
 
 
-def _refresh_api_data():
+def _refresh_api_data(*, trace_id: str):
     """Refreshes data from Arr APIs."""
-    run_async(api_refresh)
+    run_async(api_refresh, trace_id=trace_id)
     return
 
 
-def _refresh_images():
+def _refresh_images(*, trace_id: str):
     """Refreshes all images in the database."""
-    run_async(refresh_images)
+    run_async(refresh_images, trace_id=trace_id)
     return
 
 
-def _scan_disk_for_trailers():
+def _scan_disk_for_trailers(*, trace_id: str):
     """Scans the disk for trailers."""
-    run_async(scan_disk_for_trailers)
+    run_async(scan_disk_for_trailers, trace_id=trace_id)
     return
 
 
-def _cleanup_trailers():
+def _cleanup_trailers(*, trace_id: str):
     """Cleanup trailers without audio."""
-    run_async(delete_old_logs)
-    run_async(trailer_cleanup)
+
+    async def _cleanup_tasks(trace_id: str):
+        await delete_old_logs()
+        await trailer_cleanup()
+
+    run_async(_cleanup_tasks, trace_id=trace_id)
     return
 
 
-def _download_missing_trailers():
+def _download_missing_trailers(*, trace_id: str):
     """Download missing trailers."""
-    run_async(download_missing_trailers)
+    run_async(download_missing_trailers, trace_id=trace_id)
     return
 
 
@@ -71,6 +77,7 @@ def refresh_api_data_job():
     """
     scheduler.add_job(
         func=_refresh_api_data,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         minutes=app_settings.monitor_interval,
         id="hourly_refresh_api_data_job",
@@ -90,6 +97,7 @@ def image_refresh_job():
     """
     scheduler.add_job(
         func=_refresh_images,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         hours=6,
         id="image_refresh_job",
@@ -109,6 +117,7 @@ def scan_disk_for_trailers_job():
     """
     scheduler.add_job(
         func=_scan_disk_for_trailers,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         minutes=app_settings.monitor_interval,
         id="scan_disk_for_trailers_job",
@@ -128,6 +137,7 @@ def update_check_job():
     """
     scheduler.add_job(
         func=_check_for_update,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         days=1,
         id="docker_update_check_job",
@@ -147,6 +157,7 @@ def trailer_cleanup_job():
     """
     scheduler.add_job(
         func=_cleanup_trailers,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         days=1,
         id="cleanup_job",
@@ -166,6 +177,7 @@ def download_missing_trailers_job():
     """
     scheduler.add_job(
         func=_download_missing_trailers,
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         minutes=app_settings.monitor_interval,
         id="download_missing_trailers_job",

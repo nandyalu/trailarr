@@ -3,6 +3,7 @@ import {httpResource} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
 import {AppLogRecord, LogLevel} from 'generated-sources/openapi';
 import {TimeagoModule} from 'ngx-timeago';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
@@ -20,6 +21,7 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 export class LogsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly logsService = inject(LogsService);
+  private readonly route = inject(ActivatedRoute);
 
   // Component constants
   readonly title = 'Logs';
@@ -71,6 +73,13 @@ export class LogsComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      const keyValue = params['filter'];
+      if (keyValue) {
+        this.searchForm.setValue(keyValue);
+        this.searchQuery.set(keyValue);
+      }
+    });
     this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       this.searchQuery.set(value);
     });

@@ -60,6 +60,25 @@
   width: 100%;
 }
 
+.tasks-table .queue-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    display: contents;
+  }
+
+  svg {
+    margin: 0;
+    padding: 0;
+    width: 1rem;
+    height: 1rem;
+    fill: var(--color-primary);
+    cursor: pointer;
+  }
+}
+
 .table-row svg {
   margin: 0 0.5rem;
   width: 1rem;

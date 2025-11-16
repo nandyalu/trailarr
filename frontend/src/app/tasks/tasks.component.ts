@@ -1,6 +1,8 @@
 import {AsyncPipe} from '@angular/common';
 import {Component, inject, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {RouterLink} from '@angular/router';
+import {RouteLogs} from 'src/routing';
 import {TimediffPipe} from '../helpers/timediff.pipe';
 import {QueuedTask, ScheduledTask} from '../models/tasks';
 import {TasksService} from '../services/tasks.service';
@@ -9,7 +11,7 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-tasks',
-  imports: [AsyncPipe, LoadIndicatorComponent, TimediffPipe],
+  imports: [AsyncPipe, LoadIndicatorComponent, TimediffPipe, RouterLink],
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',
@@ -22,6 +24,7 @@ export class TasksComponent implements OnInit {
   queuedTasks: QueuedTask[] = [];
   isLoading1 = true;
   isLoading2 = true;
+  protected readonly RouteLogs = RouteLogs;
 
   constructor() {
     // Subscribe to WebSocket toast messages to refresh data on relevant events

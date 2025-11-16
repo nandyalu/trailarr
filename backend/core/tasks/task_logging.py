@@ -11,6 +11,8 @@ from apscheduler.job import Job
 from sqlalchemy import StaticPool
 from sqlmodel import Field, SQLModel, Session, col, create_engine, select
 
+from config.logging_context import get_new_trace_id, get_trace_id
+
 
 def get_current_time():
     return datetime.now(timezone.utc).replace(tzinfo=None)
@@ -42,6 +44,7 @@ class TaskInfoDB(TaskInfo, table=True):
 class QueueInfo(SQLModel):
     name: str
     queue_id: str
+    trace_id: str | None = Field(default=None)
     duration: int = Field(default=0)
     finished: datetime | None = Field(default=None)
     # queued: datetime = Field(default_factory=get_current_time)
@@ -194,6 +197,7 @@ def update_queue(queue: QueueInfo) -> None:
         return
 
     # Update the task info with new values
+    _queue_db.trace_id = queue.trace_id
     _queue_db.duration = queue.duration
     _queue_db.finished = queue.finished
     _queue_db.started = queue.started
@@ -279,7 +283,7 @@ def get_all_queue() -> list[QueueInfo]:
 
 
 def _get_scheduler_task(task_id: str) -> Job | None:
-    """Get a task from the in-memory database. \n
+    """Get a task from the scheduler. \n
     Args:
         task_id (str): Task ID to get. \n
     Returns:
@@ -296,18 +300,24 @@ def _convert_local_to_utc(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc).replace(tzinfo=None)
 
 
-def _get_task_next_run(task_id: str) -> datetime | None:
+def _get_task_next_run(task_id: str, job: Job | None) -> datetime | None:
     """Get the next run time for a scheduler task."""
-    _job: Job | None = _get_scheduler_task(task_id)
+    if job is not None:
+        _job = job
+    else:
+        _job: Job | None = _get_scheduler_task(task_id)
     if _job and _job.next_run_time:
         # Convert the next run time to UTC datetime and return
         return _convert_local_to_utc(_job.next_run_time)
     return None
 
 
-def _get_scheduler_task_name(task_id: str) -> str:
+def _get_scheduler_task_name(task_id: str, job: Job | None) -> str:
     """Get the name of the scheduler task."""
-    _job: Job | None = _get_scheduler_task(task_id)
+    if job is not None:
+        _job = job
+    else:
+        _job: Job | None = _get_scheduler_task(task_id)
     if _job:
         return _job.name
     return "Queued Task"
@@ -339,12 +349,17 @@ def task_started_event(event: events.JobEvent) -> None:
     _task_name = ""
     # Get task from database if it exists
     task = _get_task(_task_id)
+    # Generate new trace id for the task
+    trace_id = get_new_trace_id()
+    _job = _get_scheduler_task(_task_id)
+    if _job:
+        _job.modify(kwargs={"trace_id": trace_id})
     if task:
         # Update the task in database
         task.last_run_start = _now
         task.last_run_duration = 0
         task.last_run_status = "Running"
-        task.next_run = _get_task_next_run(_task_id)
+        task.next_run = _get_task_next_run(_task_id, _job)
         update_task(task)
         _task_name = task.name
 
@@ -352,6 +367,7 @@ def task_started_event(event: events.JobEvent) -> None:
     queue = QueueInfo(
         name=_task_name,
         queue_id=f"{_task_id}",
+        trace_id=trace_id,
         started=_now,
         status="Running",
     )
@@ -373,6 +389,7 @@ def task_finished_event(
     _duration = 0
     # Get task from database if it exists
     task = _get_task(_task_id)
+    _job = _get_scheduler_task(_task_id)
     if task:
         # Scheduled task, update the task in database with finished time and duration
         if task.last_run_start:
@@ -380,7 +397,7 @@ def task_finished_event(
             _duration = int(_duration.total_seconds())
         task.last_run_duration = _duration
         task.last_run_status = status
-        task.next_run = _get_task_next_run(_task_id)
+        task.next_run = _get_task_next_run(_task_id, _job)
         update_task(task)
         _task_name = task.name
 
@@ -390,10 +407,11 @@ def task_finished_event(
         # Queue not in database, create one
         if not _task_name:
             # Not a scheduled task, get task name from the scheduler
-            _task_name = _get_scheduler_task_name(_task_id)
+            _task_name = _get_scheduler_task_name(_task_id, _job)
         queue = QueueInfo(
             name=_task_name,
             queue_id=f"{_task_id}",
+            trace_id=get_trace_id(),
         )
     if not _duration:
         # Calculate duration if not already calculated
