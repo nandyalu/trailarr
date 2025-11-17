@@ -11,7 +11,7 @@
   width: auto;
   flex-grow: 1;
   padding: 1rem;
-  background-color: var(--color-surface-container-high);
+  background-color: var(--color-surface-container-low);
   position: sticky;
   top: 76px;
   /* 76px topnav */
@@ -76,7 +76,7 @@
 
 .logs-row {
   padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-outline-variant);
 
   @media (width < 765px) {
     padding: 0;

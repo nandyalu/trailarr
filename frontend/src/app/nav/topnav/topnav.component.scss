@@ -55,8 +55,8 @@
   border-radius: 0.5rem;
   margin: 0;
   font-size: 1rem;
-  background-color: var(--color-surface-container-highest);
-  color: var(--color-on-surface);
+  background-color: var(--color-surface-variant);
+  color: var(--color-on-surface-variant);
 
   &:focus {
     outline: var(--color-primary);
@@ -78,7 +78,7 @@
   top: 100%;
   left: 2%;
   color: var(--color-on-surface);
-  background-color: var(--color-surface-container-highest);
+  background-color: var(--color-surface-container-high);
   border: 0.5px solid var(--color-outline);
   border-radius: 5px;
   visibility: hidden;
