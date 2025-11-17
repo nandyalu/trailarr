@@ -1,10 +1,11 @@
 import asyncio
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 import hashlib
 import os
 from pathlib import Path
 import re
 import shutil
+import zoneinfo
 import aiofiles.os
 from pydantic import BaseModel, Field
 import unicodedata
@@ -115,6 +116,27 @@ class FilesHandler:
         return f"{size_in_bytes:.2f} {unit}"
 
     @staticmethod
+    def _get_system_timezone():
+        """Get the system timezone from TZ environment variable or default to UTC."""
+        tz_env = os.environ.get("TZ")
+        if tz_env:
+            try:
+                return zoneinfo.ZoneInfo(tz_env)
+            except Exception:
+                logger.warning(
+                    f"Invalid timezone in TZ env var: {tz_env}, falling back"
+                    " to UTC"
+                )
+                return timezone.utc
+        return timezone.utc
+
+    @staticmethod
+    def _format_dt(timestamp: float) -> str:
+        """Format a timestamp to a string in the system timezone."""
+        system_tz = FilesHandler._get_system_timezone()
+        return dt.fromtimestamp(timestamp, tz=system_tz).isoformat()
+
+    @staticmethod
     async def _get_file_info(entry: os.DirEntry[str]) -> FolderInfo:
         info = await aiofiles.os.stat(entry.path)
         return FolderInfo(
@@ -122,9 +144,7 @@ class FilesHandler:
             name=unicodedata.normalize("NFKD", entry.name),
             size=FilesHandler._convert_file_size(info.st_size),
             path=entry.path,
-            created=dt.fromtimestamp(info.st_ctime).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            created=FilesHandler._format_dt(info.st_ctime),
         )
 
     @staticmethod
@@ -164,9 +184,7 @@ class FilesHandler:
             files=dir_info,
             size=dir_size_str,
             path=folder_path,
-            created=dt.fromtimestamp(os.path.getctime(folder_path)).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            created=FilesHandler._format_dt(os.path.getctime(folder_path)),
         )
 
     @staticmethod
@@ -187,9 +205,7 @@ class FilesHandler:
         elif entry.is_symlink():
             _type = "symlink"
         return FolderInfo(
-            created=dt.fromtimestamp(info.st_ctime).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            created=FilesHandler._format_dt(info.st_ctime),
             name=unicodedata.normalize("NFKD", entry.name),
             path=entry.path,
             size=FilesHandler._convert_file_size(_size),
@@ -574,19 +590,19 @@ class FilesHandler:
             return False
 
     @staticmethod
-    async def scan_root_folders_for_trailers(root_media_dir: str) -> set[str]:
+    async def scan_root_folders_for_trailers(root_media_dir: str) -> list[str]:
         """Find all folders containing trailers in the specified root folders.\n
         Finds trailers in the media folder and also in a 'trailer' folder\n
         Args:
             root_media_dir (str): The root directory to search for trailers.\n
         Returns:
-            set[str]: Set of folder paths containing trailers."""
+            list[str]: Set of folder paths containing trailers."""
         logger.debug(f"Scanning '{root_media_dir}' for trailers.")
         if not FilesHandler.check_folder_exists(root_media_dir):
             logger.warning(
                 f"Root media directory '{root_media_dir}' is not a directory."
             )
-            return set()
+            return []
         inline_trailers = set()
         folder_trailers = set()
         count = 0
@@ -631,7 +647,8 @@ class FilesHandler:
             f" {len(inline_trailers)} (inline) trailers."
         )
         logger.info(msg)
-        return inline_trailers.union(folder_trailers)
+        # return inline_trailers.union(folder_trailers)
+        return [r for r in results if r]
 
     @staticmethod
     async def rename_file_fol(old_path: str, new_path: str) -> bool:

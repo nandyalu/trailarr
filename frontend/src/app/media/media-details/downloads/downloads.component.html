@@ -1,0 +1,100 @@
+<div class="downloads-section">
+  <div class="title-block">
+    <h3>Downloads</h3>
+    <!-- <button class="icononly-button" (click)="refreshDownloads()" [disabled]="isLoading()" title="Refresh Downloads">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="refresh-icon">
+        <path
+          d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
+        />
+      </svg>
+    </button> -->
+  </div>
+  <hr />
+
+  @if (hasDownloads()) {
+    <div class="downloads-list">
+      @for (download of downloads(); track download.id) {
+        <div class="download-card">
+          <div class="download-main">
+            <div class="download-icon">
+              @if (download.file_exists) {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M350-234h177q17.25 0 28.63-11.38Q567-256.75 567-274v-50l82 47v-166l-82 47v-50q0-17.25-11.37-28.63Q544.25-486 527-486H350q-17.25 0-28.62 11.37Q310-463.25 310-446v172q0 17.25 11.38 28.62Q332.75-234 350-234ZM218-64q-28.73 0-50.86-22.14Q145-108.28 145-137v-686q0-28.72 22.14-50.86Q189.27-896 218-896h358l239 240v519q0 28.72-22.14 50.86T742-64H218Zm321-559v-200H218v686h524v-486H539ZM218-823v200-200 686-686Z"
+                  />
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" title="File Deleted">
+                  <path
+                    d="M880-275 720-435v111l-60-60v-356H304l-60-60h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM482-562Zm-84 84ZM159-800l60 60h-79v520h520v-79l60 60v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Zm73 482v-21q0-46 45-72.5T400-438q78 0 123 26.5t45 72.5v21H232Z"
+                  />
+                </svg>
+              }
+            </div>
+            <div class="download-info">
+              <h4 class="download-title">{{ download.file_name }}</h4>
+              <div class="download-meta">
+                <span class="meta-item">{{ download.resolution }}p</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item">{{ download.video_format }}</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item">
+                  {{ download.audio_format }}
+                  @if (download.audio_language) {
+                    ({{ download.audio_language }})
+                  }
+                </span>
+                @if (download.subtitle_format) {
+                  <span class="meta-separator">•</span>
+                  <span class="meta-item">
+                    {{ download.subtitle_format }}
+                    @if (download.subtitle_language) {
+                      ({{ download.subtitle_language }})
+                    }
+                  </span>
+                }
+                <span class="meta-separator">•</span>
+                <span class="meta-item">{{ download.size | fileSize }}</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item">{{ download.duration | durationSecondsConvert }}</span>
+              </div>
+              <div class="download-date">Added: {{ download.added_at | date }}</div>
+            </div>
+          </div>
+          <div class="download-profile">
+            <span class="profile-label">Profile:</span>
+            @if (download.profile_id === 0) {
+              <span class="profile-name">Unknown</span>
+            } @else {
+              @let profileAvailable = profilesMap().has(download.profile_id);
+              @if (profileAvailable) {
+                <span class="profile-name link" [routerLink]="['/settings', 'profiles', download.profile_id]">
+                  {{ profilesMap().get(download.profile_id) || 'Deleted' }}
+                </span>
+              } @else {
+                <span class="profile-name">Deleted</span>
+              }
+            }
+          </div>
+          <div class="download-actions">
+            @if (download.youtube_id && !download.youtube_id.startsWith('unknown')) {
+              <a [href]="getYouTubeUrl(download.youtube_id)" target="_blank" class="yt-link" title="View on YouTube">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path
+                    d="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z"
+                  />
+                </svg>
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!hasDownloads()) {
+    <div class="no-downloads">
+      <p>No downloads recorded yet.</p>
+    </div>
+  }
+</div>

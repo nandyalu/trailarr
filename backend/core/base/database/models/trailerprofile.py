@@ -14,7 +14,7 @@ from core.base.database.models.customfilter import (
 VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus", "copy"]
 VALID_FILE_FORMATS = ["mkv", "mp4", "webm"]
 VALID_VIDEO_FORMATS = ["h264", "h265", "vp8", "vp9", "av1", "copy"]
-VALID_VIDEO_RESOLUTIONS = [240, 360, 480, 720, 1080, 1440, 2160]
+VALID_VIDEO_RESOLUTIONS = [0, 360, 480, 720, 1080, 1440, 2160]
 VALID_SUBTITLES_FORMATS = ["srt", "vtt"]
 
 VALID_YT_DICT = {

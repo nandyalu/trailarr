@@ -57,6 +57,19 @@ summary {
   }
 }
 
+.sticky-warning {
+  position: sticky;
+  top: 122px;
+  z-index: 10;
+  padding: 0 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.5rem;
+  font-size: larger;
+  font-weight: 600;
+  color: var(--color-warning);
+  background-color: var(--color-surface-container);
+}
+
 .setting-group {
   display: flex;
   flex-direction: column;

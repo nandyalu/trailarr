@@ -1,10 +1,9 @@
 import pytest
-from core.download.trailer_search import extract_youtube_id
-import types
+from core.download.trailers.utils import extract_youtube_id
 from core.download.trailer_search import __replace_media_options
-from core.base.database.models import helpers
 from core.download.trailer_search import __has_all_words
 from core.download.trailer_search import __has_any_words
+
 
 @pytest.mark.parametrize(
     "url,expected",
@@ -13,7 +12,10 @@ from core.download.trailer_search import __has_any_words
         ("https://www.youtube.com/watch?v=abcdefghijk", "abcdefghijk"),
         ("https://youtube.com/watch?v=abcdefghijk", "abcdefghijk"),
         ("https://m.youtube.com/watch?v=abcdefghijk", "abcdefghijk"),
-        ("https://www.youtube.com/watch?v=abcdefghijk&feature=related", "abcdefghijk"),
+        (
+            "https://www.youtube.com/watch?v=abcdefghijk&feature=related",
+            "abcdefghijk",
+        ),
         # Short youtu.be URLs
         ("https://youtu.be/abcdefghijk", "abcdefghijk"),
         # Embed URLs
@@ -23,7 +25,10 @@ from core.download.trailer_search import __has_any_words
         # /u/1/ URLs
         ("https://www.youtube.com/u/1/abcdefghijk", "abcdefghijk"),
         # With additional parameters
-        ("https://www.youtube.com/watch?v=abcdefghijk&list=PL1234567890", "abcdefghijk"),
+        (
+            "https://www.youtube.com/watch?v=abcdefghijk&list=PL1234567890",
+            "abcdefghijk",
+        ),
         # Invalid: wrong length
         ("https://www.youtube.com/watch?v=abcde", None),
         ("https://youtu.be/abcde", None),
@@ -34,7 +39,7 @@ from core.download.trailer_search import __has_any_words
         ("https://vimeo.com/123456789", None),
         ("", None),
         (None, None),
-    ]
+    ],
 )
 def test_extract_youtube_id(url, expected):
     if url is None:
@@ -43,6 +48,7 @@ def test_extract_youtube_id(url, expected):
         result = extract_youtube_id(url)
     assert result == expected
 
+
 class DummyMedia:
     def __init__(
         self,
@@ -50,7 +56,7 @@ class DummyMedia:
         is_movie=True,
         year=2022,
         media_filename="test_movie.mp4",
-        language="en"
+        language="en",
     ):
         self.title = title
         self.is_movie = is_movie
@@ -67,6 +73,7 @@ class DummyMedia:
             "language": self.language,
         }
 
+
 @pytest.mark.parametrize(
     "query,media,expected",
     [
@@ -74,55 +81,44 @@ class DummyMedia:
         (
             "{title} {year} {is_movie} {media_filename} {language}",
             DummyMedia(),
-            "Test Movie 2022 movie test_movie English"
+            "Test Movie 2022 movie test_movie English",
         ),
         # Year is 0, should be blank
         (
             "{title} {year} {is_movie} {media_filename} {language}",
             DummyMedia(year=0),
-            "Test Movie movie test_movie English"
+            "Test Movie movie test_movie English",
         ),
         # is_movie False, should be 'series'
         (
             "{title} {year} {is_movie} {media_filename} {language}",
             DummyMedia(is_movie=False),
-            "Test Movie 2022 series test_movie English"
+            "Test Movie 2022 series test_movie English",
         ),
         # media_filename with extension, should remove extension
         (
             "{media_filename}",
             DummyMedia(media_filename="something.mkv"),
-            "something"
+            "something",
         ),
         # language not in language_names, fallback to code
-        (
-            "{language}",
-            DummyMedia(language="xx"),
-            "xx"
-        ),
+        ("{language}", DummyMedia(language="xx"), "xx"),
         # Extra spaces should be removed
         (
             "{title}  {year}   {is_movie} ",
             DummyMedia(),
-            "Test Movie 2022 movie"
+            "Test Movie 2022 movie",
         ),
         # Empty query returns empty string
-        (
-            "",
-            DummyMedia(),
-            ""
-        ),
+        ("", DummyMedia(), ""),
         # None media returns query unchanged
-        (
-            "test {title}",
-            None,
-            "test {title}"
-        ),
-    ]
+        ("test {title}", None, "test {title}"),
+    ],
 )
 def test_replace_media_options(query, media, expected):
     result = __replace_media_options(query, media)
     assert result == expected
+
 
 @pytest.mark.parametrize(
     "words,title,expected",
@@ -152,10 +148,11 @@ def test_replace_media_options(query, media, expected):
         (["foo||bar", "baz"], "foo", False),
         # Word with only spaces
         ([" "], "anything", True),
-    ]
+    ],
 )
 def test_has_all_words(words, title, expected):
     assert __has_all_words(words, title) == expected
+
 
 @pytest.mark.parametrize(
     "words,title,expected",
@@ -187,9 +184,7 @@ def test_has_all_words(words, title, expected):
         (["foo&&bar", "baz"], "foo bar", True),
         # Word with only spaces
         ([" "], "anything", True),
-    ]
+    ],
 )
 def test_has_any_words(words, title, expected):
     assert __has_any_words(words, title) == expected
-
-

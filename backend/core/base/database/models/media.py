@@ -1,9 +1,15 @@
 from datetime import datetime, timezone
 from enum import Enum
+from pydantic import field_validator
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
-from sqlmodel import Field, Integer
+from sqlmodel import Field, Integer, Relationship
 
 from core.base.database.models.base import AppSQLModel
+from core.base.database.models.download import (
+    Download,
+    DownloadCreate,
+    DownloadRead,
+)
 
 
 def get_current_time():
@@ -105,6 +111,7 @@ class Media(MediaBase, table=True):
     added_at: datetime = Field(default_factory=get_current_time)
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
+    downloads: list[Download] = Relationship(cascade_delete=True)
 
 
 class MediaCreate(MediaBase):
@@ -120,7 +127,7 @@ class MediaCreate(MediaBase):
     - arr_monitored: False
     """
 
-    pass
+    downloads: list[DownloadCreate] = []
 
 
 class MediaRead(MediaBase):
@@ -130,6 +137,12 @@ class MediaRead(MediaBase):
     added_at: datetime
     updated_at: datetime
     downloaded_at: datetime | None
+    downloads: list[DownloadRead] = []
+
+    @field_validator("added_at", "updated_at", "downloaded_at", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        return cls.set_timezone_to_utc(value)
 
 
 class MediaUpdate(MediaBase):
@@ -138,6 +151,7 @@ class MediaUpdate(MediaBase):
     - updated_at: current time [if any field is updated]
     """
 
+    id: int
     connection_id: int | None = None  # type: ignore
     arr_id: int | None = None  # type: ignore
     title: str | None = None  # type: ignore

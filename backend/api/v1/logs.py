@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from api.v1.models import Log
 from app_logger import ModuleLogger
 from config.logs.manager import get_all_logs
-from config.logs.model import AppLogRecord, LogLevel
+from config.logs.model import AppLogRecordRead, LogLevel
 from config.settings import app_settings
 
 logger = ModuleLogger("LogsAPI")
@@ -38,7 +38,7 @@ def download_file():
 @logs_router.get("/raw")
 async def get_raw_logs(
     level: LogLevel = LogLevel.INFO, offset: int = 0, limit: int = 1000
-) -> list[AppLogRecord]:
+) -> list[AppLogRecordRead]:
     return await get_all_logs(level=level, offset=offset, limit=limit)
 
 

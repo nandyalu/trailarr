@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.download import video_analysis
 from core.files_handler import FilesHandler, FolderInfo
 
@@ -11,18 +11,6 @@ logger = ModuleLogger("MediaFilesAPI")
 files_router = APIRouter(prefix="/files", tags=["Files", "Media"])
 
 CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
-
-UNSAFE_PATHS = [
-    ".",
-    "/app",
-    "/bin",
-    "/boot",
-    "/etc",
-    "/lib",
-    "/sbin",
-    "/usr",
-    "/var",
-]
 
 UNSAFE_PATHS = [
     ".",
@@ -59,7 +47,7 @@ def _is_path_safe(path: str) -> bool:
 async def get_files(path: str) -> FolderInfo | None:
     """Get files in a directory.\n
     Args:
-        path (str): Path to the directory.
+        path (str): Path to the directory. \n
     Returns:
         FolderInfo|None: Folder information or None if folder doesn't exist. \n
     Raises:
@@ -207,6 +195,45 @@ def get_video_info(file_path: str) -> video_analysis.VideoInfo | None:
 
 
 @files_router.post(
+    "/trim_video",
+    status_code=status.HTTP_200_OK,
+    description="Trim the video file at the given timestamps.",
+)
+def trim_video(
+    file_path: str,
+    output_file: str,
+    start_timestamp: int | float | str,
+    end_timestamp: int | float | str,
+) -> str:
+    """Trim the video file at the given timestamps.\n
+    Args:
+        file_path (str): Path of the video file.
+        output_file (str): Path to save the output file.
+        start_timestamp (int | float | str): Start timestamp to trim the video.
+        end_timestamp (int | float | str): End timestamp to trim the video. \n
+    Raises:
+        HTTPException (400): If the file path is invalid. \n
+    Returns:
+        str: Message indicating the status of the operation."""
+    if not _is_path_safe(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path.",
+        )
+    try:
+        res = video_analysis.trim_video(
+            file_path, output_file, start_timestamp, end_timestamp
+        )
+    except Exception as e:
+        logger.error(f"Error trimming video: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal error occurred while trimming the video."
+        )
+    return "Video trimmed successfully." if res else "Video trim failed."
+
+
+@files_router.post(
     "/rename",
     status_code=status.HTTP_200_OK,
     description="Rename a file or folder.",
@@ -256,6 +283,5 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
         # Media id is provided, if file is trailer, update db
         if "trailer" in path:
             logger.info(f"Updating trailer status for media_id: {media_id}")
-            db = MediaDatabaseManager()
-            db.update_trailer_exists(media_id, False)
+            media_manager.update_trailer_exists(media_id, False)
     return deleted_status

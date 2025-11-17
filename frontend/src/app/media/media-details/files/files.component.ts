@@ -3,7 +3,9 @@ import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {FilesService, VideoInfo} from 'generated-sources/openapi';
+import {FileSizePipe} from 'src/app/helpers/file-size.pipe';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
+import {VideoEditDialogComponent} from 'src/app/shared/video-edit-dialog/video-edit-dialog.component';
 import {jsonEqual} from 'src/util';
 import {FolderInfo} from '../../../models/media';
 import {MediaService} from '../../../services/media.service';
@@ -17,7 +19,7 @@ interface ErrorMessage {
 
 @Component({
   selector: 'media-files',
-  imports: [DatePipe, FormsModule, LoadIndicatorComponent, NgTemplateOutlet],
+  imports: [DatePipe, FileSizePipe, FormsModule, LoadIndicatorComponent, NgTemplateOutlet, VideoEditDialogComponent],
   templateUrl: './files.component.html',
   styleUrl: './files.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +34,7 @@ export class FilesComponent {
   protected readonly filesOpened = signal(false);
   protected readonly textFileLoading = signal(true);
   protected readonly videoInfoLoading = signal(true);
+  protected readonly videoEditDialogOpen = signal(false);
   // mediaFilesResponse: string = 'No files found';
   // mediaFiles: FolderInfo | undefined = undefined;
 
@@ -40,7 +43,7 @@ export class FilesComponent {
     this.filesOpened.set(false); // Reset filesOpened when mediaId changes
   });
 
-  selectedFilePath: string = '';
+  selectedFilePath = signal('');
   protected readonly selectedFileName = signal('');
   protected readonly videoInfo = signal<VideoInfo | null>(null);
   protected readonly selectedFileText = signal<string[]>([], {equal: jsonEqual});
@@ -103,7 +106,7 @@ export class FilesComponent {
     if (folder.type === 'folder') {
       folder.isExpanded = !folder.isExpanded;
     } else {
-      this.selectedFilePath = folder.path;
+      this.selectedFilePath.set(folder.path);
       this.selectedFileName.set(folder.name);
       this.openOptionsDialog();
     }
@@ -111,9 +114,9 @@ export class FilesComponent {
 
   renameFile(): void {
     this.closeRenameDialog();
-    let selectedFileBasePath = this.selectedFilePath.split('/').slice(0, -1).join('/');
+    let selectedFileBasePath = this.selectedFilePath().split('/').slice(0, -1).join('/');
     let newName = selectedFileBasePath + '/' + this.selectedFileName();
-    this.filesService.renameFileFolApiV1FilesRenamePost({old_path: this.selectedFilePath, new_path: newName}).subscribe((renamed) => {
+    this.filesService.renameFileFolApiV1FilesRenamePost({old_path: this.selectedFilePath(), new_path: newName}).subscribe((renamed) => {
       // Display the return message
       let msg: string = '';
       if (renamed) {
@@ -129,18 +132,20 @@ export class FilesComponent {
 
   deleteFile(): void {
     this.closeDeleteFileDialog();
-    this.filesService.deleteFileFolApiV1FilesDeleteDelete({path: this.selectedFilePath, media_id: this.mediaId()}).subscribe((deleted) => {
-      // Display the return message
-      let msg: string = '';
-      if (deleted) {
-        msg = 'Deleted successfully!';
-      } else {
-        msg = 'Failed to delete!';
-      }
-      this.webSocketService.showToast(msg, deleted ? 'success' : 'error');
-      // Refresh the files list
-      this.filesResource.reload();
-    });
+    this.filesService
+      .deleteFileFolApiV1FilesDeleteDelete({path: this.selectedFilePath(), media_id: this.mediaId()})
+      .subscribe((deleted) => {
+        // Display the return message
+        let msg: string = '';
+        if (deleted) {
+          msg = 'Deleted successfully!';
+        } else {
+          msg = 'Failed to delete!';
+        }
+        this.webSocketService.showToast(msg, deleted ? 'success' : 'error');
+        // Refresh the files list
+        this.filesResource.reload();
+      });
   }
 
   @ViewChild('optionsDialog') optionsDialog!: ElementRef<HTMLDialogElement>;
@@ -158,7 +163,7 @@ export class FilesComponent {
     this.textFileLoading.set(true);
     this.selectedFileText.set([]);
     this.textDialog.nativeElement.showModal();
-    this.filesService.readFileApiV1FilesReadGet({file_path: this.selectedFilePath}).subscribe({
+    this.filesService.readFileApiV1FilesReadGet({file_path: this.selectedFilePath()}).subscribe({
       next: (content) => this.selectedFileText.set(content.split('\n')),
       complete: () => this.textFileLoading.set(false),
       error: () => this.textFileLoading.set(false),
@@ -174,7 +179,7 @@ export class FilesComponent {
   openVideoDialog(): void {
     // Display the dialog by passing the file path and title
     this.videoDialog.nativeElement.showModal();
-    let videoUrl = `/api/v1/files/video?file_path=${encodeURIComponent(this.selectedFilePath)}`;
+    let videoUrl = `/api/v1/files/video?file_path=${encodeURIComponent(this.selectedFilePath())}`;
     // style="width: 75vw; height: auto; @media (width < 768px) { width: 100vw; }">
     let videoRef = `
       <style>
@@ -205,7 +210,7 @@ export class FilesComponent {
     // Display the dialog by passing the file path and title
     this.videoInfoLoading.set(true);
     this.videoInfoDialog.nativeElement.showModal();
-    this.filesService.getVideoInfoApiV1FilesVideoInfoGet({file_path: this.selectedFilePath}).subscribe({
+    this.filesService.getVideoInfoApiV1FilesVideoInfoGet({file_path: this.selectedFilePath()}).subscribe({
       next: (videoInfo) => {
         // let jsonString = JSON.stringify(videoInfo, null, 2);
         // this.videoInfo = jsonString.replace(/,/g, ',\n'); // Add new lines between keys
@@ -243,5 +248,18 @@ export class FilesComponent {
 
   closeDeleteFileDialog(): void {
     this.deleteFileDialog.nativeElement.close(); // Close the dialog
+  }
+
+  openVideoEditDialog(): void {
+    this.closeOptionsDialog();
+    this.videoEditDialogOpen.set(true);
+  }
+
+  closeVideoEditDialog(): void {
+    this.videoEditDialogOpen.set(false);
+  }
+
+  onVideoTrimComplete(): void {
+    this.filesResource.reload();
   }
 }

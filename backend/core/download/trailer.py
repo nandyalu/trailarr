@@ -3,10 +3,11 @@ import os
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
+from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
 from exceptions import DownloadFailedError
@@ -18,7 +19,6 @@ def __update_media_status(
     media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
 ):
     """Update the media status in the database."""
-    db_manager = MediaDatabaseManager()
     if type == MonitorStatus.DOWNLOADING:
         update = MediaUpdateDC(
             id=media.id,
@@ -59,7 +59,7 @@ def __update_media_status(
     else:
         # Handle other statuses if needed
         return None
-    db_manager.update_media_status(update)
+    media_manager.update_media_status(update)
     return None
 
 
@@ -125,14 +125,20 @@ async def download_trailer(
         # Download the trailer and verify
         output_file = __download_and_verify_trailer(media, video_id, profile)
         # Move the trailer to the media folder (create subfolder if needed)
-        trailer_file.move_trailer_to_folder(output_file, media, profile)
+        final_path = trailer_file.move_trailer_to_folder(
+            output_file, media, profile
+        )
         __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
+        # Record the download in the database
+        await record_new_trailer_download(
+            media, profile.id, final_path, video_id
+        )
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"
             f" from ({video_id})"
         )
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")

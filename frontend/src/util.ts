@@ -9,6 +9,17 @@ export function durationString(durationInMinutes: number) {
   return hours === 0 ? `${minutes}m` : minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
+export function durationStringSeconds(durationInSeconds: number) {
+  const hours = Math.floor(durationInSeconds / 3600);
+  const minutes = Math.floor((durationInSeconds % 3600) / 60);
+  const seconds = Math.floor(durationInSeconds % 60);
+
+  if (hours === 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
 export function timeRemainingString(durationInMilliseconds: number) {
   const timeNow = Date.now();
   if (durationInMilliseconds < timeNow) {
@@ -56,4 +67,12 @@ export function CacheDecorator(ttl: number = 0): MethodDecorator {
       return result;
     };
   };
+}
+
+export function bytesToSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }

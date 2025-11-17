@@ -60,6 +60,7 @@ Python code should follow the below guidelines:
 - Log the error message where it's caught, NOT at the source when raising the exception.
 - When logging a message related to a media item, include the media item ID in square brackets. Frontend will detect this and add a link to the media details page.
 - Use `f-strings` for string formatting, use `str.format()` only when you want to replace from a dictionary.
+- Use relative imports for importing modules within the same package. Absolute imports everywhere else.
 
 ## Commit Message Guidelines
 

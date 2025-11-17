@@ -44,8 +44,8 @@ export class AppComponent implements OnDestroy, OnInit {
 
   // Uncomment the below code to enable mouse movement detection too!
   // @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:click', ['$event'])
-  @HostListener('document:keypress', ['$event'])
+  @HostListener('document:click')
+  @HostListener('document:keypress')
   resetIdleTimer(): void {
     // Activity detected, reset the idle timer
     clearTimeout(this.sessionTimeoutId);

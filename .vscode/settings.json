@@ -140,6 +140,6 @@
         "typescript.tsdk": "node_modules\\typescript\\lib"
     },
     "editor.defaultFoldingRangeProvider": null,
-    "editor.foldingImportsByDefault": true,
+    "editor.foldingImportsByDefault": false,
 
 }

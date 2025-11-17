@@ -3,7 +3,7 @@ from functools import cache
 from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
@@ -280,9 +280,7 @@ class BaseConnectionManager(ABC):
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
         logger.debug(f"Syncing {len(media_data)} media items to database")
-        media_read_list = MediaDatabaseManager().create_or_update_bulk(
-            media_data
-        )
+        media_read_list = media_manager.create_or_update_bulk(media_data)
         # return [
         #     MediaReadDC(
         #         id=movie_read.id,
@@ -315,9 +313,7 @@ class BaseConnectionManager(ABC):
         if len(self.media_ids) == 0:
             return
         logger.debug("Removing media not present in Arr application")
-        MediaDatabaseManager().delete_except(
-            self.connection_id, self.media_ids
-        )
+        media_manager.delete_except(self.connection_id, self.media_ids)
         return
 
     def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
@@ -325,7 +321,7 @@ class BaseConnectionManager(ABC):
         Args:
             media_update_list (list[MediaUpdateDC]): List of media update data.
         """
-        MediaDatabaseManager().update_media_status_bulk(media_update_list)
+        media_manager.update_media_status_bulk(media_update_list)
         return
 
     async def _process_media_list(self, parsed_media: list[MediaCreate]):

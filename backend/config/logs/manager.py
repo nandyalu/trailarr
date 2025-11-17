@@ -1,13 +1,18 @@
 from datetime import datetime, timedelta
 from sqlmodel import col, desc, select
 from config.logs.db_utils import get_async_logs_session
-from config.logs.model import AppLogRecord, LOG_LEVELS, LogLevel
+from config.logs.model import (
+    AppLogRecord,
+    AppLogRecordRead,
+    LOG_LEVELS,
+    LogLevel,
+)
 from config.settings import app_settings
 
 
 async def get_all_logs(
     level: LogLevel | None = None, offset: int = 0, limit: int = 1000
-) -> list[AppLogRecord]:
+) -> list[AppLogRecordRead]:
     """Retrieve all logs from the database."""
 
     if level is None:
@@ -28,7 +33,7 @@ async def get_all_logs(
             .order_by(desc(AppLogRecord.created))
         )
         logs = await session.exec(stmt)
-        return list(logs)
+        return [AppLogRecordRead(**log.model_dump()) for log in logs.all()]
 
 
 async def delete_old_logs(days: int = 30) -> int:

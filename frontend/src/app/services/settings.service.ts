@@ -78,4 +78,9 @@ export class SettingsService {
       }),
     );
   }
+
+  logout(): Observable<string> {
+    const logoutUrl = this.settingsUrl + 'logout';
+    return this.http.post<string>(logoutUrl, {});
+  }
 }

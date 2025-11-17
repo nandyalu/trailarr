@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -50,3 +51,26 @@ class AppLogRecord(LogBase, table=True):
     taskname: str | None = Field(index=True)
     mediaid: int | None = Field(default=None, index=True)
     traceback: str | None = None
+
+
+class AppLogRecordRead(LogBase):
+    """A read model for log records with timezone correction."""
+
+    id: int
+    created: datetime
+    loggername: str
+    level: LogLevel
+    message: str
+    filename: str
+    lineno: int
+    taskname: str | None
+    mediaid: int | None
+    traceback: str | None
+
+    @field_validator("created", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        if isinstance(value, datetime) and value.tzinfo is None:
+            # Assume naive datetime loaded from DB is UTC
+            return value.replace(tzinfo=timezone.utc)
+        return value

@@ -3,10 +3,8 @@ from fastapi import APIRouter
 from api.v1.models import Settings, UpdateLogin, UpdateSetting
 from api.v1 import authentication
 from config.settings import app_settings
-from core.base.database.manager.general import (
-    GeneralDatabaseManager,
-    ServerStats,
-)
+from core.base.database.manager.general import ServerStats
+from core.base.database.manager.general import get_stats as get_generic_stats
 
 settings_router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -18,7 +16,7 @@ async def get_settings() -> Settings:
 
 @settings_router.get("/stats")
 async def get_stats() -> ServerStats:
-    return GeneralDatabaseManager().get_stats()
+    return get_generic_stats()
 
 
 @settings_router.put("/update")
@@ -65,3 +63,15 @@ async def update_login(login: UpdateLogin) -> str:
         return authentication.set_password(login.new_password)
     # If neither is provided, return an error
     return "Error updating credentials: None were provided!"
+
+
+@settings_router.post("/logout")
+async def logout() -> dict:
+    """Force user logout by clearing browser's cached Basic Auth credentials.
+    This endpoint always returns 401 to force the browser to clear its
+    cached authentication credentials.
+
+    Returns:
+        dict: This will never return successfully, always raises 401
+    """
+    return authentication.logout_user()

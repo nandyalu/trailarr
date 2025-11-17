@@ -11,24 +11,9 @@ from core.base.database.models.media import MediaRead
 from core.base.database.models.helpers import language_names
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.cli import cli_to_api
+from core.download.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("TrailersDownloader")
-
-
-def extract_youtube_id(url: str) -> str | None:
-    """Extract youtube video id from url. \n
-    Args:
-        url (str): URL of the youtube video. \n
-    Returns:
-        str|None: Youtube video id / None if invalid URL."""
-    regex = re.compile(
-        r"^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*"
-    )
-    match = regex.match(url)
-    if match and len(match.group(2)) == 11:
-        return match.group(2)
-    else:
-        return None
 
 
 def __replace_media_options(
@@ -52,7 +37,7 @@ def __replace_media_options(
     # Replacing supplied options in query
     _query = query.format(**format_opts)
     # Remove extra spaces and trailing spaces
-    _query = re.sub(r'\s+', ' ', _query).strip()
+    _query = re.sub(r"\s+", " ", _query).strip()
     return _query
 
 
@@ -61,8 +46,8 @@ def __has_all_words(words: list[str], title: str) -> bool:
     for word in words:
         if not word.strip():
             continue
-        if '||' in word:
-            subwords = word.split('||')
+        if "||" in word:
+            subwords = word.split("||")
             if not __has_any_words(subwords, title):
                 return False
         elif word.lower().strip() not in title.lower():
@@ -77,8 +62,8 @@ def __has_any_words(words: list[str], title: str) -> bool:
             if len(words) == 1:
                 return True
             continue
-        if '&&' in word:
-            subwords = word.split('&&')
+        if "&&" in word:
+            subwords = word.split("&&")
             if __has_all_words(subwords, title):
                 return True
         elif word.lower().strip() in title.lower():
@@ -210,7 +195,9 @@ def search_yt_for_trailer(
         str | None: Youtube video id / None if not found."""
     logger.debug(f"Searching youtube for trailer for '{media.title}'...")
     # Set options
-    filter_func = partial(_yt_search_filter, media=media, profile=profile, exclude=exclude)
+    filter_func = partial(
+        _yt_search_filter, media=media, profile=profile, exclude=exclude
+    )
     options = {
         "format": "bv[height<=?1080]+ba/bv+ba/b",
         "match_filter": filter_func,
@@ -233,7 +220,7 @@ def search_yt_for_trailer(
     search_query = get_search_query(media, profile, search_length)
     logger.debug(f"Using Search query: {search_query}")
     # Search for video
-    with YoutubeDL(options) as ydl:
+    with YoutubeDL(options) as ydl:  # type: ignore
         search_results = ydl.extract_info(
             search_query, download=False, process=True
         )
@@ -247,7 +234,7 @@ def search_yt_for_trailer(
     # Return the first search result video id that matches the criteria
     if not exclude:
         exclude = []
-    for result in search_results["entries"]:
+    for result in search_results["entries"]:  # type: ignore
         # Skip if video id is in exclude list
         if result["id"] in exclude:
             logger.debug(f"Skipping excluded video: {result['id']}")
@@ -260,7 +247,7 @@ def get_video_id(
     media: MediaRead,
     profile: TrailerProfileRead,
     exclude: list[str] | None = None,
-    search_length: int = 10
+    search_length: int = 10,
 ) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
@@ -300,7 +287,7 @@ def get_video_id(
         video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
         )
-    
+
     if video_id:
         media.youtube_trailer_id = video_id
     return video_id

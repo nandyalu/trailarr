@@ -228,6 +228,36 @@ hr {
   color: var(--color-primary);
 }
 
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-default {
+  color: var(--color-on-surface);
+}
+
+.text-warning {
+  color: var(--color-warning);
+}
+
+.text-danger,
+.text-error {
+  color: var(--color-danger);
+}
+
+.border-default {
+  border: 1px solid var(--color-outline);
+}
+
+.border-warning {
+  border: 1px solid var(--color-warning);
+}
+
+.border-danger,
+.border-error {
+  border: 1px solid var(--color-danger);
+}
+
 /* SVG Icons */
 .icon {
   margin: auto;

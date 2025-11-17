@@ -19,8 +19,11 @@ Trailarr will try to download trailer in the selected codec if available, else i
 
 | Type    | Required | Default | Valid Values                      |
 |:-------:|:--------:|:-------:|:---------------------------------:|
-| Integer | Yes      | 1080    | 360, 480, 720, 1080, 1440, 2160   |
+| Integer | Yes      | 1080    | 0, 480, 720, 1080, 1440, 2160     |
 
 Select the video resolution of the trailers to download.
 
 Trailarr will try to download trailer in the selected resolution if available, else it will download in next best resolution available.
+
+!!! note
+    If you select `0` (shown as best in the UI), Trailarr will try to download the best available resolution of the trailer.

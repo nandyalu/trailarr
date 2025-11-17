@@ -2,11 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
-from core.base.database.manager.connection import (
-    ConnectionDatabaseManager,
-    validate_connection,
-    get_connection_rootfolders,
-)
+
+import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import (
     ConnectionCreate,
     ConnectionRead,
@@ -19,8 +16,7 @@ connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
 @connections_router.get("/")
 async def get_connections() -> list[ConnectionRead]:
-    db_handler = ConnectionDatabaseManager()
-    connections = db_handler.read_all()
+    connections = connection_manager.read_all()
     return connections
 
 
@@ -39,9 +35,11 @@ async def get_connections() -> list[ConnectionRead]:
 )
 async def test_connection(connection: ConnectionCreate) -> str:
     try:
-        result = await validate_connection(connection)
+        result = await connection_manager.validate_connection(connection)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
     return result
 
 
@@ -60,9 +58,11 @@ async def test_connection(connection: ConnectionCreate) -> str:
 )
 async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     try:
-        result = await get_connection_rootfolders(connection)
+        result = await connection_manager.get_rootfolders(connection)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
     return result
 
 
@@ -71,8 +71,10 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {
-            "description": "Connection Created Successfully! "
-            "Radarr Connection Successful Version: 3.x.x.x",
+            "description": (
+                "Connection Created Successfully! "
+                "Radarr Connection Successful Version: 3.x.x.x"
+            ),
         },
         status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,
@@ -81,14 +83,19 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     },
 )
 async def create_connection(connection: ConnectionCreate) -> str:
-    db_handler = ConnectionDatabaseManager()
     try:
-        result, connection_id = await db_handler.create(connection)
+        result, connection_id = await connection_manager.create(connection)
         await refresh_connection(connection_id)
     except Exception as e:
-        await websockets.ws_manager.broadcast("Failed to add Connection!", "Error")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    await websockets.ws_manager.broadcast("Connection Created Successfully!", "Success")
+        await websockets.ws_manager.broadcast(
+            "Failed to add Connection!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
+    await websockets.ws_manager.broadcast(
+        "Connection Created Successfully!", "Success", reload="connections"
+    )
     return f"Connection Created Successfully! {result}"
 
 
@@ -103,11 +110,12 @@ async def create_connection(connection: ConnectionCreate) -> str:
     },
 )
 async def get_connection(connection_id: int) -> ConnectionRead:
-    db_handler = ConnectionDatabaseManager()
     try:
-        connection = db_handler.read(connection_id)
+        connection = connection_manager.read(connection_id)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
     return connection
 
 
@@ -124,17 +132,24 @@ async def get_connection(connection_id: int) -> ConnectionRead:
         },
     },
 )
-async def update_connection(connection_id: int, connection: ConnectionUpdate) -> str:
-    db_handler = ConnectionDatabaseManager()
+async def update_connection(
+    connection_id: int, connection: ConnectionUpdate
+) -> str:
     try:
         # Update the connection in the database
-        await db_handler.update(connection_id, connection)
+        await connection_manager.update(connection_id, connection)
         # Refresh data from API for the connection
         await refresh_connection(connection_id)
     except Exception as e:
-        await websockets.ws_manager.broadcast("Failed to update Connection!", "Error")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    await websockets.ws_manager.broadcast("Connection Updated Successfully!", "Success")
+        await websockets.ws_manager.broadcast(
+            "Failed to update Connection!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+    await websockets.ws_manager.broadcast(
+        "Connection Updated Successfully!", "Success", reload="connections"
+    )
     return "Connection Updated Successfully!"
 
 
@@ -152,13 +167,18 @@ async def update_connection(connection_id: int, connection: ConnectionUpdate) ->
     },
 )
 async def delete_connection(connection_id: int) -> str:
-    db_handler = ConnectionDatabaseManager()
     try:
-        db_handler.delete(connection_id)
+        connection_manager.delete(connection_id)
     except Exception as e:
-        await websockets.ws_manager.broadcast("Failed to delete Connection!", "Error")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    await websockets.ws_manager.broadcast("Connection Deleted Successfully!", "Success")
+        await websockets.ws_manager.broadcast(
+            "Failed to delete Connection!", "Error"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+    await websockets.ws_manager.broadcast(
+        "Connection Deleted Successfully!", "Success", reload="connections"
+    )
     return "Connection Deleted Successfully!"
 
 

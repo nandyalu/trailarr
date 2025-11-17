@@ -51,6 +51,7 @@ COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
 RUN chmod +x /tmp/install_drivers.sh && \
     /tmp/install_drivers.sh
 
+    
 # ARG APP_VERSION, will be set during build by github actions
 ARG APP_VERSION=0.0.0-dev
 
@@ -70,6 +71,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install tzdata and pciutils, set timezone
 RUN apt-get update && apt-get install -y \
+    curl p7zip-full \
     tzdata \
     pciutils \
     udev \
@@ -77,6 +79,9 @@ RUN apt-get update && apt-get install -y \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
+
+# Install Deno for use with yt-dlp
+RUN curl -fsSL https://deno.land/install.sh | sh
 
 # Set the working directory
 WORKDIR /app

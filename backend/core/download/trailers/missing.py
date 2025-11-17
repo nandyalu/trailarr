@@ -1,7 +1,7 @@
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
-from core.base.database.manager.base import MediaDatabaseManager
+import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.filters import matches_filters
@@ -90,8 +90,7 @@ async def download_missing_trailers() -> None:
     processed_media_ids = set()  # Track processed media to avoid reprocessing
 
     while True:
-        db_manager = MediaDatabaseManager()
-        db_media_list = db_manager.read_all(None, "monitored")
+        db_media_list = media_manager.read_all(None, "monitored")
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
         if not trailer_profiles:

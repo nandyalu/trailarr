@@ -1,13 +1,16 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+from pathlib import Path
 import re
 import subprocess
 import json
+from typing import Any
 
 from pydantic import BaseModel
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+from core.download.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("VideoAnalysis")
 
@@ -28,12 +31,17 @@ class StreamInfo(BaseModel):
 class VideoInfo(BaseModel):
 
     name: str
+    file_path: str
     format_name: str
     duration_seconds: int = 0
     duration: str = "0:00:00"
     size: int = 0
     bitrate: str = "0 bps"
     streams: list[StreamInfo]
+    youtube_id: str | None = None
+    youtube_channel: str = "unknownchannel"
+    created_at: datetime
+    updated_at: datetime
 
 
 def convert_duration(duration_seconds: str) -> str:
@@ -68,7 +76,8 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     """
     entries_required = (
         "format=format_name,duration,size,bit_rate :"
-        " stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
+        " format_tags=comment,purl,artist,description,synopsis,YouTube,youtube_id,creation_time"
+        " : stream=index,codec_type,codec_name,coded_height,coded_width,channels,sample_rate"
         " : stream_tags=language,duration,name"
     )
     ffprobe_cmd = [
@@ -97,16 +106,45 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
         # If command ran successfully, parse the output
         info = json.loads(result.stdout)
-        format: dict[str, str] = info.get("format", {})
+        format: dict[str, Any] = info.get("format", {})
+        format_tags: dict[str, str] = format.get("tags", {})
+
+        # Extract YouTube ID from format tags
+        youtube_id = None
+        youtube_channel = "unknownchannel"
+        for tag_key, tag_value in format_tags.items():
+            if tag_key.lower().strip() == "artist":
+                youtube_channel = tag_value or "unknownchannel"
+                continue
+            if not youtube_id:
+                youtube_id = extract_youtube_id(tag_value)
+            if youtube_id and youtube_channel != "unknownchannel":
+                break
+
+        # Get file timestamps
+        file_path_obj = Path(file_path)
+        file_stat = file_path_obj.stat()
+        created_at = datetime.fromtimestamp(
+            file_stat.st_mtime, tz=timezone.utc
+        ) or datetime.now(timezone.utc)
+        updated_at = datetime.fromtimestamp(
+            file_stat.st_ctime, tz=timezone.utc
+        ) or datetime.now(timezone.utc)
+
         # Create VideoInfo object
         video_info = VideoInfo(
             name=os.path.basename(file_path),
-            format_name=str(format.get("format_name", "N/A")),
+            file_path=file_path,
+            format_name=os.path.splitext(file_path)[1].lower().strip("."),
             duration_seconds=int(float(format.get("duration", "0"))),
             duration=convert_duration(format.get("duration", "0")),
             size=int(format.get("size", "0")),
             bitrate=convert_bitrate(format.get("bit_rate", "0")),
             streams=[],
+            youtube_id=youtube_id,
+            youtube_channel=youtube_channel,
+            created_at=created_at,
+            updated_at=updated_at,
         )
         # Loop through streams and create StreamInfo objects
         for stream in info["streams"]:
@@ -284,13 +322,17 @@ def get_silence_timestamps(
     return None, None
 
 
-def trim_video_at_end(
-    file_path: str, output_file: str, end_timestamp: int | float | str
+def trim_video(
+    file_path: str,
+    output_file: str,
+    start_timestamp: int | float | str,
+    end_timestamp: int | float | str,
 ) -> bool:
     """Trim the video at the end using ffmpeg. \n
     Args:
         file_path (str): Path to the video file.
         output_file (str): Path to save the output file.
+        start_timestamp (int | float | str): Start timestamp to trim the video.
         end_timestamp (int | float | str): End timestamp to trim the video. \n
     Returns:
         bool: True if video trimmed successfully, False otherwise.
@@ -298,12 +340,17 @@ def trim_video_at_end(
         Exception: If error occurs while trimming video.
     """
     time = datetime.now()
-    logger.debug(f"Trimming video to end (at {end_timestamp}): {file_path}")
+    logger.debug(
+        f"Trimming video from {start_timestamp} to {end_timestamp}:"
+        f" {file_path}"
+    )
     try:
         # Remove silence part from end of video
         logger.debug(f"Running ffmpeg trim command on video: {file_path}")
         remove_cmd = [
             app_settings.ffmpeg_path,
+            "-ss",
+            str(start_timestamp),
             "-i",
             file_path,
             "-to",
@@ -367,7 +414,7 @@ def remove_silence_at_end(file_path: str) -> str:
             "Silence detected at end of video. Trimming video at"
             f" {silence_start}"
         )
-        trim_video_at_end(file_path, output_file, silence_start)
+        trim_video(file_path, output_file, 0, silence_start)
     except Exception as e:
         # Log error with traceback but return original file to continue processing
         logger.exception(

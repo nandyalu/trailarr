@@ -165,7 +165,7 @@ def get_trailer_path(
 
 def move_trailer_to_folder(
     src_path: str, media: MediaRead, profile: TrailerProfileRead
-) -> bool:
+) -> str:
     """Move the trailer file to the specified folder.
     Args:
         src_path (str): Source path of the trailer file.
@@ -177,7 +177,7 @@ def move_trailer_to_folder(
         FolderNotFoundError: If the media folder does not exist.
         Exception: Any other exceptions raised while moving file.
     Returns:
-        bool: True if trailer is moved successfully, False otherwise."""
+        str: Destination path if trailer is moved successfully."""
     logger.debug(f"Moving trailer to media folder: '{media.folder_path}'")
     # Move the trailer file to the specified folder
     if not os.path.exists(src_path):
@@ -268,7 +268,7 @@ def move_trailer_to_folder(
             )
 
     logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
-    return True
+    return dst_file_path
 
 
 def verify_download(

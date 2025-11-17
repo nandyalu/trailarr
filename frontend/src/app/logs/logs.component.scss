@@ -3,28 +3,6 @@
   flex-direction: column;
 }
 
-.logs-title {
-  position: sticky;
-  top: 76px;
-  margin: 0;
-  padding: 1rem;
-  background-color: var(--color-surface-container-high);
-  z-index: 2;
-
-  @media (width < 765px) {
-    /* 76px topnav - 8px for title padding - 6px for container padding */
-    top: 62px;
-  }
-}
-
-.text-center {
-  text-align: center;
-}
-
-// .center {
-//   margin: auto;
-// }
-
 .logssearch {
   display: flex;
   flex-direction: row;
@@ -33,17 +11,17 @@
   width: auto;
   flex-grow: 1;
   padding: 1rem;
-  background-color: var(--color-surface-container-high);
+  background-color: var(--color-surface-container-low);
   position: sticky;
-  top: 145px;
-  /* 76px topnav + 69px logs title */
+  top: 76px;
+  /* 76px topnav */
   z-index: 2;
   gap: 0.5rem;
 
   @media (width < 765px) {
     padding: 0.5rem;
-    top: 113px;
-    /* 76px topnav + 53px logs title - 16px for title padding */
+    top: 76px;
+    /* 76px topnav */
   }
 }
 
@@ -98,7 +76,7 @@
 
 .logs-row {
   padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-outline-variant);
 
   @media (width < 765px) {
     padding: 0;
