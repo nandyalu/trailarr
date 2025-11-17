@@ -1,3 +1,7 @@
+# Copyright 2024 YTDL-ORG and contributors
+# Copied from https://github.com/yt-dlp/yt-dlp/blob/master/devscripts/cli_to_api.py
+
+
 # Allow direct execution
 import os
 import sys
