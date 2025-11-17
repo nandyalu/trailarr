@@ -137,7 +137,7 @@ export class TopnavComponent implements OnInit {
 
   logout() {
     // Clear api_key from cookies first
-    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;';
 
     console.log('Logging out...');
 
