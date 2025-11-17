@@ -22,6 +22,18 @@ Frequency (in minutes) to check for new media in Radarr/Sonarr.
 !!! info Restart Required
     Changing this setting will require a restart of the app (container) to take effect.
 
+## App Theme
+
+- Default is `Auto`. Available options are `Light`, `Dark`, and `Auto`.
+
+Select the theme for the app UI.
+- Light theme will use light colors for the UI.
+- Dark theme will use dark colors for the UI.
+- Auto theme will use the system theme of the host system.
+
+!!! tip "Selection will be saved across devices"
+    Once you change the theme, Trailarr will remember the selection for next time across your devices.
+
 
 ## File Settings
 

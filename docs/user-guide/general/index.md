@@ -15,17 +15,3 @@ You can use the search bar at the top to search for any Media item in the Traila
 Search functionality is available on all pages. Search is not case-sensitive meaning `The Matrix` and `the matrix` will return same results!
 
 You can also use Keyboard Shortcut `Ctrl + F` to trigger search. If you want to use browser search, press `Ctrl + F` again!
-
-## Light / Dark Theme
-
-<video autoplay loop src="./general-theme-switch.mp4" title="General - Theme Switch"></video>
-
-Trailarr is available in both Light and Dark themes.
-
-System theme selection will be used to set the theme on statup, you can change it using the toggle at the top
-
-!!! note "Mobile - Rotate your sceen to see the toggle"
-    On Mobile screens, rotate the screen to Landscape mode to see the Theme toggle!
-
-!!! tip "Selection will be saved in browser"
-    Once you change the theme, your browser will remember the selection for next time.

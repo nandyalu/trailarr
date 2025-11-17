@@ -137,7 +137,7 @@ This setting allows you to embed metadata in the trailer files. If enabled, the 
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true or false |
 
-Enable this option to let Trailarr analyse the video file and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
+Enable this option to let Trailarr analyse the video file to detect silence towards the end of video and remove it. This helps remove video end credits usually added to show end credits or other video suggestions on YouTube.
 
 Silence is detected using `ffmpeg silencedetect` and if there is any silence (less than 30dB audio) for more than 3 seconds at the end of video file, video will be trimmed till the starting timestamp of the detected silence.
 

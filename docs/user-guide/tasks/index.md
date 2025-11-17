@@ -58,6 +58,9 @@ The Tasks page shows all background jobs that keep Trailarr running smoothly. Yo
 
 You can see queued/running jobs and their progress in real time.
 
+!!! note ""
+    Queued tasks will show a log icon next to them. Click on the icon to view detailed logs for that task.
+
 !!! tip
     You might sometimes see an error in logs like below and it's normal behaviour. All the tasks are setup such that if that task is already running, it won't start a new one!
 
