@@ -103,7 +103,7 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _format += "/bestvideo*+bestaudio*/best"
     if profile.video_resolution == 0:
         # If resolution is best (0), use a simpler format
-        _format = "bestvideo*+bestaudio*/best"
+        _format = "bestvideo*+bestaudio/best"
     _options.append(_format)
     logger.debug(f"Using format: {_format}")
 
