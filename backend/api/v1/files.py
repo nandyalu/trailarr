@@ -225,7 +225,11 @@ def trim_video(
             file_path, output_file, start_timestamp, end_timestamp
         )
     except Exception as e:
-        return str(e)
+        logger.error(f"Error trimming video: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal error occurred while trimming the video."
+        )
     return "Video trimmed successfully." if res else "Video trim failed."
 
 
