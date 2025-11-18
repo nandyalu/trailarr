@@ -27,6 +27,7 @@ display_startup_banner() {
     box_echo "--------------------------------------------------------------------------";
     box_echo "Starting Trailarr container with the following configuration:"
     box_echo "APP_DATA_DIR: ${APP_DATA_DIR}"
+    box_echo "APP_PORT: ${APP_PORT}"
     box_echo "PUID: ${PUID}"
     box_echo "PGID: ${PGID}"
     box_echo "TZ: ${TZ}"

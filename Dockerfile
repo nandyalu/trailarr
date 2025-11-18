@@ -1,11 +1,6 @@
-# Stage 1 - gosu builder
-FROM golang:1.24.5-bookworm AS gosu-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git
-RUN git clone https://github.com/harshitsidhwa/gosu.git /gosu
-WORKDIR /gosu
-RUN go build -o /usr/local/bin/gosu .
-
-# Stage 1 - Python dependencies
+# --------------------------------------------------------------------------- #
+#                          Stage 1 - Dependencies                             #
+# --------------------------------------------------------------------------- #
 FROM python:3.13-slim AS python-deps
 
 # For bare metal installation, see install.sh script in the repository root
@@ -24,8 +19,10 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Copy backend with pyproject.toml for dependency installation
-COPY ./backend /app/backend
+# Copy uv related files from backend for dependency installation
+COPY ./backend/.python-version /app/backend/.python-version
+COPY ./backend/pyproject.toml /app/backend/pyproject.toml
+COPY ./backend/uv.lock /app/backend/uv.lock
 
 # Install Python dependencies using uv pip install
 WORKDIR /app/backend
@@ -36,22 +33,24 @@ COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
 RUN chmod +x /tmp/install_ffmpeg.sh && \
     /tmp/install_ffmpeg.sh
 
-# Stage 2 - Final image
+# --------------------------------------------------------------------------- #
+#                          Stage 2 - Final image                              #
+# --------------------------------------------------------------------------- #
 FROM python:3.13-slim
 
-# Copy gosu from builder stage
-COPY --from=gosu-builder /usr/local/bin/gosu /usr/local/bin/gosu
+# Copy gosu from gosu image to allow running as non-root user
+COPY --from=tianon/gosu:trixie /usr/local/bin/gosu /usr/local/bin/gosu
 RUN chmod +x /usr/local/bin/gosu
 
 # Copy uv, ffmpeg and Python dependencies from python-deps stage to make it available in final image
-COPY --from=python-deps /usr/local/ /usr/local/
+COPY --from=python-deps /usr/local/bin/ /usr/local/bin/
+COPY --from=python-deps /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 
 # Install HW Acceleration drivers and libraries
 COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
 RUN chmod +x /tmp/install_drivers.sh && \
     /tmp/install_drivers.sh
 
-    
 # ARG APP_VERSION, will be set during build by github actions
 ARG APP_VERSION=0.0.0-dev
 
