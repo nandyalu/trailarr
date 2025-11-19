@@ -4,7 +4,7 @@ import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {AppLogRecord, LogLevel} from 'generated-sources/openapi';
+import {AppLogRecordRead, LogLevel} from 'generated-sources/openapi';
 import {TimeagoModule} from 'ngx-timeago';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
@@ -33,7 +33,7 @@ export class LogsComponent implements OnInit {
   displayCount = signal(100); // Default display count for logs
 
   // Component resources
-  protected readonly allLogs = httpResource<AppLogRecord[]>(
+  protected readonly allLogs = httpResource<AppLogRecordRead[]>(
     () => ({
       url: this.logsService.logsUrl + 'raw',
       method: 'GET',
@@ -55,7 +55,7 @@ export class LogsComponent implements OnInit {
       return logs.slice(0, this.displayCount()); // Return all logs if no query or too short
     }
     // Filter logs based on the search query
-    return logs.filter((log: AppLogRecord) => {
+    return logs.filter((log: AppLogRecordRead) => {
       const objectValues = Object.values(log).map((value) => value?.toString() || '');
       const raw_log = objectValues.join(' | ');
       return raw_log.toLowerCase().includes(query.toLowerCase());
@@ -85,7 +85,7 @@ export class LogsComponent implements OnInit {
     });
   }
 
-  getRawLog(log: AppLogRecord): string {
+  getRawLog(log: AppLogRecordRead): string {
     return `${log.created!}: [${log.level}|${log.filename}|${log.lineno}] ${log.loggername!} ${log.message}`;
   }
 

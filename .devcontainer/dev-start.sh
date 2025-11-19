@@ -58,7 +58,7 @@ alembic upgrade head && box_echo "Alembic migrations ran successfully"
 
 # Install Angular & dependencies
 box_echo "Installing Angular and it's dependencies"
-npm install -g @angular/cli@19.2.10
+npm install -g @angular/cli
 cd ../frontend && npm install
 ng completion
 

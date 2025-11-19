@@ -27,3 +27,8 @@ Trailarr will try to download trailer in the selected resolution if available, e
 
 !!! note
     If you select `0` (shown as best in the UI), Trailarr will try to download the best available resolution of the trailer.
+    `Video Resolution` of `0` or `best` is only available with the following:
+    
+    - File Format: `mkv`
+    - Video Format: `copy`
+    - Audio Format: `copy`
