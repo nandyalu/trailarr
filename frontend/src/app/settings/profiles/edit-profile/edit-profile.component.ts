@@ -71,6 +71,11 @@ export class EditProfileComponent {
     if (!_profile) {
       return disabled;
     }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('mp4');
+      disabled.push('webm');
+    }
     // Based on video formats
     switch (_profile.video_format) {
       case 'copy':
@@ -107,6 +112,14 @@ export class EditProfileComponent {
     if (!_profile) {
       return disabled;
     }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('h264');
+      disabled.push('h265');
+      disabled.push('vp8');
+      disabled.push('vp9');
+      disabled.push('av1');
+    }
     // Based on file formats
     switch (_profile.file_format) {
       case 'mp4':
@@ -127,6 +140,14 @@ export class EditProfileComponent {
     if (!_profile) {
       return disabled;
     }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('aac');
+      disabled.push('ac3');
+      disabled.push('eac3');
+      disabled.push('flac');
+      disabled.push('opus');
+    }
     // Based on file formats
     switch (_profile.file_format) {
       case 'webm':
@@ -145,6 +166,18 @@ export class EditProfileComponent {
       return []; // No profile, no warnings
     }
     let warnings: string[] = [];
+    // Check for invalid file format based on video resolution
+    if (_profile.video_resolution === 0) {
+      if (_profile.file_format !== 'mkv') {
+        warnings.push('Video resolution "best" requires file format "mkv".');
+      }
+      if (_profile.video_format !== 'copy') {
+        warnings.push('Video resolution "best" requires video format "copy".');
+      }
+      if (_profile.audio_format !== 'copy') {
+        warnings.push('Video resolution "best" requires audio format "copy".');
+      }
+    }
     // Check for invalid file format based on video format
     switch (_profile.video_format) {
       case 'copy':
