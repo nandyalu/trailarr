@@ -8,7 +8,7 @@ dependencies = [
     "aiofiles==25.1.0",
     "aiohttp==3.13.2",
     "aiosqlite==0.21.0",
-    "alembic==1.17.1",
+    "alembic==1.17.2",
     "apscheduler==3.11.1",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
