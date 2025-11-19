@@ -129,6 +129,23 @@ header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
 query_schema = APIKeyQuery(name="api_key", auto_error=False)
 
 
+def logout_user() -> dict:
+    """Force logout by returning a 401 response with WWW-Authenticate header.
+    This clears browser's cached Basic Auth credentials.
+
+    Returns:
+        dict: Logout success message
+
+    Raises:
+        HTTPException: Always raises 401 to clear browser credentials
+    """
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Logged out successfully. Please log in again.",
+        headers={"WWW-Authenticate": 'Basic realm="Trailarr"'},
+    )
+
+
 def verify_api_key(api_key: str) -> bool:
     """Verifies the API key provided by the user \n
     Args:

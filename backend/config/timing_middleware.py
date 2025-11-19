@@ -4,6 +4,7 @@ import time
 from fastapi import FastAPI, Request
 
 from app_logger import uvicorn_logger as logger
+from config.logging_context import with_logging_context
 
 # Inspiration: https://medium.com/@roy-pstr/fastapi-server-errors-and-logs-take-back-control-696405437983  # noqa: E501
 
@@ -67,6 +68,7 @@ def get_colored_status_method(method: str) -> str:
     return f"{ColorCodes.purple}{method}{ColorCodes.reset}"
 
 
+@with_logging_context
 async def log_timing_middleware(request: Request, call_next):
     """
     This middleware will log all requests and their processing time.

@@ -6,6 +6,7 @@ include = ["api*", "core*", "config*", "alembic*"]
 name = "Trailarr"
 version = "0.6.0"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
+readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==25.1.0",
@@ -15,8 +16,9 @@ dependencies = [
     "apscheduler==3.11.1",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.121.1",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.121.2",
     "pillow==12.0.0",
+    "pytz>=2025.2",
     "sqlmodel==0.0.27",
     "yt-dlp[curl-cffi,default]==2025.11.12",
     "python-jose==3.3.0",

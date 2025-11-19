@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from pydantic import field_validator
 from sqlmodel import Field
 
 from core.base.database.models.base import AppSQLModel
@@ -68,6 +69,11 @@ class DownloadRead(DownloadBase):
 
     id: int
     media_id: int
+
+    @field_validator("added_at", "updated_at", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        return cls.set_timezone_to_utc(value)
 
 
 class DownloadUpdate(AppSQLModel):

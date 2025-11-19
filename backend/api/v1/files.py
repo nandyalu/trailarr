@@ -24,18 +24,6 @@ UNSAFE_PATHS = [
     "/var",
 ]
 
-UNSAFE_PATHS = [
-    ".",
-    "/app",
-    "/bin",
-    "/boot",
-    "/etc",
-    "/lib",
-    "/sbin",
-    "/usr",
-    "/var",
-]
-
 
 def _is_path_safe(path: str) -> bool:
     """Check if the path is safe.\n
@@ -59,7 +47,7 @@ def _is_path_safe(path: str) -> bool:
 async def get_files(path: str) -> FolderInfo | None:
     """Get files in a directory.\n
     Args:
-        path (str): Path to the directory.
+        path (str): Path to the directory. \n
     Returns:
         FolderInfo|None: Folder information or None if folder doesn't exist. \n
     Raises:
@@ -237,7 +225,11 @@ def trim_video(
             file_path, output_file, start_timestamp, end_timestamp
         )
     except Exception as e:
-        return str(e)
+        logger.error(f"Error trimming video: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal error occurred while trimming the video."
+        )
     return "Video trimmed successfully." if res else "Video trim failed."
 
 

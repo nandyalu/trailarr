@@ -1,5 +1,5 @@
 <div class="content">
-  <div class="content-label">
+  <div [class]="['content-label', 'text-' + colorType()]">
     <label [for]="inputId">{{ name() }}</label>
     <small>{{ description() }}</small>
     @if (descriptionExtra()) {
@@ -11,6 +11,7 @@
       <input
         [id]="inputId"
         [type]="isNumberType() ? 'number' : 'text'"
+        [class]="'border-' + colorType()"
         [class.input__long]="isLongInput()"
         [class.input__folder]="showFolderButton()"
         [class.input__disabled]="disabled()"

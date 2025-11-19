@@ -30,7 +30,8 @@
         <a class="profile-card" [routerLink]="[profile.id]">
           <h3 class="profile-card-title">{{ profile.customfilter.filter_name }}</h3>
           <div class="profile-card-content">
-            <p>Video: {{ profile.video_resolution }}p | {{ profile.video_format }}</p>
+            @let video_res = profile.video_resolution ? `${profile.video_resolution}p` : 'best';
+            <p>Video: {{ video_res }} | {{ profile.video_format }}</p>
             <p>Audio: {{ profile.audio_format }}</p>
             @if (profile.subtitles_enabled) {
               <p>Subtitle: {{ profile.subtitles_language }} | {{ profile.subtitles_format }}</p>

@@ -80,8 +80,10 @@ RUN apt-get update && apt-get install -y \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Deno for use with yt-dlp
-RUN curl -fsSL https://deno.land/install.sh | sh
+# Install Deno for use with yt-dlp - install globally for all users
+RUN curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh && \
+    chmod +x /usr/local/bin/deno && \
+    /usr/local/bin/deno --version
 
 # Set the working directory
 WORKDIR /app

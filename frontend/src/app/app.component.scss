@@ -19,7 +19,7 @@
   z-index: 100;
   position: sticky;
   top: 0;
-  background-color: var(--color-surface-container);
+  background-color: var(--color-surface-container-high);
   color: var(--color-on-surface);
 }
 
@@ -68,7 +68,7 @@
   /* overflow-x: hidden;
   overflow-y: auto; */
   order: 2;
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-dim);
   color: var(--color-on-surface);
 
   @media (width < 765px) {

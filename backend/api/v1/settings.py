@@ -63,3 +63,15 @@ async def update_login(login: UpdateLogin) -> str:
         return authentication.set_password(login.new_password)
     # If neither is provided, return an error
     return "Error updating credentials: None were provided!"
+
+
+@settings_router.post("/logout")
+async def logout() -> dict:
+    """Force user logout by clearing browser's cached Basic Auth credentials.
+    This endpoint always returns 401 to force the browser to clear its
+    cached authentication credentials.
+
+    Returns:
+        dict: This will never return successfully, always raises 401
+    """
+    return authentication.logout_user()

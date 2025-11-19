@@ -138,7 +138,7 @@ async def download_trailer(
             f" from ({video_id})"
         )
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success")
+        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")

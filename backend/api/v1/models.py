@@ -38,6 +38,7 @@ class Settings(BaseModel):
     api_key: str
     app_data_dir: str
     app_mode: str
+    app_theme: str
     gpu_available_amd: bool
     gpu_available_intel: bool
     gpu_available_nvidia: bool

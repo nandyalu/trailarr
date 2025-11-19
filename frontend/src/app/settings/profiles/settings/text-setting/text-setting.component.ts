@@ -30,6 +30,7 @@ export class TextSettingComponent implements OnChanges {
   maxLength = input<number>(150);
   autocomplete = input<string>('off');
   disabled = input<boolean>(false);
+  colorType = input<'default' | 'warning' | 'danger'>('default');
 
   oldValue = signal<string | number>('');
   onSubmit = output<string>();

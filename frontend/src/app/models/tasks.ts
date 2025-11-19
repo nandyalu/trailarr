@@ -13,6 +13,7 @@ export interface QueuedTask {
   id: number;
   name: string;
   queue_id: string;
+  trace_id: string;
   duration: number;
   finished: Date;
   started: Date;

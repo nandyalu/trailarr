@@ -1,5 +1,6 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from config.logging_context import get_new_trace_id, with_logging_context
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import ArrType, ConnectionRead
 from core.radarr.connection_manager import RadarrConnectionManager
@@ -56,7 +57,8 @@ async def api_refresh_by_id(
 
 
 def api_refresh_by_id_job(connection_id: int):
-    def run_async(conn: ConnectionRead) -> None:
+    @with_logging_context
+    def run_async(conn: ConnectionRead, *, trace_id: str) -> None:
         """Run the async task in a separate event loop."""
         new_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(new_loop)
@@ -79,8 +81,9 @@ def api_refresh_by_id_job(connection_id: int):
     scheduler.add_job(
         func=run_async,
         args=(connection,),
+        kwargs={"trace_id": get_new_trace_id()},
         trigger="date",
-        run_date=datetime.now() + timedelta(seconds=1),
+        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
         id=f"refresh_api_data_by_connection_{connection_id}",
         name=f"Arr Data Refresh for {connection.name}",
         max_instances=1,

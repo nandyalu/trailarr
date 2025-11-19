@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
+from pydantic import field_validator
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
 from sqlmodel import Field, Integer, Relationship
 
@@ -137,6 +138,11 @@ class MediaRead(MediaBase):
     updated_at: datetime
     downloaded_at: datetime | None
     downloads: list[DownloadRead] = []
+
+    @field_validator("added_at", "updated_at", "downloaded_at", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        return cls.set_timezone_to_utc(value)
 
 
 class MediaUpdate(MediaBase):

@@ -70,5 +70,6 @@ ng completion
 # box_echo "Starting FastAPI application"
 # cd /app
 # exec gunicorn --bind 0.0.0.0:7888 -k uvicorn.workers.UvicornWorker backend.main:trailarr_api
+chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
 box_echo "Dev container started successfully!"

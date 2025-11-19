@@ -11,8 +11,8 @@
 
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
-  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.121.1-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-20.3.10-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.121.2-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-20.3.11-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
   <a href="https://github.com/nandyalu/trailarr" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
@@ -20,7 +20,7 @@
   <a href="https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml" target="_blank"><img src="https://github.com/nandyalu/trailarr/actions/workflows/docker-build.yml/badge.svg" alt="Docker Build"></a>
   <a href="https://github.com/psf/black" target="_blank"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
   <a href="https://www.codefactor.io/repository/github/nandyalu/trailarr" target="_blank"><img src="https://www.codefactor.io/repository/github/nandyalu/trailarr/badge" alt="CodeFactor"></a>
-  <a href="https://hub.docker.com/r/nandyalu/trailarr/" target="_blank"><img src="https://badgen.net/docker/pulls/nandyalu/trailarr?icon=docker&label=pulls" alt="Docker Pulls"></a>
+  <a href="https://hub.docker.com/r/nandyalu/trailarr/" target="_blank"><img src="https://img.shields.io/docker/pulls/nandyalu/trailarr?logo=docker&label=pulls" alt="Docker Pulls"></a>
   <a href="https://github.com/nandyalu/trailarr/issues" target="_blank"><img src="https://img.shields.io/github/issues/nandyalu/trailarr?logo=github" alt="GitHub Issues"></a>
   <a href="https://github.com/nandyalu/trailarr/commits/" target="_blank"><img src="https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github" alt="GitHub last commit"></a>
 </p>

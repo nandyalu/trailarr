@@ -1,3 +1,4 @@
+import {TitleCasePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Settings} from 'generated-sources/openapi';
@@ -9,7 +10,7 @@ import {TextSettingComponent} from '../profiles/settings/text-setting/text-setti
 
 @Component({
   selector: 'app-trailer',
-  imports: [FormsModule, LoadIndicatorComponent, OptionsSettingComponent, TextSettingComponent],
+  imports: [FormsModule, LoadIndicatorComponent, OptionsSettingComponent, TextSettingComponent, TitleCasePipe],
   templateUrl: './general.component.html',
   styleUrl: './general.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,7 @@ export class GeneralComponent {
 
   loggingOptions = ['Debug', 'Info', 'Warning', 'Error'];
   trueFalseOptions = ['true', 'false'];
+  themeOptions = ['Auto', 'Dark', 'Light'];
 
   toTitleCase(str: string): string {
     return str

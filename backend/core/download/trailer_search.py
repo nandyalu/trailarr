@@ -199,14 +199,15 @@ def search_yt_for_trailer(
         _yt_search_filter, media=media, profile=profile, exclude=exclude
     )
     options = {
-        "format": "bv[height<=?1080]+ba/bv+ba/b",
+        "format": "bv*+ba/b",
         "match_filter": filter_func,
         "noplaylist": True,
         "extract_flat": "discard_in_playlist",
         "fragment_retries": 10,
         "noprogress": True,
-        "no_warnings": True,
-        "quiet": True,
+        "no_warnings": app_settings.log_level != "DEBUG",
+        "quiet": app_settings.log_level != "DEBUG",
+        "verbose": app_settings.log_level == "DEBUG",
     }
     # Add Cookie if provided
     if app_settings.yt_cookies_path:

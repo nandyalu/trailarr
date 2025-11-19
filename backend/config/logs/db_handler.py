@@ -1,8 +1,8 @@
-from datetime import datetime
 import logging
 import traceback
 from logging import LogRecord
 
+from config.logging_context import get_trace_id
 from config.logs.db_utils import get_logs_session
 from config.logs.model import AppLogRecord
 
@@ -65,10 +65,11 @@ class DatabaseLoggingHandler(logging.Handler):
                     _tb = get_synthetic_traceback()
 
             # Format timestamp and task name if available
-            _created = datetime.fromtimestamp(record.created)
-            _taskName = "General"
-            if hasattr(record, "taskName"):
-                _taskName = record.taskName
+            # _created = datetime.fromtimestamp(record.created)
+            # _taskName = "General"
+            # if hasattr(record, "taskName"):
+            #     _taskName = record.taskName
+            _taskName = get_trace_id() or "System"
             _mediaid = getattr(record, "mediaid", None)
             _loggername = record.name
             if "alembic" in _loggername:
@@ -89,7 +90,7 @@ class DatabaseLoggingHandler(logging.Handler):
 
             # Create a log record instance for the database
             log_record = AppLogRecord(
-                created=_created,
+                # created=_created,
                 loggername=_loggername,
                 level=record.levelname,  # type: ignore
                 message=_message,

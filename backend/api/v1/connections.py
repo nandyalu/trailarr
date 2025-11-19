@@ -94,7 +94,7 @@ async def create_connection(connection: ConnectionCreate) -> str:
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         )
     await websockets.ws_manager.broadcast(
-        "Connection Created Successfully!", "Success"
+        "Connection Created Successfully!", "Success", reload="connections"
     )
     return f"Connection Created Successfully! {result}"
 
@@ -148,7 +148,7 @@ async def update_connection(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
     await websockets.ws_manager.broadcast(
-        "Connection Updated Successfully!", "Success"
+        "Connection Updated Successfully!", "Success", reload="connections"
     )
     return "Connection Updated Successfully!"
 
@@ -177,7 +177,7 @@ async def delete_connection(connection_id: int) -> str:
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
     await websockets.ws_manager.broadcast(
-        "Connection Deleted Successfully!", "Success"
+        "Connection Deleted Successfully!", "Success", reload="connections"
     )
     return "Connection Deleted Successfully!"
 

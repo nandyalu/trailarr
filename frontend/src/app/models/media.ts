@@ -61,9 +61,9 @@ export interface Media {
 export function mapMedia(media: any): Media {
   return {
     ...media,
-    added_at: new Date(`${media.added_at}Z`),
-    updated_at: new Date(`${media.updated_at}Z`),
-    downloaded_at: new Date(`${media.downloaded_at}Z`),
+    added_at: new Date(`${media.added_at}`),
+    updated_at: new Date(`${media.updated_at}`),
+    downloaded_at: new Date(`${media.downloaded_at}`),
     isImageLoaded: false,
   };
 }
@@ -107,7 +107,7 @@ export function mapFolderInfo(folder: any): FolderInfo {
   return {
     ...folder,
     isExpanded: false,
-    modified: new Date(`${folder.created}Z`),
+    modified: new Date(`${folder.created}`),
     files: _files,
   };
 }
@@ -116,7 +116,7 @@ function mapFileInfo(file: any): FolderInfo {
   return {
     ...file,
     isExpanded: false,
-    modified: new Date(`${file.created}Z`),
+    modified: new Date(`${file.created}`),
   };
 }
 

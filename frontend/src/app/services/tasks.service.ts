@@ -33,18 +33,6 @@ export class TasksService {
     return date ? new Date(date + 'Z') : null;
   }
 
-  // formatDuration(duration: string): string {
-  //   // Check if the duration contains milliseconds
-  //   if (!duration) {
-  //     return '0:00:00';
-  //   }
-  //   if (duration.includes('.')) {
-  //     // Remove the milliseconds
-  //     duration = duration.split('.')[0];
-  //   }
-  //   return duration
-  // }
-
   formatDuration(duration: number): string {
     // Convert duration in seconds to HH:MM:SS format
     if (duration < 1) {
@@ -69,8 +57,8 @@ export class TasksService {
           ...schedule,
           interval: this.convertTime(schedule.interval),
           last_run_duration: this.formatDuration(schedule.last_run_duration),
-          last_run_start: this.convertDate(schedule.last_run_start),
-          next_run: this.convertDate(schedule.next_run),
+          // last_run_start: this.convertDate(schedule.last_run_start),
+          // next_run: this.convertDate(schedule.next_run),
         }));
       }),
     );
@@ -84,8 +72,8 @@ export class TasksService {
           id,
           ...queue,
           duration: this.formatDuration(queue.duration),
-          finished: this.convertDate(queue.finished),
-          started: this.convertDate(queue.started),
+          // finished: this.convertDate(queue.finished),
+          // started: this.convertDate(queue.started),
           // end: this.convertDate(queue.end)
         }));
       }),
