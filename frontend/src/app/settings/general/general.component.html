@@ -5,13 +5,16 @@
   <app-load-indicator class="center" />
 }
 <!-- Warning Messages -->
-<div class="border-warning sticky-warning">
-  <ul>
-    @for (message of warningMessages(); track $index) {
-      <li>{{ message }}</li>
-    }
-  </ul>
-</div>
+@if (warningMessages().length > 0) {
+  <div class="border-warning sticky-warning">
+    <ul>
+      @for (message of warningMessages(); track $index) {
+        <li>{{ message }}</li>
+      }
+    </ul>
+  </div>
+}
+<!-- Settings Sections -->
 
 <section>
   <details open>
