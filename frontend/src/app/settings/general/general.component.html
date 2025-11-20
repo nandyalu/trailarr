@@ -4,15 +4,15 @@
 @if (isLoading()) {
   <app-load-indicator class="center" />
 }
-@if (settings()?.log_level == 'DEBUG') {
-  <div class="border-warning sticky-warning">
-    <ul>
-      @for (message of warningMessages(); track $index) {
-        <li>{{ message }}</li>
-      }
-    </ul>
-  </div>
-}
+<!-- Warning Messages -->
+<div class="border-warning sticky-warning">
+  <ul>
+    @for (message of warningMessages(); track $index) {
+      <li>{{ message }}</li>
+    }
+  </ul>
+</div>
+
 <section>
   <details open>
     <summary>
