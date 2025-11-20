@@ -1,4 +1,3 @@
-
 Filters are the conditions that determine when a profile should be applied to a media item.
 
 Each Filter consists of 3 things:
@@ -112,14 +111,14 @@ The conditions determine how the value is compared against the property. The ava
 
 ### Date Conditions
 
-| Condition         | Description                                                     |
-|------------------:|:----------------------------------------------------------------|
-| `EQUALS`          | The property must equal the specified date.                     |
-| `NOT EQUALS`      | The property must not equal the specified date.                 |
-| `IS AFTER`        | The property must be after the specified date.                  |
-| `IS BEFORE`       | The property must be before the specified date.                 |
-| `IN THE LAST`     | The property must be within the last specified time period.     |
-| `NOT IN THE LAST` | The property must not be within the last specified time period. |
+| Condition         | Description                                                                                         |
+|------------------:|:----------------------------------------------------------------------------------------------------|
+| `EQUALS`          | The property must equal the specified date (format: YYYY-MM-DD).                                    |
+| `NOT EQUALS`      | The property must not equal the specified date (format: YYYY-MM-DD).                                |
+| `IS AFTER`        | The property must be after the specified date (format: YYYY-MM-DD).                                 |
+| `IS BEFORE`       | The property must be before the specified date (format: YYYY-MM-DD).                                |
+| `IN THE LAST`     | Property is checked against an integer number of days. Provide N (days). Implementation compares (media_date - today).days <= N. |
+| `NOT IN THE LAST` | Property is checked against an integer number of days. Provide N (days). Implementation compares (media_date - today).days > N.  |
 
 
 ## Filter Values
@@ -129,3 +128,9 @@ The value is the value to compare against the property. The available values dep
 - **Integer Values**: Any integer value.
 - **String Values**: Any string value.
 - **Date Values**: A date in the format `YYYY-MM-DD` or a number of days (e.g., `7` for the last 7 days).
+
+
+**Notes:**
+
+- For `IN THE LAST` and `NOT IN THE LAST` date conditions, set `filter_value` to an integer number of days. The comparison performed by the backend uses the difference (media_date.date() - now.date()).days against the provided integer value.
+- Boolean filters accept `true` / `false` values (lowercase) when creating filters via the API or UI.

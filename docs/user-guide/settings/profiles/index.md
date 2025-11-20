@@ -19,7 +19,6 @@ Profiles are located in the `Settings > Profiles` page of the Trailarr app [http
     The next sections will explain what each of the settings and filters do, how to create a profile, and how to use profiles in Trailarr.
 
 
-
 ### View Profiles
 
 A list of existing profiles can be viewed in the `Profiles` page.
@@ -66,8 +65,8 @@ Trailarr uses profiles as follows:
 - When downloading a trailer from the UI. A dialog will appear allowing you to select a profile from existing profiles. Filters will not be applied in this case.
 - When running the `Download Missing Trailers` task (which runs periodically). 
     - If no profiles are available, the task will not run.
-    - Profiles with high priority will be used first.
-    - The task will find all profiles that match all the filters for each media item. Then it will start downloading videos for each Profile one by one (in order of priority) until a Profile with `Stop Monitoring = true` successfully downloads a trailer.
+    - Profiles with lower numeric priority values will be used first (lower number = higher priority).
+    - The task will find all profiles that match all the filters for each media item. Then it will start downloading videos for each Profile one by one (in ascending numeric priority order) until a Profile with `Stop Monitoring = true` successfully downloads a trailer.
     - Media items that does not match any profiles will not be processed.
     - Media items that matches a profile but does not have a valid Media folder or `monitor` set to `false` will not be processed.
 

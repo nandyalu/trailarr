@@ -1,4 +1,3 @@
-
 ## Profile Name
 
 | Type   | Required | Valid Values                            |
@@ -25,7 +24,7 @@ This setting allows you to enable or disable the profile. Only enabled profiles 
 |:-------:|:--------:|:-------:|:-------------:|
 | Integer | Yes      | 0       | 0 to 999     |
 
-This setting determines the order in which profile is applied when multiple profiles match a media item. Profiles with a higher priority (highest numerical value) will be processed first. 
+This setting determines the order in which a profile is applied when multiple profiles match a media item. Profiles with a lower numeric value are processed first (lower number = higher priority). Choose smaller numbers for profiles you want evaluated before others.
 
 !!! warning
     If two profiles have the same priority, any one of them can be used, so it is recommended to use unique priorities for each profile.
@@ -47,11 +46,11 @@ This setting will save the downloaded video id as the trailer id for the media a
     ```
         Profile Name: Spanish Trailer
         Stop Monitoring: false
-        Priority: 100
+        Priority: 0
         -------------------------------
         Profile Name: English Trailer
         Stop Monitoring: true
-        Priority: 0 (or any lower number than the Spanish Trailer profile)
+        Priority: 100
     ```
 
-    This way, Trailarr will first use the `Spanish Trailer` profile to download the Spanish trailer. Since `Stop Monitoring` is set to `false`, Trailarr will continue to monitor the media item after the download. Next, it will use the `English Trailer` profile to download the English trailer. After this download, since `Stop Monitoring` is set to `true`, Trailarr will stop monitoring the media item.
+    With the settings above, Trailarr will first use the `Spanish Trailer` profile (priority 0). Since `Stop Monitoring` is set to `false`, Trailarr will continue to monitor the media item after the download. Next, it will use the `English Trailer` profile (priority 100) to download the English trailer. After this download, since `Stop Monitoring` is set to `true`, Trailarr will stop monitoring the media item.
