@@ -20,7 +20,7 @@
 	// Install Node.js in the container, for running Angular.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
-			"version": "latest"
+			"version": "lts"
 		}
 	},
 	// Installing some common VS Code extensions for Python and Angular development.

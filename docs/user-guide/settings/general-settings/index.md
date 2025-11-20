@@ -22,7 +22,7 @@ Frequency (in minutes) to check for new media in Radarr/Sonarr.
 !!! info Restart Required
     Changing this setting will require a restart of the app (container) to take effect.
 
-## App Theme
+### App Theme
 
 - Default is `Auto`. Available options are `Light`, `Dark`, and `Auto`.
 

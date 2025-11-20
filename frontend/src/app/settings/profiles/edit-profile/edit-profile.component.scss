@@ -49,6 +49,10 @@ summary {
   text-overflow: ellipsis;
   max-width: calc(100vw - 260px);
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
   @media (width < 1100px) {
     max-width: calc(100vw - 100px);
   }

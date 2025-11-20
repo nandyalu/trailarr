@@ -3,6 +3,7 @@
     <app-load-indicator class="center" />
   } @else {
     <form [formGroup]="customFilterForm" (ngSubmit)="onSubmit()" (click)="$event.stopPropagation()">
+      <help-link-icon class="top-right" [link]="helpLink" />
       <!-- View Name -->
       <div class="form-group">
         <label for="filter_name">Label</label>

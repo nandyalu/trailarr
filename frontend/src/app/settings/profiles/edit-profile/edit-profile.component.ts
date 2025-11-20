@@ -16,6 +16,7 @@ import {TrailerProfileCreate} from 'generated-sources/openapi';
 import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
 import {CustomFilterCreate} from 'src/app/models/customfilter';
 import {ProfileService} from 'src/app/services/profile.service';
+import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {OptionsSettingComponent} from '../settings/options-setting/options-setting.component';
 import {RangeSettingComponent} from '../settings/range-setting/range-setting.component';
@@ -23,7 +24,14 @@ import {TextSettingComponent} from '../settings/text-setting/text-setting.compon
 
 @Component({
   selector: 'app-edit-profile',
-  imports: [FormsModule, LoadIndicatorComponent, OptionsSettingComponent, RangeSettingComponent, TextSettingComponent],
+  imports: [
+    FormsModule,
+    HelpLinkIconComponent,
+    LoadIndicatorComponent,
+    OptionsSettingComponent,
+    RangeSettingComponent,
+    TextSettingComponent,
+  ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,12 +72,27 @@ export class EditProfileComponent {
   videoResolutionOptions = ['480', '720', '1080', '1440', '2160', '0']; // '0' for best
   subtitleFormatOptions = ['srt', 'vtt'];
 
+  helpLinks = {
+    general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
+    file: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/file/',
+    audio: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/audio/',
+    video: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/video/',
+    subtitle: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/subtitle/',
+    search: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/',
+    filters: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/',
+  };
+
   // Disabled options
   protected readonly fileFormatsDisabled = computed(() => {
     let _profile = this.profile();
     let disabled: string[] = [];
     if (!_profile) {
       return disabled;
+    }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('mp4');
+      disabled.push('webm');
     }
     // Based on video formats
     switch (_profile.video_format) {
@@ -107,6 +130,14 @@ export class EditProfileComponent {
     if (!_profile) {
       return disabled;
     }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('h264');
+      disabled.push('h265');
+      disabled.push('vp8');
+      disabled.push('vp9');
+      disabled.push('av1');
+    }
     // Based on file formats
     switch (_profile.file_format) {
       case 'mp4':
@@ -127,6 +158,14 @@ export class EditProfileComponent {
     if (!_profile) {
       return disabled;
     }
+    // Based on video resolution
+    if (_profile.video_resolution === 0) {
+      disabled.push('aac');
+      disabled.push('ac3');
+      disabled.push('eac3');
+      disabled.push('flac');
+      disabled.push('opus');
+    }
     // Based on file formats
     switch (_profile.file_format) {
       case 'webm':
@@ -145,6 +184,18 @@ export class EditProfileComponent {
       return []; // No profile, no warnings
     }
     let warnings: string[] = [];
+    // Check for invalid file format based on video resolution
+    if (_profile.video_resolution === 0) {
+      if (_profile.file_format !== 'mkv') {
+        warnings.push('Video resolution "best" requires file format "mkv".');
+      }
+      if (_profile.video_format !== 'copy') {
+        warnings.push('Video resolution "best" requires video format "copy".');
+      }
+      if (_profile.audio_format !== 'copy') {
+        warnings.push('Video resolution "best" requires audio format "copy".');
+      }
+    }
     // Check for invalid file format based on video format
     switch (_profile.video_format) {
       case 'copy':

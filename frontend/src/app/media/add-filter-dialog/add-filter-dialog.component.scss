@@ -12,6 +12,14 @@ form {
   display: block flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+}
+
+.top-right {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: block;
 }
 
 /* Labels */
