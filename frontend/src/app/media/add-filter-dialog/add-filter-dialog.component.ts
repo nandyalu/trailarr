@@ -1,6 +1,7 @@
 import {Component, computed, effect, ElementRef, EventEmitter, inject, input, Output, viewChild} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 
+import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {
   BooleanFilterCondition,
@@ -20,12 +21,13 @@ import {CustomfilterService} from '../../services/customfilter.service';
 
 @Component({
   selector: 'app-add-filter-dialog',
-  imports: [FormsModule, LoadIndicatorComponent, ReactiveFormsModule],
+  imports: [FormsModule, HelpLinkIconComponent, LoadIndicatorComponent, ReactiveFormsModule],
   templateUrl: './add-filter-dialog.component.html',
   styleUrl: './add-filter-dialog.component.scss',
 })
 export class AddCustomFilterDialogComponent {
   private readonly fb = inject(FormBuilder);
+  helpLink = 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/';
 
   filterType = input.required<string>();
   filterTypeValue = computed(() => {

@@ -5,13 +5,20 @@
   <app-load-indicator class="center" />
 }
 @if (settings()?.log_level == 'DEBUG') {
-  <div class="update-message error">
-    <strong>Warning:</strong> Log Level set to 'Debug', this will generate too many logs, change it if not needed!
+  <div class="border-warning sticky-warning">
+    <ul>
+      @for (message of warningMessages(); track $index) {
+        <li>{{ message }}</li>
+      }
+    </ul>
   </div>
 }
 <section>
   <details open>
-    <summary>General</summary>
+    <summary>
+      <span>General</span>
+      <help-link-icon [link]="helpLinks.general" />
+    </summary>
     <hr />
     <div class="setting-group">
       <app-options-setting
@@ -47,7 +54,10 @@
 </section>
 <section>
   <details open>
-    <summary>Files</summary>
+    <summary>
+      <span>Files</span>
+      <help-link-icon [link]="helpLinks.files" />
+    </summary>
     <hr />
     <div class="setting-group">
       <app-options-setting
@@ -62,7 +72,10 @@
 </section>
 <section>
   <details open>
-    <summary>Advanced Options</summary>
+    <summary>
+      <span>Advanced Options</span>
+      <help-link-icon [link]="helpLinks.advanced" />
+    </summary>
     <hr />
     <div class="setting-group">
       <app-options-setting
@@ -91,7 +104,10 @@
 </section>
 <section>
   <details open>
-    <summary>Experimental Options</summary>
+    <summary>
+      <span>Experimental Options</span>
+      <help-link-icon [link]="helpLinks.experimental" />
+    </summary>
     <hr />
     <div class="setting-group">
       <p>These are experimental options, might not work as expected!</p>

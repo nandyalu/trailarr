@@ -16,6 +16,7 @@ import {TrailerProfileCreate} from 'generated-sources/openapi';
 import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
 import {CustomFilterCreate} from 'src/app/models/customfilter';
 import {ProfileService} from 'src/app/services/profile.service';
+import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {OptionsSettingComponent} from '../settings/options-setting/options-setting.component';
 import {RangeSettingComponent} from '../settings/range-setting/range-setting.component';
@@ -23,7 +24,14 @@ import {TextSettingComponent} from '../settings/text-setting/text-setting.compon
 
 @Component({
   selector: 'app-edit-profile',
-  imports: [FormsModule, LoadIndicatorComponent, OptionsSettingComponent, RangeSettingComponent, TextSettingComponent],
+  imports: [
+    FormsModule,
+    HelpLinkIconComponent,
+    LoadIndicatorComponent,
+    OptionsSettingComponent,
+    RangeSettingComponent,
+    TextSettingComponent,
+  ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +71,16 @@ export class EditProfileComponent {
   videoFormatOptions = ['h264', 'h265', 'vp8', 'vp9', 'av1', 'copy'];
   videoResolutionOptions = ['480', '720', '1080', '1440', '2160', '0']; // '0' for best
   subtitleFormatOptions = ['srt', 'vtt'];
+
+  helpLinks = {
+    general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
+    file: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/file/',
+    audio: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/audio/',
+    video: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/video/',
+    subtitle: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/subtitle/',
+    search: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/',
+    filters: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/',
+  };
 
   // Disabled options
   protected readonly fileFormatsDisabled = computed(() => {

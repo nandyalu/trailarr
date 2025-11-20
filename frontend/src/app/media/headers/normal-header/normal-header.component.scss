@@ -26,7 +26,7 @@
   }
 }
 
-button {
+button:not(.buttons-row *) {
   background-color: transparent;
   padding: 0.75rem 0;
 }
@@ -65,7 +65,7 @@ button {
 }
 
 .media-header-button:hover:not(.delete),
-button:hover:not(.delete) {
+button:hover:not(.delete):not(.buttons-row *) {
   color: var(--color-primary);
 
   svg {
@@ -101,7 +101,7 @@ button:hover:not(.delete) {
 .media-header-sortitem:hover,
 .media-header-filteritem:hover,
 .media-header-button:hover,
-button:hover {
+button:hover:not(.buttons-row *) {
   background-color: var(--color-surface-container-highest);
 }
 
