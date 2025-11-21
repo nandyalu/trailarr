@@ -1,3 +1,7 @@
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "core*", "config*", "alembic*"]
+
 [project]
 name = "Trailarr"
 version = "0.6.0"
@@ -17,6 +21,8 @@ dependencies = [
     "pytz>=2025.2",
     "sqlmodel==0.0.27",
     "yt-dlp[curl-cffi,default]==2025.11.12",
+    "python-jose==3.3.0",
+    "passlib[bcrypt]==1.7.4",
 ]
 
 [dependency-groups]

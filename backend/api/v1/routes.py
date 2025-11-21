@@ -6,6 +6,7 @@ from fastapi.openapi.docs import (
 )
 from fastapi.responses import FileResponse, HTMLResponse
 
+from api.v1.authentication import router as authentication_router
 from api.v1.authentication import validate_api_key
 from api.v1.connections import connections_router
 from api.v1.customfilters import customfilters_router
@@ -43,6 +44,7 @@ authenticated_router.include_router(trailerprofiles_router)
 
 # Now create API router and add the authenticated router to it
 api_v1_router = APIRouter()
+api_v1_router.include_router(authentication_router)
 api_v1_router.include_router(authenticated_router)
 
 
