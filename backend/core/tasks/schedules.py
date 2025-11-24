@@ -54,7 +54,7 @@ def _scan_disk_for_trailers(*, trace_id: str):
 def _cleanup_trailers(*, trace_id: str):
     """Cleanup trailers without audio."""
 
-    async def _cleanup_tasks(trace_id: str):
+    async def _cleanup_tasks():
         await delete_old_logs()
         await trailer_cleanup()
 
