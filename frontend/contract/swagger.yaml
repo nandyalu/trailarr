@@ -3384,6 +3384,9 @@ components:
         wait_for_media:
           type: boolean
           title: Wait For Media
+        delete_trailer_after_all_media_deleted:
+          type: boolean
+          title: Delete Trailer After All Media files Deleted
         webui_username:
           type: string
           title: Webui Username
@@ -3416,6 +3419,7 @@ components:
         - url_base
         - version
         - wait_for_media
+        - delete_trailer_after_all_media_deleted
         - webui_username
         - yt_cookies_path
         - ytdlp_version

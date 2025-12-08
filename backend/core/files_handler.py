@@ -269,6 +269,35 @@ class FilesHandler:
         return False
 
     @staticmethod
+    async def delete_trailers_for_media(folder_path: str) -> bool:
+        """Delete trailer files and trailer folders for the specified media folder.\n
+        Args:
+            folder_path (str): Path to the media folder containing trailers.\n
+        Returns:
+            bool: True if one or more trailer files or folders were deleted, False otherwise."""
+        if not await aiofiles.os.path.isdir(folder_path):
+            return False
+
+        deleted = False
+
+        inline_trailer = await FilesHandler._get_inline_trailer_path(
+            folder_path
+        )
+        if inline_trailer:
+            if await FilesHandler.delete_file(inline_trailer):
+                deleted = True
+
+        for entry in await aiofiles.os.scandir(folder_path):
+            if not entry.is_dir():
+                continue
+            if not FilesHandler.is_trailer_folder(entry.name):
+                continue
+            if await FilesHandler.delete_folder(entry.path):
+                deleted = True
+
+        return deleted
+
+    @staticmethod
     def is_video_file(file_name: str) -> bool:
         """Check if a file is a video file based on its name.\n
         Args:

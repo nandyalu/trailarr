@@ -3,6 +3,7 @@ from functools import cache
 from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
+from config.settings import app_settings
 import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
@@ -350,6 +351,16 @@ class BaseConnectionManager(ABC):
                     )
                 else:
                     trailer_exists = media_read.trailer_exists
+                if (
+                    app_settings.delete_trailer_after_all_media_deleted
+                    and not media_read.media_exists
+                    and trailer_exists
+                    and not media_read.created
+                ):
+                    if await FilesHandler.delete_trailers_for_media(
+                        media_read.folder_path
+                    ):
+                        trailer_exists = False
             # Check if monitor is already enabled
             if media_read.monitor:
                 monitor_media = True
@@ -389,6 +400,16 @@ class BaseConnectionManager(ABC):
             f"{media_type}: {self.created_count} created,"
             f" {self.updated_count} updated."
         )
+        # Delete any trailer content for media removed from Arr
+        if app_settings.delete_trailer_after_all_media_deleted:
+            all_media = media_manager.read_all_by_connection(self.connection_id)
+            ids_to_keep = set(self.media_ids)
+            for media in all_media:
+                if media.id in ids_to_keep:
+                    continue
+                if not media.trailer_exists or not media.folder_path:
+                    continue
+                await FilesHandler.delete_trailers_for_media(media.folder_path)
         # Delete any media that is not present in the Arr application
         self.remove_deleted_media()
         return

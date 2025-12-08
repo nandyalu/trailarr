@@ -68,6 +68,15 @@
         (optionChange)="updateSetting('wait_for_media', $event)"
       />
     </div>
+    <div class="setting-group">
+      <app-options-setting
+        name="Delete Trailer After All Media files Deleted"
+        description="For movies, the movie file must be deleted first. For TV, if there are multiple season folders, episodes across all season folders must be deleted first."
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.delete_trailer_after_all_media_deleted"
+        (optionChange)="updateSetting('delete_trailer_after_all_media_deleted', $event)"
+      />
+    </div>
   </details>
 </section>
 <section>

@@ -43,6 +43,11 @@ Select the theme for the app UI.
 
 Enable this setting to wait for media to be downloaded before downloading trailers.
 
+### Delete Trailer After All Media files Deleted
+
+- Default is `false`
+
+Enable this setting to delete the trailer after all media files are deleted.
 
 ## Advanced Settings
 

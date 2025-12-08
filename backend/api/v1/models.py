@@ -56,6 +56,7 @@ class Settings(BaseModel):
     url_base: str
     version: str
     wait_for_media: bool
+    delete_trailer_after_all_media_deleted: bool
     webui_username: str
     yt_cookies_path: str
     ytdlp_version: str

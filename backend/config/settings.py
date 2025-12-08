@@ -215,7 +215,9 @@ class _Config:
         # self.monitor_enabled = getenv_bool("MONITOR_ENABLED", True)
         self.monitor_interval = getenv_int("MONITOR_INTERVAL", 60)
         self.wait_for_media = getenv_bool("WAIT_FOR_MEDIA", False)
-
+        self.delete_trailer_after_all_media_deleted = getenv_bool(
+            "DELETE_TRAILER_AFTER_ALL_MEDIA_DELETED", False
+        )
         # If the webui_password is empty, set it to the default
         # Handle whitespace and empty strings (even improperly escaped quotes)
         _webui_password = self.webui_password.replace('"', "").replace("'", "")
@@ -248,6 +250,9 @@ class _Config:
             "url_base": self.url_base,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "delete_trailer_after_all_media_deleted": (
+                self.delete_trailer_after_all_media_deleted
+            ),
             "webui_username": self.webui_username,
             "yt_cookies_path": self.yt_cookies_path,
             "ytdlp_version": self.ytdlp_version,
@@ -359,6 +364,12 @@ class _Config:
         - Default is False.
         - Valid values are True/False."""
 
+    delete_trailer_after_all_media_deleted = bool_property(
+        "DELETE_TRAILER_AFTER_ALL_MEDIA_DELETED", default=False
+    )
+    """Delete trailer after all media files are deleted.
+        - Default is False.
+        - Valid values are True/False."""
     webui_username = str_property(
         "WEBUI_USERNAME", default=_DEFAULT_WEBUI_USERNAME
     )
