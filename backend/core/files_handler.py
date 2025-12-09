@@ -30,15 +30,11 @@ class FileInfo(BaseModel):
     name: str = Field(..., description="Name of the file.")
     size: str = Field(
         "0 KB",
-        description=(
-            "Size of the file in human-readable format (e.g. '10 KB')."
-        ),
+        description=("Size of the file in human-readable format (e.g. '10 KB')."),
     )
     created: str = Field(
         ...,
-        description=(
-            "Creation time of the file in 'YYYY-MM-DD HH:MM:SS' format."
-        ),
+        description=("Creation time of the file in 'YYYY-MM-DD HH:MM:SS' format."),
     )
 
 
@@ -53,9 +49,7 @@ class FolderInfo(BaseModel):
             format.
     """
 
-    type: str = Field(
-        default="folder", description="Type of the entry (file/folder)."
-    )
+    type: str = Field(default="folder", description="Type of the entry (file/folder).")
     name: str = Field(..., description="Name of the file/folder.")
     size: str = Field(
         default="0 KB",
@@ -76,9 +70,7 @@ class FolderInfo(BaseModel):
     )
     created: str = Field(
         ...,
-        description=(
-            "Creation time of the folder in 'YYYY-MM-DD HH:MM:SS' format."
-        ),
+        description=("Creation time of the folder in 'YYYY-MM-DD HH:MM:SS' format."),
     )
 
     def __lt__(self, other: "FileInfo"):
@@ -124,8 +116,7 @@ class FilesHandler:
                 return zoneinfo.ZoneInfo(tz_env)
             except Exception:
                 logger.warning(
-                    f"Invalid timezone in TZ env var: {tz_env}, falling back"
-                    " to UTC"
+                    f"Invalid timezone in TZ env var: {tz_env}, falling back" " to UTC"
                 )
                 return timezone.utc
         return timezone.utc
@@ -166,9 +157,7 @@ class FilesHandler:
             if entry.is_file():
                 dir_info.append(await FilesHandler._get_file_info(entry))
             elif entry.is_dir():
-                child_dir_info = await FilesHandler.get_folder_files(
-                    entry.path
-                )
+                child_dir_info = await FilesHandler.get_folder_files(entry.path)
                 if child_dir_info:
                     dir_info.append(child_dir_info)
 
@@ -274,15 +263,14 @@ class FilesHandler:
         Args:
             folder_path (str): Path to the media folder containing trailers.\n
         Returns:
-            bool: True if one or more trailer files or folders were deleted, False otherwise."""
+            bool: True if one or more trailer files or folders were deleted, False otherwise.
+        """
         if not await aiofiles.os.path.isdir(folder_path):
             return False
 
         deleted = False
 
-        inline_trailer = await FilesHandler._get_inline_trailer_path(
-            folder_path
-        )
+        inline_trailer = await FilesHandler._get_inline_trailer_path(folder_path)
         if inline_trailer:
             if await FilesHandler.delete_file(inline_trailer):
                 deleted = True
@@ -337,9 +325,7 @@ class FilesHandler:
         # Add 'trailer' and 'trailers' to the list
         trailer_folders.add("trailer")
         trailer_folders.add("trailers")
-        trailer_folders = {
-            folder.lower().strip() for folder in trailer_folders
-        }
+        trailer_folders = {folder.lower().strip() for folder in trailer_folders}
         return trailer_folders
 
     @staticmethod
@@ -489,9 +475,7 @@ class FilesHandler:
         return None
 
     @staticmethod
-    async def get_trailer_path(
-        folder_path: str, check_inline_file=False
-    ) -> str | None:
+    async def get_trailer_path(folder_path: str, check_inline_file=False) -> str | None:
         """Get the path to the trailer file in the specified folder.\n
         Args:
             folder_path (str): Path to the folder containing the trailer file.\n
@@ -513,9 +497,7 @@ class FilesHandler:
 
         # Check for trailer as an inline file, if specified
         if check_inline_file:
-            trailer_path = await FilesHandler._get_inline_trailer_path(
-                folder_path
-            )
+            trailer_path = await FilesHandler._get_inline_trailer_path(folder_path)
             if trailer_path:
                 return trailer_path
         return None
@@ -551,11 +533,7 @@ class FilesHandler:
         Returns:
             bool: True if the folder is deleted successfully, False otherwise."""
         # Make sure we are not deleting the root folder or a top level folder
-        if (
-            folder_path == "/"
-            or folder_path == ""
-            or folder_path.count("/") < 3
-        ):
+        if folder_path == "/" or folder_path == "" or folder_path.count("/") < 3:
             logger.error(f"Cannot delete root folder: {folder_path}")
             return False
         # Make sure the path is at least 3 levels deep from the root
@@ -570,9 +548,7 @@ class FilesHandler:
             logger.error(f"Folder not found: {folder_path}")
             return False
         except Exception as e:
-            logger.error(
-                f"Failed to delete folder: {folder_path}. Exception: {e}"
-            )
+            logger.error(f"Failed to delete folder: {folder_path}. Exception: {e}")
             return False
 
     @staticmethod
@@ -613,9 +589,7 @@ class FilesHandler:
             logger.debug("Temporary directory cleaned up.")
             return True
         except Exception as e:
-            logger.error(
-                f"Failed to cleanup temporary directory. Exception: {e}"
-            )
+            logger.error(f"Failed to cleanup temporary directory. Exception: {e}")
             return False
 
     @staticmethod
@@ -652,14 +626,10 @@ class FilesHandler:
             media_folders.append(media_folder)
             # Launch both checks concurrently for each media folder
             tasks.append(
-                bounded(
-                    FilesHandler._get_inline_trailer_path(media_folder.path)
-                )
+                bounded(FilesHandler._get_inline_trailer_path(media_folder.path))
             )
             tasks.append(
-                bounded(
-                    FilesHandler._get_folder_trailer_path(media_folder.path)
-                )
+                bounded(FilesHandler._get_folder_trailer_path(media_folder.path))
             )
 
         results = await asyncio.gather(*tasks)
@@ -696,9 +666,7 @@ class FilesHandler:
             logger.error(f"File/Folder not found: {old_path}")
             return False
         except Exception as e:
-            logger.error(
-                f"Failed to rename file/folder: {old_path}. Exception: {e}"
-            )
+            logger.error(f"Failed to rename file/folder: {old_path}. Exception: {e}")
             return False
 
     @staticmethod

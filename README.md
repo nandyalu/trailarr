@@ -44,6 +44,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Runs in background like Radarr/Sonarr.
 - Checks if a trailer already exists for movie/series. Download it if set to monitor.
 - Downloads trailer and organizes it in the media folder.
+- Optionally deletes trailers and trailer folders when all main media files have been removed.
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.

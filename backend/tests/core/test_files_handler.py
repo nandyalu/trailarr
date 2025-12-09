@@ -68,8 +68,7 @@ async def test_delete_trailers_for_media_tv_structure(tmp_path):
     season_dir = show_dir / "Season 1"
     season_dir.mkdir()
     episode_file = (
-        season_dir
-        / "Sample Show - S01E01 - Episode 1 [WEBDL-1080p]-Group.mkv"
+        season_dir / "Sample Show - S01E01 - Episode 1 [WEBDL-1080p]-Group.mkv"
     )
     episode_file.write_bytes(b"x")
 
@@ -189,7 +188,9 @@ async def test_process_media_list_deletes_trailer_when_media_missing(monkeypatch
 
 
 @pytest.mark.asyncio
-async def test_refresh_deletes_trailers_for_media_removed_from_arr(monkeypatch, tmp_path):
+async def test_refresh_deletes_trailers_for_media_removed_from_arr(
+    monkeypatch, tmp_path
+):
     connection = ConnectionRead(
         id=1,
         name="Test Connection",
