@@ -11,16 +11,23 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {applyEach, Field, form, maxLength, minLength, pattern, readonly, required, schema} from '@angular/forms/signals';
 import {Router} from '@angular/router';
-import {ArrType, ConnectionRead, MonitorType, PathMappingCru} from 'generated-sources/openapi';
+import {ArrType, ConnectionCreate, MonitorType, PathMappingCreate} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
+import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {PathSelectDialogComponent} from 'src/app/shared/path-select-dialog/path-select-dialog.component';
 
+const pathMappingSchema = schema<PathMappingCreate>((schema) => {
+  readonly(schema.path_from);
+  required(schema.path_from, {message: 'Path From is required.'});
+  required(schema.path_to, {message: 'Path To is required.'});
+});
+
 @Component({
   selector: 'app-edit-connection2',
-  imports: [LoadIndicatorComponent, ReactiveFormsModule, UpperCasePipe],
+  imports: [Field, HelpLinkIconComponent, LoadIndicatorComponent, UpperCasePipe],
   templateUrl: './edit-connection.component.html',
   styleUrl: './edit-connection.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,7 +35,6 @@ import {PathSelectDialogComponent} from 'src/app/shared/path-select-dialog/path-
 export class EditConnectionComponent {
   //#region In-built Injectors
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
-  private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly viewContainerRef = inject(ViewContainerRef);
   //#endregion
@@ -49,16 +55,40 @@ export class EditConnectionComponent {
   // #region Constants
   readonly arrOptions: ArrType[] = [ArrType.Radarr, ArrType.Sonarr];
   readonly monitorOptions: MonitorType[] = [MonitorType.Missing, MonitorType.New, MonitorType.None, MonitorType.Sync];
-  connectionForm = undefined as FormGroup | undefined;
   //#endregion
 
   //#region Signals in Component
+  connectionCreate = signal<ConnectionCreate>({
+    api_key: '',
+    arr_type: ArrType.Radarr,
+    monitor: MonitorType.New,
+    name: '',
+    path_mappings: [],
+    url: '',
+    external_url: '',
+  });
   arePathMappingsAdded = signal(false);
   isCreate = signal(false);
   isConnectionTested = signal(false);
   isReadyToSubmit = signal(false);
   isSubmitting = signal(false);
   submitResult = signal<string>('');
+
+  connectionForm = form(this.connectionCreate, (schema) => {
+    required(schema.api_key, {message: 'API Key is required.'});
+    pattern(schema.api_key, /^[a-zA-Z0-9]*$/, {message: 'API Key must be alphanumeric.'});
+    minLength(schema.api_key, 32, {message: 'API Key must be at least 32 characters long.'});
+    maxLength(schema.api_key, 50, {message: 'API Key cannot be longer than 50 characters.'});
+    required(schema.arr_type, {message: 'ARR Type is required.'});
+    required(schema.monitor, {message: 'Monitor Type is required.'});
+    required(schema.name, {message: 'Connection Name is required.'});
+    minLength(schema.name, 3, {message: 'Connection Name must be at least 3 characters long.'});
+    required(schema.url, {message: 'URL is required.'});
+    minLength(schema.url, 5, {message: 'URL must be at least 5 characters long.'});
+    pattern(schema.url, /^https?:\/\/.*/, {message: 'URL must start with http:// or https://.'});
+    pattern(schema.external_url, /^https?:\/\/.*/, {message: 'External URL must start with http:// or https://.'});
+    applyEach(schema.path_mappings, pathMappingSchema);
+  });
   //#endregion
 
   //#region Signals from Service
@@ -86,7 +116,7 @@ export class EditConnectionComponent {
     if (this.isSubmitting()) return; // Do not reset form if submitting
     const conn = this.connection();
     if (conn && !this.isSubmitting()) {
-      this.createForm(conn);
+      this.connectionCreate.set(conn);
       this.isCreate.set(conn.id === -1);
       this.isConnectionTested.set(false);
       this.isReadyToSubmit.set(false);
@@ -98,6 +128,7 @@ export class EditConnectionComponent {
   //#endregion
 
   // #region Form Methods
+
   formatPathFrom(pathFrom: string): string {
     // Ensure path_from ends with a slash or backslash
     if (pathFrom.endsWith('/') || pathFrom.endsWith('\\')) {
@@ -115,24 +146,30 @@ export class EditConnectionComponent {
     return pathFrom; // No change needed
   }
 
+  // Figure out why path mappings are not updating in the form array
+  // Also, submit result is not updating in the view
   addPathMappings(rootfolders: string[]) {
-    if (!this.connectionForm) return;
-    const path_mappings = this.connectionForm.get('path_mappings') as FormArray;
-    if (!path_mappings) return;
     let isUpdated = false;
     let count = 0;
+    const pathMappings = this.connectionCreate().path_mappings;
+    let newPathMappings: PathMappingCreate[] = [];
     rootfolders.forEach((rf) => {
       // Only add if no existing mapping with this path_from
-      const exists = path_mappings.controls.some((ctrl) => ctrl.get('path_from')?.value === this.formatPathFrom(rf));
+      const formattedPathFrom = this.formatPathFrom(rf);
+      const exists = pathMappings.some((pm) => pm.path_from === formattedPathFrom);
       if (!exists) {
-        path_mappings.push(this.createPathMapping(null, rf));
+        newPathMappings.push({id: null, connection_id: null, path_from: formattedPathFrom, path_to: ''});
         isUpdated = true;
         count++;
       }
     });
+    this.connectionCreate.update((conn) => {
+      conn.path_mappings = [...conn.path_mappings, ...newPathMappings];
+      return {...conn};
+    });
     if (isUpdated) {
       this.arePathMappingsAdded.set(true);
-      this.changeDetectorRef.markForCheck();
+      // this.changeDetectorRef.markForCheck();
       let msg = `Retrieved ${rootfolders.length} root folders.`;
       msg += `\nAdded ${count} new root folders to Path Mappings.`;
       msg += `\nPlease update and test the connection to submit!`;
@@ -159,54 +196,18 @@ export class EditConnectionComponent {
         return res;
       });
     }
-  }
-
-  createForm(connection: ConnectionRead) {
-    this.connectionForm = this.formBuilder.group({
-      added_at: [connection.added_at],
-      api_key: [
-        connection.api_key,
-        [Validators.required, Validators.pattern('^[a-zA-Z0-9]*$'), Validators.minLength(32), Validators.maxLength(50)],
-      ],
-      arr_type: [connection.arr_type, Validators.required],
-      id: [connection.id > 0 ? connection.id : null],
-      monitor: [connection.monitor, Validators.required],
-      name: [connection.name, [Validators.required, Validators.minLength(3)]],
-      path_mappings: this.createPathMappings(connection),
-      url: [connection.url, [Validators.required, Validators.pattern('https?://.*'), Validators.minLength(10)]],
-    });
-  }
-
-  createPathMapping(pathMapping: PathMappingCru | null = null, pathFrom: string = '') {
-    let id = null;
-    if (pathMapping && pathMapping.id && pathMapping.id > 0) {
-      id = pathMapping.id;
-    }
-    let pathFromFormatted = pathMapping ? pathMapping.path_from : pathFrom;
-    if (!pathFromFormatted) {
-      pathFromFormatted = ''; // Ensure it's not undefined
-    }
-    pathFromFormatted = this.formatPathFrom(pathFromFormatted); // Format the path_from
-    return this.formBuilder.group({
-      id: [id],
-      connection_id: [pathMapping ? pathMapping.connection_id : null],
-      path_from: [pathFromFormatted, Validators.required],
-      path_to: [pathMapping ? pathMapping.path_to : '', Validators.required],
-    });
-  }
-
-  createPathMappings(connection: ConnectionRead) {
-    return this.formBuilder.array(connection.path_mappings.map((pm) => this.createPathMapping(pm)));
-  }
-
-  get pathMappings(): FormArray {
-    return this.connectionForm!.get('path_mappings') as FormArray;
+    console.log('Path Mappings after adding root folders:', this.connectionCreate());
   }
 
   removePathMapping(index: number) {
-    this.pathMappings.removeAt(index);
-    this.connectionForm!.markAsTouched();
-    this.connectionForm!.markAsDirty();
+    let pathMappings = this.connectionCreate().path_mappings;
+    const newPathMappings = pathMappings.filter((_, i) => i !== index);
+    this.connectionCreate.update((conn) => {
+      conn.path_mappings = newPathMappings;
+      return {...conn};
+    });
+    // this.connectionForm!.markAsTouched(); ? not sure how to do this with signal forms
+    // this.connectionForm!.markAsDirty();
   }
 
   // #endregion
@@ -219,7 +220,8 @@ export class EditConnectionComponent {
   protected closeCancelDialog = () => this.cancelDialog()?.nativeElement.close();
   protected showCancelDialog = () => this.cancelDialog()?.nativeElement.showModal();
 
-  openPathSelectDialog(index: number, path_from: string): void {
+  openPathSelectDialog(index: number): void {
+    const path_from = this.connectionCreate().path_mappings[index].path_from;
     // Open the dialog for selecting a path value
     const dialogRef = this.viewContainerRef.createComponent(PathSelectDialogComponent);
     dialogRef.setInput('name', path_from);
@@ -227,8 +229,8 @@ export class EditConnectionComponent {
     dialogRef.setInput('pathShouldEndWith', '/');
     dialogRef.instance.onSubmit.subscribe((emitValue: string) => {
       if (emitValue) {
-        // Submit the value back to caller
-        this.pathMappings.at(index).get('path_to')?.setValue(emitValue);
+        // Update the path_to value in the form array
+        this.connectionForm.path_mappings[index].path_to().setControlValue(emitValue);
       }
       // Else, dialog closed without submission, do nothing
       setTimeout(() => {
@@ -240,7 +242,7 @@ export class EditConnectionComponent {
 
   // #region Action Methods
   checkConnectionValidity() {
-    if (!this.connectionForm!.valid) {
+    if (!this.connectionForm().valid()) {
       // console.log('Form is invalid, cannot submit.', this.connectionForm);
       this.submitResult.set('Form is invalid, please correct the errors and try again.');
       return false;
@@ -249,7 +251,7 @@ export class EditConnectionComponent {
   }
   onCancel() {
     // Ask Confirmation if form changed, else go back
-    if (!this.connectionForm!.pristine) {
+    if (this.connectionForm().dirty()) {
       this.showCancelDialog();
     } else {
       this.router.navigate(['/settings/connections']);
@@ -265,7 +267,8 @@ export class EditConnectionComponent {
     this.closeDeleteDialog();
     this.deleteConnection();
   }
-  onSubmit() {
+  onSubmit($event: Event) {
+    $event.preventDefault();
     if (!this.checkConnectionValidity()) return;
     // Check if connection is tested and ready to submit
     if (!this.isConnectionTested() || !this.isReadyToSubmit()) {
@@ -299,7 +302,7 @@ export class EditConnectionComponent {
     if (!this.isReadyToSubmit() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
     this.submitResult.set('Creating connection, please wait...');
-    let connectionData = this.connectionForm!.value;
+    let connectionData = this.connectionCreate();
     // console.log('Create connection: ', connectionData);
     this.connectionService.addConnection(connectionData).subscribe({
       next: (result) => {
@@ -339,7 +342,7 @@ export class EditConnectionComponent {
     if (this.isReadyToSubmit()) {
       return;
     }
-    let connectionData = this.connectionForm!.value;
+    let connectionData = this.connectionCreate();
     // console.log('Getting root folders with data', connectionData);
     this.connectionService.getRootFolders(connectionData).subscribe({
       next: (result) => {
@@ -360,7 +363,7 @@ export class EditConnectionComponent {
   }
   testConnection() {
     if (!this.checkConnectionValidity()) return;
-    let connectionData = this.connectionForm!.value;
+    let connectionData = this.connectionCreate();
     // console.log('Testing connection with data', connectionData);
     this.connectionService.testConnection(connectionData).subscribe({
       next: (result) => {
@@ -389,7 +392,7 @@ export class EditConnectionComponent {
     if (!this.isReadyToSubmit() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
     this.submitResult.set('Updating connection, please wait...');
-    let connectionData = this.connectionForm!.value;
+    let connectionData = this.connectionCreate();
     // console.log('Update connection: ', connectionData);
     this.connectionService.updateConnection(this.connectionId(), connectionData).subscribe({
       next: (result) => {
