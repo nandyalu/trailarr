@@ -4,8 +4,8 @@
     <p>Select a profile to use for searching/downloading</p>
     <label for="profile-select">Select a Profile:</label>
     <select name="profiles" id="profile-select" [(ngModel)]="selectedProfileID" required="true">
-      @for (profile of allProfiles(); track profile) {
-        <option [value]="profile.id">{{ profile.customfilter.filter_name }}</option>
+      @for (profile of allProfiles(); track profile.id) {
+        <option [value]="profile.id" [selected]="profile.id === selectedProfileID()">{{ profile.customfilter.filter_name }}</option>
       }
     </select>
     <div class="buttons-row">
