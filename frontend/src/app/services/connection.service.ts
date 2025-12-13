@@ -1,7 +1,7 @@
 import {HttpClient, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {ArrType, ConnectionCreate, ConnectionRead, ConnectionUpdate, MonitorType} from 'generated-sources/openapi/models';
 import {catchError, Observable} from 'rxjs';
+import {ArrType, ConnectionCreate, ConnectionRead, ConnectionUpdate, MonitorType} from 'src/app/models/connection';
 import {environment} from 'src/environment';
 import {handleError} from './utils';
 import {WebsocketService} from './websocket.service';
@@ -28,6 +28,7 @@ export class ConnectionService {
     name: '',
     path_mappings: [],
     url: '',
+    external_url: '',
   } as ConnectionRead;
 
   /**

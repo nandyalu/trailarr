@@ -52,10 +52,14 @@ export class MediaDetailsComponent {
     let connections = this.connectionService.connectionsResource.value();
     let connection = connections.find((c) => c.id == media.connection_id);
     if (!connection) return '';
+    let baseUrl = connection.external_url && connection.external_url.length > 0 ? connection.external_url : connection.url;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
     if (connection.arr_type.toLowerCase() == 'radarr') {
-      return connection.url + '/movie/' + media.txdb_id;
+      return baseUrl + '/movie/' + media.txdb_id;
     } else {
-      return connection.url + '/series/' + media.title_slug;
+      return baseUrl + '/series/' + media.title_slug;
     }
   });
 
@@ -80,6 +84,10 @@ export class MediaDetailsComponent {
     // Check if the active element is an input, textarea, or contenteditable element
     const activeElement = document.activeElement as HTMLElement;
     const isInputField = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
+    // Skip if Ctrl, Alt, or Meta key is pressed
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+      return;
+    }
     // Check if the event is a keydown event and the media ID is set
     if (!isInputField && event.type === 'keydown' && this.mediaId()) {
       // Check if the 'ArrowRight' key is pressed
