@@ -43,15 +43,30 @@ Select the theme for the app UI.
 
 Enable this setting to wait for media to be downloaded before downloading trailers.
 
-### Delete Trailer After All Media files Deleted
-
-- Default is `false`
-
-Enable this setting to delete the trailer after all media files are deleted.
 
 ## Advanced Settings
 
 These are advanced settings, if you don't know what they do, do not modify them!
+
+### Delete Trailer - Connection
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. 
+
+!!! warning
+    Enabling this setting will delete all downloaded trailers for media that is removed from the connected Arr application. Use with caution!
+
+
+### Delete Trailer - Media Deleted
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers when the media file is deleted from disk.
+
+!!! warning
+    Enabling this setting will delete all downloaded trailers for media whose media file is deleted from disk. Use with caution!
+
 
 ### Log Level
 

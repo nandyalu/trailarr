@@ -71,15 +71,6 @@
         (optionChange)="updateSetting('wait_for_media', $event)"
       />
     </div>
-    <div class="setting-group">
-      <app-options-setting
-        name="Delete Trailer After All Media files Deleted"
-        description="For movies, the movie file must be deleted first. For TV, if there are multiple season folders, episodes across all season folders must be deleted first."
-        [options]="trueFalseOptions"
-        [selectedOption]="settings()?.delete_trailer_after_all_media_deleted"
-        (optionChange)="updateSetting('delete_trailer_after_all_media_deleted', $event)"
-      />
-    </div>
   </details>
 </section>
 <section>
@@ -110,6 +101,22 @@
         [maxLength]="255"
         [value]="settings()?.yt_cookies_path ?? ''"
         (onSubmit)="updateSetting('yt_cookies_path', $event)"
+      />
+      <app-options-setting
+        name="Delete Trailer - Connection"
+        description="Delete trailers when media is removed from the connected Radarr/Sonarr instance."
+        [colorType]="'warning'"
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.delete_trailer_connection"
+        (optionChange)="updateSetting('delete_trailer_connection', $event)"
+      />
+      <app-options-setting
+        name="Delete Trailer - Media Deleted"
+        description="Delete trailers for a media when it's media files are deleted from disk."
+        [colorType]="'warning'"
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.delete_trailer_media"
+        (optionChange)="updateSetting('delete_trailer_media', $event)"
       />
     </div>
   </details>

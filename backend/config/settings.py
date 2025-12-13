@@ -215,9 +215,6 @@ class _Config:
         # self.monitor_enabled = getenv_bool("MONITOR_ENABLED", True)
         self.monitor_interval = getenv_int("MONITOR_INTERVAL", 60)
         self.wait_for_media = getenv_bool("WAIT_FOR_MEDIA", False)
-        self.delete_trailer_after_all_media_deleted = getenv_bool(
-            "DELETE_TRAILER_AFTER_ALL_MEDIA_DELETED", False
-        )
         # If the webui_password is empty, set it to the default
         # Handle whitespace and empty strings (even improperly escaped quotes)
         _webui_password = self.webui_password.replace('"', "").replace("'", "")
@@ -233,6 +230,8 @@ class _Config:
             "app_data_dir": APP_DATA_DIR,
             "app_mode": self.app_mode,
             "app_theme": self.app_theme,
+            "delete_trailer_connection": self.delete_trailer_connection,
+            "delete_trailer_media": self.delete_trailer_media,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
             "gpu_available_amd": self.gpu_available_amd,
@@ -250,9 +249,6 @@ class _Config:
             "url_base": self.url_base,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
-            "delete_trailer_after_all_media_deleted": (
-                self.delete_trailer_after_all_media_deleted
-            ),
             "webui_username": self.webui_username,
             "yt_cookies_path": self.yt_cookies_path,
             "ytdlp_version": self.ytdlp_version,
@@ -364,12 +360,18 @@ class _Config:
         - Default is False.
         - Valid values are True/False."""
 
-    delete_trailer_after_all_media_deleted = bool_property(
-        "DELETE_TRAILER_AFTER_ALL_MEDIA_DELETED", default=False
+    delete_trailer_connection = bool_property(
+        "DELETE_TRAILER_CONNECTION", default=False
     )
-    """Delete trailer after all media files are deleted.
+    """Delete trailer when media is deleted in Connection.
         - Default is False.
         - Valid values are True/False."""
+
+    delete_trailer_media = bool_property("DELETE_TRAILER_MEDIA", default=False)
+    """Delete trailer when media is deleted on disk.
+        - Default is False.
+        - Valid values are True/False."""
+
     webui_username = str_property(
         "WEBUI_USERNAME", default=_DEFAULT_WEBUI_USERNAME
     )

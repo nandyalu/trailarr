@@ -44,13 +44,13 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Runs in background like Radarr/Sonarr.
 - Checks if a trailer already exists for movie/series. Download it if set to monitor.
 - Downloads trailer and organizes it in the media folder.
-- Optionally deletes trailers and trailer folders when all main media files have been removed.
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.
 - Option to download desired video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for AMD, Intel, and NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
+- Option to delete trailers and trailer folders when media is removed from Arr and/or when media files have been deleted from disk.
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 

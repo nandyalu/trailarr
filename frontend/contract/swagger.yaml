@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.5.2
+  version: 0.6.0
 servers:
   - url: '{protocol}://{hostpath}'
     variables:
@@ -678,8 +678,8 @@ paths:
         - Media
       summary: Get Files
       description: "Get files in a directory.\n\nArgs:\n    path (str): Path to the\
-        \ directory.\nReturns:\n    FolderInfo|None: Folder information or None if\
-        \ folder doesn't exist. \n\nRaises:\n    HTTPException (404): If the folder\
+        \ directory. \n\nReturns:\n    FolderInfo|None: Folder information or None\
+        \ if folder doesn't exist. \n\nRaises:\n    HTTPException (404): If the folder\
         \ is not found."
       operationId: get_files_api_v1_files_files_get
       security:
@@ -1071,9 +1071,9 @@ paths:
       summary: Get All Media
       description: "Get all media from the database. \n\nOptionally apply filters\
         \ and sorting. \n\nArgs:\n    movies_only (bool, Optional=None):\n       \
-        \ Flag to get only movies.\n        - If `True`, it will return only `movies`.\n\
-        \        - If `False`, it will return only `series`.\n        - If `None`,\
-        \ it will return all media items. \n\n    filter_by (str, Optional=`all`):\n\
+        \ Flag to get only movies.\n            - If `True`, it will return only `movies`.\n\
+        \            - If `False`, it will return only `series`.\n            - If\
+        \ `None`, it will return all media items. \n\n    filter_by (str, Optional=`all`):\n\
         \        Filter the media items by a column value. Available filters are\n\
         \        - `all`\n        - `downloaded`\n        - `monitored`\n        -\
         \ `missing`\n        - `unmonitored`. \n\n    sort_by (str, Optional=None):\
@@ -2611,6 +2611,10 @@ components:
         url:
           type: string
           title: Url
+        external_url:
+          type: string
+          title: External Url
+          default: ''
         api_key:
           type: string
           title: Api Key
@@ -2642,6 +2646,10 @@ components:
         url:
           type: string
           title: Url
+        external_url:
+          type: string
+          title: External Url
+          default: ''
         api_key:
           type: string
           title: Api Key
@@ -2688,6 +2696,11 @@ components:
             - type: string
             - type: 'null'
           title: Url
+        external_url:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: External Url
         api_key:
           anyOf:
             - type: string
@@ -3228,6 +3241,11 @@ components:
         queue_id:
           type: string
           title: Queue Id
+        trace_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Trace Id
         duration:
           type: integer
           title: Duration
@@ -3333,6 +3351,12 @@ components:
         app_theme:
           type: string
           title: App Theme
+        delete_trailer_connection:
+          type: boolean
+          title: Delete Trailer Connection
+        delete_trailer_media:
+          type: boolean
+          title: Delete Trailer Media
         gpu_available_amd:
           type: boolean
           title: Gpu Available Amd
@@ -3384,9 +3408,6 @@ components:
         wait_for_media:
           type: boolean
           title: Wait For Media
-        delete_trailer_after_all_media_deleted:
-          type: boolean
-          title: Delete Trailer After All Media files Deleted
         webui_username:
           type: string
           title: Webui Username
@@ -3402,6 +3423,8 @@ components:
         - app_data_dir
         - app_mode
         - app_theme
+        - delete_trailer_connection
+        - delete_trailer_media
         - gpu_available_amd
         - gpu_available_intel
         - gpu_available_nvidia
@@ -3419,7 +3442,6 @@ components:
         - url_base
         - version
         - wait_for_media
-        - delete_trailer_after_all_media_deleted
         - webui_username
         - yt_cookies_path
         - ytdlp_version
