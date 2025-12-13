@@ -23,7 +23,8 @@ Setting up a connection involves three main steps:
             Do not use `localhost` as there are numerous problems with that and it might not always work!
 
             Instead use a static IP address
-      
+    
+    - **External URL:** (Optional) If you access your *Arr instance through a reverse proxy or a different URL than the server URL, specify that here. Eg: `https://arr.mydomain.com/radarr`. This URL will be used by Trailarr when generating links to media items in the web interface.
     - **API Key:** Your API key from Radarr/Sonarr (found in its `Settings > General` section).
 - Once these details are filled in, the `Test` button will become available, click the button.
 - Trailarr will attempt to connect to the *Arr API. Upon a successful connection:

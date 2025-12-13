@@ -38,7 +38,8 @@
               <p>Added: {{ connection.added_at | date: 'mediumDate' }}</p>
             </div>
             <div class="link-image">
-              <a target="_blank" href="{{ connection.url }}">
+              @let _url = connection.external_url.length > 0 ? connection.external_url : connection.url;
+              <a target="_blank" href="{{ _url }}">
                 @switch (connection.arr_type) {
                   @case ('radarr') {
                     <img src="assets/radarr_128.png" />

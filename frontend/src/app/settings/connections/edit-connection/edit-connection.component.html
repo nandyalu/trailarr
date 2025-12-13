@@ -15,14 +15,15 @@
 @if (isLoading() || !connectionForm) {
   <app-load-indicator />
 } @else {
-  <form [formGroup]="connectionForm" [id]="'connectionForm' + connectionId()">
+  <form [id]="'connectionForm' + connectionId()">
     <!-- #region Name -->
     <div class="input-group">
       <label for="name">Name</label>
-      <input id="name" autocapitalize="words" autocomplete="off" formControlName="name" placeholder="Connection Name" type="text" />
-      @let name = connectionForm.get('name');
-      @if (name?.invalid && name?.touched) {
-        <p class="invalid-text">Connection Name is required and must be at least 3 characters long!</p>
+      <input id="name" autocapitalize="words" autocomplete="off" [field]="connectionForm.name" placeholder="Connection Name" type="text" />
+      @if (connectionForm.name().touched() && connectionForm.name().invalid()) {
+        @for (error of connectionForm.name().errors(); track error) {
+          <p class="invalid-text">{{ error.message }}</p>
+        }
       }
     </div>
     <!-- #endregion Name -->
@@ -34,15 +35,8 @@
         <legend id="arrtype_label">Arr Type:</legend>
         <div class="options-bar" role="radiogroup" aria-labelledby="arrtype_label">
           @for (option of arrOptions; track option) {
-            <label class="option-label" [class.option__selected]="option === connectionForm.value.arr_type">
-              <input
-                type="radio"
-                [id]="'arrtype_' + option + '_option'"
-                name="arr_type"
-                [value]="option"
-                formControlName="arr_type"
-                [checked]="option === connectionForm.value.arr_type"
-              />
+            <label class="option-label" [class.option__selected]="option === connectionCreate().arr_type">
+              <input type="radio" [id]="'arrtype_' + option + '_option'" [value]="option" [field]="connectionForm.arr_type" />
               <span class="option-name">{{ option | uppercase }}</span>
             </label>
           }
@@ -55,19 +49,13 @@
         <legend id="monitorType_label">Monitor Type:</legend>
         <div class="options-bar" role="radiogroup" aria-labelledby="monitorType_label">
           @for (option of monitorOptions; track option) {
-            <label class="option-label" [class.option__selected]="option === connectionForm.value.monitor">
-              <input
-                type="radio"
-                [id]="'monitorType_' + option + '_option'"
-                name="monitor"
-                [value]="option"
-                formControlName="monitor"
-                [checked]="option === connectionForm.value.monitor"
-              />
+            <label class="option-label" [class.option__selected]="option === connectionCreate().monitor">
+              <input type="radio" [id]="'monitorType_' + option + '_option'" [value]="option" [field]="connectionForm.monitor" />
               <span class="option-name">{{ option | uppercase }}</span>
             </label>
           }
         </div>
+        <help-link-icon [link]="'https://nandyalu.github.io/trailarr/user-guide/settings/connections/#monitor-types'" />
       </div>
       <!-- #endregion MonitorType -->
     </div>
@@ -76,10 +64,26 @@
     <!-- #region URL -->
     <div class="input-group">
       <label for="url">Server URL</label>
-      <input id="url" autocomplete="off" formControlName="url" placeholder="Server URL Ex: http://192.168.0.15:6969" type="url" />
-      @let url = connectionForm.get('url');
-      @if (url?.invalid && url?.touched) {
-        <p class="invalid-text">Connection URL is required!</p>
+      <input id="url" autocomplete="off" [field]="connectionForm.url" placeholder="Server URL Ex: http://192.168.0.15:6969" type="url" />
+      @if (connectionForm.url().touched() && connectionForm.url().invalid()) {
+        @for (error of connectionForm.url().errors(); track error) {
+          <p class="invalid-text">{{ error.message }}</p>
+        }
+      }
+    </div>
+    <div class="input-group">
+      <label for="externalUrl">External URL</label>
+      <input
+        id="externalUrl"
+        autocomplete="off"
+        [field]="connectionForm.external_url"
+        placeholder="External URL Ex: http://radarr.mydomain.com"
+        type="url"
+      />
+      @if (connectionForm.external_url().touched() && connectionForm.external_url().invalid()) {
+        @for (error of connectionForm.external_url().errors(); track error) {
+          <p class="invalid-text">{{ error.message }}</p>
+        }
       }
     </div>
     <!-- #endregion URL -->
@@ -87,42 +91,41 @@
     <!-- #region API Key -->
     <div class="input-group">
       <label for="apiKey">API Key</label>
-      <input id="apiKey" autocomplete="off" formControlName="api_key" placeholder="API Key" type="text" />
-      @let apiKey = connectionForm.get('api_key');
-      @if (apiKey?.invalid && apiKey?.touched) {
-        <p class="invalid-text">API Key is required!</p>
+      <input id="apiKey" autocomplete="off" [field]="connectionForm.api_key" placeholder="API Key" type="text" />
+      @if (connectionForm.api_key().touched() && connectionForm.api_key().invalid()) {
+        @for (error of connectionForm.api_key().errors(); track error) {
+          <p class="invalid-text">{{ error.message }}</p>
+        }
       }
     </div>
     <!-- #endregion API Key -->
 
     <!-- #region Path Mappings -->
     @if (arePathMappingsAdded()) {
-      <h3>Path Mappings</h3>
+      <div class="d-row" style="justify-content: flex-start">
+        <h3>Path Mappings</h3>
+        <help-link-icon [link]="'https://nandyalu.github.io/trailarr/getting-started/03-setup/connections/#2-path-mappings'" />
+      </div>
       <hr />
-      <div formArrayName="path_mappings" class="mappings-wrapper">
-        @for (mapping of pathMappings.controls; let i = $index; track mapping) {
-          <div [formGroupName]="i" class="d-row mappings">
+      <div class="mappings-wrapper">
+        @for (mapping of connectionForm.path_mappings; let i = $index; track connectionCreate().path_mappings[i].path_from) {
+          <div class="d-row mappings">
             <div class="input-group">
-              <label for="path_from">Path From</label>
+              <label [for]="'path_from' + i">Path From</label>
               <input
-                id="path_from"
+                [id]="'path_from' + i"
                 type="text"
-                formControlName="path_from"
+                [field]="mapping.path_from"
                 placeholder="Arr Internal Path"
                 [readOnly]="true"
                 autocomplete="off"
               />
             </div>
             <div class="input-group">
-              <label for="path_to">Path To</label>
+              <label [for]="'path_to' + i">Path To</label>
               <div class="input-wrapper">
-                <input id="path_to" type="text" formControlName="path_to" placeholder="Trailarr Internal Path" autocomplete="off" />
-                <button
-                  class="tertiary folder-icon"
-                  (click)="openPathSelectDialog(i, mapping?.get('path_from')?.value)"
-                  type="button"
-                  title="Select Path"
-                >
+                <input [id]="'path_to' + i" type="text" [field]="mapping.path_to" placeholder="Trailarr Internal Path" autocomplete="off" />
+                <button class="tertiary folder-icon" (click)="openPathSelectDialog(i)" type="button" title="Select Path">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                     <path
                       d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"
@@ -131,7 +134,13 @@
                 </button>
               </div>
             </div>
-            <button class="icononly-button tertiary" id="remove" name="Remove Path Mapping" (click)="removePathMapping(i)">
+            <button
+              class="icononly-button tertiary"
+              [id]="'remove' + i"
+              type="button"
+              name="Remove Path Mapping"
+              (click)="removePathMapping(i)"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                 <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
               </svg>
@@ -157,8 +166,8 @@
           class="animated-button primary"
           id="submit"
           type="submit"
-          [disabled]="connectionForm.pristine || connectionForm.invalid"
-          (click)="onSubmit()"
+          [disabled]="!connectionForm().dirty() || !connectionForm().valid()"
+          (click)="onSubmit($event)"
         >
           <!-- Save Icon - Google Fonts W:400 G: 200 S: 48px -->
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
@@ -173,8 +182,8 @@
           class="animated-button primary"
           id="test"
           type="test"
-          [disabled]="connectionForm.pristine || connectionForm.invalid"
-          (click)="onSubmit()"
+          [disabled]="!connectionForm().dirty() || connectionForm().invalid()"
+          (click)="onSubmit($event)"
         >
           <!-- Conversion Path Icon - Google Fonts W:400 G: 200 S: 48px -->
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
