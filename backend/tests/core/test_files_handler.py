@@ -155,8 +155,15 @@ async def test_process_media_list_deletes_trailer_when_media_missing(
         updates.extend(update_list)
 
     fake_settings = SimpleNamespace(
-        delete_trailer_after_all_media_deleted=True,
+        delete_trailer_media=True,
+        delete_trailer_connection=False,
     )
+
+    called_media_ids: list[int] = []
+
+    async def fake_delete_trailers_if_media_deleted(media_id: int) -> bool:
+        called_media_ids.append(media_id)
+        return True
 
     monkeypatch.setattr(
         connection_manager_module, "app_settings", fake_settings, raising=False
@@ -174,9 +181,9 @@ async def test_process_media_list_deletes_trailer_when_media_missing(
         raising=False,
     )
     monkeypatch.setattr(
-        connection_manager_module.FilesHandler,
-        "delete_trailers_for_media",
-        fake_delete_trailers_for_media,
+        manager,
+        "delete_trailers_if_media_deleted",
+        fake_delete_trailers_if_media_deleted,
         raising=False,
     )
 
@@ -184,7 +191,7 @@ async def test_process_media_list_deletes_trailer_when_media_missing(
         [SimpleNamespace(folder_path="/some/folder")]
     )
 
-    assert fake_delete_trailers_for_media.called_with == "/some/folder"
+    assert called_media_ids == [1]
     assert len(updates) == 1
     assert updates[0].id == 1
     assert updates[0].trailer_exists is False
@@ -300,7 +307,8 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr(
         delete_except_called_with["media_ids"] = media_ids
 
     fake_settings = SimpleNamespace(
-        delete_trailer_after_all_media_deleted=True,
+        delete_trailer_media=False,
+        delete_trailer_connection=True,
     )
 
     monkeypatch.setattr(

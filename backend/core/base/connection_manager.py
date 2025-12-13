@@ -314,7 +314,8 @@ class BaseConnectionManager(ABC):
             return False
         if not media.folder_path:
             return False
-        if not FilesHandler.check_media_exists(media.folder_path):
+        if FilesHandler.check_media_exists(media.folder_path):
+            # Media files still exist on disk, nothing to delete
             return False
         # Delete download files associated with the media
         _deleted = False
