@@ -1,6 +1,6 @@
 [project]
 name = "Trailarr"
-version = "0.6.0"
+version = "0.6.3"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
 readme = "../README.md"
 requires-python = ">=3.13.5"
