@@ -42,7 +42,6 @@ class MediaReadDC(AppSQLModel):
     monitor: bool
     status: MonitorStatus
     trailer_exists: bool
-    media_exists: bool
 
 
 @dataclass(eq=False, repr=False, slots=True)

@@ -109,7 +109,9 @@ class DummyConnectionManager(connection_manager_module.BaseConnectionManager):
 
 
 @pytest.mark.asyncio
-async def test_process_media_list_deletes_trailer_when_media_missing(monkeypatch):
+async def test_process_media_list_deletes_trailer_when_media_missing(
+    monkeypatch,
+):
     connection = ConnectionRead(
         id=1,
         name="Test Connection",
@@ -136,7 +138,6 @@ async def test_process_media_list_deletes_trailer_when_media_missing(monkeypatch
         monitor=False,
         status=MonitorStatus.MONITORED,
         trailer_exists=True,
-        media_exists=False,
     )
 
     async def fake_delete_trailers_for_media(path: str) -> bool:
@@ -179,7 +180,9 @@ async def test_process_media_list_deletes_trailer_when_media_missing(monkeypatch
         raising=False,
     )
 
-    await manager._process_media_list([SimpleNamespace(folder_path="/some/folder")])
+    await manager._process_media_list(
+        [SimpleNamespace(folder_path="/some/folder")]
+    )
 
     assert fake_delete_trailers_for_media.called_with == "/some/folder"
     assert len(updates) == 1
@@ -290,7 +293,9 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr(
 
     delete_except_called_with = {}
 
-    def fake_delete_except(connection_id: int, media_ids: list[int], *, _session=None):
+    def fake_delete_except(
+        connection_id: int, media_ids: list[int], *, _session=None
+    ):
         delete_except_called_with["connection_id"] = connection_id
         delete_except_called_with["media_ids"] = media_ids
 
