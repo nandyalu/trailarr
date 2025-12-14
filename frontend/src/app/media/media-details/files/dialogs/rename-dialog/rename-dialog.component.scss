@@ -1,0 +1,37 @@
+.rename-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1.5rem;
+  max-width: 75vw;
+  max-height: 75vh;
+
+  @media (width < 765px) {
+    max-width: 90vw;
+    margin: 1rem;
+  }
+}
+
+.rename-input {
+  field-sizing: content;
+  min-width: 50vw;
+  max-width: 75vw;
+  padding: 1rem;
+  border: 1px solid var(--color-outline);
+  border-radius: 1rem;
+  font-size: 1.2rem;
+
+  @media (width < 765px) {
+    max-width: 90vw;
+  }
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 1rem;
+  width: 70%;
+}

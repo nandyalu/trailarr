@@ -1,0 +1,108 @@
+<dialog #optionsDialog (click)="closeDialog(true)">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Options</h2>
+    <i class="close" (click)="closeDialog(true)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="m249-186-63-63 231-231-231-230 63-64 231 230 231-230 63 64-230 230 230 231-63 63-231-230-231 230Z" />
+      </svg>
+    </i>
+    <div class="dialog-options">
+      @if (isVideoFile()) {
+        <div class="icon-link" (click)="openDialog('video')" title="Play Video">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path d="M320-203v-560l440 280-440 280Zm60-280Zm0 171 269-171-269-171v342Z" />
+            </svg>
+          </span>
+          <span>Play Video</span>
+        </div>
+        <div class="icon-link" (click)="openDialog('videoInfo')" title="Video Info">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M447-272h73v-248h-73v248Zm32.89-330Q496-602 507-612.59q11-10.58 11-26.23 0-17.63-10.87-28.4Q496.26-678 480.19-678q-17.19 0-27.69 10.6T442-639.68q0 16.28 10.89 26.98 10.9 10.7 27 10.7Zm-.08 538q-85.92 0-161.52-33.02-75.61-33.02-131.93-89.34-56.32-56.32-89.34-132.13T64-480.5q0-86.09 33.08-161.81t89.68-132.31q56.61-56.59 132.06-88.99Q394.27-896 480.06-896q86.15 0 162.17 32.39 76.02 32.4 132.4 89Q831-718 863.5-641.96 896-565.92 896-479.72q0 86.19-32.39 161.29-32.4 75.11-88.99 131.51Q718.03-130.53 642-97.26 565.98-64 479.81-64Zm.69-73q142.01 0 242.26-100.74Q823-338.49 823-480.5T722.94-722.76Q622.89-823 480-823q-141.51 0-242.26 100.06Q137-622.89 137-480q0 141.51 100.74 242.26Q338.49-137 480.5-137Zm-.5-343Z"
+              />
+            </svg>
+          </span>
+          <span>Video Info</span>
+        </div>
+        <div class="icon-link" (click)="openDialog('videoEdit')" title="Trim Video">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M780-105 480-405 372-297q10 18 12.5 33.5T387-228q0 68.87-45.59 114.44Q295.82-68 226.91-68T112.5-113.59Q67-159.18 67-228.09t45.56-114.41Q158.13-388 227-388q18 0 35.5 4.5T299-369l108-107-110-110q-17 8-34.5 10.5T227-573q-68.87 0-114.44-45.59Q67-664.18 67-733.09t45.59-114.41q45.59-45.5 114.5-45.5t114.41 45.56Q387-801.88 387-733q0 20-2 36.5T375-664l519 520v39H780ZM605-524l-76-76 251-252h114v38L605-524ZM226.83-646q36.69 0 61.93-25.07Q314-696.14 314-732.83q0-36.7-25.07-61.93Q263.86-820 227.17-820t-61.93 25.07Q140-769.86 140-733.17q0 36.7 25.07 61.93Q190.14-646 226.83-646Zm255.03 195q10.74 0 18.44-7.56 7.7-7.55 7.7-18.3 0-10.74-7.56-18.44-7.55-7.7-18.3-7.7-10.74 0-18.44 7.56-7.7 7.55-7.7 18.3 0 10.74 7.56 18.44 7.55 7.7 18.3 7.7ZM226.83-141q36.69 0 61.93-25.07Q314-191.14 314-227.83t-25.07-61.93Q263.86-315 227.17-315t-61.93 25.07Q140-264.86 140-228.17t25.07 61.93Q190.14-141 226.83-141Z"
+              />
+            </svg>
+          </span>
+          <span>Trim Video</span>
+        </div>
+      } @else {
+        @if (isTextFile()) {
+          <div class="icon-link" (click)="openDialog('text')" title="View Text">
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <path
+                  d="M321-250h318v-69H321v69Zm0-169h319v-68H321v68ZM229-59q-35.78 0-63.39-26.91Q138-112.83 138-150v-660q0-37.59 27.61-64.79Q193.22-902 229-902h364l230 228v524q0 37.17-27.91 64.09Q767.19-59 731-59H229Zm316-569v-182H229v660h502v-478H545ZM229-810v182-182 660-660Z"
+                />
+              </svg>
+            </span>
+            <span>View Text</span>
+          </div>
+        }
+      }
+      <div class="icon-link" title="Rename" (click)="openDialog('rename')">
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M81-5v-138h798V-5H81Zm150-327h30l371-371-13.35-15.86L604-733 231-362v30Zm-68 69v-126l486-488q10-9 23.11-14.5 13.12-5.5 26-5.5 12.89 0 25.89 5.75T748-876l28 25q12 10 17 23.99 5 13.99 5 26.52 0 13.17-5.46 26.76Q787.09-760.14 777-751L288-263H163Zm563-538-27-27 27 27Zm-94 98-13.35-15.86L604-733l28 30Z"
+            />
+          </svg>
+        </span>
+        <span>Rename</span>
+      </div>
+      <div class="icon-link danger-option" title="Delete" (click)="openDialog('delete')">
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="M253-99q-38.21 0-65.11-26.6Q161-152.2 161-190v-552h-58v-91h228v-47h297v47h228v91h-58v552q0 37.18-27.21 64.09Q743.59-99 706-99H253Zm453-643H253v552h453v-552ZM357-268h74v-398h-74v398Zm173 0h75v-398h-75v398ZM253-742v552-552Z"
+            />
+          </svg>
+        </span>
+        <span>Delete</span>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Child Dialogs -->
+@switch (openDialogType()) {
+  @case ('text') {
+    <text-dialog [filePath]="filePath()" [fileName]="fileName()" (closed)="closeChildDialog()" />
+  }
+  @case ('video') {
+    <play-video-dialog [filePath]="filePath()" (closed)="closeChildDialog()" />
+  }
+  @case ('videoInfo') {
+    <video-info-dialog [filePath]="filePath()" (closed)="closeChildDialog()" />
+  }
+  @case ('rename') {
+    <rename-dialog [filePath]="filePath()" [fileName]="fileName()" (closed)="closeChildDialog()" (renamed)="onRenameComplete()" />
+  }
+  @case ('delete') {
+    <delete-dialog
+      [filePath]="filePath()"
+      [fileName]="fileName()"
+      [mediaId]="mediaId()"
+      (closed)="closeChildDialog()"
+      (deleted)="onDeleteComplete()"
+    />
+  }
+  @case ('videoEdit') {
+    <video-edit-dialog
+      [filePath]="filePath()"
+      [fileName]="fileName()"
+      (closed)="closeChildDialog()"
+      (videoTrimmed)="onVideoTrimComplete()"
+    />
+  }
+}

@@ -1,23 +1,23 @@
-import {Component, ElementRef, inject, input, model, output, signal, viewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FilesService} from 'generated-sources/openapi';
-import {WebsocketService} from '../../services/websocket.service';
-import {LoadIndicatorComponent} from '../load-indicator';
+import {WebsocketService} from '../../../../../services/websocket.service';
+import {LoadIndicatorComponent} from '../../../../../shared/load-indicator';
 
 @Component({
-  selector: 'app-video-edit-dialog',
+  selector: 'video-edit-dialog',
   imports: [FormsModule, LoadIndicatorComponent],
   templateUrl: './video-edit-dialog.component.html',
   styleUrl: './video-edit-dialog.component.scss',
 })
-export class VideoEditDialogComponent {
+export class VideoEditDialogComponent implements AfterViewInit {
   private readonly filesService = inject(FilesService);
   private readonly webSocketService = inject(WebsocketService);
 
   filePath = input.required<string>();
   fileName = input.required<string>();
-  isOpen = model<boolean>(false);
-  onTrimComplete = output<void>();
+  closed = output<void>();
+  videoTrimmed = output<void>();
 
   protected readonly startTimestamp = signal<string>('0');
   protected readonly endTimestamp = signal<string>('');
@@ -49,7 +49,8 @@ export class VideoEditDialogComponent {
   readonly videoEditDialog = viewChild.required<ElementRef<HTMLDialogElement>>('videoEditDialog');
   readonly videoElement = viewChild<ElementRef<HTMLVideoElement>>('videoElement');
 
-  ngOnInit() {
+  ngAfterViewInit() {
+    this.openDialog();
     // Set default output filename with '_trimmed' prefix
     const fileName = this.fileName();
     const dotIndex = fileName.lastIndexOf('.');
@@ -60,38 +61,22 @@ export class VideoEditDialogComponent {
     } else {
       this.outputFileName.set(`${fileName}_trimmed`);
     }
-  }
-
-  ngAfterViewInit() {
-    if (this.isOpen()) {
-      this.showDialog();
-    }
-  }
-
-  ngOnChanges() {
-    if (this.isOpen()) {
-      this.showDialog();
-    } else {
-      this.closeDialog();
-    }
-  }
-
-  private showDialog() {
-    this.videoEditDialog().nativeElement.showModal();
     // Load video duration when dialog opens
-    setTimeout(() => {
-      const video = this.videoElement()?.nativeElement;
-      if (video) {
-        video.addEventListener('loadedmetadata', () => {
-          if (video.duration && !this.endTimestamp()) {
-            this.endTimestamp.set(this.formatTime(video.duration));
-          }
-        });
-      }
-    }, 100);
+    const video = this.videoElement()?.nativeElement;
+    if (video) {
+      video.addEventListener('loadedmetadata', () => {
+        if (video.duration && !this.endTimestamp()) {
+          this.endTimestamp.set(this.formatTime(video.duration));
+        }
+      });
+    }
   }
 
-  private closeDialog() {
+  private openDialog(): void {
+    this.videoEditDialog().nativeElement.showModal();
+  }
+
+  private closeDialog(): void {
     this.videoEditDialog().nativeElement.close();
   }
 
@@ -174,7 +159,7 @@ export class VideoEditDialogComponent {
       .subscribe({
         next: (result) => {
           this.webSocketService.showToast(result, 'success');
-          this.onTrimComplete.emit();
+          this.videoTrimmed.emit();
           this.closeVideoEditDialog();
         },
         error: (error) => {
@@ -205,9 +190,9 @@ export class VideoEditDialogComponent {
     return true;
   }
 
-  protected closeVideoEditDialog() {
-    this.isOpen.set(false);
+  protected closeVideoEditDialog(): void {
     this.closeDialog();
+    this.closed.emit();
   }
 
   protected getVideoUrl(): string {

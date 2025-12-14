@@ -1,0 +1,87 @@
+.center {
+  margin: auto;
+}
+
+dialog app-load-indicator {
+  margin: 4rem;
+}
+
+.text-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1.5rem;
+  max-width: 75vw;
+  max-height: 75vh;
+
+  @media (width < 765px) {
+    max-width: 90vw;
+    margin: 1rem;
+  }
+}
+
+.text-content {
+  width: 100%;
+  max-width: 75vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline);
+  border-radius: 1rem;
+  margin: 0.25rem;
+
+  pre {
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: start;
+    counter-reset: listing;
+    line-height: 0;
+    --indent: 2rem;
+    --lineHeight: 2;
+
+    code {
+      counter-increment: listing;
+      display: block;
+      padding: 0 0 0 var(--indent);
+      text-indent: calc(-1 * var(--indent));
+      margin: 0;
+      line-height: var(--lineHeight);
+    }
+
+    code::before {
+      content: counter(listing) '. ';
+      display: inline-block;
+      width: var(--indent);
+      padding-left: auto;
+      margin-left: auto;
+      text-align: right;
+      color: var(--color-outline);
+    }
+
+    @media (width < 765px) {
+      padding: 0.5rem;
+      --indentSm: 1.5rem;
+      --lineHeightSm: 1.25;
+
+      code {
+        padding: 0 0 0 var(--indentSm);
+        text-indent: calc(-1 * var(--indentSm));
+        line-height: var(--lineHeightSm);
+      }
+
+      code::before {
+        width: var(--indentSm);
+      }
+    }
+  }
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 1rem;
+  width: 70%;
+}
