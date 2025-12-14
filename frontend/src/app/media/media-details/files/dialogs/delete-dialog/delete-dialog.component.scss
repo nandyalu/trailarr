@@ -3,23 +3,18 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
-  margin: 1.5rem;
+  gap: 1rem;
+  margin: 0;
+  padding: 0 1rem 1rem;
   max-width: 75vw;
   max-height: 75vh;
-
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  
   @media (width < 765px) {
     max-width: 90vw;
     margin: 1rem;
   }
-}
-
-.delete-dialog {
-  background-color: var(--color-on-error-container);
-  color: var(--color-on-error);
-  padding: 0 1rem 1rem;
-  margin: 0;
-  gap: 1rem;
 }
 
 #deleteDialog::backdrop {
