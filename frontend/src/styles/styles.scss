@@ -84,110 +84,163 @@ body {
   }
 }
 
+// For theming components, see https://material.angular.dev/guide/theming-your-components
 .dark {
   color-scheme: dark;
+
+  // Primary
   --color-primary: rgb(128 213 212);
-  --color-surface-tint: rgb(128 213 212);
   --color-on-primary: rgb(0 55 55);
   --color-primary-container: rgb(0 79 79);
   --color-on-primary-container: rgb(156 241 240);
+  --color-primary-fixed: rgb(156 241 240);
+  --color-on-primary-fixed: rgb(0 32 32);
+  --color-on-primary-fixed-variant: rgb(0 79 79);
+  --color-primary-fixed-dim: rgb(128 213 212);
+  --color-inverse-primary: rgb(0 106 106);
+
+  // Secondary
   --color-secondary: rgb(176 204 203);
   --color-on-secondary: rgb(27 53 52);
   --color-secondary-container: rgb(50 75 75);
   --color-on-secondary-container: rgb(204 232 231);
+  --color-secondary-fixed: rgb(204 232 231);
+  --color-on-secondary-fixed: rgb(5 31 31);
+  --color-on-secondary-fixed-variant: rgb(50 75 75);
+  --color-secondary-fixed-dim: rgb(176 204 203);
+
+  // Tertiary
   --color-tertiary: rgb(179 200 232);
   --color-on-tertiary: rgb(28 49 75);
   --color-tertiary-container: rgb(51 72 99);
   --color-on-tertiary-container: rgb(211 228 255);
+  --color-tertiary-fixed: rgb(211 228 255);
+  --color-on-tertiary-fixed: rgb(4 28 53);
+  --color-on-tertiary-fixed-variant: rgb(51 72 99);
+  --color-tertiary-fixed-dim: rgb(179 200 232);
+
+  // Error
   --color-error: rgb(255 180 171);
   --color-on-error: rgb(105 0 5);
   --color-error-container: rgb(147 0 10);
   --color-on-error-container: rgb(255 218 214);
-  --color-background: rgb(14 21 20);
-  --color-on-background: rgb(221 228 227);
-  --color-surface: rgb(14 21 20);
+
+  // Surface
   --color-on-surface: rgb(221 228 227);
-  --color-surface-variant: rgb(63 73 72);
   --color-on-surface-variant: rgb(190 201 200);
-  --color-outline: rgb(136 147 146);
-  --color-outline-variant: rgb(63 73 72);
-  --color-shadow: rgb(0 0 0);
-  --color-scrim: rgb(0 0 0);
-  --color-inverse-surface: rgb(221 228 227);
-  --color-inverse-on-surface: rgb(43 50 49);
-  --color-inverse-primary: rgb(0 106 106);
-  --color-primary-fixed: rgb(156 241 240);
-  --color-on-primary-fixed: rgb(0 32 32);
-  --color-primary-fixed-dim: rgb(128 213 212);
-  --color-on-primary-fixed-variant: rgb(0 79 79);
-  --color-secondary-fixed: rgb(204 232 231);
-  --color-on-secondary-fixed: rgb(5 31 31);
-  --color-secondary-fixed-dim: rgb(176 204 203);
-  --color-on-secondary-fixed-variant: rgb(50 75 75);
-  --color-tertiary-fixed: rgb(211 228 255);
-  --color-on-tertiary-fixed: rgb(4 28 53);
-  --color-tertiary-fixed-dim: rgb(179 200 232);
-  --color-on-tertiary-fixed-variant: rgb(51 72 99);
-  --color-surface-dim: rgb(14 21 20);
+  --color-surface: rgb(14 21 20);
   --color-surface-bright: rgb(52 58 58);
-  --color-surface-container-lowest: rgb(9 15 15);
-  --color-surface-container-low: rgb(22 29 29);
   --color-surface-container: rgb(26 33 33);
   --color-surface-container-high: rgb(37 43 43);
   --color-surface-container-highest: rgb(47 54 54);
+  --color-surface-container-low: rgb(22 29 29);
+  --color-surface-container-lowest: rgb(9 15 15);
+  --color-surface-dim: rgb(14 21 20);
+  --color-surface-tint: rgb(128 213 212);
+  --color-surface-variant: rgb(63 73 72);
+  --color-inverse-surface: rgb(221 228 227);
+  --color-inverse-on-surface: rgb(43 50 49);
+
+  // Miscellaneous
+  --color-background: rgb(14 21 20);
+  --color-on-background: rgb(221 228 227);
+  --color-outline: rgb(136 147 146);
+  --color-outline-variant: rgb(63 73 72);
+  --color-scrim: rgb(0 0 0);
+  --color-shadow: rgb(0 0 0);
+
+  // Shadows
+  --shadow-color1: rgba(255, 255, 255, 0.08);
+  --shadow-color2: rgba(255, 255, 255, 0.06);
+  --shadow-color3: rgba(255, 255, 255, 0.04);
+  --shadow-level0: 0px 0px 0px 0px var(--shadow-color1), 0px 0px 0px 0px var(--shadow-color2), 0px 0px 0px 0px var(--shadow-color3);
+  --shadow-level1: 0px 2px 1px -1px var(--shadow-color1), 0px 1px 1px 0px var(--shadow-color2), 0px 1px 3px 0px var(--shadow-color3);
+  --shadow-level2: 0px 3px 3px -2px var(--shadow-color1), 0px 3px 4px 0px var(--shadow-color2), 0px 1px 8px 0px var(--shadow-color3);
+  --shadow-level3: 0px 3px 5px -1px var(--shadow-color1), 0px 6px 10px 0px var(--shadow-color2), 0px 1px 18px 0px var(--shadow-color3);
+  --shadow-level4: 0px 5px 5px -3px var(--shadow-color1), 0px 8px 10px 1px var(--shadow-color2), 0px 3px 14px 2px var(--shadow-color3);
+  --shadow-level5: 0px 7px 8px -4px var(--shadow-color1), 0px 12px 17px 2px var(--shadow-color2), 0px 5px 22px 4px var(--shadow-color3);
 }
 
 .light {
   color-scheme: light;
+
+  // Primary
   --color-primary: rgb(0 106 106);
-  --color-surface-tint: rgb(0 106 106);
   --color-on-primary: rgb(255 255 255);
   --color-primary-container: rgb(156 241 240);
   --color-on-primary-container: rgb(0 32 32);
+  --color-primary-fixed: rgb(156 241 240);
+  --color-on-primary-fixed: rgb(0 32 32);
+  --color-on-primary-fixed-variant: rgb(0 79 79);
+  --color-primary-fixed-dim: rgb(128 213 212);
+  --color-inverse-primary: rgb(128 213 212);
+
+  // Secondary
   --color-secondary: rgb(74 99 99);
   --color-on-secondary: rgb(255 255 255);
   --color-secondary-container: rgb(204 232 231);
   --color-on-secondary-container: rgb(5 31 31);
+  --color-secondary-fixed: rgb(204 232 231);
+  --color-on-secondary-fixed: rgb(5 31 31);
+  --color-on-secondary-fixed-variant: rgb(50 75 75);
+  --color-secondary-fixed-dim: rgb(176 204 203);
+
+  // Tertiary
   --color-tertiary: rgb(75 96 124);
   --color-on-tertiary: rgb(255 255 255);
   --color-tertiary-container: rgb(211 228 255);
   --color-on-tertiary-container: rgb(4 28 53);
+  --color-tertiary-fixed: rgb(211 228 255);
+  --color-on-tertiary-fixed: rgb(4 28 53);
+  --color-on-tertiary-fixed-variant: rgb(51 72 99);
+  --color-tertiary-fixed-dim: rgb(179 200 232);
+
+  // Error
   --color-error: rgb(186 26 26);
   --color-on-error: rgb(255 255 255);
   --color-error-container: rgb(255 218 214);
   --color-on-error-container: rgb(65 0 2);
-  --color-background: rgb(244 251 250);
-  --color-on-background: rgb(22 29 29);
-  --color-surface: rgb(244 251 250);
+
+  // Surface
   --color-on-surface: rgb(22 29 29);
-  --color-surface-variant: rgb(218 229 228);
   --color-on-surface-variant: rgb(63 73 72);
-  --color-outline: rgb(111 121 121);
-  --color-outline-variant: rgb(190 201 200);
-  --color-shadow: rgb(0 0 0);
-  --color-scrim: rgb(0 0 0);
-  --color-inverse-surface: rgb(43 50 49);
-  --color-inverse-on-surface: rgb(236 242 241);
-  --color-inverse-primary: rgb(128 213 212);
-  --color-primary-fixed: rgb(156 241 240);
-  --color-on-primary-fixed: rgb(0 32 32);
-  --color-primary-fixed-dim: rgb(128 213 212);
-  --color-on-primary-fixed-variant: rgb(0 79 79);
-  --color-secondary-fixed: rgb(204 232 231);
-  --color-on-secondary-fixed: rgb(5 31 31);
-  --color-secondary-fixed-dim: rgb(176 204 203);
-  --color-on-secondary-fixed-variant: rgb(50 75 75);
-  --color-tertiary-fixed: rgb(211 228 255);
-  --color-on-tertiary-fixed: rgb(4 28 53);
-  --color-tertiary-fixed-dim: rgb(179 200 232);
-  --color-on-tertiary-fixed-variant: rgb(51 72 99);
-  --color-surface-dim: rgb(213 219 218);
+  --color-surface: rgb(244 251 250);
   --color-surface-bright: rgb(244 251 250);
-  --color-surface-container-lowest: rgb(255 255 255);
-  --color-surface-container-low: rgb(239 245 244);
   --color-surface-container: rgb(233 239 238);
   --color-surface-container-high: rgb(227 233 233);
   --color-surface-container-highest: rgb(221 228 227);
+  --color-surface-container-low: rgb(239 245 244);
+  --color-surface-container-lowest: rgb(255 255 255);
+  --color-surface-dim: rgb(213 219 218);
+  --color-surface-tint: rgb(0 106 106);
+  --color-surface-variant: rgb(218 229 228);
+  --color-inverse-surface: rgb(43 50 49);
+  --color-inverse-on-surface: rgb(236 242 241);
+
+  // Miscellaneous
+  --color-background: rgb(244 251 250);
+  --color-on-background: rgb(22 29 29);
+  --color-outline: rgb(111 121 121);
+  --color-outline-variant: rgb(190 201 200);
+  --color-scrim: rgb(0 0 0);
+  --color-shadow: rgb(0 0 0);
+
+  // Shadows
+  --shadow-color1: rgba(0, 0, 0, 0.2);
+  --shadow-color2: rgba(0, 0, 0, 0.14);
+  --shadow-color3: rgba(0, 0, 0, 0.12);
+  --shadow-level0: 0px 0px 0px 0px var(--shadow-color1), 0px 0px 0px 0px var(--shadow-color2), 0px 0px 0px 0px var(--shadow-color3);
+  --shadow-level1: 0px 2px 1px -1px var(--shadow-color1), 0px 1px 1px 0px var(--shadow-color2), 0px 1px 3px 0px var(--shadow-color3);
+  --shadow-level2: 0px 3px 3px -2px var(--shadow-color1), 0px 3px 4px 0px var(--shadow-color2), 0px 1px 8px 0px var(--shadow-color3);
+  --shadow-level3: 0px 3px 5px -1px var(--shadow-color1), 0px 6px 10px 0px var(--shadow-color2), 0px 1px 18px 0px var(--shadow-color3);
+  --shadow-level4: 0px 5px 5px -3px var(--shadow-color1), 0px 8px 10px 1px var(--shadow-color2), 0px 3px 14px 2px var(--shadow-color3);
+  --shadow-level5: 0px 7px 8px -4px var(--shadow-color1), 0px 12px 17px 2px var(--shadow-color2), 0px 5px 22px 4px var(--shadow-color3);
+  --mat-sys-level0: 0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 0px rgba(0, 0, 0, 0.14), 0px 0px 0px 0px rgba(0, 0, 0, 0.12);
+  --mat-sys-level1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+  --mat-sys-level2: 0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);
+  --mat-sys-level3: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
+  --mat-sys-level4: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+  --mat-sys-level5: 0px 7px 8px -4px rgba(0, 0, 0, 0.2), 0px 12px 17px 2px rgba(0, 0, 0, 0.14), 0px 5px 22px 4px rgba(0, 0, 0, 0.12);
 }
 
 /* GLOBAL ELEMENT STYLES */
