@@ -263,7 +263,7 @@ run_interactive_config() {
     update_env_var "MONITOR_INTERVAL" "60" "$DATA_DIR/.env"  # 1 hour default
     update_env_var "PYTHONPATH" "/opt/trailarr/backend" "$DATA_DIR/.env"
     update_env_var "WAIT_FOR_MEDIA" "true" "$DATA_DIR/.env"  # Default to wait for media
-    
+
     # Set timezone
     TZ=$(timedatectl | grep "Time zone" | awk '{print $3}' 2>/dev/null || echo "UTC")
     update_env_var "TZ" "$TZ" "$DATA_DIR/.env"

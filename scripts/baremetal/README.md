@@ -155,7 +155,6 @@ APP_PORT=7889
 APP_DATA_DIR=/var/lib/trailarr
 MONITOR_INTERVAL=10800
 WAIT_FOR_MEDIA=true
-
 # Hardware Acceleration
 ENABLE_HWACCEL=true
 HWACCEL_TYPE=nvidia

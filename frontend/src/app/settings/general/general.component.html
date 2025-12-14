@@ -108,6 +108,37 @@
 <section>
   <details open>
     <summary>
+      <span>Delete Trailers</span>
+      <help-link-icon [link]="helpLinks.deleteTrailers" />
+    </summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="On Deleting from Connection"
+        description="Delete trailers when media is removed from the connected Radarr/Sonarr instance."
+        [options]="trueFalseOptions"
+        [colorType]="'danger'"
+        [colorTypeOption]="'true'"
+        [selectedOption]="settings()?.delete_trailer_connection"
+        (optionChange)="updateSetting('delete_trailer_connection', $event)"
+      />
+      @if (settings()?.delete_trailer_connection) {
+        <app-options-setting
+          name="Only if Media Files Deleted"
+          description="Delete trailers for media removed from Arr only when media files doesn't exist on disk."
+          [options]="trueFalseOptions"
+          [colorType]="'danger'"
+          [colorTypeOption]="'true'"
+          [selectedOption]="settings()?.delete_trailer_media"
+          (optionChange)="updateSetting('delete_trailer_media', $event)"
+        />
+      }
+    </div>
+  </details>
+</section>
+<section>
+  <details open>
+    <summary>
       <span>Experimental Options</span>
       <help-link-icon [link]="helpLinks.experimental" />
     </summary>

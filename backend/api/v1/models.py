@@ -39,6 +39,8 @@ class Settings(BaseModel):
     app_data_dir: str
     app_mode: str
     app_theme: str
+    delete_trailer_connection: bool
+    delete_trailer_media: bool
     gpu_available_amd: bool
     gpu_available_intel: bool
     gpu_available_nvidia: bool
