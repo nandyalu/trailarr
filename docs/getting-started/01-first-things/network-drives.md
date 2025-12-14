@@ -39,15 +39,15 @@ services:
     restart: unless-started
 volumes:
     movies:
-    driver_opts:
-        type: "cifs" # or "nfs" depending on your setup
-        o: "username=xxxx,password=xxxx,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,nosuid,nodev"
-        device: "//0.168.1.111/movies/"
+        driver_opts:
+            type: "cifs" # or "nfs" depending on your setup
+            o: "username=xxxx,password=xxxx,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,nosuid,nodev"
+            device: "//0.168.1.111/movies/"
     tv:
-    driver_opts:
-        type: "cifs" # or "nfs" depending on your setup
-        o: "username=xxxx,password=xxxx,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,nosuid,nodev"
-        device: "//0.168.1.111/tv/"
+        driver_opts:
+            type: "cifs" # or "nfs" depending on your setup
+            o: "username=xxxx,password=xxxx,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,nosuid,nodev"
+            device: "//0.168.1.111/tv/"
     trailarr_data:  # volume name, should match the volume name in the service
     # Any extra options for the volume if needed
 ```
