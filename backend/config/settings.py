@@ -368,9 +368,10 @@ class _Config:
         - Valid values are True/False."""
 
     delete_trailer_media = bool_property("DELETE_TRAILER_MEDIA", default=False)
-    """Delete trailer when media is deleted on disk.
+    """Delete trailer only when media is also deleted on disk.
         - Default is False.
-        - Valid values are True/False."""
+        - Valid values are True/False.
+        - This setting works only if `DELETE_TRAILER_CONNECTION` is True."""
 
     webui_username = str_property(
         "WEBUI_USERNAME", default=_DEFAULT_WEBUI_USERNAME

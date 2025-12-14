@@ -48,26 +48,6 @@ Enable this setting to wait for media to be downloaded before downloading traile
 
 These are advanced settings, if you don't know what they do, do not modify them!
 
-### Delete Trailer - Connection
-
-- Default is `false`
-
-Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. 
-
-!!! warning
-    Enabling this setting will delete all downloaded trailers for media that is removed from the connected Arr application. Use with caution!
-
-
-### Delete Trailer - Media Deleted
-
-- Default is `false`
-
-Enable this setting to delete the downloaded trailers when the media file is deleted from disk.
-
-!!! warning
-    Enabling this setting will delete all downloaded trailers for media whose media file is deleted from disk. Use with caution!
-
-
 ### Log Level
 
 - Default is `Info`
@@ -99,6 +79,30 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
     If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity and YouTube placing a ban on your account. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.
     
     Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
+
+
+## Delete Trailer Settings
+
+Delete downloaded trailers when media is removed from Radarr/Sonarr and optionally only if media files are deleted from disk.
+
+### On Deleting from Connection
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. 
+
+!!! warning
+    Enabling this setting will delete all downloaded trailers for media that is removed from the connected Arr application. Use with caution!
+
+
+### Only if Media Files Deleted
+
+!!! note ""
+    This setting works only if `On Deleting from Connection` is enabled.
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers only when the media files are deleted from disk.
 
 
 ## Experimental Settings

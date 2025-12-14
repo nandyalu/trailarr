@@ -30,6 +30,7 @@ export class GeneralComponent {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/general-settings/',
     files: 'https://nandyalu.github.io/trailarr/user-guide/settings/general-settings/#file-settings',
     advanced: 'https://nandyalu.github.io/trailarr/user-guide/settings/general-settings/#advanced-settings',
+    deleteTrailers: 'https://nandyalu.github.io/trailarr/user-guide/settings/general-settings/#delete-trailer-settings',
     experimental: 'https://nandyalu.github.io/trailarr/user-guide/settings/general-settings/#experimental-settings',
   };
 

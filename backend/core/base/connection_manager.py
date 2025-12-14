@@ -4,12 +4,15 @@ from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
-from core.base.database.models.media import MediaCreate, MonitorStatus
+from core.base.database.models.media import (
+    MediaCreate,
+    MediaRead,
+    MonitorStatus,
+)
 
 logger = ModuleLogger("ConnectionManager")
 
@@ -60,6 +63,7 @@ class BaseConnectionManager(ABC):
         Args:
             connection (ConnectionRead): The connection data."""
         self.connection_id = connection.id
+        self.connection_name = connection.name
         self.path_mappings = [
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
@@ -299,24 +303,19 @@ class BaseConnectionManager(ABC):
         )
         return media_read_dc_list
 
-    async def delete_trailers_if_media_deleted(self, media_id: int) -> bool:
-        """Delete trailers for a media item if the media file has been deleted.\n
+    async def delete_trailers_for_media(self, media: MediaRead) -> bool:
+        """Delete trailers for a media item.\n
+        - If `app_settings.delete_trailer_media` is True, check if media files exist on disk.
         Args:
-            media_id (int): The id of the media item.\n
+            media (MediaRead): The media item.\n
         Returns:
             bool: True if the trailers were deleted, False otherwise."""
-        try:
-            media = media_manager.read(media_id)
-        except Exception:
-            logger.error(
-                f"Failed to read media with id {media_id} from database."
-            )
-            return False
-        if not media.folder_path:
-            return False
-        if FilesHandler.check_media_exists(media.folder_path):
-            # Media files still exist on disk, nothing to delete
-            return False
+        if app_settings.delete_trailer_media:
+            if not media.folder_path:
+                return False
+            if FilesHandler.check_media_exists(media.folder_path):
+                # Media files still exist on disk, nothing to delete
+                return False
         # Delete download files associated with the media
         _deleted = False
         for download in media.downloads:
@@ -327,14 +326,13 @@ class BaseConnectionManager(ABC):
             if await FilesHandler.delete_file(download.path):
                 _deleted = True
                 logger.info(
-                    f"Media file deleted for '{media.title}'."
-                    f" Deleted download file '{download.path}'"
+                    f"Media '{media.title}' removed from Arr application."
+                    f" Deleted trailer file '{download.path}'"
                 )
-                download_manager.mark_as_deleted(download.id)
             else:
                 logger.warning(
-                    f"Media file deletion failed for '{media.title}'."
-                    f" Failed to delete download file '{download.path}'"
+                    f"Media '{media.title}' removed from Arr application."
+                    f" Failed to delete trailer file '{download.path}'"
                 )
         if not media.folder_path:
             return _deleted
@@ -347,9 +345,11 @@ class BaseConnectionManager(ABC):
     async def delete_removed_media_trailers(self) -> None:
         """Delete trailers for media that have been removed from the Arr application."""
         if len(self.media_ids) == 0:
+            # If no media IDs exist, avoid deleting all trailers
             return
         logger.debug(
-            "Deleting trailers for media removed from Arr application"
+            "Deleting trailers for media removed from Connection"
+            f" '{self.connection_name}' (ID: {self.connection_id})"
         )
         all_media = media_manager.read_all_by_connection(self.connection_id)
         ids_to_keep = set(self.media_ids)
@@ -357,24 +357,7 @@ class BaseConnectionManager(ABC):
             if media.id in ids_to_keep:
                 continue
             # Delete download files associated with the media
-            for download in media.downloads:
-                if not download.file_exists:
-                    continue
-                if not download.path:
-                    continue
-                if await FilesHandler.delete_file(download.path):
-                    logger.info(
-                        f"Media '{media.title}' removed from Arr application."
-                        f" Deleted trailer file '{download.path}'"
-                    )
-                else:
-                    logger.warning(
-                        f"Media '{media.title}' removed from Arr application."
-                        f" Failed to delete trailer file '{download.path}'"
-                    )
-            if not media.folder_path:
-                continue
-            await FilesHandler.delete_trailers_for_media(media.folder_path)
+            await self.delete_trailers_for_media(media)
         return
 
     def remove_deleted_media(self) -> None:
@@ -419,12 +402,6 @@ class BaseConnectionManager(ABC):
                     )
                 else:
                     trailer_exists = media_read.trailer_exists
-                if app_settings.delete_trailer_media:
-                    # If trailer(s) deleted from disk, update the database
-                    _deleted = await self.delete_trailers_if_media_deleted(
-                        media_read.id
-                    )
-                    trailer_exists = not _deleted
             # Check if monitor is already enabled
             if media_read.monitor:
                 monitor_media = True

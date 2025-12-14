@@ -102,22 +102,35 @@
         [value]="settings()?.yt_cookies_path ?? ''"
         (onSubmit)="updateSetting('yt_cookies_path', $event)"
       />
+    </div>
+  </details>
+</section>
+<section>
+  <details open>
+    <summary>
+      <span>Delete Trailers</span>
+      <help-link-icon [link]="helpLinks.deleteTrailers" />
+    </summary>
+    <hr />
+    <div class="setting-group">
       <app-options-setting
-        name="Delete Trailer - Connection"
+        name="On Deleting from Connection"
         description="Delete trailers when media is removed from the connected Radarr/Sonarr instance."
         [colorType]="'warning'"
         [options]="trueFalseOptions"
         [selectedOption]="settings()?.delete_trailer_connection"
         (optionChange)="updateSetting('delete_trailer_connection', $event)"
       />
-      <app-options-setting
-        name="Delete Trailer - Media Deleted"
-        description="Delete trailers for a media when it's media files are deleted from disk."
-        [colorType]="'warning'"
-        [options]="trueFalseOptions"
-        [selectedOption]="settings()?.delete_trailer_media"
-        (optionChange)="updateSetting('delete_trailer_media', $event)"
-      />
+      @if (settings()?.delete_trailer_connection) {
+        <app-options-setting
+          name="Only if Media Files Deleted"
+          description="Delete trailers for media removed from Arr only when media files doesn't exist on disk."
+          [colorType]="'warning'"
+          [options]="trueFalseOptions"
+          [selectedOption]="settings()?.delete_trailer_media"
+          (optionChange)="updateSetting('delete_trailer_media', $event)"
+        />
+      }
     </div>
   </details>
 </section>
