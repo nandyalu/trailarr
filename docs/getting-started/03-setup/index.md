@@ -44,4 +44,12 @@ This guide will walk you through the steps to set up your Trailarr instance, inc
     *   Here you can configure various options according to your preferences. Review each setting carefully.
     *   Some of the settings are auto-saved as you make selections. The settings that doesn't auto-save will show a button next to them, prompting to `Save`.
 
+    New in the General settings you will find a "Delete Trailers" section. This lets you control automatic removal of trailer files when media entries are removed in your connected Radarr/Sonarr instances:
+
+    - "On Deleting from Connection" (Delete Trailers): When enabled, Trailarr will remove trailer files from disk when the corresponding media entry is deleted from the connected ARR (Radarr/Sonarr).
+    - "Only if Media Files Deleted": When enabled together with the previous option, Trailarr will only delete trailer files if the media files themselves are no longer present on disk. This provides a safer cleanup option.
+
+    !!! warning
+        Enabling the "Delete Trailers" options can remove files from disk. If you enable them, understand the behaviour and ensure you have backups or are confident the removal is desired.
+
 With these initial configuration steps completed, you're ready to move on to setting up [Profiles](./profiles.md) and [Connections](./connections.md).

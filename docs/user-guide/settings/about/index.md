@@ -9,6 +9,9 @@ The **About** page in Trailarr provides a comprehensive overview of your applica
 - **Appdata Folder:** The path to the application’s data directory.
 - **Server Started:** Shows when the server was started (with timeago formatting).
 - **Timezone:** The server’s configured timezone.
+- **Delete Trailers (New):** Settings related to automatic removal of trailer files.
+  - **On Deleting from Connection:** When enabled, trailers will be deleted when the corresponding media is removed from the connected Radarr/Sonarr instance.
+  - **Only if Media Files Deleted:** When enabled together with the previous setting, trailers will only be deleted if the media files were also removed from disk.
 
 ## Statistics
 - **Movies / Series:** Total number of movies and series managed.
