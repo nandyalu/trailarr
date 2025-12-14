@@ -81,6 +81,30 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
     Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
 
 
+## Delete Trailer Settings
+
+Delete downloaded trailers when media is removed from Radarr/Sonarr and optionally only if media files are deleted from disk.
+
+### On Deleting from Connection
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. 
+
+!!! warning
+    Enabling this setting will delete all downloaded trailers for media that is removed from the connected Arr application. Use with caution!
+
+
+### Only if Media Files Deleted
+
+!!! note ""
+    This setting works only if `On Deleting from Connection` is enabled.
+
+- Default is `false`
+
+Enable this setting to delete the downloaded trailers only when the media files are deleted from disk.
+
+
 ## Experimental Settings
 
 These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}

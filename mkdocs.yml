@@ -120,6 +120,7 @@ nav:
       - getting-started/01-first-things/index.md
       - Environment Variables: getting-started/01-first-things/environment-variables.md
       - Radarr Sonarr Volumes: getting-started/01-first-things/radarr-sonarr-volumes.md
+      - Network Drives: getting-started/01-first-things/network-drives.md
     - Installation: 
       - getting-started/02-installation/index.md
       - Docker Compose: getting-started/02-installation/docker-compose.md

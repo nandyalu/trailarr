@@ -63,7 +63,7 @@ def mark_as_deleted(
     download_db = base._get_db_item(download_id, _session)
 
     # Mark the download as deleted
-    download_db.is_deleted = True
+    download_db.file_exists = False
 
     # Commit the changes to the database
     _session.add(download_db)

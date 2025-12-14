@@ -1,4 +1,4 @@
-import {Component, effect, ElementRef, inject, output, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ProfileService} from 'src/app/services/profile.service';
 
@@ -7,6 +7,7 @@ import {ProfileService} from 'src/app/services/profile.service';
   imports: [FormsModule],
   templateUrl: './profile-select-dialog.component.html',
   styleUrl: './profile-select-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileSelectDialogComponent {
   protected readonly profileService = inject(ProfileService);
@@ -23,7 +24,11 @@ export class ProfileSelectDialogComponent {
 
   constructor() {
     effect(() => {
-      this.selectedProfileID.set(0);
+      if (this.allProfiles().length > 0) {
+        this.selectedProfileID.set(this.allProfiles()[0].id);
+      } else {
+        this.selectedProfileID.set(0);
+      }
     });
   }
 

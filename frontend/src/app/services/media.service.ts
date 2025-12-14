@@ -99,7 +99,10 @@ export class MediaService {
         return this.mediaResource.value().filter((media) => !media.is_movie);
       }
       case null: {
-        return this.mediaResource.value().filter((media) => media.status.toLowerCase() === 'downloaded');
+        return this.mediaResource.value().filter((media) => {
+          return media.downloads.some((download) => download.file_exists === true);
+        });
+        // return this.mediaResource.value().filter((media) => media.status.toLowerCase() === 'downloaded');
       }
     }
   });

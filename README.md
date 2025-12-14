@@ -11,8 +11,8 @@
 
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
-  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.121.2-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-20.3.12-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.124.4-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.5-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
   <a href="https://github.com/nandyalu/trailarr" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
@@ -50,6 +50,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Option to download desired video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for AMD, Intel, and NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
+- Option to delete trailers and trailer folders when media is removed from Arr and/or when media files have been deleted from disk.
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 

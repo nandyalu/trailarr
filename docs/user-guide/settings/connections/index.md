@@ -6,6 +6,15 @@
 - **Arr Type**: Select either Radarr or Sonarr.
 - **Monitor Type**: Choose how trailers are monitored/downloaded (see below).
 - **Server URL**: The full URL to your Radarr/Sonarr server (e.g., http://192.168.0.15:7878).
+- **External URL**: (Optional) If you access your Radarr/Sonarr instance through a reverse proxy or a different URL than the server URL, specify that here. 
+    
+    This URL will be used by Trailarr when generating links to media items in the web interface.
+    
+    For example, `https://arr.mydomain.com/radarr`.
+
+    !!! note ""
+        External URL is only used for generating links in Trailarr Web interface. The Server URL is still used for API communication with Radarr/Sonarr.
+
 - **API Key**: The API key from your Radarr/Sonarr server settings.
 - **Path Mappings**: Map Radarr/Sonarr internal paths to Trailarr paths for correct file access.
 

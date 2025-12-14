@@ -1,0 +1,19 @@
+<dialog #dialog (click)="closeDialog()">
+  @if (textFileLoading()) {
+    <app-load-indicator class="center" />
+  } @else {
+    <div class="text-dialog" (click)="$event.stopPropagation()">
+      <h2>{{ fileName() }}</h2>
+      <div class="text-content">
+        <pre>
+        @for (line of selectedFileText(); track $index) {
+          <code>{{line}}</code>
+        }
+      </pre>
+      </div>
+      <div class="buttons-row">
+        <button class="tertiary" (click)="closeDialog()">Close</button>
+      </div>
+    </div>
+  }
+</dialog>

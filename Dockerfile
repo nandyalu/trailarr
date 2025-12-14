@@ -52,7 +52,7 @@ RUN chmod +x /tmp/install_drivers.sh && \
     /tmp/install_drivers.sh
 
 # ARG APP_VERSION, will be set during build by github actions
-ARG APP_VERSION=0.0.0-dev
+ARG APP_VERSION=0.6.1-dev
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \

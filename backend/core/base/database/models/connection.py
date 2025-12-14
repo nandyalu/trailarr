@@ -60,6 +60,7 @@ class ConnectionBase(AppSQLModel):
     name: str
     arr_type: ArrType
     url: str
+    external_url: str = ""
     api_key: str
     monitor: MonitorType
     # path_mappings: list[PathMappingCreate] = []
@@ -102,6 +103,7 @@ class ConnectionUpdate(AppSQLModel):
     name: str | None = None
     arr_type: ArrType | None = None
     url: str | None = None
+    external_url: str | None = None
     api_key: str | None = None
     monitor: MonitorType | None = None
     path_mappings: list[PathMappingCRU]

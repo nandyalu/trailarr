@@ -101,7 +101,8 @@
                 "column": 140,
                 "color": "#ff0000",
             }
-        ]
+        ],
+        "editor.tabSize": 2
     },
     "[css]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -112,7 +113,8 @@
                 "column": 140,
                 "color": "#ff0000",
             }
-        ]
+        ],
+        "editor.tabSize": 2
     },
     "[scss]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -124,7 +126,8 @@
                 "column": 140,
                 "color": "#ff0000",
             }
-        ]
+        ],
+        "editor.tabSize": 2
     },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -137,6 +140,7 @@
                 "color": "#ff0000",
             }
         ],
+        "editor.tabSize": 2,
         "typescript.tsdk": "node_modules\\typescript\\lib"
     },
     "editor.defaultFoldingRangeProvider": null,
