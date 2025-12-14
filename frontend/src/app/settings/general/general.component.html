@@ -116,8 +116,9 @@
       <app-options-setting
         name="On Deleting from Connection"
         description="Delete trailers when media is removed from the connected Radarr/Sonarr instance."
-        [colorType]="'warning'"
         [options]="trueFalseOptions"
+        [colorType]="'danger'"
+        [colorTypeOption]="'true'"
         [selectedOption]="settings()?.delete_trailer_connection"
         (optionChange)="updateSetting('delete_trailer_connection', $event)"
       />
@@ -125,8 +126,9 @@
         <app-options-setting
           name="Only if Media Files Deleted"
           description="Delete trailers for media removed from Arr only when media files doesn't exist on disk."
-          [colorType]="'warning'"
           [options]="trueFalseOptions"
+          [colorType]="'danger'"
+          [colorTypeOption]="'true'"
           [selectedOption]="settings()?.delete_trailer_media"
           (optionChange)="updateSetting('delete_trailer_media', $event)"
         />
