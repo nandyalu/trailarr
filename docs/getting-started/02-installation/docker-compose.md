@@ -418,6 +418,8 @@ Here are some examples:
           volumes:
             - /C/Users/nandyalu/Videos/Movies:/data/movies
         ```
+      
+      - If you have network drives and the usual methods don't work, you can also try creating docker volumes for them as explained in the [Network Drives](../01-first-things/network-drives.md#use-docker-network-mount) section.
       - There might be other paths that work, if you know something else that has been working for you, feel free to keep using that! You can also share with us, so that we can add it here!
 
 

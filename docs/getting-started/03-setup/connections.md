@@ -31,6 +31,7 @@ Setting up a connection involves three main steps:
         Eg: `https://arr.mydomain.com/radarr`.
         
     - **API Key:** Your API key from Radarr/Sonarr (found in its `Settings > General` section).
+
 - Once these details are filled in, the `Test` button will become available, click the button.
 - Trailarr will attempt to connect to the *Arr API. Upon a successful connection:
     - The Arr API version will be displayed.
@@ -238,4 +239,4 @@ You have now successfully added an *Arr connection! Trailarr will begin to sync 
 
 You can repeat the same steps for other `Radarr`/`Sonarr` connections you want `Trailarr` to monitor!
 
-We are almost done with the seup, just read some information and tips we put together for you in [Next Steps](../04-next-steps.md).
+We are almost done with the setup, just read some information and tips we put together for you in [Next Steps](../04-next-steps.md).
