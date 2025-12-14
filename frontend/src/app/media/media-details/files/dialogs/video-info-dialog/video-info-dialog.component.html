@@ -1,0 +1,126 @@
+<dialog #videoInfoDialog (click)="closeDialog()">
+  @if (videoInfoLoading()) {
+    <app-load-indicator class="center" />
+  } @else {
+    <div class="info-dialog">
+      <h1>Video Properties</h1>
+      <div class="info-container" (click)="$event.stopPropagation()">
+        @if (videoInfo(); as info) {
+          <section open>
+            <h2>File Info</h2>
+            <hr />
+            <div class="info-content">
+              <span>File Name</span>
+              <code>{{ info.name }}</code>
+            </div>
+            <div class="info-content">
+              <span>File Path</span>
+              <code>{{ info.file_path }}</code>
+            </div>
+            <div class="info-content">
+              <span>File Size</span>
+              <code>{{ info.size || 0 | fileSize }}</code>
+            </div>
+            <div class="info-content">
+              <span>Created</span>
+              <code>{{ info.created_at | date }}</code>
+            </div>
+            <div class="info-content">
+              <span>Updated</span>
+              <code>{{ info.updated_at | date }}</code>
+            </div>
+            <div class="info-content">
+              <span>Format</span>
+              <code>{{ info.format_name }}</code>
+            </div>
+            <div class="info-content">
+              <span>Bitrate</span>
+              <code>{{ info.bitrate }}</code>
+            </div>
+            <div class="info-content">
+              <span>Duration</span>
+              <code>{{ info.duration }}</code>
+            </div>
+            @if (audioTracks().length > 0) {
+              <div class="info-content">
+                <span>Audio Tracks</span>
+                <code>{{ audioTracks() }}</code>
+              </div>
+            }
+            @if (subtitleTracks().length > 0) {
+              <div class="info-content">
+                <span>Subtitles</span>
+                <code>{{ subtitleTracks() }}</code>
+              </div>
+            }
+          </section>
+          @if (info.youtube_channel || info.youtube_id) {
+            <section>
+              <h2>YouTube Info</h2>
+              <hr />
+              @if (info.youtube_channel) {
+                <div class="info-content">
+                  <span>Channel ID</span>
+                  <code>{{ info.youtube_channel }}</code>
+                </div>
+              }
+              @if (info.youtube_id) {
+                <div class="info-content">
+                  <span>Video ID</span>
+                  <code
+                    ><a [href]="'https://www.youtube.com/watch?v=' + info.youtube_id" target="_blank" rel="noopener">{{
+                      info.youtube_id
+                    }}</a></code
+                  >
+                </div>
+              }
+            </section>
+          }
+          @for (stream of info.streams; track stream.index) {
+            <section>
+              <h2>Track {{ stream.index }}: {{ stream.codec_type | titlecase }}</h2>
+              <hr />
+              @if (stream.codec_name) {
+                <div class="info-content">
+                  <span>Codec</span>
+                  <code>{{ stream.codec_name }}</code>
+                </div>
+              }
+              @if (stream.language) {
+                <div class="info-content">
+                  <span>Language</span>
+                  <code>{{ stream.language }}</code>
+                </div>
+              }
+              @if (stream.coded_height && stream.coded_width) {
+                <div class="info-content">
+                  <span>Display Dimensions</span>
+                  <code>{{ stream.coded_width }}x{{ stream.coded_height }}</code>
+                </div>
+              }
+              @if (stream.audio_channels) {
+                <div class="info-content">
+                  <span>Audio Channels</span>
+                  <code>{{ stream.audio_channels }}</code>
+                </div>
+              }
+              @if (stream.sample_rate) {
+                <div class="info-content">
+                  <span>Audio Frequency</span>
+                  <code>{{ stream.sample_rate }}</code>
+                </div>
+              }
+            </section>
+          }
+        } @else {
+          <h2>Video Info</h2>
+          <hr />
+          <code class="video-info"> Unable to fetch video info. </code>
+        }
+      </div>
+      <div class="buttons-row">
+        <button class="tertiary" (click)="closeDialog()">Close</button>
+      </div>
+    </div>
+  }
+</dialog>

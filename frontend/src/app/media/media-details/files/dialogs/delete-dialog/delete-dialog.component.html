@@ -1,0 +1,11 @@
+<dialog #deleteDialog (click)="closeDialog()">
+  <div class="delete-dialog" (click)="$event.stopPropagation()">
+    <h3>Confirm Delete</h3>
+    <code>{{ fileName() }}</code>
+    <p>Are you sure you want to delete this file?</p>
+    <div class="buttons-row">
+      <button class="danger" (click)="deleteFile()">Confirm</button>
+      <button class="tertiary" (click)="closeDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,35 @@
+.delete-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1.5rem;
+  max-width: 75vw;
+  max-height: 75vh;
+
+  @media (width < 765px) {
+    max-width: 90vw;
+    margin: 1rem;
+  }
+}
+
+.delete-dialog {
+  background-color: var(--color-on-error-container);
+  color: var(--color-on-error);
+  padding: 0 1rem 1rem;
+  margin: 0;
+  gap: 1rem;
+}
+
+#deleteDialog::backdrop {
+  background-image: linear-gradient(0deg, grey, #690005);
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 1rem;
+  width: 70%;
+}

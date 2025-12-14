@@ -1,0 +1,17 @@
+<dialog #renameDialog (click)="closeDialog()">
+  <div class="rename-dialog" (click)="$event.stopPropagation()">
+    <h2>Rename</h2>
+    <input
+      id="rename-file"
+      class="rename-input"
+      type="text"
+      [ngModel]="renamedFileName()"
+      (ngModelChange)="renamedFileName.set($event)"
+      placeholder="New Name"
+    />
+    <div class="buttons-row">
+      <button class="primary" (click)="renameFile()">Rename</button>
+      <button class="tertiary" (click)="closeDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>
