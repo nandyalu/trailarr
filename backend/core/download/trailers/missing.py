@@ -6,6 +6,7 @@ from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.filters import matches_filters
 from core.download import trailer as trailer_downloader
+from core.download.trailers import utils
 from core.files_handler import FilesHandler
 from exceptions import DownloadFailedError
 
@@ -132,12 +133,22 @@ async def download_missing_trailers() -> None:
         enabled_profiles = None
 
         # Process the found media item
-        downloads, skips = await _process_single_media_item(
-            media_to_process, matching_profiles_for_media
-        )
-        processed_media_ids.add(media_to_process.id)
-        successful_downloads += downloads
-        skipped_items += skips
+        # Ensure exceptions are caught to continue processing other items
+        try:
+            downloads, skips = await _process_single_media_item(
+                media_to_process,
+                matching_profiles_for_media,
+                successful_downloads + skipped_items,
+            )
+            successful_downloads += downloads
+            skipped_items += skips
+        except Exception as e:
+            logger.exception(
+                "Unexpected error processing media"
+                f" '{media_to_process.title}' [{media_to_process.id}]: {e}"
+            )
+        finally:
+            processed_media_ids.add(media_to_process.id)
 
     logger.info(
         "Finished downloading missing trailers. Processed:"
@@ -147,7 +158,9 @@ async def download_missing_trailers() -> None:
 
 
 async def _process_single_media_item(
-    media: MediaRead, profiles: list[TrailerProfileRead]
+    media: MediaRead,
+    profiles: list[TrailerProfileRead],
+    total_processed: int = 0,
 ) -> tuple[int, int]:
     """Process a single media item and download all matching trailers."""
     logger.info(
@@ -160,6 +173,7 @@ async def _process_single_media_item(
         check_folder = profile.custom_folder == "{media_folder}"
         if not _is_valid_media(media, check_folder):
             return successful_downloads, skipped_items + 1
+
         _profile_name = profile.customfilter.filter_name
         try:
             logger.info(
@@ -175,15 +189,18 @@ async def _process_single_media_item(
                     logger.info(
                         f"Stopping monitoring for {media.title} after"
                         f" successful download with profile: {_profile_name}"
-                        f" {_profile_name}"
                     )
                     break
-        except DownloadFailedError:
+        except (DownloadFailedError, Exception):
             logger.warning(
                 f"Failed to download trailer for {media.title} with profile:"
                 f" {_profile_name}. Continuing to next profile."
             )
             skipped_items += 1
+        finally:
+            total_processed += 1
+            await utils.sleep_between_downloads(total_processed, logger)
+
     _profile_count = len(profiles)
     _msg = f"Completed processing for media '{media.title}' [{media.id}]."
     _msg += f" Downloads: {successful_downloads}/{_profile_count}"

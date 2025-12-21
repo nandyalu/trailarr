@@ -1,9 +1,8 @@
-import asyncio
-from random import randint
 from app_logger import ModuleLogger
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailer import download_trailer
+from core.download.trailers import utils
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailerDownloadTasks")
@@ -47,22 +46,5 @@ async def batch_download_task(
         # Sleep for a random time if more downloads are pending
         if downloading_count >= download_count:
             return
-        _sleep_for = randint(0, 60)  # Random sleep between 0 and 60 seconds
-        # Increase the sleep time as more trailers are being downloaded
-        if downloading_count < 10:
-            _sleep_for += 120
-        elif downloading_count < 50:
-            _sleep_for += 240
-        elif downloading_count < 100:
-            _sleep_for += 360
-        elif downloading_count < 200:
-            _sleep_for += 420
-        elif downloading_count < 500:
-            _sleep_for += 540
-        elif downloading_count < 1000:
-            _sleep_for += 600
-        logger.info(
-            f"Sleeping for {_sleep_for} seconds before next download..."
-        )
-        await asyncio.sleep(_sleep_for)
+        await utils.sleep_between_downloads(downloading_count, logger)
     return None
