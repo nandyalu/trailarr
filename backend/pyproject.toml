@@ -9,7 +9,7 @@ dependencies = [
     "aiohttp==3.13.2",
     "aiosqlite==0.22.0",
     "alembic==1.17.2",
-    "apscheduler==3.11.1",
+    "apscheduler==3.11.2",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.127.0",
