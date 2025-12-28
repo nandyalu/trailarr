@@ -1,9 +1,11 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ConnectionsComponent renders 1`] = `
-<mock-render>
-  <app-connections>
-    <router-outlet />
-  </app-connections>
-</mock-render>
+exports[`ConnectionsComponent > renders 1`] = `
+<div
+  id="root1"
+  ng-version="21.0.5"
+>
+  <router-outlet />
+  <!--container-->
+</div>
 `;

@@ -1,13 +1,14 @@
 import {TestBed} from '@angular/core/testing';
-import {MockBuilder} from 'ng-mocks';
 import {DurationConvertPipe} from './duration-pipe';
 
 describe(`DurationConvertPipe`, () => {
   let instance: DurationConvertPipe;
 
-  beforeEach(() => MockBuilder().provide(DurationConvertPipe));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      providers: [DurationConvertPipe],
+    }).compileComponents();
 
-  beforeEach(() => {
     instance = TestBed.inject(DurationConvertPipe);
   });
 

@@ -1,17 +1,19 @@
-import {MockBuilder, MockedComponentFixture, MockRender} from 'ng-mocks';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LoadIndicatorComponent} from './load-indicator.component';
 
 describe('LoadIndicatorComponent', () => {
-  let fixture: MockedComponentFixture<LoadIndicatorComponent>;
+  let fixture: ComponentFixture<LoadIndicatorComponent>;
 
-  beforeEach(() => MockBuilder(LoadIndicatorComponent));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoadIndicatorComponent],
+    }).compileComponents();
 
-  beforeEach(() => {
-    fixture = MockRender(LoadIndicatorComponent);
+    fixture = TestBed.createComponent(LoadIndicatorComponent);
     fixture.detectChanges();
   });
 
   it('has instance', () => expect(fixture.componentInstance).toBeTruthy());
 
-  it('renders', () => expect(fixture).toMatchSnapshot());
+  it('renders', () => expect(fixture.nativeElement).toMatchSnapshot());
 });

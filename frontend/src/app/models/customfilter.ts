@@ -91,6 +91,8 @@ export const stringFilterKeys: (keyof Media)[] = [
   'youtube_trailer_id',
 ];
 
+export const allFilterKeys: (keyof Media)[] = [...booleanFilterKeys, ...dateFilterKeys, ...numberFilterKeys, ...stringFilterKeys].sort();
+
 export interface Filter {
   id: number;
   filter_by: keyof Media;

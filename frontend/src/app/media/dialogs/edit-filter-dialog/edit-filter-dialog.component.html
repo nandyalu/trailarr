@@ -1,0 +1,92 @@
+<dialog #editCustomFilterDialog>
+  <form (click)="$event.stopPropagation()" (submit)="formSubmit($event)">
+    <help-link-icon class="top-right" [link]="helpLink" />
+    <!-- View Name -->
+    <div class="form-group">
+      <label for="filter_name">Label</label>
+      <input id="filter_name" [field]="customFilterForm.filter_name" />
+    </div>
+
+    <!-- Filters Array -->
+    <div class="filters-container">
+      <!-- <h3>Filters</h3> -->
+      @for (filter of customFilterForm.filters; let i = $index; track i) {
+        <div class="filter-group">
+          <!-- Filter By -->
+          <select id="filter_by_{{ i }}" [field]="filter.filter_by" (change)="onFilterByChange(filter)">
+            <option value="" disabled>Select Filter By</option>
+            @for (filter of filterKeys; track filter) {
+              <option [value]="filter">
+                {{ filter | displayTitle }}
+              </option>
+            }
+          </select>
+
+          <!-- Filter Condition -->
+          <select id="filter_condition_{{ i }}" [field]="filter.filter_condition" (change)="onFilterConditionChange(filter)">
+            <option value="" disabled>Select Condition</option>
+            @for (condition of getFilterConditions(filter.filter_by().value()); track condition) {
+              <option [value]="condition">
+                {{ condition | displayTitle }}
+              </option>
+            }
+          </select>
+
+          <!-- Filter Value -->
+          @switch (getFilterValueType(filter.filter_by().value(), filter.filter_condition().value())) {
+            @case ('string') {
+              <input id="filter_value_{{ i }}" type="text" [field]="filter.filter_value" />
+            }
+            @case ('number') {
+              <input id="filter_value_{{ i }}" type="number" [field]="filter.filter_value" />
+            }
+            @case ('number_days') {
+              <input id="filter_value_{{ i }}" type="number" placeholder="days" [field]="filter.filter_value" />
+              <span> days</span>
+            }
+            @case ('date') {
+              <input id="filter_value_{{ i }}" type="date" [field]="filter.filter_value" />
+            }
+            @case ('boolean') {
+              <select id="filter_value_{{ i }}" [field]="filter.filter_value">
+                <option value="" disabled>Select Value</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
+            }
+            @case ('none') {
+              <!-- No input needed for conditions that don't require a value -->
+              <span> </span>
+            }
+          }
+
+          <!-- Remove Filter Button -->
+          <button type="button" class="danger icononly-button" (click)="removeFilter(i)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M253-99q-38.21 0-65.11-26.6Q161-152.2 161-190v-552h-58v-91h228v-47h297v47h228v91h-58v552q0 37.18-27.21 64.09Q743.59-99 706-99H253Zm453-643H253v552h453v-552ZM357-268h74v-398h-74v398Zm173 0h75v-398h-75v398ZM253-742v552-552Z"
+              />
+            </svg>
+          </button>
+        </div>
+      }
+      <!-- Button to add a new filter -->
+      <button type="button" class="secondary" (click)="addFilter()">Add Filter</button>
+    </div>
+    <div class="buttons-row">
+      <!-- Submit button -->
+      <button type="submit" class="primary" [disabled]="!customFilterForm().dirty() || customFilterForm().invalid() || customFilterForm().submitting()">
+        {{ customFilterForm().submitting() ? 'Saving...' : (customFilter() ? 'Update' : 'Create') }}
+      </button>
+
+      <!-- Button to Cancel Dialog -->
+      <button type="button" class="danger" (click)="closeDialog(-1)">Cancel</button>
+    </div>
+  </form>
+  @if (submitResult().message) {
+    <p class="submit-result {{submitResult().type}}">{{ submitResult().message }}</p>
+    @if (submitResult().type === 'success') {
+      <div class="close-progress"></div>
+    }
+  }
+</dialog>

@@ -1,13 +1,13 @@
 import {ChangeDetectionStrategy, Component, inject, signal, ViewContainerRef} from '@angular/core';
 import {Router, RouterLink} from '@angular/router';
-import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
+import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component';
 import {ProfileService} from 'src/app/services/profile.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
 
 @Component({
   selector: 'app-show-profiles',
-  imports: [LoadIndicatorComponent, RouterLink],
+  imports: [EditFilterDialogComponent, LoadIndicatorComponent, RouterLink],
   templateUrl: './show-profiles.component.html',
   styleUrl: './show-profiles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,30 +15,31 @@ import {RouteAdd, RouteEdit, RouteProfiles, RouteSettings} from 'src/routing';
 export class ShowProfilesComponent {
   protected readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
-  private viewContainerRef = inject(ViewContainerRef);
-
-  protected readonly isLoading = signal(true);
 
   protected readonly RouteAdd = RouteAdd;
   protected readonly RouteProfiles = RouteProfiles;
   protected readonly RouteEdit = RouteEdit;
   protected readonly RouteSettings = RouteSettings;
 
-  openFilterDialog(): void {
+  /** `protected` `readonly` Signal to toggle the Add/Edit Filter Dialog */
+  protected readonly editFilterDialogOpen = signal(false);
+
+  protected openFilterDialog(): void {
     // Open the dialog for adding or editing a custom filter
-    const dialogRef = this.viewContainerRef.createComponent(AddCustomFilterDialogComponent);
-    dialogRef.setInput('customFilter', null); // Set to null to Create a new one
-    dialogRef.setInput('filterType', 'TRAILER');
-    dialogRef.instance.dialogClosed.subscribe((emitValue: number) => {
-      if (emitValue >= 0) {
-        // Reload the filters and open profile edit page
-        this.profileService.allProfiles.reload();
-        this.router.navigate(['/settings/profiles', emitValue]);
-      }
-      // Else, Filter dialog closed without submission, do nothing
-      setTimeout(() => {
-        dialogRef.destroy(); // Destroy the dialog component after use
-      }, 3000);
-    });
+    this.editFilterDialogOpen.set(true);
+  }
+
+  /**
+   * Handles the closure of the edit filter dialog.
+   * Closes the dialog, reloads the profiles, and routes to the created profile.
+   * @protected
+   * @returns {void}
+   */
+  protected onFilterDialogClosed(id: number): void {
+    this.editFilterDialogOpen.set(false);
+    if (id >= 0) {
+      this.profileService.allProfiles.reload();
+      this.router.navigate(['/settings/profiles', id]);
+    }
   }
 }

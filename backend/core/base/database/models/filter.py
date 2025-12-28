@@ -41,27 +41,28 @@ class FilterCondition(Enum):
 
 
 BOOL_COLS = [
+    "arr_monitored",
     "is_movie",
     "media_exists",
-    "trailer_exists",
     "monitor",
-    "arr_monitored",
+    "trailer_exists",
 ]
-INT_COLS = ["id", "connection_id", "arr_id", "year", "runtime"]
+INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "year"]
 STR_COLS = [
-    "title",
     "clean_title",
-    "language",
-    "studio",
-    "media_filename",
-    "youtube_trailer_id",
     "folder_path",
     "imdb_id",
-    "txdb_id",
-    "title_slug",
+    "language",
+    "media_filename",
+    "overview",
     "status",
+    "studio",
+    "title",
+    "title_slug",
+    "txdb_id",
+    "youtube_trailer_id",
 ]
-DATE_COLS = ["added_at", "updated_at", "downloaded_at"]
+DATE_COLS = ["added_at", "downloaded_at", "updated_at"]
 
 ALL_COLS = BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS
 

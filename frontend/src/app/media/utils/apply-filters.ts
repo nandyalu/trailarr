@@ -182,6 +182,21 @@ export function applySelectedFilter(allMedia: Media[], selectedFilter: string, c
 }
 
 /**
+ * Gets the most recent download date for a media item.
+ * Only considers downloads where the file still exists.
+ *
+ * @param media - The media object containing download information
+ * @returns The most recent download date, or null if no downloads with existing files are found
+ */
+function getMediaRecentDownloadDate(media: Media): Date | null {
+  const downloadDates = media.downloads
+    .filter((d) => d.file_exists)
+    .map((d) => new Date(d.added_at))
+    .sort((d1, d2) => d2.getTime() - d1.getTime());
+  return downloadDates.length > 0 ? downloadDates[0] : null;
+}
+
+/**
  * Sorts the provided media list in place based on the selected property and sort direction.
  *
  * @param mediaList - The array of `Media` objects to be sorted. The sorting is performed in place.
@@ -196,6 +211,11 @@ export function applySelectedSort(mediaList: Media[], selectedSort: keyof Media,
   mediaList.sort((a, b) => {
     let aVal = a[selectedSort];
     let bVal = b[selectedSort];
+    // Special handling for 'downloaded_at' using the downloads array
+    if (selectedSort === 'downloaded_at') {
+      aVal = getMediaRecentDownloadDate(a) ?? 0;
+      bVal = getMediaRecentDownloadDate(b) ?? 0;
+    }
     if (aVal instanceof Date && bVal instanceof Date) {
       if (sortAscending) {
         return aVal.getTime() - bVal.getTime();
@@ -209,8 +229,8 @@ export function applySelectedSort(mediaList: Media[], selectedSort: keyof Media,
       return bVal - aVal;
     }
     if (sortAscending) {
-      return a[selectedSort].toString().localeCompare(b[selectedSort].toString());
+      return aVal.toString().localeCompare(bVal.toString());
     }
-    return b[selectedSort].toString().localeCompare(a[selectedSort].toString());
+    return bVal.toString().localeCompare(aVal.toString());
   });
 }

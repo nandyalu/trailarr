@@ -1,14 +1,13 @@
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, viewChild, ViewContainerRef} from '@angular/core';
-import {CustomFilter} from 'src/app/models/customfilter';
+import {ChangeDetectionStrategy, Component, computed, effect, inject, signal} from '@angular/core';
 import {Media} from 'src/app/models/media';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {MediaService} from 'src/app/services/media.service';
-import {AddCustomFilterDialogComponent} from '../../add-filter-dialog/add-filter-dialog.component';
 import {DisplayTitlePipe} from '../../pipes/display-title.pipe';
+import {ShowFiltersDialogComponent} from './dialogs/show-filters-dialog/show-filters-dialog.component';
 
 @Component({
   selector: 'app-normal-header',
-  imports: [DisplayTitlePipe],
+  imports: [DisplayTitlePipe, ShowFiltersDialogComponent],
   templateUrl: './normal-header.component.html',
   styleUrl: './normal-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,13 +15,12 @@ import {DisplayTitlePipe} from '../../pipes/display-title.pipe';
 export class NormalHeaderComponent {
   protected readonly customfilterService = inject(CustomfilterService);
   protected readonly mediaService = inject(MediaService);
-  private viewContainerRef = inject(ViewContainerRef);
 
   // Constants from Media Service
   protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
 
   // Constants/Variables in this Component
-  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
+  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at', 'downloaded_at'];
   filterOptions = signal<string[]>(['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored']);
 
   // Signals from Media Service
@@ -38,9 +36,10 @@ export class NormalHeaderComponent {
   protected readonly customFilters = this.customfilterService.viewFilters;
 
   // Signals in this Component
-  allFilters = computed(() => {
+  protected readonly allFilters = computed(() => {
     return this.filterOptions().concat(this.customFilters().map((f) => f.filter_name));
   });
+  protected readonly showFiltersDialogOpen = signal(false);
 
   // Effect to retrieve sort and filter options when moviesOnly changes
   effect1 = effect(() => {
@@ -131,41 +130,11 @@ export class NormalHeaderComponent {
     return;
   }
 
-  readonly showFiltersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('showFiltersDialog');
-
-  openFilterDialog(): void {
-    if (this.customFilters().length === 0) {
-      this.openFilterEditDialog(null);
-    } else {
-      this.showFiltersDialog().nativeElement.showModal();
-    }
-    // this.isCustomFilterDialogOpen = true;
+  openShowFiltersDialog(): void {
+    this.showFiltersDialogOpen.set(true);
   }
 
-  openFilterEditDialog(filter: CustomFilter | null): void {
-    this.showFiltersDialog().nativeElement.close();
-    // Open the dialog for adding or editing a custom filter
-    const dialogRef = this.viewContainerRef.createComponent(AddCustomFilterDialogComponent);
-    dialogRef.setInput('customFilter', filter);
-    dialogRef.setInput('filterType', this.moviesOnly() == null ? 'HOME' : this.moviesOnly() ? 'MOVIES' : 'SERIES');
-    dialogRef.instance.dialogClosed.subscribe(() => {
-      // Filter dialog closed, reload filters
-      this.customfilterService.reloadFilters();
-      this.retrieveSortNFilterOptions(this.moviesOnly());
-      setTimeout(() => {
-        dialogRef.destroy(); // Destroy the dialog component after use
-      }, 3000);
-    });
-  }
-
-  deleteFilter(filter_id: number): void {
-    this.customfilterService.delete(filter_id).subscribe(() => {
-      this.customfilterService.reloadFilters();
-    });
-  }
-
-  closeFilterDialog(): void {
-    this.showFiltersDialog().nativeElement.close();
-    this.retrieveSortNFilterOptions(this.moviesOnly()); // Retrieve custom filters
+  onShowFiltersDialogClosed(): void {
+    this.showFiltersDialogOpen.set(false);
   }
 }
