@@ -6,6 +6,8 @@ import {ApiModule} from 'generated-sources/openapi';
 import {TimeagoModule} from 'ngx-timeago';
 import {routes} from './app.routes';
 import {GlobalErrorHandler} from './error-handler';
+import {provideSignalFormsConfig} from '@angular/forms/signals';
+import {NG_STATUS_CLASSES} from '@angular/forms/signals/compat';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +18,7 @@ export const appConfig: ApplicationConfig = {
       // withViewTransitions(),
       withInMemoryScrolling({scrollPositionRestoration: 'top', anchorScrolling: 'enabled'}),
     ),
+    provideSignalFormsConfig({classes: NG_STATUS_CLASSES}),
     {provide: ErrorHandler, useClass: GlobalErrorHandler},
     provideHttpClient(),
     // withInterceptors([authInterceptor]),
