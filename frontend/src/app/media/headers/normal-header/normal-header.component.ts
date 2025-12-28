@@ -22,7 +22,7 @@ export class NormalHeaderComponent {
   protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
 
   // Constants/Variables in this Component
-  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at'];
+  sortOptions: (keyof Media)[] = ['title', 'year', 'added_at', 'updated_at', 'downloaded_at'];
   filterOptions = signal<string[]>(['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored']);
 
   // Signals from Media Service
