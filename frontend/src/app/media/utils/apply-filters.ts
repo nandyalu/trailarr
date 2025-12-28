@@ -184,7 +184,7 @@ export function applySelectedFilter(allMedia: Media[], selectedFilter: string, c
 /**
  * Gets the most recent download date for a media item.
  * Only considers downloads where the file still exists.
- * 
+ *
  * @param media - The media object containing download information
  * @returns The most recent download date, or null if no downloads with existing files are found
  */
@@ -229,8 +229,8 @@ export function applySelectedSort(mediaList: Media[], selectedSort: keyof Media,
       return bVal - aVal;
     }
     if (sortAscending) {
-      return a[selectedSort].toString().localeCompare(b[selectedSort].toString());
+      return aVal.toString().localeCompare(bVal.toString());
     }
-    return b[selectedSort].toString().localeCompare(a[selectedSort].toString());
+    return bVal.toString().localeCompare(aVal.toString());
   });
 }
