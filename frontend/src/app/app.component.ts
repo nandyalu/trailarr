@@ -7,10 +7,11 @@ import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
 import {SidenavComponent} from './nav/sidenav/sidenav.component';
 import {TopnavComponent} from './nav/topnav/topnav.component';
 import {MessageData, WebsocketService} from './services/websocket.service';
+import {LoadIndicatorComponent} from './shared/load-indicator';
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, RouterOutlet, TimeRemainingPipe, TopnavComponent, SidenavComponent],
+  imports: [AsyncPipe, LoadIndicatorComponent, RouterOutlet, TimeRemainingPipe, TopnavComponent, SidenavComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
