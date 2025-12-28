@@ -1,13 +1,14 @@
 # --------------------------------------------------------------------------- #
 #                      Stage 1 - Frontend Build (Node.js)                     #
 # --------------------------------------------------------------------------- #
-FROM node:22-slim AS frontend-build
+FROM node:24-slim AS frontend-build
 
 WORKDIR /app/frontend
 
 # Copy package files for dependency installation
 COPY ./frontend/package*.json ./
 COPY ./frontend/contract ./contract
+COPY ./frontend/ng-openapi-gen.json ./
 
 # Install dependencies
 RUN npm ci
