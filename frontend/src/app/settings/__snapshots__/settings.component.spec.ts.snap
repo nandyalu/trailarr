@@ -1,45 +1,61 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SettingsComponent renders 1`] = `
-<mock-render>
-  <app-settings>
-    <div
-      class="settingsnav"
+exports[`SettingsComponent > renders 1`] = `
+<div
+  _nghost-a-c3519004422=""
+  id="root1"
+  ng-version="21.0.5"
+>
+  <div
+    _ngcontent-a-c3519004422=""
+    class="settingsnav"
+  >
+    <a
+      _ngcontent-a-c3519004422=""
+      class="setnav-btn"
+      href="/general"
+      routerlinkactive="active"
     >
-      <a
-        class="setnav-btn"
-        ng-reflect-router-link="connections"
-        ng-reflect-router-link-active="active"
-        routerlinkactive="active"
-      >
-        Connections
-      </a>
-      <a
-        class="setnav-btn"
-        ng-reflect-router-link="trailer"
-        ng-reflect-router-link-active="active"
-        routerlinkactive="active"
-      >
-        Trailer
-      </a>
-      <a
-        class="setnav-btn"
-        ng-reflect-router-link="about"
-        ng-reflect-router-link-active="active"
-        routerlinkactive="active"
-      >
-        About
-      </a>
-    </div>
-    <div
-      class="settings-container"
+      General
+    </a>
+    <a
+      _ngcontent-a-c3519004422=""
+      class="setnav-btn"
+      href="/connections"
+      routerlinkactive="active"
     >
-      <div
-        class="settings-content"
-      >
-        <router-outlet />
-      </div>
+      Connections
+    </a>
+    <a
+      _ngcontent-a-c3519004422=""
+      class="setnav-btn"
+      href="/profiles"
+      routerlinkactive="active"
+    >
+      Profiles
+    </a>
+    <a
+      _ngcontent-a-c3519004422=""
+      class="setnav-btn"
+      href="/about"
+      routerlinkactive="active"
+    >
+      About
+    </a>
+  </div>
+  <div
+    _ngcontent-a-c3519004422=""
+    class="settings-container"
+  >
+    <div
+      _ngcontent-a-c3519004422=""
+      class="settings-content"
+    >
+      <router-outlet
+        _ngcontent-a-c3519004422=""
+      />
+      <!--container-->
     </div>
-  </app-settings>
-</mock-render>
+  </div>
+</div>
 `;

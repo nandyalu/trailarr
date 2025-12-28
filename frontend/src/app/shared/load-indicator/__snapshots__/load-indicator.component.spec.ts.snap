@@ -1,22 +1,22 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`LoadIndicatorComponent renders 1`] = `
-<mock-render>
-  <app-load-indicator
-    class="loading-wave"
-  >
-    <div
-      class="loading-bar"
-    />
-    <div
-      class="loading-bar"
-    />
-    <div
-      class="loading-bar"
-    />
-    <div
-      class="loading-bar"
-    />
-  </app-load-indicator>
-</mock-render>
+exports[`LoadIndicatorComponent > renders 1`] = `
+<div
+  class="loading-wave"
+  id="root1"
+  ng-version="21.0.5"
+>
+  <div
+    class="loading-bar"
+  />
+  <div
+    class="loading-bar"
+  />
+  <div
+    class="loading-bar"
+  />
+  <div
+    class="loading-bar"
+  />
+</div>
 `;

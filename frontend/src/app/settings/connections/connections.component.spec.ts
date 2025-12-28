@@ -1,17 +1,19 @@
-import {MockBuilder, MockedComponentFixture, MockRender} from 'ng-mocks';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {ConnectionsComponent} from './connections.component';
 
 describe('ConnectionsComponent', () => {
-  let fixture: MockedComponentFixture<ConnectionsComponent>;
+  let fixture: ComponentFixture<ConnectionsComponent>;
 
-  beforeEach(() => MockBuilder(ConnectionsComponent));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ConnectionsComponent],
+    }).compileComponents();
 
-  beforeEach(() => {
-    fixture = MockRender(ConnectionsComponent);
+    fixture = TestBed.createComponent(ConnectionsComponent);
     fixture.detectChanges();
   });
 
   it('has instance', () => expect(fixture.componentInstance).toBeTruthy());
 
-  it('renders', () => expect(fixture).toMatchSnapshot());
+  it('renders', () => expect(fixture.nativeElement).toMatchSnapshot());
 });

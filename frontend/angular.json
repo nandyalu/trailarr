@@ -76,14 +76,10 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
-            "assets": ["src/assets"],
-            "styles": ["src/styles/styles.scss"],
-            "inlineStyleLanguage": "scss",
-            "scripts": []
+            "buildTarget": "frontend:build:development"
           }
         }
       }
