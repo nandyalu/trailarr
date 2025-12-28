@@ -406,6 +406,11 @@
   </button>
 </div>
 
+<!-- Add/Edit Custom Filter Dialog -->
+@if (editFilterDialogOpen()) {
+  <edit-filter-dialog [filterType]="'TRAILER'" [customFilter]="customFilter()" (dialogClosed)="onFilterDialogClosed($event)" />
+}
+
 <dialog #deleteProfileDialog class="error" (click)="closeDeleteDialog()">
   <div class="dialog-content" (click)="$event.stopPropagation()">
     <h2>Delete Profile</h2>

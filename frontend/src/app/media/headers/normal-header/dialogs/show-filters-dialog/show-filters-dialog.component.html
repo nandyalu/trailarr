@@ -1,0 +1,36 @@
+<!-- Dialog to show List of Custom Filters -->
+<dialog #showFiltersDialog (click)="closeDialog(true)">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <div class="dialog-title">Custom Filters</div>
+    @for (filter of viewCustomFilters(); track filter.filter_name) {
+      <div class="customfilter-option">
+        <span (click)="openFilterEditDialog(filter)" title="Edit Custom Filter">
+          {{ filter.filter_name }}
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 -960 960 960"
+          class="icon delete-icon"
+          aria-label="Delete Custom Filter"
+          (click)="deleteFilter(filter.id)"
+          title="Delete Custom Filter"
+        >
+          <path
+            d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+          />
+        </svg>
+      </div>
+    }
+  </div>
+  <div class="buttons-row">
+    <!-- Add New Custom Filter button -->
+    <button class="primary" (click)="openFilterEditDialog(null)">Add New</button>
+    <!-- Button to Cancel Dialog -->
+    <button class="danger" (click)="closeDialog(true)">Cancel</button>
+  </div>
+</dialog>
+
+<!-- Add/Edit Custom Filter Dialog -->
+@if (editFilterDialogOpen()) {
+  <edit-filter-dialog [filterType]="filterType()" [customFilter]="filterToEdit()" (dialogClosed)="onEditDialogClosed()" />
+}

@@ -8,23 +8,23 @@ import {
   input,
   signal,
   viewChild,
-  ViewContainerRef,
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router} from '@angular/router';
 import {TrailerProfileCreate} from 'generated-sources/openapi';
-import {AddCustomFilterDialogComponent} from 'src/app/media/add-filter-dialog/add-filter-dialog.component';
-import {CustomFilterCreate} from 'src/app/models/customfilter';
+import {CustomFilter} from 'src/app/models/customfilter';
 import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {OptionsSettingComponent} from '../settings/options-setting/options-setting.component';
 import {RangeSettingComponent} from '../settings/range-setting/range-setting.component';
 import {TextSettingComponent} from '../settings/text-setting/text-setting.component';
+import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component';
 
 @Component({
   selector: 'app-edit-profile',
   imports: [
+    EditFilterDialogComponent,
     FormsModule,
     HelpLinkIconComponent,
     LoadIndicatorComponent,
@@ -39,7 +39,6 @@ import {TextSettingComponent} from '../settings/text-setting/text-setting.compon
 export class EditProfileComponent {
   protected profileService = inject(ProfileService);
   private readonly router = inject(Router);
-  private readonly viewContainerRef = inject(ViewContainerRef);
 
   profileId = input(0, {
     transform: (value: any) => {
@@ -50,6 +49,9 @@ export class EditProfileComponent {
   protected readonly profile = this.profileService.selectedProfile;
   protected readonly newProfileName = signal<string>('');
   protected readonly profileJSON = signal<string>('{}');
+  /** `protected` `readonly` Signal to toggle the Add/Edit Filter Dialog */
+  protected readonly editFilterDialogOpen = signal(false);
+
   protected readonly minLimitMax = computed(() => {
     let _profile = this.profile();
     if (_profile && _profile.max_duration) {
@@ -237,15 +239,15 @@ export class EditProfileComponent {
 
   isLoading: boolean = false;
   emptyCustomFilter = {
-    id: null,
+    id: -1,
     filter_name: '',
     filter_type: 'TRAILER',
     filters: [],
-  } as CustomFilterCreate;
+  } as CustomFilter;
   customFilter = computed(() => {
     let _profile = this.profile();
     if (_profile && _profile.customfilter) {
-      return _profile.customfilter as unknown as CustomFilterCreate;
+      return _profile.customfilter as unknown as CustomFilter;
     }
     return this.emptyCustomFilter;
   });
@@ -267,22 +269,22 @@ export class EditProfileComponent {
     }
   });
 
-  openFilterDialog(): void {
-    // Open the dialog for adding or editing a custom filter
-    const dialogRef = this.viewContainerRef.createComponent(AddCustomFilterDialogComponent);
-    dialogRef.setInput('customFilter', this.customFilter());
-    dialogRef.setInput('filterType', 'TRAILER');
-    dialogRef.instance.dialogClosed.subscribe((emitValue: number) => {
-      if (emitValue !== -1) {
-        // Reload the filters
-        // this.loadCustomFilters();
-        this.profileService.allProfiles.reload();
-      }
-      // Else, Filter dialog closed without submission, do nothing
-      setTimeout(() => {
-        dialogRef.destroy(); // Destroy the dialog component after use
-      }, 3000);
-    });
+  protected openFilterDialog(): void {
+    // Open the dialog for adding or editing the filters
+    this.editFilterDialogOpen.set(true);
+  }
+
+  /**
+   * Handles the closure of the edit filter dialog.
+   * Closes the dialog, reloads the profiles, and routes to the created profile.
+   * @protected
+   * @returns {void}
+   */
+  protected onFilterDialogClosed(id: number): void {
+    this.editFilterDialogOpen.set(false);
+    if (id != -1) {
+      this.profileService.allProfiles.reload();
+    }
   }
 
   private readonly deleteDialog = viewChild.required<ElementRef<HTMLDialogElement>>('deleteProfileDialog');

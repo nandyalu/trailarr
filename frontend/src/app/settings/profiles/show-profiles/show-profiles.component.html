@@ -63,3 +63,8 @@
     </div>
   }
 }
+
+<!-- Add/Edit Custom Filter Dialog -->
+@if (editFilterDialogOpen()) {
+  <edit-filter-dialog [filterType]="'TRAILER'" [customFilter]="null" (dialogClosed)="onFilterDialogClosed($event)" />
+}
