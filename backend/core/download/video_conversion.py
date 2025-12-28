@@ -340,7 +340,11 @@ def _get_audio_options(
                 " converting"
             )
             return _COPY_COMMAND
-    # Case 3: Apply audio volume level filter if enabled
+        # Case 3: No volume change, convert audio codec
+        logger.debug(f"Converting audio to '{acodec}' codec")
+        return ["-c:a", _aencoder, "-b:a", "128k"]
+    
+    # ===> Apply audio volume level filter if enabled <===
     # Volume level setting is between 1 and 200
     # FFMPEG volume filter expects a value between 0.01 and 10.0
     _volume_level = volume_level * 0.01
