@@ -13,7 +13,7 @@ dependencies = [
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.128.0",
-    "pillow==12.0.0",
+    "pillow==12.1.0",
     "pytz>=2025.2",
     "sqlmodel==0.0.31",
     "yt-dlp[curl-cffi,default]==2025.12.8",
