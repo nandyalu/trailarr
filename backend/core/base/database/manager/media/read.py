@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from sqlmodel import Session, col, desc, or_, select
+from typing import Generator
+from sqlmodel import Session, col, desc, or_, select, text
 from sqlmodel.sql.expression import SelectOfScalar
 
 from . import base
 import core.base.database.manager.connection as connection_manager
-from core.base.database.models.media import (
-    Media,
-    MediaRead,
-    MonitorStatus,
-)
+from core.base.database.models.media import Media, MediaRead, MonitorStatus
 from core.base.database.utils.engine import manage_session
 
 
@@ -73,6 +70,36 @@ def read_all(
             statement = statement.order_by(desc(sort_by))
     db_media_list = _session.exec(statement).all()
     return base._convert_to_read_list(db_media_list)
+
+
+@manage_session
+def read_all_generator(
+    movies_only: bool | None = None,
+    monitored_only: bool = False,
+    *,
+    _session: Session = None,  # type: ignore
+) -> Generator[MediaRead, None, None]:
+    """Generator to get all media objects from the database one by one.\n
+    Args:
+        movies_only (bool, Optional): Flag to get only movies. Default is None.\
+            If `True`, it will return only movies. \
+            If `False`, it will return only series. \
+            If `None`, it will return both movies and series.
+        monitored_only (bool, Optional): Flag to get only monitored media. Default is False.
+        _session (Session, Optional): A session to use for the database connection.\n
+            Default is None, in which case a new session will be created.\n
+    Yields:
+        MediaRead: The next MediaRead object.
+    """
+    statement = select(Media).execution_options(stream_results=True)
+    if movies_only is not None:
+        statement = statement.where(col(Media.is_movie).is_(movies_only))
+    if monitored_only:
+        statement = statement.where(col(Media.monitor).is_(True))
+    stream = _session.exec(statement)
+    for db_media in stream:
+        yield MediaRead.model_validate(db_media)
+    return
 
 
 @manage_session
