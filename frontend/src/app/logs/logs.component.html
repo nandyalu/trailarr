@@ -77,6 +77,10 @@
                 </i>
                 <strong>{{ log.loggername }}: </strong>{{ log.message }}
               </p>
+              @let mediaId = getMediaId(log);
+              @if (mediaId !== null) {
+                <button class="secondary" [routerLink]="['/media', mediaId]">Open Media</button>
+              }
               <small class="logs-dt">{{ log.created! | timeago }}</small>
             </summary>
             <!-- <em class="logs-type">{{ log.level}} | {{ log.filename }}:{{ log.lineno }} </em> -->
