@@ -61,6 +61,26 @@ async def get_all_media(
     return media
 
 
+@media_router.get("/all_raw")
+async def get_all_media_raw() -> list[dict]:
+    """Get all media from the database as raw dictionaries. \n
+    Returns:
+        list[dict]: List of media objects as dictionaries. \n
+    """
+    media_raw = media_manager.read_all_raw()
+    return media_raw
+
+
+@media_router.get("/downloads_raw")
+async def get_all_downloads_raw() -> list[dict]:
+    """Get all downloads from the database as raw dictionaries. \n
+    Returns:
+        list[dict]: List of download objects as dictionaries. \n
+    """
+    downloads_raw = download_manager.read_all_raw()
+    return downloads_raw
+
+
 @media_router.get("/")
 async def get_recent_media(
     limit: int = 30, offset: int = 0, movies_only: bool | None = None

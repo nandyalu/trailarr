@@ -32,6 +32,27 @@ def read(
 
 
 @manage_session
+def read_all_raw(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[dict]:
+    """Get all media items from the database as raw dictionaries.\n
+    Args:
+        _session (Session, Optional): A session to use for the database connection.\n
+            Default is None, in which case a new session will be created.\n
+    Returns:
+        list[dict]: List of all media items as dictionaries.
+    """
+    query = text("SELECT * FROM media")
+    result = _session.execute(query)
+    rows = []
+    for row in result.mappings():
+        item = dict(row)
+        rows.append(item)
+    return rows
+
+
+@manage_session
 def read_all(
     movies_only: bool | None = None,
     filter_by: str | None = "all",
