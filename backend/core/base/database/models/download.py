@@ -52,6 +52,11 @@ class Download(DownloadBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     media_id: int = Field(foreign_key="media.id", ondelete="CASCADE")
 
+    @field_validator("added_at", "updated_at", mode="after")
+    @classmethod
+    def update_to_utc_to_save(cls, value: datetime) -> datetime:
+        return cls.convert_to_utc(value)
+
 
 class DownloadCreate(DownloadBase):
     """
@@ -72,7 +77,7 @@ class DownloadRead(DownloadBase):
 
     @field_validator("added_at", "updated_at", mode="after")
     @classmethod
-    def correct_timezone(cls, value: datetime) -> datetime:
+    def correct_timezone_after_read(cls, value: datetime) -> datetime:
         return cls.set_timezone_to_utc(value)
 
 
