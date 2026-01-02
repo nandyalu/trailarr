@@ -4,7 +4,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
-import {FolderInfo, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
+import {buildDownloadMap, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
 
@@ -17,6 +18,7 @@ export class MediaService {
   private readonly webSocketService = inject(WebsocketService);
 
   private mediaUrl = environment.apiUrl + environment.media;
+  private filesUrl = environment.apiUrl + environment.files;
 
   // Signals from others
   readonly customFilters = this.customfilterService.viewFilters;
@@ -35,7 +37,7 @@ export class MediaService {
   readonly selectedFilter = signal<string>('all');
 
   // Resources
-  readonly mediaResource = httpResource<Media[]>(() => ({url: this.mediaUrl + 'all'}), {
+  readonly mediaResource = httpResource<Media[]>(() => ({url: this.mediaUrl + 'all_raw'}), {
     defaultValue: [],
     parse: (response) => {
       if (response && Array.isArray(response)) {
@@ -44,9 +46,42 @@ export class MediaService {
       return [];
     },
   });
+  readonly mediaDownloadsResource = httpResource<Map<number, Download[]>>(() => ({url: this.mediaUrl + 'downloads_raw'}), {
+    defaultValue: new Map<number, Download[]>(),
+    parse: (response) => {
+      if (response && Array.isArray(response)) {
+        return buildDownloadMap(response.map(mapDownload));
+      }
+      return new Map<number, Download[]>();
+    },
+  });
+  readonly mediaFilesResource = httpResource<Map<number, FileFolderInfo>>(() => ({url: this.filesUrl + 'files_raw'}), {
+    defaultValue: new Map<number, FileFolderInfo>(),
+    parse: (response) => {
+      if (response && Array.isArray(response)) {
+        return buildMediaTreeMap(response.map(mapFileFolderInfo));
+      }
+      return new Map<number, FileFolderInfo>();
+    },
+  });
   // readonly mediaFilesResource = httpResource<FolderInfo>(() => ({url: this.mediaUrl + this.selectedMediaID() + '/files'}), {
   //   parse: (response) => mapFolderInfo(response),
   // });
+
+  readonly combinedMedia = computed(() => {
+    const mediaList = this.mediaResource.value();
+    const downloadsMap = this.mediaDownloadsResource.value();
+    const filesMap = this.mediaFilesResource.value();
+    return mediaList.map((media) => {
+      const downloads = downloadsMap.get(media.id) || [];
+      const files = filesMap.get(media.id) || null;
+      return {
+        ...media,
+        files: files,
+        downloads: downloads,
+      };
+    });
+  });
 
   // Computed Signals
   readonly filteredSortedMedia = computed(() => {
@@ -63,7 +98,7 @@ export class MediaService {
     if (mediaID === null) {
       return null;
     }
-    return this.mediaResource.value().find((media) => media.id === mediaID) || null;
+    return this.combinedMedia().find((media) => media.id === mediaID) || null;
   });
   readonly previousMedia = computed(() => {
     const mediaID = this.selectedMediaID();
@@ -93,16 +128,16 @@ export class MediaService {
     let _moviesOnly = this.moviesOnly();
     switch (_moviesOnly) {
       case true: {
-        return this.mediaResource.value().filter((media) => media.is_movie);
+        return this.combinedMedia().filter((media) => media.is_movie);
       }
       case false: {
-        return this.mediaResource.value().filter((media) => !media.is_movie);
+        return this.combinedMedia().filter((media) => !media.is_movie);
       }
       case null: {
-        return this.mediaResource.value().filter((media) => {
+        return this.combinedMedia().filter((media) => {
           return media.downloads.some((download) => download.file_exists === true);
         });
-        // return this.mediaResource.value().filter((media) => media.status.toLowerCase() === 'downloaded');
+        // return this.combinedMedia().filter((media) => media.status.toLowerCase() === 'downloaded');
       }
     }
   });
@@ -110,11 +145,14 @@ export class MediaService {
   constructor() {
     // Subscribe to WebSocket updates to reload media data when necessary
     this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
-      // const msgText = msg.message.toLowerCase();
-      // const checkForItems = ['media', 'trailer', 'task', 'download', 'batch', 'update', 'delete', 'monitor', 'unmonitor'];
-      // if (checkForItems.some((term) => term && msgText.includes(term))) {
       if (msg.reload?.includes('media')) {
         this.mediaResource.reload();
+      }
+      if (msg.reload?.includes('files')) {
+        this.mediaFilesResource.reload();
+      }
+      if (msg.reload?.includes('downloads')) {
+        this.mediaDownloadsResource.reload();
       }
     });
   }
@@ -201,6 +239,11 @@ export class MediaService {
     const url = `${this.mediaUrl}${mediaID}/files`;
     const files = await firstValueFrom(this.httpClient.get<FolderInfo>(url));
     return mapFolderInfo(files);
+  }
+
+  rescanMediaFiles(mediaID: number): Observable<any> {
+    const url = `${this.mediaUrl}${mediaID}/rescan_files`;
+    return this.httpClient.post(url, {});
   }
 
   /**

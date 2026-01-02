@@ -21,6 +21,39 @@ export interface Download {
   updated_at: Date; // When file was last modified
 }
 
+export function parseDate(dateStr: string): Date | null {
+  if (!dateStr) {
+    return null; // Return epoch if dateStr is empty or invalid
+  }
+  if (dateStr.endsWith('Z')) {
+    return new Date(dateStr);
+  }
+  return new Date(`${dateStr}Z`);
+}
+
+export function mapDownload(download: any): Download {
+  return {
+    ...download,
+    file_exists: Boolean(download.file_exists),
+    added_at: parseDate(download.added_at),
+    updated_at: parseDate(download.updated_at),
+  };
+}
+
+export function buildDownloadMap(downloads: Download[]): Map<number, Download[]> {
+  const downloadMap = new Map<number, Download[]>();
+
+  // Group downloads by media_id
+  downloads.forEach((download) => {
+    if (!downloadMap.has(download.media_id)) {
+      downloadMap.set(download.media_id, []);
+    }
+    downloadMap.get(download.media_id)!.push(download);
+  });
+
+  return downloadMap;
+}
+
 export interface Media {
   is_movie: boolean;
   connection_id: number;
@@ -61,9 +94,14 @@ export interface Media {
 export function mapMedia(media: any): Media {
   return {
     ...media,
-    added_at: new Date(`${media.added_at}`),
-    updated_at: new Date(`${media.updated_at}`),
-    downloaded_at: new Date(`${media.downloaded_at}`),
+    is_movie: Boolean(media.is_movie),
+    media_exists: Boolean(media.media_exists),
+    trailer_exists: Boolean(media.trailer_exists),
+    monitor: Boolean(media.monitor),
+    arr_monitored: Boolean(media.arr_monitored),
+    added_at: parseDate(media.added_at),
+    updated_at: parseDate(media.updated_at),
+    downloaded_at: parseDate(media.downloaded_at),
     isImageLoaded: false,
   };
 }
