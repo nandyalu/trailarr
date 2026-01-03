@@ -1,4 +1,9 @@
 from datetime import datetime
+from core.base.database.manager import filefolderinfo as files_manager
+from core.base.database.models.filefolderinfo import (
+    FileFolderInfoRead,
+    FileFolderType,
+)
 from core.base.database.models.filter import FilterCondition, FilterRead
 from core.base.database.models.media import MediaRead
 
@@ -108,6 +113,24 @@ def _matches_filter(media_value, filter: FilterRead) -> bool:
         return _matches_generic(media_value, filter)
 
 
+def _matches_file_filter(
+    files: list[FileFolderInfoRead], filter: FilterRead
+) -> bool:
+    """Check if the media item has an associated file."""
+    # Determine required type based on filter
+    required_type = FileFolderType.FILE
+    if filter.filter_by.lower() == "has_folder":
+        required_type = FileFolderType.FOLDER
+    # Check for matches in files
+    for file in files:
+        # Skip if type does not match
+        if file.type != required_type:
+            continue
+        if _matches_string(file.name, filter):
+            return True
+    return False
+
+
 def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     """Check if a media item matches the given filters.
     Args:
@@ -116,7 +139,18 @@ def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     Returns:
         bool: True if the media item matches all filters, False otherwise.
     """
+    # Cache media files if fetched
+    _files: list[FileFolderInfoRead] | None = None
+
     for filter in filters:
+        # Handle special cases for 'has_file' and 'has_folder'
+        if filter.filter_by in ("has_file", "has_folder"):
+            if _files is None:
+                _files = files_manager.read_by_media_id_flat(media.id)
+            if not _matches_file_filter(_files, filter):
+                return False
+            continue
+        # Generic attribute matching
         media_value = getattr(media, filter.filter_by, None)
         if not _matches_filter(media_value, filter):
             return False

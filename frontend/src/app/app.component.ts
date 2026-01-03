@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {msMinute} from 'src/util';
@@ -14,6 +14,7 @@ import {LoadIndicatorComponent} from './shared/load-indicator';
   imports: [AsyncPipe, LoadIndicatorComponent, RouterOutlet, TimeRemainingPipe, TopnavComponent, SidenavComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnDestroy, OnInit {
   private readonly websocketService = inject(WebsocketService);

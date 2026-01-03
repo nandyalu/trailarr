@@ -1,12 +1,12 @@
 <!-- Side Navbar -->
 <nav class="navmenu">
-  <a class="sidenav-button" [routerLink]="RouteHome" routerLinkActive="active" [class.active2]="isActiveLink(RouteHome)">
+  <a class="sidenav-button" [routerLink]="RouteHome" [class.active]="activeLink() === RouteHome">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
     </svg>
     <span class="btntext">Home</span>
   </a>
-  <a class="sidenav-button" [routerLink]="RouteMovies" routerLinkActive="active" [class.active2]="isActiveLink(RouteMovies)">
+  <a class="sidenav-button" [routerLink]="RouteMovies" [class.active]="activeLink() === RouteMovies">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
         d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z"
@@ -14,7 +14,7 @@
     </svg>
     <span class="btntext">Movies</span>
   </a>
-  <a class="sidenav-button" [routerLink]="RouteSeries" routerLinkActive="active" [class.active2]="isActiveLink(RouteSeries)">
+  <a class="sidenav-button" [routerLink]="RouteSeries" [class.active]="activeLink() === RouteSeries">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
         d="M320-120v-80H160q-33 0-56.5-23.5T80-280v-480q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v480q0 33-23.5 56.5T800-200H640v80H320ZM160-280h640v-480H160v480Zm0 0v-480 480Z"

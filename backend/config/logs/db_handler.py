@@ -1,4 +1,5 @@
 import logging
+import re
 import traceback
 from logging import LogRecord
 
@@ -69,8 +70,14 @@ class DatabaseLoggingHandler(logging.Handler):
             # _taskName = "General"
             # if hasattr(record, "taskName"):
             #     _taskName = record.taskName
+            _message = record.getMessage()
             _taskName = get_trace_id() or "System"
             _mediaid = getattr(record, "mediaid", None)
+            if not _mediaid:
+                # Get media ID in [] in the log message if present
+                match = re.search(r"\[([0-9]+)\]", _message)
+                if match:
+                    _mediaid = int(match.group(1))
             _loggername = record.name
             if "alembic" in _loggername:
                 _loggername = "AlembicMigrations"
@@ -80,7 +87,6 @@ class DatabaseLoggingHandler(logging.Handler):
                 return  # Skip asyncio logs
 
             # Update message for YT-DLP download and FFMPEG conversion
-            _message = record.getMessage()
             if "YT-DLP Output::" in _message:
                 _tb = _message if not _tb else _message + _tb
                 _message = "Downloading video using YT-DLP"

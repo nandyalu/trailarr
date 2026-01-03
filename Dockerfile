@@ -1,5 +1,26 @@
 # --------------------------------------------------------------------------- #
-#                          Stage 1 - Dependencies                             #
+#                      Stage 1 - Frontend Build (Node.js)                     #
+# --------------------------------------------------------------------------- #
+FROM node:24-slim AS frontend-build
+
+WORKDIR /app/frontend
+
+# Copy package files for dependency installation
+COPY ./frontend/package*.json ./
+COPY ./frontend/contract ./contract
+COPY ./frontend/ng-openapi-gen.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source files
+COPY ./frontend/ ./
+
+# Build the frontend for production
+RUN npm run build
+
+# --------------------------------------------------------------------------- #
+#                      Stage 2 - Python Dependencies                          #
 # --------------------------------------------------------------------------- #
 FROM python:3.13-slim AS python-deps
 
@@ -34,7 +55,7 @@ RUN chmod +x /tmp/install_ffmpeg.sh && \
     /tmp/install_ffmpeg.sh
 
 # --------------------------------------------------------------------------- #
-#                          Stage 2 - Final image                              #
+#                          Stage 3 - Final image                              #
 # --------------------------------------------------------------------------- #
 FROM python:3.13-slim
 
@@ -96,8 +117,8 @@ COPY ./backend /app/backend
 # # Copy the installed Python virtual environment from python-deps stage
 # COPY --from=python-deps /app/backend/.venv /app/backend/.venv
 
-# Copy the frontend built files
-COPY ./frontend-build /app/frontend-build
+# Copy the frontend built files from the frontend-build stage
+COPY --from=frontend-build /app/frontend-build /app/frontend-build
 
 # # Copy the installed Python dependencies and ffmpeg
 # COPY --from=python-deps /usr/local/ /usr/local/

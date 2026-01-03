@@ -1,6 +1,19 @@
 import {applyEach, maxLength, readonly, required, schema} from '@angular/forms/signals';
-import {BooleanFilterCondition, booleanFilterKeys, CustomFilterCreate, DateFilterCondition, dateFilterKeys, FilterCreate, FilterType, NumberFilterCondition, numberFilterKeys, StringFilterCondition, stringFilterKeys} from 'src/app/models/customfilter';
-import { Media } from 'src/app/models/media';
+import {
+  BooleanFilterCondition,
+  booleanFilterKeys,
+  CustomFilterCreate,
+  DateFilterCondition,
+  dateFilterKeys,
+  FileFilterCondition,
+  fileFilterKeys,
+  FilterCreate,
+  FilterType,
+  NumberFilterCondition,
+  numberFilterKeys,
+  StringFilterCondition,
+  stringFilterKeys,
+} from 'src/app/models/customfilter';
 
 export const filterSchema = schema<FilterCreate>((schema) => {
   readonly(schema.id);
@@ -17,7 +30,7 @@ export const filterSchema = schema<FilterCreate>((schema) => {
       if (filterCondition === StringFilterCondition.IS_EMPTY || filterCondition === StringFilterCondition.IS_NOT_EMPTY) {
         return false;
       }
-      return (valueOf(schema.filter_condition) as any) !== ''
+      return (valueOf(schema.filter_condition) as any) !== '';
     },
   });
 });
@@ -53,7 +66,7 @@ const numberFilterConditions = Object.values(NumberFilterCondition);
 const stringFilterConditions = Object.values(StringFilterCondition);
 
 // Get the filter conditions for a given filter key.
-export function getFilterConditions(filterKey: '' | keyof Media): string[] {
+export function getFilterConditions(filterKey: string): string[] {
   if (filterKey === '') {
     return [];
   }
@@ -65,12 +78,14 @@ export function getFilterConditions(filterKey: '' | keyof Media): string[] {
     return numberFilterConditions;
   } else if (stringFilterKeys.includes(filterKey)) {
     return stringFilterConditions;
+  } else if (fileFilterKeys.includes(filterKey)) {
+    return Object.values(FileFilterCondition);
   }
   return [];
 }
 
 // Get the filter value type for a given filter key.
-export function getFilterValueType(filterKey: keyof Media, filterCondition: string): string {
+export function getFilterValueType(filterKey: string, filterCondition: string): string {
   if (booleanFilterKeys.includes(filterKey)) {
     return 'boolean';
   } else if (dateFilterKeys.includes(filterKey)) {
@@ -80,6 +95,8 @@ export function getFilterValueType(filterKey: keyof Media, filterCondition: stri
     return 'date';
   } else if (numberFilterKeys.includes(filterKey)) {
     return 'number';
+  } else if (fileFilterKeys.includes(filterKey)) {
+    return 'string';
   } else if (stringFilterKeys.includes(filterKey)) {
     if (filterCondition === StringFilterCondition.IS_EMPTY || filterCondition === StringFilterCondition.IS_NOT_EMPTY) {
       return 'none';

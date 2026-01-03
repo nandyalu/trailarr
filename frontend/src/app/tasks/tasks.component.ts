@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
 import {RouteLogs} from 'src/routing';
@@ -15,15 +15,16 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TasksComponent implements OnInit {
   private readonly tasksService = inject(TasksService);
   private readonly websocketService = inject(WebsocketService);
 
-  scheduledTasks: ScheduledTask[] = [];
-  queuedTasks: QueuedTask[] = [];
-  isLoading1 = true;
-  isLoading2 = true;
+  scheduledTasks = signal<ScheduledTask[]>([]);
+  queuedTasks = signal<QueuedTask[]>([]);
+  isLoading1 = signal(true);
+  isLoading2 = signal(true);
   protected readonly RouteLogs = RouteLogs;
 
   constructor() {
@@ -44,12 +45,12 @@ export class TasksComponent implements OnInit {
     // Refresh the data
     console.log('Refreshing task data');
     this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
-      this.scheduledTasks = tasks;
-      this.isLoading1 = false;
+      this.scheduledTasks.set(tasks);
+      this.isLoading1.set(false);
     });
     this.tasksService.getQueuedTasks().subscribe((tasks: QueuedTask[]) => {
-      this.queuedTasks = tasks;
-      this.isLoading2 = false;
+      this.queuedTasks.set(tasks);
+      this.isLoading2.set(false);
     });
   }
 

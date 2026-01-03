@@ -5,12 +5,15 @@ from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 import core.base.database.manager.download as download_manager
+import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.media as media_manager
+from core.base.database.models.filefolderinfo import FileFolderInfoRead
 from core.base.database.models.download import DownloadRead
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
 from core.download.trailers import utils as trailer_utils
-from core.files_handler import FilesHandler, FolderInfo
+from core.files_handler import FilesHandler
+from core.tasks.files_scan import scan_media_folder
 from core.tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
@@ -56,6 +59,26 @@ async def get_all_media(
         sort_asc=sort_asc,
     )
     return media
+
+
+@media_router.get("/all_raw")
+async def get_all_media_raw() -> list[dict]:
+    """Get all media from the database as raw dictionaries. \n
+    Returns:
+        list[dict]: List of media objects as dictionaries. \n
+    """
+    media_raw = media_manager.read_all_raw()
+    return media_raw
+
+
+@media_router.get("/downloads_raw")
+async def get_all_downloads_raw() -> list[dict]:
+    """Get all downloads from the database as raw dictionaries. \n
+    Returns:
+        list[dict]: List of download objects as dictionaries. \n
+    """
+    downloads_raw = download_manager.read_all_raw()
+    return downloads_raw
 
 
 @media_router.get("/")
@@ -196,22 +219,46 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         }
     },
 )
-async def get_media_files(media_id: int) -> FolderInfo | str:
+async def get_media_files(media_id: int) -> FileFolderInfoRead:
     """Get media files by ID. \n
     Args:
         media_id (int): ID of the media item. \n
     Returns:
-        FolderInfo|str: Folder information or error message. \n
+        FileFolderInfoRead: Folder information. \n
+    Raises:
+        HTTPException (404): If the media or files are not found. \n
     """
     try:
         media = media_manager.read(media_id)
         if not media.folder_path:
             raise Exception("Media has no folder path!")
-        files_handler = FilesHandler()
-        files = await files_handler.get_folder_files(media.folder_path)
+        files = files_manager.read_by_media_id(media_id)
         if not files:
             raise Exception("No files found in media folder!")
         return files
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
+@media_router.post("/{media_id}/rescan_files", status_code=status.HTTP_200_OK)
+async def rescan_media_files(media_id: int) -> str:
+    """Rescan media files by ID. \n
+    Args:
+        media_id (int): ID of the media item. \n
+    Returns:
+        str: Rescanning media files message. \n
+    """
+    try:
+        media = media_manager.read(media_id)
+        if not media.folder_path:
+            raise Exception("Media has no folder path!")
+        await scan_media_folder(media)
+        msg = f"Rescanned files for media with ID: {media_id}"
+        logger.info(msg)
+        await websockets.ws_manager.broadcast(msg, "Success", reload="files")
+        return msg
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)

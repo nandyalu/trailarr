@@ -4,6 +4,7 @@ from pydantic import field_validator
 from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
 from sqlmodel import Field, Integer, Relationship
 
+from core.base.database.models.filefolderinfo import FileFolderInfo
 from core.base.database.models.base import AppSQLModel
 from core.base.database.models.download import (
     Download,
@@ -112,6 +113,7 @@ class Media(MediaBase, table=True):
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
     downloads: list[Download] = Relationship(cascade_delete=True)
+    files_info: list[FileFolderInfo] = Relationship(cascade_delete=True)
 
 
 class MediaCreate(MediaBase):
@@ -128,6 +130,7 @@ class MediaCreate(MediaBase):
     """
 
     downloads: list[DownloadCreate] = []
+    # files_info: list[FileFolderInfoCreate] = []
 
 
 class MediaRead(MediaBase):
@@ -138,11 +141,52 @@ class MediaRead(MediaBase):
     updated_at: datetime
     downloaded_at: datetime | None
     downloads: list[DownloadRead] = []
+    # files_info: list[FileFolderInfoRead] = Field(default=[])
+    # files_tree: FileFolderInfoRead | None = None
 
     @field_validator("added_at", "updated_at", "downloaded_at", mode="after")
     @classmethod
     def correct_timezone(cls, value: datetime) -> datetime:
         return cls.set_timezone_to_utc(value)
+
+    # NOTE: We are not using this as it is causing performance issues
+
+    # @model_validator(mode="after")
+    # def compute_files_tree(self) -> Self:
+    #     """
+    #     Automatically converts the flat 'files' list into a nested tree
+    #     whenever this model is created.
+    #     """
+    #     # print(f"Computing files_tree for Media ID: {self.id}...")
+    #     if not self.files_info:
+    #         return self
+
+    #     # 1. Map IDs to objects
+    #     item_map = {item.id: item for item in self.files_info}
+    #     root_node = None
+
+    #     # 2. Build relationships
+    #     for item in self.files_info:
+    #         if item.parent_id is None:
+    #             root_node = item
+    #         else:
+    #             parent = item_map.get(item.parent_id)
+    #             if parent:
+    #                 # Append to children (ensure your Read model has children: list = [])
+    #                 if item not in parent.children:
+    #                     parent.children.append(item)
+
+    #     # 3. Sort the tree (optional, uses your __lt__ logic)
+    #     if root_node:
+    #         self._sort_node(root_node)
+    #     self.files_tree = root_node
+    #     return self
+
+    # def _sort_node(self, node: FileFolderInfoRead):
+    #     """Recursive helper to sort children."""
+    #     node.children.sort()
+    #     for child in node.children:
+    #         self._sort_node(child)
 
 
 class MediaUpdate(MediaBase):

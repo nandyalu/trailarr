@@ -3,7 +3,8 @@
 *.pyc
 *.db
 /config/
-!frontend-build/
+/config-dev/
+frontend-build/
 git-filter-repo
 restart_stack.py
 

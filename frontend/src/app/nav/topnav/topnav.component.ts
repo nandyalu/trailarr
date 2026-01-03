@@ -1,8 +1,6 @@
-import {Component, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, Renderer2, signal} from '@angular/core';
+import {debounce, Field, form} from '@angular/forms/signals';
 import {Router, RouterLink} from '@angular/router';
-import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import {SettingsService} from 'src/app/services/settings.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {RouteHome, RouteMedia} from 'src/routing';
@@ -11,12 +9,12 @@ import {MediaService} from '../../services/media.service';
 
 @Component({
   selector: 'app-topnav',
-  imports: [RouterLink, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [RouterLink, Field, RouterLink],
   templateUrl: './topnav.component.html',
   styleUrl: './topnav.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TopnavComponent implements OnInit {
-  private readonly destroyRef = inject(DestroyRef);
+export class TopnavComponent {
   private readonly elementRef = inject(ElementRef);
   private readonly mediaService = inject(MediaService);
   private readonly renderer = inject(Renderer2);
@@ -24,9 +22,13 @@ export class TopnavComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
   private readonly websocketService = inject(WebsocketService);
 
-  isDarkModeEnabled = true;
-  searchQuery = signal('');
-  searchForm = new FormControl();
+  searchQuery = signal({
+    query: '',
+  });
+  searchForm = form(this.searchQuery, (schema) => {
+    debounce(schema.query, 400);
+  });
+  previousSearchQuery = signal('');
   searchResults = signal<SearchMedia[]>([]);
   selectedIndex = signal(-1);
   selectedId = signal(-1);
@@ -48,11 +50,27 @@ export class TopnavComponent implements OnInit {
     // console.log('Theme set to %s', theme);
     // return;
   });
+  searchQueryEffect = effect(() => {
+    const query = this.searchQuery().query;
+    // Ensure we only search when query changes
+    if (query === this.previousSearchQuery()) {
+      return;
+    }
+    // Ensure search query is at least 3 characters
+    if (query.length < 3) {
+      this.searchResults.set([]);
+      this.previousSearchQuery.set('');
+      return;
+    }
+    // Perform search
+    this.previousSearchQuery.set(query);
+    this.onSearch(query);
+  });
 
   clearSearchResults() {
     this.searchResults.set([]);
-    this.searchQuery.set('');
-    this.searchForm.reset();
+    this.searchQuery.set({query: ''});
+    this.searchForm().reset();
     this.selectedId.set(-1);
     this.selectedIndex.set(-1);
   }
@@ -119,20 +137,13 @@ export class TopnavComponent implements OnInit {
         this.selectedId.set(this.searchResults()[this.selectedIndex()].id);
         return;
       } else if (event.key === 'Enter' && this.selectedId() !== -1) {
+        event.preventDefault();
         // const selectedResult = this.searchResults[this.selectedIndex];
         this.router.navigate([RouteMedia, this.selectedId()]);
         this.clearSearchResults();
         return;
       }
     }
-  }
-
-  // Check theme preference on page load and apply it
-  ngOnInit() {
-    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      // console.log('Search query: %s', value);
-      this.onSearch(value);
-    });
   }
 
   logout() {
@@ -161,7 +172,7 @@ export class TopnavComponent implements OnInit {
     });
   }
 
-  noSearchResult: SearchMedia = {
+  protected readonly noSearchResult: SearchMedia = {
     id: -1,
     title: 'No results found',
     imdb_id: '',
@@ -172,16 +183,8 @@ export class TopnavComponent implements OnInit {
     is_movie: true,
   };
   onSearch(query: string = '') {
-    if (query.length < 3) {
-      this.searchResults.set([]);
-      return;
-    }
-    if (query.trim() === this.searchQuery()) {
-      return;
-    }
-    this.searchQuery.set(query);
     // console.log('Search query: %s', this.searchQuery);
-    this.mediaService.searchMedia(this.searchQuery()).subscribe((media_list: SearchMedia[]) => {
+    this.mediaService.searchMedia(query).subscribe((media_list: SearchMedia[]) => {
       // console.log('Search results: %o', media_list);
       if (media_list.length === 0) {
         this.searchResults.set([this.noSearchResult]);

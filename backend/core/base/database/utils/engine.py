@@ -28,6 +28,8 @@ else:
             "check_same_thread": False
         },  # Allow multi-threaded access
         echo=False,
+        pool_size=30,
+        max_overflow=20,
     )  # pragma: no cover
 # * Not needed, Alembic will create the database tables
 # SQLModel.metadata.create_all(engine)

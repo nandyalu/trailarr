@@ -17,7 +17,7 @@
 		// Mount /dev/dri for GPU access (if needed)
 		// "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
 		// Mount appdata folder for persistent storage
-		"source=/var/appdata/trailarr-dev,target=/app/config,type=bind,consistency=cached",
+		"source=/var/appdata/trailarr-dev,target=/app/config-dev,type=bind,consistency=cached",
 		// Mount media folder for app to detect the media library
 		"source=/media/all/Media,target=/media,type=bind,consistency=cached",
 		// Mount local GPG keys for signing
@@ -33,7 +33,7 @@
 		"LOG_LEVEL": "Info",
 		"TESTING": "False",
 		"APP_PORT": "7888",
-		"APP_DATA_DIR": "/app/config"
+		"APP_DATA_DIR": "/app/config-dev"
 	},
 	
 	// Use 'postCreateCommand' to run commands after the container is created.

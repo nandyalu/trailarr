@@ -2,6 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
+import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.media as media_manager
 from core.download import video_analysis
 from core.files_handler import FilesHandler, FolderInfo
@@ -43,22 +44,14 @@ def _is_path_safe(path: str) -> bool:
     return True
 
 
-@files_router.get("/files")
-async def get_files(path: str) -> FolderInfo | None:
-    """Get files in a directory.\n
-    Args:
-        path (str): Path to the directory. \n
+@files_router.get("/files_raw")
+async def get_all_media_files_raw() -> list[dict]:
+    """Get raw media files info from the database. \n
     Returns:
-        FolderInfo|None: Folder information or None if folder doesn't exist. \n
-    Raises:
-        HTTPException (404): If the folder is not found."""
-    try:
-        files_handler = FilesHandler()
-        return await files_handler.get_folder_files(path)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-        )
+        list[dict]: List of raw file/folder info dicts. \n
+    """
+    files_info = files_manager.read_all_raw()
+    return files_info
 
 
 @files_router.get("/files_simple")
@@ -228,7 +221,7 @@ def trim_video(
         logger.error(f"Error trimming video: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An internal error occurred while trimming the video."
+            detail="An internal error occurred while trimming the video.",
         )
     return "Video trimmed successfully." if res else "Video trim failed."
 

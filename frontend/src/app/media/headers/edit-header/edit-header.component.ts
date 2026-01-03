@@ -65,7 +65,7 @@ export class EditHeaderComponent {
   batchUpdate(action: string, profileID: number = -1): void {
     this.webSocketService.showToast(`Batch update: ${action} ${this.checkedMediaIDs().length} items`);
     this.mediaService.batchUpdate(this.checkedMediaIDs(), action, profileID).subscribe(() => {
-      this.mediaService.mediaResource.reload(); // Fetch updated media items
+      this.mediaService.refreshContent(); // Fetch updated media items
     });
     this.checkedMediaIDs.set([]);
   }

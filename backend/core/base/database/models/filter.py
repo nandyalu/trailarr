@@ -63,8 +63,9 @@ STR_COLS = [
     "youtube_trailer_id",
 ]
 DATE_COLS = ["added_at", "downloaded_at", "updated_at"]
+FILE_COLS = ["has_file", "has_folder"]
 
-ALL_COLS = BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS
+ALL_COLS = BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS + FILE_COLS
 
 
 def _validate_bool_filter(filter: "Filter") -> None:
@@ -211,6 +212,39 @@ def _validate_date_filter(filter: "Filter") -> None:
             )
 
 
+def _validate_file_filter(filter: "Filter") -> None:
+    """
+    Validate file/folder filter.
+    """
+    if filter.filter_condition not in [
+        FilterCondition.EQUALS,
+        FilterCondition.NOT_EQUALS,
+        FilterCondition.CONTAINS,
+        FilterCondition.NOT_CONTAINS,
+        FilterCondition.STARTS_WITH,
+        FilterCondition.NOT_STARTS_WITH,
+        FilterCondition.ENDS_WITH,
+        FilterCondition.NOT_ENDS_WITH,
+    ]:
+        raise ValueError(
+            f"Invalid filter_condition for {filter.filter_by}:"
+            f" {filter.filter_condition}. Valid values: "
+            "EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS, "
+            "STARTS_WITH, NOT_STARTS_WITH, ENDS_WITH, "
+            "NOT_ENDS_WITH"
+        )
+    if not isinstance(filter.filter_value, str):
+        raise ValueError(
+            f"Invalid filter_value for {filter.filter_by}:"
+            f" {filter.filter_value}. Must be a string."
+        )
+    if not filter.filter_value:
+        raise ValueError(
+            f"Invalid filter_value for {filter.filter_by}:"
+            f" {filter.filter_value}. Must be a non-empty string."
+        )
+
+
 class _FilterBase(AppSQLModel):
     """
     Base model for Filter.\n
@@ -303,6 +337,9 @@ class Filter(_FilterBase, table=True):
         if filter_by in DATE_COLS:
             _validate_date_filter(self)
             return self
+        # File/Folder conditions
+        if filter_by in FILE_COLS:
+            _validate_file_filter(self)
         return self
 
 

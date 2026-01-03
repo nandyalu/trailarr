@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FilesService} from 'generated-sources/openapi';
 import {WebsocketService} from '../../../../../services/websocket.service';
@@ -9,6 +9,7 @@ import {LoadIndicatorComponent} from '../../../../../shared/load-indicator';
   imports: [FormsModule, LoadIndicatorComponent],
   templateUrl: './video-edit-dialog.component.html',
   styleUrl: './video-edit-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoEditDialogComponent implements AfterViewInit {
   private readonly filesService = inject(FilesService);
@@ -23,28 +24,6 @@ export class VideoEditDialogComponent implements AfterViewInit {
   protected readonly endTimestamp = signal<string>('');
   protected readonly outputFileName = signal<string>('');
   protected readonly isProcessing = signal<boolean>(false);
-
-  // Getter and setter methods for ngModel binding
-  get startTime(): string {
-    return this.startTimestamp();
-  }
-  set startTime(value: string) {
-    this.startTimestamp.set(value);
-  }
-
-  get endTime(): string {
-    return this.endTimestamp();
-  }
-  set endTime(value: string) {
-    this.endTimestamp.set(value);
-  }
-
-  get outputFile(): string {
-    return this.outputFileName();
-  }
-  set outputFile(value: string) {
-    this.outputFileName.set(value);
-  }
 
   readonly videoEditDialog = viewChild.required<ElementRef<HTMLDialogElement>>('videoEditDialog');
   readonly videoElement = viewChild<ElementRef<HTMLVideoElement>>('videoElement');
@@ -184,6 +163,16 @@ export class VideoEditDialogComponent implements AfterViewInit {
 
     if (!this.outputFileName().trim()) {
       this.webSocketService.showToast('Output filename is required', 'error');
+      return false;
+    }
+
+    if (this.outputFileName().trim() === this.fileName()) {
+      this.webSocketService.showToast('Output filename must be different from the original filename', 'error');
+      return false;
+    }
+
+    if (this.outputFileName().includes('/') || this.outputFileName().includes('\\')) {
+      this.webSocketService.showToast('Output filename cannot contain path separators', 'error');
       return false;
     }
 

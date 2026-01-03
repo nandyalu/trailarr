@@ -3,12 +3,14 @@ import {
   CustomFilter,
   DateFilterCondition,
   dateFilterKeys,
+  fileFilterKeys,
   Filter,
   NumberFilterCondition,
   numberFilterKeys,
   StringFilterCondition,
   stringFilterKeys,
 } from 'src/app/models/customfilter';
+import { FileFolderInfo } from 'src/app/models/filefolderinfo';
 import {Media} from 'src/app/models/media';
 import {CacheDecorator} from 'src/util';
 
@@ -107,10 +109,40 @@ class FilterFunctions {
   }
 }
 
+// Helper function to search file tree
+function findInFileTree(node: FileFolderInfo | null, type: 'FILE' | 'FOLDER', filterValue: string, condition: StringFilterCondition): boolean {
+  if (!node) {
+    return false;
+  }
+  // Check current node if it matches the type
+  if (node.type === type) {
+    if (FilterFunctions.applyStringFilter(node.name.toLowerCase(), filterValue.toLowerCase(), condition)) {
+      return true;
+    }
+  }
+
+  // Recursively check children
+  for (const child of node.children || []) {
+    if (findInFileTree(child, type, filterValue, condition)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Main filter dispatcher
 function applyFilter(filter: Filter, media: Media): boolean {
   const {filter_by, filter_value, filter_condition} = filter;
-  const value = media[filter_by];
+
+  // Special handling for file/folder filters
+  if (fileFilterKeys.includes(filter_by)) {
+    const fileType = filter_by === 'has_file' ? 'FILE' : 'FOLDER';
+    return findInFileTree(media.files, fileType, filter_value, filter_condition as StringFilterCondition);
+  }
+
+  // General case for media properties
+  const value = media[filter_by as keyof Media];
 
   if (booleanFilterKeys.includes(filter_by)) {
     const boolVal = filter_value.toLowerCase() === 'true';
@@ -228,6 +260,8 @@ export function applySelectedSort(mediaList: Media[], selectedSort: keyof Media,
       }
       return bVal - aVal;
     }
+    if (aVal == null) aVal = '';
+    if (bVal == null) bVal = '';
     if (sortAscending) {
       return aVal.toString().localeCompare(bVal.toString());
     }
