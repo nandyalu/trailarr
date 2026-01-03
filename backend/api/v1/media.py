@@ -13,7 +13,7 @@ from core.base.database.models.media import MediaRead
 from core.download import trailer_search
 from core.download.trailers import utils as trailer_utils
 from core.files_handler import FilesHandler
-from backend.core.tasks.files_scan import scan_media_folder
+from core.tasks.files_scan import scan_media_folder
 from core.tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,

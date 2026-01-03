@@ -5,7 +5,7 @@ import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.download.trailers.service import record_new_trailer_download
-from backend.core.files.media_scanner import MediaScanner
+from core.files.media_scanner import MediaScanner
 
 logger = ModuleLogger("TrailersFilesScan")
 

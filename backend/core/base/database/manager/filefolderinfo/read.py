@@ -8,11 +8,11 @@ from core.base.database.utils.engine import manage_session
 
 
 @manage_session
-def read_by_media_id(
+def read_by_media_id_flat(
     media_id: int,
     *,
     _session: Session = None,  # type: ignore
-) -> FileFolderInfoRead | None:
+) -> list[FileFolderInfoRead]:
     """
     Get FileFolderInfoRead tree for a specific media ID.
     Args:
@@ -20,14 +20,37 @@ def read_by_media_id(
         _session (Session, optional=None): A session to use for the \
             database connection. A new session is created if not provided.
     Returns:
-        FileFolderInfoRead | None: The file/folder info tree (read-only) \
-            or None.
+        list[FileFolderInfoRead]: Flat list of file/folder info (read-only).
     """
     statement = select(FileFolderInfo).where(
         FileFolderInfo.media_id == media_id
     )
     db_filefolderinfo = _session.exec(statement).all()
-    return base.build_file_tree(db_filefolderinfo)
+    return base.convert_to_read_list(db_filefolderinfo)
+
+
+@manage_session
+def read_by_media_id(
+    media_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> FileFolderInfoRead | None:
+    """Get FileFolderInfo tree for a specific media ID.
+    Args:
+        media_id (int): The media ID to filter downloads by.
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        FileFolderInfoRead | None: The file/folder info tree (read-only), or \
+            None if not found.
+    """
+    flat_items = read_by_media_id_flat(
+        media_id,
+        _session=_session,
+    )
+    if not flat_items or len(flat_items) == 0:
+        return None
+    return base.build_file_tree(flat_items)
 
 
 # NOTE: Read all function has been intentionally omitted to avoid \

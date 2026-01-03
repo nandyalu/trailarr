@@ -57,24 +57,22 @@ def get_db_item(id: int, session: Session) -> FileFolderInfo:
 
 
 def build_file_tree(
-    flat_items: Sequence[FileFolderInfo],
+    flat_items: Sequence[FileFolderInfoRead],
 ) -> FileFolderInfoRead | None:
     """
-    Converts a flat list of FileFolderInfo items into a single nested tree.
+    Converts a flat list of FileFolderInfoRead items into a single nested tree.
     Args:
-        flat_items (Sequence[FileFolderInfo]): Flat sequence of file/folder \
+        flat_items (Sequence[FileFolderInfoRead]): Flat sequence of file/folder \
             info items
     Returns:
         FileFolderInfoRead | None: the root node, or None if the list is empty.
     """
     if not flat_items:
         return None
-    # Convert to Read items
-    _flat_items = convert_to_read_list(flat_items)
     # 1. Create a mapping of ID -> Item and initialize empty children lists
     # We create copies to avoid mutating the original objects in the list
     item_map: dict[int, FileFolderInfoRead] = {}
-    for item in _flat_items:
+    for item in flat_items:
         # Ensure children is an empty list so we can append to it
         item.children = []
         item_map[item.id] = item
@@ -82,7 +80,7 @@ def build_file_tree(
     root_node: FileFolderInfoRead | None = None
 
     # 2. Distribute items to their parents
-    for item in _flat_items:
+    for item in flat_items:
         if item.parent_id is None:
             # This is our root node (the Media folder)
             root_node = item
