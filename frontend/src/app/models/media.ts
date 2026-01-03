@@ -1,3 +1,5 @@
+import {FileFolderInfo} from './filefolderinfo';
+
 export interface Download {
   id: number;
   path: string;
@@ -86,6 +88,7 @@ export interface Media {
   updated_at: Date;
   downloaded_at: Date;
   downloads: Download[];
+  files: FileFolderInfo | null;
 
   // Additional properties
   isImageLoaded: boolean;

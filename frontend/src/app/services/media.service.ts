@@ -68,7 +68,7 @@ export class MediaService {
   //   parse: (response) => mapFolderInfo(response),
   // });
 
-  readonly combinedMedia = computed(() => {
+  readonly combinedMedia = computed<Media[]>(() => {
     const mediaList = this.mediaResource.value();
     const downloadsMap = this.mediaDownloadsResource.value();
     const filesMap = this.mediaFilesResource.value();
