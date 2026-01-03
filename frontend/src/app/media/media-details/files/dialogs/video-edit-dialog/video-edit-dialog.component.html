@@ -24,7 +24,7 @@
             <input
               id="startTime"
               type="text"
-              [(ngModel)]="startTime"
+              [(ngModel)]="startTimestamp"
               placeholder="00:00:00 or 00:00"
               pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
             />
@@ -36,7 +36,13 @@
         <div class="time-input-group">
           <label for="endTime">End Time:</label>
           <div class="input-with-button">
-            <input id="endTime" type="text" [(ngModel)]="endTime" placeholder="00:00:00 or 00:00" pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$" />
+            <input
+              id="endTime"
+              type="text"
+              [(ngModel)]="endTimestamp"
+              placeholder="00:00:00 or 00:00"
+              pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+            />
             <button type="button" class="secondary small" (click)="setCurrentTimeAsEnd()">Use Current</button>
             <button type="button" class="secondary small" (click)="seekToEnd()">Seek</button>
           </div>
@@ -45,7 +51,7 @@
 
       <div class="output-input-group">
         <label for="outputFile">Output Filename:</label>
-        <input id="outputFile" type="text" [(ngModel)]="outputFile" placeholder="filename_trimmed.mp4" />
+        <input id="outputFile" type="text" [(ngModel)]="outputFileName" placeholder="filename_trimmed.mp4" />
       </div>
     </div>
 

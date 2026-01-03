@@ -61,6 +61,16 @@
   aspect-ratio: 3 / 5;
 }
 
+.enter-animation {
+  // Animation on load
+  animation-name: subtleFadeIn;
+  animation-duration: 800ms;
+  animation-iteration-count: 1;
+  animation-timing-function: linear;
+  animation-fill-mode: backwards;
+  // animation-delay: calc(50ms * sibling-index());
+}
+
 .media-card label {
   cursor: pointer;
   display: flex;

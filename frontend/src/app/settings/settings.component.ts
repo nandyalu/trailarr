@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {RouteAbout, RouteConnections, RouteGeneral, RouteProfiles} from 'src/routing';
 
@@ -7,7 +7,7 @@ import {RouteAbout, RouteConnections, RouteGeneral, RouteProfiles} from 'src/rou
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsComponent {
   protected readonly RouteAbout = RouteAbout;

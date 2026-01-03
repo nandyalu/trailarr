@@ -81,7 +81,7 @@
               @if (mediaId !== null) {
                 <button class="secondary" [routerLink]="['/media', mediaId]">Open Media</button>
               }
-              <small class="logs-dt">{{ log.created! | timeago }}</small>
+              <small class="logs-dt">{{ log.created! | timediff | async }}</small>
             </summary>
             <!-- <em class="logs-type">{{ log.level}} | {{ log.filename }}:{{ log.lineno }} </em> -->
             <p class="logs-raw">{{ getRawLog(log) }}</p>

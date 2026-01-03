@@ -1,7 +1,7 @@
 <div class="tasks-container">
   <div class="text-heading">Scheduled</div>
   <hr />
-  @if (isLoading1) {
+  @if (isLoading1()) {
     <app-load-indicator class="center" />
   } @else {
     <div class="table-container">
@@ -16,7 +16,7 @@
           <th></th>
         </tr>
         <!-- <p>{{ scheduledTasks }}</p> -->
-        @for (task of scheduledTasks; track task.id) {
+        @for (task of scheduledTasks(); track task.id) {
           <tr class="table-row">
             <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
             <td class="name">{{ task.name }}</td>
@@ -50,7 +50,7 @@
   }
   <div class="text-heading">Queue</div>
   <hr />
-  @if (isLoading1) {
+  @if (isLoading2()) {
     <app-load-indicator class="center" />
   } @else {
     <div class="table-container last-table">
@@ -63,7 +63,7 @@
           <th>Duration</th>
         </tr>
         <!-- <p>{{ queuedTasks }}</p> -->
-        @for (task of queuedTasks; track task.id) {
+        @for (task of queuedTasks(); track task.id) {
           <tr class="table-row">
             <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
             <td class="name queue-name">

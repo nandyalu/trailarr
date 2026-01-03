@@ -1,19 +1,28 @@
-import {TitleCasePipe} from '@angular/common';
+import {AsyncPipe, TitleCasePipe} from '@angular/common';
 import {httpResource} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {AppLogRecordRead, LogLevel} from 'generated-sources/openapi';
-import {TimeagoModule} from 'ngx-timeago';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
+import {TimediffPipe} from '../helpers/timediff.pipe';
 import {LogsService} from '../services/logs.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-logs',
-  imports: [FormsModule, LoadIndicatorComponent, ReactiveFormsModule, RouterLink, ScrollNearEndDirective, TimeagoModule, TitleCasePipe],
+  imports: [
+    AsyncPipe,
+    FormsModule,
+    LoadIndicatorComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    ScrollNearEndDirective,
+    TimediffPipe,
+    TitleCasePipe,
+  ],
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

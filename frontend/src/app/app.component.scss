@@ -48,6 +48,7 @@
   height: calc(100vh - 76px);
   view-transition-name: navmenu;
   view-transition-class: navmenu-class;
+  // contain: layout;
 
   @media (width < 765px) {
     width: 100%;

@@ -157,6 +157,12 @@ export class MediaService {
     });
   }
 
+  refreshContent() {
+    this.mediaResource.reload();
+    this.mediaFilesResource.reload();
+    this.mediaDownloadsResource.reload();
+  }
+
   /**
    * Searches for media items that match the given search term.
    *

@@ -18,7 +18,7 @@ export function mapFileFolderInfo(info: any): FileFolderInfo {
   return {
     ...info,
     is_trailer: Boolean(info.is_trailer),
-    modified: parseDate(info.added_at),
+    modified: parseDate(info.modified),
     isExpanded: false,
   };
 }

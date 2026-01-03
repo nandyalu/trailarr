@@ -36,7 +36,7 @@
     </div>
     <div class="about-content">
       <span>Server Started</span>
-      <code>{{ settings?.server_start_time ? (settings?.server_start_time | timeago) : 'Unknown' }}</code>
+      <code>{{ settings?.server_start_time | timediff: 'Unknown' | async }}</code>
     </div>
     <div class="about-content">
       <span>Timezone</span>
@@ -48,27 +48,27 @@
     <hr />
     <div class="about-content">
       <span>Movies</span>
-      <code>{{ serverStats?.movies_count }}</code>
+      <code>{{ serverStats().movies_count }}</code>
     </div>
     <div class="about-content">
       <span>Movies Monitored</span>
-      <code>{{ serverStats?.movies_monitored }}</code>
+      <code>{{ serverStats().movies_monitored }}</code>
     </div>
     <div class="about-content">
       <span>Series</span>
-      <code>{{ serverStats?.series_count }}</code>
+      <code>{{ serverStats().series_count }}</code>
     </div>
     <div class="about-content">
       <span>Series Monitored</span>
-      <code>{{ serverStats?.series_monitored }}</code>
+      <code>{{ serverStats().series_monitored }}</code>
     </div>
     <div class="about-content">
       <span>Trailers Downloaded</span>
-      <code>{{ serverStats?.trailers_downloaded }}</code>
+      <code>{{ serverStats().trailers_downloaded }}</code>
     </div>
     <div class="about-content">
       <span>Trailers Detected</span>
-      <code>{{ serverStats?.trailers_detected }}</code>
+      <code>{{ serverStats().trailers_detected }}</code>
     </div>
   </section>
   <section class="about-section">
