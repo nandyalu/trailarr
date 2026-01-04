@@ -17,7 +17,7 @@
         </tr>
         <!-- <p>{{ scheduledTasks }}</p> -->
         @for (task of scheduledTasks(); track task.id) {
-          <tr class="table-row">
+          <tr class="table-row" animate.enter="enter-animation">
             <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
             <td class="name">{{ task.name }}</td>
             <td>{{ task.interval }}</td>
@@ -64,7 +64,7 @@
         </tr>
         <!-- <p>{{ queuedTasks }}</p> -->
         @for (task of queuedTasks(); track task.id) {
-          <tr class="table-row">
+          <tr class="table-row" animate.enter="enter-animation">
             <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
             <td class="name queue-name">
               <span>{{ task.name }}</span>

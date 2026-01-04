@@ -1,37 +1,15 @@
-// @media (prefers-reduced-motion: no-preference) {
-//   @view-transition {
-//     navigation: auto;
-//   }
-// }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.35s;
+    animation-timing-function: ease-in-out;
+  }
 
-// html::view-transition-group(*) {
-//   animation-duration: 0.25s;
-// }
-
-// ::view-transition-group(.navmenu-class) {
-//   animation-duration: 0.25s;
-// }
-// ::view-transition-group(.mediacard),
-// ::view-transition-group(.mediaimage),
-// ::view-transition-group(.mediatitle) {
-//   animation-duration: 1s;
-// }
-
-// ::view-transition-group(navmenu) {
-//   animation-duration: 0.25s;
-//   animation-delay: 1s;
-// }
-
-// ::view-transition-old(navmenu),
-// ::view-transition-new(navmenu) {
-//   z-index: 100;
-//   mix-blend-mode: normal !important;
-
-//   @media (max-width: 765px) {
-//     height: 78px;
-//     opacity: 1 !important;
-//   }
-// }
+  ::view-transition-group(*) {
+    animation-duration: 0.8s;
+    animation-timing-function: ease-in-out;
+  }
+}
 
 @keyframes spin-animation {
   0% {
@@ -100,5 +78,27 @@
   to {
     transform: translateX(100%);
     opacity: 0;
+  }
+}
+
+@keyframes revealFromTop {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

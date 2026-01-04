@@ -3,7 +3,7 @@ import {provideHttpClient} from '@angular/common/http';
 import {ApplicationConfig, ErrorHandler, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
 import {provideSignalFormsConfig} from '@angular/forms/signals';
 import {NG_STATUS_CLASSES} from '@angular/forms/signals/compat';
-import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading} from '@angular/router';
+import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading, withViewTransitions} from '@angular/router';
 import {ApiModule} from 'generated-sources/openapi';
 import {routes} from './app.routes';
 import {GlobalErrorHandler} from './error-handler';
@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withPreloading(PreloadAllModules),
-      // withViewTransitions(),
+      withViewTransitions({skipInitialTransition: true}),
       withInMemoryScrolling({scrollPositionRestoration: 'top', anchorScrolling: 'enabled'}),
     ),
     provideSignalFormsConfig({classes: NG_STATUS_CLASSES}),

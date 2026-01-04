@@ -41,6 +41,7 @@ export class MediaComponent implements OnInit {
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);
+  protected readonly navigatingMediaId = this.mediaService.selectedMediaID;
 
   // Constants
   protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
@@ -105,5 +106,9 @@ export class MediaComponent implements OnInit {
       return;
     }
     this.displayCount.update((count) => count + this.defaultDisplayCount);
+  }
+
+  onMediaClick(mediaId: number): void {
+    this.navigatingMediaId.set(mediaId);
   }
 }

@@ -57,7 +57,6 @@
   background-image: url(../../assets/poster-sm.png);
   background-repeat: no-repeat;
   background-size: cover;
-  view-transition-class: mediacard;
   aspect-ratio: 3 / 5;
 }
 
@@ -68,7 +67,6 @@
   animation-iteration-count: 1;
   animation-timing-function: linear;
   animation-fill-mode: backwards;
-  // animation-delay: calc(50ms * sibling-index());
 }
 
 .media-card label {
@@ -122,7 +120,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   // border-radius: 0 0 6px 6px;
-  view-transition-class: mediatitle;
 }
 
 .animated-gradient {
@@ -159,7 +156,6 @@
   width: 100%;
   // aspect-ratio: 2 / 3;
   // border-radius: 6px 6px 0 0;
-  view-transition-class: mediaimage;
 }
 
 .media-card svg {
