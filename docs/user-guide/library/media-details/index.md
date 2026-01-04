@@ -97,15 +97,15 @@ It shows the following details:
 
 ## Files Section
 
-![Media Details - Click to Open Files](media-files-click-to-open.png)
-
-Media Files are not loaded by default, as Trailarr needs to read the files every time - which increases file operations. Just click on the section to open them!
+<!-- md:version:upd 0.6.5 -->
 
 ![Media Details - Files](media-files-open.png)
 
 The files and folders available in the media folder will be displayed here, starting with the Media folder itself!
 
 Click on a folder to reveal it's files.
+
+Clicking on the `Refresh` button will rescan the media folder for files and folders, updating the list accordingly.
 
 !!! tip ""
     If you don't see your actual Media files here, that means you need to update either your [Volume Mappings](../../../getting-started/02-installation/docker-compose.md#media-folders) or [Path Mappings](../../../getting-started/03-setup/connections.md#2-path-mappings).

@@ -1,4 +1,3 @@
-
 Filters are the conditions that determine when a profile should be applied to a media item.
 
 Each Filter consists of 3 things:
@@ -74,6 +73,22 @@ Here are the available date filters:
 | `Downloaded At`  | Date when trailer was downloaded for media item.  |
 
 
+### File Filters 
+
+<!-- md:version:add 0.6.5 -->
+
+Here are the available file filters:
+
+| Filter By        | Description                                           |
+|-----------------:|:------------------------------------------------------|
+| `Has File`      | Indicates whether the media item has specified file.   |
+| `Has Folder`    | Indicates whether the media item has specified folder. |
+
+
+!!! note
+    File filters look for files/folders relative to the media item's root folder (anywhere in the media item's folder structure). For example, to check if a movie has a subtitle file, you would use the `Has File` filter with something like `Ends With` condition and the value as `.srt`.
+
+
 ## Conditions
 
 The conditions determine how the value is compared against the property. The available conditions depend on the type of filter:
@@ -120,6 +135,22 @@ The conditions determine how the value is compared against the property. The ava
 | `IS BEFORE`       | The property must be before the specified date.                 |
 | `IN THE LAST`     | The property must be within the last specified time period.     |
 | `NOT IN THE LAST` | The property must not be within the last specified time period. |
+
+
+### File Conditions
+
+<!-- md:version:add 0.6.5 -->
+
+| Condition         | Description                                            |
+|------------------:|:-------------------------------------------------------|
+| `EQUALS`          | The property must equal the specified value.           |
+| `NOT EQUALS`      | The property must not equal the specified value.       |
+| `CONTAINS`        | The property must contain the specified value.         |
+| `NOT CONTAINS`    | The property must not contain the specified value.     |
+| `STARTS WITH`     | The property must start with the specified value.      |
+| `NOT STARTS WITH` | The property must not start with the specified value.  |
+| `ENDS WITH`       | The property must end with the specified value.        |
+| `NOT ENDS WITH`   | The property must not end with the specified value.    |
 
 
 ## Filter Values
