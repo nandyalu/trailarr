@@ -23,7 +23,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
-        run: uv pip install --no-cache --native-tls --system -r backend/pyproject.toml --group testing
+        run: cd backend && uv pip install --no-cache --native-tls --system -r pyproject.toml --group testing
       
       - name: Run tests
         run: cd backend && uv run python -m pytest tests
