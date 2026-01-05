@@ -1,10 +1,5 @@
-<!-- <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-512-lg.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-light-512-lg.png">
-    <img alt="Trailarr logo with name" src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png" width=50%>
-  </picture>
-</p> -->
+#
+
 ![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png)
 
 <hr>
@@ -13,7 +8,7 @@
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
   <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.124.4-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
   <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.5-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
-  <a href="https://github.com/nandyalu/trailarr" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
+  <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
 <p align="center">
@@ -54,13 +49,13 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Beautiful and responsive UI to manage trailers and view details of movies and series.
 - Built with Angular and FastAPI.
 
-## Installation
+## Installation & Setup
 
 Trailarr can be installed using Docker (recommended) or directly on Debian based systems. See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on [Getting Started](https://nandyalu.github.io/trailarr/getting-started/) and [User Guide](https://nandyalu.github.io/trailarr/user-guide/).
 
 We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D) that explains Trailarr installation and setup on Unraid.
 
-[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/0.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42")
+[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/maxresdefault.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42")
 
 ## Dependencies
 
@@ -115,7 +110,7 @@ If you have any suggestions or ideas for new features, please feel free to reach
 
 Contributions are welcome! Please see the [Contributing](https://nandyalu.github.io/trailarr/references/contributing) guide for more information.
 
-Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ).
+Looking for a backend (python) / frontend developers (Angular) to help with the project, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ).
 
 ## License
 

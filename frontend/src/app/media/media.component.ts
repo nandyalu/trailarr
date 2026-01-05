@@ -7,7 +7,6 @@ import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {Media} from '../models/media';
 import {CustomfilterService} from '../services/customfilter.service';
 import {MediaService} from '../services/media.service';
-import {WebsocketService} from '../services/websocket.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 import {EditHeaderComponent} from './headers/edit-header/edit-header.component';
 import {NormalHeaderComponent} from './headers/normal-header/normal-header.component';
@@ -31,7 +30,6 @@ export class MediaComponent implements OnInit {
   private readonly customfilterService = inject(CustomfilterService);
   private readonly mediaService = inject(MediaService);
   private readonly router = inject(Router);
-  private readonly webSocketService = inject(WebsocketService);
 
   // Signals from Media Service
   protected readonly checkedMediaIDs = this.mediaService.checkedMediaIDs;
@@ -43,6 +41,7 @@ export class MediaComponent implements OnInit {
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);
+  protected readonly navigatingMediaId = this.mediaService.selectedMediaID;
 
   // Constants
   protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
@@ -63,13 +62,6 @@ export class MediaComponent implements OnInit {
       default:
         this.moviesOnly.set(null);
     }
-
-    // Subscribe to WebSocket updates - REDUNDANT WITH MEDIA SERVICE NOW
-    // this.webSocketService.toastMessage.subscribe((msg) => {
-    //   if (msg.reload === 'media') {
-    //     this.mediaService.mediaResource.reload();
-    //   }
-    // });
   }
 
   // Effects for reacting to changes
@@ -114,5 +106,9 @@ export class MediaComponent implements OnInit {
       return;
     }
     this.displayCount.update((count) => count + this.defaultDisplayCount);
+  }
+
+  onMediaClick(mediaId: number): void {
+    this.navigatingMediaId.set(mediaId);
   }
 }

@@ -59,7 +59,7 @@
   height: auto;
   object-fit: contain;
   margin-bottom: auto;
-  view-transition-class: mediaimage;
+  view-transition-name: media-image;
 }
 
 .media-details-col {
@@ -81,7 +81,7 @@
   display: inline-block;
   overflow: hidden;
   max-width: 70%;
-  view-transition-class: mediatitle;
+  view-transition-name: media-title;
 }
 
 .icon-link {

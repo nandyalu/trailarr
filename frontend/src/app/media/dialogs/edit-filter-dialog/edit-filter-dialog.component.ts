@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   ElementRef,
   inject,
@@ -13,18 +12,11 @@ import {
 } from '@angular/core';
 import {customError, Field, FieldTree, form, submit} from '@angular/forms/signals';
 import {firstValueFrom} from 'rxjs';
-import {
-  allFilterKeys,
-  CustomFilter,
-  CustomFilterCreate,
-  FilterCreate,
-  FilterType,
-} from 'src/app/models/customfilter';
+import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
+import {allFilterKeys, CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {customFilterSchema, getFilterConditions, getFilterValueType, newCustomFilter, newFilter} from './form-schema';
-import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
-import { popResultSelector } from 'rxjs/internal/util/args';
 
 @Component({
   selector: 'edit-filter-dialog',
@@ -43,10 +35,10 @@ export class EditFilterDialogComponent implements AfterViewInit {
   readonly customFilter = input<CustomFilter | null>(null);
 
   // Component outputs
-  /** Emits the ID of the custom filter when the dialog is closed 
-   * 
+  /** Emits the ID of the custom filter when the dialog is closed
+   *
    * If the dialog is closed without saving, emits `-1` else emits the ID of the created/updated filter.
-  */
+   */
   readonly dialogClosed = output<number>();
 
   // Component signals
@@ -130,7 +122,7 @@ export class EditFilterDialogComponent implements AfterViewInit {
   // Signal Form
   /** Signal Form for CustomFilter */
   protected readonly customFilterForm = form(this.customFilterData, customFilterSchema);
-  protected readonly submitResult = signal<{type: 'success' | 'error', message: string}>({type: 'success', message: ''});
+  protected readonly submitResult = signal<{type: 'success' | 'error'; message: string}>({type: 'success', message: ''});
 
   // Called when the form is submitted. This will trigger validation and then submit to server if valid.
   protected async formSubmit(event: Event): Promise<void> {
@@ -152,7 +144,7 @@ export class EditFilterDialogComponent implements AfterViewInit {
         setTimeout(() => {
           this.closeDialog(result.id);
         }, 3000);
-        return undefined;  // Return undefined to indicate success
+        return undefined; // Return undefined to indicate success
       } catch (error) {
         console.error('Error submitting form:', error);
         this.submitResult.set({type: 'error', message: 'Error submitting form.' + (error as Error).message});

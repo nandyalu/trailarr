@@ -20,7 +20,6 @@
             "outputPath": "../frontend-build",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js", "@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
             "styles": ["src/styles/styles.scss", "src/styles/animations.scss"],

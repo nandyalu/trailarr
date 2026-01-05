@@ -8,7 +8,7 @@ from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import delete_old_logs, trailer_cleanup
-from core.tasks.files_scan import scan_disk_for_trailers
+from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_updates
 
@@ -45,9 +45,9 @@ def _refresh_images(*, trace_id: str):
     return
 
 
-def _scan_disk_for_trailers(*, trace_id: str):
+def _scan_all_media_folders(*, trace_id: str):
     """Scans the disk for trailers."""
-    run_async(scan_disk_for_trailers, trace_id=trace_id)
+    run_async(scan_all_media_folders, trace_id=trace_id)
     return
 
 
@@ -116,16 +116,16 @@ def scan_disk_for_trailers_job():
         None
     """
     scheduler.add_job(
-        func=_scan_disk_for_trailers,
+        func=_scan_all_media_folders,
         kwargs={"trace_id": get_new_trace_id()},
         trigger="interval",
         minutes=app_settings.monitor_interval,
-        id="scan_disk_for_trailers_job",
-        name="Scan Disk for Trailers",
+        id="scan_all_media_folders_job",
+        name="Scan All Media Folders",
         next_run_time=datetime.now(timezone.utc) + timedelta(seconds=480),
         max_instances=1,
     )
-    logger.info("Scan Disk for Trailers job scheduled!")
+    logger.info("Scan All Media Folders job scheduled!")
     return
 
 

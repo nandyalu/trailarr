@@ -35,7 +35,7 @@
   } @else {
     <div class="logs-table" appScrollNearEnd (nearEnd)="loadMore()">
       @for (log of filteredLogs(); track log.id) {
-        <div class="logs-row">
+        <div class="logs-row" animate.enter="enter-animation">
           <details>
             <summary>
               <p class="logs-text {{ log.level.toLowerCase() }}" title="{{ log.level.toLowerCase() }} log">
@@ -77,7 +77,11 @@
                 </i>
                 <strong>{{ log.loggername }}: </strong>{{ log.message }}
               </p>
-              <small class="logs-dt">{{ log.created! | timeago }}</small>
+              @let mediaId = getMediaId(log);
+              @if (mediaId !== null) {
+                <button class="secondary" [routerLink]="['/media', mediaId]">Open Media</button>
+              }
+              <small class="logs-dt">{{ log.created! | timediff | async }}</small>
             </summary>
             <!-- <em class="logs-type">{{ log.level}} | {{ log.filename }}:{{ log.lineno }} </em> -->
             <p class="logs-raw">{{ getRawLog(log) }}</p>

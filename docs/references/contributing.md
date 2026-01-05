@@ -2,6 +2,8 @@
 
 First off, thank you for considering contributing to Trailarr. It's people like you that make Trailarr such a great tool.
 
+> **Note:** If you want to contribute, but are stuck or unsure about something, please reach out on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are happy to help! Don't hesitate to ask for help and don't stress yourself out! We can work out things as long as you are friendly and respectful.
+
 ## Getting Started
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandyalu/trailarr)
 

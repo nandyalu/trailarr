@@ -94,3 +94,7 @@
 .table-row:hover:not(:first-child) {
   background-color: var(--color-tertiary-container);
 }
+
+.enter-animation {
+  animation: fadeSlideUp 0.5s ease-out backwards;
+}

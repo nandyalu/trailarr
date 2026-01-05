@@ -1,21 +1,21 @@
 import {DATE_PIPE_DEFAULT_OPTIONS} from '@angular/common';
 import {provideHttpClient} from '@angular/common/http';
-import {ApplicationConfig, ErrorHandler, importProvidersFrom} from '@angular/core';
-import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading} from '@angular/router';
-import {ApiModule} from 'generated-sources/openapi';
-import {TimeagoModule} from 'ngx-timeago';
-import {routes} from './app.routes';
-import {GlobalErrorHandler} from './error-handler';
+import {ApplicationConfig, ErrorHandler, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
 import {provideSignalFormsConfig} from '@angular/forms/signals';
 import {NG_STATUS_CLASSES} from '@angular/forms/signals/compat';
+import {PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading, withViewTransitions} from '@angular/router';
+import {ApiModule} from 'generated-sources/openapi';
+import {routes} from './app.routes';
+import {GlobalErrorHandler} from './error-handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZonelessChangeDetection(),
     provideRouter(
       routes,
       withComponentInputBinding(),
       withPreloading(PreloadAllModules),
-      // withViewTransitions(),
+      withViewTransitions({skipInitialTransition: true}),
       withInMemoryScrolling({scrollPositionRestoration: 'top', anchorScrolling: 'enabled'}),
     ),
     provideSignalFormsConfig({classes: NG_STATUS_CLASSES}),
@@ -23,6 +23,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     // withInterceptors([authInterceptor]),
     {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium', timezone: 'UTC'}},
-    importProvidersFrom(ApiModule.forRoot({rootUrl: ''}), TimeagoModule.forRoot()),
+    importProvidersFrom(ApiModule.forRoot({rootUrl: ''})),
   ],
 };

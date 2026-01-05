@@ -91,7 +91,7 @@ async def download_missing_trailers() -> None:
     processed_media_ids = set()  # Track processed media to avoid reprocessing
 
     while True:
-        db_media_list = media_manager.read_all(None, "monitored")
+        db_media_list = media_manager.read_all_generator(monitored_only=True)
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
         if not trailer_profiles:
@@ -121,6 +121,7 @@ async def download_missing_trailers() -> None:
             if matching_profiles:
                 media_to_process = db_media
                 matching_profiles_for_media = matching_profiles
+                db_media_list.close()  # Close the generator
                 break  # Found a media item to process
 
         if not media_to_process:
