@@ -597,14 +597,14 @@ standard-no-fastapi-cloud-cli = [
 
 [[package]]
 name = "fastcore"
-version = "1.11.0"
+version = "1.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/27/1e57ad8e3b32efb838a5e1b6997a7f2c4939ec9d2adbe328687aa52be6d9/fastcore-1.11.0.tar.gz", hash = "sha256:8257b967545787cedba052ee9f36f4f534336d342600403c74aae59c6848194e", size = 86327, upload-time = "2026-01-04T23:06:19.431Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/79/d50000d472d9bf1059e84d6a19b46e377f5a6928f4710eb064f4588602d0/fastcore-1.11.1.tar.gz", hash = "sha256:9cc0d94ce208d6a3453c047030db3b34adc2c754ef10ab47c2002f7d6d7d6da6", size = 85717, upload-time = "2026-01-05T05:09:43.393Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f7/f2/222e66d66c4fa599573d35822c241fe57f0f799ffdf77d0f5ccb49e456e0/fastcore-1.11.0-py3-none-any.whl", hash = "sha256:72db0c32a5398e49ad0c141a3a7be8a3706234198a663d348256465d5538234e", size = 88909, upload-time = "2026-01-04T23:06:17.465Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/fc/c4ee1f8f98d7fa1c28210dd123a2c95ab9f2756f741696a52b7a78acd858/fastcore-1.11.1-py3-none-any.whl", hash = "sha256:1bbbf4d615cb3d6c6645f8b88a77b6a316f9023fc1101e308f180d2192cb02f4", size = 88272, upload-time = "2026-01-05T05:09:41.745Z" },
 ]
 
 [[package]]
@@ -1798,7 +1798,6 @@ dev = [
 ]
 docs = [
     { name = "mkdocs-git-revision-date-localized-plugin" },
-    { name = "mkdocs-github-changelog" },
     { name = "mkdocs-glightbox" },
     { name = "mkdocs-material" },
 ]
@@ -1838,7 +1837,6 @@ dev = [
 ]
 docs = [
     { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.5.0" },
-    { name = "mkdocs-github-changelog", specifier = "==0.1.0" },
     { name = "mkdocs-glightbox", specifier = "==0.5.2" },
     { name = "mkdocs-material", specifier = "==9.7.1" },
 ]

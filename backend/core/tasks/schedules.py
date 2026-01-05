@@ -7,7 +7,7 @@ from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
-from core.tasks.cleanup import delete_old_logs, trailer_cleanup
+from core.tasks.cleanup import delete_old_logs
 from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_updates
@@ -56,7 +56,7 @@ def _cleanup_trailers(*, trace_id: str):
 
     async def _cleanup_tasks():
         await delete_old_logs()
-        await trailer_cleanup()
+        # await trailer_cleanup()
 
     run_async(_cleanup_tasks, trace_id=trace_id)
     return
