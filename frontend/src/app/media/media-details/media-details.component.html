@@ -9,24 +9,14 @@
         <div class="media-fanart-overlay" [style]="'background-image: url(' + selectedMedia_.fanart_path + ');'"></div>
       }
       <div class="media-poster" [class.sm-none]="!selectedMedia_.poster_path" title="{{ selectedMedia_.title }} Poster">
-        <img
-          src="{{ selectedMedia_.poster_path || 'assets/poster-lg.png' }}"
-          alt="{{ selectedMedia_.title }}"
-          [style]="'view-transition-name: media-' + selectedMedia_.id + '-image'"
-        />
+        <img src="{{ selectedMedia_.poster_path || 'assets/poster-lg.png' }}" alt="{{ selectedMedia_.title }}" />
       </div>
       <div class="media-details-col">
         <div class="media-details-row">
           @if (selectedMedia_.trailer_exists) {
             <div class="icon-link" title="Trailer Downloaded">
               <!-- Show Downloaded icon -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 -960 960 960"
-                class="downloaded-icon success"
-                aria-label="Trailer Exists"
-                [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon success" aria-label="Trailer Exists">
                 <path
                   d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z"
                 />
@@ -52,13 +42,7 @@
                 @if (selectedMedia_.monitor) {
                   <span>
                     <!-- Show Monitored icon -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 -960 960 960"
-                      class="monitored-icon"
-                      aria-label="Monitored"
-                      [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
-                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
                       <path
                         d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
                       />
@@ -67,13 +51,7 @@
                 } @else {
                   <span>
                     <!-- Show Not Monitored icon -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 -960 960 960"
-                      class="not-monitored-icon"
-                      aria-label="Not Monitored"
-                      [style]="'view-transition-name: media-' + selectedMedia_.id + '-logo'"
-                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon" aria-label="Not Monitored">
                       <path
                         d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
                       />
@@ -83,13 +61,7 @@
               </div>
             }
           }
-          <span
-            class="text-lg title-text"
-            appCopyToClipboard
-            [textToCopy]="selectedMedia_.title"
-            [title]="selectedMedia_.title"
-            [style]="'view-transition-name: media-' + selectedMedia_.id + '-title'"
-          >
+          <span class="text-lg title-text" appCopyToClipboard [textToCopy]="selectedMedia_.title" [title]="selectedMedia_.title">
             {{ selectedMedia_.title }}
           </span>
           <!-- Add Previous and Next icons here -->

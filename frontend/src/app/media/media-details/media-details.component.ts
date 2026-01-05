@@ -1,5 +1,17 @@
 import {TitleCasePipe} from '@angular/common';
-import {Component, computed, effect, ElementRef, HostListener, inject, input, signal, ViewChild, ViewContainerRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  signal,
+  viewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
@@ -28,6 +40,7 @@ import {FilesComponent} from './files/files.component';
   ],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
@@ -235,7 +248,7 @@ export class MediaDetailsComponent {
   }
 
   // Reference to the dialog element
-  @ViewChild('deleteDialog') deleteDialog!: ElementRef<HTMLDialogElement>;
+  readonly deleteDialog = viewChild.required<ElementRef<HTMLDialogElement>>('deleteDialog');
 
   /**
    * Displays the delete dialog modal.
@@ -245,7 +258,7 @@ export class MediaDetailsComponent {
    * @returns {void}
    */
   showDeleteDialog(): void {
-    this.deleteDialog.nativeElement.showModal(); // Open the dialog
+    this.deleteDialog().nativeElement.showModal(); // Open the dialog
   }
 
   /**
@@ -255,7 +268,7 @@ export class MediaDetailsComponent {
    * and invoking the `close` method on it.
    */
   closeDeleteDialog(): void {
-    this.deleteDialog.nativeElement.close(); // Close the dialog
+    this.deleteDialog().nativeElement.close(); // Close the dialog
   }
 
   /**

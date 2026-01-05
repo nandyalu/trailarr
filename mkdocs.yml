@@ -15,14 +15,19 @@ theme:
     - content.code.copy
     - content.code.select
     - content.tabs.link
+    - content.tooltips
+    - navigation.expand
     - navigation.footer
     - navigation.indexes
     - navigation.instant
+    - navigation.instant.preview
     - navigation.instant.progress
     - navigation.path
+    - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
+    - search.highlight
     - search.suggest
     - toc.follow
   palette:
@@ -49,6 +54,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
+hooks:
+  - docs/hooks.py
 plugins:
   - search
   - git-revision-date-localized:
@@ -112,6 +119,8 @@ extra:
       link: https://www.reddit.com/r/trailarr
     - icon: fontawesome/brands/discord
       link: https://discord.gg/KKPr5kQEzQ
+extra_css:
+  - extra.css
 nav:
   - Trailarr: index.md
   - Getting Started:
@@ -161,6 +170,7 @@ nav:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md
   - Release Notes:
+    - '2026': release-notes/2026.md
     - '2025': release-notes/2025.md
     - '2024': release-notes/2024.md
   - References:

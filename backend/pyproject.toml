@@ -12,10 +12,10 @@ dependencies = [
     "apscheduler==3.11.2",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.127.1",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.128.0",
     "pillow==12.0.0",
     "pytz>=2025.2",
-    "sqlmodel==0.0.30",
+    "sqlmodel==0.0.31",
     "yt-dlp[curl-cffi,default]==2025.12.8",
 ]
 
@@ -42,3 +42,7 @@ testing = [
     "pytest-asyncio==1.3.0",
     "pytest-cov==7.0.0",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--rootdir=backend --cov=backend --cov-report=xml --cov-report=term"
+testpaths = ["tests"]

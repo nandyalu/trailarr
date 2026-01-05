@@ -26,3 +26,7 @@ class AppSQLModel(SQLModel):
             # Assume naive datetime loaded from DB is UTC
             return value.replace(tzinfo=timezone.utc)
         return value
+
+    @classmethod
+    def convert_to_utc(cls, value: datetime) -> datetime:
+        return value.astimezone(timezone.utc)

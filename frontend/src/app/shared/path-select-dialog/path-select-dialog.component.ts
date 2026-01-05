@@ -1,4 +1,4 @@
-import {Component, effect, ElementRef, inject, input, model, output, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {SettingsService} from 'src/app/services/settings.service';
 import {LoadIndicatorComponent} from '../load-indicator';
@@ -8,6 +8,7 @@ import {LoadIndicatorComponent} from '../load-indicator';
   imports: [FormsModule, LoadIndicatorComponent],
   templateUrl: './path-select-dialog.component.html',
   styleUrl: './path-select-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PathSelectDialogComponent {
   protected readonly settingsService = inject(SettingsService);

@@ -1,4 +1,4 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 from . import base
 from core.base.database.models.download import (
     Download,
@@ -26,6 +26,27 @@ def read(
     """
     db_download = base._get_db_item(download_id, _session)
     return base.convert_to_read_item(db_download)
+
+
+@manage_session
+def read_all_raw(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[dict]:
+    """Get all downloads in raw dictionary format.
+    Args:
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[dict]: List of all downloads as dictionaries.
+    """
+    query = text("SELECT * FROM download")
+    result = _session.execute(query)
+    rows = []
+    for row in result.mappings():
+        item = dict(row)
+        rows.append(item)
+    return rows
 
 
 @manage_session

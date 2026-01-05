@@ -18,10 +18,13 @@ The Tasks page shows all background jobs that keep Trailarr running smoothly. Yo
 - Checks if a new Docker image is available for Trailarr and notifies in the UI/logs.
 - Does not auto-update; you must update the container manually.
 
-### **Scan Disk for Trailers**
+### **Scan All Media Folders**
+
+<!-- md:version:upd 0.6.5 -->
 
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 8 minutes after app launch).
-- Scans your media folders for trailers and updates the database with found trailers.
+- Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers.
+- This task refreshes the files and folders for all media items in Trailarr.
 - Useful if you add/delete trailers manually or outside of Trailarr.
 
 ### **Download Missing Trailers**

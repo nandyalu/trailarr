@@ -37,12 +37,9 @@ async def refresh_and_save_media_images(
         db_media_list = media_manager.read_recent(movies_only=is_movie)
     else:
         # Get all media from the database
-        db_media_list = media_manager.read_all(movies_only=is_movie)
+        db_media_list = media_manager.read_all_generator(movies_only=is_movie)
     media_image_list: list[MediaImage] = []
-    logger.debug(
-        "Refreshing images for"
-        f" {len(db_media_list)} {'movies' if is_movie else 'series'}"
-    )
+    logger.debug(f"Refreshing images for {'movies' if is_movie else 'series'}")
     # Create MediaImage objects for each movie/series
     for db_media in db_media_list:
         poster_image = MediaImage(

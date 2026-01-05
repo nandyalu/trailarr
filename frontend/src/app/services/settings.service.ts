@@ -17,10 +17,14 @@ export class SettingsService {
   readonly filesPath = signal<string>('');
   readonly filesResource = httpResource<FolderInfo[]>(
     () => {
+      const path = this.filesPath();
+      if (!path) {
+        return undefined;
+      }
       return {
         url: this.filesUrl + 'files_simple',
         params: {
-          path: this.filesPath(),
+          path: path,
         },
       };
     },

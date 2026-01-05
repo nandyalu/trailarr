@@ -1,8 +1,6 @@
-import asyncio
-from datetime import datetime as dt, timezone
+from datetime import datetime as dt
 import hashlib
 import os
-from pathlib import Path
 import re
 import shutil
 import zoneinfo
@@ -14,32 +12,6 @@ from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 
 logger = ModuleLogger("FilesHandler")
-
-
-class FileInfo(BaseModel):
-    """Contains information about a file. \n
-    Attrs:
-        - type (str): Type of the entry (file).
-        - name (str): Name of the file.
-        - size (str): Size of the file in human-readable format (e.g. "10 KB").
-        - created (str): Creation time of the file in "YYYY-MM-DD HH:MM:SS"
-            format.
-    """
-
-    type: str = Field(default="file", description="Type of the entry (file).")
-    name: str = Field(..., description="Name of the file.")
-    size: str = Field(
-        "0 KB",
-        description=(
-            "Size of the file in human-readable format (e.g. '10 KB')."
-        ),
-    )
-    created: str = Field(
-        ...,
-        description=(
-            "Creation time of the file in 'YYYY-MM-DD HH:MM:SS' format."
-        ),
-    )
 
 
 class FolderInfo(BaseModel):
@@ -81,7 +53,7 @@ class FolderInfo(BaseModel):
         ),
     )
 
-    def __lt__(self, other: "FileInfo"):
+    def __lt__(self, other: "FolderInfo"):
         if self.type == other.type:
             # If both are of the same type, sort by name
             return self.name < other.name
@@ -118,74 +90,14 @@ class FilesHandler:
     @staticmethod
     def _get_system_timezone():
         """Get the system timezone from TZ environment variable or default to UTC."""
-        tz_env = os.environ.get("TZ")
-        if tz_env:
-            try:
-                return zoneinfo.ZoneInfo(tz_env)
-            except Exception:
-                logger.warning(
-                    f"Invalid timezone in TZ env var: {tz_env}, falling back"
-                    " to UTC"
-                )
-                return timezone.utc
-        return timezone.utc
+        tz_env = os.environ.get("TZ", "UTC")
+        return zoneinfo.ZoneInfo(tz_env)
 
     @staticmethod
     def _format_dt(timestamp: float) -> str:
         """Format a timestamp to a string in the system timezone."""
         system_tz = FilesHandler._get_system_timezone()
         return dt.fromtimestamp(timestamp, tz=system_tz).isoformat()
-
-    @staticmethod
-    async def _get_file_info(entry: os.DirEntry[str]) -> FolderInfo:
-        info = await aiofiles.os.stat(entry.path)
-        return FolderInfo(
-            type="file",
-            name=unicodedata.normalize("NFKD", entry.name),
-            size=FilesHandler._convert_file_size(info.st_size),
-            path=entry.path,
-            created=FilesHandler._format_dt(info.st_ctime),
-        )
-
-    @staticmethod
-    async def get_folder_files(folder_path: str) -> FolderInfo | None:
-        """Get information about all files and [sub]folders in a given \
-            folder (recursively).\n
-        Args:
-            folder_path (str): Path of the folder to search.
-        Returns:
-            FolderInfo|None:
-                - FolderInfo object representing files and folders \
-                    inside a given folder.
-                - None: If the folder is empty or does not exist."""
-        _is_dir = await aiofiles.os.path.isdir(folder_path)
-        if not _is_dir:
-            return None
-        dir_info: list[FolderInfo] = []
-        for entry in await aiofiles.os.scandir(folder_path):
-            if entry.is_file():
-                dir_info.append(await FilesHandler._get_file_info(entry))
-            elif entry.is_dir():
-                child_dir_info = await FilesHandler.get_folder_files(
-                    entry.path
-                )
-                if child_dir_info:
-                    dir_info.append(child_dir_info)
-
-        # Sort the list of files and folders by name, folders first and \
-        # then files
-        dir_info.sort(key=lambda x: x)
-        # return dir_info
-        dir_size = sum(p.stat().st_size for p in Path(folder_path).rglob("*"))
-        dir_size_str = FilesHandler._convert_file_size(dir_size)
-        return FolderInfo(
-            type="folder",
-            name=unicodedata.normalize("NFKD", os.path.basename(folder_path)),
-            files=dir_info,
-            size=dir_size_str,
-            path=folder_path,
-            created=FilesHandler._format_dt(os.path.getctime(folder_path)),
-        )
 
     @staticmethod
     async def _get_file_fol_info(entry: os.DirEntry[str]) -> FolderInfo:
@@ -596,91 +508,6 @@ class FilesHandler:
         if trailer_path:
             return await FilesHandler.delete_file(trailer_path)
         return False
-
-    @staticmethod
-    async def cleanup_tmp_dir() -> bool:
-        """Cleanup any residual files left in the '/tmp' directory.\n
-        Returns:
-            bool: True if the '/tmp' directory is cleaned up successfully, False otherwise.
-        """
-        try:
-            tmp_dir = "/var/lib/trailarr/tmp"
-            if not os.path.exists(tmp_dir):
-                tmp_dir = "/app/tmp"
-
-            for entry in await aiofiles.os.scandir(tmp_dir):
-                if entry.is_file():
-                    await FilesHandler.delete_file(entry.path)
-                elif entry.is_dir():
-                    await FilesHandler.delete_folder(entry.path)
-            logger.debug("Temporary directory cleaned up.")
-            return True
-        except Exception as e:
-            logger.error(
-                f"Failed to cleanup temporary directory. Exception: {e}"
-            )
-            return False
-
-    @staticmethod
-    async def scan_root_folders_for_trailers(root_media_dir: str) -> list[str]:
-        """Find all folders containing trailers in the specified root folders.\n
-        Finds trailers in the media folder and also in a 'trailer' folder\n
-        Args:
-            root_media_dir (str): The root directory to search for trailers.\n
-        Returns:
-            list[str]: Set of folder paths containing trailers."""
-        logger.debug(f"Scanning '{root_media_dir}' for trailers.")
-        if not FilesHandler.check_folder_exists(root_media_dir):
-            logger.warning(
-                f"Root media directory '{root_media_dir}' is not a directory."
-            )
-            return []
-        inline_trailers = set()
-        folder_trailers = set()
-        count = 0
-        tasks = []
-        media_folders = []
-
-        semaphore = asyncio.Semaphore(10)  # Limit scanning 10 files at a time
-
-        async def bounded(coro):
-            async with semaphore:
-                return await coro
-
-        # Scan each immediate subfolder (media folder) in the root directory
-        for media_folder in await aiofiles.os.scandir(root_media_dir):
-            if not media_folder.is_dir():
-                continue
-            count += 1
-            media_folders.append(media_folder)
-            # Launch both checks concurrently for each media folder
-            tasks.append(
-                bounded(
-                    FilesHandler._get_inline_trailer_path(media_folder.path)
-                )
-            )
-            tasks.append(
-                bounded(
-                    FilesHandler._get_folder_trailer_path(media_folder.path)
-                )
-            )
-
-        results = await asyncio.gather(*tasks)
-        for idx, media_folder in enumerate(media_folders):
-            inline_result = results[idx * 2]
-            folder_result = results[idx * 2 + 1]
-            if inline_result:
-                inline_trailers.add(media_folder.path)
-            if folder_result:
-                folder_trailers.add(media_folder.path)
-        msg = (
-            f"Scanned Root folder '{root_media_dir}' ({count} media folders): "
-            f"Found {len(folder_trailers)} (folder) and"
-            f" {len(inline_trailers)} (inline) trailers."
-        )
-        logger.info(msg)
-        # return inline_trailers.union(folder_trailers)
-        return [r for r in results if r]
 
     @staticmethod
     async def rename_file_fol(old_path: str, new_path: str) -> bool:
