@@ -1,17 +1,14 @@
 # 
 
 ![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png)
-<!-- ![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-512-lg.png#only-dark)
-![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-light-512-lg.png#only-light) -->
-
-<!-- # Trailarr -->
 
 <hr>
+
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
-  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.124.4-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.5-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
-  <a href="https://github.com/nandyalu/trailarr" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
+  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.128.0-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.6-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
 <p align="center">
@@ -30,10 +27,9 @@ Github: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trai
 
 Docker Hub: [https://hub.docker.com/r/nandyalu/trailarr/](https://hub.docker.com/r/nandyalu/trailarr/){:target="_blank"}
 
-Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr){:target="_blank"}
+Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr/)
 
-Reddit:
-[https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr){:target=_blank}
+Reddit: [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr/)
 
 Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target="_blank"}
 
@@ -55,11 +51,11 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Installation & Setup
 
-Trailarr can be installed using Docker (recommended) or directly on Debian based systems. See the [Documentation](https://nandyalu.github.io/trailarr/){:target="_blank"} for detailed instructions on [Getting Started](getting-started/index.md) and [User Guide](user-guide/index.md).
+Trailarr can be installed using Docker (recommended) or directly on Debian based systems. See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on [Getting Started](https://nandyalu.github.io/trailarr/getting-started/) and [User Guide](https://nandyalu.github.io/trailarr/user-guide/).
 
 We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D){:target="_blank"} that explains Trailarr installation and setup on Unraid.
 
-<iframe width="100%" style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/Hz31zWEtY5k?si=dTgRuFwXyF9-Tufh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/maxresdefault.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42"){:target="_blank"}
 
 ## Dependencies
 
@@ -112,9 +108,9 @@ If you have any suggestions or ideas for new features, please feel free to reach
 
 ## Contributing
 
-Contributions are welcome! Please see the [Contributing](references/contributing.md) guide for more information.
+Contributions are welcome! Please see the [Contributing](https://nandyalu.github.io/trailarr/references/contributing/) guide for more information.
 
-Looking for a backend (python) / frontend developers (Angular) to help with the UI, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
+Looking for a backend (python) / frontend developers (Angular) to help with the project, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
 ## License
 
@@ -122,4 +118,4 @@ This project is licensed under the terms of the GPL v3 license. See [GPL-3.0 lic
 
 ## Disclaimer
 
-For important legal information about using Trailarr, please refer to our [Legal Disclaimer](references/legal-disclaimer.md).
+For important legal information about using Trailarr, please refer to our [Legal Disclaimer](https://nandyalu.github.io/trailarr/references/legal-disclaimer/).

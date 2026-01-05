@@ -81,7 +81,7 @@ async def test_download_missing_trailers_prevents_infinite_loop():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.media_manager.read_all"
+        "core.download.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
     ) as mock_trailerprofile, patch(
@@ -120,9 +120,12 @@ async def test_download_missing_trailers_prevents_infinite_loop():
             downloaded_at=None,
         )
 
-        # Database always returns the same media item
+        # Database should always yield the same media item
         # This simulates the scenario where download fails and media remains monitored
-        mock_db_manager_read_all.return_value = [media]
+        def fake_media_generator(monitored_only=False):
+            yield media
+
+        mock_db_manager_read_all.side_effect = fake_media_generator
 
         # Configure trailer profiles
         mock_profile = MagicMock()
@@ -170,7 +173,7 @@ async def test_download_missing_trailers_no_profiles():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.media_manager.read_all"
+        "core.download.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
     ) as mock_trailerprofile:
@@ -179,9 +182,10 @@ async def test_download_missing_trailers_no_profiles():
         mock_settings.monitor_enabled = True
 
         # Configure database manager mock
-        # mock_db_manager = MagicMock()
-        # mock_db_manager_class.return_value = mock_db_manager
-        mock_db_manager_read_all.return_value = []
+        def fake_media_generator(monitored_only=False):
+            yield from []
+
+        mock_db_manager_read_all.side_effect = fake_media_generator
 
         # No profiles
         mock_trailerprofile.get_trailerprofiles.return_value = []
