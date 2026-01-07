@@ -23,7 +23,7 @@ The Tasks page shows all background jobs that keep Trailarr running smoothly. Yo
 <!-- md:version:upd 0.6.5 -->
 
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 8 minutes after app launch).
-- Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers.
+- Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers and marks download records as deleted if files are missing.
 - This task refreshes the files and folders for all media items in Trailarr.
 - Useful if you add/delete trailers manually or outside of Trailarr.
 
@@ -49,12 +49,14 @@ The Tasks page shows all background jobs that keep Trailarr running smoothly. Yo
 
 - Runs every 6 hours (first run starts 12 minutes after app launch).
 - Updates artwork and images for your media library.
-- Ensures posters, backgrounds, and other images are up to date.
+- Ensures posters, and backgrounds are up to date.
 
 ### **Trailer Cleanup**
 
 - Runs once a day (first run starts 4 hours after app launch).
 - Cleans up broken, incomplete, or audio-less trailers from your library.
+- If a media item is marked as trailer existing but has no downloaded trailers, it will be marked as not having trailers. Does not change monitoring status.
+- If a media item has downloaded trailers but file does not exist, the download record will be marked as file deleted. Does not change monitoring status.
 - Helps keep your storage clean and avoids playback issues.
 
 ## Queued Tasks

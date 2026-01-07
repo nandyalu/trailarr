@@ -1,6 +1,5 @@
 import core.base.database.manager.media as media_manager
 from core.base.database.models.helpers import MediaImage
-from core.base.database.models.media import MediaUpdate
 from core.download.image import refresh_media_images
 from app_logger import ModuleLogger
 
@@ -59,20 +58,4 @@ async def refresh_and_save_media_images(
     # Refresh images in the system, and/or get updated paths
     # refresh_media_images modifies the MediaImage objects in place
     await refresh_media_images(is_movie, media_image_list)
-
-    # Update the database with new image paths
-    media_update_dict: dict[int, MediaUpdate] = {}
-    for media_image in media_image_list:
-        if media_image.id in media_update_dict:
-            media_update = media_update_dict[media_image.id]
-        else:
-            media_update = MediaUpdate(id=media_image.id)
-        if media_image.is_poster:
-            media_update.poster_path = media_image.image_path
-        else:
-            media_update.fanart_path = media_image.image_path
-        media_update_dict[media_image.id] = media_update
-    update_list = [update_obj for update_obj in media_update_dict.values()]
-    # Save changes to database
-    media_manager.update_bulk(update_list)
     return

@@ -22,7 +22,6 @@ async def scan_media_folder(
         tuple[int, int]: A tuple containing the number of new trailer files found \
             and the number of missing trailer files.
     """
-    found_paths: set[str] = set()
     if not media.folder_path:
         return 0, 0
     if scanner is None:
@@ -44,12 +43,13 @@ async def scan_media_folder(
     existing_paths = {d.path for d in all_downloads}
 
     # Check if any trailer paths are new downloads
+    new_count = 0
     for t_path in trailer_paths:
         if t_path in existing_paths:
             # Already recorded as download
             continue
         # New trailer download found
-        found_paths.add(t_path)
+        new_count += 1
         logger.info(
             f"Found new trailer file: '{t_path}' for '{media.title}'"
             f" [{media.id}]"
@@ -62,7 +62,8 @@ async def scan_media_folder(
     # Mark downloads as non-existent if file is deleted
     missing_count = 0
     for download in all_downloads:
-        if download.path in found_paths:
+        if download.path in trailer_paths:
+            # Already found in current scan
             continue
         if not os.path.exists(download.path):
             missing_count += 1
@@ -72,7 +73,7 @@ async def scan_media_folder(
             )
             download_manager.mark_as_deleted(download.id)
 
-    return len(found_paths), missing_count
+    return new_count, missing_count
 
 
 async def scan_all_media_folders() -> None:

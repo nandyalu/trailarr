@@ -9,6 +9,7 @@ from async_lru import alru_cache
 from app_logger import logger
 from config.settings import app_settings
 from core.base.database.models.helpers import MediaImage
+from core.base.database.manager import media as media_manager
 
 POSTER = (300, 450)
 FANART = (1280, 720)
@@ -146,6 +147,7 @@ async def refresh_media_images(
     If an image with the same URL already exists, image path will be set to existing image. \n
     Note: \n
         The `media_list` objects will be modified in place. \n
+        Also updates the database with new image paths. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         media_list (list[MediaImage]): List of media image objects. \n
@@ -157,7 +159,10 @@ async def refresh_media_images(
 
     async def download(media_image: MediaImage):
         async with sem:  # Wait for a free slot in the semaphore
-            return await process_image(is_movie, media_image)
+            updated = await process_image(is_movie, media_image)
+            if updated:
+                media_manager.update_media_image(media_image)
+            return
 
     # Start all downloads and wait for them to complete
     await asyncio.gather(*(download(media) for media in media_list))

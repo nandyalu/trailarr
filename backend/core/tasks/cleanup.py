@@ -3,8 +3,6 @@ from app_logger import ModuleLogger
 from config.logs import manager as logs_manager
 import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
-from core.base.database.models.helpers import MediaUpdateDC
-from core.base.database.models.media import MonitorStatus
 from core.download import video_analysis
 from core.files_handler import FilesHandler
 
@@ -39,42 +37,24 @@ async def delete_trailer(trailer_path: str, download_id: int):
     return None
 
 
-def monitor_media(media_id: int):
-    """
-    Set the monitor status of the media to True. \n
-    Args:
-        media_id (int): ID of the media. \n
-    Returns:
-        None
-    """
-    media_manager.update_media_status(
-        MediaUpdateDC(
-            id=media_id,
-            monitor=True,
-            status=MonitorStatus.MONITORED,
-            trailer_exists=False,
-        )
-    )
-    return None
-
-
 async def trailer_cleanup():
     """
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
     Also cleanup any residual files left in '/tmp' directory.
     """
     logger.info("Running trailer cleanup task...")
-    # Get all media from the database and filter out the ones that have no trailers
-    db_media_list = media_manager.read_all()
-    media_with_trailers = [
-        media for media in db_media_list if len(media.downloads) > 0
-    ]
-    logger.info(
-        f"Analyzing {len(media_with_trailers)} media items with trailers."
+    # Get all media from the database that are downloaded
+    media_with_trailers = media_manager.read_all_generator(
+        downloaded_only=True
     )
+    logger.info("Analyzing media items with trailers.")
     # Analyze the trailer files and remove the ones without audio
     for media in media_with_trailers:
-        logger.debug(f"Checking trailer for {media.title}")
+        # Skip media with no downloads
+        if not media.downloads:
+            media_manager.update_no_trailers_exist(media.id)
+            continue
+        logger.debug(f"Analyzing trailers for {media.title}")
         for download in media.downloads:
             _path = download.path
             # Skip if file has already been deleted or path is missing
@@ -82,6 +62,12 @@ async def trailer_cleanup():
                 continue
             # Check if file exists on disk
             if not await aiofiles.os.path.exists(_path):
+                logger.info(
+                    f"Trailer file '{_path}' does not exist on disk for"
+                    f" '{media.title}' [{media.id}]. Marking as deleted."
+                )
+                download.file_exists = False
+                download_manager.mark_as_deleted(download.id)
                 continue
 
             # Verify the trailer has audio and video streams
@@ -89,16 +75,9 @@ async def trailer_cleanup():
             if not video_analysis.verify_trailer_streams(_path):
                 logger.info(
                     "Deleting trailer with missing audio/video for"
-                    f" {media.title}"
+                    f" {media.title} [{media.id}] at path '{_path}'."
                 )
                 download.file_exists = False
                 await delete_trailer(_path, download.id)
-        # If no valid trailers remain, set monitor to True
-        if not any(dl.file_exists for dl in media.downloads):
-            logger.info(
-                f"No valid trailers remain for {media.title}. Setting monitor"
-                " to True."
-            )
-            monitor_media(media.id)
     logger.info("Trailer cleanup task completed.")
     return None
