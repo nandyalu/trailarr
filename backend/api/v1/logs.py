@@ -37,12 +37,27 @@ def download_file():
 
 @logs_router.get("/raw")
 async def get_raw_logs(
-    level: LogLevel = LogLevel.INFO, offset: int = 0, limit: int = 1000
+    level: LogLevel = LogLevel.INFO,
+    offset: int = 0,
+    limit: int = 1000,
+    filter: str | None = None,
 ) -> list[AppLogRecordRead]:
-    return await get_all_logs(level=level, offset=offset, limit=limit)
+    """Retrieve logs from the database.
+    Args:
+        level (LogLevel, optional=LogLevel.INFO): The minimum log level to retrieve.
+        offset (int, optional=0): The number of logs to skip.
+        limit (int, optional=1000): The maximum number of logs to retrieve.
+        filter (str | None, optional=None): A filter string to search in log fields. \
+            filter must be at least 3 characters long.
+    Returns:
+        list[AppLogRecordRead]: A list of log records.
+    """
+    return await get_all_logs(
+        level=level, offset=offset, limit=limit, filter=filter
+    )
 
 
-@logs_router.get("/")
+@logs_router.get("/", deprecated=True)
 async def get_logs(page: int = 0, limit: int = 1000) -> list[Log]:
     # Read logs from file and send it back
     logs_dir = os.path.abspath(os.path.join(app_settings.app_data_dir, "logs"))
