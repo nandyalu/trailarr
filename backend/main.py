@@ -214,6 +214,7 @@ if not static_dir.exists():
         f"Frontend directory not found at {static_dir}, using fallback."
     )
     static_dir = Path("/app/frontend-build/browser")
+static_dir = static_dir.resolve()
 logging.debug(f"Using frontend directory: {static_dir}")
 
 
@@ -244,9 +245,7 @@ async def serve_frontend(rest_of_path: str = ""):
         # Otherwise, it's a frontend request and should be handled by Angular
         file_path = Path(static_dir, rest_of_path).resolve()
         # Check if the path is within the static directory
-        if not file_path.as_posix().startswith(
-            static_dir.absolute().as_posix()
-        ):
+        if not file_path.is_relative_to(static_dir):
             return HTMLResponse(status_code=404)
         if file_path.is_file():
             # If the path corresponds to a static file, return the file
