@@ -73,20 +73,6 @@ plugins:
       draggable: true
       auto_caption: false
       caption_position: bottom
-  # - swagger-ui-tag
-  - mkdocs_github_changelog:
-        # token: !ENV GITHUB_TOKEN
-        # Github token (needs repo scope for private repos, and may be worth setting for public repos due to rate limiting).
-        # github_api_url: <url>
-        # URL for github api endpoint if not standard github.com (This is not tested on github enterprise server).
-        # release_template: <jinja2 str>
-        # Jinja2 template string to override the default. 
-        # match: '[0-9+].[0-9+].[0-9]+'
-        # Regex string for matching the rleease name.
-        # autoprocess: True
-        # Autoprocess the body for user and issue/pull request links
-        enabled: True
-        # Enable or disable the plugin.
 markdown_extensions:
   - attr_list
   - admonition
