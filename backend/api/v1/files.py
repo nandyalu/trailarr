@@ -9,7 +9,7 @@ from core.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFilesAPI")
 
-files_router = APIRouter(prefix="/files", tags=["Files", "Media"])
+files_router = APIRouter(prefix="/files", tags=["Files"])
 
 CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
 

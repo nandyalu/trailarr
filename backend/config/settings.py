@@ -249,6 +249,7 @@ class _Config:
             "url_base": self.url_base,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "webui_disable_auth": self.webui_disable_auth,
             "webui_username": self.webui_username,
             "yt_cookies_path": self.yt_cookies_path,
             "ytdlp_version": self.ytdlp_version,
@@ -372,6 +373,11 @@ class _Config:
         - Default is False.
         - Valid values are True/False.
         - This setting works only if `DELETE_TRAILER_CONNECTION` is True."""
+
+    webui_disable_auth = bool_property("WEBUI_DISABLE_AUTH", default=False)
+    """Disable authentication for WebUI.
+        - Default is False.
+        - Valid values are True/False."""
 
     webui_username = str_property(
         "WEBUI_USERNAME", default=_DEFAULT_WEBUI_USERNAME

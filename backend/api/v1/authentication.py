@@ -10,8 +10,9 @@ from fastapi.security import (
 
 from config.settings import app_settings
 
-# Dependency to validate HHTP Basic Authentication in frontend
-browser_security = HTTPBasic()
+# Dependency to validate HTTP Basic Authentication in frontend
+# auto_error=False allows bypassing auth when webui_disable_auth is True
+browser_security = HTTPBasic(auto_error=False)
 
 
 # Hash a string using bcrypt
@@ -76,18 +77,25 @@ def verify_password(plain_password: str) -> bool:
 
 
 def validate_login(
-    credentials: Annotated[HTTPBasicCredentials, Depends(browser_security)],
+    credentials: Annotated[
+        HTTPBasicCredentials | None, Depends(browser_security)
+    ] = None,
 ):
     """Validates the login credentials provided by the user \n
+    Or bypasses auth if `webui_disable_auth` is True \n
     Args:
         credentials (HTTPBasicCredentials): The login credentials \n
     Raises:
         HTTPException: If the username or password is incorrect"""
-    # current_username_bytes = credentials.username.encode("utf8")
-    # correct_username_bytes = b"admin"
-    # is_correct_username = secrets.compare_digest(
-    #     current_username_bytes, correct_username_bytes
-    # )
+    # For disabled auth, always return True
+    if app_settings.webui_disable_auth:
+        return True
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
     is_correct_username = verify_username(credentials.username)
     is_correct_password = verify_password(credentials.password)
     if not (is_correct_username and is_correct_password):
@@ -99,26 +107,26 @@ def validate_login(
     return True
 
 
-# Dependency to validate the API key provided in the query or header
-header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
-query_schema = APIKeyQuery(name="api_key", auto_error=False)
-
-
 def logout_user() -> dict:
     """Force logout by returning a 401 response with WWW-Authenticate header.
     This clears browser's cached Basic Auth credentials.
-
     Returns:
         dict: Logout success message
-
     Raises:
         HTTPException: Always raises 401 to clear browser credentials
     """
+    if app_settings.webui_disable_auth:
+        return {"message": "Auth is disabled. No need to logout."}
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Logged out successfully. Please log in again.",
         headers={"WWW-Authenticate": 'Basic realm="Trailarr"'},
     )
+
+
+# Dependency to validate the API key provided in the query or header
+header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
+query_schema = APIKeyQuery(name="api_key", auto_error=False)
 
 
 def verify_api_key(api_key: str) -> bool:

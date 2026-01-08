@@ -24,7 +24,7 @@ logger = ModuleLogger("MediaAPI")
 media_router = APIRouter(prefix="/media", tags=["Media"])
 
 
-@media_router.get("/all")
+@media_router.get("/all", deprecated=True)
 async def get_all_media(
     movies_only: bool | None = None,
     filter_by: str | None = "all",
@@ -32,25 +32,26 @@ async def get_all_media(
     sort_asc: bool = True,
 ) -> list[MediaRead]:
     """Get all media from the database. \n
-    Optionally apply filters and sorting. \n
+    Optionally apply filters and sorting.
+    ## Warning:
+        🚨Deprecated, use `/all_raw` instead.🚨\n
     Args:
-        movies_only (bool, Optional=None):
-            Flag to get only movies.
-                - If `True`, it will return only `movies`.
-                - If `False`, it will return only `series`.
-                - If `None`, it will return all media items. \n
-        filter_by (str, Optional=`all`):
-            Filter the media items by a column value. Available filters are
-            - `all`
-            - `downloaded`
-            - `monitored`
-            - `missing`
-            - `unmonitored`. \n
+        movies_only (bool, Optional=None): Flag to get only movies.
+            - If `True`, it will return only `movies`.
+            - If `False`, it will return only `series`.
+            - If `None`, it will return all media items.
+        filter_by (str, Optional=`all`): Filter the media items by a \
+            column value. Available filters
+            - all
+            - downloaded
+            - monitored
+            - missing
+            - unmonitored
         sort_by (str, Optional=None): Sort the media items by `title`, `year`, \
-            `added_at`, or `updated_at`. \n
-        sort_asc (bool, Optional=True): Flag to sort in ascending order. \n
+            `added_at`, or `updated_at`.
+        sort_asc (bool, Optional=True): Flag to sort in ascending order.
     Returns:
-        list[MediaRead]: List of media objects. \n
+        list[MediaRead]: List of media objects.
     """
     media = media_manager.read_all(
         movies_only=movies_only,
@@ -81,11 +82,13 @@ async def get_all_downloads_raw() -> list[dict]:
     return downloads_raw
 
 
-@media_router.get("/")
+@media_router.get("/", deprecated=True)
 async def get_recent_media(
     limit: int = 30, offset: int = 0, movies_only: bool | None = None
 ) -> list[MediaRead]:
     """Get recent media from the database. \n
+    ## Warning:
+        🚨Deprecated, use `/all_raw` instead.🚨
     Args:
         limit (int, Optional=30): Number of items to return.
         offset (int, Optional=0): Number of items to skip.
@@ -101,28 +104,32 @@ async def get_recent_media(
     return media
 
 
-@media_router.get("/updated")
+@media_router.get("/updated", deprecated=True)
 async def get_updated_after(seconds: int) -> list[MediaRead]:
-    """Get media updated after a certain datetime. \n
+    """Get media updated after a certain datetime.
+    ## Warning:
+        🚨Deprecated, use `/all_raw` instead.🚨
     Args:
         seconds (int): Seconds since epoch to filter media.
     Returns:
-        list[MediaRead]: List of media objects. \n
+        list[MediaRead]: List of media objects.
     """
     media = media_manager.read_updated_after(seconds)
     return media
 
 
-@media_router.get("/downloaded")
+@media_router.get("/downloaded", deprecated=True)
 async def get_recently_downloaded(
     limit: int = 30, offset: int = 0
 ) -> list[MediaRead]:
-    """Get recently downloaded media from the database. \n
+    """Get recently downloaded media from the database.
+    ## Warning:
+        🚨Deprecated, use `/all_raw` instead.🚨
     Args:
         limit (int, Optional=30): Number of items to return.
-        offset (int, Optional=0): Number of items to skip. \n
+        offset (int, Optional=0): Number of items to skip.
     Returns:
-        list[MediaRead]: List of media objects. \n
+        list[MediaRead]: List of media objects.
     """
     media = media_manager.read_recently_downloaded(limit, offset)
     return media

@@ -250,7 +250,8 @@
 				"env": {
 					"PYTHON_PATH": "${workspaceFolder}/backend",
 					"PYTHONDONTWRITEBYTECODE": "1",
-					"PYTHONUNBUFFERED": "1"
+					"PYTHONUNBUFFERED": "1",
+					"WEBUI_DISABLE_AUTH": "true"
 				}
 			},
 			"group": {
