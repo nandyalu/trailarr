@@ -34,6 +34,16 @@ Select the theme for the app UI.
 !!! tip "Selection will be saved across devices"
     Once you change the theme, Trailarr will remember the selection for next time across your devices.
 
+### WebUI Disable Authentication
+
+<!-- md:version:add 0.6.6 -->
+
+- Default is `false`
+
+Enable this setting to disable authentication for the WebUI. Use with caution, as this will allow anyone with access to the WebUI to control the app without needing to log in.
+
+!!! warning
+    Disabling WebUI authentication can expose your app to unauthorized access. Only disable this if you are running the app in a secure environment.
 
 ## File Settings
 
@@ -80,6 +90,13 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
     
     Alternatively, you can try setting up a new YouTube account and use cookies from that new account.
 
+### FFMPEG Timeout
+
+<!-- md:version:add 0.6.6 -->
+
+- Default is `15` minutes. Minimum is `10`. Maximum is `300`.
+
+Set the timeout (in minutes) for downloaded video conversions using FFMPEG. If FFMPEG takes longer than this time to complete an operation, it will be terminated.
 
 ## Delete Trailer Settings
 

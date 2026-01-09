@@ -1,8 +1,28 @@
 openapi: 3.1.0
 info:
   title: Trailarr API
+  summary: Trailarr API available commands.
   description: API for Trailarr application.
+  termsOfService: https://github.com/nandyalu/trailarr
+  contact:
+    name: Trailarr - Github
+    url: https://github.com/nandyalu/trailarr
+  license:
+    name: GNU GPL 3.0
+    url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
   version: 0.6.0
+servers:
+  - url: /
+    description: Current host
+  - url: '{protocol}://{hostpath}'
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      hostpath:
+        default: 127.0.0.1:7889
 paths:
   /status:
     get:
@@ -3142,6 +3162,7 @@ components:
         - name
         - size
         - path
+        - modified
         - id
         - media_id
       title: FileFolderInfoRead
@@ -3643,6 +3664,9 @@ components:
         delete_trailer_media:
           type: boolean
           title: Delete Trailer Media
+        ffmpeg_timeout:
+          type: integer
+          title: Ffmpeg Timeout
         gpu_available_amd:
           type: boolean
           title: Gpu Available Amd
@@ -3694,6 +3718,9 @@ components:
         wait_for_media:
           type: boolean
           title: Wait For Media
+        webui_disable_auth:
+          type: boolean
+          title: Webui Disable Auth
         webui_username:
           type: string
           title: Webui Username
@@ -3711,6 +3738,7 @@ components:
         - app_theme
         - delete_trailer_connection
         - delete_trailer_media
+        - ffmpeg_timeout
         - gpu_available_amd
         - gpu_available_intel
         - gpu_available_nvidia
@@ -3728,6 +3756,7 @@ components:
         - url_base
         - version
         - wait_for_media
+        - webui_disable_auth
         - webui_username
         - yt_cookies_path
         - ytdlp_version

@@ -15,7 +15,7 @@
   </div>
 }
 <!-- Settings Sections -->
-
+<!-- General -->
 <section>
   <details open>
     <summary>
@@ -41,6 +41,8 @@
         autocomplete="off"
         [minLength]="1"
         [maxLength]="6"
+        [minValue]="10"
+        [maxValue]="14400"
         [value]="settings()?.monitor_interval ?? 60"
         [disabled]="false"
         (onSubmit)="updateSetting('monitor_interval', $event)"
@@ -52,9 +54,20 @@
         [selectedOption]="settings()?.app_theme | titlecase"
         (optionChange)="updateSetting('app_theme', $event)"
       />
+      <app-options-setting
+        name="WebUI Disable Authentication"
+        description="Enable or disable authentication for the WebUI."
+        descriptionExtra="True - Auth disabled, False - Auth Enabled"
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.webui_disable_auth"
+        [colorType]="'warning'"
+        [colorTypeOption]="'true'"
+        (optionChange)="updateSetting('webui_disable_auth', $event)"
+      />
     </div>
   </details>
 </section>
+<!-- Files -->
 <section>
   <details open>
     <summary>
@@ -73,6 +86,7 @@
     </div>
   </details>
 </section>
+<!-- Advanced -->
 <section>
   <details open>
     <summary>
@@ -102,9 +116,27 @@
         [value]="settings()?.yt_cookies_path ?? ''"
         (onSubmit)="updateSetting('yt_cookies_path', $event)"
       />
+      <app-text-setting
+        name="Ffmpeg Timeout"
+        description="Ffmpeg timeout (in minutes) used for converting downloaded video files"
+        descriptionExtra="Default is 15. Minuimum is 10. Maximun is 300. Container restart required to apply new interval."
+        [isNumberType]="true"
+        [isLongInput]="false"
+        placeholder="Ffmpeg Timeout minutes"
+        autocomplete="off"
+        [minLength]="2"
+        [maxLength]="3"
+        [minValue]="10"
+        [maxValue]="300"
+        [value]="settings()?.ffmpeg_timeout ?? 15"
+        [colorType]="'warning'"
+        [disabled]="false"
+        (onSubmit)="updateSetting('ffmpeg_timeout', $event)"
+      />
     </div>
   </details>
 </section>
+<!-- Delete trailers -->
 <section>
   <details open>
     <summary>
@@ -136,6 +168,7 @@
     </div>
   </details>
 </section>
+<!-- Experimental -->
 <section>
   <details open>
     <summary>

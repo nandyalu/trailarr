@@ -232,6 +232,7 @@ class _Config:
             "app_theme": self.app_theme,
             "delete_trailer_connection": self.delete_trailer_connection,
             "delete_trailer_media": self.delete_trailer_media,
+            "ffmpeg_timeout": self.ffmpeg_timeout,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
             "gpu_available_amd": self.gpu_available_amd,
@@ -345,6 +346,13 @@ class _Config:
     """Application theme for the WebUI.
         - Default is 'auto'.
         - Valid values are 'light', 'dark', 'auto'."""
+
+    ffmpeg_timeout = int_property(
+        "FFMPEG_TIMEOUT", default=15, min_=10, max_=300
+    )
+    """Timeout for ffmpeg operations in minutes.
+        - Default is 15 minutes. Minimum is 10, Maximum is 300.
+        - Valid values are integers."""
 
     monitor_enabled = bool_property("MONITOR_ENABLED", default=True)
     """Monitor enabled for the application.

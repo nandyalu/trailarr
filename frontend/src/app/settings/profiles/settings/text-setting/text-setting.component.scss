@@ -42,6 +42,10 @@ button {
     width: 2rem;
     height: 2rem;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 }
 
 .content-input {
