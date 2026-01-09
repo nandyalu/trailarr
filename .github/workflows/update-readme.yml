@@ -1,0 +1,39 @@
+name: Update Github Readme
+
+permissions:
+  contents: write
+
+on:
+  pull_request:
+    paths:
+      - docs/index.md
+      - .github/workflows/update-readme.yml
+
+jobs:
+  githubReadme:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+    
+    - name: Copy and Clean Index.md
+      run: |
+        # Use sed to replace the string and redirect to README.md
+        sed 's/{:target="_blank"}//g' docs/index.md > README.md
+
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Only commit if there are actual changes
+        git add README.md
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "docs: sync index.md to README.md (auto-cleanup)"
+          git push
+        fi

@@ -1,15 +1,15 @@
 name: Update DockerHub Description
 
 permissions:
-  contents: write
+  contents: read
 
 on:
   push:
     branches:
       - main
     paths:
-      - docs/index.md
-      - .github/workflows/dockerhub-description.yml
+      - README.md
+      - .github/workflows/update-dockerhub-description.yml
 
 jobs:
   dockerHubDescription:
@@ -17,25 +17,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    - name: Copy and Clean Index.md
-      run: |
-        # Use sed to replace the string and redirect to README.md
-        sed 's/{:target="_blank"}//g' docs/index.md > README.md
-
-    - name: Commit and Push changes
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Only commit if there are actual changes
-        git add README.md
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "docs: sync index.md to README.md (auto-cleanup)"
-          git push
-        fi
     
     - name: Update Docker Hub Description
       uses: peter-evans/dockerhub-description@v4

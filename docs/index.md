@@ -23,7 +23,7 @@
 
 Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/){:target="_blank"}, and [Sonarr](https://sonarr.tv/){:target="_blank"} libraries.
 
-Github: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/){:target="_blank"} 
+GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
 Docker Hub: [https://hub.docker.com/r/nandyalu/trailarr/](https://hub.docker.com/r/nandyalu/trailarr/){:target="_blank"}
 
@@ -43,7 +43,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 - Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
 
-> If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}, encourages us to continue improving it.
+> Let us know that you appreciate the project by giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
 
 ## Installation & Setup
 
@@ -79,7 +79,7 @@ If you still need help, please use the below:
 
 ## Issues
 
-If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/trailarr/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
 
 ## Roadmap
 
@@ -94,7 +94,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
-- [x] Improve task logging (in progress)
+- [x] Improve task logging
 - [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 - [ ] Add Event tracking similar to History in Radarr/Sonarr
 - [ ] Add Discord notifications for important events
