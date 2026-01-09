@@ -252,9 +252,13 @@ async def serve_frontend(rest_of_path: str = ""):
             return FileResponse(file_path)
         else:
             # Serve index.html for SPA client-side routing
-            response = HTMLResponse(
-                content=open(f"{static_dir}/index.html").read()
-            )
+            index_path = Path(static_dir, "index.html").resolve()
+            # Extra safety: ensure index.html is within the static directory
+            if not index_path.is_file() or not index_path.is_relative_to(
+                static_dir
+            ):
+                return HTMLResponse(status_code=404)
+            response = FileResponse(index_path)
             response.set_cookie(
                 key="trailarr_api_key",
                 value=app_settings.api_key,
