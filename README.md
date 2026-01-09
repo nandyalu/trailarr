@@ -1,4 +1,4 @@
-#
+# 
 
 ![Trailarr Logo](https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-full-primary-512-lg.png)
 
@@ -6,8 +6,8 @@
 
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
-  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.124.4-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.5-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.128.0-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.6-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
   <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
@@ -23,31 +23,27 @@
 
 Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/) libraries.
 
-Github: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/)
+Github: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/) 
 
 Docker Hub: [https://hub.docker.com/r/nandyalu/trailarr/](https://hub.docker.com/r/nandyalu/trailarr/)
 
-Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr)
+Documentation: [https://nandyalu.github.io/trailarr](https://nandyalu.github.io/trailarr/)
 
-Reddit: [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr)
+Reddit: [https://www.reddit.com/r/trailarr](https://www.reddit.com/r/trailarr/)
 
 Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 
 ## Features
 
 - Manages multiple Radarr and Sonarr instances to find media
-- Runs in background like Radarr/Sonarr.
-- Checks if a trailer already exists for movie/series. Download it if set to monitor.
+- Detects existing trailers for media items.
 - Downloads trailer and organizes it in the media folder.
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
-- Downloads trailers for trailer id's set in Radarr/Sonarr.
-- Searches for a trailer if not set in Radarr/Sonarr.
-- Option to download desired video as trailer for any movie/series.
-- Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for AMD, Intel, and NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
-- Option to delete trailers and trailer folders when media is removed from Arr and/or when media files have been deleted from disk.
-- Beautiful and responsive UI to manage trailers and view details of movies and series.
+- Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
+
+> If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr), encourages us to continue improving it.
 
 ## Installation & Setup
 
@@ -76,12 +72,10 @@ If you have any questions or need help, please read the [FAQ](https://nandyalu.g
 If you still need help, please use the below:
 
 - [Discord](https://discord.gg/KKPr5kQEzQ)
-- [Reddit](https://www.reddit.com/r/trailarr).
+- [Reddit](https://www.reddit.com/r/trailarr)
 
 > **Note:** Please do not use the GitHub issues for support requests!
 
-
-If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr).
 
 ## Issues
 
@@ -100,15 +94,17 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
-- [ ] Improve task logging (in progress)
+- [x] Improve task logging (in progress)
 - [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
+- [ ] Add Event tracking similar to History in Radarr/Sonarr
+- [ ] Add Discord notifications for important events
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ). We are always looking for ways to improve the project.
 
 ## Contributing
 
-Contributions are welcome! Please see the [Contributing](https://nandyalu.github.io/trailarr/references/contributing) guide for more information.
+Contributions are welcome! Please see the [Contributing](https://nandyalu.github.io/trailarr/references/contributing/) guide for more information.
 
 Looking for a backend (python) / frontend developers (Angular) to help with the project, if you are interested, please reach out on [Discord](https://discord.gg/KKPr5kQEzQ).
 
