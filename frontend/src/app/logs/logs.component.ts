@@ -53,6 +53,23 @@ export class LogsComponent implements OnInit {
     },
   );
 
+  protected readonly searchFilterLogs = httpResource<AppLogRecordRead[]>(
+    () => {
+      const query = this.searchQuery();
+      if (!query || query.length < 3) {
+        return undefined; // No search if query is empty or too short
+      }
+      return {
+        url: this.logsService.logsUrl + 'raw',
+        method: 'GET',
+        params: {filter: query, level: this.selectedLogLevel().toUpperCase(), limit: this.limit()},
+      };
+    },
+    {
+      defaultValue: [],
+    },
+  );
+
   // Component signals
   searchQuery = signal<string>('');
   selectedLogLevel = signal(LogLevel.Info);
@@ -60,15 +77,11 @@ export class LogsComponent implements OnInit {
   filteredLogs = computed(() => {
     const query = this.searchQuery();
     const logs = this.allLogs.value();
-    if (!query || query.length < 3) {
-      return logs.slice(0, this.displayCount()); // Return all logs if no query or too short
+    const searchLogs = this.searchFilterLogs.value();
+    if (query && query.trim().length > 0) {
+      return searchLogs.slice(0, this.displayCount()); // Return filtered logs from search API
     }
-    // Filter logs based on the search query
-    return logs.filter((log: AppLogRecordRead) => {
-      const objectValues = Object.values(log).map((value) => value?.toString() || '');
-      const raw_log = objectValues.join(' | ');
-      return raw_log.toLowerCase().includes(query.toLowerCase());
-    });
+    return logs.slice(0, this.displayCount()); // Return all logs if no query or too short
   });
 
   // Component effects
@@ -98,6 +111,14 @@ export class LogsComponent implements OnInit {
     return `${log.created!}: [${log.level}|${log.filename}|${log.lineno}] ${log.loggername!} ${log.message}`;
   }
 
+  getRawLogWithTraceback(log: AppLogRecordRead): string {
+    let rawlog = this.getRawLog(log);
+    if (log.traceback) {
+      rawlog += `\nException details:\n${log.traceback}`;
+    }
+    return rawlog;
+  }
+
   getMediaId(log: AppLogRecordRead): number | null {
     if (log.mediaid) {
       return log.mediaid;
@@ -107,11 +128,16 @@ export class LogsComponent implements OnInit {
     return mediaIdMatch ? parseInt(mediaIdMatch[1], 10) : null;
   }
 
+  sortLogsByDateAsc(a: AppLogRecordRead, b: AppLogRecordRead): number {
+    return new Date(a.created!).getTime() - new Date(b.created!).getTime();
+  }
+
   // Download logs as a file - All Filtered Logs
   downloadLogs() {
     // Write the logs to a file and download it
     const logs = this.filteredLogs()
-      .map((log) => this.getRawLog(log))
+      .sort(this.sortLogsByDateAsc)
+      .map((log) => this.getRawLogWithTraceback(log))
       .join('\n');
     const blob = new Blob([logs], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
