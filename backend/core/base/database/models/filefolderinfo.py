@@ -42,7 +42,7 @@ class FileFolderInfoBase(AppSQLModel):
     size: int  # Size in bytes
     path: str
     is_trailer: bool = False
-    modified: datetime = Field(default_factory=get_current_time)
+    modified: datetime
 
     def __lt__(self, other: "FileFolderInfoBase") -> bool:
         # Folders come before files; if same type, sort by name

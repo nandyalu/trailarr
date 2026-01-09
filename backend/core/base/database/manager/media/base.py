@@ -98,7 +98,7 @@ def get_status(
         trailer_exists (bool): Whether the trailer already exists for the media.
         status (MonitorStatus): Current monitor status of the media.\n
     Returns:
-        str: The monitor status string. One of "MONITORED", "DOWNLOADED", "MISSING".
+        MonitorStatus: The monitor status.
     """
     if status in (
         MonitorStatus.DOWNLOADING,
