@@ -36,18 +36,14 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 ## Features
 
 - Manages multiple Radarr and Sonarr instances to find media
-- Runs in background like Radarr/Sonarr.
-- Checks if a trailer already exists for movie/series. Download it if set to monitor.
+- Detects existing trailers for media items.
 - Downloads trailer and organizes it in the media folder.
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
-- Downloads trailers for trailer id's set in Radarr/Sonarr.
-- Searches for a trailer if not set in Radarr/Sonarr.
-- Option to download desired video as trailer for any movie/series.
-- Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for AMD, Intel, and NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
-- Option to delete trailers and trailer folders when media is removed from Arr and/or when media files have been deleted from disk.
-- Beautiful and responsive UI to manage trailers and view details of movies and series.
+- Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
+
+> If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}, encourages us to continue improving it.
 
 ## Installation & Setup
 
@@ -81,8 +77,6 @@ If you still need help, please use the below:
 > **Note:** Please do not use the GitHub issues for support requests!
 
 
-If you like the project, please consider giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
-
 ## Issues
 
 If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
@@ -100,8 +94,10 @@ There are some changes that are planned for the future. These changes are not gu
 - [ ] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
-- [ ] Improve task logging (in progress)
+- [x] Improve task logging (in progress)
 - [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
+- [ ] Add Event tracking similar to History in Radarr/Sonarr
+- [ ] Add Discord notifications for important events
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}. We are always looking for ways to improve the project.
