@@ -1551,6 +1551,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#webui-disable-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebUI Disable Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1612,6 +1623,17 @@
     <span class="md-ellipsis">
       
         Yt-dlp Cookies Path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ffmpeg-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FFMPEG Timeout
       
     </span>
   </a>
@@ -2697,6 +2719,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#webui-disable-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebUI Disable Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2758,6 +2791,17 @@
     <span class="md-ellipsis">
       
         Yt-dlp Cookies Path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ffmpeg-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FFMPEG Timeout
       
     </span>
   </a>
@@ -2999,6 +3043,16 @@
 <p class="admonition-title">Selection will be saved across devices</p>
 <p>Once you change the theme, Trailarr will remember the selection for next time across your devices.</p>
 </div>
+<h3 id="webui-disable-authentication">WebUI Disable Authentication</h3>
+<p><span class="twemoji golden" title="Added in v0.6.6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"></path></svg></span> <a href="../../../release-notes/2026/#v066-beta-january-09-2026">v0.6.6</a></p>
+<ul>
+<li>Default is <code>false</code></li>
+</ul>
+<p>Enable this setting to disable authentication for the WebUI. Use with caution, as this will allow anyone with access to the WebUI to control the app without needing to log in.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Disabling WebUI authentication can expose your app to unauthorized access. Only disable this if you are running the app in a secure environment.</p>
+</div>
 <h2 id="file-settings">File Settings</h2>
 <h3 id="wait-for-media">Wait For Media</h3>
 <ul>
@@ -3039,6 +3093,12 @@
 <p>If you are just setting up Trailarr, it is recommended to not use cookies initially for downloading trailers in bulk, as that might lead to your account being flagged for suspicious activity and YouTube placing a ban on your account. Instead, try downloading trailers without cookies first and then setup cookies once the bulk downloads are complete.</p>
 <p>Alternatively, you can try setting up a new YouTube account and use cookies from that new account.</p>
 </div>
+<h3 id="ffmpeg-timeout">FFMPEG Timeout</h3>
+<p><span class="twemoji golden" title="Added in v0.6.6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"></path></svg></span> <a href="../../../release-notes/2026/#v066-beta-january-09-2026">v0.6.6</a></p>
+<ul>
+<li>Default is <code>15</code> minutes. Minimum is <code>10</code>. Maximum is <code>300</code>.</li>
+</ul>
+<p>Set the timeout (in minutes) for downloaded video conversions using FFMPEG. If FFMPEG takes longer than this time to complete an operation, it will be terminated.</p>
 <h2 id="delete-trailer-settings">Delete Trailer Settings</h2>
 <p>Delete downloaded trailers when media is removed from Radarr/Sonarr and optionally only if media files are deleted from disk.</p>
 <h3 id="on-deleting-from-connection">On Deleting from Connection</h3>
@@ -3119,7 +3179,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="December 14, 2025 22:40:40 UTC">December 14, 2025 22:40:40</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="January 9, 2026 07:57:00 UTC">January 9, 2026 07:57:00</span>
   </span>
 
     
