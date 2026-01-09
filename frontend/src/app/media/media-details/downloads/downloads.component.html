@@ -32,7 +32,11 @@
               }
             </div>
             <div class="download-info">
-              <h4 class="download-title">{{ download.file_name }}</h4>
+              @if (download.file_exists) {
+                <h4 class="download-title">{{ download.file_name }}</h4>
+              } @else {
+                <h4 class="download-title">{{ download.file_name }} (Deleted)</h4>
+              }
               <div class="download-meta">
                 <span class="meta-item">{{ download.resolution }}p</span>
                 <span class="meta-separator">•</span>
