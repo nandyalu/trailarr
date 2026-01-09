@@ -53,6 +53,17 @@ class MediaUpdateDC:
     yt_id: str | None = None
     downloaded_at: datetime | None = None
 
+    def model_dump(self) -> dict:
+        """Dump MediaUpdateDC to dictionary."""
+        return {
+            "id": self.id,
+            "monitor": self.monitor,
+            "status": self.status,
+            "trailer_exists": self.trailer_exists,
+            "yt_id": self.yt_id,
+            "downloaded_at": self.downloaded_at,
+        }
+
 
 language_names = {
     "ar": "Arabic",

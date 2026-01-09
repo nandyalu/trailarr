@@ -12,6 +12,8 @@ info:
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
   version: 0.6.0
 servers:
+  - url: /
+    description: Current host
   - url: '{protocol}://{hostpath}'
     variables:
       protocol:
@@ -671,27 +673,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/files/files:
+  /api/v1/files/files_raw:
     get:
       tags:
         - Files
-        - Media
-      summary: Get Files
-      description: "Get files in a directory.\n\nArgs:\n    path (str): Path to the\
-        \ directory. \n\nReturns:\n    FolderInfo|None: Folder information or None\
-        \ if folder doesn't exist. \n\nRaises:\n    HTTPException (404): If the folder\
-        \ is not found."
-      operationId: get_files_api_v1_files_files_get
+      summary: Get All Media Files Raw
+      description: "Get raw media files info from the database. \n\n\n\n## Returns\n\
+        \n- **list[dict]**: List of raw file/folder info dicts."
+      operationId: get_all_media_files_raw_api_v1_files_files_raw_get
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: path
-          in: query
-          required: true
-          schema:
-            type: string
-            title: Path
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -706,10 +699,11 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/FolderInfo'
-                  - type: 'null'
-                title: Response Get Files Api V1 Files Files Get
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get All Media Files Raw Api V1 Files Files Raw Get
         '401':
           description: API key is missing
         '422':
@@ -722,12 +716,32 @@ paths:
     get:
       tags:
         - Files
-        - Media
       summary: Get Files Simple
-      description: "Get files in a directory in a simple format.\n\nArgs:\n    path\
-        \ (str): Path to the directory. \n\nReturns:\n    list: List of file names\
-        \ in the directory. \n\nRaises:\n    HTTPException (404): If the folder is\
-        \ not found."
+      description: 'Get files in a directory in a simple format.
+
+
+
+
+        ## Args
+
+
+        - **path** (__str__): Path to the directory.
+
+
+
+
+        ## Returns
+
+
+        - **list**: List of file names in the directory.
+
+
+
+
+        ## Raises
+
+
+        - **HTTPException** (__404__): If the folder is not found.'
       operationId: get_files_simple_api_v1_files_files_simple_get
       security:
         - APIKeyQuery: []
@@ -769,13 +783,38 @@ paths:
     get:
       tags:
         - Files
-        - Media
       summary: Video Endpoint
-      description: "Stream video files.\n\nArgs:\n    file_path (str): Path to the\
-        \ video file.\n    range (str, optional=None): Range of bytes to stream. \n\
-        \nRaises:\n    HTTPException (400): If the file path is invalid.\n    HTTPException\
-        \ (404): If the file is not found.\n    HTTPException (400): If the file is\
-        \ not a video file. \n\nReturns:\n    Response: Video stream response."
+      description: 'Stream video files.
+
+
+
+
+        ## Args
+
+
+        - **file_path** (__str__): Path to the video file.
+
+        - **range** (__str, optional=None__): Range of bytes to stream.
+
+
+
+
+        ## Raises
+
+
+        - **HTTPException** (__400__): If the file path is invalid.
+
+        - **HTTPException** (__404__): If the file is not found.
+
+        - **HTTPException** (__400__): If the file is not a video file.
+
+
+
+
+        ## Returns
+
+
+        - **Response**: Video stream response.'
       operationId: video_endpoint_api_v1_files_video_get
       security:
         - APIKeyQuery: []
@@ -819,7 +858,6 @@ paths:
     get:
       tags:
         - Files
-        - Media
       summary: Read File
       description: Read the contents of a file.
       operationId: read_file_api_v1_files_read_get
@@ -861,7 +899,6 @@ paths:
     get:
       tags:
         - Files
-        - Media
       summary: Get Video Info
       description: Get information about the video file.
       operationId: get_video_info_api_v1_files_video_info_get
@@ -905,7 +942,6 @@ paths:
     post:
       tags:
         - Files
-        - Media
       summary: Trim Video
       description: Trim the video file at the given timestamps.
       operationId: trim_video_api_v1_files_trim_video_post
@@ -971,7 +1007,6 @@ paths:
     post:
       tags:
         - Files
-        - Media
       summary: Rename File Fol
       description: Rename a file or folder.
       operationId: rename_file_fol_api_v1_files_rename_post
@@ -1019,7 +1054,6 @@ paths:
     delete:
       tags:
         - Files
-        - Media
       summary: Delete File Fol
       description: Delete a file/folder from the filesystem.
       operationId: delete_file_fol_api_v1_files_delete_delete
@@ -1070,17 +1104,19 @@ paths:
         - Media
       summary: Get All Media
       description: "Get all media from the database. \n\nOptionally apply filters\
-        \ and sorting. \n\nArgs:\n    movies_only (bool, Optional=None):\n       \
-        \ Flag to get only movies.\n            - If `True`, it will return only `movies`.\n\
-        \            - If `False`, it will return only `series`.\n            - If\
-        \ `None`, it will return all media items. \n\n    filter_by (str, Optional=`all`):\n\
-        \        Filter the media items by a column value. Available filters are\n\
-        \        - `all`\n        - `downloaded`\n        - `monitored`\n        -\
-        \ `missing`\n        - `unmonitored`. \n\n    sort_by (str, Optional=None):\
-        \ Sort the media items by `title`, `year`,             `added_at`, or `updated_at`.\
-        \ \n\n    sort_asc (bool, Optional=True): Flag to sort in ascending order.\
-        \ \n\nReturns:\n    list[MediaRead]: List of media objects."
+        \ and sorting.\n## Warning:\n- \U0001F6A8Deprecated, use `/all_raw` instead.\U0001F6A8\
+        \n\n\n\n## Args\n\n- **movies_only** (__bool, Optional=None__): Flag to get\
+        \ only movies.  \n  - If `True`, it will return only `movies`.  \n  - If `False`,\
+        \ it will return only `series`.  \n  - If `None`, it will return all media\
+        \ items.\n- **filter_by** (__str, Optional=`all`__): Filter the media items\
+        \ by a             column value. Available filters  \n  - all  \n  - downloaded\
+        \  \n  - monitored  \n  - missing  \n  - unmonitored\n- **sort_by** (__str,\
+        \ Optional=None__): Sort the media items by `title`, `year`,             `added_at`,\
+        \ or `updated_at`.\n- **sort_asc** (__bool, Optional=True__): Flag to sort\
+        \ in ascending order.\n\n\n## Returns\n\n- **list[MediaRead]**: List of media\
+        \ objects."
       operationId: get_all_media_api_v1_media_all_get
+      deprecated: true
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -1143,19 +1179,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/all_raw:
+    get:
+      tags:
+        - Media
+      summary: Get All Media Raw
+      description: "Get all media from the database as raw dictionaries. \n\n\n\n\
+        ## Returns\n\n- **list[dict]**: List of media objects as dictionaries."
+      operationId: get_all_media_raw_api_v1_media_all_raw_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get All Media Raw Api V1 Media All Raw Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/downloads_raw:
+    get:
+      tags:
+        - Media
+      summary: Get All Downloads Raw
+      description: "Get all downloads from the database as raw dictionaries. \n\n\n\
+        \n## Returns\n\n- **list[dict]**: List of download objects as dictionaries."
+      operationId: get_all_downloads_raw_api_v1_media_downloads_raw_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get All Downloads Raw Api V1 Media Downloads Raw Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/media/:
     get:
       tags:
         - Media
       summary: Get Recent Media
-      description: "Get recent media from the database. \n\nArgs:\n    limit (int,\
-        \ Optional=30): Number of items to return.\n    offset (int, Optional=0):\
-        \ Number of items to skip.\n    movies_only (bool, Optional=None):\n     \
-        \   Flag to get only movies.\n        - If `True`, it will return only `movies`.\n\
-        \        - If `False`, it will return only `series`.\n        - If `None`,\
-        \ it will return all media items. \n\nReturns:\n- list[MediaRead]: List of\
+      description: "Get recent media from the database. \n\n## Warning:\n- \U0001F6A8\
+        Deprecated, use `/all_raw` instead.\U0001F6A8\n\n\n## Args\n\n- **limit**\
+        \ (__int, Optional=30__): Number of items to return.\n- **offset** (__int,\
+        \ Optional=0__): Number of items to skip.\n- **movies_only** (__bool, Optional=None__):\
+        \   \n  Flag to get only movies.  \n  - If `True`, it will return only `movies`.\
+        \  \n  - If `False`, it will return only `series`.  \n  - If `None`, it will\
+        \ return all media items.\n\n\n\n## Returns\n\n- list[MediaRead]: List of\
         \ media objects."
       operationId: get_recent_media_api_v1_media__get
+      deprecated: true
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -1213,10 +1329,27 @@ paths:
       tags:
         - Media
       summary: Get Updated After
-      description: "Get media updated after a certain datetime. \n\nArgs:\n    seconds\
-        \ (int): Seconds since epoch to filter media.\nReturns:\n    list[MediaRead]:\
-        \ List of media objects."
+      description: 'Get media updated after a certain datetime.
+
+        ## Warning:
+
+        - 🚨Deprecated, use `/all_raw` instead.🚨
+
+
+
+        ## Args
+
+
+        - **seconds** (__int__): Seconds since epoch to filter media.
+
+
+
+        ## Returns
+
+
+        - **list[MediaRead]**: List of media objects.'
       operationId: get_updated_after_api_v1_media_updated_get
+      deprecated: true
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -1258,11 +1391,29 @@ paths:
       tags:
         - Media
       summary: Get Recently Downloaded
-      description: "Get recently downloaded media from the database. \n\nArgs:\n \
-        \   limit (int, Optional=30): Number of items to return.\n    offset (int,\
-        \ Optional=0): Number of items to skip. \n\nReturns:\n    list[MediaRead]:\
-        \ List of media objects."
+      description: 'Get recently downloaded media from the database.
+
+        ## Warning:
+
+        - 🚨Deprecated, use `/all_raw` instead.🚨
+
+
+
+        ## Args
+
+
+        - **limit** (__int, Optional=30__): Number of items to return.
+
+        - **offset** (__int, Optional=0__): Number of items to skip.
+
+
+
+        ## Returns
+
+
+        - **list[MediaRead]**: List of media objects.'
       operationId: get_recently_downloaded_api_v1_media_downloaded_get
+      deprecated: true
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -1313,8 +1464,9 @@ paths:
         - Media
         - Search
       summary: Search Media
-      description: "Search media by query. \n\nArgs:\n    query (str): Search query.\
-        \ \n\nReturns:\n    list[SearchMedia]: List of search media objects."
+      description: "Search media by query. \n\n\n\n## Args\n\n- **query** (__str__):\
+        \ Search query.\n\n\n\n## Returns\n\n- **list[SearchMedia]**: List of search\
+        \ media objects."
       operationId: search_media_api_v1_media_search_get
       security:
         - APIKeyQuery: []
@@ -1357,8 +1509,8 @@ paths:
       tags:
         - Media
       summary: Get Media By Id
-      description: "Get media by ID. \n\nArgs:\n    media_id (int): ID of the media\
-        \ item. \n\nReturns:\n    MediaRead: Media object."
+      description: "Get media by ID. \n\n\n\n## Args\n\n- **media_id** (__int__):\
+        \ ID of the media item.\n\n\n\n## Returns\n\n- **MediaRead**: Media object."
       operationId: get_media_by_id_api_v1_media__media_id__get
       security:
         - APIKeyQuery: []
@@ -1404,9 +1556,21 @@ paths:
       tags:
         - Media
       summary: Get Media Downloads
-      description: "Get all downloads for a specific media item.\nArgs:\n    media_id\
-        \ (int): The ID of the media item.\nReturns:\n    list[DownloadRead]: List\
-        \ of download objects for the media item."
+      description: 'Get all downloads for a specific media item.
+
+
+
+        ## Args
+
+
+        - **media_id** (__int__): The ID of the media item.
+
+
+
+        ## Returns
+
+
+        - **list[DownloadRead]**: List of download objects for the media item.'
       operationId: get_media_downloads_api_v1_media__media_id__downloads_get
       security:
         - APIKeyQuery: []
@@ -1456,9 +1620,10 @@ paths:
       tags:
         - Media
       summary: Get Media Files
-      description: "Get media files by ID. \n\nArgs:\n    media_id (int): ID of the\
-        \ media item. \n\nReturns:\n    FolderInfo|str: Folder information or error\
-        \ message."
+      description: "Get media files by ID. \n\n\n\n## Args\n\n- **media_id** (__int__):\
+        \ ID of the media item.\n\n\n\n## Returns\n\n- **FileFolderInfoRead**: Folder\
+        \ information.\n\n\n\n## Raises\n\n- **HTTPException** (__404__): If the media\
+        \ or files are not found."
       operationId: get_media_files_api_v1_media__media_id__files_get
       security:
         - APIKeyQuery: []
@@ -1484,10 +1649,7 @@ paths:
           content:
             application/json:
               schema:
-                anyOf:
-                  - $ref: '#/components/schemas/FolderInfo'
-                  - type: string
-                title: Response Get Media Files Api V1 Media  Media Id  Files Get
+                $ref: '#/components/schemas/FileFolderInfoRead'
         '401':
           description: API key is missing
         '404':
@@ -1502,15 +1664,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/media/{media_id}/rescan_files:
+    post:
+      tags:
+        - Media
+      summary: Rescan Media Files
+      description: "Rescan media files by ID. \n\n\n\n## Args\n\n- **media_id** (__int__):\
+        \ ID of the media item.\n\n\n\n## Returns\n\n- **str**: Rescanning media files\
+        \ message."
+      operationId: rescan_media_files_api_v1_media__media_id__rescan_files_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: media_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Media Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Rescan Media Files Api V1 Media  Media Id  Rescan
+                  Files Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/media/{media_id}/download:
     post:
       tags:
         - Media
       summary: Download Media Trailer
-      description: "Download trailer for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item.\n    profile_id (int): ID of the trailer profile to\
-        \ use for downloading.\n    yt_id (str, Optional=\"\"): YouTube ID of the\
-        \ trailer.\n\nReturns:\n    str: Downloading trailer message."
+      description: "Download trailer for media by ID. \n\n\n\n## Args\n\n- **media_id**\
+        \ (__int__): ID of the media item.\n- **profile_id** (__int__): ID of the\
+        \ trailer profile to use for downloading.\n- **yt_id** (__str, Optional=\"\
+        \"__): YouTube ID of the trailer.\n\n\n\n## Returns\n\n- **str**: Downloading\
+        \ trailer message."
       operationId: download_media_trailer_api_v1_media__media_id__download_post
       security:
         - APIKeyQuery: []
@@ -1571,9 +1778,9 @@ paths:
       tags:
         - Media
       summary: Monitor Media
-      description: "Monitor media by ID. \n\nArgs:\n    media_id (int): ID of the\
-        \ media item.\n    monitor (bool, Optional=True): Monitor status. \n\nReturns:\n\
-        \    str: Monitoring message."
+      description: "Monitor media by ID. \n\n\n\n## Args\n\n- **media_id** (__int__):\
+        \ ID of the media item.\n- **monitor** (__bool, Optional=True__): Monitor\
+        \ status.\n\n\n\n## Returns\n\n- **str**: Monitoring message."
       operationId: monitor_media_api_v1_media__media_id__monitor_post
       security:
         - APIKeyQuery: []
@@ -1627,9 +1834,9 @@ paths:
       tags:
         - Media
       summary: Update Yt Id
-      description: "Update YouTube ID for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item.\n    yt_id (str): YouTube ID of the trailer. \n\n\
-        Returns:\n    str: Updating YouTube ID message."
+      description: "Update YouTube ID for media by ID. \n\n\n\n## Args\n\n- **media_id**\
+        \ (__int__): ID of the media item.\n- **yt_id** (__str__): YouTube ID of the\
+        \ trailer.\n\n\n\n## Returns\n\n- **str**: Updating YouTube ID message."
       operationId: update_yt_id_api_v1_media__media_id__update_post
       security:
         - APIKeyQuery: []
@@ -1688,10 +1895,10 @@ paths:
       tags:
         - Media
       summary: Search For Trailer
-      description: "Search for trailer for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item.\n    profile_id (int): ID of the trailer profile to\
-        \ use.\n\nReturns:\n    str: Youtube ID of the trailer if found, else empty\
-        \ string."
+      description: "Search for trailer for media by ID. \n\n\n\n## Args\n\n- **media_id**\
+        \ (__int__): ID of the media item.\n- **profile_id** (__int__): ID of the\
+        \ trailer profile to use.\n\n\n\n## Returns\n\n- **str**: Youtube ID of the\
+        \ trailer if found, else empty string."
       operationId: search_for_trailer_api_v1_media__media_id__search_post
       security:
         - APIKeyQuery: []
@@ -1745,8 +1952,9 @@ paths:
       tags:
         - Media
       summary: Delete Media Trailer
-      description: "Delete trailer for media by ID. \n\nArgs:\n    media_id (int):\
-        \ ID of the media item. \n\nReturns:\n    str: Deleting trailer message."
+      description: "Delete trailer for media by ID. \n\n\n\n## Args\n\n- **media_id**\
+        \ (__int__): ID of the media item.\n\n\n\n## Returns\n\n- **str**: Deleting\
+        \ trailer message."
       operationId: delete_media_trailer_api_v1_media__media_id__trailer_delete
       security:
         - APIKeyQuery: []
@@ -1797,8 +2005,9 @@ paths:
       description: "Batch update media by their IDs. \n\nAvailable update types are:\
         \ \n\n- monitor: Monitor media items. \n\n- unmonitor: Unmonitor media items.\
         \ \n\n- delete: Delete media items. \n\n- download: Download trailers for\
-        \ media items. \n\nArgs:\n    update (BulkUpdate): Bulk update object with\
-        \ media ids and update type.\nReturns:\n    str: Monitoring message."
+        \ media items. \n\n\n\n## Args\n\n- **update** (__BulkUpdate__): Bulk update\
+        \ object with media ids and update type.\n\n\n## Returns\n\n- **str**: Monitoring\
+        \ message."
       operationId: batch_update_media_api_v1_media_batch_update_post
       security:
         - APIKeyQuery: []
@@ -1989,10 +2198,19 @@ paths:
       tags:
         - Settings
       summary: Logout
-      description: "Force user logout by clearing browser's cached Basic Auth credentials.\n\
-        This endpoint always returns 401 to force the browser to clear its\ncached\
-        \ authentication credentials.\n\nReturns:\n    dict: This will never return\
-        \ successfully, always raises 401"
+      description: 'Force user logout by clearing browser''s cached Basic Auth credentials.
+
+        This endpoint always returns 401 to force the browser to clear its
+
+        cached authentication credentials.
+
+
+
+
+        ## Returns
+
+
+        - **dict**: This will never return successfully, always raises 401'
       operationId: logout_api_v1_settings_logout_post
       security:
         - APIKeyQuery: []
@@ -2060,6 +2278,29 @@ paths:
       tags:
         - Logs
       summary: Get Raw Logs
+      description: 'Retrieve logs from the database.
+
+
+
+        ## Args
+
+
+        - **level** (__LogLevel, optional=LogLevel.INFO__): The minimum log level
+        to retrieve.
+
+        - **offset** (__int, optional=0__): The number of logs to skip.
+
+        - **limit** (__int, optional=1000__): The maximum number of logs to retrieve.
+
+        - **filter** (__str | None, optional=None__): A filter string to search in
+        log fields.             filter must be at least 3 characters long.
+
+
+
+        ## Returns
+
+
+        - **list[AppLogRecordRead]**: A list of log records.'
       operationId: get_raw_logs_api_v1_logs_raw_get
       security:
         - APIKeyQuery: []
@@ -2085,6 +2326,14 @@ paths:
             type: integer
             default: 1000
             title: Limit
+        - name: filter
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Filter
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2117,6 +2366,7 @@ paths:
         - Logs
       summary: Get Logs
       operationId: get_logs_api_v1_logs__get
+      deprecated: true
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -2868,6 +3118,63 @@ components:
       required:
         - message
       title: ErrorResponse
+    FileFolderInfoRead:
+      properties:
+        type:
+          $ref: '#/components/schemas/FileFolderType'
+        name:
+          type: string
+          title: Name
+        size:
+          type: integer
+          title: Size
+        path:
+          type: string
+          title: Path
+        is_trailer:
+          type: boolean
+          title: Is Trailer
+          default: false
+        modified:
+          type: string
+          format: date-time
+          title: Modified
+        id:
+          type: integer
+          title: Id
+        media_id:
+          type: integer
+          title: Media Id
+        parent_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Parent Id
+        children:
+          items:
+            $ref: '#/components/schemas/FileFolderInfoRead'
+          type: array
+          title: Children
+          default: []
+      type: object
+      required:
+        - type
+        - name
+        - size
+        - path
+        - modified
+        - id
+        - media_id
+      title: FileFolderInfoRead
+      description: Model for reading FileFolderInfo from database.
+    FileFolderType:
+      type: string
+      enum:
+        - file
+        - folder
+        - symlink
+      title: FileFolderType
+      description: 'Type of File/Folder Info. '
     FilterCondition:
       type: string
       enum:
@@ -3357,6 +3664,9 @@ components:
         delete_trailer_media:
           type: boolean
           title: Delete Trailer Media
+        ffmpeg_timeout:
+          type: integer
+          title: Ffmpeg Timeout
         gpu_available_amd:
           type: boolean
           title: Gpu Available Amd
@@ -3408,6 +3718,9 @@ components:
         wait_for_media:
           type: boolean
           title: Wait For Media
+        webui_disable_auth:
+          type: boolean
+          title: Webui Disable Auth
         webui_username:
           type: string
           title: Webui Username
@@ -3425,6 +3738,7 @@ components:
         - app_theme
         - delete_trailer_connection
         - delete_trailer_media
+        - ffmpeg_timeout
         - gpu_available_amd
         - gpu_available_intel
         - gpu_available_nvidia
@@ -3442,6 +3756,7 @@ components:
         - url_base
         - version
         - wait_for_media
+        - webui_disable_auth
         - webui_username
         - yt_cookies_path
         - ytdlp_version

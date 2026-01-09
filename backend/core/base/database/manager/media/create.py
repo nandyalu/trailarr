@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 
+from . import base
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.media import (
     Media,
@@ -96,7 +97,7 @@ def _create_or_update(
         )
         db_media.sqlmodel_update(media_update_data)
         _updated = False
-        if _has_updated(db_media, media_create):
+        if base.has_updated(db_media, media_create):
             db_media.updated_at = datetime.now(timezone.utc)
             _updated = True
         session.add(db_media)
@@ -106,40 +107,6 @@ def _create_or_update(
         db_media = Media.model_validate(media_create)
         session.add(db_media)
         return db_media, True, False
-
-
-def _has_updated(
-    db_media: Media,
-    media_update: MediaCreate,
-) -> bool:
-    """🚨This is a private method🚨 \n
-    Check if certain fields in the media update differ from the existing media object.\n
-    Field that will be compared:
-        - title
-        - year
-        - media_exists
-        - media_filename
-        - folder_path
-        - arr_monitored
-    Args:
-        db_media (Media): The existing media object from the database.
-        media_update (MediaCreate): The media update object to compare.\n
-    Returns:
-        bool: True if any fields have changed, False otherwise.
-    """
-    if db_media.title != media_update.title:
-        return True
-    if db_media.year != media_update.year:
-        return True
-    if db_media.media_exists != media_update.media_exists:
-        return True
-    if db_media.media_filename != media_update.media_filename:
-        return True
-    if db_media.folder_path != media_update.folder_path:
-        return True
-    if db_media.arr_monitored != media_update.arr_monitored:
-        return True
-    return False
 
 
 def _read_if_exists(

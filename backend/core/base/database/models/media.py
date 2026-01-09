@@ -203,6 +203,9 @@ class MediaUpdate(MediaBase):
     language: str | None = None  # type: ignore
     runtime: int | None = None  # type: ignore
     txdb_id: str | None = None  # type: ignore
+    media_exists: bool | None = None  # type: ignore
+    media_filename: str | None = None  # type: ignore
+    folder_path: str | None = None  # type: ignore
     trailer_exists: bool | None = None  # type: ignore
     monitor: bool | None = None  # type: ignore
     arr_monitored: bool | None = None  # type: ignore

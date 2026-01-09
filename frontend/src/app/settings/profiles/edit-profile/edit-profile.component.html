@@ -48,7 +48,7 @@
       />
       <app-text-setting
         name="Priority"
-        description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 1000."
+        description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 999."
         descriptionExtra="When multiple profiles match, the one with the highest priority will be used first."
         [isNumberType]="true"
         [isLongInput]="false"
@@ -56,6 +56,8 @@
         [autocomplete]="'off'"
         [minLength]="1"
         [maxLength]="3"
+        [minValue]="0"
+        [maxValue]="999"
         [value]="profile()?.priority ?? 0"
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('priority', $event)"

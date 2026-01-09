@@ -41,6 +41,7 @@ class Settings(BaseModel):
     app_theme: str
     delete_trailer_connection: bool
     delete_trailer_media: bool
+    ffmpeg_timeout: int
     gpu_available_amd: bool
     gpu_available_intel: bool
     gpu_available_nvidia: bool
@@ -58,6 +59,7 @@ class Settings(BaseModel):
     url_base: str
     version: str
     wait_for_media: bool
+    webui_disable_auth: bool
     webui_username: str
     yt_cookies_path: str
     ytdlp_version: str

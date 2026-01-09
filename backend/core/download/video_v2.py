@@ -11,7 +11,8 @@ from exceptions import ConversionFailedError, DownloadFailedError
 
 logger = ModuleLogger("TrailersDownloader")
 
-SUBPROCESS_TIMEOUT = 900  # 15 minutes timeout for subprocesses
+YTDLP_TIMEOUT = 900  # 15 minutes timeout for subprocesses
+FFMPEG_TIMEOUT = app_settings.ffmpeg_timeout * 60  # Convert minutes to seconds
 
 # ffmpeg -i output1.mkv -c:v libx264 -c:a aac -c:s srt output1-converted3-264-aac-srt-cpu.mkv
 # 3m44.35s - 53.29MB
@@ -184,7 +185,7 @@ def _download_with_ytdlp(
             ytdlp_cmd,
             capture_output=True,
             text=True,
-            timeout=SUBPROCESS_TIMEOUT,  # 15 minutes timeout
+            timeout=YTDLP_TIMEOUT,  # 15 minutes timeout
             encoding="utf-8",
             errors="replace",
         )
@@ -259,7 +260,7 @@ def _convert_video(
             ffmpeg_cmd,
             capture_output=True,
             text=True,
-            timeout=SUBPROCESS_TIMEOUT,  # 15 minutes timeout
+            timeout=FFMPEG_TIMEOUT,
             encoding="utf-8",
             errors="replace",
         )

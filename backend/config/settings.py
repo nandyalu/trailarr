@@ -232,6 +232,7 @@ class _Config:
             "app_theme": self.app_theme,
             "delete_trailer_connection": self.delete_trailer_connection,
             "delete_trailer_media": self.delete_trailer_media,
+            "ffmpeg_timeout": self.ffmpeg_timeout,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
             "gpu_available_amd": self.gpu_available_amd,
@@ -249,6 +250,7 @@ class _Config:
             "url_base": self.url_base,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
+            "webui_disable_auth": self.webui_disable_auth,
             "webui_username": self.webui_username,
             "yt_cookies_path": self.yt_cookies_path,
             "ytdlp_version": self.ytdlp_version,
@@ -345,6 +347,13 @@ class _Config:
         - Default is 'auto'.
         - Valid values are 'light', 'dark', 'auto'."""
 
+    ffmpeg_timeout = int_property(
+        "FFMPEG_TIMEOUT", default=15, min_=10, max_=300
+    )
+    """Timeout for ffmpeg operations in minutes.
+        - Default is 15 minutes. Minimum is 10, Maximum is 300.
+        - Valid values are integers."""
+
     monitor_enabled = bool_property("MONITOR_ENABLED", default=True)
     """Monitor enabled for the application.
         - Default is True.
@@ -372,6 +381,11 @@ class _Config:
         - Default is False.
         - Valid values are True/False.
         - This setting works only if `DELETE_TRAILER_CONNECTION` is True."""
+
+    webui_disable_auth = bool_property("WEBUI_DISABLE_AUTH", default=False)
+    """Disable authentication for WebUI.
+        - Default is False.
+        - Valid values are True/False."""
 
     webui_username = str_property(
         "WEBUI_USERNAME", default=_DEFAULT_WEBUI_USERNAME

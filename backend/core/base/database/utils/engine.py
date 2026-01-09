@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from functools import wraps
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError as SQLiteOperationalError
+from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
 from sqlalchemy import Engine, event, StaticPool, text as sa_text
@@ -25,7 +26,8 @@ else:
     engine = create_engine(
         sqlite_url,
         connect_args={
-            "check_same_thread": False
+            "check_same_thread": False,
+            "timeout": 30,  # High timeout at the driver level
         },  # Allow multi-threaded access
         echo=False,
         pool_size=30,
@@ -46,7 +48,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA synchronous=NORMAL")
     # Add busy_timeout for robustness if not already included
-    cursor.execute("PRAGMA busy_timeout=5000")  # 5 seconds
+    cursor.execute("PRAGMA busy_timeout=20000")  # 20 seconds
     cursor.close()
 
 
@@ -60,16 +62,15 @@ def flush_records_to_db():
 @contextmanager
 def get_session() -> Generator[Session, None, None]:
     """Provide a SQLModel session to the context manager
-
     Yields:
         Session: A SQLModel session
-
-    Example::
-
+    Example:
+        ```python
         with get_session() as session:
             movie_1 = Movie(title=..., year=..., ...)
             session.add(movie_1)
             session.commit()
+        ```
     """
     session = Session(engine)
     try:
@@ -85,13 +86,11 @@ def manage_session(func):
     Also handles database lock errors by retrying the function (5 times). \n
     Args:
         func: The function to decorate
-
     Returns:
         The decorated function with a session keyword argument
-
-    Example::
-
-        Within a class method
+    Example:
+        1. Within a class method
+        ```python
         class MovieDatabaseHandler:
             @manage_session
             def read(
@@ -103,13 +102,15 @@ def manage_session(func):
                 movie = _session.get(Movie, movie_id)
                 # do something else with _session or commit the changes
                 return movie
-
-        Outside a class method
+        ```
+        2. Outside a class method
+        ```python
         @manage_session
         def read(movie_id: int, *, _session: Session = None) -> MovieRead:
             movie = _session.get(Movie, movie_id)
             # do something else with _session or commit the changes
             return movie
+        ```
     """
 
     @wraps(func)
@@ -127,12 +128,20 @@ def manage_session(func):
                 else:
                     # If a session was provided, just call the function
                     return func(*args, **kwargs)
-            except OperationalError as e:
-                if "database is locked" in str(e):
+            except (SAOperationalError, SQLiteOperationalError) as e:
+                if "database is locked" in str(e).lower():
+                    # If this was the last attempt, raise the final exception
+                    if i == retries - 1:
+                        raise Exception(
+                            f"Database locked after {retries} retries: {e}"
+                        )
+                    # Wait and retry
                     time.sleep(delay)
-                    delay *= 2  # Double the delay for each retry
+                    delay *= 2  # Exponential backoff
                 else:
+                    # If it's a different Exception, raise it immediately
                     raise
+        # If we exit the loop without returning, raise an exception
         raise Exception("Database is locked, retries exhausted.")
 
     return wrapper

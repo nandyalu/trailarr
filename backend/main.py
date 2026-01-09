@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
-import os
+from pathlib import Path
 import shutil
 from fastapi import (
     Depends,
@@ -11,6 +11,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -19,6 +20,7 @@ from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie, validate_login
 from app_logger import ModuleLogger
+from api.utils import format_google_docstring
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
 from config.settings import app_settings
@@ -53,8 +55,8 @@ async def lifespan(app: FastAPI):
 
 
 # Get APP_NAME and APP_VERSION from environment variables
-APP_NAME = os.getenv("APP_NAME", "Trailarr")
-APP_VERSION = os.getenv("APP_VERSION", "0.0.1")
+APP_NAME = "Trailarr"
+APP_VERSION = app_settings.version
 
 # Initialize the database - No need to do this if we are using alembic
 # logger.debug("Initializing the database")
@@ -64,32 +66,10 @@ logging.info("Starting Trailarr application")
 logging.debug("Creating the FastAPI application")
 trailarr_api = FastAPI(
     lifespan=lifespan,
-    title=f"{APP_NAME} API",
-    description=f"API for {APP_NAME} application.",
-    summary=f"{APP_NAME} API available commands.",
-    version=APP_VERSION,
     root_path=f"{app_settings.url_base}",
     openapi_url="/api/v1/openapi.json",
     docs_url=None,
     redoc_url=None,
-    terms_of_service="https://github.com/nandyalu/trailarr",
-    contact={
-        "name": "Trailarr - Github",
-        "url": "https://github.com/nandyalu/trailarr",
-    },
-    license_info={
-        "name": "GNU GPL 3.0",
-        "url": "https://github.com/nandyalu/trailarr/blob/main/LICENSE",
-    },
-    servers=[
-        {
-            "url": "{protocol}://{hostpath}",
-            "variables": {
-                "protocol": {"default": "http", "enum": ["http", "https"]},
-                "hostpath": {"default": "127.0.0.1:7889"},
-            },
-        }
-    ],
 )
 
 trailarr_api.add_middleware(
@@ -138,6 +118,58 @@ async def health_check():
 trailarr_api.include_router(api_v1_router, prefix="/api/v1")
 
 
+def custom_openapi():
+    if trailarr_api.openapi_schema:
+        return trailarr_api.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=f"{APP_NAME} API",
+        description=f"API for {APP_NAME} application.",
+        summary=f"{APP_NAME} API available commands.",
+        version=APP_VERSION,
+        openapi_version=trailarr_api.openapi_version,
+        routes=trailarr_api.routes,
+        terms_of_service="https://github.com/nandyalu/trailarr",
+        contact={
+            "name": "Trailarr - Github",
+            "url": "https://github.com/nandyalu/trailarr",
+        },
+        license_info={
+            "name": "GNU GPL 3.0",
+            "url": "https://github.com/nandyalu/trailarr/blob/main/LICENSE",
+        },
+        servers=[
+            {
+                # Use current page host as default
+                "url": "/",
+                "description": "Current host",
+            },
+            {
+                "url": "{protocol}://{hostpath}",
+                "variables": {
+                    "protocol": {"default": "http", "enum": ["http", "https"]},
+                    "hostpath": {"default": "127.0.0.1:7889"},
+                },
+            },
+        ],
+    )
+
+    for path in openapi_schema["paths"].values():
+        for method in path.values():
+            if "description" in method:
+                # trailarr_apily the enhanced formatter
+                method["description"] = format_google_docstring(
+                    method["description"]
+                )
+
+    trailarr_api.openapi_schema = openapi_schema
+    return trailarr_api.openapi_schema
+
+
+# Assign the custom OpenAPI function to the FastAPI app for generating formatted docs
+trailarr_api.openapi = custom_openapi
+
+
 # Websockets
 @trailarr_api.websocket(
     "/ws/{client_id}",
@@ -162,27 +194,35 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 # Register other routes here (if any)
 
 # Mount images folders - Load these before mountic frontend
-images_dir = os.path.join(app_settings.app_data_dir, "web", "images")
-if not os.path.exists(images_dir):
-    logging.debug("Creating images directory")
-    os.makedirs(images_dir)
-    trailarr_api.mount(
-        images_dir, StaticFiles(directory=images_dir), name="images"
+images_dir = Path(app_settings.app_data_dir, "web", "images")
+if not images_dir.exists():
+    logging.warning(
+        f"Images directory not found at '{images_dir}'. Creating images"
+        " directory"
     )
+    images_dir.mkdir(parents=True, exist_ok=True)
 else:
     logging.debug("Mounting images directory for frontend!")
-    trailarr_api.mount(
-        images_dir, StaticFiles(directory=images_dir), name="images"
+trailarr_api.mount(
+    images_dir.as_posix(), StaticFiles(directory=images_dir), name="images"
+)
+
+# Get static dir path as frontend-build/browser in this file's parent dirs
+static_dir = Path(__file__).resolve().parents[1] / "frontend-build" / "browser"
+if not static_dir.exists():
+    logging.warning(
+        f"Frontend directory not found at {static_dir}, using fallback."
     )
+    static_dir = Path("/app/frontend-build/browser")
+static_dir = static_dir.resolve()
+logging.debug(f"Using frontend directory: {static_dir}")
 
 
 # Mount Frontend 'assets/manifest.json' without authorization
 @trailarr_api.get("/assets/manifest.json", include_in_schema=False)
 async def serve_manifest():
-    file_path = os.path.normpath(
-        os.path.join(static_dir, "assets", "manifest.json")
-    )
-    if os.path.isfile(file_path):
+    file_path = Path(static_dir, "assets", "manifest.json").resolve()
+    if file_path.is_file():
         # If the path corresponds to a static file, return the file
         return FileResponse(file_path)
     else:
@@ -191,77 +231,39 @@ async def serve_manifest():
 
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
-login_enabled = os.getenv("WEBUI_DISABLE_AUTH", "false").lower() != "true"
-if login_enabled:
-    # Authentication is enabled
-    @trailarr_api.get(
-        "/{rest_of_path:path}",
-        include_in_schema=False,
-        dependencies=[Depends(validate_login)],
-    )
-    async def serve_frontend(rest_of_path: str = ""):
-        return await get_frontend(rest_of_path)
-
-else:
-    # Authentication is disabled - Serve frontend without authentication
-    logging.info(
-        "WebUI Authentication is disabled - Frontend will be served without"
-        " authentication"
-    )
-
-    @trailarr_api.get("/{rest_of_path:path}", include_in_schema=False)
-    async def serve_frontend2(rest_of_path: str = ""):
-        return await get_frontend(rest_of_path)
-
-
-async def get_frontend(rest_of_path: str = ""):
+@trailarr_api.get(
+    "/{rest_of_path:path}",
+    include_in_schema=False,
+    dependencies=[Depends(validate_login)],
+)
+async def serve_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
         # If the path starts with "api", it's an API request and not \
         # meant for the frontend
         return HTMLResponse(status_code=404)
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
-        file_path = os.path.normpath(os.path.join(static_dir, rest_of_path))
+        file_path = Path(static_dir, rest_of_path).resolve()
         # Check if the path is within the static directory
-        if not file_path.startswith(static_dir):
+        if not file_path.is_relative_to(static_dir):
             return HTMLResponse(status_code=404)
-        if os.path.isfile(file_path):
+        if file_path.is_file():
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
         else:
-            # If the path corresponds to a directory, return the \
-            # index.html file in the directory
-            # headers = {"X-API-KEY": app_settings.api_key}
-            headers = {
-                "Set-Cookie": (
-                    f"trailarr_api_key={app_settings.api_key};"
-                    " SameSite=Strict; Path=/"
-                )
-            }
-            return HTMLResponse(
-                content=open(f"{static_dir}/index.html").read(),
-                headers=headers,
+            # Serve index.html for SPA client-side routing
+            index_path = Path(static_dir, "index.html").resolve()
+            # Extra safety: ensure index.html is within the static directory
+            if not index_path.is_file() or not index_path.is_relative_to(
+                static_dir
+            ):
+                return HTMLResponse(status_code=404)
+            response = FileResponse(index_path)
+            response.set_cookie(
+                key="trailarr_api_key",
+                value=app_settings.api_key,
+                path="/",
+                samesite="lax",
+                httponly=True,  # Frontend JS needs access
             )
-
-
-# Check if the frontend directory exists, if not create it
-# Support both Docker (/app) and bare metal (/opt/trailarr) paths
-static_dirs = [
-    "/opt/trailarr/frontend-build/browser",  # Bare metal
-    "/app/frontend-build/browser"            # Docker
-]
-
-static_dir = None
-for dir_path in static_dirs:
-    if os.path.exists(dir_path):
-        static_dir = os.path.abspath(dir_path)
-        break
-
-if static_dir is None:
-    # Fallback to first option and create it
-    static_dir = os.path.abspath(static_dirs[0])
-    logging.debug(f"Creating static directory: {static_dir}")
-    os.makedirs(static_dir, exist_ok=True)
-else:
-    logging.debug(f"Using frontend directory: {static_dir}")
-    trailarr_api.mount("/", StaticFiles(directory=static_dir), name="frontend")
+            return response

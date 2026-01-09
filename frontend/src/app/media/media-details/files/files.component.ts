@@ -65,6 +65,7 @@ export class FilesComponent {
     this.mediaService.rescanMediaFiles(this.mediaId()).subscribe(() => {
       this.isLoading.set(false);
       this.webSocketService.showToast('Media files rescanned successfully.', 'success');
+      this.mediaService.refreshContent();
     });
   }
 }

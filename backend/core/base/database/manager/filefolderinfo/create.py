@@ -39,7 +39,9 @@ def _update_existing_node(
         # Safety check: Item might have been deleted by another process
         return None
 
-    _update_data = incoming.model_dump(exclude_unset=True)
+    _update_data = incoming.model_dump(
+        exclude_unset=True, exclude_defaults=True
+    )
     db_item.sqlmodel_update(_update_data)
     db_item.parent_id = parent_id
 

@@ -6,7 +6,7 @@ readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==25.1.0",
-    "aiohttp==3.13.2",
+    "aiohttp==3.13.3",
     "aiosqlite==0.22.1",
     "alembic==1.17.2",
     "apscheduler==3.11.2",
@@ -32,7 +32,6 @@ dev = [
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.5.0",
-    "mkdocs-github-changelog==0.1.0",
     "mkdocs-glightbox==0.5.2",
     "mkdocs-material==9.7.1",
 ]

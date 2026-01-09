@@ -1,4 +1,15 @@
-import {ChangeDetectionStrategy, Component, inject, input, model, OnChanges, output, signal, ViewContainerRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  OnChanges,
+  output,
+  signal,
+  ViewContainerRef,
+} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {PathSelectDialogComponent} from 'src/app/shared/path-select-dialog/path-select-dialog.component';
 
@@ -26,6 +37,8 @@ export class TextSettingComponent implements OnChanges {
   pathShouldEndWith = input<string>('');
   placeholder = input<string>('');
   value = model.required<string | number>();
+  minValue = input<number | null>(null);
+  maxValue = input<number | null>(null);
   minLength = input<number>(0);
   maxLength = input<number>(150);
   autocomplete = input<string>('off');
@@ -34,6 +47,30 @@ export class TextSettingComponent implements OnChanges {
 
   oldValue = signal<string | number>('');
   onSubmit = output<string>();
+
+  disableConfirm = computed(() => {
+    const val = this.value();
+    if (this.isNumberType()) {
+      // Number type validation
+      const numVal = Number(val);
+      if (this.minValue() !== null && numVal < this.minValue()!) {
+        return true;
+      }
+      if (this.maxValue() !== null && numVal > this.maxValue()!) {
+        return true;
+      }
+      return false;
+    }
+    // String type validation
+    const strVal = String(val);
+    if (this.minLength() && strVal.length < this.minLength()) {
+      return true;
+    }
+    if (this.maxLength() && strVal.length > this.maxLength()) {
+      return true;
+    }
+    return false;
+  });
 
   // ngOnInit() {
   //   this.oldValue.set(this.value());

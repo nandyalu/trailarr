@@ -97,17 +97,19 @@ def read_all(
 def read_all_generator(
     movies_only: bool | None = None,
     monitored_only: bool = False,
+    downloaded_only: bool = False,
     *,
     _session: Session = None,  # type: ignore
 ) -> Generator[MediaRead, None, None]:
     """Generator to get all media objects from the database one by one.\n
     Args:
-        movies_only (bool, Optional): Flag to get only movies. Default is None.\
+        movies_only (bool, Optional=None): Flag to get only movies. \
             If `True`, it will return only movies. \
             If `False`, it will return only series. \
             If `None`, it will return both movies and series.
-        monitored_only (bool, Optional): Flag to get only monitored media. Default is False.
-        _session (Session, Optional): A session to use for the database connection.\n
+        monitored_only (bool, Optional=False): Flag to get only monitored media.
+        downloaded_only (bool, Optional=False): Flag to get only downloaded media.
+        _session (Session, Optional=None): A session to use for the database connection.\n
             Default is None, in which case a new session will be created.\n
     Yields:
         MediaRead: The next MediaRead object.
@@ -116,7 +118,9 @@ def read_all_generator(
     if movies_only is not None:
         statement = statement.where(col(Media.is_movie).is_(movies_only))
     if monitored_only:
-        statement = statement.where(col(Media.monitor).is_(True))
+        statement = _apply_filter(statement, "monitored")
+    if downloaded_only:
+        statement = _apply_filter(statement, "downloaded")
     stream = _session.exec(statement)
     for db_media in stream:
         yield MediaRead.model_validate(db_media)
