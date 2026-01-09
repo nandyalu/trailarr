@@ -263,7 +263,7 @@ async def serve_frontend(rest_of_path: str = ""):
                 key="trailarr_api_key",
                 value=app_settings.api_key,
                 path="/",
-                samesite="strict",
-                httponly=False,  # Frontend JS needs access
+                samesite="lax",
+                httponly=True,  # Frontend JS needs access
             )
             return response

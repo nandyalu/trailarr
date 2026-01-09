@@ -115,8 +115,6 @@ def logout_user() -> dict:
     Raises:
         HTTPException: Always raises 401 to clear browser credentials
     """
-    if app_settings.webui_disable_auth:
-        return {"message": "Auth is disabled. No need to logout."}
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Logged out successfully. Please log in again.",
