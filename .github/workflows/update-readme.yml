@@ -1,4 +1,4 @@
-name: Update DockerHub Description
+name: Update Github Readme
 
 permissions:
   contents: write
@@ -10,11 +10,14 @@ on:
       - .github/workflows/update-readme.yml
 
 jobs:
-  dockerHubDescription:
+  githubReadme:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
     
     - name: Copy and Clean Index.md
       run: |
