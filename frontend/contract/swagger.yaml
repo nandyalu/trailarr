@@ -3658,6 +3658,9 @@ components:
         app_theme:
           type: string
           title: App Theme
+        delete_corrupted_trailers:
+          type: boolean
+          title: Delete Corrupted Trailers
         delete_trailer_connection:
           type: boolean
           title: Delete Trailer Connection
@@ -3736,6 +3739,7 @@ components:
         - app_data_dir
         - app_mode
         - app_theme
+        - delete_corrupted_trailers
         - delete_trailer_connection
         - delete_trailer_media
         - ffmpeg_timeout

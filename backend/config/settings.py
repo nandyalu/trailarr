@@ -230,6 +230,7 @@ class _Config:
             "app_data_dir": APP_DATA_DIR,
             "app_mode": self.app_mode,
             "app_theme": self.app_theme,
+            "delete_corrupted_trailers": self.delete_corrupted_trailers,
             "delete_trailer_connection": self.delete_trailer_connection,
             "delete_trailer_media": self.delete_trailer_media,
             "ffmpeg_timeout": self.ffmpeg_timeout,
