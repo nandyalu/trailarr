@@ -93,13 +93,13 @@ async def trailer_cleanup():
                         f" {media.title} [{media.id}] at path '{_path}'."
                     )
                     await delete_trailer(_path, download.id)
+                    download.file_exists = False
                 else:
                     logger.warning(
                         "Corrupted trailer found (missing audio/video) for"
                         f" {media.title} [{media.id}] at path '{_path}',"
                         " but deletion is disabled. Please check manually."
                     )
-                download.file_exists = False
     logger.info(
         f"Trailer cleanup task completed. Analyzed {analyzed_count} trailers."
         f" Missing files: {file_missing_count}."
