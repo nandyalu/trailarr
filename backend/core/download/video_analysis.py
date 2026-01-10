@@ -200,7 +200,7 @@ def verify_trailer_streams(
     if media_info is None:
         logger.debug(f"No media info found for the trailer: {trailer_path}")
         return None
-    # Varify the trailer duration is within the limits
+    # Verify the trailer duration is within the limits
     if not media_info.duration_seconds:
         logger.debug(f"Trailer duration is zero: {trailer_path}")
         return None
