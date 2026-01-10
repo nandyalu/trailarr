@@ -49,6 +49,9 @@ async def trailer_cleanup():
     )
     logger.info("Analyzing media items with trailers.")
     # Analyze the trailer files and remove the ones without audio
+    analyzed_count = 0
+    file_missing_count = 0
+    verification_failed_count = 0
     for media in media_with_trailers:
         # Skip media with no downloads
         if not media.downloads:
@@ -58,10 +61,12 @@ async def trailer_cleanup():
         for download in media.downloads:
             _path = download.path
             # Skip if file has already been deleted or path is missing
-            if not download.file_exists or not _path:
+            if not download.file_exists:
                 continue
+            analyzed_count += 1
             # Check if file exists on disk
-            if not await aiofiles.os.path.exists(_path):
+            if not _path or not await aiofiles.os.path.exists(_path):
+                file_missing_count += 1
                 logger.info(
                     f"Trailer file '{_path}' does not exist on disk for"
                     f" '{media.title}' [{media.id}]. Marking as deleted."
@@ -72,12 +77,24 @@ async def trailer_cleanup():
 
             # Verify the trailer has audio and video streams
             # if not, delete the trailer file and set monitor to True
-            if not video_analysis.verify_trailer_streams(_path):
+            verified = video_analysis.verify_trailer_streams(_path)
+            if verified is None:
+                logger.info(
+                    f"Could not analyze trailer for {media.title} [{media.id}]"
+                    f" at path '{_path}'. Skipping deletion."
+                )
+                continue
+            elif verified is False:
+                verification_failed_count += 1
                 logger.info(
                     "Deleting trailer with missing audio/video for"
                     f" {media.title} [{media.id}] at path '{_path}'."
                 )
                 download.file_exists = False
                 await delete_trailer(_path, download.id)
-    logger.info("Trailer cleanup task completed.")
+    logger.info(
+        f"Trailer cleanup task completed. Analyzed {analyzed_count} trailers."
+        f" Missing files: {file_missing_count}."
+        f" Verification failed: {verification_failed_count}."
+    )
     return None
