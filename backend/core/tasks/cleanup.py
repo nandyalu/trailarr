@@ -10,7 +10,7 @@ from core.files_handler import FilesHandler
 logger = ModuleLogger("CleanupTasks")
 
 
-async def delete_old_logs():
+async def delete_old_logs():  # pragma: no cover
     """
     Delete old log files from the '/config/logs' directory.
     This function is intended to be run periodically to keep the log directory clean.

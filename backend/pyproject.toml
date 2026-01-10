@@ -43,5 +43,4 @@ testing = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--rootdir=backend --cov=backend --cov-report=xml --cov-report=term"
 testpaths = ["tests"]
