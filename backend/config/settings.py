@@ -347,6 +347,13 @@ class _Config:
         - Default is 'auto'.
         - Valid values are 'light', 'dark', 'auto'."""
 
+    delete_corrupted_trailers = bool_property(
+        "DELETE_CORRUPTED_TRAILERS", default=True
+    )
+    """Delete corrupted trailers during trailer cleanup task.
+        - Default is True.
+        - Valid values are True/False."""
+
     ffmpeg_timeout = int_property(
         "FFMPEG_TIMEOUT", default=15, min_=10, max_=300
     )

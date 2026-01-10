@@ -1,5 +1,6 @@
 import aiofiles.os
 from app_logger import ModuleLogger
+from config.settings import app_settings
 from config.logs import manager as logs_manager
 import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
@@ -86,12 +87,19 @@ async def trailer_cleanup():
                 continue
             elif verified is False:
                 verification_failed_count += 1
-                logger.info(
-                    "Deleting trailer with missing audio/video for"
-                    f" {media.title} [{media.id}] at path '{_path}'."
-                )
+                if app_settings.delete_corrupted_trailers:
+                    logger.info(
+                        "Deleting trailer with missing audio/video for"
+                        f" {media.title} [{media.id}] at path '{_path}'."
+                    )
+                    await delete_trailer(_path, download.id)
+                else:
+                    logger.warning(
+                        "Corrupted trailer found (missing audio/video) for"
+                        f" {media.title} [{media.id}] at path '{_path}',"
+                        " but deletion is disabled. Please check manually."
+                    )
                 download.file_exists = False
-                await delete_trailer(_path, download.id)
     logger.info(
         f"Trailer cleanup task completed. Analyzed {analyzed_count} trailers."
         f" Missing files: {file_missing_count}."
