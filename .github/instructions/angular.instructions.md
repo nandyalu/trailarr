@@ -142,6 +142,7 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 9. Add error handling and loading states using signals
 10. Write unit and end-to-end tests
 11. Optimize performance and bundle size
+12. When making changes, ensure relevant documentation is also updated.
 
 ## Additional Guidelines
 - Follow the Angular Style Guide for file naming conventions (see https://angular.dev/style-guide), e.g., use `feature.ts` for components and `feature-service.ts` for services. For legacy codebases, maintain consistency with existing pattern.

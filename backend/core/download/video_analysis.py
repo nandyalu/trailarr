@@ -176,7 +176,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
 def verify_trailer_streams(
     trailer_path: str, min_duration: int = 10, max_duration: int = 1200
-) -> bool:
+) -> bool | None:
     """
     Check if the trailer has audio and video streams. \n
     Args:
@@ -186,18 +186,24 @@ def verify_trailer_streams(
         max_duration (int): Maximum duration of the trailer in seconds. \
             Default is 1200 seconds (20 minutes).
     Returns:
-        bool: True if the trailer has audio and video streams, False otherwise.
+        Result (bool | None):
+            - True: Trailer has both audio and video streams within duration limits.
+            - False: Trailer is missing audio or video streams, or duration is out of bounds.
+            - None: File missing, could not be analyzed, duration is zero.
     """
     # Check trailer file exists
     logger.debug(f"Verifying trailer streams for: {trailer_path}")
     if not trailer_path:
-        return False
+        return None
     # Get media analysis for the trailer
     media_info = get_media_info(trailer_path)
     if media_info is None:
         logger.debug(f"No media info found for the trailer: {trailer_path}")
-        return False
-    # Varify the trailer duration is within the limits
+        return None
+    # Verify the trailer duration is within the limits
+    if not media_info.duration_seconds:
+        logger.debug(f"Trailer duration is zero: {trailer_path}")
+        return None
     if media_info.duration_seconds < min_duration:
         logger.debug(
             f"Trailer duration less than {min_duration} seconds:"

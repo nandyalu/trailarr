@@ -53,10 +53,19 @@
 				"color": "terminal.ansiYellow"
 			},
 			"type": "shell",
-			"command": "cd backend && pytest --cov=. --cov-report=html",
+			"command": "python -m pytest --cov=. --cov-report=html",
 			"group": {
 				"kind": "test",
 				"isDefault": false
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/backend",
+				"env": {
+					"PYTHON_PATH": "${workspaceFolder}/backend",
+					"TZ": "UTC",
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1"
+				}
 			},
 			"presentation": {
 				"reveal": "always"

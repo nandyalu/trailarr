@@ -18,10 +18,11 @@ Adapted to fit the current project's needs.
 - Follow PEP 8 style guidelines for formatting and structure.
 - Include error handling with appropriate exceptions.
 - Provide docstrings following slightly modified Google Style Docstring conventions (see Docstring example at the end).
-- Use the python 3.10+ syntax for type annotations (e.g., `list[str]`, `dict[str, int]`).
+- Use the python 3.10+ syntax for type annotations (e.g., `list[str]`, `dict[str, int]`, `set[str]`).
 - Break down complex functions into smaller, more manageable functions.
 - Add appropriate logging where necessary for debugging and monitoring.
 - Log exceptions where caught, not when they are raised. Include exception details in the log if user needs to be informed.
+- Include media id as `[media_id]` in the log message, Frontend app logic uses this media id to link the log to relevant media item.
 
 
 ## General Instructions
