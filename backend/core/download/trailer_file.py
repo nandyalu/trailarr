@@ -275,7 +275,7 @@ def verify_download(
     file_path: str,
     title: str,
     profile: TrailerProfileRead,
-) -> bool:
+) -> bool | None:
     """Verify if the trailer is downloaded successfully. \n
     Also checks if the trailer has audio and video streams. \n
     Args:
@@ -283,7 +283,11 @@ def verify_download(
         title (str): Title of the media (for logging purposes).
         profile (TrailerProfileRead): Trailer Profile used to download. \n
     Returns:
-        bool: True if trailer is downloaded successfully, False otherwise."""
+        Result (bool | None):
+            - True: Trailer has both audio and video streams within duration limits.
+            - False: Trailer is missing audio or video streams, or duration is out of bounds.
+            - None: File missing, could not be analyzed, duration is zero.
+    """
     # Check if the trailer is downloaded successfully
     # This check is to ensure that correct file is downloaded
     # and not a partial file like a video only or audio only file
