@@ -34,7 +34,7 @@
         "--max-line-length=80",
     ],
     "python.testing.pytestArgs": [
-        "."
+        "--override-ini=addopts="
     ],
     "python.testing.cwd": "${workspaceFolder}/backend",
     "python.testing.unittestEnabled": false,
