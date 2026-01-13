@@ -43,14 +43,12 @@ testing = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--rootdir=backend --cov=backend --cov-report=xml --cov-report=term"
+addopts = "--cov=. --cov-report=xml --cov-report=term"
 testpaths = ["tests"]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 branch = true
-source = ["backend"]
+source = ["."]
 relative_files = true
 omit = [
     "*/__pycache__/*",
