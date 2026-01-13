@@ -1,17 +1,17 @@
 from abc import ABC
 from functools import cache
+from itertools import batched
 from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
 import core.base.database.manager.media as media_manager
-from core.base.database.models.helpers import MediaReadDC, MediaUpdateDC
+from core.base.database.models.helpers import MediaReadDC
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.media import (
     MediaCreate,
     MediaRead,
-    MonitorStatus,
 )
 
 logger = ModuleLogger("ConnectionManager")
@@ -164,28 +164,17 @@ class BaseConnectionManager(ABC):
         media_data = await self.get_media_data()
         logger.debug(f"Media data received: {len(media_data)} items")
         if not media_data:
-            yield []
+            logger.warning("No media data received from Arr application")
             return
         # Parse the media data to MediaCreate objects in chunks of 100
-        chunk_count = 0
-        total_chunks = (len(media_data) + 99) // 100
-        count = 0
-        parsed_media: list[MediaCreate] = []
-        for media in media_data:
-            parsed_media.append(self.parse_media(self.connection_id, media))
-            count += 1
-            if count == 100:
-                chunk_count += 1
-                logger.debug(f"Chunk {chunk_count}/{total_chunks} parsed")
-                yield parsed_media
-                count = 0
-                parsed_media = []
-        if parsed_media:
-            # If there are remaining media items in the last chunk, yield them
-            chunk_count += 1
-            logger.debug(f"Chunk {chunk_count}/{total_chunks} parsed")
+        for chunk in batched(media_data, 100):
+            parsed_media: list[MediaCreate] = []
+            for media in chunk:
+                media_create = self.parse_media(self.connection_id, media)
+                parsed_media.append(media_create)
+            self._apply_path_mappings(parsed_media)
             yield parsed_media
-            parsed_media = []
+        return
 
     def _apply_path_mappings(
         self, media_list: list[MediaCreate]
@@ -251,32 +240,6 @@ class BaseConnectionManager(ABC):
             return arr_monitored
         return False
 
-    @cache
-    def _get_media_status(
-        self,
-        trailer_exists: bool,
-        monitor: bool,
-        current_status: MonitorStatus,
-    ) -> MonitorStatus:
-        """Get the media status based on the trailer and monitoring status.\n
-        Args:
-            trailer_exists (bool): Flag indicating if a trailer exists on disk.
-            monitor (bool): Flag indicating if the media should be monitored.
-            current_status (MonitorStatus): The current media status.\n
-        Returns:
-            MonitorStatus: The new media status."""
-        # If media is already downloading, return downloading status
-        if current_status == MonitorStatus.DOWNLOADING:
-            return MonitorStatus.DOWNLOADING
-        # If trailer exists, return downloaded status
-        if trailer_exists:
-            return MonitorStatus.DOWNLOADED
-        # If media is monitored, return monitored status
-        if monitor:
-            return MonitorStatus.MONITORED
-        # Else, return missing status
-        return MonitorStatus.MISSING
-
     def create_or_update_bulk(
         self, media_data: list[MediaCreate]
     ) -> list[MediaReadDC]:
@@ -298,9 +261,6 @@ class BaseConnectionManager(ABC):
                 **media_read.model_dump(), created=created
             )
             media_read_dc_list.append(media_read_dc)
-        logger.debug(
-            f"Created: {self.created_count}, Updated: {self.updated_count}"
-        )
         return media_read_dc_list
 
     async def delete_trailers_for_media(self, media: MediaRead) -> bool:
@@ -360,7 +320,7 @@ class BaseConnectionManager(ABC):
             await self.delete_trailers_for_media(media)
         return
 
-    def remove_deleted_media(self) -> None:
+    def remove_media_deleted_in_arr_from_db(self) -> None:
         """Remove the media from the database that are not present in the Arr application."""
         if len(self.media_ids) == 0:
             return
@@ -368,27 +328,17 @@ class BaseConnectionManager(ABC):
         media_manager.delete_except(self.connection_id, self.media_ids)
         return
 
-    def update_media_status_bulk(self, media_update_list: list[MediaUpdateDC]):
-        """Update the media status in the database. \n
-        Args:
-            media_update_list (list[MediaUpdateDC]): List of media update data.
-        """
-        media_manager.update_media_status_bulk(media_update_list)
-        return
-
     async def _process_media_list(self, parsed_media: list[MediaCreate]):
         """Process the media list and update the database with the new data.\n
         Args:
             parsed_media (list[MediaCreate]): The parsed media data."""
         if len(parsed_media) == 0:
-            logger.warning("No media found in the Arr application")
+            logger.debug("No media to process")
             return
-        # Apply path mappings to the media folder paths
-        self._apply_path_mappings(parsed_media)
         # Create or update the media in the database
         media_res = self.create_or_update_bulk(parsed_media)
         # Check if media has trailer and should be monitored
-        update_list: list[MediaUpdateDC] = []
+        update_list: list[tuple[int, bool, bool]] = []
         for media_read in media_res:
             # Check if trailer exists
             trailer_exists = None
@@ -412,21 +362,9 @@ class BaseConnectionManager(ABC):
                     trailer_exists,
                     media_read.arr_monitored,
                 )
-            # Set media status based on trailer and monitoring status
-            status = self._get_media_status(
-                trailer_exists, monitor_media, media_read.status
-            )
-            # Append to the update list
-            update_list.append(
-                MediaUpdateDC(
-                    id=media_read.id,
-                    monitor=monitor_media,
-                    status=status,
-                    trailer_exists=trailer_exists,
-                )
-            )
+            update_list.append((media_read.id, monitor_media, trailer_exists))
         # Update the database with trailer and monitoring status
-        self.update_media_status_bulk(update_list)
+        media_manager.update_monitor_and_trailer_exists_bulk(update_list)
         return
 
     async def refresh(self):
@@ -447,5 +385,5 @@ class BaseConnectionManager(ABC):
             await self.delete_removed_media_trailers()
 
         # Delete any media that is not present in the Arr application
-        self.remove_deleted_media()
+        self.remove_media_deleted_in_arr_from_db()
         return
