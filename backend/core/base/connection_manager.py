@@ -248,7 +248,6 @@ class BaseConnectionManager(ABC):
             media_data (list[MovieCreate]): The movie data to create or update.\n
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
-        logger.debug(f"Syncing {len(media_data)} media items to database")
         media_read_list = media_manager.create_or_update_bulk(media_data)
         media_read_dc_list = []
         for media_read, created, updated in media_read_list:
