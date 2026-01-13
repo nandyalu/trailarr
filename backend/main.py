@@ -248,9 +248,17 @@ update_base_href(index_html_path, app_settings.url_base)
 def get_sanitized_path(base_dir: Path, messy_path: str) -> Path | None:
     """Sanitize a file path to ensure it is within the base directory."""
     resolved_base_dir = base_dir.resolve()
-    # Ensure path is relative to prevent absolute path overriding parent
+    # Normalize input: ensure a relative path and reject empty/whitespace-only values
+    if not messy_path or not messy_path.strip():
+        return None
+
+    # Remove leading slashes to prevent absolute path issues
     clean_path = messy_path.lstrip("/")
-    file_path = (resolved_base_dir / clean_path).resolve()
+    try:
+        file_path = (resolved_base_dir / clean_path).resolve()
+    except (OSError, RuntimeError):
+        # Any resolution error results in rejecting the path
+        return None
 
     # Check if the path is within the static directory
     if not file_path.is_relative_to(resolved_base_dir):
