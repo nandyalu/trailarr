@@ -3,6 +3,7 @@ import {ChangeDetectionStrategy, Component, effect, inject, OnInit, signal} from
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink, RouterState} from '@angular/router';
 import {RouteMedia} from 'src/routing';
+import {RemoveStartingSlashPipe} from '../helpers/remove-starting-slash.pipe';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {Media} from '../models/media';
 import {CustomfilterService} from '../services/customfilter.service';
@@ -19,6 +20,7 @@ import {NormalHeaderComponent} from './headers/normal-header/normal-header.compo
     NgTemplateOutlet,
     LoadIndicatorComponent,
     NormalHeaderComponent,
+    RemoveStartingSlashPipe,
     RouterLink,
     ScrollNearEndDirective,
   ],

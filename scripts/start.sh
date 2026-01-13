@@ -43,9 +43,22 @@ else
 fi
 box_echo "--------------------------------------------------------------------------";
 
+# Load .env file from APP_DATA_DIR if it exists
+ENV_FILE="${APP_DATA_DIR}/.env"
+if [ -f "$ENV_FILE" ]; then
+    box_echo "Loading environment variables from $ENV_FILE"
+    set -o allexport
+    source "$ENV_FILE"
+    set +o allexport
+    box_echo "Environment variables loaded successfully!"
+    box_echo "--------------------------------------------------------------------------";
+else
+    box_echo "No .env file found at $ENV_FILE, skipping environment variable loading."
+    box_echo "--------------------------------------------------------------------------";
+fi
 # Start FastAPI application
 box_echo "Starting Trailarr application..."
 echo "+==============================================================================+";
 echo ""
 cd /app/backend
-exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889}
+exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889} --root-path ${URL_BASE:-/}

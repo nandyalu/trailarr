@@ -173,6 +173,19 @@ Enable this setting to update `yt-dlp` to the latest version on every app start.
 
 ### URL Base
 
+<!-- md:version:upd 0.6.7 -->
+
 - Default is  `(empty)`
 
-Enter the base URL of the app for use with reverse proxies. This will allow the app to generate correct URLs when behind a reverse proxy.
+Enter the base URL of the app for use with subdirectory reverse proxies. This will allow the app to generate correct URLs when behind a reverse proxy.
+
+Make sure to start the URL Base with a `/` and do not end it with a `/`. For example, use `/trailarr` instead of `trailarr/` or `/trailarr/`. 
+
+!!! success ""
+    The app will automatically format the URL Base to ensure it starts with a `/` and does not end with a `/`.
+
+!!! note
+    If you are not using a subdirectory reverse proxy, leave this setting empty.
+
+!!! warning
+    Changing this setting requires a restart of the app (container) to take effect.

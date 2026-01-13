@@ -30,8 +30,12 @@ export class WebsocketService {
       const hostname = window.location.hostname;
       // Use the port if needed, or leave it empty for default ports (80 for ws and 443 for wss)
       const port = window.location.port ? `:${window.location.port}` : ''; // Use the current port or specify one
+      // Get base href from the document
+      const baseHref = document.getElementsByTagName('base')[0]?.getAttribute('href') || '/';
+      // Remove starting slash if present
+      const formattedBaseHref = baseHref.startsWith('/') ? baseHref.substring(1) : baseHref;
       // Construct the WebSocket URL dynamically
-      const wsUrl = `${wsProtocol}//${hostname}${port}/ws/${client_id}`;
+      const wsUrl = `${wsProtocol}//${hostname}${port}/${formattedBaseHref}ws/${client_id}`;
 
       this.socket$ = webSocket(wsUrl);
 

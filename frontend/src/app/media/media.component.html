@@ -65,7 +65,7 @@
   <label [for]="media.id">
     <img
       id="mediaImage{{ media.id }}"
-      [src]="media.poster_path || 'assets/poster-sm.png'"
+      [src]="(media.poster_path | removeStartingSlash) || 'assets/poster-sm.png'"
       [alt]="media.title"
       loading="lazy"
       (load)="media.isImageLoaded = true"

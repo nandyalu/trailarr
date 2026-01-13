@@ -16,6 +16,7 @@ import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
 import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
+import {RemoveStartingSlashPipe} from 'src/app/helpers/remove-starting-slash.pipe';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {RouteMedia} from 'src/routing';
@@ -35,6 +36,7 @@ import {FilesComponent} from './files/files.component';
     FilesComponent,
     FormsModule,
     LoadIndicatorComponent,
+    RemoveStartingSlashPipe,
     RouterLink,
     TitleCasePipe,
   ],
