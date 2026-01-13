@@ -28,32 +28,18 @@
             "args": [
                 "main:trailarr_api",
                 "--reload",
+                "--host=0.0.0.0",
                 "--port=7888"
             ],
             "jinja": true,
             "justMyCode": true
         },
         {
-            "name": "Docker: Python - Fastapi",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "python": {
-                "pathMappings": [
-                    {
-                        "localRoot": "${workspaceFolder}",
-                        "remoteRoot": "/app"
-                    }
-                ],
-                "projectType": "fastapi"
-            }
-        },
-        {
             "name": "ng serve",
             "type": "msedge",
             "request": "launch",
             "preLaunchTask": "npm: start",
-            "cwd": "${workspaceFolder}/frontend", // Added this line
+            "cwd": "${workspaceFolder}/frontend",
             "url": "http://localhost:4200/",
             "webRoot": "${workspaceFolder}/frontend/"
         },
@@ -62,26 +48,8 @@
             "type": "chrome",
             "request": "launch",
             "preLaunchTask": "npm: test",
-            "cwd": "${workspaceFolder}/frontend", // Added this line
+            "cwd": "${workspaceFolder}/frontend",
             "url": "http://localhost:9876/debug.html"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Jest Current File",
-            "program": "${workspaceFolder}/frontend/node_modules/.bin/jest",
-            "args": [
-                "--updateSnapshot",
-                "--runInBand",
-                "--runTestsByPath",
-                "${relativeFile}"
-            ],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
-            "windows": {
-                "program": "${workspaceFolder}/frontend/node_modules/jest/bin/jest"
-            }
         }
     ]
 }
