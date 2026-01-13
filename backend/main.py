@@ -6,7 +6,6 @@ from fastapi import (
     Depends,
     FastAPI,
     HTTPException,
-    Request,
     WebSocket,
     WebSocketDisconnect,
 )
@@ -253,7 +252,7 @@ update_base_href(index_html_path, app_settings.url_base)
     include_in_schema=False,
     dependencies=[Depends(validate_login)],
 )
-async def serve_frontend(request: Request, rest_of_path: str = ""):
+async def serve_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
         # If the path starts with "api", it's an API request and not \
         # meant for the frontend
@@ -261,10 +260,11 @@ async def serve_frontend(request: Request, rest_of_path: str = ""):
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
         # Sanitize the rest_of_path to prevent directory traversal attacks
+        resolved_frontend_dir = frontend_dir.resolve()
         file_path = frontend_dir / rest_of_path
         file_path = file_path.resolve()
         # Check if the path is within the static directory
-        if not file_path.is_relative_to(frontend_dir):
+        if not file_path.is_relative_to(resolved_frontend_dir):
             return HTMLResponse(status_code=404)
         if file_path.is_file():
             # If the path corresponds to a static file, return the file
