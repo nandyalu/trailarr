@@ -135,11 +135,14 @@ export class LogsComponent implements OnInit {
   // Download logs as a file - All Filtered Logs
   downloadLogs() {
     // Write the logs to a file and download it
-    const logs = this.filteredLogs()
+    const query = this.searchQuery();
+    const isSearching = query && query.length >= 3;
+    const logs = isSearching ? this.searchFilterLogs.value() : this.allLogs.value();
+    const formattedlogs = logs
       .sort(this.sortLogsByDateAsc)
       .map((log) => this.getRawLogWithTraceback(log))
       .join('\n');
-    const blob = new Blob([logs], {type: 'text/plain'});
+    const blob = new Blob([formattedlogs], {type: 'text/plain'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -152,8 +155,16 @@ export class LogsComponent implements OnInit {
 
   loadMore() {
     const currentCount = this.displayCount();
-    if (currentCount >= this.allLogs.value().length) {
-      this.limit.update((limit) => limit + 1000); // Increase the limit by 1000
+    const query = this.searchQuery();
+    const isSearching = query && query.length >= 3;
+    const logs = isSearching ? this.searchFilterLogs.value() : this.allLogs.value();
+
+    if (currentCount >= logs.length) {
+      // All logs are already displayed
+      if (logs.length >= this.limit()) {
+        // Check if we need to increase the limit
+        this.limit.update((limit) => limit + 1000); // Increase the limit by 1000
+      }
       return; // No more logs to load
     }
     // Increase the display count by 30
