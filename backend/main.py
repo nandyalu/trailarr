@@ -245,6 +245,19 @@ if not index_html_path.is_file():
 update_base_href(index_html_path, app_settings.url_base)
 
 
+def get_sanitized_path(base_dir: Path, messy_path: str) -> Path | None:
+    """Sanitize a file path to ensure it is within the base directory."""
+    resolved_base_dir = base_dir.resolve()
+    # Ensure path is relative to prevent absolute path overriding parent
+    clean_path = messy_path.lstrip("/")
+    file_path = (resolved_base_dir / clean_path).resolve()
+
+    # Check if the path is within the static directory
+    if not file_path.is_relative_to(resolved_base_dir):
+        return None
+    return file_path
+
+
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
 @trailarr_api.get(
@@ -260,11 +273,8 @@ async def serve_frontend(rest_of_path: str = ""):
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
         # Sanitize the rest_of_path to prevent directory traversal attacks
-        resolved_frontend_dir = frontend_dir.resolve()
-        file_path = frontend_dir / rest_of_path
-        file_path = file_path.resolve()
-        # Check if the path is within the static directory
-        if not file_path.is_relative_to(resolved_frontend_dir):
+        file_path = get_sanitized_path(frontend_dir, rest_of_path)
+        if file_path is None:
             return HTMLResponse(status_code=404)
         if file_path.is_file():
             # If the path corresponds to a static file, return the file
