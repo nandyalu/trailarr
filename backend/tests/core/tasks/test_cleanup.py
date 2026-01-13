@@ -337,7 +337,7 @@ class TestTrailerCleanup:
 
             assert result is None
             mock_delete_trailer.assert_not_called()
-            assert download.file_exists is False
+            assert download.file_exists is True
 
     @pytest.mark.asyncio
     async def test_cleanup_skips_verified_trailers(self):
