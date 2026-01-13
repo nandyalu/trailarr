@@ -245,25 +245,14 @@ if not index_html_path.is_file():
 update_base_href(index_html_path, app_settings.url_base)
 
 
-def get_sanitized_path(base_dir: Path, messy_path: str) -> Path | None:
+def get_sanitized_path(messy_path: str) -> Path | None:
     """Sanitize a file path to ensure it is within the base directory."""
-    resolved_base_dir = base_dir.resolve()
-    # Normalize input: ensure a relative path and reject empty/whitespace-only values
-    if not messy_path or not messy_path.strip():
+    base_dir = frontend_dir.resolve()
+    requested_path = base_dir / messy_path
+    # Ensure path remains within base directory
+    if not requested_path.resolve().is_relative_to(base_dir):
         return None
-
-    # Remove leading slashes to prevent absolute path issues
-    clean_path = messy_path.lstrip("/")
-    try:
-        file_path = (resolved_base_dir / clean_path).resolve()
-    except (OSError, RuntimeError):
-        # Any resolution error results in rejecting the path
-        return None
-
-    # Check if the path is within the static directory
-    if not file_path.is_relative_to(resolved_base_dir):
-        return None
-    return file_path
+    return requested_path.resolve()
 
 
 # Mount static frontend files to serve frontend
@@ -281,7 +270,7 @@ async def serve_frontend(rest_of_path: str = ""):
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
         # Sanitize the rest_of_path to prevent directory traversal attacks
-        file_path = get_sanitized_path(frontend_dir, rest_of_path)
+        file_path = get_sanitized_path(rest_of_path)
         if file_path is None:
             return HTMLResponse(status_code=404)
         if file_path.is_file():
