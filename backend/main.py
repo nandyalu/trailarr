@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import shutil
+from urllib.parse import unquote
 from fastapi import (
     Depends,
     FastAPI,
@@ -247,12 +248,25 @@ update_base_href(index_html_path, app_settings.url_base)
 
 def get_sanitized_path(messy_path: str) -> Path | None:
     """Sanitize a file path to ensure it is within the base directory."""
-    base_dir = frontend_dir.resolve()
-    requested_path = base_dir / messy_path
-    # Ensure path remains within base directory
-    if not requested_path.resolve().is_relative_to(base_dir):
+    resolved_base_dir = frontend_dir.resolve()
+    # Decode URL-encoded characters
+    messy_path = unquote(messy_path)
+    # Normalize input: ensure a relative path and reject empty/whitespace-only values
+    if not messy_path or not messy_path.strip():
         return None
-    return requested_path.resolve()
+
+    # Remove leading slashes to prevent absolute path issues
+    clean_path = messy_path.lstrip("/")
+    try:
+        file_path = (resolved_base_dir / clean_path).resolve()
+    except (OSError, RuntimeError):
+        # Any resolution error results in rejecting the path
+        return None
+
+    # Check if the path is within the static directory
+    if not file_path.is_relative_to(resolved_base_dir):
+        return None
+    return file_path
 
 
 # Mount static frontend files to serve frontend
