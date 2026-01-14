@@ -302,7 +302,7 @@ async def serve_frontend(rest_of_path: str = ""):
         file_path = get_sanitized_path(rest_of_path)
         if file_path is None:
             return HTMLResponse(status_code=404)
-        if file_path and file_path.is_file():
+        if file_path.is_file():
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
         return serve_index_html_with_cookie()
