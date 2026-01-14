@@ -2867,7 +2867,7 @@
 
 
 <h1 id="reverse-proxy-configuration">Reverse Proxy Configuration</h1>
-<p><span class="twemoji golden" title="Added in v0.6.7"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"></path></svg></span> <a href="../../release-notes/2026/">v0.6.7</a></p>
+<p><span class="twemoji golden" title="Added in v0.6.7"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"></path></svg></span> <a href="../../release-notes/2026/#v067-beta-january-13-2026">v0.6.7</a></p>
 <p>When hosting Trailarr behind a reverse proxy (like Nginx, Apache, Caddy, Traefik, etc.), certain configurations are necessary to ensure that the application functions correctly. This includes proper routing of requests and handling of headers.</p>
 <h2 id="sub-domain-reverse-proxy-configuration">Sub-domain Reverse Proxy Configuration</h2>
 <p>When hosting the application behind a reverse proxy in a sub-domain (e.g., <code>https://trailarr.example.com/</code>), the following configurations can be used as examples.</p>
@@ -2921,7 +2921,7 @@
 <h3 id="reverse-proxy-configuration-examples">Reverse Proxy Configuration Examples</h3>
 <h4 id="nginx_1">Nginx</h4>
 <div class="language-nginx highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">location</span><span class="w"> </span><span class="s">/trailarr/</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://localhost:port/</span><span class="p">;</span><span class="w">  </span><span class="c1"># Replace 'port' with the actual port number</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://192.168.1.231:7889/</span><span class="p">;</span><span class="w">  </span><span class="c1"># Replace with your Trailarr server address</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
@@ -2930,12 +2930,12 @@
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="apache_1">Apache</h4>
-<div class="language-apache highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">"/trailarr/"</span><span class="w"> </span><span class="s2">"http://localhost:port/"</span><span class="w">  </span>#<span class="w"> </span>Replace<span class="w"> </span>'port'<span class="w"> </span>with<span class="w"> </span>the<span class="w"> </span>actual<span class="w"> </span>port<span class="w"> </span>number
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">ProxyPassReverse</span><span class="w"> </span><span class="s2">"/trailarr/"</span><span class="w"> </span><span class="s2">"http://localhost:port/"</span>
+<div class="language-apache highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">"/trailarr/"</span><span class="w"> </span><span class="s2">"http://192.168.1.231:7889/"</span><span class="w">  </span>#<span class="w"> </span>Replace<span class="w"> </span>with<span class="w"> </span>your<span class="w"> </span>Trailarr<span class="w"> </span>server<span class="w"> </span>address
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">ProxyPassReverse</span><span class="w"> </span><span class="s2">"/trailarr/"</span><span class="w"> </span><span class="s2">"http://192.168.1.231:7889/"</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Prefix<span class="w"> </span><span class="s2">"/trailarr"</span>
 </span></code></pre></div>
 <h4 id="caddy_1">Caddy</h4>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>reverse_proxy /trailarr/* http://localhost:port {  # Replace 'port' with the actual port number
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>reverse_proxy /trailarr/* http://192.168.1.231:7889 {  # Replace with your Trailarr server address
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    header_up X-Forwarded-Prefix /trailarr
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>}
 </span></code></pre></div>
@@ -2951,7 +2951,7 @@
 </span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="nt">trailarr-service</span><span class="p">:</span>
 </span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nt">loadBalancer</span><span class="p">:</span>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="nt">servers</span><span class="p">:</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">"http://localhost:port"</span><span class="w">  </span><span class="c1"># Replace 'port' with the actual port number</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">"http://192.168.1.231:7889"</span><span class="w">  </span><span class="c1"># Replace with your Trailarr server address</span>
 </span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span><span class="nt">middlewares</span><span class="p">:</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="nt">strip-trailarr</span><span class="p">:</span>
 </span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="nt">stripPrefix</span><span class="p">:</span>
@@ -3000,7 +3000,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="January 14, 2026 02:47:16 UTC">January 14, 2026 02:47:16</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="January 14, 2026 03:29:04 UTC">January 14, 2026 03:29:04</span>
   </span>
 
     
