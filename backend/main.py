@@ -269,6 +269,18 @@ def get_sanitized_path(messy_path: str) -> Path | None:
     return file_path
 
 
+def serve_index_html_with_cookie():
+    response = FileResponse(index_html_path)
+    response.set_cookie(
+        key="trailarr_api_key",
+        value=app_settings.api_key,
+        path=app_settings.url_base or "/",
+        samesite="lax",
+        httponly=True,  # Frontend JS needs access
+    )
+    return response
+
+
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
 @trailarr_api.get(
@@ -283,20 +295,14 @@ async def serve_frontend(rest_of_path: str = ""):
         return HTMLResponse(status_code=404)
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
+        if rest_of_path == "":
+            # If no specific path is provided, serve index.html
+            return serve_index_html_with_cookie()
         # Sanitize the rest_of_path to prevent directory traversal attacks
         file_path = get_sanitized_path(rest_of_path)
         if file_path is None:
             return HTMLResponse(status_code=404)
-        if file_path.is_file():
+        if file_path and file_path.is_file():
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
-        else:
-            response = FileResponse(index_html_path)
-            response.set_cookie(
-                key="trailarr_api_key",
-                value=app_settings.api_key,
-                path=app_settings.url_base or "/",
-                samesite="lax",
-                httponly=True,  # Frontend JS needs access
-            )
-            return response
+        return serve_index_html_with_cookie()
