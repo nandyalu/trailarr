@@ -78,7 +78,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
 
 ```nginx
 location /trailarr/ {
-    proxy_pass http://localhost:port/;  # Replace 'port' with the actual port number
+    proxy_pass http://192.168.1.231:7889/;  # Replace with your Trailarr server address
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -90,15 +90,15 @@ location /trailarr/ {
 #### Apache
 
 ```apache
-ProxyPass "/trailarr/" "http://localhost:port/"  # Replace 'port' with the actual port number
-ProxyPassReverse "/trailarr/" "http://localhost:port/"
+ProxyPass "/trailarr/" "http://192.168.1.231:7889/"  # Replace with your Trailarr server address
+ProxyPassReverse "/trailarr/" "http://192.168.1.231:7889/"
 RequestHeader set X-Forwarded-Prefix "/trailarr"
 ```
 
 #### Caddy
 
 ```caddy
-reverse_proxy /trailarr/* http://localhost:port {  # Replace 'port' with the actual port number
+reverse_proxy /trailarr/* http://192.168.1.231:7889 {  # Replace with your Trailarr server address
     header_up X-Forwarded-Prefix /trailarr
 }
 ```
@@ -117,7 +117,7 @@ http:
     trailarr-service:
     loadBalancer:
       servers:
-        - url: "http://localhost:port"  # Replace 'port' with the actual port number
+        - url: "http://192.168.1.231:7889"  # Replace with your Trailarr server address
   middlewares:
     strip-trailarr:
       stripPrefix:
