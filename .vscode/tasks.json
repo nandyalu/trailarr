@@ -17,35 +17,6 @@
 			},
 		},
 		{
-			"type": "shell",
-			"label": "Docker build run without Frontend",
-			"detail": "Run the docker image without frontend changes",
-			"icon": {
-				"id": "open-preview",
-				"color": "terminal.ansiBlue"
-			},
-			"dependsOrder": "sequence",
-			"dependsOn": [
-				"Docker build without Frontend"
-			],
-			"command": "python ./restart_stack.py",
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"label": "Docker build run with Frontend",
-			"detail": "Run the docker image with frontend changes",
-			"icon": {
-				"id": "open-preview",
-				"color": "terminal.ansiGreen"
-			},
-			"dependsOn": [
-				"Docker build with Frontend"
-			],
-			"command": "python ./restart_stack.py",
-			"problemMatcher": []
-		},
-		{
 			"label": "Generate PyTest HTML Report",
 			"detail": "Generate PyTest HTML Report by running the tests",
 			"icon": {
@@ -207,7 +178,8 @@
 					"PYTHON_PATH": "${workspaceFolder}/backend",
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
-					"LOG_LEVEL": "ERROR"
+					"LOG_LEVEL": "ERROR",
+					"APP_VERSION": "0.6.7"
 				}
 			},
 			"group": {

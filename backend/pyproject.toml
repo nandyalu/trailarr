@@ -1,6 +1,6 @@
 [project]
 name = "Trailarr"
-version = "0.6.3"
+version = "0.6.7"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
 readme = "../README.md"
 requires-python = ">=3.13.5"
@@ -8,7 +8,7 @@ dependencies = [
     "aiofiles==25.1.0",
     "aiohttp==3.13.3",
     "aiosqlite==0.22.1",
-    "alembic==1.17.2",
+    "alembic==1.18.0",
     "apscheduler==3.11.2",
     "async-lru==2.0.5",
     "bcrypt==5.0.0",

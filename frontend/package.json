@@ -1,6 +1,6 @@
 {
   "name": "trailarr",
-  "version": "0.6.3",
+  "version": "0.6.7",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

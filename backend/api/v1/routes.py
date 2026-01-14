@@ -35,9 +35,9 @@ authenticated_router = APIRouter(
 authenticated_router.include_router(connections_router)
 authenticated_router.include_router(customfilters_router)
 authenticated_router.include_router(files_router)
+authenticated_router.include_router(logs_router)
 authenticated_router.include_router(media_router)
 authenticated_router.include_router(settings_router)
-authenticated_router.include_router(logs_router)
 authenticated_router.include_router(tasks_router)
 authenticated_router.include_router(trailerprofiles_router)
 

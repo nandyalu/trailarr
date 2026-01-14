@@ -144,7 +144,7 @@ def custom_openapi():
         servers=[
             {
                 # Use current page host as default
-                "url": "/",
+                "url": f"{app_settings.url_base}/",
                 "description": "Current host",
             },
             {
