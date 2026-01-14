@@ -22,7 +22,7 @@
       </div>
     }
   </div>
-  <div class="buttons-row">
+  <div class="buttons-row" (click)="$event.stopPropagation()">
     <!-- Add New Custom Filter button -->
     <button class="primary" (click)="openFilterEditDialog(null)">Add New</button>
     <!-- Button to Cancel Dialog -->
