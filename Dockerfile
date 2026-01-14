@@ -20,25 +20,14 @@ COPY ./frontend/ ./
 RUN npm run build
 
 # --------------------------------------------------------------------------- #
-#                      Stage 2 - Python Dependencies                          #
+#                          Stage 2 - Final image                              #
 # --------------------------------------------------------------------------- #
-FROM python:3.13-slim AS python-deps
+FROM nandyalu/python-ffmpeg:latest
 
-# For bare metal installation, see install.sh script in the repository root
-
-# PYTHONDONTWRITEBYTECODE=1 -> Keeps Python from generating .pyc files in the container
-# PYTHONUNBUFFERED=1 -> Turns off buffering for easier container logging
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Install ca-certificates for SSL
-RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
+# python3.13, uv, gosu, yt-dlp, deno (for yt-dlp-ejs), ffmpeg with hw acceleration drivers are pre-installed
 
 # Set the working directory
 WORKDIR /app
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy uv related files from backend for dependency installation
 COPY ./backend/.python-version /app/backend/.python-version
@@ -48,29 +37,6 @@ COPY ./backend/uv.lock /app/backend/uv.lock
 # Install Python dependencies using uv pip install
 WORKDIR /app/backend
 RUN uv pip install --no-cache --native-tls --system -r pyproject.toml
-
-# Install ffmpeg using install_ffmpeg.sh script
-COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
-RUN chmod +x /tmp/install_ffmpeg.sh && \
-    /tmp/install_ffmpeg.sh
-
-# --------------------------------------------------------------------------- #
-#                          Stage 3 - Final image                              #
-# --------------------------------------------------------------------------- #
-FROM python:3.13-slim
-
-# Copy gosu from gosu image to allow running as non-root user
-COPY --from=tianon/gosu:trixie /usr/local/bin/gosu /usr/local/bin/gosu
-RUN chmod +x /usr/local/bin/gosu
-
-# Copy uv, ffmpeg and Python dependencies from python-deps stage to make it available in final image
-COPY --from=python-deps /usr/local/bin/ /usr/local/bin/
-COPY --from=python-deps /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
-
-# Install HW Acceleration drivers and libraries
-COPY ./scripts/install_drivers.sh /tmp/install_drivers.sh
-RUN chmod +x /tmp/install_drivers.sh && \
-    /tmp/install_drivers.sh
 
 # ARG APP_VERSION, will be set during build by github actions
 ARG APP_VERSION=0.6.1-dev
@@ -89,21 +55,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NVIDIA_VISIBLE_DEVICES="all" \
     NVIDIA_DRIVER_CAPABILITIES="all"
 
-# Install tzdata and pciutils, set timezone
-RUN apt-get update && apt-get install -y \
-    curl p7zip-full \
-    tzdata \
-    pciutils \
-    udev \
-    && \
-    ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install Deno for use with yt-dlp - install globally for all users
-RUN curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh && \
-    chmod +x /usr/local/bin/deno && \
-    /usr/local/bin/deno --version
 
 # Set the working directory
 WORKDIR /app
@@ -114,14 +65,8 @@ COPY ./assets /app/assets
 # Copy the backend
 COPY ./backend /app/backend
 
-# # Copy the installed Python virtual environment from python-deps stage
-# COPY --from=python-deps /app/backend/.venv /app/backend/.venv
-
 # Copy the frontend built files from the frontend-build stage
 COPY --from=frontend-build /app/frontend-build /app/frontend-build
-
-# # Copy the installed Python dependencies and ffmpeg
-# COPY --from=python-deps /usr/local/ /usr/local/
 
 # Set the python path
 ENV PYTHONPATH=/app/backend

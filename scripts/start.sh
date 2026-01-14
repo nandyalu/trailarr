@@ -61,4 +61,8 @@ box_echo "Starting Trailarr application..."
 echo "+==============================================================================+";
 echo ""
 cd /app/backend
-exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889} --root-path ${URL_BASE:-/}
+if [ -n "$URL_BASE" ]; then
+    exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889} --root-path ${URL_BASE:-}
+else
+    exec uvicorn main:trailarr_api --host 0.0.0.0 --port ${APP_PORT:-7889}
+fi

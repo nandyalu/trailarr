@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
   <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.128.0-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.6-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.0.8-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
   <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
