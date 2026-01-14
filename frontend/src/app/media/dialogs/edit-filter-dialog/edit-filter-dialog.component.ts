@@ -10,7 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {customError, Field, FieldTree, form, submit} from '@angular/forms/signals';
+import {Field, FieldTree, form, submit} from '@angular/forms/signals';
 import {firstValueFrom} from 'rxjs';
 import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
 import {allFilterKeys, CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
@@ -148,9 +148,10 @@ export class EditFilterDialogComponent implements AfterViewInit {
       } catch (error) {
         console.error('Error submitting form:', error);
         this.submitResult.set({type: 'error', message: 'Error submitting form.' + (error as Error).message});
-        return customError({
+        return {
+          kind: 'server',
           message: 'An error occurred while submitting the form. Please try again.',
-        });
+        };
       }
     });
   }

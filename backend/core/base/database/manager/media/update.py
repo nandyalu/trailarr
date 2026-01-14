@@ -42,6 +42,77 @@ def update_media_image(
 
 
 @manage_session
+def update_monitor_and_trailer_exists(
+    media_id: int,
+    monitor: bool,
+    trailer_exists: bool,
+    *,
+    _commit: bool = True,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update the monitoring and trailer_exists status of a media item in the database by id.\n
+    Args:
+        media_id (int): The id of the media to update.
+        monitor (bool): The monitoring status to set.
+        trailer_exists (bool): The trailer_exists status to set.
+        _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
+        _session (Session, Optional): A session to use for the database connection. \
+            Default is `None`, in which case a new session will be created.
+    Returns:
+        None
+    Raises:
+        ItemNotFoundError: If the media item with provided id doesn't exist.
+    """
+    db_media = base._get_db_item(media_id, _session)
+    _updated = False
+    if db_media.monitor != monitor:
+        db_media.monitor = monitor
+        _updated = True
+    if db_media.trailer_exists != trailer_exists:
+        db_media.trailer_exists = trailer_exists
+        _updated = True
+    if _updated:
+        db_media.updated_at = datetime.now(timezone.utc)
+        # Update status based on monitor status and trailer existence
+        db_media.status = base.get_status(
+            db_media.monitor, db_media.trailer_exists, db_media.status
+        )
+        _session.add(db_media)
+        if _commit:
+            _session.commit()
+    return
+
+
+@manage_session
+def update_monitor_and_trailer_exists_bulk(
+    media_update_list: Sequence[tuple[int, bool, bool]],
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update the monitoring and trailer_exists status of multiple media items in the database at once.\n
+    Args:
+        media_update_list (Sequence[tuple[int, bool, bool]]): Sequence of tuples containing \
+            media id, monitor status and trailer_exists status.\n
+        _session (Session, Optional): A session to use for the database connection.\n
+            Default is None, in which case a new session will be created.
+    Returns:
+        None
+    Raises:
+        ItemNotFoundError: If any of the media items with provided id's don't exist.
+    """
+    for media_id, monitor, trailer_exists in media_update_list:
+        update_monitor_and_trailer_exists(
+            media_id,
+            monitor,
+            trailer_exists,
+            _session=_session,
+            _commit=False,
+        )
+    _session.commit()
+    return
+
+
+@manage_session
 def update_media_status(
     media_update: MediaUpdateDC,
     *,
@@ -81,28 +152,6 @@ def update_media_status(
     _session.add(db_media)
     if _commit:
         _session.commit()
-    return
-
-
-@manage_session
-def update_media_status_bulk(
-    media_update_list: Sequence[MediaUpdateDC],
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Update the monitoring status of multiple media items in the database at once.\n
-    Args:
-        media_update_list (Sequence[MediaUpdateProtocol]): Sequence of media update objects.\n
-        _session (Session, Optional): A session to use for the database connection.\n
-            Default is None, in which case a new session will be created.
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If any of the media items with provided id's don't exist.
-    """
-    for media_update in media_update_list:
-        update_media_status(media_update, _session=_session, _commit=False)
-    _session.commit()
     return
 
 

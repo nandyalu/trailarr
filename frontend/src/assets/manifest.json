@@ -3,7 +3,7 @@
   "name": "Trailarr: Movie and Tv Show trailer downloader",
   "icons": [
     {
-      "src": "/assets/logos/trailarr.svg",
+      "src": "logos/trailarr.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any"
@@ -22,7 +22,7 @@
       "url": "/home",
       "icons": [
         {
-          "src": "/assets/icons/home.svg",
+          "src": "icons/home.svg",
           "type": "image/svg+xml",
           "sizes": "96x96"
         }
@@ -33,7 +33,7 @@
       "url": "/movies",
       "icons": [
         {
-          "src": "/assets/icons/movies.svg",
+          "src": "icons/movies.svg",
           "type": "image/svg+xml",
           "sizes": "96x96"
         }
@@ -44,7 +44,7 @@
       "url": "/series",
       "icons": [
         {
-          "src": "/assets/icons/series.svg",
+          "src": "icons/series.svg",
           "type": "image/svg+xml",
           "sizes": "96x96"
         }
@@ -55,7 +55,7 @@
       "url": "/settings",
       "icons": [
         {
-          "src": "/assets/icons/settings.svg",
+          "src": "icons/settings.svg",
           "type": "image/svg+xml",
           "sizes": "96x96"
         }
@@ -65,49 +65,49 @@
   "description": "Trailarr is a Docker application to download and manage trailers for your media library. It integrates with your existing services, such as Plex, Radarr, and Sonarr!",
   "screenshots": [
     {
-      "src": "/assets/screenshots/home.png",
+      "src": "screenshots/home.png",
       "type": "image/png",
       "sizes": "1377x926",
       "form_factor": "wide"
     },
     {
-      "src": "/assets/screenshots/series.png",
+      "src": "screenshots/series.png",
       "type": "image/png",
       "sizes": "1377x926",
       "form_factor": "wide"
     },
     {
-      "src": "/assets/screenshots/settings.png",
+      "src": "screenshots/settings.png",
       "type": "image/png",
       "sizes": "1377x926",
       "form_factor": "wide"
     },
     {
-      "src": "/assets/screenshots/light.png",
+      "src": "screenshots/light.png",
       "type": "image/png",
       "sizes": "1377x926",
       "form_factor": "wide"
     },
     {
-      "src": "/assets/screenshots/mobile/home.png",
+      "src": "screenshots/mobile/home.png",
       "type": "image/png",
       "sizes": "1442x3202",
       "form_factor": "narrow"
     },
     {
-      "src": "/assets/screenshots/mobile/series.png",
+      "src": "screenshots/mobile/series.png",
       "type": "image/png",
       "sizes": "1442x3202",
       "form_factor": "narrow"
     },
     {
-      "src": "/assets/screenshots/mobile/settings.png",
+      "src": "screenshots/mobile/settings.png",
       "type": "image/png",
       "sizes": "1442x3202",
       "form_factor": "narrow"
     },
     {
-      "src": "/assets/screenshots/mobile/light.png",
+      "src": "screenshots/mobile/light.png",
       "type": "image/png",
       "sizes": "1442x3202",
       "form_factor": "narrow"

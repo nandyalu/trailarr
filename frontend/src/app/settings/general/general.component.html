@@ -165,6 +165,15 @@
           (optionChange)="updateSetting('delete_trailer_media', $event)"
         />
       }
+      <app-options-setting
+        name="Delete Corrupted Trailers"
+        description="Delete trailers that are found to be corrupted during the cleanup task."
+        [options]="trueFalseOptions"
+        [colorType]="'danger'"
+        [colorTypeOption]="'true'"
+        [selectedOption]="settings()?.delete_corrupted_trailers"
+        (optionChange)="updateSetting('delete_corrupted_trailers', $event)"
+      />
     </div>
   </details>
 </section>

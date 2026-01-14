@@ -13,15 +13,11 @@ async def refresh_images(recent_only: bool = False):
     """
     logger.info("Refreshing images in the system")
 
-    logger.debug("Refreshing movie images")
     await refresh_and_save_media_images(is_movie=True, recent_only=recent_only)
-    logger.debug("Movie Images refresh complete!")
 
-    logger.debug("Refreshing series images")
     await refresh_and_save_media_images(
         is_movie=False, recent_only=recent_only
     )
-    logger.debug("Series Images refresh complete!")
 
     logger.info("Image refresh complete!")
     return
@@ -58,4 +54,7 @@ async def refresh_and_save_media_images(
     # Refresh images in the system, and/or get updated paths
     # refresh_media_images modifies the MediaImage objects in place
     await refresh_media_images(is_movie, media_image_list)
+    logger.debug(
+        f"Finished refreshing images for {'movies' if is_movie else 'series'}"
+    )
     return

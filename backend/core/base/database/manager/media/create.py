@@ -82,7 +82,7 @@ def _create_or_update(
     Returns:
         tuple[Media, bool, bool]: Media object and flags indicating created and updated.\n
         Example::\n
-            (<Media obj>, True)
+            (<Media obj>, True, False)
     """
     db_media = _read_if_exists(
         media_create.connection_id, media_create.txdb_id, session
@@ -93,11 +93,28 @@ def _create_or_update(
             exclude_unset=True,
             # exclude_defaults=True,
             exclude_none=True,
-            exclude={"youtube_trailer_id", "downloaded_at"},
+            exclude={
+                "youtube_trailer_id",
+                "downloaded_at",
+                "created_at",
+                "updated_at",
+            },
         )
         db_media.sqlmodel_update(media_update_data)
         _updated = False
-        if base.has_updated(db_media, media_create):
+        if base.has_updated(
+            db_media,
+            media_create,
+            ignore_attrs={
+                "trailer_exists",
+                "monitor",
+                "status",
+                "updated_at",
+                "downloaded_at",
+                "youtube_trailer_id",
+                "created_at",
+            },
+        ):
             db_media.updated_at = datetime.now(timezone.utc)
             _updated = True
         session.add(db_media)

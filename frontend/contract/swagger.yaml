@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.6.0
+  version: 0.6.7
 servers:
   - url: /
     description: Current host
@@ -1090,6 +1090,176 @@ paths:
               schema:
                 type: boolean
                 title: Response Delete File Fol Api V1 Files Delete Delete
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/download:
+    get:
+      tags:
+        - Logs
+      summary: Download File
+      operationId: download_file_api_v1_logs_download_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/raw:
+    get:
+      tags:
+        - Logs
+      summary: Get Raw Logs
+      description: 'Retrieve logs from the database.
+
+
+
+        ## Args
+
+
+        - **level** (__LogLevel, optional=LogLevel.INFO__): The minimum log level
+        to retrieve.
+
+        - **offset** (__int, optional=0__): The number of logs to skip.
+
+        - **limit** (__int, optional=1000__): The maximum number of logs to retrieve.
+
+        - **filter** (__str | None, optional=None__): A filter string to search in
+        log fields.             filter must be at least 3 characters long.
+
+
+
+        ## Returns
+
+
+        - **list[AppLogRecordRead]**: A list of log records.'
+      operationId: get_raw_logs_api_v1_logs_raw_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: level
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/LogLevel'
+            default: INFO
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Offset
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1000
+            title: Limit
+        - name: filter
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Filter
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppLogRecordRead'
+                title: Response Get Raw Logs Api V1 Logs Raw Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/logs/:
+    get:
+      tags:
+        - Logs
+      summary: Get Logs
+      operationId: get_logs_api_v1_logs__get
+      deprecated: true
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Page
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1000
+            title: Limit
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+                title: Response Get Logs Api V1 Logs  Get
         '401':
           description: API key is missing
         '422':
@@ -2233,176 +2403,6 @@ paths:
                 type: object
                 additionalProperties: true
                 title: Response Logout Api V1 Settings Logout Post
-        '401':
-          description: API key is missing
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/logs/download:
-    get:
-      tags:
-        - Logs
-      summary: Download File
-      operationId: download_file_api_v1_logs_download_get
-      security:
-        - APIKeyQuery: []
-        - APIKeyHeader: []
-      parameters:
-        - name: trailarr_api_key
-          in: cookie
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Trailarr Api Key
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '401':
-          description: API key is missing
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/logs/raw:
-    get:
-      tags:
-        - Logs
-      summary: Get Raw Logs
-      description: 'Retrieve logs from the database.
-
-
-
-        ## Args
-
-
-        - **level** (__LogLevel, optional=LogLevel.INFO__): The minimum log level
-        to retrieve.
-
-        - **offset** (__int, optional=0__): The number of logs to skip.
-
-        - **limit** (__int, optional=1000__): The maximum number of logs to retrieve.
-
-        - **filter** (__str | None, optional=None__): A filter string to search in
-        log fields.             filter must be at least 3 characters long.
-
-
-
-        ## Returns
-
-
-        - **list[AppLogRecordRead]**: A list of log records.'
-      operationId: get_raw_logs_api_v1_logs_raw_get
-      security:
-        - APIKeyQuery: []
-        - APIKeyHeader: []
-      parameters:
-        - name: level
-          in: query
-          required: false
-          schema:
-            $ref: '#/components/schemas/LogLevel'
-            default: INFO
-        - name: offset
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 0
-            title: Offset
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1000
-            title: Limit
-        - name: filter
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Filter
-        - name: trailarr_api_key
-          in: cookie
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Trailarr Api Key
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AppLogRecordRead'
-                title: Response Get Raw Logs Api V1 Logs Raw Get
-        '401':
-          description: API key is missing
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/logs/:
-    get:
-      tags:
-        - Logs
-      summary: Get Logs
-      operationId: get_logs_api_v1_logs__get
-      deprecated: true
-      security:
-        - APIKeyQuery: []
-        - APIKeyHeader: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 0
-            title: Page
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1000
-            title: Limit
-        - name: trailarr_api_key
-          in: cookie
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Trailarr Api Key
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Log'
-                title: Response Get Logs Api V1 Logs  Get
         '401':
           description: API key is missing
         '422':
@@ -3658,6 +3658,9 @@ components:
         app_theme:
           type: string
           title: App Theme
+        delete_corrupted_trailers:
+          type: boolean
+          title: Delete Corrupted Trailers
         delete_trailer_connection:
           type: boolean
           title: Delete Trailer Connection
@@ -3736,6 +3739,7 @@ components:
         - app_data_dir
         - app_mode
         - app_theme
+        - delete_corrupted_trailers
         - delete_trailer_connection
         - delete_trailer_media
         - ffmpeg_timeout

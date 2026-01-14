@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import shutil
+from urllib.parse import unquote
 from fastapi import (
     Depends,
     FastAPI,
@@ -27,6 +28,7 @@ from config.settings import app_settings
 from core.base.database.utils.engine import flush_records_to_db
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
+from frontend.utils import update_base_href
 
 logging = ModuleLogger("Main")
 # from web.routes import web_router
@@ -61,12 +63,13 @@ APP_VERSION = app_settings.version
 # Initialize the database - No need to do this if we are using alembic
 # logger.debug("Initializing the database")
 # init_db()
+
 # Create the FastAPI application
 logging.info("Starting Trailarr application")
 logging.debug("Creating the FastAPI application")
 trailarr_api = FastAPI(
     lifespan=lifespan,
-    root_path=f"{app_settings.url_base}",
+    # root_path=f"{app_settings.url_base}",
     openapi_url="/api/v1/openapi.json",
     docs_url=None,
     redoc_url=None,
@@ -141,7 +144,7 @@ def custom_openapi():
         servers=[
             {
                 # Use current page host as default
-                "url": "/",
+                "url": f"{app_settings.url_base}/",
                 "description": "Current host",
             },
             {
@@ -193,7 +196,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 # Register other routes here (if any)
 
-# Mount images folders - Load these before mountic frontend
+# Mount images folders - Load these before mounting frontend
 images_dir = Path(app_settings.app_data_dir, "web", "images")
 if not images_dir.exists():
     logging.warning(
@@ -203,30 +206,67 @@ if not images_dir.exists():
     images_dir.mkdir(parents=True, exist_ok=True)
 else:
     logging.debug("Mounting images directory for frontend!")
+images_mount_path = images_dir.as_posix()
+logging.debug(
+    f"Mounting images directory '{images_dir}' at '{images_mount_path}'"
+)
 trailarr_api.mount(
-    images_dir.as_posix(), StaticFiles(directory=images_dir), name="images"
+    images_mount_path, StaticFiles(directory=images_dir), name="images"
 )
 
-# Get static dir path as frontend-build/browser in this file's parent dirs
-static_dir = Path(__file__).resolve().parents[1] / "frontend-build" / "browser"
-if not static_dir.exists():
+# Get frontend dir path as frontend-build/browser in this file's parent dirs
+frontend_dir = (
+    Path(__file__).resolve().parents[1] / "frontend-build" / "browser"
+)
+if not frontend_dir.exists():
     logging.warning(
-        f"Frontend directory not found at {static_dir}, using fallback."
+        f"Frontend directory not found at '{frontend_dir}', using fallback."
     )
-    static_dir = Path("/app/frontend-build/browser")
-static_dir = static_dir.resolve()
-logging.debug(f"Using frontend directory: {static_dir}")
+    frontend_dir = Path("/app/frontend-build/browser")
+frontend_dir = frontend_dir.resolve()
+logging.debug(f"Using frontend directory: {frontend_dir}")
 
 
 # Mount Frontend 'assets/manifest.json' without authorization
 @trailarr_api.get("/assets/manifest.json", include_in_schema=False)
 async def serve_manifest():
-    file_path = Path(static_dir, "assets", "manifest.json").resolve()
+    file_path = Path(frontend_dir, "assets", "manifest.json").resolve()
     if file_path.is_file():
         # If the path corresponds to a static file, return the file
         return FileResponse(file_path)
     else:
         return HTMLResponse(status_code=404)
+
+
+index_html_path = Path(frontend_dir, "index.html").resolve()
+if not index_html_path.is_file():
+    logging.warning(
+        f"index.html not found at '{index_html_path}'. Frontend may not work."
+    )
+update_base_href(index_html_path, app_settings.url_base)
+
+
+def get_sanitized_path(messy_path: str) -> Path | None:
+    """Sanitize a file path to ensure it is within the base directory."""
+    resolved_base_dir = frontend_dir.resolve()
+    # Decode URL-encoded characters
+    messy_path = unquote(messy_path)
+    # Normalize input: ensure a relative path and reject empty/whitespace-only values
+    if not messy_path or not messy_path.strip():
+        return None
+
+    # Remove leading slashes to prevent absolute path issues
+    clean_path = messy_path.lstrip("/")
+    try:
+        file_path = (resolved_base_dir / clean_path).resolve()
+    except (OSError, RuntimeError):
+        # Any resolution error results in rejecting the path
+        return None
+
+    # Check if the path is within the static directory
+    if not file_path.is_relative_to(resolved_base_dir):
+        return None
+    return file_path
 
 
 # Mount static frontend files to serve frontend
@@ -243,26 +283,19 @@ async def serve_frontend(rest_of_path: str = ""):
         return HTMLResponse(status_code=404)
     else:
         # Otherwise, it's a frontend request and should be handled by Angular
-        file_path = Path(static_dir, rest_of_path).resolve()
-        # Check if the path is within the static directory
-        if not file_path.is_relative_to(static_dir):
+        # Sanitize the rest_of_path to prevent directory traversal attacks
+        file_path = get_sanitized_path(rest_of_path)
+        if file_path is None:
             return HTMLResponse(status_code=404)
         if file_path.is_file():
             # If the path corresponds to a static file, return the file
             return FileResponse(file_path)
         else:
-            # Serve index.html for SPA client-side routing
-            index_path = Path(static_dir, "index.html").resolve()
-            # Extra safety: ensure index.html is within the static directory
-            if not index_path.is_file() or not index_path.is_relative_to(
-                static_dir
-            ):
-                return HTMLResponse(status_code=404)
-            response = FileResponse(index_path)
+            response = FileResponse(index_html_path)
             response.set_cookie(
                 key="trailarr_api_key",
                 value=app_settings.api_key,
-                path="/",
+                path=app_settings.url_base or "/",
                 samesite="lax",
                 httponly=True,  # Frontend JS needs access
             )

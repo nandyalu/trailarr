@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 from io import BytesIO
+from pathlib import Path
 import aiohttp
 import aiofiles.os
 from PIL import Image
@@ -13,18 +14,23 @@ from core.base.database.manager import media as media_manager
 
 POSTER = (300, 450)
 FANART = (1280, 720)
-STATIC_PATH_MOVIES = f"{app_settings.app_data_dir}/web/images/movies/"
-STATIC_PATH_SHOWS = f"{app_settings.app_data_dir}/web/images/shows/"
+IMAGES_PATH = Path(app_settings.app_data_dir, "web", "images")
+STATIC_PATH_MOVIES = IMAGES_PATH / "movies"
+STATIC_PATH_SHOWS = IMAGES_PATH / "shows"
+
+
+# TODO: For v1.0.0 release - Change the paths saved in DB to paths \
+# relative to `images` folder and serve them statically from there.
 
 
 @alru_cache
-async def get_base_path(is_movie: bool, is_poster: bool) -> str:
+async def get_base_path(is_movie: bool, is_poster: bool) -> Path:
     """Get the base path for saving images. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         is_poster (bool): Whether the image is a poster or fanart."""
     base_path = STATIC_PATH_MOVIES if is_movie else STATIC_PATH_SHOWS
-    base_path += "posters/" if is_poster else "fanart/"
+    base_path = base_path / "posters" if is_poster else base_path / "fanart"
     # Create directories if they don't exist
     try:
         await aiofiles.os.makedirs(base_path, exist_ok=True)
@@ -66,20 +72,20 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
         return False
     base_path = await get_base_path(is_movie, media.is_poster)
     filename = get_md5_filename(media.image_url)
-    file_path = base_path + f"{filename}.jpg"
+    file_path = base_path / f"{filename}.jpg"
     # Check if a poster/artwork already exists
     if media.image_path:
         # Check if the existing path matches with new path
-        if media.image_path != file_path:
+        if media.image_path != file_path.as_posix():
             logger.debug(
-                f"Image updated for media id: {media.id}, "
-                f"deleting old image! Path: '{media.image_path}'"
+                f"Image updated for media id: [{media.id}], deleting old"
+                f" image! Path: '{media.image_path}'"
             )
             await delete_image(media.image_path)
     # Update the image path
-    media.image_path = file_path
+    media.image_path = file_path.as_posix()
     # Check if the file exists
-    if await aiofiles.os.path.exists(media.image_path):
+    if await aiofiles.os.path.exists(file_path):
         return False  # Poster/Artwork already exist
     return True
 
@@ -107,14 +113,15 @@ async def process_image(
         media (MediaImage): Media image object.
         retries (int) [Optional]: Number of retries in case of failure. Default is 3.
     """
+    # keep original path for update check
+    _image_path = media.image_path
     if not await download_needed(is_movie, media):
-        return False
+        return _image_path != media.image_path
     # download_needed() checks if image_url is None and returns False,
     # and sets image_path if empty/updated.
     # We are checking them here to make sure nothing went wrong, also for type checking.
     if media.image_url is None or media.image_path is None:
-        return False
-
+        return _image_path != media.image_path
     # Set the image type
     image_dimensions = POSTER if media.is_poster else FANART
     # Download image from URL and save it to disk
@@ -125,13 +132,17 @@ async def process_image(
             media.image_path, format="JPEG", optimize=True, progressive=True
         )
         logger.debug(
-            f"Image downloaded for media id: {media.id}, "
+            f"Image downloaded for media id: [{media.id}], "
             f"URL: '{media.image_url}', path: '{media.image_path}'"
         )
     except Exception:
         if retries > 0:
             return await process_image(is_movie, media, retries - 1)
         else:
+            logger.debug(
+                f"Failed to download image for media id: [{media.id}], "
+                f"URL: '{media.image_url}'"
+            )
             return False
     return True
 

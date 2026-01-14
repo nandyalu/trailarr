@@ -122,6 +122,18 @@ Enable this setting to delete the downloaded trailers when media is removed from
 Enable this setting to delete the downloaded trailers only when the media files are deleted from disk.
 
 
+### Delete Corrupted Trailers
+
+<!-- md:version:add 0.6.7 -->
+
+- Default is `true`
+
+Enable this setting to allow the `Trailer Cleanup` task to automatically delete trailers that are found to be corrupted (e.g., missing audio or video streams).
+
+!!! warning
+    Disabling this means corrupted files will remain on disk and may need to be manually removed. A Warning log will be generated for each corrupted file detected during the cleanup task.
+
+
 ## Experimental Settings
 
 These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}
@@ -161,6 +173,19 @@ Enable this setting to update `yt-dlp` to the latest version on every app start.
 
 ### URL Base
 
+<!-- md:version:upd 0.6.7 -->
+
 - Default is  `(empty)`
 
-Enter the base URL of the app for use with reverse proxies. This will allow the app to generate correct URLs when behind a reverse proxy.
+Enter the base URL of the app for use with subdirectory reverse proxies. This will allow the app to generate correct URLs when behind a reverse proxy.
+
+Make sure to start the URL Base with a `/` and do not end it with a `/`. For example, use `/trailarr` instead of `trailarr/` or `/trailarr/`. 
+
+!!! success ""
+    The app will automatically format the URL Base to ensure it starts with a `/` and does not end with a `/`.
+
+!!! note
+    If you are not using a subdirectory reverse proxy, leave this setting empty.
+
+!!! warning
+    Changing this setting requires a restart of the app (container) to take effect.

@@ -33,9 +33,6 @@
         "--ignore=W293,E203,E704,E501,W503",
         "--max-line-length=80",
     ],
-    "python.testing.pytestArgs": [
-        "."
-    ],
     "python.testing.cwd": "${workspaceFolder}/backend",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

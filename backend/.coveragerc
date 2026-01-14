@@ -1,4 +1,0 @@
-[run]
-branch = True
-source = .
-omit = */__pycache__/*, */__init__.py, backend/tests/*, frontend/tests/*,

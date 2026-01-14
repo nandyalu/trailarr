@@ -6,26 +6,20 @@ Trailarr is a Dockerized application for downloading and managing trailers for R
 
 ## Working Effectively
 
-### Initial Setup Commands (NEVER CANCEL - Total setup time: ~3-4 minutes)
+### Initial Setup Commands (NEVER CANCEL - Total setup time: ~2-3 minutes)
 Execute these commands in order to set up the development environment:
 
 ```bash
-# Backend setup - NEVER CANCEL: Takes 120 seconds. Set timeout to 4+ minutes. Run from project root.
-cd .devcontainer/requirements
-pip install -r main.txt
+# Backend setup - NEVER CANCEL: Takes 60 seconds. Set timeout to 2+ minutes. Run from backend folder.
+cd backend
+uv sync
 
-# Testing dependencies for backend - Takes 30 seconds. Set timeout to 4+ minutes. Run from project root.
-cd .devcontainer/requirements
-pip install -r testing.txt
-
-# Dependencies for documentation - Takes 30 seconds. Set timeout to 4+ minutes. Run from project root.
-cd .devcontainer/requirements
-pip install -r docs.txt
-
-# Frontend setup - NEVER CANCEL: Takes 90 seconds. Set timeout to 5+ minutes. Run from project root.
+# Frontend setup - NEVER CANCEL: Takes 90 seconds. Set timeout to 5+ minutes. Run from frontend folder.
 cd frontend
 npm install
 ```
+
+**Note:** The backend uses `uv` for dependency management. All Python dependencies (main, testing, docs) are defined in `backend/pyproject.toml` and installed together with `uv sync`.
 
 ### Build Commands (Validated and Working)
 
@@ -86,9 +80,19 @@ mkdir -p /tmp/trailarr-config/web
 export APP_DATA_DIR=/tmp/trailarr-config
 export PYTHONPATH=$(pwd)/backend
 
-# Run database migrations
+# Run database migrations (from backend folder)
 cd backend
-alembic upgrade head
+uv run alembic upgrade head
+```
+
+### Creating Database Migrations
+
+When modifying SQLModel models, create a new migration:
+
+```bash
+# From the backend folder
+cd backend
+uv run alembic revision --autogenerate -m "Description of changes"
 ```
 
 **Note:** Database setup may require additional configuration files and environment setup that are typically handled by the Docker container.
@@ -149,7 +153,7 @@ Use these VSCode tasks (defined in `.vscode/tasks.json`):
 
 | Command | Expected Time | Timeout Recommendation |
 |---------|---------------|-------------------------|
-| Backend pip install | 65 seconds | 2+ minutes |
+| Backend uv sync | 60 seconds | 2+ minutes |
 | Frontend npm install | 90 seconds | 3+ minutes |
 | Frontend build | 10 seconds | 30+ seconds |
 | Backend tests | 3 seconds | 60+ seconds |

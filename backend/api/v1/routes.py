@@ -35,9 +35,9 @@ authenticated_router = APIRouter(
 authenticated_router.include_router(connections_router)
 authenticated_router.include_router(customfilters_router)
 authenticated_router.include_router(files_router)
+authenticated_router.include_router(logs_router)
 authenticated_router.include_router(media_router)
 authenticated_router.include_router(settings_router)
-authenticated_router.include_router(logs_router)
 authenticated_router.include_router(tasks_router)
 authenticated_router.include_router(trailerprofiles_router)
 
@@ -48,8 +48,13 @@ api_v1_router.include_router(authenticated_router)
 
 # Mount Custom API Documentation
 APP_NAME = os.getenv("APP_NAME", "Trailarr")
-STATIC_PATH = "/api/v1/static"
-OPENAPI_URL = "/api/v1/openapi.json"
+URL_BASE = os.getenv("URL_BASE", "")
+if URL_BASE and not URL_BASE.startswith("/"):
+    URL_BASE = "/" + URL_BASE
+if URL_BASE.endswith("/"):
+    URL_BASE = URL_BASE[:-1]
+STATIC_PATH = f"{URL_BASE}/api/v1/static"
+OPENAPI_URL = f"{URL_BASE}/api/v1/openapi.json"
 REDOC_URL = "redoc"
 SWAGGER_URL = "docs"
 

@@ -106,13 +106,20 @@ def int_property(
 
 
 def str_property(
-    name: str, *, default: str, valid_values: list[str] = []
+    name: str,
+    *,
+    default: str,
+    valid_values: list[str] | None = None,
+    formatter=None,
 ) -> property:
     """Creates a string property with getter and setter methods. \n
     Args:
         name (str): Name of the property.
         default (str): Default value for the property.
-        valid_values (list[str], Optional): list of valid values if applicable.
+        valid_values (list[str] | None, Optional=None): list of valid \
+            values if applicable.
+        formatter (function, Optional=None): Function to format the \
+            value before setting.
     Returns:
         property: Getter and Setter methods for the property."""
 
@@ -121,12 +128,24 @@ def str_property(
 
     def setter(self, value: str) -> None:
         value = value.strip()
+        if formatter:
+            value = formatter(value)
         if valid_values and value.lower() not in valid_values:
             value = default
         # setattr(self, f"_{name.lower()}", value)
         _save_to_env(name, value)
 
     return property(getter, setter)
+
+
+def _start_slash_only(value: str) -> str:
+    """Ensure the value starts with a slash and not end with one."""
+    value = value.strip()
+    if not value.startswith("/"):
+        value = "/" + value
+    if value.endswith("/"):
+        value = value[:-1]
+    return value
 
 
 def get_ytdlp_version() -> str:
@@ -230,6 +249,7 @@ class _Config:
             "app_data_dir": APP_DATA_DIR,
             "app_mode": self.app_mode,
             "app_theme": self.app_theme,
+            "delete_corrupted_trailers": self.delete_corrupted_trailers,
             "delete_trailer_connection": self.delete_trailer_connection,
             "delete_trailer_media": self.delete_trailer_media,
             "ffmpeg_timeout": self.ffmpeg_timeout,
@@ -347,6 +367,13 @@ class _Config:
         - Default is 'auto'.
         - Valid values are 'light', 'dark', 'auto'."""
 
+    delete_corrupted_trailers = bool_property(
+        "DELETE_CORRUPTED_TRAILERS", default=True
+    )
+    """Delete corrupted trailers during trailer cleanup task.
+        - Default is True.
+        - Valid values are True/False."""
+
     ffmpeg_timeout = int_property(
         "FFMPEG_TIMEOUT", default=15, min_=10, max_=300
     )
@@ -444,7 +471,9 @@ class _Config:
         - Default is False.
         - Valid values are True/False."""
 
-    url_base = str_property("URL_BASE", default="")
+    url_base = str_property(
+        "URL_BASE", default="", formatter=_start_slash_only
+    )
     """URL Base for the application for use with reverse proxy.
         - Default is empty string.
         - If a value is provided, app will start with that url_base as \

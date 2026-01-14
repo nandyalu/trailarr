@@ -152,6 +152,7 @@ nav:
         - Filters: user-guide/settings/profiles/filters.md
         - Examples: user-guide/settings/profiles/examples.md
       - About: user-guide/settings/about/index.md
+    - Reverse Proxy: user-guide/reverse-proxy.md
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
     - FAQ: troubleshooting/faq.md

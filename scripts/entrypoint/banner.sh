@@ -31,5 +31,6 @@ display_startup_banner() {
     box_echo "PUID: ${PUID}"
     box_echo "PGID: ${PGID}"
     box_echo "TZ: ${TZ}"
+    box_echo "URL_BASE: ${URL_BASE}"
     box_echo "--------------------------------------------------------------------------";
 }
