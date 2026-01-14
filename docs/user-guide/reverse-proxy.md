@@ -7,7 +7,7 @@ When hosting Trailarr behind a reverse proxy (like Nginx, Apache, Caddy, Traefik
 
 There are two common scenarios for reverse proxy setups:
 
-1. `https://trailar.mydomain.com/` (Sub-domain)
+1. `https://trailarr.mydomain.com/` (Sub-domain)
 2. `https://mydomain.com/trailarr/` (Sub-directory)
 
 ## Sub-domain Reverse Proxy Configuration
