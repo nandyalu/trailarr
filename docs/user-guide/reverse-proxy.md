@@ -5,133 +5,166 @@
 
 When hosting Trailarr behind a reverse proxy (like Nginx, Apache, Caddy, Traefik, etc.), certain configurations are necessary to ensure that the application functions correctly. This includes proper routing of requests and handling of headers.
 
+There are two common scenarios for reverse proxy setups:
+
+1. `https://trailar.mydomain.com/` (Sub-domain)
+2. `https://mydomain.com/trailarr/` (Sub-directory)
+
 ## Sub-domain Reverse Proxy Configuration
 
-When hosting the application behind a reverse proxy in a sub-domain (e.g., `https://trailarr.example.com/`), the following configurations can be used as examples.
-
-No special configuration is needed in Trailarr for sub-domain setups, but ensure that your reverse proxy forwards the necessary headers.
+When hosting the application behind a reverse proxy in a sub-domain (e.g., `https://trailarr.mydomain.com/`), the following configurations can be used as examples.
 
 These are example configurations for common reverse proxies, adjust them as needed for your specific setup.
 
-### Nginx
+!!! success ""
+    No special configuration is needed in Trailarr for sub-domain setups, but ensure that your reverse proxy forwards the necessary headers.
 
-```nginx
-server {
-    server_name trailarr.mydomain.com;
-
-    location / {
-        proxy_pass http://192.168.1.231:7889; # Replace with your Trailarr server address
-
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### Apache
-
-```apache
-<VirtualHost *:80>
-    ServerName trailarr.mydomain.com
-    ProxyPreserveHost On
-    ProxyPass / http://192.168.1.231:7889/  # Replace with your Trailarr server address
-    ProxyPassReverse / http://192.168.1.231:7889/
-</VirtualHost>
-```
-
-### Caddy
-
-```caddy
-trailarr.mydomain.com {
-    reverse_proxy http://192.168.1.231:7889  # Replace with your Trailarr server address
-}
-```
-
-### Traefik
-
-```yaml
-http:
-  routers:
-    trailarr:
-      rule: "Host(`trailarr.mydomain.com`)"
-      service: trailarr-service
-  services:
-    trailarr-service:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.231:7889"  # Replace with your Trailarr server address
-```
 
 ## Sub-directory Reverse Proxy Configuration
 
-When hosting the application behind a reverse proxy in a sub-directory (e.g., `https://example.com/trailarr/`), additional configuration is required to ensure proper routing and resource loading.
+When hosting the application behind a reverse proxy in a sub-directory (e.g., `https://mydomain.com/trailarr/`), additional configuration is required to ensure proper routing and resource loading.
 
 ### URL Base Setting
 
-- Make sure to set the `URL Base` in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at `https://example.com/trailarr/`, set the `URL Base` to `/trailarr`.
+- Make sure to set the `URL Base` in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at `https://mydomain.com/trailarr/`, set the `URL Base` to `/trailarr`.
 
-### Reverse Proxy Configuration Examples
 
-#### Nginx
+## Example Configurations
 
-```nginx
-location /trailarr/ {
-    proxy_pass http://192.168.1.231:7889/;  # Replace with your Trailarr server address
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-Prefix /trailarr;
-}
-```
+!!! warning
+    Remember to replace these with actual values:
 
-#### Apache
+      - `http://192.168.1.231:7889` -> Trailarr internal IP and port
+      - `trailarr.mydomain.com` -> Your Sub-Domain
+      - `/trailarr/` -> Your Sub-Directory path -> set the same for `URL Base` setting in Trailarr
 
-```apache
-ProxyPass "/trailarr/" "http://192.168.1.231:7889/"  # Replace with your Trailarr server address
-ProxyPassReverse "/trailarr/" "http://192.168.1.231:7889/"
-RequestHeader set X-Forwarded-Prefix "/trailarr"
-```
+### Nginx
 
-#### Caddy
+=== "Sub-Domain"
+    ```nginx
+    server {
+        server_name trailarr.mydomain.com;
 
-```caddy
-reverse_proxy /trailarr/* http://192.168.1.231:7889 {  # Replace with your Trailarr server address
-    header_up X-Forwarded-Prefix /trailarr
-}
-```
+        location / {
+            proxy_pass http://192.168.1.231:7889;
 
-#### Traefik
+            proxy_set_header Host                $host;
+            proxy_set_header X-Real-IP           $remote_addr;
+            proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto   $scheme;
 
-```yaml
-http:
-  routers:
-    trailarr:
-      rule: "PathPrefix(`/trailarr`)"
-      service: trailarr-service
+        }
+    }
+    ```
+
+=== "Sub-Directory"
+    ```nginx
+    server {
+        server_name mydomain.com;
+
+        location /trailarr/ {
+            proxy_pass http://192.168.1.231:7889;
+
+            proxy_set_header Host                $host;
+            proxy_set_header X-Real-IP           $remote_addr;
+            proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto   $scheme;
+            proxy_set_header X-Forwarded-Prefix  /trailarr;
+        }
+    }
+    ```
+
+
+### Apache
+
+=== "Sub-Domain"
+    ```apache
+    <VirtualHost *:80>
+        ServerName trailarr.mydomain.com
+        ProxyPreserveHost On
+        ProxyPass "/" "http://192.168.1.231:7889/" 
+        ProxyPassReverse "/" "http://192.168.1.231:7889/"
+
+    </VirtualHost>
+    ```
+
+=== "Sub-Directory"
+    ```apache
+    <VirtualHost *:80>
+        ServerName mydomain.com
+        ProxyPreserveHost On
+        ProxyPass "/trailarr/" "http://192.168.1.231:7889/" 
+        ProxyPassReverse "/trailarr/" "http://192.168.1.231:7889/"
+        RequestHeader set X-Forwarded-Prefix "/trailarr"
+    </VirtualHost>
+    ```
+
+
+### Caddy
+
+=== "Sub-Domain"
+    ```caddy
+    trailarr.mydomain.com {
+        reverse_proxy http://192.168.1.231:7889 
+    }
+    ```
+
+=== "Sub-Directory"
+    ```caddy
+    reverse_proxy /trailarr/* http://192.168.1.231:7889 { 
+        header_up X-Forwarded-Prefix /trailarr
+    }
+    ```
+
+
+### Traefik
+
+=== "Sub-Domain"
+    ```yaml
+    http:
+      routers:
+        trailarr:
+          rule: "Host(`trailarr.mydomain.com`)"
+          service: trailarr-service
+      services:
+        trailarr-service:
+          loadBalancer:
+            servers:
+              - url: "http://192.168.1.231:7889" 
+    ```
+
+=== "Sub-Directory"
+    ```yaml
+    http:
+      routers:
+        trailarr:
+          rule: "PathPrefix(`/trailarr`)"
+          service: trailarr-service
+          middlewares:
+            - strip-trailarr
+      services:
+        trailarr-service:
+        loadBalancer:
+          servers:
+            - url: "http://192.168.1.231:7889" 
       middlewares:
-        - strip-trailarr
-  services:
-    trailarr-service:
-    loadBalancer:
-      servers:
-        - url: "http://192.168.1.231:7889"  # Replace with your Trailarr server address
-  middlewares:
-    strip-trailarr:
-      stripPrefix:
-        prefixes:
-          - "/trailarr"
-```
+        strip-trailarr:
+          stripPrefix:
+            prefixes:
+              - "/trailarr"
+    ```
 
 
-### Additional Notes
+## Additional Notes
 
-- Ensure that your reverse proxy is configured to forward the `X-Forwarded-Prefix` header to the application.
-- After making these changes, restart Trailarr and your reverse proxy server to apply the new configuration.
-- Once you add the `URL Base` and restart Trailarr, you will not be able to access the application at the root URL.
-- You may need to clear your browser cache or perform a hard refresh (`Ctrl + Shift + I` to open Developer Tools, then right-click the refresh button and select "Empty Cache and Hard Reload") to load the resources correctly.
+- Forward the `X-Forwarded-Prefix` header from reverse proxy to Trailarr. _Optional but helps_
+- Restart Trailarr and reverse proxy to apply the new configuration.
+- Once you add the `URL Base` and restart Trailarr, you will __NOT__ be able to access the application at the __root URL__ or __local IP and port__.
+- You may need to clear your browser cache or perform a hard refresh to load the resources correctly.
+
+    !!! tip
+        `Ctrl + Shift + I` to open Developer Tools -> right-click the `Refresh` button -> select `Empty Cache and Hard Reload`
+
 - If you encounter any issues, and want to revert back to root access, find the `.env` file in `config/` folder and remove the value set for `URL_BASE`, then restart the application.
 
 
