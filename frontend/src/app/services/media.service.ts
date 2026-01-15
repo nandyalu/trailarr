@@ -64,10 +64,9 @@ export class MediaService {
       return new Map<number, FileFolderInfo>();
     },
   });
-  // readonly mediaFilesResource = httpResource<FolderInfo>(() => ({url: this.mediaUrl + this.selectedMediaID() + '/files'}), {
-  //   parse: (response) => mapFolderInfo(response),
-  // });
 
+  // Computed Signals
+  /** Combined media list with associated files and downloads */
   readonly combinedMedia = computed<Media[]>(() => {
     const mediaList = this.mediaResource.value();
     const downloadsMap = this.mediaDownloadsResource.value();
@@ -83,16 +82,49 @@ export class MediaService {
     });
   });
 
-  // Computed Signals
+  /** Filtered and sorted media list based on the current filters and sort options
+   *
+   * @reacts  to changes in:
+   * - combinedMedia
+   * - moviesOnly
+   * - selectedFilter
+   * - selectedSort
+   * - sortAscending
+   *
+   * @use  this is the main media list to display in the UI
+   */
   readonly filteredSortedMedia = computed(() => {
+    // Apply the moviesOnly filter
+    let _moviesOnly = this.moviesOnly();
+    let moviesOnlyMediaList: Media[];
+    switch (_moviesOnly) {
+      case true: {
+        moviesOnlyMediaList = this.combinedMedia().filter((media) => media.is_movie);
+        break;
+      }
+      case false: {
+        moviesOnlyMediaList = this.combinedMedia().filter((media) => !media.is_movie);
+        break;
+      }
+      case null: {
+        moviesOnlyMediaList = this.combinedMedia().filter((media) => {
+          return media.downloads.some((download) => download.file_exists === true);
+        });
+        break;
+      }
+    }
     // Filter the media list by the selected filter option
-    let mediaList = applySelectedFilter(this.allMedia(), this.selectedFilter(), this.customFilters());
+    let mediaList = applySelectedFilter(moviesOnlyMediaList, this.selectedFilter(), this.customFilters());
     // Sort the media list by the selected sort option
     // Sorts the list in place. If sortAscending is false, reverses the list
     applySelectedSort(mediaList, this.selectedSort(), this.sortAscending());
     return mediaList;
   });
+
+  /** Media list to display based on the current display count */
   readonly displayMedia = computed(() => this.filteredSortedMedia().slice(0, this.displayCount()));
+
+  /** Currently selected media item based on the selectedMediaID */
   readonly selectedMedia = computed(() => {
     const mediaID = this.selectedMediaID();
     if (mediaID === null) {
@@ -100,6 +132,8 @@ export class MediaService {
     }
     return this.combinedMedia().find((media) => media.id === mediaID) || null;
   });
+
+  /** Media item that comes before the currently selected media item in the filtered and sorted media list */
   readonly previousMedia = computed(() => {
     const mediaID = this.selectedMediaID();
     if (mediaID === null) {
@@ -112,6 +146,8 @@ export class MediaService {
     }
     return null;
   });
+
+  /** Media item that comes after the currently selected media item in the filtered and sorted media list */
   readonly nextMedia = computed(() => {
     const mediaID = this.selectedMediaID();
     if (mediaID === null) {
@@ -123,23 +159,6 @@ export class MediaService {
       return mediaList[currentIndex + 1];
     }
     return null;
-  });
-  readonly allMedia = computed(() => {
-    let _moviesOnly = this.moviesOnly();
-    switch (_moviesOnly) {
-      case true: {
-        return this.combinedMedia().filter((media) => media.is_movie);
-      }
-      case false: {
-        return this.combinedMedia().filter((media) => !media.is_movie);
-      }
-      case null: {
-        return this.combinedMedia().filter((media) => {
-          return media.downloads.some((download) => download.file_exists === true);
-        });
-        // return this.combinedMedia().filter((media) => media.status.toLowerCase() === 'downloaded');
-      }
-    }
   });
 
   constructor() {
@@ -157,10 +176,31 @@ export class MediaService {
     });
   }
 
-  refreshContent() {
+  /**
+   * Refreshes all media-related content by reloading the media, media files, and media downloads resources.
+   *
+   * @returns {void} This method does not return a value.
+   */
+  refreshContent(): void {
     this.mediaResource.reload();
     this.mediaFilesResource.reload();
     this.mediaDownloadsResource.reload();
+  }
+
+  /**
+   * Handles the event when a media item is selected, either by checking or unchecking a checkbox.
+   * Adds or removes the media item from the selectedMedia array based on the checkbox state.
+   *
+   * @param {Media} media - The media item that was selected.
+   * @param {boolean} checked - Indicates whether the media item was checked or unchecked.
+   * @returns {void}
+   */
+  onMediaChecked(media: Media, checked: boolean): void {
+    if (checked) {
+      this.checkedMediaIDs.update((ids) => [...ids, media.id]);
+    } else {
+      this.checkedMediaIDs.update((ids) => ids.filter((id) => id !== media.id));
+    }
   }
 
   /**

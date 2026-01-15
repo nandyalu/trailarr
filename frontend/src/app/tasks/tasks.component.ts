@@ -43,7 +43,7 @@ export class TasksComponent implements OnInit {
 
   refreshTaskData() {
     // Refresh the data
-    console.log('Refreshing task data');
+    // console.log('Refreshing task data');
     this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
       this.scheduledTasks.set(tasks);
       this.isLoading1.set(false);

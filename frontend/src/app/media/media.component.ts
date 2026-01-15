@@ -1,29 +1,16 @@
-import {NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, effect, inject, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Router, RouterLink, RouterState} from '@angular/router';
-import {RouteMedia} from 'src/routing';
-import {RemoveStartingSlashPipe} from '../helpers/remove-starting-slash.pipe';
-import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
-import {Media} from '../models/media';
+import {Router, RouterState} from '@angular/router';
 import {CustomfilterService} from '../services/customfilter.service';
 import {MediaService} from '../services/media.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 import {EditHeaderComponent} from './headers/edit-header/edit-header.component';
 import {NormalHeaderComponent} from './headers/normal-header/normal-header.component';
+import {PosterComponent} from './media-cards/poster/poster.component';
 
 @Component({
-  selector: 'app-media2',
-  imports: [
-    EditHeaderComponent,
-    FormsModule,
-    NgTemplateOutlet,
-    LoadIndicatorComponent,
-    NormalHeaderComponent,
-    RemoveStartingSlashPipe,
-    RouterLink,
-    ScrollNearEndDirective,
-  ],
+  selector: 'app-media',
+  imports: [EditHeaderComponent, FormsModule, LoadIndicatorComponent, NormalHeaderComponent, PosterComponent],
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,20 +21,12 @@ export class MediaComponent implements OnInit {
   private readonly router = inject(Router);
 
   // Signals from Media Service
-  protected readonly checkedMediaIDs = this.mediaService.checkedMediaIDs;
-  protected readonly displayCount = this.mediaService.displayCount;
-  protected readonly displayMedia = this.mediaService.displayMedia;
+  protected readonly moviesOnly = this.mediaService.moviesOnly;
   protected readonly filteredSortedMedia = this.mediaService.filteredSortedMedia;
   protected readonly inEditMode = this.mediaService.inEditMode;
-  protected readonly moviesOnly = this.mediaService.moviesOnly;
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);
-  protected readonly navigatingMediaId = this.mediaService.selectedMediaID;
-
-  // Constants
-  protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
-  protected readonly RouteMedia = RouteMedia;
 
   ngOnInit() {
     this.isLoading.set(true);
@@ -77,40 +56,4 @@ export class MediaComponent implements OnInit {
     }
     this.customfilterService.moviesOnly.set(this.moviesOnly());
   });
-
-  /**
-   * Handles the event when a media item is selected, either by checking or unchecking a checkbox.
-   * Adds or removes the media item from the selectedMedia array based on the checkbox state.
-   *
-   * @param {Media} media - The media item that was selected.
-   * @param {Event} event - The event that triggered the selection.
-   * @returns {void}
-   */
-  onMediaSelected(media: Media, event: Event): void {
-    // Navigate to the media details page
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement.checked) {
-      this.checkedMediaIDs.update((ids) => [...ids, media.id]);
-    } else {
-      this.checkedMediaIDs.update((ids) => ids.filter((id) => id !== media.id));
-    }
-  }
-
-  /**
-   * Handles the event when the user scrolls near the end of the media list.
-   * Loads more media items into the display list if there are more items to show.
-   *
-   * @returns {void} This method does not return a value.
-   */
-  onNearEndScroll(): void {
-    // Load more media when near the end of the scroll
-    if (this.displayCount() >= this.filteredSortedMedia().length) {
-      return;
-    }
-    this.displayCount.update((count) => count + this.defaultDisplayCount);
-  }
-
-  onMediaClick(mediaId: number): void {
-    this.navigatingMediaId.set(mediaId);
-  }
 }

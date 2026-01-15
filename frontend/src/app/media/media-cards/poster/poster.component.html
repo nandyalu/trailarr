@@ -1,0 +1,53 @@
+<div class="media-grid" appScrollNearEnd (nearEnd)="onNearEndScroll()" role="listbox" aria-multiselectable="true">
+  @for (media of displayMedia(); track media.id) {
+    @if (inEditMode()) {
+      <!-- Edit Mode - Show Checkboxes -->
+      <div
+        class="media-card"
+        [title]="media.title + ' (' + (media.status | displayTitle) + ')'"
+        role="option"
+        [attr.aria-selected]="checkedMediaIDs().includes(media.id)"
+      >
+        <input
+          type="checkbox"
+          [id]="media.id"
+          class="media-card-checkbox"
+          (click)="$event.stopPropagation()"
+          (change)="onMediaChecked(media, $event.target.checked)"
+          [checked]="checkedMediaIDs().includes(media.id)"
+        />
+        <label [for]="media.id">
+          <img
+            id="mediaImage{{ media.id }}"
+            [src]="(media.poster_path | removeStartingSlash) || 'assets/poster-sm.png'"
+            [alt]="media.title"
+            loading="lazy"
+            [style.view-transition-name]="selectedMediaID() === media.id ? 'media-image' : 'none'"
+          />
+          <p [style.view-transition-name]="selectedMediaID() === media.id ? 'media-title' : 'none'">{{ media.title }}</p>
+        </label>
+        <media-status-icon [status]="media.status" class="status-icon"></media-status-icon>
+      </div>
+    } @else {
+      <!-- Normal Mode - Show Media Card -->
+      <a
+        class="media-card"
+        animate.enter="enter-animation"
+        [routerLink]="['/' + RouteMedia, media.id]"
+        [title]="media.title + ' (' + (media.status | displayTitle) + ')'"
+        [id]="media.id"
+        (click)="selectedMediaID.set(media.id)"
+      >
+        <img
+          id="mediaImage{{ media.id }}"
+          [src]="(media.poster_path | removeStartingSlash) || 'assets/poster-sm.png'"
+          [alt]="media.title"
+          loading="lazy"
+          [style.view-transition-name]="selectedMediaID() === media.id ? 'media-image' : 'none'"
+        />
+        <p [style.view-transition-name]="selectedMediaID() === media.id ? 'media-title' : 'none'">{{ media.title }}</p>
+        <media-status-icon [status]="media.status" class="status-icon"></media-status-icon>
+      </a>
+    }
+  }
+</div>
