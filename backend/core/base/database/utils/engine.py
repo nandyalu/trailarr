@@ -64,7 +64,8 @@ def flush_records_to_db():
 
 @contextmanager
 def get_session() -> Generator[Session, None, None]:
-    """Provide a SQLModel session to the context manager
+    """Provide a SQLModel session to the context manager.
+    Automatically rolls back on exceptions and always closes the session.
     Yields:
         Session: A SQLModel session
     Example:
@@ -78,6 +79,9 @@ def get_session() -> Generator[Session, None, None]:
     session = Session(engine)
     try:
         yield session
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()
 
@@ -198,6 +202,7 @@ def _session_handler(func, *args, is_blocking: bool = False, **kwargs):
                 time.sleep(delay)
                 delay *= 2  # Exponential backoff
             else:
+                
                 # If it's a different Exception, raise it immediately
                 raise
     # If we exit the loop without returning, raise an exception
