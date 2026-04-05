@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v5
       
       - name: GitHub Releases to Discord
-        uses: SethCohen/github-releases-to-discord@v1.19.0
+        uses: SethCohen/github-releases-to-discord@v1.20.0
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
           color: "4760230"
