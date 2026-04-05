@@ -7,7 +7,7 @@
 version: 2
 updates:
   # Maintain dependencies for pyproject.toml - backend
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     directory: "/backend"
     schedule:
       interval: daily
@@ -24,3 +24,7 @@ updates:
   #   allow:
   #     - dependency-name: "@angular/*"
   #     - dependency-name: "rxjs"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
