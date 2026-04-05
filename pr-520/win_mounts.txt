@@ -1,5 +1,0 @@
-https://woshub.com/mount-drives-in-wsl/
-https://superuser.com/questions/1692434/docker-on-wsl-want-to-mount-a-applicable-folder-on-windows10-with-wsl
-https://stackoverflow.com/questions/50239386/docker-add-network-drive-as-volume-on-windows
-https://learn.microsoft.com/en-us/windows/wsl/wsl2-mount-disk
-
