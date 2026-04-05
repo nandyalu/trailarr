@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, col, select
 
 from core.base.database.models.media import Media
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
 class ServerStats(BaseModel):
@@ -14,7 +14,7 @@ class ServerStats(BaseModel):
     series_monitored: int
 
 
-@manage_session
+@read_session
 def get_stats(
     *,
     _session: Session = None,  # type: ignore

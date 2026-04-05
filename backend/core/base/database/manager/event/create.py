@@ -7,10 +7,10 @@ from core.base.database.models.event import (
     EventSource,
     EventType,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def create(
     event_create: EventCreate,
     *,
@@ -31,7 +31,7 @@ def create(
     return EventRead.model_validate(db_event)
 
 
-@manage_session
+@write_session
 def create_if_not_exists(
     event_create: EventCreate,
     *,
@@ -63,7 +63,7 @@ def create_if_not_exists(
     return EventRead.model_validate(db_event), True
 
 
-@manage_session
+@write_session
 def create_skip_event_if_not_exists(
     media_id: int,
     skip_reason: str,

@@ -1,10 +1,10 @@
 from sqlmodel import Session
 
 from . import base
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def delete(
     connection_id: int,
     *,
@@ -22,13 +22,7 @@ def delete(
     """
     connection = base._get_db_item(connection_id, _session=_session)
     _session.delete(connection)
-    # # Delete all path mappings associated with the connection
-    # for path_mapping in connection.path_mappings:
-    #     _session.delete(path_mapping)
-    # # Delete all media associated with the connection
-    # _statement = select(Media).where(Media.connection_id == connection_id)
-    # media_list = _session.exec(_statement).all()
-    # for media in media_list:
-    #     _session.delete(media)
+    # SQLite will take care of the cascade delete of path mappings and media items.
+    # No need to manually delete them here. Just commit the transaction to persist the changes.
     _session.commit()
     return True

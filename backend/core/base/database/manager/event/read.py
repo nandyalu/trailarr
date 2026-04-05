@@ -1,11 +1,16 @@
 from sqlmodel import Session, col, desc, select
 
 from . import base
-from core.base.database.models.event import Event, EventRead, EventSource, EventType
-from core.base.database.utils.engine import manage_session
+from core.base.database.models.event import (
+    Event,
+    EventRead,
+    EventSource,
+    EventType,
+)
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def read(
     id: int,
     *,
@@ -25,7 +30,7 @@ def read(
     return EventRead.model_validate(db_event)
 
 
-@manage_session
+@read_session
 def read_all(
     limit: int = 100,
     offset: int = 0,
@@ -61,7 +66,7 @@ def read_all(
     return [EventRead.model_validate(e) for e in db_events]
 
 
-@manage_session
+@read_session
 def read_by_media_id(
     media_id: int,
     limit: int = 100,
@@ -90,7 +95,7 @@ def read_by_media_id(
     return [EventRead.model_validate(e) for e in db_events]
 
 
-@manage_session
+@read_session
 def has_skip_event(
     media_id: int,
     *,

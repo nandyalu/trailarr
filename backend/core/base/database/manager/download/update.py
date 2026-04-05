@@ -6,10 +6,10 @@ from core.base.database.models.download import (
     DownloadCreate,
     DownloadRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def update(
     download_id: int,
     download_create: DownloadCreate,
@@ -45,7 +45,7 @@ def update(
     return base.convert_to_read_item(download_db)
 
 
-@manage_session
+@write_session
 def mark_as_deleted(
     download_id: int,
     *,

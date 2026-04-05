@@ -1,66 +1,15 @@
 from sqlmodel import Session, col, select
 
-from . import base
-from core.base.database.models.media import (
-    Media,
-)
-from core.base.database.utils.engine import manage_session
-from exceptions import ItemNotFoundError
-from app_logger import logger
+from core.base.database.models.media import Media
+from core.base.database.utils.engine import write_session
+
+# There are no explicit media delete methods bacause we shouldn't be deleting them,
+# instead media is added/updated/deleted in bulk during connection updates.
+# The delete_except method is used to delete all media items except the ones provided,
+# which is the most common use case for deleting media items.
 
 
-@manage_session
-def delete(
-    media_id: int,
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Delete a media item from the database by id.\n
-    Args:
-        media_id (int): The id of the media to delete.
-        _session (Session, Optional): A session to use for the database connection.\
-            Default is None, in which case a new session will be created.\n
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If the media item with provided id doesn't exist.
-    """
-    db_media = base._get_db_item(media_id, _session)
-    _session.delete(db_media)
-    _session.commit()
-    return
-
-
-@manage_session
-def delete_bulk(
-    media_ids: list[int],
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Delete multiple media items from the database at once.\n
-    Args:
-        media_ids (list[int]): List of media id's to delete.
-        _session (Session, Optional): A session to use for the database connection.\
-            Default is None, in which case a new session will be created.\n
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If any of the media items with provided id's don't exist.
-    """
-    for media_id in media_ids:
-        try:
-            media_db = base._get_db_item(media_id, _session)
-            _session.delete(media_db)
-        except ItemNotFoundError:
-            logger.debug(
-                f"Media with id {media_id} doesn't exist in"
-                " the database. Skipping!"
-            )
-    _session.commit()
-    return
-
-
-@manage_session
+@write_session
 def delete_except(
     connection_id: int,
     media_ids: list[int],

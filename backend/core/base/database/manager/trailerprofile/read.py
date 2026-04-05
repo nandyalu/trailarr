@@ -7,11 +7,11 @@ from core.base.database.models.trailerprofile import (
     TrailerProfile,
     TrailerProfileRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 from exceptions import ItemNotFoundError
 
 
-@manage_session
+@read_session
 def get_trailerprofile(
     trailerprofile_id: int,
     *,
@@ -36,7 +36,7 @@ def get_trailerprofile(
     return convert_to_read_item(db_trailerprofile)
 
 
-@manage_session
+@read_session
 def get_trailerprofiles(
     *,
     _session: Session = None,  # type: ignore
@@ -54,7 +54,7 @@ def get_trailerprofiles(
     return convert_to_read_list(db_trailerprofiles)
 
 
-@manage_session
+@read_session
 def get_trailer_folders(
     *,
     _session: Session = None,  # type: ignore

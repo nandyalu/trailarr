@@ -3,10 +3,10 @@ from sqlmodel import Session, select
 from . import base
 
 from core.base.database.models.download import Download
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def delete(id: int, *, _session: Session = None) -> bool:  # type: ignore
     """
     Delete a download by id.
@@ -27,7 +27,7 @@ def delete(id: int, *, _session: Session = None) -> bool:  # type: ignore
     return True
 
 
-@manage_session
+@write_session
 def delete_all_for_media(
     media_id: int,
     *,

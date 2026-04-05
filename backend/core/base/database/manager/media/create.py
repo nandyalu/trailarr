@@ -10,11 +10,11 @@ from core.base.database.models.media import (
     MediaCreate,
     MediaRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 from exceptions import ItemNotFoundError
 
 
-@manage_session
+@write_session
 def create_or_update_bulk(
     media_create_list: list[MediaCreate],
     *,

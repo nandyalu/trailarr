@@ -6,10 +6,10 @@ from core.base.database.models.download import (
     DownloadCreate,
     DownloadRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def create(
     download_create: DownloadCreate,
     *,

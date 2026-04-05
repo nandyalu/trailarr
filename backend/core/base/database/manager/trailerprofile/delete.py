@@ -2,13 +2,13 @@ from sqlmodel import Session
 
 from app_logger import ModuleLogger
 from core.base.database.models.trailerprofile import TrailerProfile
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
 
 
-@manage_session
+@write_session
 def delete_trailerprofile(
     id: int, *, _session: Session = None  # type: ignore
 ) -> bool:

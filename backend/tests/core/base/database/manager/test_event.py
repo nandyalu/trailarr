@@ -8,7 +8,7 @@ from core.base.database.models.connection import (
     Connection,
     MonitorType,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.event import (
@@ -20,7 +20,7 @@ from core.base.database.models.media import MediaCreate
 from exceptions import ItemNotFoundError
 
 
-@manage_session
+@write_session
 def _create_test_connection(
     name: str = "Test Connection",
     *,

@@ -7,10 +7,10 @@ from core.base.database.models.media import (
     Media,
     MediaRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def search(
     query: str,
     *,

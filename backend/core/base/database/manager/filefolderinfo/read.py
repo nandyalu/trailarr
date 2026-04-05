@@ -4,10 +4,10 @@ from core.base.database.models.filefolderinfo import (
     FileFolderInfo,
     FileFolderInfoRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def read_by_media_id_flat(
     media_id: int,
     *,
@@ -29,7 +29,7 @@ def read_by_media_id_flat(
     return base.convert_to_read_list(db_filefolderinfo)
 
 
-@manage_session
+@read_session
 def read_by_media_id(
     media_id: int,
     *,
@@ -58,7 +58,7 @@ def read_by_media_id(
 # Use read_by_media_id or read_all_raw instead.
 
 
-@manage_session
+@read_session
 def read_all_raw(
     *,
     _session: Session = None,  # type: ignore

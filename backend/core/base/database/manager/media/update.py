@@ -8,10 +8,10 @@ from core.base.database.models.media import (
     MediaUpdate,
     MonitorStatus,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def update_media_image(
     media_image: MediaImage,
     *,
@@ -41,7 +41,7 @@ def update_media_image(
     return
 
 
-@manage_session
+@write_session
 def update_monitor_and_trailer_exists(
     media_id: int,
     monitor: bool,
@@ -83,7 +83,7 @@ def update_monitor_and_trailer_exists(
     return
 
 
-@manage_session
+@write_session
 def update_monitor_and_trailer_exists_bulk(
     media_update_list: Sequence[tuple[int, bool, bool]],
     *,
@@ -112,7 +112,7 @@ def update_monitor_and_trailer_exists_bulk(
     return
 
 
-@manage_session
+@write_session
 def update_media_status(
     media_update: MediaUpdateDC,
     *,
@@ -155,7 +155,7 @@ def update_media_status(
     return
 
 
-@manage_session
+@write_session
 def update_monitoring(
     media_id: int,
     monitor: bool,
@@ -215,7 +215,7 @@ def update_monitoring(
     return msg, True
 
 
-@manage_session
+@write_session
 def update_monitoring_bulk(
     media_ids: list,
     monitor: bool,
@@ -239,7 +239,7 @@ def update_monitoring_bulk(
     return
 
 
-@manage_session
+@write_session
 def update_no_trailers_exist(
     media_id: int,
     *,
@@ -269,7 +269,7 @@ def update_no_trailers_exist(
 
 
 # TODO: Split this up into separate simpler methods
-@manage_session
+@write_session
 def update_trailer_exists(
     media_id: int,
     trailer_exists: bool,
@@ -308,7 +308,7 @@ def update_trailer_exists(
     return None
 
 
-@manage_session
+@write_session
 def update_ytid(
     media_id: int,
     yt_id: str,
@@ -333,4 +333,4 @@ def update_ytid(
     _session.add(db_media)
     if _commit:
         _session.commit()
-    return
+    return None

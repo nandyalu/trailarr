@@ -6,10 +6,10 @@ from sqlmodel.sql.expression import SelectOfScalar
 from . import base
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.media import Media, MediaRead, MonitorStatus
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def read(
     id: int,
     *,
@@ -31,7 +31,7 @@ def read(
     return media_read
 
 
-@manage_session
+@read_session
 def read_all_raw(
     *,
     _session: Session = None,  # type: ignore
@@ -52,7 +52,7 @@ def read_all_raw(
     return rows
 
 
-@manage_session
+@read_session
 def read_all(
     movies_only: bool | None = None,
     filter_by: str | None = "all",
@@ -93,7 +93,7 @@ def read_all(
     return base._convert_to_read_list(db_media_list)
 
 
-@manage_session
+@read_session
 def read_all_generator(
     movies_only: bool | None = None,
     monitored_only: bool = False,
@@ -127,7 +127,7 @@ def read_all_generator(
     return
 
 
-@manage_session
+@read_session
 def read_all_by_connection(
     connection_id: int,
     *,
@@ -148,7 +148,7 @@ def read_all_by_connection(
     return base._convert_to_read_list(db_media_list)
 
 
-@manage_session
+@read_session
 def read_recent(
     limit: int = 100,
     offset: int = 0,
@@ -180,7 +180,7 @@ def read_recent(
     return base._convert_to_read_list(db_media_list)
 
 
-@manage_session
+@read_session
 def read_recently_downloaded(
     limit: int = 100,
     offset: int = 0,
@@ -209,7 +209,7 @@ def read_recently_downloaded(
     return base._convert_to_read_list(db_media_list)
 
 
-@manage_session
+@read_session
 def read_updated_after(
     seconds: int,
     *,

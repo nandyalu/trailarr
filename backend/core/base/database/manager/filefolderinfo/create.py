@@ -8,7 +8,7 @@ from core.base.database.models.filefolderinfo import (
     FileFolderInfoRead,
 )
 from core.base.database.models.media import MediaRead
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
 def _create_new_node(
@@ -118,7 +118,7 @@ def sync_file_tree(
     return updated_tree
 
 
-@manage_session
+@write_session
 def update(
     media: MediaRead,
     incoming_root: FileFolderInfoCreate,

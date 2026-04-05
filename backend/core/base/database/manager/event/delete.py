@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, col, select
 
 from core.base.database.models.event import Event
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 def delete_old_events(
     days: int = 90,
     *,
@@ -31,7 +31,7 @@ def delete_old_events(
     return count
 
 
-@manage_session
+@write_session
 def delete_by_media_id(
     media_id: int,
     *,

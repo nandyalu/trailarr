@@ -2,20 +2,34 @@ from sqlmodel import Session
 
 from . import base
 from core.base.database.models.connection import ConnectionCreate, Connection
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
-async def create(
-    connection: ConnectionCreate,
+@write_session
+async def _save_validated_connection(
+    connection: Connection,
     *,
     _session: Session = None,  # type: ignore
-) -> tuple[str, int]:
+) -> int:
+    """Save a connection to the database \n
+    Args:
+        connection (Connection): The validated connection to save
+        _session (Session, optional): A session to use for the database connection. \
+            Defaults to None, in which case a new session is created. \n
+    Returns:
+        int: The id of the saved connection
+    """
+    # Use the session to add the connection to the database
+    _session.add(connection)
+    _session.commit()
+    assert connection.id is not None
+    return connection.id
+
+
+async def create(connection: ConnectionCreate) -> tuple[str, int]:
     """Create a new connection in the database \n
     Args:
         connection (Connection): The connection to create
-        _session (optional): A session to use for the database connection. \
-            Defaults to None, in which case a new session is created. \n
     Returns:
         tuple(str, int): The status message of the connection with version if created. \
             and the id of the created connection. \n
@@ -37,8 +51,7 @@ async def create(
     db_connection = Connection.model_validate(connection)
     # Add path mappings to database connection
     db_connection.path_mappings = _path_mappings
-    # Use the session to add the connection to the database
-    _session.add(db_connection)
-    _session.commit()
-    assert db_connection.id is not None
-    return status, db_connection.id
+    # Pass the validated connection to the save function
+    # to add to the database and return the id of the new connection
+    _id = await _save_validated_connection(db_connection)
+    return status, _id
