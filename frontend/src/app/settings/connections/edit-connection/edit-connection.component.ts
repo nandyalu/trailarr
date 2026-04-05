@@ -230,7 +230,7 @@ export class EditConnectionComponent {
     dialogRef.instance.onSubmit.subscribe((emitValue: string) => {
       if (emitValue) {
         // Update the path_to value in the form array
-        this.connectionForm.path_mappings[index].path_to().setControlValue(emitValue);
+        this.connectionForm.path_mappings[index].path_to().controlValue.set(emitValue);
       }
       // Else, dialog closed without submission, do nothing
       setTimeout(() => {
