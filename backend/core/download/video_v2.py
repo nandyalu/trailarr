@@ -114,6 +114,9 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
         _options.append("--embed-subs")
         _options.append("--sub-langs")
         _options.append(profile.subtitles_language)
+        # Sleep for 15 seconds to reduce subtitles failures
+        _options.append("--sleep-subtitles")
+        _options.append("15")
     # Fragment retries option - Not needed as default is 10
     # _options.append("--fragment-retries")
     # _options.append("10")
