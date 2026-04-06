@@ -309,16 +309,6 @@ def _convert_video(
     return "Video converted successfully"
 
 
-def _cleanup_files(file_path: str | Path):
-    """Cleanup the temporary files created during the download and conversion"""
-    file_path = Path(file_path)
-    dir_path = file_path.parent
-    if dir_path.exists():
-        for file in dir_path.iterdir():
-            if file.stem in file.name:
-                file.unlink()
-
-
 def download_video(
     url: str, file_path: str | Path, profile: TrailerProfileRead
 ) -> str:
@@ -336,8 +326,6 @@ def download_video(
     file_path = Path(file_path)
     file_name = file_path.name
     temp_file_path = str(file_path.with_name(f"temp_{file_name}"))
-    # Cleanup the temporary files
-    _cleanup_files(file_path)
 
     # Download the video using yt-dlp
     start_time = time.perf_counter()  # Download start time
