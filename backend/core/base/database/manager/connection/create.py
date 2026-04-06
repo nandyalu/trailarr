@@ -6,7 +6,7 @@ from core.base.database.utils.engine import write_session
 
 
 @write_session
-async def _save_validated_connection(
+def _save_validated_connection(
     connection: Connection,
     *,
     _session: Session = None,  # type: ignore
@@ -53,5 +53,5 @@ async def create(connection: ConnectionCreate) -> tuple[str, int]:
     db_connection.path_mappings = _path_mappings
     # Pass the validated connection to the save function
     # to add to the database and return the id of the new connection
-    _id = await _save_validated_connection(db_connection)
+    _id = _save_validated_connection(db_connection)
     return status, _id
