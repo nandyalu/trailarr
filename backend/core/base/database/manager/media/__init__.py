@@ -1,5 +1,5 @@
 from .create import create_or_update_bulk
-from .delete import delete, delete_bulk, delete_except
+from .delete import delete_except
 from .read import (
     read,
     read_all,
@@ -24,8 +24,6 @@ from .update import (
 
 __all__ = [
     "create_or_update_bulk",
-    "delete",
-    "delete_bulk",
     "delete_except",
     "read",
     "read_all",

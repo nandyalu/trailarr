@@ -6,7 +6,7 @@ from core.base.database.models.customfilter import (
     CustomFilterRead,
 )
 from core.base.database.models.filter import Filter
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 from exceptions import ItemNotFoundError
 
 
@@ -57,7 +57,7 @@ def __update_filters(
     return None
 
 
-@manage_session
+@write_session
 def update_customfilter(
     filter_id: int,
     filter_create: CustomFilterCreate,

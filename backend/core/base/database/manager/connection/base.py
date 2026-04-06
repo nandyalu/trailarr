@@ -9,11 +9,11 @@ from core.base.database.models.connection import (
     ConnectionUpdate,
     PathMapping,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 from exceptions import ItemNotFoundError
 
 
-@manage_session
+@read_session
 def exists(
     connection_id: int,
     *,
@@ -159,17 +159,11 @@ def _update_path_mappings(
     return None
 
 
-@manage_session
-def _get_db_item(
-    connection_id: int,
-    *,
-    _session: Session = None,  # type: ignore
-) -> Connection:
+def _get_db_item(connection_id: int, _session: Session) -> Connection:
     """Get a connection from the database. This is a private method. \n
     Args:
         connection_id (int): The id of the connection to read
-        _session (optional): A session to use for the database connection. \
-            Defaults to None, in which case a new session is created. \n
+        _session (Session): The database session to use \n
     Returns:
         Connection: The connection [database] object \n
     Raises:

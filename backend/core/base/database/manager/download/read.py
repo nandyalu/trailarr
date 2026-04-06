@@ -4,10 +4,10 @@ from core.base.database.models.download import (
     Download,
     DownloadRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def read(
     download_id: int,
     *,
@@ -28,7 +28,7 @@ def read(
     return base.convert_to_read_item(db_download)
 
 
-@manage_session
+@read_session
 def read_all_raw(
     *,
     _session: Session = None,  # type: ignore
@@ -49,7 +49,7 @@ def read_all_raw(
     return rows
 
 
-@manage_session
+@read_session
 def read_all(
     *,
     _session: Session = None,  # type: ignore
@@ -67,7 +67,7 @@ def read_all(
     return base.convert_to_read_list(db_downloads)
 
 
-@manage_session
+@read_session
 def read_by_media_id(
     media_id: int,
     *,
@@ -87,7 +87,7 @@ def read_by_media_id(
     return base.convert_to_read_list(db_downloads)
 
 
-@manage_session
+@read_session
 def read_by_profile_id(
     profile_id: int,
     *,

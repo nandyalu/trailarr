@@ -10,12 +10,12 @@ from core.base.database.models.trailerprofile import (
     TrailerProfileCreate,
     TrailerProfileRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 logger = ModuleLogger("TrailerProfileManager")
 
 
-@manage_session
+@write_session
 def create_trailerprofile(
     trailerprofile_create: TrailerProfileCreate,
     *,

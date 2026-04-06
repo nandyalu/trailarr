@@ -5,10 +5,10 @@ from core.base.database.models.customfilter import (
     CustomFilterRead,
     FilterType,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def get_all_customfilters(
     *,
     _session: Session = None,  # type: ignore
@@ -26,7 +26,7 @@ def get_all_customfilters(
     return convert_to_read_list(db_customfilters)
 
 
-@manage_session
+@read_session
 def get_home_customfilters(
     *,
     _session: Session = None,  # type: ignore
@@ -46,7 +46,7 @@ def get_home_customfilters(
     return convert_to_read_list(db_customfilters)
 
 
-@manage_session
+@read_session
 def get_movie_customfilters(
     *,
     _session: Session = None,  # type: ignore
@@ -66,7 +66,7 @@ def get_movie_customfilters(
     return convert_to_read_list(db_customfilters)
 
 
-@manage_session
+@read_session
 def get_series_customfilters(
     *,
     _session: Session = None,  # type: ignore

@@ -5,10 +5,10 @@ from core.base.database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 
 
-@manage_session
+@write_session
 async def update(
     connection_id: int,
     connection_update: ConnectionUpdate,

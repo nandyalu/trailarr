@@ -1,7 +1,8 @@
-import os
 import shlex
 import subprocess
 import time
+from pathlib import Path
+
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
@@ -144,23 +145,26 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     return _options
 
 
-def _find_downloaded_file(file_path: str) -> str | None:
+def _find_downloaded_file(file_path: str | Path) -> str | None:
     """Find the downloaded file with the given file path.\n
     File extension should be one of:
         `.avi`, `.mkv`, `.mp4`, `.webm`
     Args:
-        file_path (str): Output file path template with %(ext)s
+        file_path (str | Path): Output file path template with %(ext)s
     Returns:
         str|None: The downloaded file path if found, None otherwise
     """
-    dir_name = os.path.dirname(file_path)
-    base_name = os.path.basename(file_path).replace("%(ext)s", "")
+    file_path = Path(file_path)
+    dir_path = file_path.parent
+    base_name = file_path.name.replace("%(ext)s", "")
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
 
-    if os.path.exists(dir_name):
-        for file in os.listdir(dir_name):
-            if file.startswith(base_name) and file.endswith(VIDEO_EXTENSIONS):
-                return os.path.join(dir_name, file)
+    if dir_path.exists():
+        for file in dir_path.iterdir():
+            if file.name.startswith(base_name) and file.name.endswith(
+                VIDEO_EXTENSIONS
+            ):
+                return str(file)
     return None
 
 
@@ -305,24 +309,13 @@ def _convert_video(
     return "Video converted successfully"
 
 
-def _cleanup_files(file_path: str):
-    """Cleanup the temporary files created during the download and conversion"""
-    # Check if a file already exists at the given path, delete it
-    dir_name = os.path.dirname(file_path)
-    if os.path.exists(dir_name):
-        for file in os.listdir(dir_name):
-            file_name_wo_ext, file_ext = os.path.splitext(file)
-            if file_name_wo_ext in file:
-                os.remove(os.path.join(dir_name, file))
-
-
 def download_video(
-    url: str, file_path: str, profile: TrailerProfileRead
+    url: str, file_path: str | Path, profile: TrailerProfileRead
 ) -> str:
     """Download the video from the given URL
     Args:
         url (str): URL of the video
-        file_path (str): Output file path template with %(ext)s
+        file_path (str | Path): Output file path template with %(ext)s
         profile (TrailerProfileRead): Trailer profile used for downloading
     Returns:
         str: The downloaded (and converted) video file path
@@ -330,12 +323,9 @@ def download_video(
         DownloadFailedError: Error while downloading video
         ConversionFailedError: Error while converting video
     """
-    # try:
-    # Get the file name from the file path
-    file_name = os.path.basename(file_path)
-    temp_file_path = file_path.replace(file_name, f"temp_{file_name}")
-    # Cleanup the temporary files
-    _cleanup_files(file_path)
+    file_path = Path(file_path)
+    file_name = file_path.name
+    temp_file_path = str(file_path.with_name(f"temp_{file_name}"))
 
     # Download the video using yt-dlp
     start_time = time.perf_counter()  # Download start time
@@ -344,11 +334,13 @@ def download_video(
     logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
 
     # Add the file extension from download file to the output file
-    converted_file_path = file_path.replace("%(ext)s", profile.file_format)
+    converted_file_path = str(file_path).replace(
+        "%(ext)s", profile.file_format
+    )
 
     # Convert the video to the desired format
     _convert_video(profile, download_file_path, converted_file_path)
     logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
-    os.remove(download_file_path)
+    Path(download_file_path).unlink()
     logger.info("Video download and conversion completed successfully")
     return converted_file_path

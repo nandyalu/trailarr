@@ -66,9 +66,11 @@ async def get_all_media(
 
 @media_router.get("/all_raw")
 async def get_all_media_raw() -> list[dict]:
-    """Get all media from the database as raw dictionaries. \n
+    """Get all media from the database as raw JSON objects. \n
+    The raw media objects include all columns but doesn't have any related
+    objects (downloads, files, etc.) included or validated. \n
     Returns:
-        list[dict]: List of media objects as dictionaries. \n
+        list[dict]: List of media objects as JSON. \n
     """
     media_raw = media_manager.read_all_raw()
     return media_raw
@@ -76,9 +78,11 @@ async def get_all_media_raw() -> list[dict]:
 
 @media_router.get("/downloads_raw")
 async def get_all_downloads_raw() -> list[dict]:
-    """Get all downloads from the database as raw dictionaries. \n
+    """Get all downloads from the database as raw JSON objects. \n
+    The raw download objects include all columns but doesn't have any related
+    media objects included or validated. \n
     Returns:
-        list[dict]: List of download objects as dictionaries. \n
+        list[dict]: List of download objects as JSON. \n
     """
     downloads_raw = download_manager.read_all_raw()
     return downloads_raw

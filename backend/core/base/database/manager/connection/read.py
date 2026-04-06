@@ -10,10 +10,10 @@ from core.base.database.models.connection import (
     ConnectionRead,
     Connection,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import read_session
 
 
-@manage_session
+@read_session
 def read(
     connection_id: int,
     *,
@@ -35,7 +35,7 @@ def read(
     return connection_read
 
 
-@manage_session
+@read_session
 def read_all(
     *,
     _session: Session = None,  # type: ignore

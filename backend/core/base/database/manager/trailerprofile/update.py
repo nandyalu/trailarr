@@ -10,13 +10,13 @@ from core.base.database.models.trailerprofile import (
     TrailerProfileCreate,
     TrailerProfileRead,
 )
-from core.base.database.utils.engine import manage_session
+from core.base.database.utils.engine import write_session
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
 
 
-@manage_session
+@write_session
 def update_trailerprofile(
     trailerprofile_id: int,
     trailerprofile_create: TrailerProfileCreate,
@@ -66,7 +66,7 @@ def update_trailerprofile(
     return convert_to_read_item(trailerprofile_db)
 
 
-@manage_session
+@write_session
 def update_trailerprofile_setting(
     id: int,
     setting: str,

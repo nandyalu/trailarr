@@ -96,6 +96,7 @@ async def record_new_trailer_download(
     profile_id: int,
     file_path: str,
     youtube_video_id: str | None = None,
+    video_info: VideoInfo | None = None,
 ) -> None:
     """
     Records a new trailer download in the database with comprehensive metadata.
@@ -103,17 +104,30 @@ async def record_new_trailer_download(
         media (MediaRead): The media object.
         profile_id (int): The ID of the TrailerProfile used for download.
         file_path (str): The path to the downloaded file.
-        youtube_video_id (str): The YouTube video ID of the trailer.
+        youtube_video_id (str | None): The YouTube video ID of the trailer.
+        video_info (VideoInfo | None): Pre-analyzed video info to avoid
+            redundant ffprobe calls. If None, will analyze the file.
     """
     logger.debug(
         f"Recording new trailer download for media {media.title} [{media.id}]"
     )
     try:
-        # Get media info using ffprobe
-        media_info = get_media_info(file_path)
+        # Use provided video info or analyze the file
+        media_info = video_info
+        if not media_info:
+            media_info = get_media_info(file_path)
         if not media_info:
             logger.error(f"Failed to get media info for {file_path}")
             return
+
+        # Get file timestamps from the actual final path (may differ from original)
+        file_stat = os.stat(file_path)
+        file_created_at = datetime.fromtimestamp(
+            file_stat.st_mtime, tz=timezone.utc
+        )
+        file_updated_at = datetime.fromtimestamp(
+            file_stat.st_ctime, tz=timezone.utc
+        )
 
         # Compute File Hash
         file_hash = compute_file_hash(file_path)
@@ -172,8 +186,8 @@ async def record_new_trailer_download(
             file_exists=True,
             profile_id=profile_id,
             media_id=media.id,
-            added_at=media_info.created_at or datetime.now(timezone.utc),
-            updated_at=media_info.updated_at or datetime.now(timezone.utc),
+            added_at=file_created_at,
+            updated_at=file_updated_at,
         )
 
         # Save to database using dedicated download manager
