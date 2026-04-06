@@ -86,73 +86,73 @@ def get_session() -> Generator[Session, None, None]:
         session.close()
 
 
-# TODO: Once all code is migrated to use the read/write decorators, we can remove the manage_session decorator and its logic.
-def manage_session(func):
-    """Decorator to manage the session for a function. \n
-    Add '_session' to the function's keyword arguments, \n
-    decorator will supply a new session if one is not provided. \n
-    Also handles database lock errors by retrying the function (5 times). \n
-    Args:
-        func: The function to decorate
-    Returns:
-        The decorated function with a session keyword argument
-    Example:
-        1. Within a class method
-        ```python
-        class MovieDatabaseHandler:
-            @manage_session
-            def read(
-                self,
-                movie_id: int,
-                *,
-                _session: Session = None,  # type: ignore
-            ) -> MovieRead:
-                movie = _session.get(Movie, movie_id)
-                # do something else with _session or commit the changes
-                return movie
-        ```
-        2. Outside a class method
-        ```python
-        @manage_session
-        def read(movie_id: int, *, _session: Session = None) -> MovieRead:
-            movie = _session.get(Movie, movie_id)
-            # do something else with _session or commit the changes
-            return movie
-        ```
-    """
+# TODO: All code has been moved to use read/write sessions. Remove in v0.8.0!
+# def manage_session(func):
+#     """Decorator to manage the session for a function. \n
+#     Add '_session' to the function's keyword arguments, \n
+#     decorator will supply a new session if one is not provided. \n
+#     Also handles database lock errors by retrying the function (5 times). \n
+#     Args:
+#         func: The function to decorate
+#     Returns:
+#         The decorated function with a session keyword argument
+#     Example:
+#         1. Within a class method
+#         ```python
+#         class MovieDatabaseHandler:
+#             @manage_session
+#             def read(
+#                 self,
+#                 movie_id: int,
+#                 *,
+#                 _session: Session = None,  # type: ignore
+#             ) -> MovieRead:
+#                 movie = _session.get(Movie, movie_id)
+#                 # do something else with _session or commit the changes
+#                 return movie
+#         ```
+#         2. Outside a class method
+#         ```python
+#         @manage_session
+#         def read(movie_id: int, *, _session: Session = None) -> MovieRead:
+#             movie = _session.get(Movie, movie_id)
+#             # do something else with _session or commit the changes
+#             return movie
+#         ```
+#     """
 
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        retries = 5
-        delay = 0.1
-        for i in range(retries):
-            try:
-                # Check if a '_session' keyword argument was provided
-                if kwargs.get("_session") is None:
-                    # If not, create a new session and add it to kwargs
-                    with get_session() as _session:
-                        kwargs["_session"] = _session
-                        return func(*args, **kwargs)
-                else:
-                    # If a session was provided, just call the function
-                    return func(*args, **kwargs)
-            except (SAOperationalError, SQLiteOperationalError) as e:
-                if "database is locked" in str(e).lower():
-                    # If this was the last attempt, raise the final exception
-                    if i == retries - 1:
-                        raise Exception(
-                            f"Database locked after {retries} retries: {e}"
-                        )
-                    # Wait and retry
-                    time.sleep(delay)
-                    delay *= 2  # Exponential backoff
-                else:
-                    # If it's a different Exception, raise it immediately
-                    raise
-        # If we exit the loop without returning, raise an exception
-        raise Exception("Database is locked, retries exhausted.")
+#     @wraps(func)
+#     def wrapper(*args: Any, **kwargs: Any) -> Any:
+#         retries = 5
+#         delay = 0.1
+#         for i in range(retries):
+#             try:
+#                 # Check if a '_session' keyword argument was provided
+#                 if kwargs.get("_session") is None:
+#                     # If not, create a new session and add it to kwargs
+#                     with get_session() as _session:
+#                         kwargs["_session"] = _session
+#                         return func(*args, **kwargs)
+#                 else:
+#                     # If a session was provided, just call the function
+#                     return func(*args, **kwargs)
+#             except (SAOperationalError, SQLiteOperationalError) as e:
+#                 if "database is locked" in str(e).lower():
+#                     # If this was the last attempt, raise the final exception
+#                     if i == retries - 1:
+#                         raise Exception(
+#                             f"Database locked after {retries} retries: {e}"
+#                         )
+#                     # Wait and retry
+#                     time.sleep(delay)
+#                     delay *= 2  # Exponential backoff
+#                 else:
+#                     # If it's a different Exception, raise it immediately
+#                     raise
+#         # If we exit the loop without returning, raise an exception
+#         raise Exception("Database is locked, retries exhausted.")
 
-    return wrapper
+#     return wrapper
 
 
 # Lock for write operations - only acquired when creating a new write session
@@ -202,7 +202,7 @@ def _session_handler(func, *args, is_blocking: bool = False, **kwargs):
                 time.sleep(delay)
                 delay *= 2  # Exponential backoff
             else:
-                
+
                 # If it's a different Exception, raise it immediately
                 raise
     # If we exit the loop without returning, raise an exception
