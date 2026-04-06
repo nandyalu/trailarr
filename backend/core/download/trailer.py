@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-import os
+from pathlib import Path
+import tempfile
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
@@ -99,11 +100,11 @@ def __download_and_verify_trailer(
         f"Downloading trailer for {media.title} [{media.id}] from"
         f" {trailer_url}"
     )
-    tmp_dir = "/var/lib/trailarr/tmp"
-    if not os.path.exists(tmp_dir):
-        tmp_dir = "/app/tmp"
-    output_file = f"{tmp_dir}/{media.id}-trailer.{profile.file_format}"
-    output_file = download_video(trailer_url, output_file, profile)
+    # Use system temp directory for cross-platform compatibility
+    tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    output_file = tmp_dir / f"{media.id}-trailer.{profile.file_format}"
+    output_file = download_video(trailer_url, str(output_file), profile)
 
     # Verify and get video info in one pass
     is_valid, video_info = trailer_file.verify_download(

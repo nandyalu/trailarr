@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
-import os
 from pathlib import Path
 import re
 import subprocess
 import json
+import tempfile
 from typing import Any
 
 from pydantic import BaseModel
@@ -133,9 +133,9 @@ def get_media_info(file_path: str) -> VideoInfo | None:
 
         # Create VideoInfo object
         video_info = VideoInfo(
-            name=os.path.basename(file_path),
-            file_path=file_path,
-            format_name=os.path.splitext(file_path)[1].lower().strip("."),
+            name=file_path_obj.name,
+            file_path=str(file_path_obj),
+            format_name=file_path_obj.suffix.lower().strip("."),
             duration_seconds=int(float(format.get("duration", "0"))),
             duration=convert_duration(format.get("duration", "0")),
             size=int(format.get("size", "0")),
@@ -470,12 +470,10 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
         logger.info("No silence detected at end of video")
         return file_path, False
     # Remove silence from the end of the video
-    tmp_dir = "/var/lib/trailarr/tmp"
-    if not os.path.exists(tmp_dir):
-        tmp_dir = "/app/tmp"
-    output_file = f"{tmp_dir}/trimmed_{os.path.basename(file_path)}"
-    # file_name, file_ext = os.path.splitext(file_path)
-    # output_srt = f"/app/tmp/trimmed_{os.path.basename(file_name)}.srt"
+    file_path_obj = Path(file_path)
+    tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    output_file = str(tmp_dir / f"trimmed_{file_path_obj.name}")
     try:
         logger.info(
             "Silence detected at end of video. Trimming video at"
