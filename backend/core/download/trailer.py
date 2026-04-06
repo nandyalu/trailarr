@@ -12,6 +12,7 @@ from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
+from core.download.video_analysis import VideoInfo
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailersDownloader")
@@ -88,8 +89,11 @@ def __update_media_status(
 
 def __download_and_verify_trailer(
     media: MediaRead, video_id: str, profile: TrailerProfileRead
-) -> str:
-    """Download the trailer and verify it."""
+) -> tuple[str, VideoInfo | None]:
+    """Download the trailer and verify it.
+    Returns:
+        tuple[str, VideoInfo | None]: File path and video info for reuse.
+    """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
         f"Downloading trailer for {media.title} [{media.id}] from"
@@ -100,11 +104,23 @@ def __download_and_verify_trailer(
         tmp_dir = "/app/tmp"
     output_file = f"{tmp_dir}/{media.id}-trailer.{profile.file_format}"
     output_file = download_video(trailer_url, output_file, profile)
-    if not trailer_file.verify_download(output_file, media.title, profile):
+
+    # Verify and get video info in one pass
+    is_valid, video_info = trailer_file.verify_download(
+        output_file, media.title, profile
+    )
+    if not is_valid:
         raise DownloadFailedError("Trailer verification failed")
+
     if profile.remove_silence:
-        output_file = video_analysis.remove_silence_at_end(output_file)
-    return output_file
+        output_file, _trimmed = video_analysis.remove_silence_at_end(
+            output_file
+        )
+        # Re-analyze after silence removal as duration/size changed
+        if _trimmed:
+            video_info = video_analysis.get_media_info(output_file)
+
+    return output_file, video_info
 
 
 async def download_trailer(
@@ -146,15 +162,17 @@ async def download_trailer(
     try:
         __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
         # Download the trailer and verify
-        output_file = __download_and_verify_trailer(media, video_id, profile)
+        output_file, video_info = __download_and_verify_trailer(
+            media, video_id, profile
+        )
         # Move the trailer to the media folder (create subfolder if needed)
         final_path = trailer_file.move_trailer_to_folder(
-            output_file, media, profile
+            output_file, media, profile, video_info
         )
         __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
         # Record the download in the database
         await record_new_trailer_download(
-            media, profile.id, final_path, video_id
+            media, profile.id, final_path, video_id, video_info
         )
 
         # Track trailer_downloaded event

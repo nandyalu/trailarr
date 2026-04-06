@@ -238,6 +238,65 @@ def verify_trailer_streams(
     return True
 
 
+def verify_and_analyze_trailer(
+    trailer_path: str, min_duration: int = 10, max_duration: int = 1200
+) -> tuple[bool | None, VideoInfo | None]:
+    """
+    Verify trailer streams and return the VideoInfo for reuse. \n
+    Args:
+        trailer_path (str): Path to the trailer file.
+        min_duration (int): Minimum duration in seconds. Default is 10.
+        max_duration (int): Maximum duration in seconds. Default is 1200. \n
+    Returns:
+        tuple[bool | None, VideoInfo | None]: Verification result and video info.
+            - (True, VideoInfo): Valid trailer with both audio/video streams.
+            - (False, None): Missing streams or duration out of bounds.
+            - (None, None): File missing, could not be analyzed, or zero duration.
+    """
+    logger.debug(f"Verifying and analyzing trailer: {trailer_path}")
+    if not trailer_path:
+        return None, None
+
+    media_info = get_media_info(trailer_path)
+    if media_info is None:
+        logger.debug(f"No media info found for the trailer: {trailer_path}")
+        return None, None
+
+    if not media_info.duration_seconds:
+        logger.debug(f"Trailer duration is zero: {trailer_path}")
+        return None, None
+    if media_info.duration_seconds < min_duration:
+        logger.debug(
+            f"Trailer duration less than {min_duration} seconds:"
+            f" {media_info.duration_seconds}"
+        )
+        return False, None
+    if media_info.duration_seconds > max_duration:
+        logger.debug(
+            f"Trailer duration more than {max_duration} seconds:"
+            f" {media_info.duration_seconds}"
+        )
+        return False, None
+
+    streams = media_info.streams
+    if len(streams) == 0:
+        logger.debug(f"No streams found in the trailer: {trailer_path}")
+        return False, None
+
+    audio_exists = any(s.codec_type == "audio" for s in streams)
+    video_exists = any(s.codec_type == "video" for s in streams)
+
+    if not audio_exists:
+        logger.debug(f"No audio stream found in the trailer: {trailer_path}")
+        return False, None
+    if not video_exists:
+        logger.debug(f"No video stream found in the trailer: {trailer_path}")
+        return False, None
+
+    logger.debug(f"Trailer verified successfully: {trailer_path}")
+    return True, media_info
+
+
 def get_silence_timestamps(
     file_path: str,
 ) -> tuple[float | None, float | None]:
@@ -394,20 +453,22 @@ def trim_video(
     return False
 
 
-def remove_silence_at_end(file_path: str) -> str:
+def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
     """
     Remove silence from the end of the video. \n
     Args:
         file_path (str): Path to the video file. \n
     Returns:
-        str: Path to the trimmed video file.
+        tuple[str, bool]:
+            - Path to the trimmed video file
+            - flag indicating if trimming was successful.
     """
     logger.info(f"Detecting silence at end of video: {file_path}")
     # Get silence timestamps
     silence_start, silence_end = get_silence_timestamps(file_path)
     if silence_start is None or silence_end is None:
         logger.info("No silence detected at end of video")
-        return file_path
+        return file_path, False
     # Remove silence from the end of the video
     tmp_dir = "/var/lib/trailarr/tmp"
     if not os.path.exists(tmp_dir):
@@ -426,12 +487,12 @@ def remove_silence_at_end(file_path: str) -> str:
         logger.exception(
             f"Exception while removing silence from video: {str(e)}"
         )
-        return file_path
+        return file_path, False
     silence_time = silence_end - silence_start
     logger.info(
         f"Silence removed ({silence_time:.2f}s) from end of video: {file_path}"
     )
-    return output_file
+    return output_file, True
 
 
 # folder = "/media/movies/all/Pechi (2024) {imdb-tt33034505}"
