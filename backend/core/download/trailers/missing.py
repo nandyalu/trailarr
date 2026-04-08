@@ -1,3 +1,5 @@
+import threading
+
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
@@ -100,7 +102,9 @@ def _is_valid_media(
 #     return FilesHandler.check_file_exists(media.folder_path, file_name)
 
 
-async def download_missing_trailers() -> None:
+async def download_missing_trailers(
+    _stop_event: threading.Event | None = None,
+) -> None:
     """Download missing trailers for monitored media items."""
     # Exit if monitoring is disabled
     if not app_settings.monitor_enabled:
@@ -112,6 +116,12 @@ async def download_missing_trailers() -> None:
     processed_media_ids = set()  # Track processed media to avoid reprocessing
 
     while True:
+        if _stop_event and _stop_event.is_set():
+            logger.info(
+                "Stop event set, terminating download of missing trailers."
+            )
+            return
+
         db_media_list = media_manager.read_all_generator(monitored_only=True)
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
@@ -157,10 +167,17 @@ async def download_missing_trailers() -> None:
         # Process the found media item
         # Ensure exceptions are caught to continue processing other items
         try:
+            if _stop_event and _stop_event.is_set():
+                logger.info(
+                    "Stop event set, terminating download of missing trailers."
+                )
+                return
+
             downloads, skips = await _process_single_media_item(
                 media_to_process,
                 matching_profiles_for_media,
                 successful_downloads + skipped_items,
+                _stop_event=_stop_event,
             )
             successful_downloads += downloads
             skipped_items += skips
@@ -183,6 +200,7 @@ async def _process_single_media_item(
     media: MediaRead,
     profiles: list[TrailerProfileRead],
     total_processed: int = 0,
+    _stop_event: threading.Event | None = None,
 ) -> tuple[int, int]:
     """Process a single media item and download all matching trailers."""
     logger.info(
@@ -192,6 +210,12 @@ async def _process_single_media_item(
     skipped_items = 0
 
     for profile in profiles:
+        if _stop_event and _stop_event.is_set():
+            logger.info(
+                "Stop event set, terminating processing of single media item."
+            )
+            return successful_downloads, skipped_items
+
         check_folder = profile.custom_folder == "{media_folder}"
         if not _is_valid_media(media, check_folder):
             return successful_downloads, skipped_items + 1
@@ -203,7 +227,7 @@ async def _process_single_media_item(
                 f" using profile: {_profile_name}"
             )
             download_successful = await trailer_downloader.download_trailer(
-                media, profile, profile.retry_count
+                media, profile, profile.retry_count, _stop_event=_stop_event
             )
             if download_successful:
                 successful_downloads += 1

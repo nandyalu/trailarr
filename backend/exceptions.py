@@ -58,3 +58,9 @@ class ItemNotFoundError(Exception):
         super().__init__(message)
 
     pass
+
+
+class StopEventSetError(Exception):
+    """Raised when a stop event is set during a long-running operation"""
+
+    pass

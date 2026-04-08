@@ -673,6 +673,200 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/events/:
+    get:
+      tags:
+        - Events
+      summary: Get Events
+      description: "Get events from the database with optional filtering. \n\n\n\n\
+        ## Args\n\n- **limit** (__int, Optional=100__): Maximum number of events to\
+        \ return.\n- **offset** (__int, Optional=0__): Number of events to skip.\n\
+        - **event_type** (__EventType, Optional=None__): Filter by event type.  \n\
+        \  Available types  \n  - media_added  \n  - monitor_changed  \n  - youtube_id_changed\
+        \  \n  - trailer_detected  \n  - trailer_downloaded  \n  - trailer_deleted\
+        \  \n  - download_skipped\n- **event_source** (__EventSource, Optional=None__):\
+        \ Filter by event source.  \n  Available sources: user, system\n- **media_id**\
+        \ (__int | None, Optional=None__): Filter by media ID.\n\n\n\n## Returns\n\
+        \n- **list[EventRead]**: List of events."
+      operationId: get_events_api_v1_events__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            title: Limit
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Offset
+        - name: event_type
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/EventType'
+              - type: 'null'
+            title: Event Type
+        - name: event_source
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/EventSource'
+              - type: 'null'
+            title: Event Source
+        - name: media_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: 'null'
+            title: Media Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventRead'
+                title: Response Get Events Api V1 Events  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/events/{event_id}:
+    get:
+      tags:
+        - Events
+      summary: Get Event By Id
+      description: "Get event by ID. \n\n\n\n## Args\n\n- **event_id** (__int__):\
+        \ ID of the event.\n\n\n\n## Returns\n\n- **EventRead**: Event object.\n\n\
+        \n\n## Raises\n\n- **HTTPException** (__404__): If the event is not found."
+      operationId: get_event_by_id_api_v1_events__event_id__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Event Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventRead'
+        '401':
+          description: API key is missing
+        '404':
+          description: Event Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/events/media/{media_id}:
+    get:
+      tags:
+        - Events
+      summary: Get Events By Media Id
+      description: "Get all events for a specific media item. \n\n\n\n## Args\n\n\
+        - **media_id** (__int__): ID of the media item.\n- **limit** (__int, Optional=100__):\
+        \ Maximum number of events to return.\n- **offset** (__int, Optional=0__):\
+        \ Number of events to skip.\n\n\n\n## Returns\n\n- **list[EventRead]**: List\
+        \ of events for the media item."
+      operationId: get_events_by_media_id_api_v1_events_media__media_id__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: media_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Media Id
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            title: Limit
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Offset
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventRead'
+                title: Response Get Events By Media Id Api V1 Events Media  Media
+                  Id  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/files/files_raw:
     get:
       tags:
@@ -1354,8 +1548,10 @@ paths:
       tags:
         - Media
       summary: Get All Media Raw
-      description: "Get all media from the database as raw dictionaries. \n\n\n\n\
-        ## Returns\n\n- **list[dict]**: List of media objects as dictionaries."
+      description: "Get all media from the database as raw JSON objects. \n\nThe raw\
+        \ media objects include all columns but doesn't have any related\nobjects\
+        \ (downloads, files, etc.) included or validated. \n\n\n\n## Returns\n\n-\
+        \ **list[dict]**: List of media objects as JSON."
       operationId: get_all_media_raw_api_v1_media_all_raw_get
       security:
         - APIKeyQuery: []
@@ -1393,8 +1589,10 @@ paths:
       tags:
         - Media
       summary: Get All Downloads Raw
-      description: "Get all downloads from the database as raw dictionaries. \n\n\n\
-        \n## Returns\n\n- **list[dict]**: List of download objects as dictionaries."
+      description: "Get all downloads from the database as raw JSON objects. \n\n\
+        The raw download objects include all columns but doesn't have any related\n\
+        media objects included or validated. \n\n\n\n## Returns\n\n- **list[dict]**:\
+        \ List of download objects as JSON."
       operationId: get_all_downloads_raw_api_v1_media_downloads_raw_get
       security:
         - APIKeyQuery: []
@@ -2411,12 +2609,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/schedules:
+  /api/v1/tasks-data:
     get:
       tags:
         - Tasks
-      summary: Get Scheduled Tasks
-      operationId: get_scheduled_tasks_api_v1_tasks_schedules_get
+        - Jobs
+      summary: Get Task Data
+      description: "Get all tasks, jobs, and task configurations. \n\nUsed in Frontend\
+        \ to display the current state of all tasks, jobs, and task configurations.\n\
+        \n\n## Returns\n\n- **TaskData**: An object containing all tasks, jobs, and\
+        \ task configurations."
+      operationId: get_task_data_api_v1_tasks_data_get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskData'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/task-configs/:
+    get:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Get Task Configs
+      operationId: get_task_configs_api_v1_task_configs__get
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
@@ -2437,8 +2674,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TaskInfo'
-                title: Response Get Scheduled Tasks Api V1 Tasks Schedules Get
+                  $ref: '#/components/schemas/ScheduledTaskConfigRead'
+                title: Response Get Task Configs Api V1 Task Configs  Get
         '401':
           description: API key is missing
         '422':
@@ -2447,58 +2684,228 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/queue:
-    get:
+  /api/v1/task-configs/{task_key}:
+    put:
       tags:
         - Tasks
-      summary: Get Task Queue
-      operationId: get_task_queue_api_v1_tasks_queue_get
+        - Jobs
+      summary: Update Task Config
+      operationId: update_task_config_api_v1_task_configs__task_key__put
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: trailarr_api_key
-          in: cookie
-          required: false
-          schema:
-            anyOf:
-              - type: string
-              - type: 'null'
-            title: Trailarr Api Key
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/QueueInfo'
-                title: Response Get Task Queue Api V1 Tasks Queue Get
-        '401':
-          description: API key is missing
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/run/{task_id}:
-    get:
-      tags:
-        - Tasks
-      summary: Run Task Now
-      operationId: run_task_now_api_v1_tasks_run__task_id__get
-      security:
-        - APIKeyQuery: []
-        - APIKeyHeader: []
-      parameters:
-        - name: task_id
+        - name: task_key
           in: path
           required: true
           schema:
             type: string
-            title: Task Id
+            title: Task Key
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledTaskConfigUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledTaskConfigRead'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/:
+    get:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Get All Tasks
+      operationId: get_all_tasks_api_v1_tasks__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+                title: Response Get All Tasks Api V1 Tasks  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_name}:
+    get:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Get Task
+      operationId: get_task_api_v1_tasks__task_name__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: task_name
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Task Name
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_name}/cancel:
+    post:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Cancel Task
+      operationId: cancel_task_api_v1_tasks__task_name__cancel_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: task_name
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Task Name
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                title: Response Cancel Task Api V1 Tasks  Task Name  Cancel Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_name}/resume:
+    post:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Resume Task
+      operationId: resume_task_api_v1_tasks__task_name__resume_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: task_name
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Task Name
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                title: Response Resume Task Api V1 Tasks  Task Name  Resume Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_name}/run:
+    post:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Run Task
+      operationId: run_task_api_v1_tasks__task_name__run_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: task_name
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Task Name
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2514,7 +2921,125 @@ paths:
             application/json:
               schema:
                 type: string
-                title: Response Run Task Now Api V1 Tasks Run  Task Id  Get
+                title: Response Run Task Api V1 Tasks  Task Name  Run Post
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/:
+    get:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Get All Jobs
+      operationId: get_all_jobs_api_v1_jobs__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+                title: Response Get All Jobs Api V1 Jobs  Get
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/{job_id}:
+    get:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Get Job
+      operationId: get_job_api_v1_jobs__job_id__get
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Job Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '401':
+          description: API key is missing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/{job_id}/cancel:
+    post:
+      tags:
+        - Tasks
+        - Jobs
+      summary: Cancel Job
+      operationId: cancel_job_api_v1_jobs__job_id__cancel_post
+      security:
+        - APIKeyQuery: []
+        - APIKeyHeader: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Job Id
+        - name: trailarr_api_key
+          in: cookie
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Trailarr Api Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                title: Response Cancel Job Api V1 Jobs  Job Id  Cancel Post
         '401':
           description: API key is missing
         '422':
@@ -3118,6 +3643,64 @@ components:
       required:
         - message
       title: ErrorResponse
+    EventRead:
+      properties:
+        media_id:
+          type: integer
+          title: Media Id
+        event_type:
+          $ref: '#/components/schemas/EventType'
+        source:
+          $ref: '#/components/schemas/EventSource'
+          default: user
+        source_detail:
+          type: string
+          title: Source Detail
+          default: ''
+        old_value:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Old Value
+        new_value:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: New Value
+        id:
+          type: integer
+          title: Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+        - media_id
+        - event_type
+        - id
+        - created_at
+      title: EventRead
+      description: Event model for reading events.
+    EventSource:
+      type: string
+      enum:
+        - user
+        - system
+      title: EventSource
+      description: Source of the event.
+    EventType:
+      type: string
+      enum:
+        - media_added
+        - monitor_changed
+        - youtube_id_changed
+        - trailer_detected
+        - trailer_downloaded
+        - trailer_deleted
+        - download_skipped
+      title: EventType
+      description: Types of events that can be tracked.
     FileFolderInfoRead:
       properties:
         type:
@@ -3311,6 +3894,37 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    Job:
+      properties:
+        id:
+          type: string
+          title: Id
+        task_id:
+          type: string
+          title: Task Id
+        status:
+          type: string
+          title: Status
+          default: scheduled
+        started_at:
+          type: string
+          format: date-time
+          title: Started At
+        ended_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Ended At
+      type: object
+      required:
+        - task_id
+      title: Job
+      description: "Execution record for a single task run.\n\nAttributes:\n    __tablename__\
+        \ (str): Database table name for jobs.\n    id (str, UUID): UUID job identifier\
+        \ string.\n    task_id (str): Foreign key to the source task.\n    status\
+        \ (str): Job status string.\n    started_at (datetime): UTC start timestamp.\n\
+        \    ended_at (datetime, Optional=None): UTC end timestamp when available."
     Log:
       properties:
         datetime:
@@ -3540,42 +4154,50 @@ components:
         - path_to
       title: PathMappingCRU
       description: Path Mapping model to use for Create, Read, and Update operations.
-    QueueInfo:
+    ScheduledTaskConfigRead:
       properties:
-        name:
+        task_key:
           type: string
-          title: Name
-        queue_id:
+          title: Task Key
+        task_name:
           type: string
-          title: Queue Id
-        trace_id:
-          anyOf:
-            - type: string
-            - type: 'null'
-          title: Trace Id
-        duration:
+          title: Task Name
+        interval_seconds:
+          type: number
+          title: Interval Seconds
+        delay_seconds:
+          type: number
+          title: Delay Seconds
+        id:
           type: integer
-          title: Duration
-          default: 0
-        finished:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: 'null'
-          title: Finished
-        started:
-          type: string
-          format: date-time
-          title: Started
-        status:
-          type: string
-          title: Status
-          default: Queued
+          title: Id
       type: object
       required:
-        - name
-        - queue_id
-      title: QueueInfo
+        - task_key
+        - task_name
+        - interval_seconds
+        - delay_seconds
+        - id
+      title: ScheduledTaskConfigRead
+    ScheduledTaskConfigUpdate:
+      properties:
+        task_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Task Name
+        interval_seconds:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Interval Seconds
+        delay_seconds:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Delay Seconds
+      type: object
+      title: ScheduledTaskConfigUpdate
     SearchMedia:
       properties:
         id:
@@ -3806,47 +4428,79 @@ components:
         - codec_type
         - codec_name
       title: StreamInfo
-    TaskInfo:
+    Task:
       properties:
-        name:
+        id:
           type: string
-          title: Name
-        task_id:
+          title: Id
+        task_name:
           type: string
-          title: Task Id
-        interval:
-          type: integer
-          title: Interval
-          default: 0
-        last_run_duration:
-          type: integer
-          title: Last Run Duration
-          default: 0
-        last_run_start:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: 'null'
-          title: Last Run Start
-        last_run_status:
-          type: string
-          title: Last Run Status
-          default: Not Run Yet
-        next_run:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: 'null'
-          title: Next Run
-        scheduled:
+          title: Task Name
+        args:
+          items: {}
+          type: array
+          title: Args
+        kwargs:
+          additionalProperties: true
+          type: object
+          title: Kwargs
+        interval_seconds:
+          type: number
+          title: Interval Seconds
+        run_once:
           type: boolean
-          title: Scheduled
-          default: true
+          title: Run Once
+        status:
+          type: string
+          title: Status
+        next_run_at:
+          type: string
+          format: date-time
+          title: Next Run At
       type: object
       required:
-        - name
-        - task_id
-      title: TaskInfo
+        - id
+        - task_name
+        - args
+        - kwargs
+        - interval_seconds
+        - run_once
+        - status
+        - next_run_at
+      title: Task
+      description: "Scheduled task model returned by public API methods.\n\nThe public\
+        \ API methods ``get_task()``, ``get_task_by_id()``, and\n``get_all_tasks()``\
+        \ return ``Task`` objects directly.\n\nExample::\n\n    task = scheduler.get_task(\"\
+        my-task\")  # Returns Task\n    tasks = scheduler.get_all_tasks()     # Returns\
+        \ list[Task]\n\nAttributes:\n    id (str): UUID task identifier string.\n\
+        \    task_name (str): User-facing task key.\n    args (tuple[Any, ...]): Positional\
+        \ arguments.\n    kwargs (dict[str, Any]): Keyword arguments.\n    interval_seconds\
+        \ (float): Interval between consecutive task runs.\n    run_once (bool): Whether\
+        \ task executes only once.\n    status (str): Task status string.\n    next_run_at\
+        \ (datetime): Next scheduled UTC run timestamp."
+    TaskData:
+      properties:
+        tasks:
+          items:
+            $ref: '#/components/schemas/Task'
+          type: array
+          title: Tasks
+        jobs:
+          items:
+            $ref: '#/components/schemas/Job'
+          type: array
+          title: Jobs
+        configs:
+          items:
+            $ref: '#/components/schemas/ScheduledTaskConfigRead'
+          type: array
+          title: Configs
+      type: object
+      required:
+        - tasks
+        - jobs
+        - configs
+      title: TaskData
     TrailerProfileCreate:
       properties:
         enabled:
@@ -3861,7 +4515,7 @@ components:
           default: 0
         retry_count:
           type: integer
-          maximum: 10.0
+          maximum: 9.0
           minimum: 0.0
           title: Retry Count
           default: 2
@@ -3988,7 +4642,7 @@ components:
           default: 0
         retry_count:
           type: integer
-          maximum: 10.0
+          maximum: 9.0
           minimum: 0.0
           title: Retry Count
           default: 2
@@ -4151,6 +4805,11 @@ components:
         type:
           type: string
           title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
         - loc

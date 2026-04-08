@@ -9,12 +9,11 @@ dependencies = [
     "aiohttp==3.13.5",
     "aiosqlite==0.22.1",
     "alembic==1.18.4",
-    "apscheduler==3.11.2",
     "async-lru==2.3.0",
     "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.135.3",
     "pillow==12.2.0",
-    "pytz>=2025.2",
+    "quiv>=0.3.1",
     "sqlmodel==0.0.38",
     "yt-dlp[curl-cffi,default]==2026.3.17",
 ]

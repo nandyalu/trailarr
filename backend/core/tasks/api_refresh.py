@@ -1,6 +1,6 @@
-import asyncio
-from datetime import datetime, timedelta, timezone
-from config.logging_context import get_new_trace_id, with_logging_context
+import threading
+
+from config.logging_context import with_logging_context
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import ArrType, ConnectionRead
 from core.radarr.connection_manager import RadarrConnectionManager
@@ -12,7 +12,7 @@ from core.tasks import scheduler
 logger = ModuleLogger("APIRefreshTasks")
 
 
-async def api_refresh() -> None:
+async def api_refresh(_stop_event: threading.Event | None = None) -> None:
     logger.info("Refreshing data from APIs")
     # Get all connections from database
     connections = connection_manager.read_all()
@@ -22,15 +22,23 @@ async def api_refresh() -> None:
 
     # Refresh data from API for each connection
     for connection in connections:
+        if _stop_event and _stop_event.is_set():
+            logger.info("API Refresh stopped due to stop event.")
+            return
         await api_refresh_by_id(connection, image_refresh=False)
 
     # Refresh images after API refresh to download/update images for new media
-    await refresh_images(recent_only=True)
+    if _stop_event and _stop_event.is_set():
+        logger.info("API Refresh stopped due to stop event.")
+        return
+    await refresh_images(recent_only=True, _stop_event=_stop_event)
     logger.info("API Refresh completed!")
 
 
 async def api_refresh_by_id(
-    connection: ConnectionRead, image_refresh=True
+    connection: ConnectionRead,
+    image_refresh=True,
+    _stop_event: threading.Event | None = None,
 ) -> None:
     logger.info(f"Refreshing data from API for connection: {connection.name}")
     # Get connection manager based on connection type
@@ -51,20 +59,30 @@ async def api_refresh_by_id(
 
     # Refresh images after API refresh to download/update images for new media
     if image_refresh:
-        await refresh_images(recent_only=True)
+        await refresh_images(recent_only=True, _stop_event=_stop_event)
         logger.info("Images refreshed")
         logger.info("API Refresh completed!")
 
 
-def api_refresh_by_id_job(connection_id: int):
-    @with_logging_context
-    def run_async(conn: ConnectionRead, *, trace_id: str) -> None:
-        """Run the async task in a separate event loop."""
-        new_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(new_loop)
-        new_loop.run_until_complete(api_refresh_by_id(conn))
-        new_loop.close()
+@with_logging_context
+async def _api_refresh_by_id_job(
+    connection_id: int,
+    *,
+    _job_id: str | None = None,
+    _stop_event: threading.Event | None = None,
+):
+    # Get connection from database
+    try:
+        connection = connection_manager.read(connection_id)
+    except Exception as e:
+        msg = f"Failed to get connection with ID: {connection_id}"
+        logger.error(f"{msg}. Error: {e}")
         return
+    await api_refresh_by_id(connection, _stop_event=_stop_event)
+    return None
+
+
+def api_refresh_by_id_job(connection_id: int):
 
     logger.info(f"Refreshing data from API for connection ID: {connection_id}")
     # Get connection from database
@@ -78,14 +96,12 @@ def api_refresh_by_id_job(connection_id: int):
     # Refresh data from API for the connection
     msg = f"Refreshing data from API for connection: {connection.name}"
     logger.info(msg)
-    scheduler.add_job(
-        func=run_async,
-        args=(connection,),
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="date",
-        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
-        id=f"refresh_api_data_by_connection_{connection_id}",
-        name=f"Arr Data Refresh for {connection.name}",
-        max_instances=1,
+    scheduler.add_task(
+        task_name=f"Arr Data Refresh for {connection.name}",
+        func=_api_refresh_by_id_job,
+        interval=86400.0,
+        delay=1,
+        run_once=True,
+        args=(connection_id,),
     )
     return msg
