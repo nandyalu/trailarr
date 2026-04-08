@@ -15,6 +15,11 @@ Enable this setting to monitor trailers for connections. When enabled, the app w
 
 ### Monitor Interval
 
+<!-- md:version:upd 0.8.0 -->
+
+!!! warning ""
+    This no longer has any effect on the tasks. Tasks frequency can be individually configured since `v0.8.0`. This setting will be removed in later versions.
+
 - Default is `60` minutes. Minimum is `10` minutes`. 
 
 Frequency (in minutes) to check for new media in Radarr/Sonarr.
