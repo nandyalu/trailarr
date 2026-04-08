@@ -62,6 +62,7 @@ Trailarr is built using the following libraries and tools:
 - [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
 - [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material){:target="_blank"}
 - [Python](https://www.python.org/){:target="_blank"}
+- [Quiv](https://nandyalu.github.io/quiv/){:target="_blank"}
 - [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
 
 
