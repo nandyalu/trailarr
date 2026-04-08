@@ -1,3 +1,4 @@
+import asyncio
 from contextvars import ContextVar, Token
 from functools import wraps
 import uuid
@@ -37,14 +38,39 @@ def with_logging_context(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Get the trace_id from kwargs if provided and
-        # generate/set it for the logging context
-        trace_id = kwargs.get("trace_id")
+    async def async_wrapper(*args, **kwargs):
+        # 1. Extract or Create
+        trace_id = kwargs.get("_job_id") or kwargs.get("trace_id")
+
+        token = generate_trace_id(trace_id)  # Falls back to uuid4() internally
+        try:
+            return await func(*args, **kwargs)
+        finally:
+            clear_trace_id(token)
+
+    @wraps(func)
+    def sync_wrapper(*args, **kwargs):
+        # 1. Extract or Create
+        trace_id = kwargs.get("_job_id") or kwargs.get("trace_id")
+
         token = generate_trace_id(trace_id)
         try:
             return func(*args, **kwargs)
         finally:
             clear_trace_id(token)
 
-    return wrapper
+    # Return the appropriate wrapper based on the source function
+    return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+
+    # @wraps(func)
+    # def wrapper(*args, **kwargs):
+    #     # Get the trace_id from kwargs if provided and
+    #     # generate/set it for the logging context
+    #     trace_id = kwargs.get("trace_id")
+    #     token = generate_trace_id(trace_id)
+    #     try:
+    #         return func(*args, **kwargs)
+    #     finally:
+    #         clear_trace_id(token)
+
+    # return wrapper

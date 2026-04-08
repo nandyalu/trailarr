@@ -8,6 +8,9 @@ export const environment = {
   media: 'media/',
   profiles: 'trailerprofiles/',
   settings: 'settings/',
+  jobs: 'jobs/',
   tasks: 'tasks/',
+  taskConfigs: 'task-configs/',
+  tasksData: 'tasks-data',
   trailerprofiles: 'trailerprofiles/',
 } as const;

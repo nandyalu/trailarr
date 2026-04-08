@@ -1,17 +1,16 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
-import {RouteLogs} from 'src/routing';
+import {RouteLogs} from '../../routing';
 import {TimediffPipe} from '../helpers/timediff.pipe';
-import {QueuedTask, ScheduledTask} from '../models/tasks';
+import {QueuedTask, ScheduledTask, TaskConfigUpdate} from '../models/tasks';
 import {TasksService} from '../services/tasks.service';
 import {WebsocketService} from '../services/websocket.service';
-import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-tasks',
-  imports: [AsyncPipe, LoadIndicatorComponent, TimediffPipe, RouterLink],
+  imports: [AsyncPipe, TimediffPipe, RouterLink],
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',
@@ -20,15 +19,16 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 export class TasksComponent implements OnInit {
   private readonly tasksService = inject(TasksService);
   private readonly websocketService = inject(WebsocketService);
+  private readonly editDialog = viewChild.required<ElementRef<HTMLDialogElement>>('editDialog');
 
-  scheduledTasks = signal<ScheduledTask[]>([]);
-  queuedTasks = signal<QueuedTask[]>([]);
-  isLoading1 = signal(true);
-  isLoading2 = signal(true);
+  readonly scheduledTasks = this.tasksService.scheduledTasks;
+  readonly queuedTasks = this.tasksService.queuedTasks;
+  readonly isLoading = this.tasksService.isLoading;
+  editingTask = signal<ScheduledTask | null>(null);
+  isSaving = signal(false);
   protected readonly RouteLogs = RouteLogs;
 
   constructor() {
-    // Subscribe to WebSocket toast messages to refresh data on relevant events
     this.websocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
       if (msg.reload?.includes('tasks')) {
         this.refreshTaskData();
@@ -37,27 +37,59 @@ export class TasksComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // On first fetch, get next event start time and set interval to fetch at that time
     this.refreshTaskData();
   }
 
   refreshTaskData() {
-    // Refresh the data
-    // console.log('Refreshing task data');
-    this.tasksService.getScheduledTasks().subscribe((tasks: ScheduledTask[]) => {
-      this.scheduledTasks.set(tasks);
-      this.isLoading1.set(false);
-    });
-    this.tasksService.getQueuedTasks().subscribe((tasks: QueuedTask[]) => {
-      this.queuedTasks.set(tasks);
-      this.isLoading2.set(false);
-    });
+    this.tasksService.refreshData();
   }
 
-  runTask(task_id: string) {
-    // console.log('Running task with id:', task_id);
-    this.tasksService.runScheduledTask(task_id).subscribe((res: string) => {
-      console.log(res);
+  runTask(task: ScheduledTask) {
+    this.tasksService.runScheduledTask(task.task_id).subscribe(() => this.refreshTaskData());
+  }
+
+  pauseTask(task: ScheduledTask) {
+    this.tasksService.pauseTask(task.task_id).subscribe(() => this.refreshTaskData());
+  }
+
+  resumeTask(task: ScheduledTask) {
+    this.tasksService.resumeTask(task.task_id).subscribe(() => this.refreshTaskData());
+  }
+
+  cancelJob(job: QueuedTask) {
+    this.tasksService.cancelJob(job.id).subscribe(() => this.refreshTaskData());
+  }
+
+  openEditDialog(task: ScheduledTask) {
+    this.editingTask.set(task);
+    this.editDialog().nativeElement.showModal();
+  }
+
+  closeEditDialog() {
+    this.editDialog().nativeElement.close();
+    this.editingTask.set(null);
+  }
+
+  saveTaskConfig(name: string, intervalValue: number, intervalUnit: number, delayValue: number, delayUnit: number) {
+    const task = this.editingTask();
+    if (!task || this.isSaving()) return;
+
+    const payload: TaskConfigUpdate = {
+      task_name: name,
+      interval_seconds: intervalValue * intervalUnit,
+      delay_seconds: delayValue * delayUnit,
+    };
+
+    this.isSaving.set(true);
+    this.tasksService.updateTaskConfig(task.task_key, payload).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.closeEditDialog();
+        this.refreshTaskData();
+      },
+      error: () => {
+        this.isSaving.set(false);
+      },
     });
   }
 }

@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 from io import BytesIO
 from pathlib import Path
+import threading
 import aiohttp
 import aiofiles.os
 from PIL import Image
@@ -148,7 +149,9 @@ async def process_image(
 
 
 async def refresh_media_images(
-    is_movie: bool, media_list: list[MediaImage]
+    is_movie: bool,
+    media_list: list[MediaImage],
+    _stop_event: threading.Event | None = None,
 ) -> None:
     """Refresh images in the disk. \n
     New images will be downloaded if:
@@ -161,7 +164,8 @@ async def refresh_media_images(
         Also updates the database with new image paths. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
-        media_list (list[MediaImage]): List of media image objects. \n
+        media_list (list[MediaImage]): List of media image objects.
+        _stop_event (threading.Event Optional=None): Event to signal stopping the operation. \n
     Returns:
         None
     """
@@ -169,6 +173,9 @@ async def refresh_media_images(
     sem = asyncio.Semaphore(5)  # Limit to 5 concurrent downloads
 
     async def download(media_image: MediaImage):
+        if _stop_event and _stop_event.is_set():
+            logger.info("Image refresh stopped due to stop event.")
+            return
         async with sem:  # Wait for a free slot in the semaphore
             updated = await process_image(is_movie, media_image)
             if updated:

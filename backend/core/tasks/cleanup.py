@@ -1,3 +1,5 @@
+import threading
+
 import aiofiles.os
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -40,7 +42,7 @@ async def delete_trailer(trailer_path: str, download_id: int):
     return None
 
 
-async def trailer_cleanup():
+async def trailer_cleanup(_stop_event: threading.Event | None = None):
     """
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
     Also cleanup any residual files left in '/tmp' directory.
@@ -62,6 +64,12 @@ async def trailer_cleanup():
             continue
         logger.debug(f"Analyzing trailers for {media.title}")
         for download in media.downloads:
+            if _stop_event and _stop_event.is_set():
+                logger.info(
+                    "Stop event set, terminating trailer cleanup task."
+                )
+                return
+
             _path = download.path
             # Skip if file has already been deleted or path is missing
             if not download.file_exists:

@@ -1,33 +1,46 @@
-from pytz import utc
+import os
+from typing import Any
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from apscheduler.jobstores.memory import MemoryJobStore
+from quiv import Quiv, Event
 
 from app_logger import ModuleLogger
-from core.tasks.task_logging import add_all_event_listeners
+from api.v1.websockets import ws_manager
 
 # Get the timezone from the environment variable
-timezone = utc  # os.getenv("TZ", "UTC")
+timezone = os.getenv("TZ", "UTC")
 
-# Initialize a MemeoryJobStore for the scheduler
-jobstores = {"default": MemoryJobStore()}
-
-# Configure executors
-executors = {
-    "default": ThreadPoolExecutor(10),
-    "processpool": ProcessPoolExecutor(10),
-}
-
-# Get a logger
+# # Get a logger
 tasks_logger = ModuleLogger("Tasks")
 
-# Create a scheduler instance and start it in FastAPI's lifespan context
-scheduler = BackgroundScheduler(
-    jobstores=jobstores,
-    timezone=timezone,
-    logger=tasks_logger,
-    executors=executors,
-)
+# Create a scheduler instance
+scheduler = Quiv(timezone=timezone, logger=tasks_logger)
 
-add_all_event_listeners(scheduler)
+
+# Add event listeners to the scheduler
+async def on_job_started_event(event: Event, data: dict[str, Any]) -> None:
+    await ws_manager.broadcast(
+        f"'{data['task_name']}' Task Started",
+        type="Info",
+        reload="media,tasks",
+    )
+
+
+async def on_job_completed_event(event: Event, data: dict[str, Any]) -> None:
+    await ws_manager.broadcast(
+        f"'{data['task_name']}' Task Completed",
+        type="Success",
+        reload="media,tasks",
+    )
+
+
+async def on_job_failed_event(event: Event, data: dict[str, Any]) -> None:
+    await ws_manager.broadcast(
+        f"'{data['task_name']}' Task Failed",
+        type="Error",
+        reload="media,tasks",
+    )
+
+
+scheduler.add_listener(Event.JOB_STARTED, on_job_started_event)
+scheduler.add_listener(Event.JOB_COMPLETED, on_job_completed_event)
+scheduler.add_listener(Event.JOB_FAILED, on_job_failed_event)

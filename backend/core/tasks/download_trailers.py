@@ -1,8 +1,7 @@
-import asyncio
-from datetime import datetime, timedelta, timezone
+import threading
 
 from app_logger import ModuleLogger
-from config.logging_context import get_new_trace_id, with_logging_context
+from config.logging_context import with_logging_context
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
 import core.base.database.manager.media as media_manager
@@ -21,18 +20,18 @@ logger = ModuleLogger("TrailerDownloadTasks")
 
 
 @with_logging_context
-def _download_trailer(
+async def _download_trailer(
     media: MediaRead,
     profile: TrailerProfileRead,
     retry_count: int,
     *,
-    trace_id: str,
+    _job_id: str | None = None,
+    _stop_event: threading.Event | None = None,
 ) -> None:
     """Run the async task in a separate event loop."""
-    new_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(download_trailer(media, profile, retry_count))
-    new_loop.close()
+    await download_trailer(
+        media, profile, retry_count, _stop_event=_stop_event
+    )
     return
 
 
@@ -78,16 +77,14 @@ def download_trailer_by_id(
         # If always search is enabled, do not use the id from the database
         media.youtube_trailer_id = None
 
-    # Add Job to scheduler to download trailer
-    scheduler.add_job(
+    # Add Task to scheduler to download trailer
+    scheduler.add_task(
+        task_name=f"Download Trailer for {media.title}",
         func=_download_trailer,
+        interval=86400.0,
+        delay=1,
+        run_once=True,
         args=(media, profile, retry_count),
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="date",
-        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
-        id=f"download_trailer_by_id_{media_id}",
-        name=f"Download Trailer for {media.title}",
-        max_instances=1,
     )
     msg = "Trailer download started in background for "
     msg += f"{_type}: '{media.title}' [{media_id}]"
@@ -99,17 +96,15 @@ def download_trailer_by_id(
 
 
 @with_logging_context
-def _batch_download_task(
+async def _batch_download_task(
     media_list: list[MediaRead],
     profile: TrailerProfileRead,
     *,
-    trace_id: str,
+    _job_id: str | None = None,
+    _stop_event: threading.Event | None = None,
 ) -> None:
     """Run the async task in a separate event loop."""
-    new_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(batch_download_task(media_list, profile))
-    new_loop.close()
+    await batch_download_task(media_list, profile, _stop_event=_stop_event)
     return
 
 
@@ -176,14 +171,12 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     if not media_trailer_list:
         logger.info("No missing trailers to download")
         return
-    # Add Job to scheduler to download trailers
-    scheduler.add_job(
+    # Add Task to scheduler to download trailers
+    scheduler.add_task(
+        task_name="Batch Download Trailers",
         func=_batch_download_task,
+        interval=86400.0,
+        delay=1,
+        run_once=True,
         args=(media_trailer_list, profile),
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="date",
-        run_date=datetime.now(timezone.utc) + timedelta(seconds=1),
-        id="batch_download_trailers",
-        name="Batch Download Trailers",
-        max_instances=1,
     )
