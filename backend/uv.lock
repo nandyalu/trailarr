@@ -1617,15 +1617,15 @@ wheels = [
 
 [[package]]
 name = "quiv"
-version = "0.3.1"
+version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sqlmodel" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/1b/45cf8eef845e5e64524514b009877fc2031f3bb5ee783412f1db0a891c76/quiv-0.3.1.tar.gz", hash = "sha256:d77b65a5fa0a60bb6b2d81326df805af6bcdd728606955dd9e04527d6da351ec", size = 17882, upload-time = "2026-04-07T17:16:22.044Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/f6/915176cf27cc89e6988322fa398e6c6bdc04de1e34160224b498dd4854e0/quiv-0.3.3.tar.gz", hash = "sha256:5744fca98142d003f185016d12124ba7d708f1d4a587dca406180b33992d281e", size = 18210, upload-time = "2026-04-09T05:03:10.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/c6/7782bee925ab690f89d825c4ac12c286d316b91c73a128c6d8d257ac67d1/quiv-0.3.1-py3-none-any.whl", hash = "sha256:f9c09a113c9895b57ab2818cf5211fbef450333b2ed96a4db4b9ca3c28858faf", size = 22117, upload-time = "2026-04-07T17:16:23.165Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/f9/b8d817640adac11fa6c4c22fdb3bf5b168faf6479cd4bc9342b282ebc621/quiv-0.3.3-py3-none-any.whl", hash = "sha256:765de1501643d3d07a6580deeced2a782020b7a1e24c2278c44d905ddef9c8d5", size = 22602, upload-time = "2026-04-09T05:03:11.364Z" },
 ]
 
 [[package]]
