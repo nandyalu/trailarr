@@ -617,11 +617,11 @@ standard-no-fastapi-cloud-cli = [
 
 [[package]]
 name = "fastcore"
-version = "1.12.34"
+version = "1.12.36"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/39/66/e2bf42b3cad563a7246cc8e61a49c88e611c4c4228244da6bb39909126ef/fastcore-1.12.34.tar.gz", hash = "sha256:24c06e40cf9444ee4cbfbb5ff331e59762c83f1f5e27a128beb90b46d95aa687", size = 94563, upload-time = "2026-04-01T09:43:17.953Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/0e/57770d00d36eeca35c74dad23da8277d52218d5e5cc22dc3a12a5425aacc/fastcore-1.12.36.tar.gz", hash = "sha256:38ff8f8ce79e2d0fe48415a7e46947321edd3c15267fe94feaa3eadd3f2b9ebd", size = 97443, upload-time = "2026-04-10T05:16:10.424Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/89/bf2adbdbb90dab8b465d7a489e0a291e9153bf7b1db2b90ea4fa3c4bf16f/fastcore-1.12.34-py3-none-any.whl", hash = "sha256:917ed3559ef25cfbf3ec3327cb664cf75830832490ed1fb7be1425eb351783df", size = 98770, upload-time = "2026-04-01T09:43:16.288Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/79/02097c21f41bafb7167273824dc648d2527d4666fb81630d920e96ae97f5/fastcore-1.12.36-py3-none-any.whl", hash = "sha256:2405994be94e87530981d563ab36f212719b6113a7c1e9c69fa6ee077447264a", size = 102104, upload-time = "2026-04-10T05:16:08.781Z" },
 ]
 
 [[package]]
@@ -1560,11 +1560,11 @@ wheels = [
 
 [[package]]
 name = "python-multipart"
-version = "0.0.24"
+version = "0.0.26"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8a/45/e23b5dc14ddb9918ae4a625379506b17b6f8fc56ca1d82db62462f59aea6/python_multipart-0.0.24.tar.gz", hash = "sha256:9574c97e1c026e00bc30340ef7c7d76739512ab4dfd428fec8c330fa6a5cc3c8", size = 37695, upload-time = "2026-04-05T20:49:13.829Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/71/b145a380824a960ebd60e1014256dbb7d2253f2316ff2d73dfd8928ec2c3/python_multipart-0.0.26.tar.gz", hash = "sha256:08fadc45918cd615e26846437f50c5d6d23304da32c341f289a617127b081f17", size = 43501, upload-time = "2026-04-10T14:09:59.473Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/73/89930efabd4da63cea44a3f438aeb753d600123570e6d6264e763617a9ce/python_multipart-0.0.24-py3-none-any.whl", hash = "sha256:9b110a98db707df01a53c194f0af075e736a770dc5058089650d70b4a182f950", size = 24420, upload-time = "2026-04-05T20:49:12.555Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/22/f1925cdda983ab66fc8ec6ec8014b959262747e58bdca26a4e3d1da29d56/python_multipart-0.0.26-py3-none-any.whl", hash = "sha256:c0b169f8c4484c13b0dcf2ef0ec3a4adb255c4b7d18d8e420477d2b1dd03f185", size = 28847, upload-time = "2026-04-10T14:09:58.131Z" },
 ]
 
 [[package]]
@@ -1617,15 +1617,15 @@ wheels = [
 
 [[package]]
 name = "quiv"
-version = "0.3.3"
+version = "0.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sqlmodel" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/f6/915176cf27cc89e6988322fa398e6c6bdc04de1e34160224b498dd4854e0/quiv-0.3.3.tar.gz", hash = "sha256:5744fca98142d003f185016d12124ba7d708f1d4a587dca406180b33992d281e", size = 18210, upload-time = "2026-04-09T05:03:10.434Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/b1/5b095fe3c030588b45e0c09d025f704daf2a15d6cec48118861f4fcbeaa9/quiv-0.3.4.tar.gz", hash = "sha256:5d3a1d17994a582f525278ae01b1dd4fea04923bcb051ff905c3b83b6001fd52", size = 18245, upload-time = "2026-04-10T05:05:07.71Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a2/f9/b8d817640adac11fa6c4c22fdb3bf5b168faf6479cd4bc9342b282ebc621/quiv-0.3.3-py3-none-any.whl", hash = "sha256:765de1501643d3d07a6580deeced2a782020b7a1e24c2278c44d905ddef9c8d5", size = 22602, upload-time = "2026-04-09T05:03:11.364Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/78/13bad36e1596b9f1f8834c3a2d7e7367587dcc3e5531a8366ebbef7be126/quiv-0.3.4-py3-none-any.whl", hash = "sha256:0913922d359ca30ee3e26cd38e9fb858ffa44c00ca8eb0890a395ab4a1e8b851", size = 22633, upload-time = "2026-04-10T05:05:06.642Z" },
 ]
 
 [[package]]

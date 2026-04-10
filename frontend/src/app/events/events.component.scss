@@ -8,15 +8,14 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   background-color: var(--color-surface-container-low);
   position: sticky;
   top: 76px;
   z-index: 2;
 
   @media (width < 765px) {
-    padding: 0;
-    top: calc(76px + 0.5rem);
+    padding: 0.5rem 0.75rem;
   }
 }
 
@@ -26,28 +25,51 @@
   gap: 0.5rem;
 }
 
-.refresh-icon {
+.refresh-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
   cursor: pointer;
-  fill: var(--color-on-surface);
-}
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-.loading {
-  cursor: progress;
-  animation: spin-animation 2s linear infinite;
+  &:hover {
+    background-color: var(--color-surface-container-high);
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: var(--color-on-surface-variant);
+  }
+
+  &.loading svg {
+    animation: spin-animation 1.5s linear infinite;
+  }
 }
 
 .event-source-select,
 .event-type-select {
-  padding: 0.5rem;
-  border: 1px solid var(--color-outline);
-  border-radius: 0.5rem;
-  background-color: var(--color-surface-container-highest);
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.375rem;
+  background-color: var(--color-surface-container);
   color: var(--color-on-surface);
-  font-size: 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-outline);
+  }
 
   &:focus {
-    outline: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
   }
 }
 
@@ -70,17 +92,28 @@
 
   input {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--color-outline);
-    border-radius: 0.5rem;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.375rem;
     margin: 0;
-    font-size: 1rem;
-    background-color: var(--color-surface-container-highest);
+    font-size: 0.875rem;
+    background-color: var(--color-surface-container);
     color: var(--color-on-surface);
+    transition: border-color 0.15s ease;
+
+    &::placeholder {
+      color: var(--color-on-surface-variant);
+    }
+
+    &:hover {
+      border-color: var(--color-outline);
+    }
 
     &:focus {
-      outline: var(--color-primary);
-      border: 1px solid var(--color-primary);
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1px var(--color-primary);
     }
   }
 }

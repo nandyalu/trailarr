@@ -2701,6 +2701,12 @@ paths:
           schema:
             type: string
             title: Task Key
+        - name: task_id
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Task Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2767,23 +2773,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/{task_name}:
+  /api/v1/tasks/{task_id}:
     get:
       tags:
         - Tasks
         - Jobs
       summary: Get Task
-      operationId: get_task_api_v1_tasks__task_name__get
+      operationId: get_task_api_v1_tasks__task_id__get
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: task_name
+        - name: task_id
           in: path
           required: true
           schema:
             type: string
-            title: Task Name
+            title: Task Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2807,23 +2813,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/{task_name}/cancel:
+  /api/v1/tasks/{task_id}/pause:
     post:
       tags:
         - Tasks
         - Jobs
-      summary: Cancel Task
-      operationId: cancel_task_api_v1_tasks__task_name__cancel_post
+      summary: Pause Task
+      operationId: pause_task_api_v1_tasks__task_id__pause_post
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: task_name
+        - name: task_id
           in: path
           required: true
           schema:
             type: string
-            title: Task Name
+            title: Task Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2839,7 +2845,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-                title: Response Cancel Task Api V1 Tasks  Task Name  Cancel Post
+                title: Response Pause Task Api V1 Tasks  Task Id  Pause Post
         '401':
           description: API key is missing
         '422':
@@ -2848,23 +2854,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/{task_name}/resume:
+  /api/v1/tasks/{task_id}/resume:
     post:
       tags:
         - Tasks
         - Jobs
       summary: Resume Task
-      operationId: resume_task_api_v1_tasks__task_name__resume_post
+      operationId: resume_task_api_v1_tasks__task_id__resume_post
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: task_name
+        - name: task_id
           in: path
           required: true
           schema:
             type: string
-            title: Task Name
+            title: Task Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2880,7 +2886,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-                title: Response Resume Task Api V1 Tasks  Task Name  Resume Post
+                title: Response Resume Task Api V1 Tasks  Task Id  Resume Post
         '401':
           description: API key is missing
         '422':
@@ -2889,23 +2895,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/tasks/{task_name}/run:
+  /api/v1/tasks/{task_id}/run:
     post:
       tags:
         - Tasks
         - Jobs
       summary: Run Task
-      operationId: run_task_api_v1_tasks__task_name__run_post
+      operationId: run_task_api_v1_tasks__task_id__run_post
       security:
         - APIKeyQuery: []
         - APIKeyHeader: []
       parameters:
-        - name: task_name
+        - name: task_id
           in: path
           required: true
           schema:
             type: string
-            title: Task Name
+            title: Task Id
         - name: trailarr_api_key
           in: cookie
           required: false
@@ -2921,7 +2927,7 @@ paths:
             application/json:
               schema:
                 type: string
-                title: Response Run Task Api V1 Tasks  Task Name  Run Post
+                title: Response Run Task Api V1 Tasks  Task Id  Run Post
         '401':
           description: API key is missing
         '422':
@@ -3902,6 +3908,9 @@ components:
         task_id:
           type: string
           title: Task Id
+        task_name:
+          type: string
+          title: Task Name
         status:
           type: string
           title: Status
@@ -3916,15 +3925,29 @@ components:
               format: date-time
             - type: 'null'
           title: Ended At
+        duration_seconds:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Duration Seconds
+        error_message:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Error Message
       type: object
       required:
         - task_id
+        - task_name
       title: Job
       description: "Execution record for a single task run.\n\nAttributes:\n    __tablename__\
         \ (str): Database table name for jobs.\n    id (str, UUID): UUID job identifier\
-        \ string.\n    task_id (str): Foreign key to the source task.\n    status\
-        \ (str): Job status string.\n    started_at (datetime): UTC start timestamp.\n\
-        \    ended_at (datetime, Optional=None): UTC end timestamp when available."
+        \ string.\n    task_id (str): Foreign key to the source task.\n    task_name\
+        \ (str): Name of the task that spawned this job.\n    status (str): Job status\
+        \ string.\n    started_at (datetime): UTC start timestamp.\n    ended_at (datetime,\
+        \ Optional=None): UTC end timestamp when available.\n    duration_seconds\
+        \ (float, Optional=None): Job duration in seconds.\n    error_message (str,\
+        \ Optional=None): Error message if job failed."
     Log:
       properties:
         datetime:
@@ -4447,6 +4470,10 @@ components:
         interval_seconds:
           type: number
           title: Interval Seconds
+        fixed_interval:
+          type: boolean
+          title: Fixed Interval
+          default: true
         run_once:
           type: boolean
           title: Run Once
@@ -4469,15 +4496,18 @@ components:
         - next_run_at
       title: Task
       description: "Scheduled task model returned by public API methods.\n\nThe public\
-        \ API methods ``get_task()``, ``get_task_by_id()``, and\n``get_all_tasks()``\
-        \ return ``Task`` objects directly.\n\nExample::\n\n    task = scheduler.get_task(\"\
-        my-task\")  # Returns Task\n    tasks = scheduler.get_all_tasks()     # Returns\
-        \ list[Task]\n\nAttributes:\n    id (str): UUID task identifier string.\n\
-        \    task_name (str): User-facing task key.\n    args (tuple[Any, ...]): Positional\
-        \ arguments.\n    kwargs (dict[str, Any]): Keyword arguments.\n    interval_seconds\
-        \ (float): Interval between consecutive task runs.\n    run_once (bool): Whether\
-        \ task executes only once.\n    status (str): Task status string.\n    next_run_at\
-        \ (datetime): Next scheduled UTC run timestamp."
+        \ API methods ``get_task()`` and ``get_all_tasks()`` return\n``Task`` objects\
+        \ directly.\n\nExample::\n\n    task_id = scheduler.add_task(\"my-task\",\
+        \ handler, interval=60)\n    task = scheduler.get_task(task_id)  # Returns\
+        \ Task\n    tasks = scheduler.get_all_tasks()   # Returns list[Task]\n\nAttributes:\n\
+        \    id (str): UUID task identifier string.\n    task_name (str): User-facing\
+        \ task key.\n    args (tuple[Any, ...]): Positional arguments.\n    kwargs\
+        \ (dict[str, Any]): Keyword arguments.\n    interval_seconds (float): Interval\
+        \ between consecutive task runs.\n    fixed_interval (bool): Whether next\
+        \ run is measured from job start\n        time (True) or from job completion\
+        \ time (False).\n    run_once (bool): Whether task executes only once.\n \
+        \   status (str): Task status string.\n    next_run_at (datetime): Next scheduled\
+        \ UTC run timestamp."
     TaskData:
       properties:
         tasks:
