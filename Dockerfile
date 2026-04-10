@@ -17,6 +17,10 @@ RUN npm ci
 # Copy frontend source files
 COPY ./frontend/ ./
 
+# ARG APP_VERSION needs to be declared in each stage to be available
+ARG APP_VERSION=0.6.1-dev
+RUN npm version ${APP_VERSION} --no-git-tag-version --allow-same-version
+
 # Build the frontend for production
 RUN npm run build
 
@@ -65,6 +69,9 @@ COPY ./assets /app/assets
 
 # Copy the backend
 COPY ./backend /app/backend
+
+# Set the version in uv (updates pyproject.toml)
+RUN cd /app/backend && uv version ${APP_VERSION}
 
 # Copy the frontend built files from the frontend-build stage
 COPY --from=frontend-build /app/frontend-build /app/frontend-build
