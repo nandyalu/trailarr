@@ -142,5 +142,7 @@
     },
     "editor.defaultFoldingRangeProvider": null,
     "editor.foldingImportsByDefault": false,
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python.terminal.useEnvFile": true
 
 }

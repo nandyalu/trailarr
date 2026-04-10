@@ -1,88 +1,227 @@
 <div class="tasks-container">
-  <div class="text-heading">Scheduled</div>
-  <hr />
-  @if (isLoading1()) {
-    <app-load-indicator class="center" />
+  <!-- ── Scheduled Tasks ── -->
+  <div class="section-header">
+    <span class="section-title">Scheduled Tasks</span>
+    @if (!isLoading()) {
+      <span class="count-chip">{{ scheduledTasks().length }}</span>
+    }
+    <button class="icononly-button refresh-btn" [class.loading]="isLoading()" (click)="refreshTaskData()" title="Refresh">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+          d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+        />
+      </svg>
+    </button>
+  </div>
+
+  @if (scheduledTasks().length === 0) {
+    <div class="empty-state">No scheduled tasks found</div>
   } @else {
-    <div class="table-container">
-      <table class="tasks-table">
-        <tr class="table-row header">
-          <th class="name">Name</th>
-          <th>Interval</th>
-          <th>Last Run</th>
-          <th>Last Run Status</th>
-          <th>Last Run Duration</th>
-          <th>Next Run</th>
-          <th></th>
-        </tr>
-        <!-- <p>{{ scheduledTasks }}</p> -->
-        @for (task of scheduledTasks(); track task.id) {
-          <tr class="table-row" animate.enter="enter-animation">
-            <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
-            <td class="name">{{ task.name }}</td>
-            <td>{{ task.interval }}</td>
-            <td>{{ task.last_run_start | timediff: 'Not run yet' | async }}</td>
-            <td>{{ task.last_run_status }}</td>
-            <td>{{ task.last_run_duration }}</td>
-            <td>{{ task.next_run | timediff: 'Not scheduled' | async }}</td>
-            @if (task.last_run_status.toLowerCase() != 'running') {
-              <td title="Run task now" (click)="task.last_run_status = 'Running'; runTask(task.task_id)">
+    <div class="task-list">
+      @for (task of scheduledTasks(); track task.id) {
+        <div class="task-row" [class.paused]="task.status === 'paused'">
+          <div class="task-info">
+            <div class="task-top">
+              <span class="task-name">{{ task.task_name }}</span>
+              <span class="badge" [class]="'badge-task-' + task.status">{{ task.status }}</span>
+              @if (task.last_run) {
+                <span class="badge" [class]="'badge-job-' + task.last_run.status">{{ task.last_run.status }}</span>
+              }
+            </div>
+            <div class="task-meta">
+              <span class="meta-item">
+                <span class="meta-label">Every</span>
+                {{ task.run_once ? 'once' : (task.interval_seconds | interval) }}
+              </span>
+              <span class="meta-dot">·</span>
+              <span class="meta-item">
+                <span class="meta-label">Last run</span>
+                {{ task.last_run?.started_at | timediff: 'Never' | async }}
+                @if (task.last_run && task.last_run.status !== 'scheduled') {
+                  <span class="meta-duration">({{ task.last_run.duration_seconds | duration: '...' }})</span>
+                }
+              </span>
+              <span class="meta-dot">·</span>
+              <span class="meta-item">
+                <span class="meta-label">Next</span>
+                {{ task.next_run_at | timediff: '—' | async }}
+              </span>
+            </div>
+          </div>
+          <div class="task-actions">
+            @if (task.status === 'active') {
+              <button class="action-btn" (click)="runTask(task)" title="Run now">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="M382-306.67 653.33-480 382-653.33v346.66ZM480-80q-82.33 0-155.33-31.5-73-31.5-127.34-85.83Q143-251.67 111.5-324.67T80-480q0-83 31.5-156t85.83-127q54.34-54 127.34-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82.33-31.5 155.33-31.5 73-85.5 127.34Q709-143 636-111.5T480-80Z"
-                  />
+                  <path d="M320-200v-560l440 280-440 280Z" />
                 </svg>
-              </td>
+              </button>
             }
-            @if (task.last_run_status.toLowerCase() == 'running') {
-              <td title="Task is running">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+            @if (task.status === 'active') {
+              <button class="action-btn" (click)="pauseTask(task)" title="Pause task">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Z" />
+                </svg>
+              </button>
+            }
+            @if (task.status === 'paused') {
+              <button class="action-btn resume" (click)="resumeTask(task)" title="Resume task">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="M320-200v-560l440 280-440 280Z" />
+                </svg>
+              </button>
+            }
+            @if (task.status === 'running') {
+              <span class="action-btn running" title="Running…">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
                   />
                 </svg>
-              </td>
+              </span>
             }
-          </tr>
-        }
-      </table>
+            <button class="action-btn edit" (click)="openEditDialog(task)" title="Edit task">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <path
+                  d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
     </div>
   }
-  <div class="text-heading">Queue</div>
-  <hr />
-  @if (isLoading2()) {
-    <app-load-indicator class="center" />
+
+  <!-- ── Job Queue ── -->
+  <div class="section-header">
+    <span class="section-title">Job Queue</span>
+    @if (!isLoading()) {
+      <span class="count-chip">{{ jobs().length }}</span>
+    }
+  </div>
+
+  @if (jobs().length === 0) {
+    <div class="empty-state">No jobs in queue</div>
   } @else {
-    <div class="table-container last-table">
-      <table class="tasks-table">
-        <tr class="table-row header">
-          <th class="name">Name</th>
-          <th>Status</th>
-          <th>Started</th>
-          <th>Finished</th>
-          <th>Duration</th>
-        </tr>
-        <!-- <p>{{ queuedTasks }}</p> -->
-        @for (task of queuedTasks(); track task.id) {
-          <tr class="table-row" animate.enter="enter-animation">
-            <!-- <td class="name">{{ task.id }}: {{ task.name }}</td> -->
-            <td class="name queue-name">
-              <span>{{ task.name }}</span>
-              <i [routerLink]="['/', RouteLogs]" [queryParams]="{filter: task.trace_id}" title="View Logs">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+    <div class="task-list">
+      @for (job of jobs(); track job.id) {
+        <div class="task-row">
+          <div class="task-info">
+            <div class="task-top">
+              <span class="task-name">{{ job.task_name }}</span>
+              <span class="badge" [class]="'badge-job-' + job.status">{{ job.status }}</span>
+            </div>
+            <div class="task-meta">
+              <span class="meta-item">
+                <span class="meta-label">Started</span>
+                {{ job.started_at | timediff: 'Pending' | async }}
+              </span>
+              @if (job.ended_at) {
+                <span class="meta-dot">·</span>
+                <span class="meta-item">
+                  <span class="meta-label">Finished</span>
+                  {{ job.ended_at | timediff: '—' | async }}
+                </span>
+              }
+              @if (job.duration_seconds !== null) {
+                <span class="meta-dot">·</span>
+                <span class="meta-item">
+                  <span class="meta-label">Duration</span>
+                  {{ job.duration_seconds | duration }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="task-actions">
+            <a class="action-btn" [routerLink]="['/', RouteLogs]" [queryParams]="{filter: job.id}" title="View Logs">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <path
+                  d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"
+                />
+              </svg>
+            </a>
+            @if (job.status === 'running' || job.status === 'scheduled') {
+              <button class="action-btn cancel" (click)="cancelJob(job)" title="Cancel job">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
-                    d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"
+                    d="M360-320h240v-320H360v320ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
                   />
                 </svg>
-              </i>
-            </td>
-            <td>{{ task.status }}</td>
-            <td>{{ task.started | timediff: 'Pending' | async }}</td>
-            <td>{{ task.finished | timediff: '-' | async }}</td>
-            <td>{{ task.duration }}</td>
-          </tr>
-        }
-      </table>
+              </button>
+            }
+          </div>
+        </div>
+      }
     </div>
   }
 </div>
+
+<!-- ── Edit Task Dialog ── -->
+<dialog #editDialog class="edit-dialog" (click)="$event.target === $event.currentTarget && closeEditDialog()">
+  @if (editingTask(); as task) {
+    <div class="dialog-content">
+      <h2 class="dialog-title">Edit Task</h2>
+
+      <div class="form-field">
+        <label class="form-label" for="taskName">Name</label>
+        <input id="taskName" #nameInput class="form-input" type="text" [value]="task.task_name" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="intervalValue">Interval</label>
+        <div class="input-with-unit">
+          @let intervalSecs = task.config?.interval_seconds ?? task.interval_seconds;
+          <input
+            id="intervalValue"
+            #intervalValueInput
+            class="form-input"
+            type="number"
+            min="1"
+            [value]="intervalDisplayValue(intervalSecs)"
+          />
+          <select #intervalUnitSelect class="form-select" name="interval-interval-type" [value]="intervalDisplayUnit(intervalSecs)">
+            <option value="1">seconds</option>
+            <option value="60">minutes</option>
+            <option value="3600">hours</option>
+            <option value="86400">days</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="delayValue">Startup Delay</label>
+        <div class="input-with-unit">
+          @let delaySecs = task.config?.delay_seconds ?? 0;
+          <input id="delayValue" #delayValueInput class="form-input" type="number" min="0" [value]="intervalDisplayValue(delaySecs)" />
+          <select #delayUnitSelect class="form-select" name="delay-interval-type" [value]="intervalDisplayUnit(delaySecs)">
+            <option value="1">seconds</option>
+            <option value="60">minutes</option>
+            <option value="3600">hours</option>
+            <option value="86400">days</option>
+          </select>
+        </div>
+        <p class="form-hint">Delay changes take effect immediately on next restart.</p>
+        <p class="form-hint">For the full interval cadence to reset, restart Trailarr.</p>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn-secondary" (click)="closeEditDialog()">Cancel</button>
+        <button
+          class="btn-primary"
+          [disabled]="isSaving()"
+          (click)="
+            saveTaskConfig(
+              nameInput.value,
+              +intervalValueInput.value,
+              +intervalUnitSelect.value,
+              +delayValueInput.value,
+              +delayUnitSelect.value
+            )
+          "
+        >
+          {{ isSaving() ? 'Saving…' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  }
+</dialog>

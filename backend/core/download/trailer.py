@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import tempfile
+import threading
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
@@ -14,7 +15,7 @@ from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
 from core.download.video_analysis import VideoInfo
-from exceptions import DownloadFailedError
+from exceptions import DownloadFailedError, StopEventSetError
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -89,11 +90,16 @@ def __update_media_status(
 
 
 def __download_and_verify_trailer(
-    media: MediaRead, video_id: str, profile: TrailerProfileRead
+    media: MediaRead,
+    video_id: str,
+    profile: TrailerProfileRead,
+    _stop_event: threading.Event | None = None,
 ) -> tuple[str, VideoInfo | None]:
     """Download the trailer and verify it.
     Returns:
         tuple[str, VideoInfo | None]: File path and video info for reuse.
+    Raises:
+        StopEventSetError: If the stop event is set during the download.
     """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
@@ -104,7 +110,9 @@ def __download_and_verify_trailer(
     tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
     tmp_dir.mkdir(parents=True, exist_ok=True)
     output_file = tmp_dir / f"{media.id}-trailer.{profile.file_format}"
-    output_file = download_video(trailer_url, str(output_file), profile)
+    output_file = download_video(
+        trailer_url, str(output_file), profile, _stop_event=_stop_event
+    )
 
     # Verify and get video info in one pass
     is_valid, video_info = trailer_file.verify_download(
@@ -114,6 +122,9 @@ def __download_and_verify_trailer(
         raise DownloadFailedError("Trailer verification failed")
 
     if profile.remove_silence:
+        if _stop_event and _stop_event.is_set():
+            raise StopEventSetError("Stop event set during silence removal")
+
         output_file, _trimmed = video_analysis.remove_silence_at_end(
             output_file
         )
@@ -129,6 +140,7 @@ async def download_trailer(
     profile: TrailerProfileRead,
     retry_count: int = 2,
     exclude: list[str] | None = None,
+    _stop_event: threading.Event | None = None,
 ) -> bool:
     """Download trailer for a media object with given profile.
     Args:
@@ -160,11 +172,16 @@ async def download_trailer(
     if not video_id:
         raise DownloadFailedError(f"No trailer found for {media.title}")
 
+    # Stop if stop event is set
+    if _stop_event and _stop_event.is_set():
+        logger.info(f"Download stopped for {media.title} [{media.id}]")
+        return False
+
     try:
         __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
         # Download the trailer and verify
         output_file, video_info = __download_and_verify_trailer(
-            media, video_id, profile
+            media, video_id, profile, _stop_event=_stop_event
         )
         # Move the trailer to the media folder (create subfolder if needed)
         final_path = trailer_file.move_trailer_to_folder(
@@ -194,6 +211,12 @@ async def download_trailer(
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
         __update_media_status(media, MonitorStatus.MISSING, profile)
+        if _stop_event and _stop_event.is_set():
+            logger.info(
+                f"Download stopped for {media.title} [{media.id}] due to stop"
+                " event."
+            )
+            return False
         if retry_count > 0:
             logger.info(
                 f"Retrying download for {media.title}... ({3 - retry_count}/3)"

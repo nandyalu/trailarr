@@ -1,9 +1,18 @@
-import asyncio
-from datetime import datetime, timedelta, timezone
+import threading
+from typing import Callable
 
 from app_logger import ModuleLogger
-from config.logging_context import get_new_trace_id, with_logging_context
+from config.logging_context import with_logging_context
 from config.settings import app_settings
+from core.base.database.manager.task_config import (
+    create_task_config,
+    get_task_config,
+    update_task_config,
+)
+from core.base.database.models.task_config import (
+    ScheduledTaskConfig,
+    ScheduledTaskConfigRead,
+)
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
@@ -12,226 +21,191 @@ from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.updates.docker_check import check_for_updates
 
-# from core.tasks.task_runner import TaskRunner
-
 logger = ModuleLogger("BackgroundTasks")
 
 
 @with_logging_context
-def run_async(task, *, trace_id: str) -> None:
-    """Run the async task in a separate event loop."""
-    new_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(task())
-    new_loop.close()
-    return
-
-
-def _check_for_update(*, trace_id: str):
+async def _check_for_update(*, _job_id: str | None = None):
     """Check for updates to the Docker image."""
-    run_async(check_for_updates, trace_id=trace_id)
-    return
+    await check_for_updates()
 
 
-def _refresh_api_data(*, trace_id: str):
+@with_logging_context
+async def _refresh_api_data(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
     """Refreshes data from Arr APIs."""
-    run_async(api_refresh, trace_id=trace_id)
-    return
+    await api_refresh(_stop_event=_stop_event)
 
 
-def _refresh_images(*, trace_id: str):
+@with_logging_context
+async def _refresh_images(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
     """Refreshes all images in the database."""
-    run_async(refresh_images, trace_id=trace_id)
-    return
+    await refresh_images(_stop_event=_stop_event)
 
 
-def _scan_all_media_folders(*, trace_id: str):
+@with_logging_context
+async def _scan_all_media_folders(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
     """Scans the disk for trailers."""
-    run_async(scan_all_media_folders, trace_id=trace_id)
-    return
+    await scan_all_media_folders(_stop_event=_stop_event)
 
 
-def _cleanup_trailers(*, trace_id: str):
+@with_logging_context
+async def _cleanup_trailers(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
     """Cleanup trailers without audio."""
-
-    async def _cleanup_tasks():
-        await delete_old_logs()
-        await trailer_cleanup()
-
-    run_async(_cleanup_tasks, trace_id=trace_id)
-    return
+    await delete_old_logs()
+    await trailer_cleanup(_stop_event=_stop_event)
 
 
-def _download_missing_trailers(*, trace_id: str):
+@with_logging_context
+async def _download_missing_trailers(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
     """Download missing trailers."""
-    run_async(download_missing_trailers, trace_id=trace_id)
-    return
+    await download_missing_trailers(_stop_event=_stop_event)
 
 
-def refresh_api_data_job():
-    """
-    Schedules a background job to refresh Arr API data. \n
-        - Runs once an hour, first run in 30 seconds. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_refresh_api_data,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        minutes=app_settings.monitor_interval,
-        id="hourly_refresh_api_data_job",
-        name="Arr Data Refresh",
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
-        max_instances=1,
-    )
-    logger.info("API Refresh job scheduled!")
-    return
+# Maps each stable task_key to its handler function.
+TASK_REGISTRY: dict[str, Callable] = {
+    "api_refresh": _refresh_api_data,
+    "image_refresh": _refresh_images,
+    "scan_disk": _scan_all_media_folders,
+    "update_check": _check_for_update,
+    "cleanup": _cleanup_trailers,
+    "download_trailers": _download_missing_trailers,
+}
 
 
-def image_refresh_job():
-    """Schedules a background job to refresh images.\n
-        - Runs once every 6 hours, first run in 12 minutes. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_refresh_images,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        hours=6,
-        id="image_refresh_job",
-        name="Image Refresh",
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=720),
-        max_instances=1,
-    )
-    logger.info("Image refresh job scheduled!")
-    return
+def _build_defaults() -> list[dict[str, str | float]]:
+    """Return default task config dicts using current app settings."""
+    monitor_interval_seconds = app_settings.monitor_interval * 60.0
+    return [
+        {
+            "task_key": "api_refresh",
+            "task_name": "Arr Data Refresh",
+            "interval_seconds": monitor_interval_seconds,
+            "delay_seconds": 30.0,
+        },
+        {
+            "task_key": "update_check",
+            "task_name": "Docker Update Check",
+            "interval_seconds": 86400.0,
+            "delay_seconds": 240.0,
+        },
+        {
+            "task_key": "scan_disk",
+            "task_name": "Scan All Media Folders",
+            "interval_seconds": monitor_interval_seconds,
+            "delay_seconds": 480.0,
+        },
+        {
+            "task_key": "download_trailers",
+            "task_name": "Download Missing Trailers",
+            "interval_seconds": monitor_interval_seconds,
+            "delay_seconds": 900.0,
+        },
+        {
+            "task_key": "image_refresh",
+            "task_name": "Image Refresh",
+            "interval_seconds": 21600.0,
+            "delay_seconds": 720.0,
+        },
+        {
+            "task_key": "cleanup",
+            "task_name": "Cleanup Task",
+            "interval_seconds": 86400.0,
+            "delay_seconds": 14400.0,
+        },
+    ]
 
 
-def scan_disk_for_trailers_job():
-    """Schedules a background job to scan disk for trailers.\n
-        - Runs once an hour, first run in 8 minute. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_scan_all_media_folders,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        minutes=app_settings.monitor_interval,
-        id="scan_all_media_folders_job",
-        name="Scan All Media Folders",
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=480),
-        max_instances=1,
-    )
-    logger.info("Scan All Media Folders job scheduled!")
-    return
+def _get_or_create_config(
+    task_key: str, defaults: dict[str, str | float]
+) -> ScheduledTaskConfigRead:
+    """Load config from DB; create from defaults if not yet persisted."""
+    config = get_task_config(task_key)
+    if config is None:
+        config = create_task_config(ScheduledTaskConfig(**defaults))  # type: ignore
+    return config
 
 
-def update_check_job():
-    """Schedules a background job to check for image updates.\n
-        - Runs once a day, first run in 4 minutes. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_check_for_update,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        days=1,
-        id="docker_update_check_job",
-        name="Docker Update Check",
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=240),
-        max_instances=1,
-    )
-    logger.info("Update Check job scheduled!")
-    return
+def schedule_all_tasks() -> None:
+    """Schedule all background tasks, reading intervals from the DB.
 
-
-def trailer_cleanup_job():
-    """Schedules a background job to cleanup trailers and other things.\n
-        - Runs once a day, first run in 4 hours. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_cleanup_trailers,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        days=1,
-        id="cleanup_job",
-        name="Cleanup Task",
-        next_run_time=datetime.now(timezone.utc) + timedelta(hours=4),
-        max_instances=1,
-    )
-    logger.info("Cleanup job scheduled!")
-    return
-
-
-def download_missing_trailers_job():
-    """Schedules a background job to download missing trailers. \n
-        Runs once an hour, first run in 15 minutes. \n
-    Returns:
-        None
-    """
-    scheduler.add_job(
-        func=_download_missing_trailers,
-        kwargs={"trace_id": get_new_trace_id()},
-        trigger="interval",
-        minutes=app_settings.monitor_interval,
-        id="download_missing_trailers_job",
-        name="Download Missing Trailers",
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=900),
-        max_instances=1,
-    )
-    logger.info("Download Missing Trailers job scheduled!")
-    return
-
-
-def schedule_all_tasks():
-    """Schedules all tasks for the application. \n
-    Returns:
-        None
+    Falls back to hard-coded defaults and seeds the DB for any task
+    that has no persisted configuration yet.
     """
     logger.info("Scheduling all background tasks!")
-
-    # Schedule API Refresh to run every hour
-    refresh_api_data_job()
-
-    # Schedule update check task to run once a day, start in 4 minutes from now
-    update_check_job()
-
-    # Schedule disk scan task to run every hour, start in 10 minutes from now
-    scan_disk_for_trailers_job()
-
-    # Schedule trailer download task to run every hour, start in 15 minutes from now
-    download_missing_trailers_job()
-
-    # Schedule Image Refresh to run every 6 hours, start in 10 minutes from now
-    image_refresh_job()
-
-    # Schedule trailer cleanup task to run every hour, start in 5 minutes from now
-    trailer_cleanup_job()
-
+    for defaults in _build_defaults():
+        task_key: str = defaults["task_key"]  # type: ignore
+        config = _get_or_create_config(task_key, defaults)
+        func = TASK_REGISTRY[task_key]
+        scheduler.add_task(
+            task_name=config.task_name,
+            func=func,
+            interval=config.interval_seconds,
+            delay=config.delay_seconds,
+            run_once=False,
+        )
+        # logger.info(f"Scheduled '{config.task_name}' (key={task_key!r})")
     logger.info("All tasks scheduled!")
-    return
+
+
+def reschedule_task(
+    task_key: str,
+    task_id: str,
+    task_name: str,
+    interval_seconds: float,
+    delay_seconds: float,
+) -> ScheduledTaskConfigRead:
+    """Persist updated config and replace the live quiv task.
+
+    Removes the old quiv task by its current name, then immediately
+    re-registers it with the new parameters so the change takes effect
+    without a restart.
+
+    Returns the updated :class:`ScheduledTaskConfigRead`.
+    """
+    current = get_task_config(task_key)
+    if current is None:
+        raise ValueError(f"Unknown task_key: {task_key!r}")
+
+    old_name = current.task_name
+    updated = update_task_config(
+        task_key, task_name, interval_seconds, delay_seconds
+    )
+
+    scheduler.remove_task(task_id)
+    func = TASK_REGISTRY[task_key]
+    scheduler.add_task(
+        task_name=updated.task_name,
+        func=func,
+        interval=updated.interval_seconds,
+        delay=updated.delay_seconds,
+        run_once=False,
+    )
+    logger.info(
+        f"Task '{old_name}' rescheduled as '{updated.task_name}'"
+        f" (key={task_key!r})"
+    )
+    return updated
 
 
 def run_task_now(task_id: str) -> str:
-    """Run a scheduled task immediately. \n
+    """Run a scheduled task immediately.
+
     Args:
-        task_id (str): The id of the task to run. \n
+        task_id (str): The quiv task ID.
     Returns:
-        str: Message indicating the task was triggered."""
+        str: Confirmation message.
+    """
     if not task_id:
         return "Unable to trigger task, 'task_id' not provided!"
-    _task = scheduler.get_job(task_id)
-    if not _task:
-        return "Unable to trigger task, Task with 'task_id' not found!"
-    _name = _task.name
-    _next_run_time = datetime.now(timezone.utc) + timedelta(
-        seconds=1
-    )  # Start in 1 second
-    scheduler.modify_job(job_id=task_id, next_run_time=_next_run_time)
-    return f"'{_name}' Task triggered successfully!"
+    scheduler.run_task_immediately(task_id)
+    return f"'{task_id}' Task triggered successfully!"

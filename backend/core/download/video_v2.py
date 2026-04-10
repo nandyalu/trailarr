@@ -1,5 +1,6 @@
 import shlex
 import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -8,7 +9,11 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.video_conversion import get_ffmpeg_cmd
-from exceptions import ConversionFailedError, DownloadFailedError
+from exceptions import (
+    ConversionFailedError,
+    DownloadFailedError,
+    StopEventSetError,
+)
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -310,18 +315,23 @@ def _convert_video(
 
 
 def download_video(
-    url: str, file_path: str | Path, profile: TrailerProfileRead
+    url: str,
+    file_path: str | Path,
+    profile: TrailerProfileRead,
+    _stop_event: threading.Event | None = None,
 ) -> str:
     """Download the video from the given URL
     Args:
         url (str): URL of the video
         file_path (str | Path): Output file path template with %(ext)s
         profile (TrailerProfileRead): Trailer profile used for downloading
+        _stop_event (threading.Event, optional=None): Event to signal stopping the download.
     Returns:
         str: The downloaded (and converted) video file path
     Raises:
         DownloadFailedError: Error while downloading video
         ConversionFailedError: Error while converting video
+        StopEventSetError: If the stop event is set during the download.
     """
     file_path = Path(file_path)
     file_name = file_path.name
@@ -332,6 +342,11 @@ def download_video(
     download_file_path = _download_with_ytdlp(url, temp_file_path, profile)
     end_time = time.perf_counter()  # Download end time / Conversion start time
     logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
+
+    # Stop if stop event is set
+    if _stop_event and _stop_event.is_set():
+        logger.info(f"Stop Event set, stopping download for {url}")
+        raise StopEventSetError("Stop event set during video download")
 
     # Add the file extension from download file to the output file
     converted_file_path = str(file_path).replace(

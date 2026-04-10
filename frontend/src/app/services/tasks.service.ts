@@ -1,8 +1,8 @@
-import {HttpClient} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
-import {map, Observable} from 'rxjs';
+import {HttpClient, httpResource} from '@angular/common/http';
+import {computed, inject, Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
 import {environment} from '../../environment';
-import {QueuedTask, ScheduledTask} from '../models/tasks';
+import {QuivJob, QuivTask, TaskConfig, TaskConfigUpdate, TasksData} from '../models/tasks';
 
 @Injectable({
   providedIn: 'root',
@@ -10,77 +10,59 @@ import {QueuedTask, ScheduledTask} from '../models/tasks';
 export class TasksService {
   private readonly http = inject(HttpClient);
 
+  private taskDataUrl = environment.apiUrl + environment.tasksData;
   private tasksUrl = environment.apiUrl + environment.tasks;
+  private jobsUrl = environment.apiUrl + environment.jobs;
+  private configsUrl = environment.apiUrl + environment.taskConfigs;
 
-  convertTime(seconds: number): string {
-    const timeUnits = [
-      {unit: 'second', value: 60},
-      {unit: 'minute', value: 60},
-      {unit: 'hour', value: 24},
-      {unit: 'day', value: 7},
-    ];
+  private readonly tasksDataResource = httpResource<TasksData>(() => this.taskDataUrl, {
+    defaultValue: {tasks: [], jobs: [], configs: []},
+  });
 
-    for (const {unit, value} of timeUnits) {
-      if (seconds < value) {
-        return `${seconds} ${unit}${seconds === 1 ? '' : 's'}`;
+  readonly scheduledTasks = computed<QuivTask[]>(() => {
+    const {tasks, jobs, configs} = this.tasksDataResource.value();
+
+    const lastJobByTaskId = new Map<string, QuivJob>();
+    for (const job of jobs) {
+      const existing = lastJobByTaskId.get(job.task_id);
+      if (!existing || job.started_at > existing.started_at) {
+        lastJobByTaskId.set(job.task_id, job);
       }
-      seconds = Math.floor(seconds / value);
     }
-    return `${seconds} ${seconds === 1 ? 'week' : 'weeks'}`;
+
+    const configByName = new Map(configs.map((c) => [c.task_name, c]));
+
+    return tasks.map((task) => ({
+      ...task,
+      last_run: lastJobByTaskId.get(task.id) ?? null,
+      config: configByName.get(task.task_name) ?? null,
+    }));
+  });
+
+  readonly jobs = computed<QuivJob[]>(() => this.tasksDataResource.value().jobs);
+  readonly isLoading = this.tasksDataResource.isLoading;
+
+  refreshData() {
+    this.tasksDataResource.reload();
   }
 
-  convertDate(date: string): Date | null {
-    return date ? new Date(date + 'Z') : null;
+  updateTaskConfig(taskKey: string, taskId: string, payload: TaskConfigUpdate): Observable<TaskConfig> {
+    return this.http.put<TaskConfig>(this.configsUrl + taskKey, payload, {params: {task_id: taskId}});
   }
 
-  formatDuration(duration: number): string {
-    // Convert duration in seconds to HH:MM:SS format
-    if (duration < 1) {
-      return '00:00:00';
-    }
-    let hours = Math.floor(duration / 3600)
-      .toString()
-      .padStart(2, '0');
-    let minutes = Math.floor((duration % 3600) / 60)
-      .toString()
-      .padStart(2, '0');
-    let seconds = (duration % 60).toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+  runScheduledTask(taskId: string): Observable<string> {
+    return this.http.post<string>(this.tasksUrl + taskId + '/run', {});
   }
 
-  private schedulesUrl = this.tasksUrl + 'schedules';
-  getScheduledTasks(): Observable<ScheduledTask[]> {
-    return this.http.get<{[key: string]: any}>(this.schedulesUrl).pipe(
-      map((all_schedules: {[key: string]: any}) => {
-        return Object.entries(all_schedules).map(([id, schedule]) => ({
-          id,
-          ...schedule,
-          interval: this.convertTime(schedule.interval),
-          last_run_duration: this.formatDuration(schedule.last_run_duration),
-          // last_run_start: this.convertDate(schedule.last_run_start),
-          // next_run: this.convertDate(schedule.next_run),
-        }));
-      }),
-    );
+  pauseTask(taskId: string): Observable<boolean> {
+    return this.http.post<boolean>(this.tasksUrl + taskId + '/pause', {});
   }
 
-  private queueUrl = this.tasksUrl + 'queue';
-  getQueuedTasks(): Observable<QueuedTask[]> {
-    return this.http.get<{[key: string]: any}>(this.queueUrl).pipe(
-      map((all_queues: {[key: string]: any}) => {
-        return Object.entries(all_queues).map(([id, queue]) => ({
-          id,
-          ...queue,
-          duration: this.formatDuration(queue.duration),
-          // finished: this.convertDate(queue.finished),
-          // started: this.convertDate(queue.started),
-          // end: this.convertDate(queue.end)
-        }));
-      }),
-    );
+  resumeTask(taskId: string): Observable<boolean> {
+    return this.http.post<boolean>(this.tasksUrl + taskId + '/resume', {});
   }
 
-  runScheduledTask(id: string): Observable<any> {
-    return this.http.get(this.tasksUrl + 'run/' + id);
+  cancelJob(jobId: string): Observable<boolean> {
+    return this.http.post<boolean>(this.jobsUrl + jobId + '/cancel', {});
   }
 }
