@@ -7,14 +7,19 @@ export interface QuivTask {
   run_once: boolean;
   status: string;
   next_run_at: string | null;
+  last_run: QuivJob | null;
+  config: TaskConfig | null;
 }
 
 export interface QuivJob {
   id: string;
   task_id: string;
+  task_name: string;
   status: string;
   started_at: string;
   ended_at: string | null;
+  duration_seconds: number | null;
+  error_message: string | null;
 }
 
 export interface TaskConfig {
@@ -35,30 +40,4 @@ export interface TaskConfigUpdate {
   task_name: string;
   interval_seconds: number;
   delay_seconds: number;
-}
-
-export interface ScheduledTask {
-  id: string;
-  name: string;
-  task_id: string;
-  task_key: string;
-  task_status: string;
-  interval: string;
-  interval_seconds: number;
-  delay_seconds: number;
-  last_run_duration: string;
-  last_run_start: Date | null;
-  last_run_status: string;
-  next_run: Date | null;
-}
-
-export interface QueuedTask {
-  id: string;
-  name: string;
-  queue_id: string;
-  trace_id: string;
-  duration: string;
-  finished: Date | null;
-  started: Date | null;
-  status: string;
 }

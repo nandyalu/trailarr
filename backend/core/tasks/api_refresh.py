@@ -66,18 +66,11 @@ async def api_refresh_by_id(
 
 @with_logging_context
 async def _api_refresh_by_id_job(
-    connection_id: int,
+    connection: ConnectionRead,
     *,
     _job_id: str | None = None,
     _stop_event: threading.Event | None = None,
 ):
-    # Get connection from database
-    try:
-        connection = connection_manager.read(connection_id)
-    except Exception as e:
-        msg = f"Failed to get connection with ID: {connection_id}"
-        logger.error(f"{msg}. Error: {e}")
-        return
     await api_refresh_by_id(connection, _stop_event=_stop_event)
     return None
 
@@ -102,6 +95,6 @@ def api_refresh_by_id_job(connection_id: int):
         interval=86400.0,
         delay=1,
         run_once=True,
-        args=(connection_id,),
+        args=(connection,),
     )
     return msg

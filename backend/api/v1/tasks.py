@@ -41,7 +41,7 @@ async def get_task_configs() -> list[ScheduledTaskConfigRead]:
 
 @tasks_router.put("/task-configs/{task_key}")
 async def update_task_config(
-    task_key: str, update: ScheduledTaskConfigUpdate
+    task_key: str, task_id: str, update: ScheduledTaskConfigUpdate
 ) -> ScheduledTaskConfigRead:
     if (
         update.task_name is None
@@ -54,16 +54,20 @@ async def update_task_config(
                 "task_name, interval_seconds, and delay_seconds are required."
             ),
         )
-    if update.task_name not in schedules.TASK_REGISTRY.keys():
-        # task_name doubles as the quiv key; only disallow empty strings
-        if not update.task_name.strip():
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="task_name must not be empty.",
-            )
+    if task_key not in schedules.TASK_REGISTRY.keys():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unknown task_key: {task_key!r}",
+        )
+    if not update.task_name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="task_name must not be empty.",
+        )
     try:
         updated = schedules.reschedule_task(
             task_key=task_key,
+            task_id=task_id,
             task_name=update.task_name,
             interval_seconds=update.interval_seconds,
             delay_seconds=update.delay_seconds,
@@ -77,42 +81,35 @@ async def update_task_config(
 
 @tasks_router.get("/tasks/")
 async def get_all_tasks() -> list[Task]:
-    tasks = scheduler.get_all_tasks()
-    # for task in tasks:
-    #     task.args = pickle.loads(task.args)
-    #     task.kwargs = pickle.loads(task.kwargs)
-    return tasks
+    return scheduler.get_all_tasks()
 
 
-@tasks_router.get("/tasks/{task_name}")
-async def get_task(task_name: str) -> Task:
-    task = scheduler.get_task(task_name)
-    # task.args = pickle.loads(task.args)
-    # task.kwargs = pickle.loads(task.kwargs)
-    return task
+@tasks_router.get("/tasks/{task_id}")
+async def get_task(task_id: str) -> Task:
+    return scheduler.get_task(task_id)
 
 
-@tasks_router.post("/tasks/{task_name}/cancel")
-async def cancel_task(task_name: str) -> bool:
+@tasks_router.post("/tasks/{task_id}/pause")
+async def pause_task(task_id: str) -> bool:
     try:
-        scheduler.pause_task(task_name)
+        scheduler.pause_task(task_id)
         return True
     except Exception:
         return False
 
 
-@tasks_router.post("/tasks/{task_name}/resume")
-async def resume_task(task_name: str) -> bool:
+@tasks_router.post("/tasks/{task_id}/resume")
+async def resume_task(task_id: str) -> bool:
     try:
-        scheduler.resume_task(task_name)
+        scheduler.resume_task(task_id)
         return True
     except Exception:
         return False
 
 
-@tasks_router.post("/tasks/{task_name}/run")
-async def run_task(task_name: str) -> str:
-    return schedules.run_task_now(task_name)
+@tasks_router.post("/tasks/{task_id}/run")
+async def run_task(task_id: str) -> str:
+    return schedules.run_task_now(task_id)
 
 
 # Jobs routes defined separately to avoid any path-param conflicts

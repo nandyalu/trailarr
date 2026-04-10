@@ -1,30 +1,32 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
 import {RouteLogs} from '../../routing';
+import {DurationPipe} from '../helpers/duration.pipe';
+import {IntervalPipe} from '../helpers/interval.pipe';
 import {TimediffPipe} from '../helpers/timediff.pipe';
-import {QueuedTask, ScheduledTask, TaskConfigUpdate} from '../models/tasks';
+import {QuivJob, QuivTask, TaskConfigUpdate} from '../models/tasks';
 import {TasksService} from '../services/tasks.service';
 import {WebsocketService} from '../services/websocket.service';
 
 @Component({
   selector: 'app-tasks',
-  imports: [AsyncPipe, TimediffPipe, RouterLink],
+  imports: [AsyncPipe, TimediffPipe, IntervalPipe, DurationPipe, RouterLink],
   providers: [],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TasksComponent implements OnInit {
+export class TasksComponent {
   private readonly tasksService = inject(TasksService);
   private readonly websocketService = inject(WebsocketService);
   private readonly editDialog = viewChild.required<ElementRef<HTMLDialogElement>>('editDialog');
 
   readonly scheduledTasks = this.tasksService.scheduledTasks;
-  readonly queuedTasks = this.tasksService.queuedTasks;
+  readonly jobs = this.tasksService.jobs;
   readonly isLoading = this.tasksService.isLoading;
-  editingTask = signal<ScheduledTask | null>(null);
+  editingTask = signal<QuivTask | null>(null);
   isSaving = signal(false);
   protected readonly RouteLogs = RouteLogs;
 
@@ -36,31 +38,27 @@ export class TasksComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.refreshTaskData();
-  }
-
   refreshTaskData() {
     this.tasksService.refreshData();
   }
 
-  runTask(task: ScheduledTask) {
-    this.tasksService.runScheduledTask(task.task_id).subscribe(() => this.refreshTaskData());
+  runTask(task: QuivTask) {
+    this.tasksService.runScheduledTask(task.id).subscribe(() => this.refreshTaskData());
   }
 
-  pauseTask(task: ScheduledTask) {
-    this.tasksService.pauseTask(task.task_id).subscribe(() => this.refreshTaskData());
+  pauseTask(task: QuivTask) {
+    this.tasksService.pauseTask(task.id).subscribe(() => this.refreshTaskData());
   }
 
-  resumeTask(task: ScheduledTask) {
-    this.tasksService.resumeTask(task.task_id).subscribe(() => this.refreshTaskData());
+  resumeTask(task: QuivTask) {
+    this.tasksService.resumeTask(task.id).subscribe(() => this.refreshTaskData());
   }
 
-  cancelJob(job: QueuedTask) {
+  cancelJob(job: QuivJob) {
     this.tasksService.cancelJob(job.id).subscribe(() => this.refreshTaskData());
   }
 
-  openEditDialog(task: ScheduledTask) {
+  openEditDialog(task: QuivTask) {
     this.editingTask.set(task);
     this.editDialog().nativeElement.showModal();
   }
@@ -81,7 +79,7 @@ export class TasksComponent implements OnInit {
     };
 
     this.isSaving.set(true);
-    this.tasksService.updateTaskConfig(task.task_key, payload).subscribe({
+    this.tasksService.updateTaskConfig(task.config?.task_key ?? '', task.id, payload).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.closeEditDialog();
@@ -91,5 +89,16 @@ export class TasksComponent implements OnInit {
         this.isSaving.set(false);
       },
     });
+  }
+
+  intervalDisplayUnit(seconds: number): number {
+    if (seconds >= 86400) return 86400;
+    if (seconds >= 3600) return 3600;
+    if (seconds >= 60) return 60;
+    return 1;
+  }
+
+  intervalDisplayValue(seconds: number): number {
+    return Math.round(seconds / this.intervalDisplayUnit(seconds));
   }
 }
