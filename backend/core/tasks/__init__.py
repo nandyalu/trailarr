@@ -1,7 +1,6 @@
 import os
-from typing import Any
 
-from quiv import Quiv, Event
+from quiv import Quiv, Event, Task, Job
 
 from app_logger import ModuleLogger
 from api.v1.websockets import ws_manager
@@ -17,25 +16,25 @@ scheduler = Quiv(timezone=timezone, logger=tasks_logger)
 
 
 # Add event listeners to the scheduler
-async def on_job_started_event(event: Event, data: dict[str, Any]) -> None:
+async def on_job_started_event(event: Event, task: Task, job: Job) -> None:
     await ws_manager.broadcast(
-        f"'{data['task_name']}' Task Started",
+        f"'{task.task_name}' Task Started",
         type="Info",
         reload="media,tasks",
     )
 
 
-async def on_job_completed_event(event: Event, data: dict[str, Any]) -> None:
+async def on_job_completed_event(event: Event, task: Task, job: Job) -> None:
     await ws_manager.broadcast(
-        f"'{data['task_name']}' Task Completed",
+        f"'{task.task_name}' Task Completed",
         type="Success",
         reload="media,tasks",
     )
 
 
-async def on_job_failed_event(event: Event, data: dict[str, Any]) -> None:
+async def on_job_failed_event(event: Event, task: Task, job: Job) -> None:
     await ws_manager.broadcast(
-        f"'{data['task_name']}' Task Failed",
+        f"'{task.task_name}' Task Failed",
         type="Error",
         reload="media,tasks",
     )

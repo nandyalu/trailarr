@@ -19,58 +19,58 @@
   } @else {
     <div class="task-list">
       @for (task of scheduledTasks(); track task.id) {
-        <div class="task-row" [class.paused]="task.task_status === 'paused'">
+        <div class="task-row" [class.paused]="task.status === 'paused'">
           <div class="task-info">
             <div class="task-top">
-              <span class="task-name">{{ task.name }}</span>
-              <span class="badge" [class]="'badge-task-' + task.task_status">{{ task.task_status }}</span>
-              @if (task.last_run_status !== 'not run') {
-                <span class="badge" [class]="'badge-job-' + task.last_run_status">{{ task.last_run_status }}</span>
+              <span class="task-name">{{ task.task_name }}</span>
+              <span class="badge" [class]="'badge-task-' + task.status">{{ task.status }}</span>
+              @if (task.last_run) {
+                <span class="badge" [class]="'badge-job-' + task.last_run.status">{{ task.last_run.status }}</span>
               }
             </div>
             <div class="task-meta">
               <span class="meta-item">
                 <span class="meta-label">Every</span>
-                {{ task.interval }}
+                {{ task.run_once ? 'once' : (task.interval_seconds | interval) }}
               </span>
               <span class="meta-dot">·</span>
               <span class="meta-item">
                 <span class="meta-label">Last run</span>
-                {{ task.last_run_start | timediff: 'Never' | async }}
-                @if (task.last_run_duration) {
-                  <span class="meta-duration">({{ task.last_run_duration }})</span>
+                {{ task.last_run?.started_at | timediff: 'Never' | async }}
+                @if (task.last_run && task.last_run.status !== 'scheduled') {
+                  <span class="meta-duration">({{ task.last_run.duration_seconds | duration: '...' }})</span>
                 }
               </span>
               <span class="meta-dot">·</span>
               <span class="meta-item">
                 <span class="meta-label">Next</span>
-                {{ task.next_run | timediff: '—' | async }}
+                {{ task.next_run_at | timediff: '—' | async }}
               </span>
             </div>
           </div>
           <div class="task-actions">
-            @if (task.task_status === 'active') {
+            @if (task.status === 'active') {
               <button class="action-btn" (click)="runTask(task)" title="Run now">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M320-200v-560l440 280-440 280Z" />
                 </svg>
               </button>
             }
-            @if (task.task_status === 'active') {
+            @if (task.status === 'active') {
               <button class="action-btn" (click)="pauseTask(task)" title="Pause task">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Z" />
                 </svg>
               </button>
             }
-            @if (task.task_status === 'paused') {
+            @if (task.status === 'paused') {
               <button class="action-btn resume" (click)="resumeTask(task)" title="Resume task">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M320-200v-560l440 280-440 280Z" />
                 </svg>
               </button>
             }
-            @if (task.task_status === 'running') {
+            @if (task.status === 'running') {
               <span class="action-btn running" title="Running…">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
@@ -96,52 +96,52 @@
   <div class="section-header">
     <span class="section-title">Job Queue</span>
     @if (!isLoading()) {
-      <span class="count-chip">{{ queuedTasks().length }}</span>
+      <span class="count-chip">{{ jobs().length }}</span>
     }
   </div>
 
-  @if (queuedTasks().length === 0) {
+  @if (jobs().length === 0) {
     <div class="empty-state">No jobs in queue</div>
   } @else {
     <div class="task-list">
-      @for (task of queuedTasks(); track task.id) {
+      @for (job of jobs(); track job.id) {
         <div class="task-row">
           <div class="task-info">
             <div class="task-top">
-              <span class="task-name">{{ task.name }}</span>
-              <span class="badge" [class]="'badge-job-' + task.status">{{ task.status }}</span>
+              <span class="task-name">{{ job.task_name }}</span>
+              <span class="badge" [class]="'badge-job-' + job.status">{{ job.status }}</span>
             </div>
             <div class="task-meta">
               <span class="meta-item">
                 <span class="meta-label">Started</span>
-                {{ task.started | timediff: 'Pending' | async }}
+                {{ job.started_at | timediff: 'Pending' | async }}
               </span>
-              @if (task.finished) {
+              @if (job.ended_at) {
                 <span class="meta-dot">·</span>
                 <span class="meta-item">
                   <span class="meta-label">Finished</span>
-                  {{ task.finished | timediff: '—' | async }}
+                  {{ job.ended_at | timediff: '—' | async }}
                 </span>
               }
-              @if (task.duration) {
+              @if (job.duration_seconds !== null) {
                 <span class="meta-dot">·</span>
                 <span class="meta-item">
                   <span class="meta-label">Duration</span>
-                  {{ task.duration }}
+                  {{ job.duration_seconds | duration }}
                 </span>
               }
             </div>
           </div>
           <div class="task-actions">
-            <a class="action-btn" [routerLink]="['/', RouteLogs]" [queryParams]="{filter: task.trace_id}" title="View Logs">
+            <a class="action-btn" [routerLink]="['/', RouteLogs]" [queryParams]="{filter: job.id}" title="View Logs">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                 <path
                   d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"
                 />
               </svg>
             </a>
-            @if (task.status === 'running' || task.status === 'scheduled') {
-              <button class="action-btn cancel" (click)="cancelJob(task)" title="Cancel job">
+            @if (job.status === 'running' || job.status === 'scheduled') {
+              <button class="action-btn cancel" (click)="cancelJob(job)" title="Cancel job">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M360-320h240v-320H360v320ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
@@ -164,34 +164,22 @@
 
       <div class="form-field">
         <label class="form-label" for="taskName">Name</label>
-        <input id="taskName" #nameInput class="form-input" type="text" [value]="task.name" />
+        <input id="taskName" #nameInput class="form-input" type="text" [value]="task.task_name" />
       </div>
 
       <div class="form-field">
         <label class="form-label" for="intervalValue">Interval</label>
         <div class="input-with-unit">
+          @let intervalSecs = task.config?.interval_seconds ?? task.interval_seconds;
           <input
             id="intervalValue"
             #intervalValueInput
             class="form-input"
             type="number"
             min="1"
-            [value]="
-              task.interval_seconds >= 86400
-                ? task.interval_seconds / 86400
-                : task.interval_seconds >= 3600
-                  ? task.interval_seconds / 3600
-                  : task.interval_seconds >= 60
-                    ? task.interval_seconds / 60
-                    : task.interval_seconds
-            "
+            [value]="intervalDisplayValue(intervalSecs)"
           />
-          <select
-            #intervalUnitSelect
-            class="form-select"
-            name="interval-interval-type"
-            [value]="task.interval_seconds >= 86400 ? 86400 : task.interval_seconds >= 3600 ? 3600 : task.interval_seconds >= 60 ? 60 : 1"
-          >
+          <select #intervalUnitSelect class="form-select" name="interval-interval-type" [value]="intervalDisplayUnit(intervalSecs)">
             <option value="1">seconds</option>
             <option value="60">minutes</option>
             <option value="3600">hours</option>
@@ -203,29 +191,13 @@
       <div class="form-field">
         <label class="form-label" for="delayValue">Startup Delay</label>
         <div class="input-with-unit">
-          <input
-            id="delayValue"
-            #delayValueInput
-            class="form-input"
-            type="number"
-            min="0"
-            [value]="
-              task.delay_seconds >= 3600
-                ? task.delay_seconds / 3600
-                : task.delay_seconds >= 60
-                  ? task.delay_seconds / 60
-                  : task.delay_seconds
-            "
-          />
-          <select
-            #delayUnitSelect
-            class="form-select"
-            name="delay-interval-type"
-            [value]="task.delay_seconds >= 3600 ? 3600 : task.delay_seconds >= 60 ? 60 : 1"
-          >
+          @let delaySecs = task.config?.delay_seconds ?? 0;
+          <input id="delayValue" #delayValueInput class="form-input" type="number" min="0" [value]="intervalDisplayValue(delaySecs)" />
+          <select #delayUnitSelect class="form-select" name="delay-interval-type" [value]="intervalDisplayUnit(delaySecs)">
             <option value="1">seconds</option>
             <option value="60">minutes</option>
             <option value="3600">hours</option>
+            <option value="86400">days</option>
           </select>
         </div>
         <p class="form-hint">Delay changes take effect immediately on next restart.</p>

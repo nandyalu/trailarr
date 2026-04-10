@@ -1,4 +1,5 @@
 import threading
+from typing import Callable
 
 from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
@@ -71,7 +72,7 @@ async def _download_missing_trailers(
 
 
 # Maps each stable task_key to its handler function.
-TASK_REGISTRY = {
+TASK_REGISTRY: dict[str, Callable] = {
     "api_refresh": _refresh_api_data,
     "image_refresh": _refresh_images,
     "scan_disk": _scan_all_media_folders,
@@ -81,7 +82,7 @@ TASK_REGISTRY = {
 }
 
 
-def _build_defaults() -> list[dict]:
+def _build_defaults() -> list[dict[str, str | float]]:
     """Return default task config dicts using current app settings."""
     monitor_interval_seconds = app_settings.monitor_interval * 60.0
     return [
@@ -125,12 +126,12 @@ def _build_defaults() -> list[dict]:
 
 
 def _get_or_create_config(
-    task_key: str, defaults: dict
+    task_key: str, defaults: dict[str, str | float]
 ) -> ScheduledTaskConfigRead:
     """Load config from DB; create from defaults if not yet persisted."""
     config = get_task_config(task_key)
     if config is None:
-        config = create_task_config(ScheduledTaskConfig(**defaults))
+        config = create_task_config(ScheduledTaskConfig(**defaults))  # type: ignore
     return config
 
 
@@ -142,7 +143,7 @@ def schedule_all_tasks() -> None:
     """
     logger.info("Scheduling all background tasks!")
     for defaults in _build_defaults():
-        task_key: str = defaults["task_key"]
+        task_key: str = defaults["task_key"]  # type: ignore
         config = _get_or_create_config(task_key, defaults)
         func = TASK_REGISTRY[task_key]
         scheduler.add_task(
@@ -158,6 +159,7 @@ def schedule_all_tasks() -> None:
 
 def reschedule_task(
     task_key: str,
+    task_id: str,
     task_name: str,
     interval_seconds: float,
     delay_seconds: float,
@@ -179,7 +181,7 @@ def reschedule_task(
         task_key, task_name, interval_seconds, delay_seconds
     )
 
-    scheduler.remove_task(old_name)
+    scheduler.remove_task(task_id)
     func = TASK_REGISTRY[task_key]
     scheduler.add_task(
         task_name=updated.task_name,
@@ -195,15 +197,15 @@ def reschedule_task(
     return updated
 
 
-def run_task_now(task_name: str) -> str:
+def run_task_now(task_id: str) -> str:
     """Run a scheduled task immediately.
 
     Args:
-        task_name (str): The quiv task name.
+        task_id (str): The quiv task ID.
     Returns:
         str: Confirmation message.
     """
-    if not task_name:
-        return "Unable to trigger task, 'task_name' not provided!"
-    scheduler.run_task_immediately(task_name)
-    return f"'{task_name}' Task triggered successfully!"
+    if not task_id:
+        return "Unable to trigger task, 'task_id' not provided!"
+    scheduler.run_task_immediately(task_id)
+    return f"'{task_id}' Task triggered successfully!"

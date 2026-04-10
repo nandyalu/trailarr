@@ -8,7 +8,7 @@ Scheduled tasks will show the following action buttons:
 
 ### Run Now
 
-This runs the task immediately without waiting until the next scheduled run. Once a task is immediately runned, it will continue it's schedule to run at specified intervals from that time until next app restart.
+This runs the task immediately without waiting until the next scheduled run. Once a task is run immediately, it will continue its schedule to run at specified intervals from that time until next app restart.
 
 ### Pause
 
