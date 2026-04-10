@@ -1,5 +1,7 @@
 # Tasks
 
+<!-- md:version:upd 0.8.0 -->
+
 The Tasks page shows all background jobs that keep Trailarr running smoothly. You can view scheduled jobs, see their status, and run them manually if needed.
 
 ## Task Actions
@@ -8,7 +10,10 @@ Scheduled tasks will show the following action buttons:
 
 ### Run Now
 
-This runs the task immediately without waiting until the next scheduled run. Once a task is run immediately, it will continue its schedule to run at specified intervals from that time until next app restart.
+This runs the task immediately without waiting until the next scheduled run. 
+
+!!! waarning ""
+    Once a task is run immediately, it will continue its schedule to run at specified intervals from that time until next app restart.
 
 ### Pause
 
