@@ -28,6 +28,7 @@ export class TasksComponent {
   readonly isLoading = this.tasksService.isLoading;
   editingTask = signal<QuivTask | null>(null);
   isSaving = signal(false);
+  expandedErrorId = signal<string | null>(null);
   protected readonly RouteLogs = RouteLogs;
 
   constructor() {
@@ -89,6 +90,10 @@ export class TasksComponent {
         this.isSaving.set(false);
       },
     });
+  }
+
+  toggleError(id: string) {
+    this.expandedErrorId.set(this.expandedErrorId() === id ? null : id);
   }
 
   intervalDisplayUnit(seconds: number): number {
