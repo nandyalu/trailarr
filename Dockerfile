@@ -87,7 +87,8 @@ RUN find /app/scripts -name "*.sh" -type f -exec chmod +x {} \;
 EXPOSE ${APP_PORT}
 
 # Set permissions for appuser on /app directory
-RUN chmod -R 750 /app
+# Use 755 so appuser (running as 'other') can read/execute without needing ownership
+RUN chmod -R 755 /app
 
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
