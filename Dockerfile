@@ -19,7 +19,9 @@ COPY ./frontend/ ./
 
 # ARG APP_VERSION needs to be declared in each stage to be available
 ARG APP_VERSION=0.6.1-dev
-RUN npm version ${APP_VERSION} --no-git-tag-version --allow-same-version
+RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+'; then \
+        npm version "${APP_VERSION}" --no-git-tag-version --allow-same-version; \
+    fi
 
 # Build the frontend for production
 RUN npm run build
@@ -70,8 +72,10 @@ COPY ./assets /app/assets
 # Copy the backend
 COPY ./backend /app/backend
 
-# Set the version in uv (updates pyproject.toml)
-RUN cd /app/backend && uv version ${APP_VERSION}
+# Set the version in uv (updates pyproject.toml); skip for non-semver versions (e.g. nightly builds)
+RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+'; then \
+        cd /app/backend && uv version "${APP_VERSION}"; \
+    fi
 
 # Copy the frontend built files from the frontend-build stage
 COPY --from=frontend-build /app/frontend-build /app/frontend-build
