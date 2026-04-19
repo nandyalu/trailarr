@@ -19,7 +19,7 @@ COPY ./frontend/ ./
 
 # ARG APP_VERSION needs to be declared in each stage to be available
 ARG APP_VERSION=0.6.1-dev
-RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+'; then \
+RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+$'; then \
         npm version "${APP_VERSION}" --no-git-tag-version --allow-same-version; \
     fi
 
@@ -73,7 +73,7 @@ COPY ./assets /app/assets
 COPY ./backend /app/backend
 
 # Set the version in uv (updates pyproject.toml); skip for non-semver versions (e.g. nightly builds)
-RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+'; then \
+RUN if echo "${APP_VERSION}" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+$'; then \
         cd /app/backend && uv version "${APP_VERSION}"; \
     fi
 
