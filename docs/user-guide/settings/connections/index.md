@@ -39,13 +39,15 @@ Turns off monitoring for the connection and does not download any trailers.
 
 ## Plex Connection
 
+<!-- md:version:add 0.9.0 -->
+
 Plex connections work differently from Radarr/Sonarr connections. See [Plex Connection Fields](./plex.md) for a full field reference and [Plex Connection Setup](../../../getting-started/03-setup/plex-connection.md) for a step-by-step guide.
 
 Key differences:
 
 - **Authentication**: Uses OAuth (sign in with your Plex account) instead of an API key.
-- **No path mappings**: Trailarr communicates with Plex via its API and does not need access to Plex media files.
-- **No monitor type**: Plex connections do not download trailers. They only link media and support skip logic and notifications configured in Trailer Profiles.
+- **Library folders instead of path mappings**: Maps Plex library folder paths to Trailarr container paths. The `sync` monitor option is not available.
+- **No `sync` monitor type**: Plex connections support `missing`, `new`, and `none`. The `new` option is disabled when first creating a connection.
 
 !!! note ""
     You still need at least one Radarr or Sonarr connection — a Plex connection alone is not sufficient to use Trailarr.

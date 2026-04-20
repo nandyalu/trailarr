@@ -90,6 +90,7 @@ export class EditProfileComponent {
     subtitle: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/subtitle/',
     search: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/',
     filters: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/',
+    plex: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/plex/',
   };
 
   // Disabled options

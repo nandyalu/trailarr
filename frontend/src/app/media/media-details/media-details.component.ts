@@ -73,11 +73,13 @@ export class MediaDetailsComponent {
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
-    if (connection.arr_type.toLowerCase() == 'radarr') {
+    const arrType = connection.arr_type.toLowerCase();
+    if (arrType == 'radarr') {
       return baseUrl + '/movie/' + media.txdb_id;
-    } else {
+    } else if (arrType == 'sonarr') {
       return baseUrl + '/series/' + media.title_slug;
     }
+    return '';
   });
 
   plex_url = computed(() => {

@@ -10,6 +10,8 @@ Trailarr tracks important events for each media item, giving you visibility into
 
 ## Event Sources
 
+<!-- md:version:upd 0.9.0 -->
+
 Events are triggered by two sources:
 
 | Source | Description |
@@ -162,6 +164,8 @@ Logged when Trailarr skips downloading a trailer for a media item.
 
 ### Plex Linked
 
+<!-- md:version:add 0.9.0 -->
+
 Logged when a media item is successfully matched to an item in a Plex library.
 
 | Field | Value |
@@ -175,6 +179,8 @@ This event is created when Trailarr syncs with your Plex connection and finds a 
 ---
 
 ### Plex Unlinked
+
+<!-- md:version:add 0.9.0 -->
 
 Logged when the Plex link for a media item is removed.
 
@@ -191,6 +197,8 @@ Logged when the Plex link for a media item is removed.
 ---
 
 ### Plex Scan Triggered
+
+<!-- md:version:add 0.9.0 -->
 
 Logged when Trailarr requests a Plex library refresh after a successful trailer download.
 

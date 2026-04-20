@@ -81,12 +81,23 @@
           <legend id="monitorType_label">Monitor Type:</legend>
           <div class="options-bar" role="radiogroup" aria-labelledby="monitorType_label">
             @for (option of monitorOptions; track option) {
-              <label class="option-label" [class.option__selected]="option === selectedMonitor()">
-                <input type="radio" [id]="'monitor_' + option" [value]="option" (change)="setMonitor(option)" />
+              <label
+                class="option-label"
+                [class.option__selected]="option === selectedMonitor()"
+                [class.option__disabled]="option === 'new' && connectionId() === 0"
+              >
+                <input
+                  type="radio"
+                  [id]="'monitor_' + option"
+                  [value]="option"
+                  (change)="setMonitor(option)"
+                  [disabled]="option === 'new' && connectionId() === 0"
+                />
                 <span class="option-name">{{ option | uppercase }}</span>
               </label>
             }
           </div>
+          <help-link-icon [link]="'https://nandyalu.github.io/trailarr/user-guide/settings/connections/plex/#monitor-type'" />
         </div>
       </div>
       <!-- #endregion -->
@@ -105,6 +116,7 @@
       <!-- #region Library Folders -->
       <div class="d-row" style="justify-content: flex-start">
         <h3>Library Folders</h3>
+        <help-link-icon [link]="'https://nandyalu.github.io/trailarr/user-guide/settings/connections/plex/#library-folders'" />
       </div>
       @if (connectionData().path_mappings.length === 0) {
         <div class="warning-banner">

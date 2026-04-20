@@ -24,7 +24,7 @@ export class ConnectionService {
     api_key: '',
     arr_type: ArrType.Radarr,
     id: -1,
-    monitor: MonitorType.New,
+    monitor: MonitorType.None,
     name: '',
     machine_identifier: null,
     path_mappings: [],

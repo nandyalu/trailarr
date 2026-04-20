@@ -1,5 +1,7 @@
 ## Notify Plex
 
+<!-- md:version:add 0.9.0 -->
+
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true or false |
@@ -12,6 +14,8 @@ When enabled, Trailarr will trigger a Plex library scan after successfully downl
 ---
 
 ## Skip if Plex Trailer
+
+<!-- md:version:add 0.9.0 -->
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
@@ -33,6 +37,8 @@ A trailer qualifies if:
 ---
 
 ## Skip if Plex Trailer Resolution
+
+<!-- md:version:add 0.9.0 -->
 
 | Type    | Required | Default | Valid Values          |
 |:-------:|:--------:|:-------:|:---------------------:|
