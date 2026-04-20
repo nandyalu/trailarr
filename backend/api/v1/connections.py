@@ -9,7 +9,7 @@ from core.base.database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.tasks.api_refresh import api_refresh_by_id_job
+from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -158,7 +158,7 @@ async def update_connection(
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {
-            "description": "Connection Deleted Successfully!",
+            "description": "Connection deletion scheduled.",
         },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
@@ -168,18 +168,12 @@ async def update_connection(
 )
 async def delete_connection(connection_id: int) -> str:
     try:
-        connection_manager.delete(connection_id)
+        msg = delete_connection_job(connection_id)
     except Exception as e:
-        await websockets.ws_manager.broadcast(
-            "Failed to delete Connection!", "Error"
-        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
-    await websockets.ws_manager.broadcast(
-        "Connection Deleted Successfully!", "Success", reload="connections"
-    )
-    return "Connection Deleted Successfully!"
+    return msg
 
 
 @connections_router.get(

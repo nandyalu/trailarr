@@ -3,7 +3,7 @@ import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core'
 import {RouterLink} from '@angular/router';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
-import {RouteAdd, RouteConnections, RouteEdit, RouteSettings} from 'src/routing';
+import {RouteAdd, RouteConnections, RouteEdit, RoutePlex, RouteSettings} from 'src/routing';
 
 @Component({
   selector: 'app-show-connections',
@@ -25,5 +25,6 @@ export class ShowConnectionsComponent {
   protected readonly RouteAdd = RouteAdd;
   protected readonly RouteConnections = RouteConnections;
   protected readonly RouteEdit = RouteEdit;
+  protected readonly RoutePlex = RoutePlex;
   protected readonly RouteSettings = RouteSettings;
 }

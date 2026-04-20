@@ -1,8 +1,7 @@
 import {HttpClient} from '@angular/common/http';
 import {inject, Injectable} from '@angular/core';
-import {AppLogRecordRead} from 'generated-sources/openapi';
 import {environment} from '../../environment';
-import {Logs} from '../models/logs';
+import {AppLogRecord, Logs} from '../models/logs';
 
 @Injectable({providedIn: 'root'})
 export class LogsService {
@@ -13,5 +12,5 @@ export class LogsService {
   downloadLogs = () => this.http.get(this.logsUrl + 'download', {responseType: 'blob'});
   getLogs = () => this.http.get<Logs[]>(this.logsUrl);
 
-  getRawLogs = () => this.http.get<AppLogRecordRead[]>(this.logsUrl + 'raw');
+  getRawLogs = () => this.http.get<AppLogRecord[]>(this.logsUrl + 'raw');
 }

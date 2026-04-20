@@ -1,5 +1,5 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, viewChild} from '@angular/core';
-import {FilesService} from 'generated-sources/openapi';
+import {FilesService} from 'src/app/services/files.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 
 @Component({
@@ -31,7 +31,7 @@ export class DeleteDialogComponent implements AfterViewInit {
   }
 
   deleteFile(): void {
-    this.filesService.deleteFileFolApiV1FilesDeleteDelete({path: this.filePath(), media_id: this.mediaId()}).subscribe((result) => {
+    this.filesService.deleteFileFol(this.filePath(), this.mediaId()).subscribe((result) => {
       const msg = result ? 'Deleted successfully!' : 'Failed to delete!';
       this.webSocketService.showToast(msg, result ? 'success' : 'error');
       this.closeDialog();

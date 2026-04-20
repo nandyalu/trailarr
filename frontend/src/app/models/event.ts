@@ -6,6 +6,9 @@ export enum EventType {
   TRAILER_DOWNLOADED = 'trailer_downloaded',
   TRAILER_DELETED = 'trailer_deleted',
   DOWNLOAD_SKIPPED = 'download_skipped',
+  PLEX_LINKED = 'plex_linked',
+  PLEX_UNLINKED = 'plex_unlinked',
+  PLEX_SCAN_TRIGGERED = 'plex_scan_triggered',
 }
 
 export enum EventSource {
@@ -32,6 +35,9 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   [EventType.TRAILER_DOWNLOADED]: 'Trailer Downloaded',
   [EventType.TRAILER_DELETED]: 'Trailer Deleted',
   [EventType.DOWNLOAD_SKIPPED]: 'Download Skipped',
+  [EventType.PLEX_LINKED]: 'Plex Linked',
+  [EventType.PLEX_UNLINKED]: 'Plex Unlinked',
+  [EventType.PLEX_SCAN_TRIGGERED]: 'Plex Scan Triggered',
 };
 
 export const EVENT_SOURCE_LABELS: Record<EventSource, string> = {

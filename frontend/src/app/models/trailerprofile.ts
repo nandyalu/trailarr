@@ -1,0 +1,69 @@
+import {CustomFilter, CustomFilterCreate} from './customfilter';
+
+export interface TrailerProfileRead {
+  id: number;
+  customfilter_id: number;
+  customfilter: CustomFilter;
+  enabled?: boolean;
+  priority?: number;
+  retry_count?: number;
+  file_format?: string;
+  file_name?: string;
+  folder_enabled?: boolean;
+  folder_name?: string;
+  embed_metadata?: boolean;
+  remove_silence?: boolean;
+  audio_format?: string;
+  audio_volume_level?: number;
+  video_format?: string;
+  video_resolution?: number;
+  subtitles_enabled?: boolean;
+  subtitles_format?: string;
+  subtitles_language?: string;
+  search_query?: string;
+  min_duration?: number;
+  max_duration?: number;
+  always_search?: boolean;
+  exclude_words?: string;
+  include_words?: string;
+  ytdlp_extra_options?: string;
+  stop_monitoring?: boolean;
+  custom_folder?: string;
+  notify_plex?: boolean;
+  skip_if_plex_trailer?: boolean;
+  skip_if_plex_trailer_resolution?: number;
+}
+
+export interface TrailerProfileCreate {
+  id?: number | null;
+  customfilter_id?: number | null;
+  customfilter: CustomFilterCreate;
+  enabled?: boolean;
+  priority?: number;
+  retry_count?: number;
+  file_format?: string;
+  file_name?: string;
+  folder_enabled?: boolean;
+  folder_name?: string;
+  embed_metadata?: boolean;
+  remove_silence?: boolean;
+  audio_format?: string;
+  audio_volume_level?: number;
+  video_format?: string;
+  video_resolution?: number;
+  subtitles_enabled?: boolean;
+  subtitles_format?: string;
+  subtitles_language?: string;
+  search_query?: string;
+  min_duration?: number;
+  max_duration?: number;
+  always_search?: boolean;
+  exclude_words?: string;
+  include_words?: string;
+  ytdlp_extra_options?: string;
+  stop_monitoring?: boolean;
+  custom_folder?: string;
+  notify_plex?: boolean;
+  skip_if_plex_trailer?: boolean;
+  skip_if_plex_trailer_resolution?: number;
+}

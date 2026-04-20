@@ -322,14 +322,8 @@ export class EditConnectionComponent {
   deleteConnection() {
     if (!this.connectionService.connectionExists(this.connectionId())) return;
     this.connectionService.deleteConnection(this.connectionId()).subscribe({
-      next: (result) => {
-        this.submitResult.set(`Connection deleted successfully: ${result}`);
-        this.connectionService.connectionsResource.reload();
-        setTimeout(() => {
-          this.router.navigate(['/settings/connections']).then(() => {
-            this.connectionService.connectionsResource.reload();
-          });
-        }, 3000);
+      next: () => {
+        this.router.navigate(['/settings/connections']);
       },
       error: (error) => {
         console.error('Error deleting connection:', error);

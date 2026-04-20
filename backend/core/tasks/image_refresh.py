@@ -1,6 +1,7 @@
 import threading
 
 import core.base.database.manager.media as media_manager
+import core.base.database.manager.connection as connection_manager
 from core.base.database.models.helpers import MediaImage
 from core.download.image import refresh_media_images
 from app_logger import ModuleLogger
@@ -43,16 +44,32 @@ async def refresh_and_save_media_images(
         db_media_list = media_manager.read_all_generator(movies_only=is_movie)
     media_image_list: list[MediaImage] = []
     logger.debug(f"Refreshing images for {'movies' if is_movie else 'series'}")
+    # Cache Plex tokens keyed by plex_connection_id to avoid repeated DB reads
+    plex_tokens: dict[int, str] = {}
     # Create MediaImage objects for each movie/series
     for db_media in db_media_list:
         if _stop_event and _stop_event.is_set():
             logger.info("Image refresh stopped due to stop event.")
             return
+        # Build extra headers for Plex-hosted images
+        plex_headers: dict | None = None
+        if db_media.plex_connection_id:
+            conn_id = db_media.plex_connection_id
+            if conn_id not in plex_tokens:
+                try:
+                    conn = connection_manager.read(conn_id)
+                    plex_tokens[conn_id] = conn.api_key or ""
+                except Exception:
+                    plex_tokens[conn_id] = ""
+            token = plex_tokens[conn_id]
+            if token:
+                plex_headers = {"X-Plex-Token": token}
         poster_image = MediaImage(
             id=db_media.id,
             is_poster=True,
             image_url=db_media.poster_url,
             image_path=db_media.poster_path,
+            headers=plex_headers,
         )
         media_image_list.append(poster_image)
         fanart_image = MediaImage(
@@ -60,6 +77,7 @@ async def refresh_and_save_media_images(
             is_poster=False,
             image_url=db_media.fanart_url,
             image_path=db_media.fanart_path,
+            headers=plex_headers,
         )
         media_image_list.append(fanart_image)
     # Refresh images in the system, and/or get updated paths

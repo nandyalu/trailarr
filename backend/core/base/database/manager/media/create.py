@@ -15,6 +15,30 @@ from exceptions import ItemNotFoundError
 
 
 @write_session
+def create(
+    media_create: MediaCreate,
+    *,
+    _session: Session = None,  # type: ignore
+) -> MediaRead:
+    """Create a single new media item in the database.\n
+    Args:
+        media_create (MediaCreate): The media item to create.
+        _session (Session, Optional): A session to use for the database connection.\n
+    Returns:
+        MediaRead: The created MediaRead object.
+    Raises:
+        ItemNotFoundError: If the connection_id is invalid.
+    """
+    if not connection_manager.exists(media_create.connection_id, _session=_session):
+        raise ItemNotFoundError("Connection", media_create.connection_id)
+    db_media = Media.model_validate(media_create)
+    _session.add(db_media)
+    _session.commit()
+    _session.refresh(db_media)
+    return MediaRead.model_validate(db_media)
+
+
+@write_session
 def create_or_update_bulk(
     media_create_list: list[MediaCreate],
     *,

@@ -27,9 +27,9 @@ class SearchMedia(BaseModel):
     id: int
     title: str
     year: int
-    youtube_trailer_id: str
-    imdb_id: str
-    txdb_id: str
+    youtube_trailer_id: str | None
+    imdb_id: str | None
+    txdb_id: str | None
     is_movie: bool
     poster_path: str | None
 

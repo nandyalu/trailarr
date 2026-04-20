@@ -92,6 +92,14 @@
 .connection-card .content {
   grid-row: 2;
   grid-column: 1;
+  overflow: hidden;
+
+  .url-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .connection-card .link-image {
@@ -106,7 +114,14 @@
   img {
     width: 3rem;
     height: 3rem;
+    margin: 0 1.5rem;
     pointer-events: all;
+
+    &[src*="plex_logo"] {
+      width: 6rem;
+      height: auto;
+      margin: 0;
+    }
   }
 }
 
@@ -131,3 +146,82 @@ dialog::backdrop {
 .dialog-content button {
   margin: 10px;
 }
+
+// #region Add-type picker dialog
+.add-type-dialog {
+  border: 2px solid var(--color-outline);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  min-width: 280px;
+  max-width: 420px;
+
+  h3 {
+    margin: 0 0 1rem;
+    text-align: center;
+    color: var(--color-on-surface);
+  }
+}
+
+.add-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.type-option-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface-container-high);
+  border: 2px solid var(--color-outline);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  width: 100%;
+  color: inherit;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-container-highest, var(--color-surface-container-high));
+  }
+
+  .type-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-primary);
+  }
+
+  .type-desc {
+    font-size: 0.8rem;
+    color: var(--color-on-surface-variant);
+    margin-top: 2px;
+  }
+}
+
+.type-option-button.plex-type {
+  &:hover {
+    border-color: #e5a00d;
+  }
+
+  .type-name {
+    color: #e5a00d;
+  }
+}
+
+.add-type-dialog .link-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+}
+// #endregion Add-type picker dialog

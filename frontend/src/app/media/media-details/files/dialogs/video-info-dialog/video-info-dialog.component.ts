@@ -11,7 +11,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {FilesService, VideoInfo} from 'generated-sources/openapi';
+import {FilesService} from 'src/app/services/files.service';
+import {VideoInfo} from 'src/app/models/video';
 import {FileSizePipe} from 'src/app/helpers/file-size.pipe';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 
@@ -59,7 +60,7 @@ export class VideoInfoDialogComponent implements AfterViewInit {
   }
 
   private loadVideoInfo(): void {
-    this.filesService.getVideoInfoApiV1FilesVideoInfoGet({file_path: this.filePath()}).subscribe({
+    this.filesService.getVideoInfo(this.filePath()).subscribe({
       next: (videoInfo) => {
         // Handle case where youtube_channel is 'UnknownChannel'
         if (videoInfo && videoInfo.youtube_channel) {
