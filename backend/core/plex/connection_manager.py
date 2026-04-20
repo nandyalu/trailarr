@@ -1,8 +1,9 @@
 from app_logger import ModuleLogger
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import ConnectionRead
+from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.event import EventSource
+from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
 from core.plex.models import PlexLibrarySection, PlexMediaItem
@@ -40,6 +41,7 @@ class PlexConnectionManager:
         self.path_mappings = [
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
+        self.monitor = connection.monitor
         self.api = PlexAPI(
             server_url=connection.url,
             token=connection.api_key,
@@ -64,6 +66,23 @@ class PlexConnectionManager:
                 path = path.replace(_from, _to)
                 break
         return path.replace("\\", "/")
+
+    def _check_monitoring(self, trailer_exists: bool) -> bool:
+        """Return the monitor value for a newly-created Plex-only media item.
+
+        Plex items have no arr_monitored concept; MONITOR_SYNC treats presence
+        in the Plex library as implicitly monitored (arr_monitored=True)."""
+        if trailer_exists:
+            return False
+        if self.monitor == MonitorType.MONITOR_NONE:
+            return False
+        # MONITOR_MISSING, MONITOR_NEW, MONITOR_SYNC all resolve to True:
+        # - MISSING: no trailer → monitor
+        # - NEW: Plex-only items are always newly created → monitor
+        #        Existing items don't call this function since they won't
+        #        be re-created → no change
+        # - SYNC: Plex library presence = monitored → monitor
+        return True
 
     # ------------------------------------------------------------------
     # Core refresh logic
@@ -96,7 +115,7 @@ class PlexConnectionManager:
                 return path.replace(_to, _from, 1).replace("\\", "/")
         return path
 
-    def _process_item(
+    async def _process_item(
         self,
         item: PlexMediaItem,
         section: PlexLibrarySection,
@@ -159,6 +178,31 @@ class PlexConnectionManager:
                 source=EventSource.SYSTEM,
                 source_detail="PlexRefresh",
             )
+            # Check trailer and apply monitoring logic for Plex-only items
+            trailer_exists = False
+            if media_read.folder_path:
+                trailer_exists = await FilesHandler.check_trailer_exists(
+                    path=media_read.folder_path,
+                    check_inline_file=True,
+                )
+            monitor = self._check_monitoring(trailer_exists)
+            if monitor != media_read.monitor:
+                event_manager.track_monitor_changed(
+                    media_id=media_read.id,
+                    old_monitor=media_read.monitor,
+                    new_monitor=monitor,
+                    source=EventSource.SYSTEM,
+                    source_detail="PlexRefresh",
+                )
+            if trailer_exists and not media_read.trailer_exists:
+                event_manager.track_trailer_detected(
+                    media_id=media_read.id,
+                    source=EventSource.SYSTEM,
+                    source_detail="PlexRefresh",
+                )
+            media_manager.update_monitor_and_trailer_exists_bulk(
+                [(media_read.id, monitor, trailer_exists)]
+            )
             logger.debug(f"Created new Plex-only media row for '{item.title}'")
 
     async def _process_movie_section(
@@ -168,7 +212,7 @@ class PlexConnectionManager:
         count = 0
         async for item in self.api.get_library_media(section.key):
             count += 1
-            self._process_item(
+            await self._process_item(
                 item, section, is_movie=True, plex_folder=item.media_folder
             )
         logger.debug(f"Section '{section.title}': {count} movies")
@@ -203,7 +247,7 @@ class PlexConnectionManager:
             item_count += 1
             # Prefer folder derived from episode files; fall back to Location path
             plex_folder = folder_map.get(item.ratingKey, item.media_folder)
-            self._process_item(
+            await self._process_item(
                 item, section, is_movie=False, plex_folder=plex_folder
             )
         logger.debug(
