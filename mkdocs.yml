@@ -127,6 +127,7 @@ nav:
       - getting-started/03-setup/index.md
       - Profiles: getting-started/03-setup/profiles.md
       - Connections: getting-started/03-setup/connections.md
+      - Plex Connection: getting-started/03-setup/plex-connection.md
     - Next Steps: getting-started/04-next-steps.md
   - User Guide:
     - user-guide/index.md
@@ -140,7 +141,9 @@ nav:
     - Settings: 
       - user-guide/settings/index.md
       - General Settings: user-guide/settings/general-settings/index.md
-      - Connections: user-guide/settings/connections/index.md
+      - Connections:
+        - user-guide/settings/connections/index.md
+        - Plex: user-guide/settings/connections/plex.md
       - Profiles:
         - user-guide/settings/profiles/index.md
         - Settings:
@@ -150,6 +153,7 @@ nav:
           - Video: user-guide/settings/profiles/settings/video.md
           - Subtitle: user-guide/settings/profiles/settings/subtitle.md
           - Search: user-guide/settings/profiles/settings/search.md
+          - Plex: user-guide/settings/profiles/settings/plex.md
         - Filters: user-guide/settings/profiles/filters.md
         - Examples: user-guide/settings/profiles/examples.md
       - About: user-guide/settings/about/index.md
