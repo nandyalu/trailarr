@@ -110,6 +110,11 @@
               </a>
             }
           }
+          @if (plex_url()) {
+            <a [href]="plex_url()" target="_blank" title="Open in Plex">
+              <img src="assets/plex_logo.svg" alt="Plex" class="xdb-icon" />
+            </a>
+          }
           @if (arr_url()) {
             @if (selectedMedia_.is_movie) {
               <a [href]="arr_url()" target="_blank" title="Radarr Movie Link">
@@ -142,6 +147,9 @@
                   }
                   <p>Monitored: {{ selectedMedia_.monitor }}</p>
                   <p>Downloaded: {{ selectedMedia_.trailer_exists }}</p>
+                  @if (selectedMedia_.plex_trailer !== null) {
+                    <p>Plex Trailer: {{ selectedMedia_.plex_trailer }}</p>
+                  }
                   <p>Added: {{ selectedMedia_.added_at.toLocaleString() }}</p>
                   <p>Updated: {{ selectedMedia_.updated_at.toLocaleString() }}</p>
                   @if (selectedMedia_.downloaded_at && selectedMedia_.downloaded_at.toString() != 'Invalid Date') {

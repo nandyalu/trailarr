@@ -182,6 +182,24 @@
       fill: var(--color-warning);
     }
   }
+
+  &.plex_linked {
+    .event-icon svg {
+      fill: var(--color-info);
+    }
+  }
+
+  &.plex_unlinked {
+    .event-icon svg {
+      fill: var(--color-warning);
+    }
+  }
+
+  &.plex_scan_triggered {
+    .event-icon svg {
+      fill: var(--color-primary);
+    }
+  }
 }
 
 .event-icon {
