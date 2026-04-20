@@ -80,6 +80,16 @@ export class MediaDetailsComponent {
     }
   });
 
+  plex_url = computed(() => {
+    const media = this.selectedMedia();
+    if (!media?.plex_rating_key || !media?.plex_connection_id) return '';
+    const connections = this.connectionService.connectionsResource.value();
+    const connection = connections.find((c) => c.id === media.plex_connection_id);
+    if (!connection?.machine_identifier) return '';
+    const baseUrl = (connection.external_url?.length > 0 ? connection.external_url : connection.url).replace(/\/$/, '');
+    return `${baseUrl}/web/index.html#!/server/${connection.machine_identifier}/details?key=%2Flibrary%2Fmetadata%2F${media.plex_rating_key}`;
+  });
+
   // Load media data when the media ID changes
   mediaIDChangeEffect = effect(() => {
     this.mediaService.selectedMediaID.set(this.mediaId());

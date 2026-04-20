@@ -135,6 +135,12 @@ export class EventsComponent implements OnInit {
         return 'delete';
       case EventType.DOWNLOAD_SKIPPED:
         return 'block';
+      case EventType.PLEX_LINKED:
+        return 'link';
+      case EventType.PLEX_UNLINKED:
+        return 'link_off';
+      case EventType.PLEX_SCAN_TRIGGERED:
+        return 'sync';
       default:
         return 'info';
     }
@@ -158,6 +164,12 @@ export class EventsComponent implements OnInit {
         return `Trailer deleted: ${event.new_value || 'unknown reason'}`;
       case EventType.DOWNLOAD_SKIPPED:
         return `Skipped: ${event.new_value}`;
+      case EventType.PLEX_LINKED:
+        return `Linked to Plex connection: ${event.new_value}`;
+      case EventType.PLEX_UNLINKED:
+        return `Unlinked from Plex connection: ${event.old_value}`;
+      case EventType.PLEX_SCAN_TRIGGERED:
+        return `Plex scan triggered for: ${event.new_value}`;
       default:
         return event.new_value || event.old_value || '';
     }

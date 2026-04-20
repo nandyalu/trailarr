@@ -96,6 +96,30 @@ hr {
       fill: var(--color-warning);
     }
   }
+
+  &.plex_linked {
+    border-left-color: var(--color-info);
+
+    .event-icon svg {
+      fill: var(--color-info);
+    }
+  }
+
+  &.plex_unlinked {
+    border-left-color: var(--color-warning);
+
+    .event-icon svg {
+      fill: var(--color-warning);
+    }
+  }
+
+  &.plex_scan_triggered {
+    border-left-color: var(--color-primary);
+
+    .event-icon svg {
+      fill: var(--color-primary);
+    }
+  }
 }
 
 .event-icon {
