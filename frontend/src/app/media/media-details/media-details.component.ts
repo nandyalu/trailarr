@@ -73,11 +73,23 @@ export class MediaDetailsComponent {
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
-    if (connection.arr_type.toLowerCase() == 'radarr') {
+    const arrType = connection.arr_type.toLowerCase();
+    if (arrType == 'radarr') {
       return baseUrl + '/movie/' + media.txdb_id;
-    } else {
+    } else if (arrType == 'sonarr') {
       return baseUrl + '/series/' + media.title_slug;
     }
+    return '';
+  });
+
+  plex_url = computed(() => {
+    const media = this.selectedMedia();
+    if (!media?.plex_rating_key || !media?.plex_connection_id) return '';
+    const connections = this.connectionService.connectionsResource.value();
+    const connection = connections.find((c) => c.id === media.plex_connection_id);
+    if (!connection?.machine_identifier) return '';
+    const baseUrl = (connection.external_url?.length > 0 ? connection.external_url : connection.url).replace(/\/$/, '');
+    return `${baseUrl}/web/index.html#!/server/${connection.machine_identifier}/details?key=%2Flibrary%2Fmetadata%2F${media.plex_rating_key}`;
   });
 
   // Load media data when the media ID changes

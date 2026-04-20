@@ -92,7 +92,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [x] Add options to disable conversion of downloaded videos
 - [x] Update media objects to include more metadata received from Radarr/Sonarr, include media_available flag, downloaded trailer info, etc.
 - [x] Add an option to trim videos in `Media Details` page to remove unwanted parts of the trailer. This will help in cases where the trailer has unwanted parts at the beginning or end. 🎬
-- [ ] Add Plex integration to send notifications to Plex and scan media signals
+- [x] Add Plex integration to send notifications to Plex and scan media signals
 - [x] Add support for some fields with translated values
 - [x] Update docs for Windows path mappings
 - [x] Improve task logging

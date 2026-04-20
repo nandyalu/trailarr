@@ -147,10 +147,10 @@ finalize_user_setup() {
     # Source the box_echo function
     source /app/scripts/box_echo.sh
     
-    # Set permissions for appuser on /app and /data directories
-    box_echo "Changing the owner of '/app' and '$APP_DATA_DIR' directories to '$APPUSER'"
-    chmod -R 750 /app
-    chown -R "$APPUSER":"$APPGROUP" /app
+    # Set ownership of the data directory so appuser can read/write config and data files.
+    # /app is set to 755 in the Dockerfile (world-readable/executable), so appuser can
+    # access it without needing ownership, avoiding a slow recursive chown on startup.
+    box_echo "Changing the owner of '$APP_DATA_DIR' directory to '$APPUSER'"
     chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
     box_echo "--------------------------------------------------------------------------";
 

@@ -1,6 +1,6 @@
 import {DATE_PIPE_DEFAULT_OPTIONS} from '@angular/common';
 import {provideHttpClient} from '@angular/common/http';
-import {ApplicationConfig, ErrorHandler, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
+import {ApplicationConfig, ErrorHandler, provideZonelessChangeDetection} from '@angular/core';
 import {provideSignalFormsConfig} from '@angular/forms/signals';
 import {NG_STATUS_CLASSES} from '@angular/forms/signals/compat';
 import {
@@ -11,7 +11,6 @@ import {
   withPreloading,
   withViewTransitions,
 } from '@angular/router';
-import {ApiModule} from 'generated-sources/openapi';
 import {routes} from './app.routes';
 import {GlobalErrorHandler} from './error-handler';
 
@@ -30,6 +29,5 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     // withInterceptors([authInterceptor]),
     {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium', timezone: 'UTC'}},
-    importProvidersFrom(ApiModule.forRoot({rootUrl: ''})),
   ],
 };

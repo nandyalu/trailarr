@@ -104,11 +104,16 @@
               <a href="https://www.themoviedb.org/movie/{{ selectedMedia_.txdb_id }}" target="_blank" title="TMDB Link">
                 <img src="assets/TMDBlogo.png" alt="TMDB" class="xdb-icon" />
               </a>
-            } @else {
+            } @else if (!selectedMedia_.txdb_id.startsWith('plex-')) {
               <a href="https://www.thetvdb.com/?tab=series&id={{ selectedMedia_.txdb_id }}" target="_blank" title="TVDB Link">
                 <img src="assets/TVDBlogo.png" alt="TVDB" class="xdb-icon" />
               </a>
             }
+          }
+          @if (plex_url()) {
+            <a [href]="plex_url()" target="_blank" title="Open in Plex">
+              <img src="assets/plex_logo.svg" alt="Plex" class="xdb-icon" />
+            </a>
           }
           @if (arr_url()) {
             @if (selectedMedia_.is_movie) {
@@ -142,6 +147,9 @@
                   }
                   <p>Monitored: {{ selectedMedia_.monitor }}</p>
                   <p>Downloaded: {{ selectedMedia_.trailer_exists }}</p>
+                  @if (selectedMedia_.plex_trailer !== null) {
+                    <p>Plex Trailer: {{ selectedMedia_.plex_trailer }}</p>
+                  }
                   <p>Added: {{ selectedMedia_.added_at.toLocaleString() }}</p>
                   <p>Updated: {{ selectedMedia_.updated_at.toLocaleString() }}</p>
                   @if (selectedMedia_.downloaded_at && selectedMedia_.downloaded_at.toString() != 'Invalid Date') {

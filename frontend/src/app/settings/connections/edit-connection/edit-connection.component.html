@@ -56,7 +56,11 @@
         <legend id="monitorType_label">Monitor Type:</legend>
         <div class="options-bar" role="radiogroup" aria-labelledby="monitorType_label">
           @for (option of monitorOptions; track option) {
-            <label class="option-label" [class.option__selected]="option === connectionCreate().monitor">
+            <label
+              class="option-label"
+              [class.option__selected]="option === connectionCreate().monitor"
+              [class.option__disabled]="option === 'new' && isCreate()"
+            >
               <input type="radio" [id]="'monitorType_' + option + '_option'" [value]="option" [formField]="connectionForm.monitor" />
               <span class="option-name">{{ option | uppercase }}</span>
             </label>

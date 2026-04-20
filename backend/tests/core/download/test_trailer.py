@@ -512,3 +512,299 @@ class TestDownloadTrailerMediaStatus:
 
         # Should update status including MISSING
         assert mock_update_status.call_count >= 1
+
+
+class TestCheckPlexTrailer:
+    """Tests for _check_plex_trailer helper."""
+
+    @pytest.fixture
+    def mock_media_plex(self):
+        media = MagicMock()
+        media.id = 1
+        media.title = "Test Movie"
+        media.plex_connection_id = 10
+        media.plex_rating_key = "123"
+        return media
+
+    @pytest.fixture
+    def mock_profile_plex(self):
+        profile = MagicMock()
+        profile.skip_if_plex_trailer = True
+        profile.skip_if_plex_trailer_resolution = 0
+        return profile
+
+    @pytest.mark.asyncio
+    async def test_returns_false_when_flag_disabled(
+        self, mock_media_plex, mock_profile_plex
+    ):
+        """Returns False immediately when skip_if_plex_trailer is False."""
+        mock_profile_plex.skip_if_plex_trailer = False
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_returns_false_when_no_plex_connection(
+        self, mock_media_plex, mock_profile_plex
+    ):
+        """Returns False when media has no plex_connection_id."""
+        mock_media_plex.plex_connection_id = None
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_returns_false_when_no_plex_rating_key(
+        self, mock_media_plex, mock_profile_plex
+    ):
+        """Returns False when media has no plex_rating_key."""
+        mock_media_plex.plex_rating_key = None
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+        assert result is False
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_returns_true_and_updates_db_when_trailer_found(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns True and saves plex_trailer=True when Plex has a trailer extra."""
+        from core.base.database.models.connection import ArrType
+        from core.plex.models import PlexMediaExtra
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.PLEX
+        mock_conn.url = "http://plex"
+        mock_conn.api_key = "token"
+        mock_read_conn.return_value = mock_conn
+
+        trailer_extra = PlexMediaExtra(subtype="trailer", title="Official Trailer")
+        mock_get_extras.return_value = [trailer_extra]
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is True
+        mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, True)
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_returns_false_and_updates_db_when_no_trailer(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns False and saves plex_trailer=False when Plex has no trailer extra."""
+        from core.base.database.models.connection import ArrType
+        from core.plex.models import PlexMediaExtra
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.PLEX
+        mock_conn.url = "http://plex"
+        mock_conn.api_key = "token"
+        mock_read_conn.return_value = mock_conn
+
+        featurette = PlexMediaExtra(subtype="featurette", title="Behind the Scenes")
+        mock_get_extras.return_value = [featurette]
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is False
+        mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, False)
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_returns_false_when_connection_is_not_plex(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns False without calling Plex API when connection is not PLEX type."""
+        from core.base.database.models.connection import ArrType
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.RADARR
+        mock_read_conn.return_value = mock_conn
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is False
+        mock_get_extras.assert_not_called()
+        mock_update_plex_trailer.assert_not_called()
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_returns_false_gracefully_on_exception(
+        self,
+        mock_update_plex_trailer,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns False without raising when Plex API call fails."""
+        mock_read_conn.side_effect = Exception("DB error")
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is False
+        mock_update_plex_trailer.assert_not_called()
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_ignores_local_file_trailers(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns False when the only trailer extra has a file:// guid (local)."""
+        from core.base.database.models.connection import ArrType
+        from core.plex.models import PlexMediaExtra
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.PLEX
+        mock_conn.url = "http://plex"
+        mock_conn.api_key = "token"
+        mock_read_conn.return_value = mock_conn
+
+        local_trailer = PlexMediaExtra(subtype="trailer", title="My Trailer", guid="file:///media/trailers/t.mkv")
+        mock_get_extras.return_value = [local_trailer]
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is False
+        mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, False)
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_resolution_threshold_met_returns_true(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns True when a remote trailer meets the resolution threshold."""
+        from core.base.database.models.connection import ArrType
+        from core.plex.models import PlexMediaExtra
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.PLEX
+        mock_conn.url = "http://plex"
+        mock_conn.api_key = "token"
+        mock_read_conn.return_value = mock_conn
+
+        mock_profile_plex.skip_if_plex_trailer_resolution = 720
+        hd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/123", resolution=1080)
+        mock_get_extras.return_value = [hd_trailer]
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    async def test_resolution_threshold_not_met_returns_false(
+        self,
+        mock_update_plex_trailer,
+        mock_get_extras,
+        mock_read_conn,
+        mock_media_plex,
+        mock_profile_plex,
+    ):
+        """Returns False when remote trailer resolution is below the threshold."""
+        from core.base.database.models.connection import ArrType
+        from core.plex.models import PlexMediaExtra
+
+        mock_conn = MagicMock()
+        mock_conn.arr_type = ArrType.PLEX
+        mock_conn.url = "http://plex"
+        mock_conn.api_key = "token"
+        mock_read_conn.return_value = mock_conn
+
+        mock_profile_plex.skip_if_plex_trailer_resolution = 1080
+        sd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/456", resolution=480)
+        mock_get_extras.return_value = [sd_trailer]
+
+        from core.download.trailer import _check_plex_trailer
+
+        result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
+
+        assert result is False
+
+
+class TestDownloadTrailerPlexSkip:
+    """Tests for plex trailer skip in download_trailer."""
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer._check_plex_trailer", new_callable=AsyncMock)
+    async def test_skips_download_when_plex_has_trailer(
+        self, mock_check_plex, mock_media, mock_profile
+    ):
+        """Returns False without downloading when Plex already has a trailer."""
+        mock_check_plex.return_value = True
+        mock_profile.skip_if_plex_trailer = True
+
+        from core.download.trailer import download_trailer
+
+        result = await download_trailer(mock_media, mock_profile)
+
+        assert result is False
+        mock_check_plex.assert_called_once_with(mock_media, mock_profile)
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer._check_plex_trailer", new_callable=AsyncMock)
+    @patch("core.download.trailer.trailer_search.get_video_id")
+    async def test_proceeds_when_plex_has_no_trailer(
+        self, mock_get_video_id, mock_check_plex, mock_media, mock_profile
+    ):
+        """Proceeds to search when Plex has no trailer."""
+        mock_check_plex.return_value = False
+        mock_get_video_id.return_value = None  # stop after check
+
+        from core.download.trailer import download_trailer
+
+        with pytest.raises(Exception):
+            await download_trailer(mock_media, mock_profile)
+
+        mock_get_video_id.assert_called_once()

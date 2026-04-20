@@ -10,6 +10,8 @@ Trailarr tracks important events for each media item, giving you visibility into
 
 ## Event Sources
 
+<!-- md:version:upd 0.9.0 -->
+
 Events are triggered by two sources:
 
 | Source | Description |
@@ -26,6 +28,7 @@ Each event also includes a **source detail** that provides more context about wh
 - `TrailerSearch` - Triggered by manual trailer search
 - `DownloadTrailers` - Triggered by scheduled download task
 - `MediaCleanup` - Triggered during cleanup of deleted media
+- `PlexSync` - Triggered during Plex library sync
 
 ---
 
@@ -156,6 +159,55 @@ Logged when Trailarr skips downloading a trailer for a media item.
 | `Folder not found` | Media folder doesn't exist on disk |
 | `Already downloaded` | A trailer already exists for this media |
 | `Unmonitored` | Media item is not monitored for trailer downloads |
+
+---
+
+### Plex Linked
+
+<!-- md:version:add 0.9.0 -->
+
+Logged when a media item is successfully matched to an item in a Plex library.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `PlexSync` |
+| New Value | Plex rating key of the matched item |
+
+This event is created when Trailarr syncs with your Plex connection and finds a Plex library entry that corresponds to a Radarr/Sonarr media item. Once linked, Trailarr can check Plex for existing trailers and trigger Plex library scans after downloads.
+
+---
+
+### Plex Unlinked
+
+<!-- md:version:add 0.9.0 -->
+
+Logged when the Plex link for a media item is removed.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `PlexSync` or `ConnectionRefresh` |
+
+**Triggers:**
+
+- The Plex connection is deleted.
+- The media item is no longer found in the Plex library during a sync.
+
+---
+
+### Plex Scan Triggered
+
+<!-- md:version:add 0.9.0 -->
+
+Logged when Trailarr requests a Plex library refresh after a successful trailer download.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `TrailerDownload` |
+
+This event is only created when **Notify Plex** is enabled in the Trailer Profile used for the download. It confirms that Trailarr asked Plex to scan the media folder so the new trailer appears in Plex without delay.
 
 ---
 

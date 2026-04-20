@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from . import base
-from core.base.database.models.connection import ConnectionCreate, Connection
+from core.base.database.models.connection import ArrType, ConnectionCreate, Connection
 from core.base.database.utils.engine import write_session
 
 
@@ -51,6 +51,11 @@ async def create(connection: ConnectionCreate) -> tuple[str, int]:
     db_connection = Connection.model_validate(connection)
     # Add path mappings to database connection
     db_connection.path_mappings = _path_mappings
+    # For Plex connections, fetch and store the server machine identifier
+    if connection.arr_type == ArrType.PLEX:
+        from core.plex.api_manager import PlexAPI
+        plex_api = PlexAPI(connection.url, connection.api_key, identifier="trailarr_1234")
+        db_connection.machine_identifier = await plex_api.get_machine_identifier()
     # Pass the validated connection to the save function
     # to add to the database and return the id of the new connection
     _id = _save_validated_connection(db_connection)

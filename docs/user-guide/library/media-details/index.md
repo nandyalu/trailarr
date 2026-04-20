@@ -21,6 +21,18 @@ Additional Media Status details can be viewed by hovering (click on it in Mobile
 !!! tip "Season Count for TV Show"
     This will also show a `Season Count` of the selected Media if it's a TV Show. This is coming from `Sonarr` and `Trailarr` can only read it, cannot update it!
 
+### Plex Trailer Status
+
+If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is configured and this media item has been linked to a Plex library entry, the details panel will show whether Plex already has a remote trailer available for it.
+
+| Status | Meaning |
+|--------|---------|
+| ✅ Plex has trailer | Plex has at least one internet-sourced trailer for this item |
+| ❌ No Plex trailer | Plex does not have a remote trailer (or the item is not linked to Plex) |
+
+!!! tip ""
+    This status is what Trailarr checks when **Skip if Plex Trailer** is enabled in a profile. If Plex already has a qualifying trailer, Trailarr will skip the download for that media item.
+
 ## YouTube Trailer ID
 
 ![Media - YouTube Trailer ID](media-youtube-trailer-id.png)

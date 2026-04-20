@@ -1,6 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {FilesService} from 'generated-sources/openapi';
+import {FilesService} from '../../../../../services/files.service';
 import {WebsocketService} from '../../../../../services/websocket.service';
 import {LoadIndicatorComponent} from '../../../../../shared/load-indicator';
 
@@ -129,12 +129,7 @@ export class VideoEditDialogComponent implements AfterViewInit {
     const endTime = this.parseTime(this.endTimestamp());
 
     this.filesService
-      .trimVideoApiV1FilesTrimVideoPost({
-        file_path: this.filePath(),
-        output_file: outputPath,
-        start_timestamp: startTime,
-        end_timestamp: endTime,
-      })
+      .trimVideo(this.filePath(), outputPath, startTime, endTime)
       .subscribe({
         next: (result) => {
           this.webSocketService.showToast(result, 'success');

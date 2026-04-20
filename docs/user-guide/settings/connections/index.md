@@ -34,3 +34,20 @@ Turns off monitoring for the connection and does not download any trailers.
 
 !!! tip
     _If you have a huge library and don't want to download trailers for all of them, set the monitor type to `None` when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to `New` to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for._
+
+---
+
+## Plex Connection
+
+<!-- md:version:add 0.9.0 -->
+
+Plex connections work differently from Radarr/Sonarr connections. See [Plex Connection Fields](./plex.md) for a full field reference and [Plex Connection Setup](../../../getting-started/03-setup/plex-connection.md) for a step-by-step guide.
+
+Key differences:
+
+- **Authentication**: Uses OAuth (sign in with your Plex account) instead of an API key.
+- **Library folders instead of path mappings**: Maps Plex library folder paths to Trailarr container paths. The `sync` monitor option is not available.
+- **No `sync` monitor type**: Plex connections support `missing`, `new`, and `none`. The `new` option is disabled when first creating a connection.
+
+!!! note ""
+    You still need at least one Radarr or Sonarr connection — a Plex connection alone is not sufficient to use Trailarr.

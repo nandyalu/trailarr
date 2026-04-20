@@ -13,6 +13,7 @@ class MediaImage:
     is_poster: bool
     image_url: str | None
     image_path: str | None
+    headers: dict | None = None  # extra HTTP headers (e.g. X-Plex-Token)
 
 
 # @dataclass

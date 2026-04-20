@@ -60,6 +60,12 @@ export class MediaEventsComponent {
         return event.new_value ? `Deleted: ${event.new_value}` : 'Trailer deleted';
       case EventType.DOWNLOAD_SKIPPED:
         return event.new_value || 'Download was skipped';
+      case EventType.PLEX_LINKED:
+        return `Linked to Plex: ${event.new_value}`;
+      case EventType.PLEX_UNLINKED:
+        return `Unlinked from Plex: ${event.old_value}`;
+      case EventType.PLEX_SCAN_TRIGGERED:
+        return event.new_value ? `Scan path: ${event.new_value}` : 'Plex scan triggered';
       default:
         return '';
     }
