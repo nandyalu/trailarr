@@ -125,12 +125,13 @@ class PlexAPI:
                         if response.status != 200:
                             error_text = await response.text()
                             raise ConnectionError(
-                                f"Plex returned {response.status}: {error_text}"
+                                f"Plex returned {response.status}:"
+                                f" {error_text}"
                             )
                         data: dict[str, Any] = await response.json()
-                        items: list[dict[str, Any]] = (
-                            data.get("MediaContainer", {}).get("Metadata", [])
-                        )
+                        items: list[dict[str, Any]] = data.get(
+                            "MediaContainer", {}
+                        ).get("Metadata", [])
             except aiohttp.ClientError as e:
                 raise ConnectionError(
                     f"Network error reaching Plex: {e}"
@@ -202,9 +203,7 @@ class PlexAPI:
         async for raw in self._iter_pages(url):
             count += 1
             yield PlexMediaItem(**raw)
-        logger.debug(
-            f"Yielded {count} items from section {section_key}"
-        )
+        logger.debug(f"Yielded {count} items from section {section_key}")
 
     async def get_library_leaves(
         self, section_key: str | int
@@ -222,9 +221,7 @@ class PlexAPI:
         async for raw in self._iter_pages(url):
             count += 1
             yield PlexEpisodeLeaf(**raw)
-        logger.debug(
-            f"Yielded {count} leaf items from section {section_key}"
-        )
+        logger.debug(f"Yielded {count} leaf items from section {section_key}")
 
     async def get_library_item_details(
         self, rating_key: str | int

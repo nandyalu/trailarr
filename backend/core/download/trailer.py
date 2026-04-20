@@ -65,7 +65,8 @@ async def _check_plex_trailer(
         return has_trailer
     except Exception as e:
         logger.warning(
-            f"Failed to check Plex trailer for '{media.title}' [{media.id}]: {e}"
+            f"Failed to check Plex trailer for '{media.title}'"
+            f" [{media.id}]: {e}"
         )
         return False
 
@@ -78,7 +79,11 @@ async def _notify_plex(media: MediaRead) -> None:
     and ``folder_path`` to all be set on the media row; silently skips if any
     are missing.
     """
-    if not (media.plex_connection_id and media.plex_section_key and media.folder_path):
+    if not (
+        media.plex_connection_id
+        and media.plex_section_key
+        and media.folder_path
+    ):
         logger.debug(
             f"Skipping Plex scan notify for '{media.title}' [{media.id}]:"
             " missing plex_connection_id, plex_section_key, or folder_path"

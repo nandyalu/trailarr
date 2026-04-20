@@ -5,7 +5,7 @@ from core.base.database.models.connection import ConnectionRead
 from core.base.database.models.event import EventSource
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
-from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
+from core.plex.models import PlexLibrarySection, PlexMediaItem
 
 logger = ModuleLogger("PlexConnectionManager")
 
@@ -38,9 +38,7 @@ class PlexConnectionManager:
         self.all_path_mappings = connection.path_mappings
         # Non-identity mappings only — used for path translation.
         self.path_mappings = [
-            pm
-            for pm in connection.path_mappings
-            if pm.path_from != pm.path_to
+            pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
         self.api = PlexAPI(
             server_url=connection.url,
@@ -89,7 +87,9 @@ class PlexConnectionManager:
             return path
         for pm in self.path_mappings:
             if path.startswith(pm.path_to):
-                return path.replace(pm.path_to, pm.path_from, 1).replace("\\", "/")
+                return path.replace(pm.path_to, pm.path_from, 1).replace(
+                    "\\", "/"
+                )
             _to = pm.path_to.rstrip("/").rstrip("\\")
             _from = pm.path_from.rstrip("/").rstrip("\\")
             if path.startswith(_to):
@@ -109,11 +109,13 @@ class PlexConnectionManager:
         if plex_folder and not self._is_in_configured_library(plex_folder):
             logger.debug(
                 f"Skipping '{item.title}': folder '{plex_folder}'"
-                f" not under any configured library"
+                " not under any configured library"
             )
             return
 
-        folder_path = self._apply_path_mapping(plex_folder) if plex_folder else ""
+        folder_path = (
+            self._apply_path_mapping(plex_folder) if plex_folder else ""
+        )
 
         existing = None
         if folder_path:
@@ -157,17 +159,18 @@ class PlexConnectionManager:
                 source=EventSource.SYSTEM,
                 source_detail="PlexRefresh",
             )
-            logger.debug(
-                f"Created new Plex-only media row for '{item.title}'"
-            )
+            logger.debug(f"Created new Plex-only media row for '{item.title}'")
 
-    async def _process_movie_section(self, section: PlexLibrarySection) -> None:
+    async def _process_movie_section(
+        self, section: PlexLibrarySection
+    ) -> None:
         """Fetch all movies in a section and merge into the DB."""
         count = 0
         async for item in self.api.get_library_media(section.key):
             count += 1
-            self._process_item(item, section, is_movie=True,
-                               plex_folder=item.media_folder)
+            self._process_item(
+                item, section, is_movie=True, plex_folder=item.media_folder
+            )
         logger.debug(f"Section '{section.title}': {count} movies")
 
     async def _process_show_section(self, section: PlexLibrarySection) -> None:
@@ -186,7 +189,9 @@ class PlexConnectionManager:
         async for leaf in self.api.get_library_leaves(section.key):
             leaf_count += 1
             if leaf.grandparentRatingKey and leaf.media_folder:
-                folder_map.setdefault(leaf.grandparentRatingKey, leaf.media_folder)
+                folder_map.setdefault(
+                    leaf.grandparentRatingKey, leaf.media_folder
+                )
         logger.debug(
             f"Section '{section.title}': {len(folder_map)} unique shows"
             f" from {leaf_count} episodes"
@@ -198,9 +203,12 @@ class PlexConnectionManager:
             item_count += 1
             # Prefer folder derived from episode files; fall back to Location path
             plex_folder = folder_map.get(item.ratingKey, item.media_folder)
-            self._process_item(item, section, is_movie=False,
-                               plex_folder=plex_folder)
-        logger.debug(f"Section '{section.title}': {item_count} show-level items")
+            self._process_item(
+                item, section, is_movie=False, plex_folder=plex_folder
+            )
+        logger.debug(
+            f"Section '{section.title}': {item_count} show-level items"
+        )
 
     async def _process_section(self, section: PlexLibrarySection) -> None:
         """Dispatch to the correct section processor based on library type."""
@@ -256,8 +264,9 @@ class PlexConnectionManager:
         )
         if not self.all_path_mappings:
             logger.warning(
-                f"Plex connection '{self.connection_name}' has no library "
-                f"folders configured — skipping refresh (no media will be added)."
+                f"Plex connection '{self.connection_name}' has no library"
+                " folders configured — skipping refresh (no media will be"
+                " added)."
             )
             return
         sections = await self.api.get_libraries()
