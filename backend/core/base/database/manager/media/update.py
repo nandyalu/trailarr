@@ -334,3 +334,54 @@ def update_ytid(
     if _commit:
         _session.commit()
     return None
+
+
+@write_session
+def update_plex_fields(
+    media_id: int,
+    plex_rating_key: str | None,
+    plex_section_key: str | None,
+    plex_connection_id: int | None,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update only the Plex-specific fields on a media item.\n
+    Used during Plex connection refresh to layer Plex metadata onto an
+    existing Arr-sourced media row without overwriting Arr fields.\n
+    Args:
+        media_id (int): The id of the media to update.
+        plex_rating_key (str | None): The Plex ratingKey for targeted refreshes.
+        plex_section_key (str | None): The Plex library section key.
+        plex_connection_id (int | None): FK to the Plex Connection row.
+        _session (Session, Optional): A session to use for the database connection.
+    """
+    db_media = base._get_db_item(media_id, _session)
+    db_media.plex_rating_key = plex_rating_key
+    db_media.plex_section_key = plex_section_key
+    db_media.plex_connection_id = plex_connection_id
+    db_media.updated_at = datetime.now(timezone.utc)
+    _session.add(db_media)
+    _session.commit()
+    return None
+
+
+@write_session
+def update_plex_trailer(
+    media_id: int,
+    plex_trailer: bool | None,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update the plex_trailer flag on a media item.
+
+    Args:
+        media_id (int): The id of the media to update.
+        plex_trailer (bool | None): True if Plex has a trailer, False if not, None if unknown.
+        _session (Session, Optional): A session to use for the database connection.
+    """
+    db_media = base._get_db_item(media_id, _session)
+    db_media.plex_trailer = plex_trailer
+    db_media.updated_at = datetime.now(timezone.utc)
+    _session.add(db_media)
+    _session.commit()
+    return None
