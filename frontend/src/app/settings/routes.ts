@@ -6,10 +6,12 @@ import {
   RouteGeneral,
   RouteParamConnectionId,
   RouteParamProfileId,
+  RoutePlex,
   RouteProfiles,
 } from 'src/routing';
 import {AboutComponent} from './about/about.component';
 import {EditConnectionComponent} from './connections/edit-connection/edit-connection.component';
+import {EditPlexConnectionComponent} from './connections/edit-plex-connection/edit-plex-connection.component';
 import {ShowConnectionsComponent} from './connections/show-connections/show-connections.component';
 import {GeneralComponent} from './general/general.component';
 import {EditProfileComponent} from './profiles/edit-profile/edit-profile.component';
@@ -23,6 +25,8 @@ export default [
     children: [
       {path: RouteConnections, component: ShowConnectionsComponent},
       {path: `${RouteConnections}/${RouteAdd}`, component: EditConnectionComponent},
+      {path: `${RouteConnections}/${RoutePlex}/${RouteAdd}`, component: EditPlexConnectionComponent},
+      {path: `${RouteConnections}/${RoutePlex}/:${RouteParamConnectionId}`, component: EditPlexConnectionComponent},
       {path: `${RouteConnections}/:${RouteParamConnectionId}`, component: EditConnectionComponent},
       {path: RouteProfiles, component: ShowProfilesComponent},
       {path: `${RouteProfiles}/:${RouteParamProfileId}`, component: EditProfileComponent},

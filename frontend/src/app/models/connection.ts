@@ -15,6 +15,7 @@ export interface PathMappingCreate {
 export enum ArrType {
   Radarr = 'radarr',
   Sonarr = 'sonarr',
+  Plex = 'plex',
 }
 
 export enum MonitorType {
@@ -33,6 +34,7 @@ export interface Connection {
   monitor: MonitorType;
   id: number;
   added_at: Date;
+  machine_identifier: string | null;
   path_mappings: PathMapping[];
 }
 
@@ -53,6 +55,7 @@ export interface ConnectionRead {
   id: number;
   monitor: MonitorType;
   name: string;
+  machine_identifier: string | null;
   path_mappings: PathMappingCreate[];
   url: string;
   external_url: string;
