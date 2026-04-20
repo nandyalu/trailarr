@@ -17,6 +17,7 @@ import {Router} from '@angular/router';
 import {ArrType, ConnectionCreate, MonitorType, PathMappingCreate} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {PlexOAuthService} from 'src/app/services/plex-oauth.service';
+import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {PathSelectDialogComponent} from 'src/app/shared/path-select-dialog/path-select-dialog.component';
 
@@ -24,7 +25,7 @@ type OAuthState = 'idle' | 'pending_pin' | 'pending_auth' | 'server_select' | 'a
 
 @Component({
   selector: 'app-edit-plex-connection',
-  imports: [LoadIndicatorComponent, UpperCasePipe],
+  imports: [HelpLinkIconComponent, LoadIndicatorComponent, UpperCasePipe],
   templateUrl: './edit-plex-connection.component.html',
   styleUrl: './edit-plex-connection.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,7 +49,7 @@ export class EditPlexConnectionComponent implements OnDestroy {
   //#endregion
 
   //#region Constants
-  readonly monitorOptions: MonitorType[] = [MonitorType.Missing, MonitorType.New, MonitorType.None, MonitorType.Sync];
+  readonly monitorOptions: MonitorType[] = [MonitorType.Missing, MonitorType.New, MonitorType.None];
   //#endregion
 
   //#region Dialog refs

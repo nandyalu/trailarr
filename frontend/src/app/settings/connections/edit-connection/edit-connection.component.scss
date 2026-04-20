@@ -125,6 +125,12 @@ input.ng-touched.ng-invalid {
   transition: 0.3s ease;
 }
 
+.option__disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  text-decoration: line-through 2px var(--color-danger);
+}
+
 input[type='radio'] {
   // display: none;
   clip: rect(0 0 0 0);

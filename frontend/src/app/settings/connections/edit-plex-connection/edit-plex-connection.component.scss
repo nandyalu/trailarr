@@ -119,6 +119,12 @@ input:read-only {
   transition: 0.3s ease;
 }
 
+.option__disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  text-decoration: line-through 2px var(--color-danger);
+}
+
 input[type='radio'] {
   clip: rect(0 0 0 0);
   clip-path: inset(100%);
@@ -243,12 +249,6 @@ input[type='radio'] {
   100% {
     width: 0%;
   }
-}
-
-.buttons-row {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
 }
 
 // #region OAuth block

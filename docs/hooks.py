@@ -16,6 +16,7 @@ VERSION_LINKS: dict[str, str] = {
     "0.6.10": "2026.md#v0610-beta-february-07-2026",
     "0.7.0": "2026.md#v070-beta-february-11-2026",
     "0.8.0": "2026.md#v080-beta-april-10-2026",
+    "0.9.0": "2026.md#v090-beta-april-30-2026",
     # Add more versions as needed
 }
 
