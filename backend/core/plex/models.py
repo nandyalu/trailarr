@@ -1,0 +1,169 @@
+from pydantic import (
+    AliasPath,
+    BaseModel,
+    Field,
+    field_validator,
+    model_validator,
+)
+
+
+class PlexLibrarySection(BaseModel):
+    allowSync: bool = Field(default=False)
+    filters: bool = Field(default=False)
+    refreshing: bool = Field(default=False)
+    key: str = Field(default="")
+    type: str = Field(default="")
+    title: str = Field(default="")
+    language: str = Field(default="")
+    folders: list[str] = Field(
+        alias="Location",
+        default_factory=list,
+    )
+
+    @field_validator("folders", mode="before")
+    @classmethod
+    def extract_and_filter_paths(cls, v) -> list[str]:
+        if isinstance(v, list):
+            return [
+                loc["path"]
+                for loc in v
+                if isinstance(loc, dict) and "path" in loc
+            ]
+        return []
+
+
+class PlexEpisodeLeaf(BaseModel):
+    """Lightweight model for episode items returned by /allLeaves on show sections.
+
+    Only fields needed to build the show-root folder map are captured.
+    grandparentRatingKey is the show's ratingKey; media_folder is derived
+    by stripping the filename and season folder from the episode file path.
+    """
+
+    grandparentRatingKey: str = Field(default="")
+    media_filename: str = Field(
+        validation_alias=AliasPath("Media", 0, "Part", 0, "file"), default=""
+    )
+    media_folder: str = Field(default="")
+
+    @model_validator(mode="after")
+    def derive_show_folder(self):
+        if self.media_filename:
+            parts = self.media_filename.replace("\\", "/").split("/")
+            # Strip filename + season folder to reach show root
+            self.media_folder = "/".join(parts[:-2]).rstrip("/")
+        return self
+
+
+class PlexMediaExtra(BaseModel):
+    type: str = Field(default="")
+    title: str = Field(default="")
+    subtype: str = Field(default="")
+    guid: str = Field(default="")
+    resolution: int = Field(
+        default=0,
+        validation_alias=AliasPath("Media", 0, "videoResolution"),
+    )
+    language: str = Field(
+        default="",
+        validation_alias=AliasPath(
+            "Media", 0, "Part", 0, "Stream", 1, "language"
+        ),
+    )
+
+
+class PlexMediaItem(BaseModel):
+    ratingKey: str = Field(default="")
+    key: str = Field(default="")
+    guid: str = Field(default="")
+    slug: str = Field(default="")
+    studio: str = Field(default="")
+    type: str = Field(default="")
+    title: str = Field(default="")
+    original_title: str = Field(default="")
+    summary: str = Field(default="")
+    year: int = Field(default=0)
+    tagline: str = Field(default="")
+    thumb: str = Field(default="")
+    art: str = Field(default="")
+    duration: int = Field(default=0)  # stored as minutes after conversion
+    originallyAvailableAt: str | None = Field(default=None)
+    addedAt: int | None = Field(default=None)
+    updatedAt: int | None = Field(default=None)
+    media_filename: str = Field(
+        validation_alias=AliasPath("Media", 0, "Part", 0, "file"), default=""
+    )
+    media_folder: str = Field(default="")
+    locations: list[str] = Field(
+        alias="Location",
+        default_factory=list,
+    )
+    guids: list[str] = Field(
+        validation_alias=AliasPath("Guid"),
+        default_factory=list,
+    )
+    imdb_id: str | None = Field(default=None)
+    tmdb_id: int | None = Field(default=None)
+    tvdb_id: int | None = Field(default=None)
+    extras: list[PlexMediaExtra] = Field(
+        default_factory=list,
+        validation_alias=AliasPath("Extras", "Metadata"),
+    )
+
+    @field_validator("locations", mode="before")
+    @classmethod
+    def extract_location_paths(cls, v) -> list[str]:
+        if isinstance(v, list):
+            return [
+                loc["path"]
+                for loc in v
+                if isinstance(loc, dict) and "path" in loc
+            ]
+        return []
+
+    @field_validator("guids", mode="before")
+    @classmethod
+    def extract_guids(cls, v) -> list[str]:
+        if isinstance(v, list):
+            return [
+                guid["id"]
+                for guid in v
+                if isinstance(guid, dict) and "id" in guid
+            ]
+        return []
+
+    @field_validator("duration", mode="before")
+    @classmethod
+    def convert_duration_to_minutes(cls, v) -> int:
+        if not v:
+            return 0
+        if isinstance(v, str) and v.isdigit():
+            v = int(v)
+        if isinstance(v, (int, float)):
+            return int(v // 60000)
+        return 0
+
+    @model_validator(mode="after")
+    def extract_ids_and_folder(self):
+        for guid in self.guids:
+            if guid.startswith("imdb://"):
+                self.imdb_id = guid.replace("imdb://", "")
+            elif guid.startswith("tmdb://"):
+                try:
+                    self.tmdb_id = int(guid.replace("tmdb://", ""))
+                except ValueError:
+                    self.tmdb_id = None
+            elif guid.startswith("tvdb://"):
+                try:
+                    self.tvdb_id = int(guid.replace("tvdb://", ""))
+                except ValueError:
+                    self.tvdb_id = None
+        if self.media_filename:
+            # Movie: derive folder from the file path (strip the filename)
+            self.media_folder = "/".join(self.media_filename.split("/")[:-1])
+        elif self.locations:
+            # Show: Plex returns the show root folder in Location[].path
+            self.media_folder = self.locations[0]
+        # Strip trailing slash to stay consistent with Radarr/Sonarr stored paths
+        self.media_folder = self.media_folder.rstrip("/").rstrip("\\")
+        return self

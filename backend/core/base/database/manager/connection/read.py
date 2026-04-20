@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 
 from . import base
+from core.plex.api_manager import PlexAPI
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
 from exceptions import ItemNotFoundError
@@ -72,8 +73,15 @@ async def get_rootfolders(connection: ConnectionBase) -> list[str]:
     if connection.arr_type == ArrType.RADARR:
         arr_connection = RadarrManager(connection.url, connection.api_key)
         root_folders = await arr_connection.get_rootfolders()
-    if connection.arr_type == ArrType.SONARR:
+    elif connection.arr_type == ArrType.SONARR:
         arr_connection = SonarrManager(connection.url, connection.api_key)
         root_folders = await arr_connection.get_rootfolders()
+    elif connection.arr_type == ArrType.PLEX:
+        plex_connection = PlexAPI(
+            connection.url,
+            connection.api_key,
+            identifier="trailarr_1234",
+        )
+        root_folders = await plex_connection.get_library_folders()
 
     return root_folders
