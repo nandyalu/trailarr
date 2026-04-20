@@ -149,6 +149,82 @@ def read_all_by_connection(
 
 
 @read_session
+def read_arr_linked_to_plex_connection(
+    plex_connection_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[MediaRead]:
+    """Return Arr-sourced media rows linked to a specific Plex connection.
+
+    These are rows where ``plex_connection_id`` matches but ``connection_id``
+    does not — i.e., the media came from Radarr/Sonarr but was linked to Plex
+    via folder-path matching. When the Plex connection is deleted the DB sets
+    ``plex_connection_id`` to NULL via SET NULL; this function is used *before*
+    deletion to fire PLEX_UNLINKED events for each affected row.
+
+    Args:
+        plex_connection_id (int): The Plex connection id to look up.
+        _session: A session to use for the database connection.
+
+    Returns:
+        list[MediaRead]: Arr-sourced media rows linked to this Plex connection.
+    """
+    statement = select(Media).where(
+        (Media.plex_connection_id == plex_connection_id)
+        & (Media.connection_id != plex_connection_id)
+    )
+    db_media_list = _session.exec(statement).all()
+    return base._convert_to_read_list(db_media_list)
+
+
+@read_session
+def read_by_folder_path(
+    folder_path: str,
+    *,
+    _session: Session = None,  # type: ignore
+) -> MediaRead | None:
+    """Find a media item by folder path, with fallback to prefix matching.
+
+    Two-stage lookup:
+    1. Exact match on folder_path (covers movies and single-folder media).
+    2. Prefix match: find the stored folder_path that is a parent directory
+       of the given path (covers TV shows where Plex gives a season subfolder
+       but Sonarr stores the series root folder).
+
+    Args:
+        folder_path (str): The folder path to look up (Plex-mapped path).
+        _session (Session, Optional): A session to use for the database connection.
+    Returns:
+        MediaRead | None: The MediaRead object if found, otherwise None.
+    """
+    # Stage 1: exact match
+    statement = select(Media).where(Media.folder_path == folder_path)
+    db_media = _session.exec(statement).first()
+    if db_media:
+        return MediaRead.model_validate(db_media)
+
+    # Stage 2: prefix match — stored folder_path is a parent of the given path.
+    # Uses substr to avoid LIKE wildcard issues with special characters.
+    # Equivalent to: folder_path.startswith(stored_folder_path)
+    row = _session.execute(
+        text(
+            "SELECT id FROM media"
+            " WHERE folder_path IS NOT NULL"
+            " AND folder_path != ''"
+            " AND substr(:path, 1, length(folder_path)) = folder_path"
+            " LIMIT 1"
+        ),
+        {"path": folder_path},
+    ).first()
+    if not row:
+        return None
+    db_media = _session.get(Media, row[0])
+    if not db_media:
+        return None
+    return MediaRead.model_validate(db_media)
+
+
+@read_session
 def read_recent(
     limit: int = 100,
     offset: int = 0,
