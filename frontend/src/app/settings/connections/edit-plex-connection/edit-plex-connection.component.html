@@ -1,0 +1,234 @@
+@if (isCreate()) {
+  <h2>Add Plex Connection</h2>
+} @else {
+  <h2>Edit Plex Connection</h2>
+  @if (connectionId() > 0) {
+    <button class="icon-button danger top-right-button" type="button" (click)="showDeleteDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+          d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
+        />
+      </svg>
+      <span class="text">Delete</span>
+    </button>
+  }
+}
+<hr />
+
+@if (isLoading()) {
+  <app-load-indicator />
+} @else {
+  <!-- #region OAuth block -->
+  <div class="oauth-block">
+    @switch (oauthState()) {
+      @case ('idle') {
+        <p class="oauth-hint">Connect your Plex account to retrieve the server URL and token automatically.</p>
+        <button class="plex-button" type="button" (click)="startOAuth()">Connect with Plex</button>
+      }
+      @case ('pending_pin') {
+        <app-load-indicator />
+        <p>Requesting Plex PIN…</p>
+      }
+      @case ('pending_auth') {
+        <app-load-indicator />
+        <p>Waiting for you to approve in the Plex window…</p>
+      }
+      @case ('server_select') {
+        <div class="input-group">
+          <label for="serverSelect">Select Server URL</label>
+          <select id="serverSelect" (change)="setSelectedServerUri($event)">
+            @for (opt of serverUriOptions(); track opt.uri) {
+              <option [value]="opt.uri">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+        <button class="plex-button" type="button" (click)="applySelectedServer()">Connect to this server</button>
+      }
+      @case ('authenticated') {
+        <div class="auth-status">
+          <span class="auth-ok">Plex authenticated</span>
+          <button class="link-button" type="button" (click)="reconnect()">Reconnect</button>
+        </div>
+      }
+      @case ('error') {
+        <p class="error-text">{{ errorMessage() }}</p>
+        <button class="plex-button" type="button" (click)="startOAuth()">Try Again</button>
+      }
+    }
+  </div>
+  <!-- #endregion -->
+
+  @if (oauthState() === 'authenticated') {
+    <form>
+      <!-- #region Name -->
+      <div class="input-group">
+        <label for="name">Name</label>
+        <input
+          id="name"
+          autocapitalize="words"
+          autocomplete="off"
+          [value]="connectionData().name"
+          (input)="setName($event)"
+          placeholder="Plex Connection Name"
+          type="text"
+        />
+      </div>
+      <!-- #endregion -->
+
+      <!-- #region Monitor Type -->
+      <div class="d-row">
+        <div class="option-container">
+          <legend id="monitorType_label">Monitor Type:</legend>
+          <div class="options-bar" role="radiogroup" aria-labelledby="monitorType_label">
+            @for (option of monitorOptions; track option) {
+              <label class="option-label" [class.option__selected]="option === selectedMonitor()">
+                <input type="radio" [id]="'monitor_' + option" [value]="option" (change)="setMonitor(option)" />
+                <span class="option-name">{{ option | uppercase }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+      <!-- #endregion -->
+
+      <!-- #region Read-only server info -->
+      <div class="input-group">
+        <label for="serverUrl">Server URL</label>
+        <input id="serverUrl" [value]="connectionData().url" readonly type="url" />
+      </div>
+      <div class="input-group">
+        <label for="plexToken">Plex Token</label>
+        <input id="plexToken" [value]="connectionData().api_key ? '••••••••••••••••••••' : ''" readonly type="text" />
+      </div>
+      <!-- #endregion -->
+
+      <!-- #region Library Folders -->
+      <div class="d-row" style="justify-content: flex-start">
+        <h3>Library Folders</h3>
+      </div>
+      @if (connectionData().path_mappings.length === 0) {
+        <div class="warning-banner">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="warning-icon">
+            <path
+              d="M92-120l388-672 388 672H92Zm138-72h500L480-724 230-192Zm250-40q17 0 28.5-11.5T520-272q0-17-11.5-28.5T480-312q-17 0-28.5 11.5T440-272q0 17 11.5 28.5T480-232Zm-40-120h80v-200h-80v200Zm40-100Z"
+            />
+          </svg>
+          <span>No library folders configured. No media will be added to Trailarr.</span>
+        </div>
+        <button class="animated-button secondary add-library-btn" type="button" (click)="addLibraryFolders()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+          </svg>
+          <span class="text">Add library folders</span>
+        </button>
+      } @else {
+        <div class="warning-banner">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="warning-icon">
+            <path
+              d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+            />
+          </svg>
+          <span>Remove a library folder to exclude it from Trailarr</span>
+        </div>
+        <hr />
+        <div class="mappings-wrapper">
+          @for (pm of connectionData().path_mappings; let i = $index; track i) {
+            <div class="d-row mappings">
+              <div class="input-group">
+                <label [for]="'path_from' + i">Library Folder (Plex)</label>
+                <input [id]="'path_from' + i" type="text" [value]="pm.path_from" readonly autocomplete="off" />
+              </div>
+              <div class="input-group">
+                <label [for]="'path_to' + i">Path in Trailarr</label>
+                <div class="input-wrapper">
+                  <input
+                    [id]="'path_to' + i"
+                    type="text"
+                    [value]="pm.path_to"
+                    (input)="updatePathTo(i, $event)"
+                    placeholder="Trailarr Internal Path"
+                    autocomplete="off"
+                    required
+                  />
+                  <button class="tertiary folder-icon" type="button" (click)="openPathSelectDialog(i)" title="Select Path">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                      <path
+                        d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <p class="invalid-text">Path is required</p>
+              </div>
+              <button
+                class="icononly-button tertiary remove-button"
+                [id]="'remove' + i"
+                type="button"
+                title="Remove Library"
+                (click)="removePathMapping(i)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+      }
+      <!-- #endregion -->
+
+      <!-- #region Submission Result -->
+      @let _submitResult = submitResult();
+      @if (_submitResult) {
+        <p class="result-text">{{ _submitResult }}</p>
+      }
+      <!-- #endregion -->
+
+      <!-- #region Action Buttons -->
+      <div class="buttons-row">
+        @if (isReadyToSubmit()) {
+          <button class="animated-button primary" type="button" (click)="onSubmit()" [disabled]="isSubmitting()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M856-690v513q0 28.73-22.14 50.86Q811.72-104 783-104H177q-28.73 0-50.86-22.14Q104-148.27 104-177v-606q0-28.72 22.14-50.86Q148.27-856 177-856h513l166 166Zm-73 32.22L657.78-783H177v606h606v-480.78ZM479.82-238q46.18 0 78.68-32.32 32.5-32.33 32.5-78.5 0-46.18-32.32-78.68-32.33-32.5-78.5-32.5-46.18 0-78.68 32.32-32.5 32.33-32.5 78.5 0 46.18 32.32 78.68 32.33 32.5 78.5 32.5ZM226-577h374v-157H226v157Zm-49-80.78V-177v-606 125.22Z"
+              />
+            </svg>
+            <span class="text">Save</span>
+          </button>
+        } @else {
+          <button class="animated-button primary" type="button" (click)="onSubmit()" [disabled]="isSubmitting()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M766-113q-43 0-76-26t-41-63H443q-67.76 0-111.38-43.67Q288-289.34 288-357.17T331.62-469q43.62-44 111.38-44h77q40.17 0 65.59-25.17 25.41-25.17 25.41-65t-25.35-65.33Q560.3-694 520.21-694H312q-10 37-42.5 63T194-605q-50.92 0-85.96-35.06Q73-675.12 73-726.06t35.04-86.44Q143.08-848 194-848q43 0 75.5 26.5t42.91 62.5H520q68.17 0 112.09 43.88 43.91 43.87 43.91 112 0 68.12-43.91 111.62Q588.17-448 520-448h-77q-39.76 0-64.88 25.38Q353-397.25 353-357.12 353-317 378.12-292q25.12 25 64.88 25h206q9.3-35.81 41.65-62.41Q723-356 766-356q51.33 0 86.67 35.26Q888-285.47 888-234.24 888-183 852.67-148q-35.34 35-86.67 35Z"
+              />
+            </svg>
+            <span class="text">Test</span>
+          </button>
+        }
+        <button class="animated-button secondary" type="button" (click)="onCancel()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m247-195-51-52 233-233-233-234 51-52 234 234 232-234 51 52-232 234 232 233-51 52-232-234-234 234Z" />
+          </svg>
+          <span class="text">Cancel</span>
+        </button>
+      </div>
+      <!-- #endregion -->
+
+      @if (_submitResult.toLowerCase().includes('ated success')) {
+        <div class="close-progress"></div>
+      }
+    </form>
+  }
+}
+
+<dialog #deleteConnectionDialog (click)="closeDeleteDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Delete Connection</h2>
+    <p>This will delete the Plex connection and remove its library data from Trailarr.</p>
+    <p>Are you sure?</p>
+    <div class="buttons-row">
+      <button class="danger" (click)="onConfirmDelete()">Delete</button>
+      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
+    </div>
+  </div>
+</dialog>

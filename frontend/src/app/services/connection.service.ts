@@ -26,6 +26,7 @@ export class ConnectionService {
     id: -1,
     monitor: MonitorType.New,
     name: '',
+    machine_identifier: null,
     path_mappings: [],
     url: '',
     external_url: '',
