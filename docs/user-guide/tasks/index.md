@@ -51,12 +51,15 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Scan All Media Folders**
 
-<!-- md:version:upd 0.6.5 -->
+<!-- md:version:upd 0.9.0 -->
 
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 8 minutes after app launch).
 - Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers and marks download records as deleted if files are missing.
 - This task refreshes the files and folders for all media items in Trailarr.
 - Useful if you add/delete trailers manually or outside of Trailarr.
+
+!!! note "Minimal Files Scan from `v0.9.0`"
+    The task now checks folder modification times before doing a full recursive scan. If neither the media folder nor any of its immediate subdirectories (e.g., `Trailers/`) have changed since the last scan, the folder is skipped entirely. User-initiated scans always run in full. This significantly reduces scan time for large libraries where most folders are unchanged between runs.
 
 ### **Download Missing Trailers**
 
