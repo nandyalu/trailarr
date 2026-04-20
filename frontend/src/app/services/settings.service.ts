@@ -1,7 +1,7 @@
 import {HttpClient, httpResource} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
-import {FolderInfo, ServerStats, Settings} from 'generated-sources/openapi';
 import {catchError, Observable, of} from 'rxjs';
+import {FolderInfo, ServerStats, Settings} from '../models/settings';
 import {environment} from '../../environment';
 
 @Injectable({

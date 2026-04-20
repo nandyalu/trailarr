@@ -1,8 +1,8 @@
-import {httpResource} from '@angular/common/http';
+import {HttpClient, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {TrailerProfileCreate, TrailerProfileRead, TrailerProfilesService} from 'generated-sources/openapi';
-import {Observable, of} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
+import {Observable, of, throwError} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
+import {TrailerProfileCreate, TrailerProfileRead} from '../models/trailerprofile';
 import {environment} from 'src/environment';
 import {WebsocketService} from './websocket.service';
 
@@ -10,8 +10,8 @@ import {WebsocketService} from './websocket.service';
   providedIn: 'root',
 })
 export class ProfileService {
+  private readonly http = inject(HttpClient);
   private profilesUrl = environment.apiUrl + environment.trailerprofiles;
-  private _service = inject(TrailerProfilesService);
   private websocketService = inject(WebsocketService);
 
   readonly allProfiles = httpResource<TrailerProfileRead[]>(() => this.profilesUrl, {defaultValue: []});
@@ -61,22 +61,18 @@ export class ProfileService {
       console.error('Profile creation failed: Name is required');
       return of(null); // Return null observable if name is invalid
     }
-    return this._service.createTrailerProfileApiV1TrailerprofilesPost({body: profile}).pipe(
+    return this.http.post<TrailerProfileRead>(this.profilesUrl, profile).pipe(
       map((createdProfile) => {
-        // Reload the Profiles
         this.allProfiles.reload();
-        this.selectedProfileId.set(createdProfile.id); // Set the newly created profile as selected
+        this.selectedProfileId.set(createdProfile.id);
         this.websocketService.showToast(`Profile '${createdProfile.customfilter.filter_name}' created successfully!`, 'success');
         return createdProfile.id;
       }),
       catchError((error) => {
-        // Log the server's error message
         let errorMessage = 'An unknown error occurred!';
         if (error.error instanceof ErrorEvent) {
-          // client-side error
           errorMessage = `Error: ${error.error.message}`;
         } else {
-          // server-side error
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         console.error('Failed to create profile:', errorMessage);
@@ -92,33 +88,24 @@ export class ProfileService {
       console.error('Profile update failed: Name is required');
       return of(false); // Return false observable if name is invalid
     }
-    return this._service
-      .updateTrailerProfileApiV1TrailerprofilesTrailerprofileIdPut({
-        trailerprofile_id: profile.id,
-        body: profile,
-      })
-      .pipe(
-        map((updatedProfile) => {
-          // Reload Profiles
-          this.allProfiles.reload();
-          this.websocketService.showToast(`Profile '${updatedProfile.customfilter.filter_name}' updated successfully!`, 'success');
-          return true;
-        }),
-        catchError((error) => {
-          // Log the server's error message
-          let errorMessage = 'An unknown error occurred!';
-          if (error.error instanceof ErrorEvent) {
-            // client-side error
-            errorMessage = `Error: ${error.error.message}`;
-          } else {
-            // server-side error
-            errorMessage = `Error: ${error.status} ${error.error.detail}`;
-          }
-          console.error('Failed to update profile:', errorMessage);
-          this.websocketService.showToast(errorMessage, 'error');
-          return of(false);
-        }),
-      );
+    return this.http.put<TrailerProfileRead>(`${this.profilesUrl}${profile.id}`, profile).pipe(
+      map((updatedProfile) => {
+        this.allProfiles.reload();
+        this.websocketService.showToast(`Profile '${updatedProfile.customfilter.filter_name}' updated successfully!`, 'success');
+        return true;
+      }),
+      catchError((error) => {
+        let errorMessage = 'An unknown error occurred!';
+        if (error.error instanceof ErrorEvent) {
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        console.error('Failed to update profile:', errorMessage);
+        this.websocketService.showToast(errorMessage, 'error');
+        return of(false);
+      }),
+    );
   }
 
   updateSetting(key: keyof TrailerProfileRead, value: any) {
@@ -127,68 +114,53 @@ export class ProfileService {
       throw new Error('No profile selected');
     }
 
-    this._service
-      .updateTrailerProfileSettingApiV1TrailerprofilesTrailerprofileIdSettingPost({
-        trailerprofile_id: selectedId,
-        body: {
-          key: key,
-          value: value,
-        },
-      })
-      .subscribe({
-        next: (updatedProfile) => {
-          // Update the local allProfiles signal with the updated profile
-          this.allProfiles.update((profiles) => {
-            const index = profiles.findIndex((profile) => profile.id === updatedProfile.id);
-            if (index !== -1) {
-              profiles[index] = updatedProfile;
-              return [...profiles];
-            }
-            return [...profiles, updatedProfile];
-          });
-          const _key = key.charAt(0).toUpperCase() + key.replaceAll('_', ' ').slice(1);
-          this.websocketService.showToast(`${_key} set to '${value}' successfully!`, 'success');
-        },
-        error: (error) => {
-          // Log the server's error message
-          let errorMessage = 'An unknown error occurred!';
-          if (error.error instanceof ErrorEvent) {
-            // client-side error
-            errorMessage = `Error: ${error.error.message}`;
-          } else {
-            // server-side error
-            errorMessage = `Error: ${error.status} ${error.error.detail}`;
+    this.http.post<TrailerProfileRead>(`${this.profilesUrl}${selectedId}/setting`, {key, value}).subscribe({
+      next: (updatedProfile) => {
+        this.allProfiles.update((profiles) => {
+          const index = profiles.findIndex((profile) => profile.id === updatedProfile.id);
+          if (index !== -1) {
+            profiles[index] = updatedProfile;
+            return [...profiles];
           }
-          console.error('Failed to update profile setting:', errorMessage);
-          this.websocketService.showToast(errorMessage, 'error');
-        },
-      });
+          return [...profiles, updatedProfile];
+        });
+        const _key = key.charAt(0).toUpperCase() + key.replaceAll('_', ' ').slice(1);
+        this.websocketService.showToast(`${_key} set to '${value}' successfully!`, 'success');
+      },
+      error: (error) => {
+        let errorMessage = 'An unknown error occurred!';
+        if (error.error instanceof ErrorEvent) {
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          errorMessage = `Error: ${error.status} ${error.error.detail}`;
+        }
+        console.error('Failed to update profile setting:', errorMessage);
+        this.websocketService.showToast(errorMessage, 'error');
+      },
+    });
   }
 
-  deleteProfile(id: number) {
+  deleteProfile(id: number): Observable<boolean> {
     if (id <= 0) {
       throw new Error('Invalid profile ID');
     }
-    this._service.deleteTrailerProfileApiV1TrailerprofilesTrailerprofileIdDelete({trailerprofile_id: id}).subscribe({
-      next: () => {
-        // Reset the selected profile ID and reload profiles
+    return this.http.delete<boolean>(`${this.profilesUrl}${id}`).pipe(
+      tap(() => {
         this.selectedProfileId.set(0);
         this.allProfiles.reload();
         this.websocketService.showToast('Profile deleted successfully!', 'success');
-      },
-      error: (error) => {
-        // Log the server's error message
+      }),
+      catchError((error) => {
         let errorMessage = 'An unknown error occurred!';
         if (error.error instanceof ErrorEvent) {
-          // client-side error
           errorMessage = `Error: ${error.error.message}`;
         } else {
-          // server-side error
           errorMessage = `Error: ${error.status} ${error.error.detail}`;
         }
         console.error('Failed to delete profile:', errorMessage);
         this.websocketService.showToast(errorMessage, 'error');
-      },
-    });
+        return throwError(() => error);
+      }),
+    );
   }
 }
