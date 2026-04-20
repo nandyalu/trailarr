@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.6.7
+  version: 0.6.3
 servers:
   - url: /
     description: Current host
@@ -338,7 +338,7 @@ paths:
             title: Trailarr Api Key
       responses:
         '200':
-          description: Connection Deleted Successfully!
+          description: Connection deletion scheduled.
           content:
             application/json:
               schema:
@@ -3361,6 +3361,7 @@ components:
       enum:
         - radarr
         - sonarr
+        - plex
       title: ArrType
     BatchUpdate:
       properties:
@@ -3443,6 +3444,11 @@ components:
           type: string
           format: date-time
           title: Added At
+        machine_identifier:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Machine Identifier
         path_mappings:
           items:
             $ref: '#/components/schemas/PathMappingCRU'
@@ -3705,6 +3711,9 @@ components:
         - trailer_downloaded
         - trailer_deleted
         - download_skipped
+        - plex_linked
+        - plex_unlinked
+        - plex_scan_triggered
       title: EventType
       description: Types of events that can be tracked.
     FileFolderInfoRead:
@@ -4098,6 +4107,26 @@ components:
           type: boolean
           title: Arr Monitored
           default: false
+        plex_rating_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Plex Rating Key
+        plex_section_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Plex Section Key
+        plex_connection_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Plex Connection Id
+        plex_trailer:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Plex Trailer
         status:
           $ref: '#/components/schemas/MonitorStatus'
           default: missing
@@ -4233,13 +4262,19 @@ components:
           type: integer
           title: Year
         youtube_trailer_id:
-          type: string
+          anyOf:
+            - type: string
+            - type: 'null'
           title: Youtube Trailer Id
         imdb_id:
-          type: string
+          anyOf:
+            - type: string
+            - type: 'null'
           title: Imdb Id
         txdb_id:
-          type: string
+          anyOf:
+            - type: string
+            - type: 'null'
           title: Txdb Id
         is_movie:
           type: boolean
@@ -4641,6 +4676,14 @@ components:
           type: boolean
           title: Notify Plex
           default: false
+        skip_if_plex_trailer:
+          type: boolean
+          title: Skip If Plex Trailer
+          default: false
+        skip_if_plex_trailer_resolution:
+          type: integer
+          title: Skip If Plex Trailer Resolution
+          default: 1080
         id:
           anyOf:
             - type: integer
@@ -4768,6 +4811,14 @@ components:
           type: boolean
           title: Notify Plex
           default: false
+        skip_if_plex_trailer:
+          type: boolean
+          title: Skip If Plex Trailer
+          default: false
+        skip_if_plex_trailer_resolution:
+          type: integer
+          title: Skip If Plex Trailer Resolution
+          default: 1080
         id:
           type: integer
           title: Id

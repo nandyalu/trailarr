@@ -1,0 +1,152 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+**Trailarr** is a Docker-based application that automates downloading and managing trailers for Radarr and Sonarr media libraries, with support for Plex, Emby, and Jellyfin.
+
+- **Backend**: Python 3.13 + FastAPI + SQLModel + Alembic + SQLite
+- **Frontend**: Angular 21 (standalone components, Signals) + TypeScript strict mode
+- **Task Scheduler**: Quiv (async task scheduler, replaced APScheduler)
+- **Dependency manager**: `uv` for Python, `npm` for frontend
+
+## Commands
+
+### Setup
+
+```bash
+# Backend (from /app/backend) - takes ~60s
+uv sync
+
+# Frontend (from /app/frontend) - takes ~90s
+npm install
+# npm install also runs postinstall: generates frontend/generated-sources/ from OpenAPI spec
+```
+
+### Development Servers
+
+```bash
+# FastAPI backend (from /app/backend) - requires database setup first
+PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --host 0.0.0.0 --port 7888
+
+# Angular frontend (from /app/frontend) - proxies API to localhost:7888
+npm run start   # http://localhost:4200
+```
+
+### Database Setup
+
+```bash
+# Required before running the backend server
+mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+cd backend
+APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
+```
+
+### Testing
+
+```bash
+# Backend tests (from /app/backend) - 74 tests, ~3s
+PYTHONPATH=$(pwd) python -m pytest tests/ -v
+PYTHONPATH=$(pwd) python -m pytest tests/path/to/test_file.py -v   # single file
+
+# Frontend tests (from /app/frontend) - ~13s
+npm run test
+npm run test:coverage
+```
+
+### Build
+
+```bash
+# Frontend production build (from /app/frontend) - ~10s, output to ../frontend-build/
+npm run build
+
+# Regenerate TypeScript API client from backend OpenAPI spec (from /app/frontend)
+npm run openapi
+
+# Docker image (~15-30 min; may fail in CI due to SSL/PyPI issues)
+docker build --tag trailarr:latest .
+```
+
+### Database Migrations
+
+```bash
+# From /app/backend
+uv run alembic revision --autogenerate -m "Description of changes"
+uv run alembic upgrade head
+```
+
+## Architecture
+
+### Backend (`/app/backend/`)
+
+Layered architecture:
+
+- `main.py` — FastAPI app entry point (`trailarr_api`)
+- `api/v1/` — Route handlers (media, tasks, connections, settings, events, logs, websockets, etc.)
+- `core/` — Business logic
+  - `base/database/models/` — SQLModel ORM models
+  - `base/database/manager/` — Database access managers (one per model type)
+  - `base/arr_manager/` — Base Radarr/Sonarr integration
+  - `radarr/`, `sonarr/` — App-specific logic
+  - `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
+  - `download/trailers/` — Trailer download orchestration via yt-dlp
+  - `files_handler.py` — File management
+- `config/settings.py` — Environment-based configuration; settings persisted to `.env` in `APP_DATA_DIR`
+- `tests/` — pytest test suite
+
+**Key patterns:**
+- All endpoints and background tasks are async/await
+- Database migrations auto-applied on startup via `init_db()`
+- WebSocket broadcasting for real-time task/event updates
+- `APP_DATA_DIR` env var required for all runtime operations
+
+### Frontend (`/app/frontend/src/app/`)
+
+- `app.routes.ts` — Top-level lazy-loaded routes
+- `app.config.ts` — Angular app configuration (standalone, zoneless)
+- `services/` — API service wrappers (typed, using auto-generated client)
+- `media/` — Media list/detail pages (primary feature UI)
+- `tasks/`, `settings/`, `logs/`, `events/` — Feature pages
+- `shared/` — Shared UI components
+- `models/` — TypeScript interfaces
+- `generated-sources/` — **Auto-generated** TypeScript API client from backend OpenAPI spec; do not edit manually
+
+**Key patterns:**
+- Standalone components only (no NgModules)
+- Angular Signals for reactivity (zoneless change detection)
+- Dev server proxies `/api` to backend on port 7888 (see `src/proxy.conf.json`)
+
+### API Client Generation
+
+When backend API changes:
+1. Run `python backend/export_openapi.py` (or the VSCode "Generate OpenAPI Files" task)
+2. Run `cd frontend && npm run openapi` to regenerate `generated-sources/`
+
+### Docker Build
+
+Multi-stage: Stage 1 builds Angular frontend (Node.js), Stage 2 packages backend with Python/FFmpeg. Uses `nandyalu/python-ffmpeg` base image (Python 3.13 + uv + FFmpeg + yt-dlp).
+
+## VSCode Tasks
+
+Pre-configured in `.vscode/tasks.json`:
+- **Frontend build** — `npm run build`
+- **Fastapi run** — starts FastAPI dev server
+- **Generate OpenAPI Files** — updates OpenAPI spec and generates frontend client
+- **Create Alembic Migration** — runs `scripts/create_migration.sh`
+- **Upgrade Python Dependencies** — `uv sync --upgrade`
+
+## Required Environment Variables
+
+```bash
+APP_DATA_DIR=/path/to/config   # Config, database, logs location (REQUIRED)
+PYTHONPATH=/path/to/backend    # Required for backend dev/testing
+LOG_LEVEL=Info                 # Logging level
+```
+
+## Key Conventions
+
+- **Python**: PEP-8, type hints everywhere, async/await, specific exception types, log errors where caught
+- **Angular**: Standalone components, Signals for reactivity, SCSS for styles, service-based state
+- **API changes**: Always regenerate OpenAPI client after backend API modifications
+- **Database changes**: Always create Alembic migration after SQLModel model changes
