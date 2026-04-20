@@ -1,7 +1,7 @@
 import {TitleCasePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Settings} from 'generated-sources/openapi';
+import {Settings} from 'src/app/models/settings';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';

@@ -1,5 +1,5 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
-import {FilesService} from 'generated-sources/openapi';
+import {FilesService} from 'src/app/services/files.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {jsonEqual} from 'src/util';
 
@@ -35,7 +35,7 @@ export class TextDialogComponent implements AfterViewInit {
   }
 
   private loadFileContent(): void {
-    this.filesService.readFileApiV1FilesReadGet({file_path: this.filePath()}).subscribe({
+    this.filesService.readFile(this.filePath()).subscribe({
       next: (content) => this.selectedFileText.set(content.split('\n')),
       complete: () => this.textFileLoading.set(false),
       error: () => this.textFileLoading.set(false),

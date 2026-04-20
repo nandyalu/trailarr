@@ -4,7 +4,7 @@ import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, Elemen
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, RouterLink} from '@angular/router';
-import {AppLogRecordRead, LogLevel} from 'generated-sources/openapi';
+import {AppLogRecord, LogLevel} from '../models/logs';
 import {debounceTime, distinctUntilChanged} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {TimediffPipe} from '../helpers/timediff.pipe';
@@ -42,11 +42,11 @@ export class LogsComponent implements OnInit {
   displayCount = signal(100);
 
   // Dialog state for traceback
-  tracebackLog = signal<AppLogRecordRead | null>(null);
+  tracebackLog = signal<AppLogRecord | null>(null);
   private readonly tracebackDialog = viewChild<ElementRef<HTMLDialogElement>>('tracebackDialog');
 
   // Component resources
-  protected readonly allLogs = httpResource<AppLogRecordRead[]>(
+  protected readonly allLogs = httpResource<AppLogRecord[]>(
     () => ({
       url: this.logsService.logsUrl + 'raw',
       method: 'GET',
@@ -57,7 +57,7 @@ export class LogsComponent implements OnInit {
     },
   );
 
-  protected readonly searchFilterLogs = httpResource<AppLogRecordRead[]>(
+  protected readonly searchFilterLogs = httpResource<AppLogRecord[]>(
     () => {
       const query = this.searchQuery();
       if (!query || query.length < 3) {
@@ -111,11 +111,11 @@ export class LogsComponent implements OnInit {
     });
   }
 
-  getRawLog(log: AppLogRecordRead): string {
+  getRawLog(log: AppLogRecord): string {
     return `${log.created!}: [${log.level}|${log.filename}|${log.lineno}] ${log.loggername!} ${log.message}`;
   }
 
-  getRawLogWithTraceback(log: AppLogRecordRead): string {
+  getRawLogWithTraceback(log: AppLogRecord): string {
     let rawlog = this.getRawLog(log);
     if (log.traceback) {
       rawlog += `\nException details:\n${log.traceback}`;
@@ -123,7 +123,7 @@ export class LogsComponent implements OnInit {
     return rawlog;
   }
 
-  getMediaId(log: AppLogRecordRead): number | null {
+  getMediaId(log: AppLogRecord): number | null {
     if (log.mediaid) {
       return log.mediaid;
     }
@@ -132,7 +132,7 @@ export class LogsComponent implements OnInit {
     return mediaIdMatch ? parseInt(mediaIdMatch[1], 10) : null;
   }
 
-  openTraceback(log: AppLogRecordRead) {
+  openTraceback(log: AppLogRecord) {
     this.tracebackLog.set(log);
     this.tracebackDialog()?.nativeElement.showModal();
   }
@@ -149,7 +149,7 @@ export class LogsComponent implements OnInit {
     }
   }
 
-  sortLogsByDateAsc(a: AppLogRecordRead, b: AppLogRecordRead): number {
+  sortLogsByDateAsc(a: AppLogRecord, b: AppLogRecord): number {
     return new Date(a.created!).getTime() - new Date(b.created!).getTime();
   }
 
