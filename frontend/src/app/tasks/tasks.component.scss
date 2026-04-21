@@ -349,6 +349,47 @@
   &::backdrop {
     background-color: rgb(0 0 0 / 50%);
   }
+
+  &.cancel:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  }
+
+  &.running {
+    cursor: default;
+
+    svg {
+      fill: var(--color-primary);
+      animation: spin-animation 1.5s linear infinite;
+    }
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+// ── Edit dialog ───────────────────────────────────────────────────────────────
+
+.edit-dialog {
+  border: none;
+  border-radius: 1rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  padding: 0;
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 30%);
+
+  &::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+  }
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
 }
 
 .dialog-content {
