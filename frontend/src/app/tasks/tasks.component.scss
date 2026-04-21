@@ -368,30 +368,6 @@
   }
 }
 
-// ── Edit dialog ───────────────────────────────────────────────────────────────
-
-.edit-dialog {
-  border: none;
-  border-radius: 1rem;
-  background-color: var(--color-surface-container);
-  color: var(--color-on-surface);
-  padding: 0;
-  max-width: 28rem;
-  width: calc(100% - 2rem);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 30%);
-
-  &::backdrop {
-    background-color: rgb(0 0 0 / 50%);
-  }
-}
-
-.dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding: 1.5rem;
-}
-
 .dialog-content {
   display: flex;
   flex-direction: column;
