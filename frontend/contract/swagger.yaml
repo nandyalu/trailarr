@@ -10,7 +10,7 @@ info:
   license:
     name: GNU GPL 3.0
     url: https://github.com/nandyalu/trailarr/blob/main/LICENSE
-  version: 0.6.3
+  version: 0.6.7
 servers:
   - url: /
     description: Current host

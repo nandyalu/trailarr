@@ -206,22 +206,29 @@ def read_by_folder_path(
     # Stage 2: prefix match — stored folder_path is a parent of the given path.
     # Uses substr to avoid LIKE wildcard issues with special characters.
     # Equivalent to: folder_path.startswith(stored_folder_path)
-    row = _session.execute(
-        text(
-            "SELECT id FROM media"
-            " WHERE folder_path IS NOT NULL"
-            " AND folder_path != ''"
-            " AND substr(:path, 1, length(folder_path)) = folder_path"
-            " LIMIT 1"
-        ),
-        {"path": folder_path},
-    ).first()
-    if not row:
+    statement = select(Media).where(col(Media.folder_path).is_not(None))
+    statement = statement.where(
+        col(Media.folder_path).istartswith(folder_path[:255])
+    )  # Avoid issues with long paths
+    matching_media = _session.exec(statement).all()
+
+    startswith_matches = []
+    for media in matching_media:
+        if not media.folder_path:
+            continue
+        # If an exact match was found in the loop, return it immediately
+        if folder_path == media.folder_path:
+            return MediaRead.model_validate(media)
+        # If the media's folder_path is a prefix of the given folder_path, add it to the matches
+        if folder_path.startswith(media.folder_path):
+            startswith_matches.append(MediaRead.model_validate(media))
+    if not startswith_matches:
         return None
-    db_media = _session.get(Media, row[0])
-    if not db_media:
-        return None
-    return MediaRead.model_validate(db_media)
+    # If multiple matches are found, return the one with the longest folder_path (most specific match)
+    startswith_matches.sort(
+        key=lambda m: len(m.folder_path or ""), reverse=True
+    )
+    return startswith_matches[0]
 
 
 @read_session

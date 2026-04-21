@@ -44,8 +44,14 @@ async def update(
     # For Plex connections, refresh the machine identifier in case the server changed
     if db_connection.arr_type == ArrType.PLEX:
         from core.plex.api_manager import PlexAPI
-        plex_api = PlexAPI(db_connection.url, db_connection.api_key, identifier="trailarr_1234")
-        db_connection.machine_identifier = await plex_api.get_machine_identifier()
+
+        _id = f"trailarr_{db_connection.id}"
+        plex_api = PlexAPI(
+            db_connection.url, db_connection.api_key, identifier=_id
+        )
+        db_connection.machine_identifier = (
+            await plex_api.get_machine_identifier()
+        )
     # Commit the changes to the database
     _session.add(db_connection)
     _session.commit()
