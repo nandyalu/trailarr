@@ -204,31 +204,24 @@ def read_by_folder_path(
         return MediaRead.model_validate(db_media)
 
     # Stage 2: prefix match — stored folder_path is a parent of the given path.
-    # Uses substr to avoid LIKE wildcard issues with special characters.
-    # Equivalent to: folder_path.startswith(stored_folder_path)
-    statement = select(Media).where(col(Media.folder_path).is_not(None))
-    statement = statement.where(
-        col(Media.folder_path).istartswith(folder_path[:255])
-    )  # Avoid issues with long paths
-    matching_media = _session.exec(statement).all()
-
-    startswith_matches = []
-    for media in matching_media:
-        if not media.folder_path:
-            continue
-        # If an exact match was found in the loop, return it immediately
-        if folder_path == media.folder_path:
-            return MediaRead.model_validate(media)
-        # If the media's folder_path is a prefix of the given folder_path, add it to the matches
-        if folder_path.startswith(media.folder_path):
-            startswith_matches.append(MediaRead.model_validate(media))
-    if not startswith_matches:
-        return None
-    # If multiple matches are found, return the one with the longest folder_path (most specific match)
-    startswith_matches.sort(
-        key=lambda m: len(m.folder_path or ""), reverse=True
+    # Fetch only id + folder_path to avoid loading full rows, filter in Python,
+    # then fetch the single winning row by id.
+    id_path_stmt = select(Media.id, Media.folder_path).where(
+        col(Media.folder_path).is_not(None)
     )
-    return startswith_matches[0]
+    rows = _session.exec(id_path_stmt).all()
+
+    best_id: int | None = None
+    best_path_len: int = 0
+    for row_id, row_path in rows:
+        if not row_path or not row_id:
+            continue
+        if folder_path.startswith(row_path) and len(row_path) > best_path_len:
+            best_id = row_id
+            best_path_len = len(row_path)
+    if best_id is None:
+        return None
+    return MediaRead.model_validate(base._get_db_item(best_id, _session))
 
 
 @read_session
