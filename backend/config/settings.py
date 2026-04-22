@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import os
+import platform
 import secrets
 
 from dotenv import load_dotenv, set_key
@@ -227,6 +228,18 @@ class _Config:
         self.timezone = getenv_str("TZ", "UTC")
         self.app_data_dir = APP_DATA_DIR
 
+        # Server platform info — used by the frontend for Plex OAuth device context
+        _system = platform.system() or "Linux"
+        if os.path.exists("/.dockerenv"):
+            self.server_platform = "Docker"
+        elif _system == "Darwin":
+            self.server_platform = "macOS"
+        else:
+            self.server_platform = _system  # "Linux" or "Windows"
+        self.server_platform_version = platform.release() or "unknown"
+        self.server_model = platform.machine() or "unknown"
+        self.server_hostname = platform.node() or "Trailarr"
+
         # Read properties from ENV variables or set default values \
         # if not present
         self.api_key = getenv_str("API_KEY", "")
@@ -262,6 +275,10 @@ class _Config:
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
             "monitor_interval": self.monitor_interval,
+            "server_hostname": self.server_hostname,
+            "server_model": self.server_model,
+            "server_platform": self.server_platform,
+            "server_platform_version": self.server_platform_version,
             "server_start_time": self.server_start_time,
             "timezone": self.timezone,
             "update_available": self.update_available,

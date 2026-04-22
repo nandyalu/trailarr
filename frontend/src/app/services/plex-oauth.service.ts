@@ -71,6 +71,7 @@ export class PlexOAuthService {
    * Include a forwardUrl so Plex redirects back after auth (optional, ignored if blank).
    */
   buildAuthUrl(pinCode: string, clientId: string): string {
+    const s = this.settings.settingsResource.value();
     const params = new URLSearchParams({
       clientID: clientId,
       code: pinCode,
@@ -78,10 +79,10 @@ export class PlexOAuthService {
       'context[device][version]': this.appVersion,
       'context[device][device]': PLEX_DEVICE,
       'context[device][deviceName]': PLEX_DEVICE_NAME,
-      'context[device][platform]': 'platform',
-      'context[device][platformVersion]': 'platform_version',
-      'context[device][model]': 'model',
-      'context[device][deviceVendor]': 'device_vendor',
+      'context[device][platform]': s?.server_platform ?? 'Linux',
+      'context[device][platformVersion]': s?.server_platform_version ?? 'unknown',
+      'context[device][model]': s?.server_model ?? 'unknown',
+      'context[device][deviceVendor]': s?.server_hostname ?? 'Trailarr',
     });
     return `https://app.plex.tv/auth#?${params.toString()}`;
   }

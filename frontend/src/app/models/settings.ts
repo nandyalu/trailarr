@@ -16,6 +16,10 @@ export interface Settings {
   log_level: string;
   monitor_enabled: boolean;
   monitor_interval: number;
+  server_hostname: string;
+  server_model: string;
+  server_platform: string;
+  server_platform_version: string;
   server_start_time: string;
   timezone: string;
   update_available: boolean;

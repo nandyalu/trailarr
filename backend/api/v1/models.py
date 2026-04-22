@@ -52,6 +52,10 @@ class Settings(BaseModel):
     log_level: str
     monitor_enabled: bool
     monitor_interval: int
+    server_hostname: str
+    server_model: str
+    server_platform: str
+    server_platform_version: str
     server_start_time: str
     timezone: str
     update_available: bool
