@@ -1,4 +1,7 @@
 import os
+import re
+from difflib import SequenceMatcher
+from pathlib import Path
 
 from app_logger import ModuleLogger
 import core.base.database.manager.event as event_manager
@@ -14,6 +17,47 @@ logger = ModuleLogger("PlexConnectionManager")
 
 _MOVIE_SECTION_TYPES = {"movie"}
 _SHOW_SECTION_TYPES = {"show"}
+
+# Matches standard and localized season/special folder names
+_SEASON_FOLDER_RE = re.compile(
+    r"^(season|series|s|saison|staffel|temporada|stagione|seizoen|säsong|kausi)\s*\d+$"
+    r"|^specials?$|^extras?$|^bonus$",
+    re.IGNORECASE,
+)
+
+# Strips (year), {id-tag}, [id-tag] decorators before fuzzy title comparison
+_DECORATOR_RE = re.compile(r"\s*[\[{(][^\]})]*[\]})]\s*")
+
+
+def _normalize_title(name: str) -> str:
+    return _DECORATOR_RE.sub(" ", name).strip().lower()
+
+
+def _resolve_show_root(folder: str, show_title: str) -> str:
+    """Return the true show-root folder, stripping a trailing season directory
+    if one is detected.
+
+    Signal 1 — regex: last component matches a known season-folder pattern
+    (e.g. 'Season 1', 'S02', 'Staffel 3', 'Specials') → go up one level.
+
+    Signal 2 — fuzzy title match: after stripping year/ID decorators, the
+    last component is compared against the show title with SequenceMatcher.
+    A ratio ≥ 0.6 means we are already at the show root → return as-is.
+
+    If neither signal fires the folder is returned unchanged; the prefix
+    match in read_by_folder_path acts as a safety net.
+    """
+    path = Path(folder)
+    last = path.name
+    if not last:
+        return folder
+    if _SEASON_FOLDER_RE.match(last):
+        return str(path.parent)
+    norm_last = _normalize_title(last)
+    norm_title = _normalize_title(show_title)
+    if norm_title and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6:
+        return folder
+    return folder
 
 
 class PlexConnectionManager:
@@ -254,8 +298,12 @@ class PlexConnectionManager:
         item_count = 0
         async for item in self.api.get_library_media(section.key):
             item_count += 1
-            # Prefer folder derived from episode files; fall back to Location path
-            plex_folder = folder_map.get(item.ratingKey, item.media_folder)
+            # Prefer folder derived from episode files; fall back to Location path.
+            # Then resolve the true show root (strips trailing season dirs).
+            plex_folder = _resolve_show_root(
+                folder_map.get(item.ratingKey, item.media_folder),
+                item.title,
+            )
             await self._process_item(
                 item, section, is_movie=False, plex_folder=plex_folder
             )

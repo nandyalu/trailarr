@@ -121,3 +121,50 @@ A unique identifier for your Plex Media Server instance, used internally by Trai
 
 !!! tip ""
     All Plex-specific behaviour (skip logic, notifications) is configured per [Trailer Profile](../profiles/index.md), not on the connection itself. A Plex connection only needs to be set up once.
+
+---
+
+## How Trailarr Resolves TV Show Folder Paths
+
+To match Plex shows against Radarr/Sonarr entries, Trailarr needs to know each show's root folder path. Plex does not expose this directly, so Trailarr derives it in two steps when syncing a TV library section.
+
+**Step 1 — Episode file scan**
+
+Trailarr calls Plex's `/allLeaves` endpoint to collect the file path of every episode in the section. It groups those paths by show and runs `commonpath` across them to find the deepest folder that all episodes share. For example:
+
+| Episode files | Computed common path |
+|---------------|---------------------|
+| `/tv/Breaking Bad (2008)/Season 1/s01e01.mkv`<br>`/tv/Breaking Bad (2008)/Season 2/s02e01.mkv` | `/tv/Breaking Bad (2008)` ✓ |
+| `/tv/Arcane (2021)/Season 1/s01e01.mkv`<br>`/tv/Arcane (2021)/Season 1/s01e02.mkv` | `/tv/Arcane (2021)/Season 1` ← needs fixing |
+
+**Step 2 — Season folder detection & title confirmation**
+
+Single-season shows (or shows where Plex has only indexed one season so far) leave `commonpath` stuck inside the season subfolder. Trailarr then checks the last component of that path using two signals:
+
+1. **Season folder regex** — if the last component matches a known season-folder pattern (`Season 1`, `S02`, `Series 3`, `Specials`, or localized equivalents like `Saison`, `Staffel`, `Temporada`, `Stagione`, …), Trailarr walks up one level to the show root.
+
+2. **Fuzzy title match** — if the regex doesn't fire, Trailarr strips common decorators (`(year)`, `{tvdb-id}`, `[imdb-id]`) from the last component and compares it against the show title using fuzzy matching. A high similarity (≥ 60 %) confirms we are already at the show root. Otherwise the path is kept as-is and Trailarr falls back to a prefix-based lookup at match time.
+
+### Naming conventions that work best
+
+Trailarr is designed to work with the default naming schemes used by **Sonarr** and **Radarr**, which are also the conventions Plex recommends:
+
+| Folder format | Works? |
+|---------------|--------|
+| `Show Name (Year)` | ✓ |
+| `Show Name (Year) {tvdb-ID}` | ✓ — decorators are stripped before matching |
+| `Show Name (Year) {tvdb-ID} [imdb-ID]` | ✓ |
+| `Season XX` subfolders | ✓ — detected automatically |
+| `Specials` / `Extras` subfolders | ✓ — detected automatically |
+| Localized season folders (`Saison 1`, `Staffel 2`, …) | ✓ |
+| Flat layout (all episodes directly in the show folder) | ✓ — `commonpath` already lands on the show root |
+
+### What to check if a show is not matching
+
+If trailers are not being linked to a specific show, check the following:
+
+1. **Verify the folder path in Sonarr/Radarr** matches what Plex sees. The path Sonarr stores for a show must be the same path (or a parent of the path) that Plex uses for the show's files.
+
+2. **Folder name contains the show title** — after stripping year and ID decorators, Trailarr compares the folder name against the show title. If you have renamed the folder manually to something unrelated to the show title, the fuzzy match will not fire. Use the Sonarr default naming scheme.
+
+3. **Run a manual sync** from the Tasks page after making any folder name changes.
