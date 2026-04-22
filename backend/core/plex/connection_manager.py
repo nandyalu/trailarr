@@ -1,3 +1,5 @@
+import os
+
 from app_logger import ModuleLogger
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
@@ -227,15 +229,22 @@ class PlexConnectionManager:
         The folder map is applied to each show so that folder_path is correctly
         derived from a real episode file rather than the unreliable Location[].path.
         """
-        # Step 1: build grandparentRatingKey → show-root-folder streaming episodes
-        folder_map: dict[str, str] = {}
+        # Step 1: build grandparentRatingKey → show-root-folder from episodes.
+        # Collect every episode's parent directory per show, then take the
+        # common path — this correctly handles both seasonal and flat layouts.
+        folder_paths: dict[str, list[str]] = {}
         leaf_count = 0
         async for leaf in self.api.get_library_leaves(section.key):
             leaf_count += 1
             if leaf.grandparentRatingKey and leaf.media_folder:
-                folder_map.setdefault(
-                    leaf.grandparentRatingKey, leaf.media_folder
-                )
+                folder_paths.setdefault(leaf.grandparentRatingKey, [])
+                folder_paths[leaf.grandparentRatingKey].append(leaf.media_folder)
+        folder_map: dict[str, str] = {}
+        for rating_key, paths in folder_paths.items():
+            try:
+                folder_map[rating_key] = os.path.commonpath(paths)
+            except ValueError:
+                folder_map[rating_key] = paths[0]
         logger.debug(
             f"Section '{section.title}': {len(folder_map)} unique shows"
             f" from {leaf_count} episodes"

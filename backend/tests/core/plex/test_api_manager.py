@@ -196,8 +196,8 @@ class TestGetLibraryLeaves:
         assert len(results) == 1
         assert isinstance(results[0], PlexEpisodeLeaf)
         assert results[0].grandparentRatingKey == "99"
-        # derive_show_folder strips filename + season dir → show root
-        assert results[0].media_folder == "/media/tv/Show"
+        # derive_show_folder strips only the filename; caller computes common path
+        assert results[0].media_folder == "/media/tv/Show/S01"
 
     @pytest.mark.asyncio
     @patch.object(PlexAPI, "_iter_pages")

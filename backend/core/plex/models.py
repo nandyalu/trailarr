@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import (
     AliasPath,
     BaseModel,
@@ -36,8 +38,10 @@ class PlexEpisodeLeaf(BaseModel):
     """Lightweight model for episode items returned by /allLeaves on show sections.
 
     Only fields needed to build the show-root folder map are captured.
-    grandparentRatingKey is the show's ratingKey; media_folder is derived
-    by stripping the filename and season folder from the episode file path.
+    grandparentRatingKey is the show's ratingKey; media_folder is the
+    immediate parent directory of the episode file. The caller groups all
+    leaves by grandparentRatingKey and computes the common path to derive
+    the true show-root folder (handles both seasonal and flat layouts).
     """
 
     grandparentRatingKey: str = Field(default="")
@@ -49,9 +53,7 @@ class PlexEpisodeLeaf(BaseModel):
     @model_validator(mode="after")
     def derive_show_folder(self):
         if self.media_filename:
-            parts = self.media_filename.replace("\\", "/").split("/")
-            # Strip filename + season folder to reach show root
-            self.media_folder = "/".join(parts[:-2]).rstrip("/")
+            self.media_folder = str(Path(self.media_filename).parent)
         return self
 
 
