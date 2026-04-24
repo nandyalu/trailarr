@@ -11,7 +11,7 @@ dependencies = [
     "alembic==1.18.4",
     "async-lru==2.3.0",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.136.0",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.136.1",
     "pillow==12.2.0",
     "quiv>=0.3.1",
     "sqlmodel==0.0.38",
