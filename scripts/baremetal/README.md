@@ -1,211 +1,119 @@
-# Trailarr Bare Metal Installation Scripts
+# Trailarr Direct Installation Scripts
 
-This directory contains all the scripts and components needed for bare metal installation of Trailarr on Debian-based systems.
+Cross-platform native installation for Linux, macOS, and Windows.
+The only prerequisite is [`uv`](https://docs.astral.sh/uv/).
 
-## Overview
+---
 
-The bare metal installation provides native system integration with optimal performance for GPU hardware acceleration, especially useful in environments where Docker GPU passthrough is complex (like Proxmox LXC containers).
+## Architecture
 
-## Script Architecture
+```
+Bootstrap (OS-specific, minimal):
+├── install.sh        (Linux / macOS)  — checks uv, downloads release, runs Python installer
+└── install.ps1       (Windows)        — checks uv, downloads release, runs Python installer
 
-### Main Installation Scripts
+Python installer  scripts/install/
+├── install.py                    # Entry point — detects OS, delegates to platform module
+├── common/
+│   ├── display.py                # Rich Panel / Progress helpers
+│   ├── ffmpeg.py                 # Downloads platform-specific ffmpeg static binary
+│   ├── gpu.py                    # GPU detection + per-distro driver instructions
+│   ├── config.py                 # Interactive config (port, .env)
+│   └── env_file.py               # .env read / write helpers
+└── platforms/
+    ├── base.py                   # Shared: copy files, uv sync, write config
+    ├── linux.py                  # trailarr user, systemd service
+    ├── macos.py                  # launchd plist
+    └── windows.py                # NSSM Windows service
 
-- **`bootstrap_install.sh`** - Standalone bootstrap script that downloads source and runs installation
-- **`install.sh`** - Main installation script with comprehensive setup (requires all dependencies)
-- **`uninstall.sh`** - Complete uninstallation with data preservation options
+Runtime   scripts/start/
+└── start.py                      # Cross-platform: GPU → .env, DB backup, alembic, uvicorn
 
-### Modular Components
+CLI  scripts/cli/
+└── trailarr_cli.py               # run / stop / restart / status / logs / update / uninstall
+```
 
-- **`install_media_tools.sh`** - yt-dlp and ffmpeg installation in app directory
-- **`baremetal_pre_start.sh`** - Pre-start environment setup
-- **`baremetal_start.sh`** - Application startup script
+---
 
-## Installation Process
+## Install flow
 
-### Quick Install Command
+1. User installs `uv` (one command, see below)
+2. User runs `install.sh` or `install.ps1`
+3. Bootstrap fetches latest `trailarr-{version}-release.tar.gz` from GitHub Releases
+   (this asset is built by `.github/workflows/release.yml` and contains the pre-built Angular frontend)
+4. Bootstrap calls: `uv run --python 3.13 --with rich scripts/install/install.py --source-dir … --version …`
+5. Python installer handles everything: dirs, uv sync, ffmpeg, config, service, GPU report
 
-Users can install Trailarr by running:
+---
+
+## Release asset
+
+The release workflow (`.github/workflows/release.yml`) triggers on `v*` tags and:
+- Builds the Angular frontend (`npm run build` → outputs to `frontend-build/`)
+- Packages: `backend/`, `frontend-build/`, `assets/`, `scripts/`, `install.sh`, `install.ps1`
+- Publishes `trailarr-{version}-release.tar.gz` as a GitHub Release asset
+
+The bootstrap requires this asset — it **does not** fall back to the source zipball.
+
+---
+
+## Installation directories
+
+| | Linux | macOS | Windows |
+|---|---|---|---|
+| Install dir | `/opt/trailarr` | `/usr/local/opt/trailarr` | `C:\Program Files\Trailarr` |
+| Data dir | `/var/lib/trailarr` | `~/.local/share/trailarr` | `C:\ProgramData\Trailarr` |
+| Log dir | `/var/log/trailarr` | `~/Library/Logs/trailarr` | `C:\ProgramData\Trailarr\logs` |
+| ffmpeg | `<install>/bin/ffmpeg` | `<install>/bin/ffmpeg` | `<install>\bin\ffmpeg.exe` |
+| Service | systemd | launchd | Windows Service (NSSM) |
+
+---
+
+## ffmpeg sources
+
+| Platform | Source |
+|---|---|
+| Linux x86_64 | [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) `linux64-gpl` |
+| Linux arm64 | yt-dlp/FFmpeg-Builds `linuxarm64-gpl` |
+| Windows x64 | yt-dlp/FFmpeg-Builds `win64-gpl` |
+| Windows arm64 | yt-dlp/FFmpeg-Builds `winarm64-gpl` |
+| macOS | [evermeet.cx](https://evermeet.cx/ffmpeg/) static builds |
+
+These static GPL builds support VAAPI (Intel/AMD) and NVENC (NVIDIA) — hardware acceleration
+works once the appropriate drivers are installed.
+
+---
+
+## GPU detection
+
+At the end of installation, `gpu.py` detects available GPU hardware and prints a rich panel
+showing per-distro driver install commands.  **No drivers are installed automatically.**
+
+After the user installs drivers and restarts Trailarr, hardware acceleration can be enabled
+in **Settings → Video Processing**.
+
+---
+
+## Legacy scripts (`scripts/baremetal/`)
+
+The Bash-based scripts in this directory are kept for reference and are still used by
+any existing Debian-specific deployments.  New installations use the Python-based system
+described above.
+
+---
+
+## Development / testing
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
+# Run the installer locally (from repo root) without downloading a release:
+uv run --python 3.13 --with rich scripts/install/install.py \
+    --source-dir "$(pwd)" \
+    --version dev
+
+# Run just the startup script directly:
+APP_DATA_DIR=/tmp/trailarr-test \
+  /opt/trailarr/backend/.venv/bin/python scripts/start/start.py
+
+# Test the CLI:
+python scripts/cli/trailarr_cli.py status
 ```
-
-### Installation Steps
-
-1. **System Checks** - Verifies Debian-based OS and user permissions
-2. **Dependencies** - Installs required system packages
-3. **User Setup** - Creates `trailarr` user and directory structure
-4. **Python Installation** - Installs Python 3.13.5 (system or local)
-5. **GPU Detection** - Detects and configures GPU hardware acceleration
-6. **Media Tools** - Installs ffmpeg and yt-dlp locally in app directory
-7. **Configuration** - Sets up default configuration with port selection
-8. **Driver Installation** - Installs required GPU drivers system-wide
-9. **Service Creation** - Creates and configures systemd service
-
-### Directory Structure
-
-```
-/opt/trailarr/              # Application installation
-├── backend/                # Python application
-│   └── .venv/             # Python virtual environment (created by uv)
-├── frontend-build/         # Web interface
-├── assets/                 # Static assets
-├── scripts/                # All scripts including modular ones
-├── bin/                   # Local binaries (ffmpeg, yt-dlp)
-├── .local/bin/            # uv package manager
-└── tmp/                   # Temporary files
-
-/var/lib/trailarr/          # Data directory
-├── logs/                   # Application logs
-├── backups/                # Database backups
-├── web/images/             # Downloaded trailers
-├── .env                   # Configuration file
-└── trailarr.db            # SQLite database
-
-/var/log/trailarr/          # System logs
-```
-
-## Features
-
-### GPU Hardware Acceleration
-
-- **Auto-detection** of NVIDIA, Intel, and AMD GPUs
-- **Driver installation** for system-wide GPU support
-- **User group setup** for GPU access permissions
-- **Interactive selection** when multiple GPUs are available
-- **Fallback support** when no GPU hardware is detected
-
-### Python Management
-
-- **Version checking** for Python 3.13.5 system installation
-- **Local installation** if system version not available
-- **Virtual environment** isolation for dependencies
-- **Cross-architecture** support (amd64, arm64)
-
-### Media Tools
-
-- **Local installation** of ffmpeg and yt-dlp in app directory
-- **Environment variables** to prioritize local versions
-- **Auto-update** mechanism for yt-dlp
-- **Architecture detection** for optimal ffmpeg builds
-
-### Configuration Management
-
-- **Simplified setup** with default settings and port selection only
-- **Web UI configuration** for advanced settings after installation
-- **Environment file** for persistent configuration storage
-
-### Service Integration
-
-- **Systemd service** with security hardening
-- **Auto-start** capability with `systemctl enable`
-- **Proper shutdown** handling and restart policies
-- **Environment isolation** and protection
-
-## Usage
-
-### Installation
-
-```bash
-# Download and run installer
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/bootstrap_install.sh | sudo bash
-
-# Or download source and run locally
-git clone https://github.com/nandyalu/trailarr.git
-cd trailarr
-./scripts/baremetal/install.sh
-```
-
-### Service Management
-
-```bash
-# Start the service
-sudo systemctl start trailarr
-
-# Enable auto-start
-sudo systemctl enable trailarr
-
-# Check status
-sudo systemctl status trailarr
-
-# View logs
-sudo journalctl -u trailarr -f
-
-# Stop the service
-sudo systemctl stop trailarr
-```
-
-### Uninstallation
-
-```bash
-# Download and run uninstaller
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh | sudo bash
-
-# Or run from source
-./scripts/baremetal/uninstall.sh
-```
-
-## Configuration
-
-The main configuration is stored in `/opt/trailarr/.env`:
-
-```bash
-# Application Settings
-APP_PORT=7889
-APP_DATA_DIR=/var/lib/trailarr
-MONITOR_INTERVAL=10800
-WAIT_FOR_MEDIA=true
-# Hardware Acceleration
-ENABLE_HWACCEL=true
-HWACCEL_TYPE=nvidia
-
-# Installation Mode
-INSTALLATION_MODE=baremetal
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Permission Errors**: Ensure user has sudo privileges
-2. **GPU Not Detected**: Check hardware drivers and /dev/dri permissions
-3. **Service Won't Start**: Check logs with `journalctl -u trailarr`
-4. **Port Conflicts**: Change APP_PORT in .env file and restart
-
-### Log Locations
-
-- **Service logs**: `sudo journalctl -u trailarr`
-- **Application logs**: `/var/lib/trailarr/logs/`
-- **System logs**: `/var/log/trailarr/`
-
-### Reset Configuration
-
-```bash
-# Stop service
-sudo systemctl stop trailarr
-
-# Edit configuration
-sudo nano /opt/trailarr/.env
-
-# Restart service
-sudo systemctl start trailarr
-```
-
-## Comparison with Docker
-
-| Feature | Docker | Bare Metal |
-|---------|--------|------------|
-| Setup Complexity | Easy | Moderate |
-| Resource Usage | Higher | Lower |
-| Hardware Access | Limited | Full |
-| GPU Passthrough | Complex in LXC | Native |
-| Updates | Container replacement | File-based |
-| System Integration | Isolated | Native |
-| Performance | Good | Optimal |
-
-## Support
-
-For issues and support:
-- [GitHub Issues](https://github.com/nandyalu/trailarr/issues)
-- [Documentation](https://github.com/nandyalu/trailarr/docs)
-- [Discord Community](https://discord.gg/trailarr)
