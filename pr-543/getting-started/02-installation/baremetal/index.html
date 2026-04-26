@@ -13,7 +13,7 @@
         <link rel="prev" href="../docker-run/">
       
       
-        <link rel="next" href="../unraid/">
+        <link rel="next" href="../self-install/">
       
       
         
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#bare-metal-installation" class="md-skip">
+        <a href="#direct-installation" class="md-skip">
           Skip to content
         </a>
       
@@ -716,6 +716,8 @@
       
         
       
+        
+      
     
     
     
@@ -896,41 +898,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
-  <a href="#quick-installation" class="md-nav__link">
+  <a href="#step-1-install-uv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#one-command-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        One-Command Installation
+        Step 1 — Install uv
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#alternative-clone-and-install" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#step-2-install-trailarr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Alternative: Clone and Install
+        Step 2 — Install Trailarr
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -946,56 +931,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hardware-acceleration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hardware Acceleration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Hardware Acceleration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#nvidia-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        NVIDIA GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#intel-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Intel GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#amd-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AMD GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#service-management" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1004,14 +939,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Service Management">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gpu-hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Hardware Acceleration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GPU Hardware Acceleration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#starting-and-stopping" class="md-nav__link">
+  <a href="#supported-acceleration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Starting and Stopping
+        Supported acceleration
       
     </span>
   </a>
@@ -1019,10 +965,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#checking-status" class="md-nav__link">
+  <a href="#common-driver-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Checking Status
+        Common driver commands
       
     </span>
   </a>
@@ -1046,63 +992,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
+  <a href="#updating" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Maintenance
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Maintenance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#updating-trailarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updating Trailarr
+        Updating
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#updating-yt-dlp" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#uninstalling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Updating yt-dlp
+        Uninstalling
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-backups" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Backups
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#log-rotation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Log Rotation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1119,22 +1026,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#common-issues" class="md-nav__link">
+  <a href="#service-wont-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Issues
+        Service won't start
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Common Issues">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#service-wont-start" class="md-nav__link">
+  <a href="#port-conflict" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Service Won't Start
+        Port conflict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-errors-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission errors (Linux)
       
     </span>
   </a>
@@ -1145,73 +1062,7 @@
   <a href="#gpu-acceleration-not-working" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GPU Acceleration Not Working
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#port-conflicts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Port Conflicts
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#uninstallation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Uninstallation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Uninstallation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quick-uninstall" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Uninstall
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-uninstall" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Uninstall
+        GPU acceleration not working
       
     </span>
   </a>
@@ -1224,10 +1075,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison-with-docker" class="md-nav__link">
+  <a href="#comparison-direct-vs-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison with Docker
+        Comparison: Direct vs Docker
       
     </span>
   </a>
@@ -1238,6 +1089,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../self-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Self Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2966,41 +2845,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
-  <a href="#quick-installation" class="md-nav__link">
+  <a href="#step-1-install-uv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#one-command-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        One-Command Installation
+        Step 1 — Install uv
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#alternative-clone-and-install" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#step-2-install-trailarr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Alternative: Clone and Install
+        Step 2 — Install Trailarr
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3016,56 +2878,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hardware-acceleration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hardware Acceleration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Hardware Acceleration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#nvidia-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        NVIDIA GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#intel-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Intel GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#amd-gpus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AMD GPUs
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#service-management" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3074,14 +2886,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Service Management">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gpu-hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Hardware Acceleration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GPU Hardware Acceleration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#starting-and-stopping" class="md-nav__link">
+  <a href="#supported-acceleration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Starting and Stopping
+        Supported acceleration
       
     </span>
   </a>
@@ -3089,10 +2912,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#checking-status" class="md-nav__link">
+  <a href="#common-driver-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Checking Status
+        Common driver commands
       
     </span>
   </a>
@@ -3116,63 +2939,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#maintenance" class="md-nav__link">
+  <a href="#updating" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Maintenance
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Maintenance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#updating-trailarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updating Trailarr
+        Updating
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#updating-yt-dlp" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#uninstalling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Updating yt-dlp
+        Uninstalling
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-backups" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Backups
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#log-rotation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Log Rotation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3189,22 +2973,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#common-issues" class="md-nav__link">
+  <a href="#service-wont-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Issues
+        Service won't start
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Common Issues">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#service-wont-start" class="md-nav__link">
+  <a href="#port-conflict" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Service Won't Start
+        Port conflict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-errors-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission errors (Linux)
       
     </span>
   </a>
@@ -3215,73 +3009,7 @@
   <a href="#gpu-acceleration-not-working" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GPU Acceleration Not Working
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#port-conflicts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Port Conflicts
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#uninstallation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Uninstallation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Uninstallation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quick-uninstall" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Uninstall
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-uninstall" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual Uninstall
+        GPU acceleration not working
       
     </span>
   </a>
@@ -3294,10 +3022,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison-with-docker" class="md-nav__link">
+  <a href="#comparison-direct-vs-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison with Docker
+        Comparison: Direct vs Docker
       
     </span>
   </a>
@@ -3390,281 +3118,390 @@
   
 
 
-<h1 id="bare-metal-installation">Bare Metal Installation</h1>
-<p>Trailarr supports native installation on Debian-based systems (Ubuntu, Debian) for users who prefer direct system installation over Docker containers.</p>
+<h1 id="direct-installation">Direct Installation</h1>
+<p>Trailarr supports native direct installation on <strong>Linux, macOS, and Windows</strong> — no Docker required.
+The only prerequisite is <a href="https://docs.astral.sh/uv/"><code>uv</code></a>, a fast Python package manager that also manages Python versions.</p>
+<div class="admonition tip">
+<p class="admonition-title">Need more control?</p>
+<p>See the <a href="../self-install/">Self Install</a> guide if the installer script doesn't work in your
+environment, or if you want to set up each step manually.</p>
+</div>
 <div class="admonition info">
 <p class="admonition-title">System Requirements</p>
 <ul>
-<li>Debian-based Linux distribution (Ubuntu 20.04+, Debian 11+, etc.)</li>
-<li>User account with sudo privileges</li>
-<li>curl, wget, and git</li>
-<li>At least 4GB of free disk space</li>
-<li>Internet connection for downloading dependencies</li>
+<li>Linux (Ubuntu 20.04+ / Debian 11+ / Fedora 38+ / Arch), macOS 13+, or Windows 10/11</li>
+<li>Internet connection</li>
+<li>At least 2 GB of free disk space</li>
+<li>For GPU hardware acceleration: NVIDIA, Intel, or AMD GPU (optional)</li>
 </ul>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Python Version</p>
-<p>The application requires Python 3.13.5 or newer. The installer will automatically detect and install this version within the Trailarr installation if not available on your system.</p>
-</div>
-<h2 id="quick-installation">Quick Installation</h2>
-<h3 id="one-command-installation">One-Command Installation</h3>
-<p>Run this single command to download and install Trailarr:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-sSL<span class="w"> </span>https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
+<hr>
+<h2 id="step-1-install-uv">Step 1 — Install uv</h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"><input id="__tabbed_1_2" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="__tabbed_1_1">Linux / macOS</label><label for="__tabbed_1_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p></p><div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
 </span></code></pre></div>
-<p>This command will:</p>
+Then restart your shell (or run <code>source ~/.bashrc</code> / <code>source ~/.zshrc</code>).<p></p>
+</div>
+<div class="tabbed-block">
+<p>Open PowerShell and run:
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">powershell</span> <span class="n">-ExecutionPolicy</span> <span class="n">ByPass</span> <span class="n">-c</span> <span class="s2">"irm https://astral.sh/uv/install.ps1 | iex"</span>
+</span></code></pre></div>
+Restart PowerShell after installation.<p></p>
+</div>
+</div>
+</div>
+<hr>
+<h2 id="step-2-install-trailarr">Step 2 — Install Trailarr</h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"><input id="__tabbed_2_2" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="__tabbed_2_1">Linux / macOS</label><label for="__tabbed_2_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>sh
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Download <a href="https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1">install.ps1</a>,
+then right-click it and choose <strong>Run with PowerShell</strong> (it will self-elevate to Administrator).</p>
+<p>Or from an elevated PowerShell:
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">Set-ExecutionPolicy</span> <span class="n">Bypass</span> <span class="n">-Scope</span> <span class="k">Process</span> <span class="n">-Force</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">irm </span><span class="n">https</span><span class="p">://</span><span class="n">raw</span><span class="p">.</span><span class="n">githubusercontent</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">nandyalu</span><span class="p">/</span><span class="n">trailarr</span><span class="p">/</span><span class="n">main</span><span class="p">/</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span> <span class="p">|</span> <span class="nb">iex</span>
+</span></code></pre></div><p></p>
+</div>
+</div>
+</div>
+<p>The installer will:</p>
 <ol>
-<li>Download the latest Trailarr release</li>
-<li>Extract the installation scripts</li>
-<li>Run the interactive installation process</li>
-<li>Set up GPU hardware acceleration (if available)</li>
-<li>Configure the systemd service</li>
+<li>Download the latest release (includes pre-built web interface)</li>
+<li>Set up an isolated Python environment with <code>uv sync</code></li>
+<li>Download the correct ffmpeg static binary for your OS and CPU architecture</li>
+<li>Ask you to choose a port (default <code>7889</code>)</li>
+<li>Create and start a system service (systemd / launchd / Windows Service)</li>
+<li>Detect GPU hardware and display driver installation instructions</li>
 </ol>
-<h3 id="alternative-clone-and-install">Alternative: Clone and Install</h3>
-<p>If you prefer to review the code first:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nandyalu/trailarr.git
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">cd</span><span class="w"> </span>trailarr
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>./install.sh
-</span></code></pre></div>
-<p>The installer will guide you through installation process.</p>
+<hr>
 <h2 id="directory-structure">Directory Structure</h2>
-<p>After installation, files are organized as follows:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>/opt/trailarr/              # Application installation
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── .local/bin/             # Local binaries (ffmpeg, uv)
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├── backend/                # Python application code
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>├── backend/.venv/          # Python virtual environment
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>├── frontend-build/         # Web interface files
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>├── assets/                 # Static assets and images
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>└── scripts/                # Maintenance and startup scripts
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>/var/lib/trailarr/          # Application data
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>├── logs/                   # Application logs
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>├── backups/                # Automatic database backups
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>├── web/images/             # Image files used in Trailarr
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>├── tmp/                    # Temporary download files
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>├── .env                    # Configuration Environment Variables
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>└── trailarr.db             # SQLite database
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>/var/log/trailarr/          # System logs
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>└── trailarr.log            # Service logs
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>/etc/systemd/system/        # Service configuration
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>└── trailarr.service        # Systemd service file
+<div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio"><input id="__tabbed_3_2" name="__tabbed_3" type="radio"><input id="__tabbed_3_3" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="__tabbed_3_1">Linux</label><label for="__tabbed_3_2">macOS</label><label for="__tabbed_3_3">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>/opt/trailarr/              # Application
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── backend/                # Python source + .venv/
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>├── frontend-build/         # Web interface
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>├── bin/                    # ffmpeg, ffprobe
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>└── scripts/                # start.py, cli/
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>/var/lib/trailarr/          # Data (persists across updates)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>├── trailarr.db             # SQLite database
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>├── .env                    # Configuration
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>├── backups/                # Automatic DB backups (30 kept)
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>├── logs/                   # Application logs
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>└── web/images/             # Downloaded images
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>/etc/systemd/system/trailarr.service
 </span></code></pre></div>
-<h2 id="hardware-acceleration">Hardware Acceleration</h2>
-<p>The installer will detect your GPU hardware and provide installation commands for necessary drivers:</p>
-<h3 id="nvidia-gpus">NVIDIA GPUs</h3>
-<p></p><div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>nvidia-driver-&lt;diver-version&gt;
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># Replace &lt;driver-version&gt; with the version you want to install. Ex: nvidia-drivers-535</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Reboot required after installation</span>
+</div>
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>/usr/local/opt/trailarr/    # Application
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>├── backend/                # Python source + .venv/
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>├── frontend-build/         # Web interface
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>├── bin/                    # ffmpeg, ffprobe
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>└── scripts/                # start.py, cli/
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>~/.local/share/trailarr/    # Data (persists across updates)
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>├── trailarr.db
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>├── .env
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>├── backups/
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>├── logs/
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>└── web/images/
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>~/Library/LaunchAgents/com.trailarr.app.plist
 </span></code></pre></div>
-It's best to find the appropriate install method for your system and install them.<p></p>
-<h3 id="intel-gpus">Intel GPUs</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>intel-media-va-driver<span class="w"> </span>i965-va-driver<span class="w"> </span>vainfo
-</span></code></pre></div>
-<h3 id="amd-gpus">AMD GPUs</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>mesa-va-drivers<span class="w"> </span>vainfo
-</span></code></pre></div>
-<p><strong>Note</strong>: After installing GPU drivers, restart the Trailarr service to enable hardware acceleration.</p>
-<h2 id="service-management">Service Management</h2>
-<h3 id="starting-and-stopping">Starting and Stopping</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Start Trailarr</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>trailarr
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Stop Trailarr  </span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>trailarr
+</div>
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>C:\Program Files\Trailarr\  # Application
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├── backend\                # Python source + .venv\
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>├── frontend-build\         # Web interface
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>├── bin\                    # ffmpeg.exe, ffprobe.exe, nssm.exe
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>└── scripts\                # start.py, cli\
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Restart Trailarr</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>trailarr
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># Enable auto-start on boot</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>trailarr
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># Disable auto-start</span>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>trailarr
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>C:\ProgramData\Trailarr\    # Data (persists across updates)
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>├── trailarr.db
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>├── .env
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>├── backups\
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>├── logs\
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>└── web\images\
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>Windows Service: "Trailarr"
 </span></code></pre></div>
-<h3 id="checking-status">Checking Status</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Check service status</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>trailarr
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># View recent logs</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Follow logs in real-time</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>-f
-</span></code></pre></div>
-<h2 id="configuration">Configuration</h2>
-<p>Most of the options can be changed from the web UI after installation.</p>
-<div class="admonition warning">
-<p><code>APP_DATA_DIR</code> is set to <code>/opt/trailarr</code> and cannot be changed as installer depends on that!</p>
 </div>
-<p>Main Configuration File is located in <code>/var/lib/trailarr/.env</code> if you want to modify later.</p>
+</div>
+</div>
+<hr>
+<h2 id="service-management">Service Management</h2>
+<p>Use the <code>trailarr</code> CLI that is installed automatically:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>trailarr<span class="w"> </span>run<span class="w">        </span><span class="c1"># Start the service</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>trailarr<span class="w"> </span>stop<span class="w">       </span><span class="c1"># Stop the service</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>trailarr<span class="w"> </span>restart<span class="w">    </span><span class="c1"># Restart the service</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>trailarr<span class="w"> </span>status<span class="w">     </span><span class="c1"># Show current status</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>trailarr<span class="w"> </span>logs<span class="w">       </span><span class="c1"># Show last 50 log lines</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>trailarr<span class="w"> </span>logs<span class="w"> </span><span class="m">200</span><span class="w">   </span><span class="c1"># Show last 200 log lines</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>trailarr<span class="w"> </span>update<span class="w">     </span><span class="c1"># Update to the latest version</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>trailarr<span class="w"> </span>uninstall<span class="w">  </span><span class="c1"># Remove Trailarr</span>
+</span></code></pre></div>
 <div class="admonition note">
-<p>Restart Trailarr service after configuration change.</p>
+<p class="admonition-title">Windows</p>
+<p>On Windows, open a PowerShell with Administrator rights before running <code>trailarr</code> commands
+that affect the service (run, stop, restart, update, uninstall).</p>
 </div>
-<h2 id="maintenance">Maintenance</h2>
-<h3 id="updating-trailarr">Updating Trailarr</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Stop the service</span>
+<p>You can also use OS-native tools directly:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:3"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio"><input id="__tabbed_4_2" name="__tabbed_4" type="radio"><input id="__tabbed_4_3" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="__tabbed_4_1">Linux</label><label for="__tabbed_4_2">macOS</label><label for="__tabbed_4_3">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>trailarr
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>trailarr
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Backup current installation</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>sudo<span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>/opt/trailarr<span class="w"> </span>/opt/trailarr.backup
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Download and run the installer again</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>curl<span class="w"> </span>-sSL<span class="w"> </span>https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="c1"># Start the service (if not already running)</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>trailarr
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>trailarr
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>-f<span class="w">          </span><span class="c1"># Follow live logs</span>
 </span></code></pre></div>
-<h3 id="updating-yt-dlp">Updating yt-dlp</h3>
-<p>yt-dlp is automatically updated during startup (if enabled), or manually using below command:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">cd</span><span class="w"> </span>/opt/trailarr/backend
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>sudo<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>/opt/trailarr/.local/bin/uv<span class="w"> </span>sync<span class="w"> </span>--no-cache-dir
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>launchctl<span class="w"> </span>start<span class="w"> </span>com.trailarr.app
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>launchctl<span class="w"> </span>stop<span class="w"> </span>com.trailarr.app
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>launchctl<span class="w"> </span>list<span class="w"> </span>com.trailarr.app
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>tail<span class="w"> </span>-f<span class="w"> </span>~/Library/Logs/trailarr/trailarr.log
 </span></code></pre></div>
-<h3 id="database-backups">Database Backups</h3>
-<p>Automatic backups are created before each application start:</p>
-<ul>
-<li>Location: <code>/var/lib/trailarr/backups/</code></li>
-<li>Retention: 30 most recent backups</li>
-<li>Format: <code>trailarr_YYYYMMDDHHMMSS.db</code></li>
-</ul>
-<h3 id="log-rotation">Log Rotation</h3>
-<p>Logs are automatically managed by systemd journald. To configure retention:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Edit journald configuration</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>sudo<span class="w"> </span>nano<span class="w"> </span>/etc/systemd/journald.conf
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Set log retention (e.g., 7 days)</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nv">MaxRetentionSec</span><span class="o">=</span>7d
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nv">SystemMaxUse</span><span class="o">=</span>500M
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># Restart journald</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>systemd-journald
+</div>
+<div class="tabbed-block">
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">Start-Service</span> <span class="n">Trailarr</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">Stop-Service</span> <span class="n">Trailarr</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">Get-Service</span> <span class="n">Trailarr</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nb">Get-Content</span> <span class="s2">"C:\ProgramData\Trailarr\logs\trailarr.log"</span> <span class="n">-Tail</span> <span class="n">50</span> <span class="n">-Wait</span>
 </span></code></pre></div>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="common-issues">Common Issues</h3>
-<h4 id="service-wont-start">Service Won't Start</h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Check service status and logs</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>trailarr
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># Common causes:</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="c1"># - Port already in use</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># - Database corruption</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="c1"># - Missing dependencies</span>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="c1"># - Permission issues</span>
-</span></code></pre></div>
-<h4 id="gpu-acceleration-not-working">GPU Acceleration Not Working</h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Check GPU status</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>lspci<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>vga
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>lspci<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>nvidia
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Check drivers</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>nvidia-smi<span class="w">  </span><span class="c1"># For NVIDIA</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>vainfo<span class="w">      </span><span class="c1"># For Intel/AMD</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># Check user groups</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>groups<span class="w"> </span>trailarr
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>ls<span class="w"> </span>-la<span class="w"> </span>/dev/dri/
-</span></code></pre></div>
-<h4 id="permission-errors">Permission Errors</h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Fix ownership</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span>trailarr:trailarr<span class="w"> </span>/opt/trailarr
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span>trailarr:trailarr<span class="w"> </span>/var/lib/trailarr
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># Check service user</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>show<span class="w"> </span>trailarr<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>User
-</span></code></pre></div>
-<h4 id="port-conflicts">Port Conflicts</h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Check what's using the port</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>sudo<span class="w"> </span>netstat<span class="w"> </span>-tlnp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>:7889
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>sudo<span class="w"> </span>lsof<span class="w"> </span>-i<span class="w"> </span>:7889
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># Change port in configuration</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>sudo<span class="w"> </span>nano<span class="w"> </span>/opt/trailarr/.env
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># Edit APP_PORT=7889 to different port</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>trailarr
-</span></code></pre></div>
-<h2 id="uninstallation">Uninstallation</h2>
-<h3 id="quick-uninstall">Quick Uninstall</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>curl<span class="w"> </span>-sSL<span class="w"> </span>https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
-</span></code></pre></div>
-<p>The uninstaller will prompt you to preserve data for future reinstallations.</p>
-<h3 id="manual-uninstall">Manual Uninstall</h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Stop and disable service</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>trailarr
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>trailarr
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c1"># Remove service file</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/etc/systemd/system/trailarr.service
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="c1"># Remove application files</span>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/opt/trailarr
-</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
-</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Remove data (optional - will lose all trailarr logs and configuration)</span>
-</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/lib/trailarr
-</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/log/trailarr
-</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>
-</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="c1"># Remove user</span>
-</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>sudo<span class="w"> </span>userdel<span class="w"> </span>trailarr
-</span></code></pre></div>
-<h2 id="comparison-with-docker">Comparison with Docker</h2>
+</div>
+</div>
+</div>
+<hr>
+<h2 id="gpu-hardware-acceleration">GPU Hardware Acceleration</h2>
+<p>At the end of installation, Trailarr detects your GPU hardware and displays the exact
+commands needed to install drivers.  <strong>Drivers are not installed automatically</strong> — you
+review and run the commands yourself.</p>
+<p>After installing drivers, restart Trailarr and enable hardware acceleration in
+<strong>Settings → Video Processing</strong>.</p>
+<h3 id="supported-acceleration">Supported acceleration</h3>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
-<th>Docker</th>
-<th>Bare Metal</th>
+<th>GPU</th>
+<th>Linux</th>
+<th>macOS</th>
+<th>Windows</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Setup Complexity</strong></td>
+<td>NVIDIA</td>
+<td>CUDA / NVENC</td>
+<td>—</td>
+<td>NVENC</td>
+</tr>
+<tr>
+<td>Intel</td>
+<td>VAAPI</td>
+<td>Metal (built-in)</td>
+<td>DirectX</td>
+</tr>
+<tr>
+<td>AMD</td>
+<td>VAAPI</td>
+<td>Metal (built-in)</td>
+<td>DirectX</td>
+</tr>
+</tbody>
+</table>
+<h3 id="common-driver-commands">Common driver commands</h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:4"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio"><input id="__tabbed_5_2" name="__tabbed_5" type="radio"><input id="__tabbed_5_3" name="__tabbed_5" type="radio"><input id="__tabbed_5_4" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="__tabbed_5_1">NVIDIA (Linux)</label><label for="__tabbed_5_2">Intel (Linux)</label><label for="__tabbed_5_3">AMD (Linux)</label><label for="__tabbed_5_4">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Ubuntu / Debian</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nvidia-driver-535
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Fedora</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>akmod-nvidia
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Arch</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>sudo<span class="w"> </span>pacman<span class="w"> </span>-S<span class="w"> </span>nvidia
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Ubuntu / Debian</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>intel-media-va-driver<span class="w"> </span>intel-media-va-driver-non-free<span class="w"> </span>libva-drm2
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Fedora</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>intel-media-driver<span class="w"> </span>libva
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># Arch</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>sudo<span class="w"> </span>pacman<span class="w"> </span>-S<span class="w"> </span>intel-media-driver<span class="w"> </span>libva
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Ubuntu / Debian</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>mesa-va-drivers<span class="w"> </span>libva-drm2
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Fedora</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>mesa-va-drivers<span class="w"> </span>libva
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1"># Arch</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>sudo<span class="w"> </span>pacman<span class="w"> </span>-S<span class="w"> </span>mesa<span class="w"> </span>libva
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<ul>
+<li><strong>NVIDIA</strong> — <a href="https://www.nvidia.com/en-us/geforce/geforce-experience/">GeForce Experience</a> or <a href="https://www.nvidia.com/Download/index.aspx">nvidia.com/drivers</a></li>
+<li><strong>AMD</strong> — <a href="https://www.amd.com/en/support">AMD Adrenalin Software</a></li>
+<li><strong>Intel</strong> — <a href="https://www.intel.com/content/www/us/en/download-center/home.html">Intel Graphics Driver</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">macOS</p>
+<p>Metal hardware acceleration is built-in — no extra drivers are needed.</p>
+</div>
+<hr>
+<h2 id="configuration">Configuration</h2>
+<p>All settings can be changed from the <strong>Trailarr web interface</strong> after installation.
+The configuration file is at:</p>
+<table>
+<thead>
+<tr>
+<th>OS</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td><code>/var/lib/trailarr/.env</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>~/.local/share/trailarr/.env</code></td>
+</tr>
+<tr>
+<td>Windows</td>
+<td><code>C:\ProgramData\Trailarr\.env</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p>Restart the Trailarr service after editing <code>.env</code> manually.</p>
+</div>
+<hr>
+<h2 id="updating">Updating</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>trailarr<span class="w"> </span>update
+</span></code></pre></div>
+<p>This will:</p>
+<ol>
+<li>Stop the service</li>
+<li>Back up your database and <code>.env</code> to the <code>backups/</code> folder</li>
+<li>Download the latest release</li>
+<li>Run <code>uv sync</code> to update Python dependencies</li>
+<li>Restart the service</li>
+</ol>
+<p>Your data directory is <strong>never modified</strong> during an update.</p>
+<hr>
+<h2 id="uninstalling">Uninstalling</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>trailarr<span class="w"> </span>uninstall
+</span></code></pre></div>
+<p>You will be asked to confirm before anything is removed.
+This removes the application, service, and CLI.
+The data directory is also removed — back it up first if needed.</p>
+<hr>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="service-wont-start">Service won't start</h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Linux</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>-n<span class="w"> </span><span class="m">100</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># macOS</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>cat<span class="w"> </span>~/Library/Logs/trailarr/trailarr.log
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Windows (PowerShell)</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>Get-Content<span class="w"> </span><span class="s2">"C:\ProgramData\Trailarr\logs\trailarr.log"</span><span class="w"> </span>-Tail<span class="w"> </span><span class="m">100</span>
+</span></code></pre></div>
+<p>Common causes: port already in use, database corruption, missing <code>uv</code> or ffmpeg.</p>
+<h3 id="port-conflict">Port conflict</h3>
+<p>Edit the <code>.env</code> file and change <code>APP_PORT</code>, then restart the service.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Check what's on port 7889</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="c1"># Linux / macOS</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>lsof<span class="w"> </span>-i<span class="w"> </span>:7889
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Windows</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>netstat<span class="w"> </span>-ano<span class="w"> </span><span class="p">|</span><span class="w"> </span>findstr<span class="w"> </span>:7889
+</span></code></pre></div>
+<h3 id="permission-errors-linux">Permission errors (Linux)</h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span>trailarr:trailarr<span class="w"> </span>/opt/trailarr<span class="w"> </span>/var/lib/trailarr
+</span></code></pre></div>
+<h3 id="gpu-acceleration-not-working">GPU acceleration not working</h3>
+<p>Verify drivers are installed and detected at startup:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># NVIDIA</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>nvidia-smi
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Intel / AMD (Linux)</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>vainfo
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Check Trailarr logs for "GPU detected" lines</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>trailarr<span class="w"> </span>logs<span class="w"> </span><span class="m">100</span>
+</span></code></pre></div>
+<p>Then confirm hardware acceleration is enabled in <strong>Settings → Video Processing</strong>.</p>
+<hr>
+<h2 id="comparison-direct-vs-docker">Comparison: Direct vs Docker</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Docker</th>
+<th>Direct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Setup complexity</strong></td>
 <td>Easy</td>
-<td>Moderate</td>
+<td>Moderate (uv required)</td>
 </tr>
 <tr>
-<td><strong>Resource Usage</strong></td>
-<td>Higher (container overhead)</td>
-<td>Lower (native)</td>
-</tr>
-<tr>
-<td><strong>Hardware Access</strong></td>
-<td>Limited (requires passthrough)</td>
-<td>Full (direct access)</td>
-</tr>
-<tr>
-<td><strong>GPU Support</strong></td>
-<td>Complex in LXC environments</td>
-<td>Native support</td>
+<td><strong>GPU support</strong></td>
+<td>Complex in LXC/Proxmox</td>
+<td>Native (direct driver access)</td>
 </tr>
 <tr>
 <td><strong>Performance</strong></td>
 <td>Good</td>
-<td>Optimal</td>
+<td>Optimal (no container overhead)</td>
+</tr>
+<tr>
+<td><strong>Resource usage</strong></td>
+<td>Higher</td>
+<td>Lower</td>
 </tr>
 <tr>
 <td><strong>Updates</strong></td>
-<td>Container replacement</td>
-<td>File-based updates</td>
+<td><code>docker pull</code></td>
+<td><code>trailarr update</code></td>
 </tr>
 <tr>
-<td><strong>System Integration</strong></td>
+<td><strong>System integration</strong></td>
 <td>Isolated</td>
-<td>Native systemd service</td>
+<td>Native service (systemd / launchd / SCM)</td>
 </tr>
 <tr>
-<td><strong>Troubleshooting</strong></td>
-<td>Container logs</td>
-<td>System logs</td>
-</tr>
-<tr>
-<td><strong>Best For</strong></td>
+<td><strong>Best for</strong></td>
 <td>Quick setup, isolated environments</td>
-<td>Performance, complex GPU setups</td>
+<td>Maximum performance, complex GPU setups</td>
 </tr>
 </tbody>
 </table>
-<p>Choose bare metal installation when you need maximum performance, have complex GPU requirements, or are running in environments where Docker GPU passthrough is challenging.</p>
+<p>Choose direct installation when you need full GPU hardware access, run in an
+environment where Docker GPU passthrough is difficult (e.g., Proxmox LXC), or
+simply prefer a native system service.</p>
 
 
 
@@ -3687,7 +3524,7 @@ It's best to find the appropriate install method for your system and install the
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="August 25, 2025 00:37:23 UTC">August 25, 2025 00:37:23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="April 26, 2026 06:18:37 UTC">April 26, 2026 06:18:37</span>
   </span>
 
     
@@ -3751,13 +3588,13 @@ It's best to find the appropriate install method for your system and install the
         
         
           
-          <a href="../unraid/" class="md-footer__link md-footer__link--next" aria-label="Next: Unraid">
+          <a href="../self-install/" class="md-footer__link md-footer__link--next" aria-label="Next: Self Install">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Unraid
+                Self Install
               </div>
             </div>
             <div class="md-footer__button md-icon">
