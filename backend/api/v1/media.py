@@ -1,3 +1,5 @@
+from warnings import deprecated
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
@@ -475,9 +477,12 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             "description": "Media Not Found",
         }
     },
+    deprecated=True,
 )
 async def delete_media_trailer(media_id: int) -> str:
-    """Delete trailer for media by ID. \n
+    """Delete all trailers for media by ID. \n
+    ## Warning:
+        🚨Deprecated, use `/files/delete` instead.🚨
     Args:
         media_id (int): ID of the media item. \n
     Returns:
@@ -496,18 +501,24 @@ async def delete_media_trailer(media_id: int) -> str:
             msg = f"Media '{media.title}' [{media.id}] has no folder path"
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
-        files_handler = FilesHandler()
-        res = await files_handler.delete_trailer(media.folder_path)
-        if not res:
+        # Use download records as the authoritative source for trailer files
+        downloads = download_manager.read_by_media_id(media_id)
+        live = [d for d in downloads if d.file_exists]
+        if not live:
             msg = (
-                f"Failed to delete trailer for media '{media.title}'"
+                f"No trailer files found for media '{media.title}'"
                 f" [{media.id}]"
             )
             await websockets.ws_manager.broadcast(msg, "Error")
             return msg
+
+        for d in live:
+            await FilesHandler.delete_file(d.path)
+            download_manager.mark_as_deleted(d.id)
+
         media_manager.update_trailer_exists(media_id, False)
 
-        # Track trailer_deleted event
+        # Track trailer_deleted event (once per media item, not per file)
         event_manager.track_trailer_deleted(
             media_id=media_id,
             reason="user_request",

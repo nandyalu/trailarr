@@ -70,6 +70,7 @@ class FilesHandler:
     """Utility class to handle files and folders."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
+    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -226,10 +227,16 @@ class FilesHandler:
         return True
 
     @staticmethod
-    def is_trailer_file(file_name: str) -> bool:
+    def is_trailer_file(
+        file_name: str, file_size_bytes: int | None = None
+    ) -> bool:
         """Check if a file is a trailer file based on its name.\n
         Args:
             file_name (str): Name of the file to check.\n
+            file_size_bytes (int | None): Size of the file in bytes. \
+                When provided, files >= 100 MB are not treated as trailers \
+                even if the name matches, to avoid false positives for media \
+                whose title contains the word 'trailer'.\n
         Returns:
             bool: True if the file is a trailer, False otherwise."""
         if not FilesHandler.is_video_file(file_name):
@@ -239,6 +246,11 @@ class FilesHandler:
             return False
         # Check if the file name contains 'trailer'
         if "trailer" in file_name.lower():
+            if (
+                file_size_bytes is not None
+                and file_size_bytes >= FilesHandler.TRAILER_MAX_SIZE_BYTES
+            ):
+                return False
             return True
         return False
 
@@ -297,11 +309,12 @@ class FilesHandler:
             path (str): Folder path to check for a trailer file.\n
         Returns:
             bool: True if a trailer file exists in the folder, False otherwise.
+
         """
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if FilesHandler.is_trailer_file(entry.name):
+            if FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
                 return True
         return False
 
@@ -368,7 +381,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not FilesHandler.is_trailer_file(entry.name):
+            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
                 continue
             return entry.path
         return None
@@ -396,7 +409,7 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if FilesHandler.is_trailer_file(sub_entry.name):
+                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):

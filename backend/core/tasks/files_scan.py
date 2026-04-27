@@ -138,6 +138,11 @@ async def scan_media_folder(
                 source_detail="FilesScan",
             )
 
+    # If no trailer files exist on disk but media is marked as having trailers, reset
+    if not trailer_paths and media.trailer_exists:
+        media.trailer_exists = False
+        media_manager.update_trailer_exists(media.id, False)
+
     return new_count, missing_count
 
 

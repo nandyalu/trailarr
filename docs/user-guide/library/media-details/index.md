@@ -60,7 +60,7 @@ This can be used to let Trailarr search for a trailer for the `Media` by selecti
 
 ## Action Buttons
 
-There are 3 actions buttons that can appear depending on the selected Media
+There are up to 2 action buttons that can appear depending on the selected Media.
 
 ### Watch 
 
@@ -69,18 +69,15 @@ There are 3 actions buttons that can appear depending on the selected Media
 
 ### Download
 
-- Appears when a trailer is not downloaded for the selected Media OR when a new video ID/URL is added in the `YouTube Trailer ID` field.
+- Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
 - This will schedule a task for Trailarr to download a trailer for this Media, uses `YouTube Trailer ID` if provided/existing.
 
-### Delete
+!!! tip "Multiple trailers"
+    Because Trailarr supports downloading multiple trailers per media item (via [Stop Monitoring](../../settings/profiles/settings/general.md#stop-monitoring) in a Profile), the Download button is always shown so you can trigger additional downloads at any time.
 
-- Appears when the selected Media has a downloaded trailer.
-- Deletes the trailer file.
-- Asks for a confirmation before Deleting.
-
-!!! warning
-    This will Delete the trailer file on disk! Cannot be reversed!
+!!! tip ""
+    To delete a trailer, use the **Files Section** below — click the trailer file and choose **Delete**.
 
 ## Downloads Section
 
