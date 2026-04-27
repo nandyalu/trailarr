@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-release:
+    name: Build and publish release asset
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Build Angular frontend
+        run: cd frontend && npm run build
+        # angular.json outputPath is ../frontend-build, so output lands at repo root
+
+      - name: Create release archive
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          ARCHIVE_DIR="trailarr-${VERSION}"
+          mkdir -p "${ARCHIVE_DIR}"
+          cp -r backend          "${ARCHIVE_DIR}/"
+          cp -r frontend-build   "${ARCHIVE_DIR}/"
+          cp -r assets           "${ARCHIVE_DIR}/"
+          cp -r scripts          "${ARCHIVE_DIR}/"
+          cp install.sh          "${ARCHIVE_DIR}/"
+          cp install.ps1         "${ARCHIVE_DIR}/"
+          tar -czf "trailarr-${VERSION}-release.tar.gz" "${ARCHIVE_DIR}/"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "trailarr-*-release.tar.gz"
+          fail_on_unmatched_files: true

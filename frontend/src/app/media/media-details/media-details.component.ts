@@ -4,12 +4,10 @@ import {
   Component,
   computed,
   effect,
-  ElementRef,
   HostListener,
   inject,
   input,
   signal,
-  viewChild,
   ViewContainerRef,
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -137,11 +135,6 @@ export class MediaDetailsComponent {
           this.router.navigate([RouteMedia, previousMedia1.id]);
         }
       }
-      // Check if the 'Delete' key is pressed
-      else if (event.key === 'Delete' || event.key === 'Backspace') {
-        // If the 'Delete' key is pressed, show the delete dialog
-        this.showDeleteDialog();
-      }
     }
   }
 
@@ -263,41 +256,4 @@ export class MediaDetailsComponent {
     window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
   }
 
-  // Reference to the dialog element
-  readonly deleteDialog = viewChild.required<ElementRef<HTMLDialogElement>>('deleteDialog');
-
-  /**
-   * Displays the delete dialog modal.
-   * This method opens the delete dialog by calling the `showModal` method
-   * on the native element of the delete dialog.
-   *
-   * @returns {void}
-   */
-  showDeleteDialog(): void {
-    this.deleteDialog().nativeElement.showModal(); // Open the dialog
-  }
-
-  /**
-   * Closes the delete dialog.
-   *
-   * This method is used to close the delete dialog by accessing the native element
-   * and invoking the `close` method on it.
-   */
-  closeDeleteDialog(): void {
-    this.deleteDialog().nativeElement.close(); // Close the dialog
-  }
-
-  /**
-   * Handles the confirmation of trailer deletion.
-   * Closes the delete dialog and calls the media service to delete the trailer.
-   * Updates the media object to reflect that the trailer no longer exists.
-   */
-  onConfirmDelete() {
-    // console.log('Deleting trailer');
-    this.closeDeleteDialog();
-    this.mediaService.deleteMediaTrailer(this.mediaId()).subscribe((res: string) => {
-      console.log(res);
-      this.selectedMedia()!.trailer_exists = false;
-    });
-  }
 }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Trailarr** is a Docker-based application that automates downloading and managing trailers for Radarr and Sonarr media libraries, with support for Plex, Emby, and Jellyfin.
+**Trailarr** is a Docker-based application that automates downloading and managing trailers for Radarr and Sonarr media libraries. Plex is a first-class connection type that works alongside Arr connections. Emby and Jellyfin are also supported.
 
 - **Backend**: Python 3.13 + FastAPI + SQLModel + Alembic + SQLite
 - **Frontend**: Angular 21 (standalone components, Signals) + TypeScript strict mode
@@ -46,9 +46,10 @@ APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 ### Testing
 
 ```bash
-# Backend tests (from /app/backend) - 74 tests, ~3s
-PYTHONPATH=$(pwd) python -m pytest tests/ -v
-PYTHONPATH=$(pwd) python -m pytest tests/path/to/test_file.py -v   # single file
+# Backend tests (from /app/backend) - ~333 tests, ~6s
+# Note: use `uv run python` — plain `python` is not in PATH
+PYTHONPATH=$(pwd) uv run python -m pytest tests/ -v
+PYTHONPATH=$(pwd) uv run python -m pytest tests/path/to/test_file.py -v   # single file
 
 # Frontend tests (from /app/frontend) - ~13s
 npm run test
@@ -88,7 +89,9 @@ Layered architecture:
   - `base/database/models/` — SQLModel ORM models
   - `base/database/manager/` — Database access managers (one per model type)
   - `base/arr_manager/` — Base Radarr/Sonarr integration
+  - `base/connection_manager.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
   - `radarr/`, `sonarr/` — App-specific logic
+  - `plex/` — Plex connection manager, API client, data parser, models
   - `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
   - `download/trailers/` — Trailer download orchestration via yt-dlp
   - `files_handler.py` — File management
@@ -100,6 +103,14 @@ Layered architecture:
 - Database migrations auto-applied on startup via `init_db()`
 - WebSocket broadcasting for real-time task/event updates
 - `APP_DATA_DIR` env var required for all runtime operations
+- `EventType` is stored as VARCHAR (`native_enum=False`) — adding new enum values does **not** require an Alembic migration
+
+**Plex ↔ Arr media linking:**
+Plex and Arr connections can track the same physical media. The system merges by `folder_path`:
+- Plex sync: before creating, checks `read_by_folder_path()` — if an Arr row exists, updates only `plex_*` fields (fires `PLEX_LINKED`)
+- Arr sync: before creating, checks `_read_plex_only_by_folder_path()` — if a Plex-only row (`arr_id=0`) exists at the same path, adopts it with Arr fields (fires `ARR_LINKED`)
+- When an item is removed from Arr but still in Plex: demoted back to Plex-only (`connection_id → plex_connection_id`, `arr_id → 0`) instead of deleted (fires `ARR_UNLINKED`)
+- `media_manager.create_or_update_bulk()` returns `(MediaRead, created, updated, arr_linked)` — 4-tuple
 
 ### Frontend (`/app/frontend/src/app/`)
 
@@ -150,3 +161,4 @@ LOG_LEVEL=Info                 # Logging level
 - **Angular**: Standalone components, Signals for reactivity, SCSS for styles, service-based state
 - **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
+- **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`

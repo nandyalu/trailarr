@@ -28,7 +28,7 @@ Each event also includes a **source detail** that provides more context about wh
 - `TrailerSearch` - Triggered by manual trailer search
 - `DownloadTrailers` - Triggered by scheduled download task
 - `MediaCleanup` - Triggered during cleanup of deleted media
-- `PlexSync` - Triggered during Plex library sync
+- `PlexRefresh` - Triggered during Plex library sync
 
 ---
 
@@ -171,8 +171,9 @@ Logged when a media item is successfully matched to an item in a Plex library.
 | Field | Value |
 |-------|-------|
 | Source | System |
-| Source Detail | `PlexSync` |
-| New Value | Plex rating key of the matched item |
+| Source Detail | `PlexRefresh` |
+| New Value | Name of the Plex connection |
+| Old Value | Plex rating key of the matched item |
 
 This event is created when Trailarr syncs with your Plex connection and finds a Plex library entry that corresponds to a Radarr/Sonarr media item. Once linked, Trailarr can check Plex for existing trailers and trigger Plex library scans after downloads.
 
@@ -187,12 +188,11 @@ Logged when the Plex link for a media item is removed.
 | Field | Value |
 |-------|-------|
 | Source | System |
-| Source Detail | `PlexSync` or `ConnectionRefresh` |
+| Source Detail | `ConnectionDeleted` |
 
 **Triggers:**
 
-- The Plex connection is deleted.
-- The media item is no longer found in the Plex library during a sync.
+- The Plex connection is deleted from Trailarr.
 
 ---
 
@@ -208,6 +208,42 @@ Logged when Trailarr requests a Plex library refresh after a successful trailer 
 | Source Detail | `TrailerDownload` |
 
 This event is only created when **Notify Plex** is enabled in the Trailer Profile used for the download. It confirms that Trailarr asked Plex to scan the media folder so the new trailer appears in Plex without delay.
+
+---
+
+### Arr Linked
+
+<!-- md:version:add 0.9.0 -->
+
+Logged when a media item that was previously tracked only by Plex is adopted by a Radarr or Sonarr connection.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `ConnectionRefresh` |
+| New Value | Name of the Arr connection (e.g., "Radarr", "My Sonarr") |
+
+This event is created when a Radarr or Sonarr connection sync finds an existing Plex-only media item at the same folder path. Instead of creating a duplicate, Trailarr merges the Arr metadata into the existing item and links both connections to the same record. The Plex link is preserved after the merge.
+
+**Typical scenario**: A Plex connection was set up first, creating items without Radarr/Sonarr backing. When a Radarr or Sonarr connection is added later and synced, any matching items are linked rather than duplicated.
+
+---
+
+### Arr Unlinked
+
+<!-- md:version:add 0.9.0 -->
+
+Logged when a media item is removed from Radarr or Sonarr but its files remain on disk and it is still tracked by Plex.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `ConnectionRefresh` |
+| Old Value | Name of the Arr connection that removed the item |
+
+Instead of deleting the media item from Trailarr, the Arr link is stripped and the item reverts to Plex-only tracking (`connection_id` is reassigned to the Plex connection and `arr_id` is reset to 0). This preserves trailer history and Plex metadata for the item.
+
+**Typical scenario**: A movie or series is unmonitored and removed from Radarr/Sonarr while the media files are kept. Because Plex still has the files in its library, Trailarr keeps the record alive as a Plex-only item rather than deleting it.
 
 ---
 

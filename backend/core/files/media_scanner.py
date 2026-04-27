@@ -17,6 +17,7 @@ class MediaScanner:
     """Handles scanning of folders and files of media."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
+    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
 
     def __init__(self) -> None:
 
@@ -44,11 +45,17 @@ class MediaScanner:
         }
         return trailer_folders
 
-    def is_trailer_file(self, file_name: str) -> bool:
+    def is_trailer_file(
+        self, file_name: str, file_size_bytes: int | None = None
+    ) -> bool:
         """Check if a file is a trailer file based on its name,\
             OR if it's in a trailer folder.\n
         Args:
             file_name (str): Name of the file to check.\n
+            file_size_bytes (int | None): Size of the file in bytes. \
+                When provided, files >= 100 MB are not treated as trailers \
+                even if the name matches, to avoid false positives for media \
+                whose title contains the word 'trailer'.\n
         Returns:
             bool: True if the file is a trailer, False otherwise."""
         if not file_name:
@@ -61,6 +68,11 @@ class MediaScanner:
             return False
         # Check if the file name contains 'trailer'
         if "trailer" in file_name.lower():
+            if (
+                file_size_bytes is not None
+                and file_size_bytes >= self.TRAILER_MAX_SIZE_BYTES
+            ):
+                return False
             return True
         # Check if file is in a trailer folder
         folder_name = Path(file_name).parent.name.lower().strip()
@@ -71,8 +83,8 @@ class MediaScanner:
     async def _get_file_info(
         self, entry: os.DirEntry[str], media_id: int
     ) -> FileFolderInfoCreate:
-        is_trailer = self.is_trailer_file(entry.name)
         info = await aiofiles.os.stat(entry.path)
+        is_trailer = self.is_trailer_file(entry.name, info.st_size)
         return FileFolderInfoCreate(
             type=FileFolderType.FILE,
             name=unicodedata.normalize("NFKD", entry.name),

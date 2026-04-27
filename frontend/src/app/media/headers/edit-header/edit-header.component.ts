@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, ViewContainerRef} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject, viewChild, ViewContainerRef} from '@angular/core';
 import {MediaService} from 'src/app/services/media.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {ProfileSelectDialogComponent} from '../../dialogs/profile-select-dialog/profile-select-dialog.component';
@@ -62,6 +62,21 @@ export class EditHeaderComponent {
    * Only required for `download` action.
    * @returns {void}
    */
+  readonly deleteConfirmDialog = viewChild.required<ElementRef<HTMLDialogElement>>('deleteConfirmDialog');
+
+  showDeleteConfirmDialog(): void {
+    this.deleteConfirmDialog().nativeElement.showModal();
+  }
+
+  closeDeleteConfirmDialog(): void {
+    this.deleteConfirmDialog().nativeElement.close();
+  }
+
+  onConfirmBatchDelete(): void {
+    this.closeDeleteConfirmDialog();
+    this.batchUpdate('delete');
+  }
+
   batchUpdate(action: string, profileID: number = -1): void {
     this.webSocketService.showToast(`Batch update: ${action} ${this.checkedMediaIDs().length} items`);
     this.mediaService.batchUpdate(this.checkedMediaIDs(), action, profileID).subscribe(() => {

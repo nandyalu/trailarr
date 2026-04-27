@@ -51,7 +51,7 @@ class TestTrackPlexLinked:
                 txdb_id="tt8881001",
             )
         ])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_creates_plex_linked_event(self):
         """Creates a PLEX_LINKED event with correct type and values."""
@@ -95,7 +95,7 @@ class TestTrackPlexUnlinked:
                 txdb_id="tt8882001",
             )
         ])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_creates_plex_unlinked_event(self):
         """Creates a PLEX_UNLINKED event with correct type and values."""
@@ -133,7 +133,7 @@ class TestTrackPlexScanTriggered:
                 txdb_id="tt8883001",
             )
         ])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_creates_plex_scan_triggered_event(self):
         """Creates a PLEX_SCAN_TRIGGERED event with scan_path stored."""

@@ -1,299 +1,361 @@
-# Bare Metal Installation
+# Direct Installation
 
-Trailarr supports native installation on Debian-based systems (Ubuntu, Debian) for users who prefer direct system installation over Docker containers.
+Trailarr supports native direct installation on **Linux, macOS, and Windows** — no Docker required.
+The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python package manager that also manages Python versions.
+
+!!! tip "Need more control?"
+    See the [Self Install](self-install.md) guide if the installer script doesn't work in your
+    environment, or if you want to set up each step manually.
 
 !!! info "System Requirements"
-    - Debian-based Linux distribution (Ubuntu 20.04+, Debian 11+, etc.)
-    - User account with sudo privileges
-    - curl, wget, and git
-    - At least 4GB of free disk space
-    - Internet connection for downloading dependencies
+    - Linux (Ubuntu 20.04+ / Debian 11+ / Fedora 38+ / Arch), macOS 13+, or Windows 10/11
+    - Internet connection
+    - At least 2 GB of free disk space
+    - For GPU hardware acceleration: NVIDIA, Intel, or AMD GPU (optional)
 
-!!! warning "Python Version"
-    The application requires Python 3.13.5 or newer. The installer will automatically detect and install this version within the Trailarr installation if not available on your system.
+---
 
-## Quick Installation
+## Step 1 — Install uv
 
-### One-Command Installation
+=== "Linux / macOS"
 
-Run this single command to download and install Trailarr:
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+    Then restart your shell (or run `source ~/.bashrc` / `source ~/.zshrc`).
 
-```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
-```
+=== "Windows"
 
-This command will:
+    Open PowerShell and run:
+    ```powershell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+    Restart PowerShell after installation.
 
-1. Download the latest Trailarr release
-2. Extract the installation scripts
-3. Run the interactive installation process
-4. Set up GPU hardware acceleration (if available)
-5. Configure the systemd service
+---
 
-### Alternative: Clone and Install
+## Step 2 — Install Trailarr
 
-If you prefer to review the code first:
+=== "Linux / macOS"
 
-```bash
-git clone https://github.com/nandyalu/trailarr.git
-cd trailarr
-sudo bash ./install.sh
-```
+    ```bash
+    curl -LsSf https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo sh
+    ```
 
-The installer will guide you through installation process.
+=== "Windows"
 
+    Download [install.ps1](https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1),
+    then right-click it and choose **Run with PowerShell** (it will self-elevate to Administrator).
+
+    Or from an elevated PowerShell:
+    ```powershell
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    irm https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1 | iex
+    ```
+
+The installer will:
+
+1. Download the latest release (includes pre-built web interface)
+2. Set up an isolated Python environment with `uv sync`
+3. Download the correct ffmpeg static binary for your OS and CPU architecture
+4. Ask you to choose a port (default `7889`)
+5. Create and start a system service (systemd / launchd / Windows Service)
+6. Detect GPU hardware and display driver installation instructions
+
+---
 
 ## Directory Structure
 
-After installation, files are organized as follows:
+=== "Linux"
 
-```
-/opt/trailarr/              # Application installation
-├── .local/bin/             # Local binaries (ffmpeg, uv)
-├── backend/                # Python application code
-├── backend/.venv/          # Python virtual environment
-├── frontend-build/         # Web interface files
-├── assets/                 # Static assets and images
-└── scripts/                # Maintenance and startup scripts
+    ```
+    /opt/trailarr/              # Application
+    ├── backend/                # Python source + .venv/
+    ├── frontend-build/         # Web interface
+    ├── bin/                    # ffmpeg, ffprobe
+    └── scripts/                # start.py, cli/
 
-/var/lib/trailarr/          # Application data
-├── logs/                   # Application logs
-├── backups/                # Automatic database backups
-├── web/images/             # Image files used in Trailarr
-├── tmp/                    # Temporary download files
-├── .env                    # Configuration Environment Variables
-└── trailarr.db             # SQLite database
+    /var/lib/trailarr/          # Data (persists across updates)
+    ├── trailarr.db             # SQLite database
+    ├── .env                    # Configuration
+    ├── backups/                # Automatic DB backups (30 kept)
+    ├── logs/                   # Application logs
+    └── web/images/             # Downloaded images
 
-/var/log/trailarr/          # System logs
-└── trailarr.log            # Service logs
+    /etc/systemd/system/trailarr.service
+    ```
 
-/etc/systemd/system/        # Service configuration
-└── trailarr.service        # Systemd service file
-```
+=== "macOS"
 
-## Hardware Acceleration
+    ```
+    /usr/local/opt/trailarr/    # Application
+    ├── backend/                # Python source + .venv/
+    ├── frontend-build/         # Web interface
+    ├── bin/                    # ffmpeg, ffprobe
+    └── scripts/                # start.py, cli/
 
-The installer will detect your GPU hardware and provide installation commands for necessary drivers:
+    ~/.local/share/trailarr/    # Data (persists across updates)
+    ├── trailarr.db
+    ├── .env
+    ├── backups/
+    ├── logs/
+    └── web/images/
 
-### NVIDIA GPUs
-```bash
-sudo apt update && sudo apt install -y nvidia-driver-<diver-version>
-# Replace <driver-version> with the version you want to install. Ex: nvidia-drivers-535
-# Reboot required after installation
-```
-It's best to find the appropriate install method for your system and install them.
+    ~/Library/LaunchAgents/com.trailarr.app.plist
+    ```
 
-### Intel GPUs
-```bash
-sudo apt update && sudo apt install -y intel-media-va-driver i965-va-driver vainfo
-```
+=== "Windows"
 
-### AMD GPUs
-```bash
-sudo apt update && sudo apt install -y mesa-va-drivers vainfo
-```
+    ```
+    C:\Program Files\Trailarr\  # Application
+    ├── backend\                # Python source + .venv\
+    ├── frontend-build\         # Web interface
+    ├── bin\                    # ffmpeg.exe, ffprobe.exe, nssm.exe
+    └── scripts\                # start.py, cli\
 
-**Note**: After installing GPU drivers, restart the Trailarr service to enable hardware acceleration.
+    C:\ProgramData\Trailarr\    # Data (persists across updates)
+    ├── trailarr.db
+    ├── .env
+    ├── backups\
+    ├── logs\
+    └── web\images\
+
+    Windows Service: "Trailarr"
+    ```
+
+---
 
 ## Service Management
 
-### Starting and Stopping
+Use the `trailarr` CLI that is installed automatically:
 
 ```bash
-# Start Trailarr
-sudo systemctl start trailarr
-
-# Stop Trailarr  
-sudo systemctl stop trailarr
-
-# Restart Trailarr
-sudo systemctl restart trailarr
-
-# Enable auto-start on boot
-sudo systemctl enable trailarr
-
-# Disable auto-start
-sudo systemctl disable trailarr
+trailarr run        # Start the service
+trailarr stop       # Stop the service
+trailarr restart    # Restart the service
+trailarr status     # Show current status
+trailarr logs       # Show last 50 log lines
+trailarr logs 200   # Show last 200 log lines
+trailarr update     # Update to the latest version
+trailarr uninstall  # Remove Trailarr
 ```
 
-### Checking Status
+!!! note "Windows"
+    On Windows, open a PowerShell with Administrator rights before running `trailarr` commands
+    that affect the service (run, stop, restart, update, uninstall).
 
-```bash
-# Check service status
-sudo systemctl status trailarr
+You can also use OS-native tools directly:
 
-# View recent logs
-sudo journalctl -u trailarr -n 50
+=== "Linux"
 
-# Follow logs in real-time
-sudo journalctl -u trailarr -f
-```
+    ```bash
+    sudo systemctl start trailarr
+    sudo systemctl stop trailarr
+    sudo systemctl status trailarr
+    sudo journalctl -u trailarr -f          # Follow live logs
+    ```
+
+=== "macOS"
+
+    ```bash
+    launchctl start com.trailarr.app
+    launchctl stop com.trailarr.app
+    launchctl list com.trailarr.app
+    tail -f ~/Library/Logs/trailarr/trailarr.log
+    ```
+
+=== "Windows"
+
+    ```powershell
+    Start-Service Trailarr
+    Stop-Service Trailarr
+    Get-Service Trailarr
+    Get-Content "C:\ProgramData\Trailarr\logs\trailarr.log" -Tail 50 -Wait
+    ```
+
+---
+
+## GPU Hardware Acceleration
+
+At the end of installation, Trailarr detects your GPU hardware and displays the exact
+commands needed to install drivers.  **Drivers are not installed automatically** — you
+review and run the commands yourself.
+
+After installing drivers, restart Trailarr and enable hardware acceleration in
+**Settings → Video Processing**.
+
+### Supported acceleration
+
+| GPU | Linux | macOS | Windows |
+|---|---|---|---|
+| NVIDIA | CUDA / NVENC | — | NVENC |
+| Intel | VAAPI | Metal (built-in) | DirectX |
+| AMD | VAAPI | Metal (built-in) | DirectX |
+
+### Common driver commands
+
+=== "NVIDIA (Linux)"
+
+    ```bash
+    # Ubuntu / Debian
+    sudo apt install nvidia-driver-535
+
+    # Fedora
+    sudo dnf install akmod-nvidia
+
+    # Arch
+    sudo pacman -S nvidia
+    ```
+
+=== "Intel (Linux)"
+
+    ```bash
+    # Ubuntu / Debian
+    sudo apt install intel-media-va-driver intel-media-va-driver-non-free libva-drm2
+
+    # Fedora
+    sudo dnf install intel-media-driver libva
+
+    # Arch
+    sudo pacman -S intel-media-driver libva
+    ```
+
+=== "AMD (Linux)"
+
+    ```bash
+    # Ubuntu / Debian
+    sudo apt install mesa-va-drivers libva-drm2
+
+    # Fedora
+    sudo dnf install mesa-va-drivers libva
+
+    # Arch
+    sudo pacman -S mesa libva
+    ```
+
+=== "Windows"
+
+    - **NVIDIA** — [GeForce Experience](https://www.nvidia.com/en-us/geforce/geforce-experience/) or [nvidia.com/drivers](https://www.nvidia.com/Download/index.aspx)
+    - **AMD** — [AMD Adrenalin Software](https://www.amd.com/en/support)
+    - **Intel** — [Intel Graphics Driver](https://www.intel.com/content/www/us/en/download-center/home.html)
+
+!!! note "macOS"
+    Metal hardware acceleration is built-in — no extra drivers are needed.
+
+---
 
 ## Configuration
 
-Most of the options can be changed from the web UI after installation.
+All settings can be changed from the **Trailarr web interface** after installation.
+The configuration file is at:
 
-!!! warning ""
-    `APP_DATA_DIR` is set to `/opt/trailarr` and cannot be changed as installer depends on that!
-
-Main Configuration File is located in `/var/lib/trailarr/.env` if you want to modify later.
+| OS | Path |
+|---|---|
+| Linux | `/var/lib/trailarr/.env` |
+| macOS | `~/.local/share/trailarr/.env` |
+| Windows | `C:\ProgramData\Trailarr\.env` |
 
 !!! note ""
-    Restart Trailarr service after configuration change.
+    Restart the Trailarr service after editing `.env` manually.
 
-## Maintenance
+---
 
-### Updating Trailarr
-
-```bash
-# Stop the service
-sudo systemctl stop trailarr
-
-# Backup current installation
-sudo cp -r /opt/trailarr /opt/trailarr.backup
-
-# Download and run the installer again
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo bash
-
-# Start the service (if not already running)
-sudo systemctl start trailarr
-```
-
-### Updating yt-dlp
-
-yt-dlp is automatically updated during startup (if enabled), or manually using below command:
+## Updating
 
 ```bash
-cd /opt/trailarr/backend
-sudo -u trailarr /opt/trailarr/.local/bin/uv sync --no-cache-dir
+trailarr update
 ```
 
-### Database Backups
+This will:
 
-Automatic backups are created before each application start:
+1. Stop the service
+2. Back up your database and `.env` to the `backups/` folder
+3. Download the latest release
+4. Run `uv sync` to update Python dependencies
+5. Restart the service
 
-- Location: `/var/lib/trailarr/backups/`
-- Retention: 30 most recent backups
-- Format: `trailarr_YYYYMMDDHHMMSS.db`
+Your data directory is **never modified** during an update.
 
-### Log Rotation
+---
 
-Logs are automatically managed by systemd journald. To configure retention:
+## Uninstalling
 
 ```bash
-# Edit journald configuration
-sudo nano /etc/systemd/journald.conf
-
-# Set log retention (e.g., 7 days)
-MaxRetentionSec=7d
-SystemMaxUse=500M
-
-# Restart journald
-sudo systemctl restart systemd-journald
+trailarr uninstall
 ```
+
+You will be asked to confirm before anything is removed.
+This removes the application, service, and CLI.
+The data directory is also removed — back it up first if needed.
+
+---
 
 ## Troubleshooting
 
-### Common Issues
-
-#### Service Won't Start
+### Service won't start
 
 ```bash
-# Check service status and logs
-sudo systemctl status trailarr
-sudo journalctl -u trailarr -n 50
+# Linux
+sudo journalctl -u trailarr -n 100
 
-# Common causes:
-# - Port already in use
-# - Database corruption
-# - Missing dependencies
-# - Permission issues
+# macOS
+cat ~/Library/Logs/trailarr/trailarr.log
+
+# Windows (PowerShell)
+Get-Content "C:\ProgramData\Trailarr\logs\trailarr.log" -Tail 100
 ```
 
-#### GPU Acceleration Not Working
+Common causes: port already in use, database corruption, missing `uv` or ffmpeg.
+
+### Port conflict
+
+Edit the `.env` file and change `APP_PORT`, then restart the service.
 
 ```bash
-# Check GPU status
-lspci | grep -i vga
-lspci | grep -i nvidia
-
-# Check drivers
-nvidia-smi  # For NVIDIA
-vainfo      # For Intel/AMD
-
-# Check user groups
-groups trailarr
-ls -la /dev/dri/
+# Check what's on port 7889
+# Linux / macOS
+lsof -i :7889
+# Windows
+netstat -ano | findstr :7889
 ```
 
-#### Permission Errors
+### Permission errors (Linux)
 
 ```bash
-# Fix ownership
-sudo chown -R trailarr:trailarr /opt/trailarr
-sudo chown -R trailarr:trailarr /var/lib/trailarr
-
-# Check service user
-sudo systemctl show trailarr | grep User
+sudo chown -R trailarr:trailarr /opt/trailarr /var/lib/trailarr
 ```
 
-#### Port Conflicts
+### GPU acceleration not working
+
+Verify drivers are installed and detected at startup:
 
 ```bash
-# Check what's using the port
-sudo netstat -tlnp | grep :7889
-sudo lsof -i :7889
+# NVIDIA
+nvidia-smi
 
-# Change port in configuration
-sudo nano /opt/trailarr/.env
-# Edit APP_PORT=7889 to different port
-sudo systemctl restart trailarr
+# Intel / AMD (Linux)
+vainfo
+
+# Check Trailarr logs for "GPU detected" lines
+trailarr logs 100
 ```
 
-## Uninstallation
+Then confirm hardware acceleration is enabled in **Settings → Video Processing**.
 
-### Quick Uninstall
+---
 
-```bash
-curl -sSL https://raw.githubusercontent.com/nandyalu/trailarr/main/scripts/baremetal/uninstall.sh | sudo bash
-```
+## Comparison: Direct vs Docker
 
-The uninstaller will prompt you to preserve data for future reinstallations.
+| | Docker | Direct |
+|---|---|---|
+| **Setup complexity** | Easy | Moderate (uv required) |
+| **GPU support** | Complex in LXC/Proxmox | Native (direct driver access) |
+| **Performance** | Good | Optimal (no container overhead) |
+| **Resource usage** | Higher | Lower |
+| **Updates** | `docker pull` | `trailarr update` |
+| **System integration** | Isolated | Native service (systemd / launchd / SCM) |
+| **Best for** | Quick setup, isolated environments | Maximum performance, complex GPU setups |
 
-### Manual Uninstall
-
-```bash
-# Stop and disable service
-sudo systemctl stop trailarr
-sudo systemctl disable trailarr
-
-# Remove service file
-sudo rm /etc/systemd/system/trailarr.service
-sudo systemctl daemon-reload
-
-# Remove application files
-sudo rm -rf /opt/trailarr
-
-# Remove data (optional - will lose all trailarr logs and configuration)
-sudo rm -rf /var/lib/trailarr
-sudo rm -rf /var/log/trailarr
-
-# Remove user
-sudo userdel trailarr
-```
-
-## Comparison with Docker
-
-| Feature | Docker | Bare Metal |
-|---------|--------|------------|
-| **Setup Complexity** | Easy | Moderate |
-| **Resource Usage** | Higher (container overhead) | Lower (native) |
-| **Hardware Access** | Limited (requires passthrough) | Full (direct access) |
-| **GPU Support** | Complex in LXC environments | Native support |
-| **Performance** | Good | Optimal |
-| **Updates** | Container replacement | File-based updates |
-| **System Integration** | Isolated | Native systemd service |
-| **Troubleshooting** | Container logs | System logs |
-| **Best For** | Quick setup, isolated environments | Performance, complex GPU setups |
-
-Choose bare metal installation when you need maximum performance, have complex GPU requirements, or are running in environments where Docker GPU passthrough is challenging.
+Choose direct installation when you need full GPU hardware access, run in an
+environment where Docker GPU passthrough is difficult (e.g., Proxmox LXC), or
+simply prefer a native system service.

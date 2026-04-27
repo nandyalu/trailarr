@@ -14,6 +14,8 @@ from .delete import (
     delete_old_events,
 )
 from .helpers import (
+    track_arr_linked,
+    track_arr_unlinked,
     track_download_skipped,
     track_media_added,
     track_monitor_changed,
@@ -36,6 +38,8 @@ __all__ = [
     "read",
     "read_all",
     "read_by_media_id",
+    "track_arr_linked",
+    "track_arr_unlinked",
     "track_download_skipped",
     "track_media_added",
     "track_monitor_changed",

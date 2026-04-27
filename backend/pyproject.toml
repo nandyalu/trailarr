@@ -16,6 +16,7 @@ dependencies = [
     "quiv>=0.3.1",
     "sqlmodel==0.0.38",
     "yt-dlp[curl-cffi,default]==2026.3.17",
+    "rich>=15.0.0",
 ]
 
 [dependency-groups]
