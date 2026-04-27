@@ -92,11 +92,50 @@ It took me a while to figure out how to set it up inside devcontainer, so I thou
 	```bash
 	sudo apt-get install gnupg2 gpg-agent pinentry-curses
 	```
-- I then created a new GPG key using the following command:
-	```bash
-	gpg --full-generate-key
-	```
-- I followed the prompts to create a new key, and then I added the key to my GitHub account, and follow the steps to enable commit signing in vscode. See [this](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) for more information.
+- I followed the prompts to create a new key, and then I added the key to my GitHub account, and follow the steps to enable commit signing in vscode. See [this](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) for more information. Here are the commands to generate and set it in `git` and `Github`:
+	
+	1. Created a new GPG key using the following command:
+		```bash
+		gpg --full-generate-key
+		# You can use any kind of key, recommended is ECC (sign only is enough)
+		# Use `Curve 25519` for elliptic curve
+		# How long key should be valid is upto you (you need to regenerate a new one when expired)
+		# Real name: <Use the display name in your Github account, it will be displayed on signed commit signatures>
+		# Email address: <You could use either your email you use for Github OR Github noreply account>
+		# If asked for Comment, you can leave it empty
+		```
+
+	1. Now, get the long format of the generated key
+		```bash
+		gpg --list-secret-keys --keyid-format=long
+		# You will get output like below, we need `D38DD074ABF2FB6B` for our next step
+		# ---------------------------
+		# sec   ed25519/D38DD074ABF2FB6B 2026-04-27 [SC]
+		#       42ED8106CBFBEB34FA7DDC57D38DD074ABF2FB6B
+		# uid                 [ultimate] Uma Nandyala <18457369+nandyalu@users.noreply.github.com>
+		# ssb   cv25519/D571BBA1971C36E7 2026-04-27 [E]
+		```
+	
+	1. Get the Public key to add to Github.
+
+		!!! tip ""
+			Copy everything from the output, including the `-----BEGIN PGP PUBLIC KEY BLOCK-----` and `-----END PGP PUBLIC KEY BLOCK-----`.
+		
+		```bash
+		gpg --armor --export D38DD074ABF2FB6B
+		```
+	1. Go to Githib Account Settings and add it under `SSH and GPG Keys` > `New GPG Key` and paste the Public key from last step, give it a name to identify this key (useful if you want to delete it later). More info on [Github](https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account).
+
+	1. One last step is to tell local git to use this key for signing commits. 
+		```bash
+		git config --global user.signingkey D38DD074ABF2FB6B
+		git config --global commit.gpgsign true
+		git config --global tag.gpgsign true
+		```
+
+		!!! note ""
+			Note that we are setting `--global` so this works for all commits from that machine, remove that to only use that for this repo.
+
 - I then added the following lines to my `~/.bashrc` file:
 	```bash
 	export GPG_TTY=$(tty)
@@ -116,7 +155,8 @@ It took me a while to figure out how to set it up inside devcontainer, so I thou
 	allow-loopback-pinentry
 	pinentry-program /usr/bin/pinentry-curses
 	```
-	> I guess the cache values are not necessary if you don't want your passphrase to be cached!
+	!!! tip ""
+		I guess the cache values are not necessary if you don't want your passphrase to be cached!
 - I then restarted the `gpg-agent` using the following command:
 	```bash
 	gpgconf --kill gpg-agent
