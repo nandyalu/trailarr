@@ -1811,6 +1811,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard-no-fastapi-cloud-cli"] },
     { name = "pillow" },
     { name = "quiv" },
+    { name = "rich" },
     { name = "sqlmodel" },
     { name = "yt-dlp", extra = ["curl-cffi", "default"] },
 ]
@@ -1849,6 +1850,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.136.0" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "quiv", specifier = ">=0.3.1" },
+    { name = "rich", specifier = ">=13.0.0" },
     { name = "sqlmodel", specifier = "==0.0.38" },
     { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = "==2026.3.17" },
 ]

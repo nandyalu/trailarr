@@ -41,7 +41,7 @@ class TestUpdatePlexTrailer:
             txdb_id="tt9999999",
         )
         result = media_manager.create_or_update_bulk([media_data])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_sets_plex_trailer_true(self):
         """Sets plex_trailer to True on a media row."""

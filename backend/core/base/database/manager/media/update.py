@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 from typing import Sequence
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from . import base
 from core.base.database.models.helpers import MediaImage, MediaUpdateDC
 from core.base.database.models.media import (
+    Media,
     MediaUpdate,
     MonitorStatus,
 )
@@ -385,3 +386,41 @@ def update_plex_trailer(
     _session.add(db_media)
     _session.commit()
     return None
+
+
+@write_session
+def demote_arr_items_with_plex_to_plex_only(
+    connection_id: int,
+    keep_ids: list[int],
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[int]:
+    """Demote Arr-sourced rows being removed from Arr that still have a Plex link.
+
+    Instead of deleting them, sets connection_id = plex_connection_id and arr_id = 0
+    so the Plex connection continues tracking the item. Only affects rows that have
+    plex_connection_id set (i.e. previously linked to both Arr and Plex).
+
+    Args:
+        connection_id (int): The Arr connection id to scope the query.
+        keep_ids (list[int]): Media ids that are still present in Arr (not to demote).
+
+    Returns:
+        list[int]: IDs of demoted media items so the caller can fire ARR_UNLINKED events.
+    """
+    statement = (
+        select(Media)
+        .where(Media.connection_id == connection_id)
+        .where(~col(Media.id).in_(keep_ids))
+        .where(col(Media.plex_connection_id).is_not(None))
+    )
+    rows = _session.exec(statement).all()
+    demoted_ids: list[int] = []
+    for db_media in rows:
+        db_media.connection_id = db_media.plex_connection_id  # type: ignore
+        db_media.arr_id = 0
+        db_media.updated_at = datetime.now(timezone.utc)
+        _session.add(db_media)
+        demoted_ids.append(db_media.id)  # type: ignore
+    _session.commit()
+    return demoted_ids

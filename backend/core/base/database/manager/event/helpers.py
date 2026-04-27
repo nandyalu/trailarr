@@ -346,6 +346,70 @@ def track_plex_scan_triggered(
         )
 
 
+def track_arr_linked(
+    media_id: int,
+    connection_name: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a Plex-only item is adopted by an Arr connection for the first time.
+
+    Fires once when arr_id changes from 0 to a real Arr id via folder-path
+    matching during an Arr connection refresh.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Arr connection.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "ConnectionRefresh").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.ARR_LINKED,
+            source=source,
+            source_detail=source_detail,
+            new_value=connection_name,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track arr_linked event for [{media_id}]: {e}"
+        )
+
+
+def track_arr_unlinked(
+    media_id: int,
+    connection_name: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when an Arr-linked item is demoted back to Plex-only.
+
+    Fires when a media item is removed from the Arr application but its
+    files remain on disk and Plex still tracks it.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Arr connection being removed.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "ConnectionRefresh").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.ARR_UNLINKED,
+            source=source,
+            source_detail=source_detail,
+            old_value=connection_name,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track arr_unlinked event for [{media_id}]: {e}"
+        )
+
+
 def track_download_skipped(
     media_id: int,
     skip_reason: str,

@@ -252,13 +252,20 @@ class BaseConnectionManager(ABC):
             list[MediaReadDC]: A list of MediaRead objects."""
         media_read_list = media_manager.create_or_update_bulk(media_data)
         media_read_dc_list = []
-        for media_read, created, updated in media_read_list:
+        for media_read, created, updated, arr_linked in media_read_list:
             self.media_ids.append(media_read.id)
             if created:
                 self.created_count += 1
                 # Track all events for new media (added, youtube_id, monitor)
                 event_manager.track_media_added(
                     media=media_read,
+                    connection_name=self.connection_name,
+                    source=EventSource.SYSTEM,
+                    source_detail="ConnectionRefresh",
+                )
+            if arr_linked:
+                event_manager.track_arr_linked(
+                    media_id=media_read.id,
                     connection_name=self.connection_name,
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",
@@ -333,6 +340,17 @@ class BaseConnectionManager(ABC):
         if len(self.media_ids) == 0:
             return
         logger.debug("Removing media not present in Arr application")
+        # Demote Plex-linked items back to Plex-only instead of deleting them.
+        demoted_ids = media_manager.demote_arr_items_with_plex_to_plex_only(
+            self.connection_id, self.media_ids
+        )
+        for media_id in demoted_ids:
+            event_manager.track_arr_unlinked(
+                media_id=media_id,
+                connection_name=self.connection_name,
+                source=EventSource.SYSTEM,
+                source_detail="ConnectionRefresh",
+            )
         media_manager.delete_except(self.connection_id, self.media_ids)
         return
 
