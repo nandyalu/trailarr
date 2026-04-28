@@ -1,7 +1,0 @@
-{
-  "$schema": "./node_modules/ng-openapi-gen/ng-openapi-gen-schema.json",
-  "input": "./contract/swagger.yaml",
-  "output": "./generated-sources/openapi",
-  "indexFile": true,
-  "skipJsonSuffix": true
-}

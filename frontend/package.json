@@ -8,10 +8,7 @@
     "dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:coverage": "ng test --coverage",
-    "openapi": "ng-openapi-gen",
-    "postinstall": "npm run openapi",
-    "postopenapi": "prettier --write generated-sources --ignore-path=.prettierignore"
+    "test:coverage": "ng test --coverage"
   },
   "private": true,
   "dependencies": {
@@ -33,7 +30,6 @@
     "@angular/compiler-cli": "^21.0.0",
     "@angular/localize": "^21.0.0",
     "jsdom": "^27.4.0",
-    "ng-openapi-gen": "^0.53.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "ts-mockery": "^1.2.0",

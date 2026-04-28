@@ -21,7 +21,6 @@ uv sync
 
 # Frontend (from /app/frontend) - takes ~90s
 npm install
-# npm install also runs postinstall: generates frontend/generated-sources/ from OpenAPI spec
 ```
 
 ### Development Servers
@@ -61,9 +60,6 @@ npm run test:coverage
 ```bash
 # Frontend production build (from /app/frontend) - ~10s, output to ../frontend-build/
 npm run build
-
-# Regenerate TypeScript API client from backend OpenAPI spec (from /app/frontend)
-npm run openapi
 
 # Docker image (~15-30 min; may fail in CI due to SSL/PyPI issues)
 docker build --tag trailarr:latest .
@@ -121,18 +117,10 @@ Plex and Arr connections can track the same physical media. The system merges by
 - `tasks/`, `settings/`, `logs/`, `events/` — Feature pages
 - `shared/` — Shared UI components
 - `models/` — TypeScript interfaces
-- `generated-sources/` — **Auto-generated** TypeScript API client from backend OpenAPI spec; do not edit manually
-
 **Key patterns:**
 - Standalone components only (no NgModules)
 - Angular Signals for reactivity (zoneless change detection)
 - Dev server proxies `/api` to backend on port 7888 (see `src/proxy.conf.json`)
-
-### API Client Generation
-
-When backend API changes:
-1. Run `python backend/export_openapi.py` (or the VSCode "Generate OpenAPI Files" task)
-2. Run `cd frontend && npm run openapi` to regenerate `generated-sources/`
 
 ### Docker Build
 
