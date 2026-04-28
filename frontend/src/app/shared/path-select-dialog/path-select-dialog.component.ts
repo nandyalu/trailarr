@@ -60,6 +60,12 @@ export class PathSelectDialogComponent {
     if (path1.endsWith('/')) {
       path1 = path1.slice(0, -1); // Remove the trailing slash
     }
+    // Windows drive root (e.g. "C:") or UNC share root (e.g. "//server/share")
+    // — go to virtual root so the drive list is shown.
+    if (/^[A-Za-z]:$/.test(path1) || /^\/\/[^/]+\/[^/]+$/.test(path1)) {
+      this.setPath('/');
+      return;
+    }
     path1 = path1.replace(/\/[^\/]*$/, ''); // Remove the last segment
     this.setPath(path1);
   }

@@ -3,6 +3,8 @@ import hashlib
 import os
 import re
 import shutil
+import string
+import sys
 import zoneinfo
 import aiofiles.os
 from pydantic import BaseModel, Field
@@ -126,6 +128,24 @@ class FilesHandler:
         )
 
     @staticmethod
+    def _list_windows_drives() -> list[FolderInfo]:
+        """Return a FolderInfo entry for every available drive on Windows."""
+        drives: list[FolderInfo] = []
+        for letter in string.ascii_uppercase:
+            drive = f"{letter}:/"
+            if os.path.isdir(drive):
+                drives.append(
+                    FolderInfo(
+                        type="folder",
+                        name=f"{letter}:",
+                        path=drive,
+                        size="0 KB",
+                        created="",
+                    )
+                )
+        return drives
+
+    @staticmethod
     async def get_folder_files_simple(folder_path: str) -> list[FolderInfo]:
         """Get information about all files and folders in a given \
             folder (non-recursive).\n
@@ -134,6 +154,9 @@ class FilesHandler:
         Returns:
             list[FolderInfo]: List of FolderInfo objects representing files and folders \
                 inside a given folder."""
+        # On Windows, treat "/" or "" as a virtual root that lists all drives.
+        if sys.platform == "win32" and folder_path in ("/", ""):
+            return FilesHandler._list_windows_drives()
         _is_dir = await aiofiles.os.path.isdir(folder_path)
         if not _is_dir:
             return []
