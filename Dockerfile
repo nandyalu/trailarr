@@ -7,8 +7,8 @@ WORKDIR /app/frontend
 
 # Copy package files for dependency installation
 COPY ./frontend/package*.json ./
-COPY ./frontend/contract ./contract
-COPY ./frontend/ng-openapi-gen.json ./
+# COPY ./frontend/contract ./contract
+# COPY ./frontend/ng-openapi-gen.json ./
 
 # Install dependencies
 RUN npm install
