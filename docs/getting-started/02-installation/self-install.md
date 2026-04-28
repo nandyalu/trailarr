@@ -129,17 +129,47 @@ the automated installer, but you can use any paths you prefer.
 
 ## Step 4 — Install Python dependencies
 
-```bash
-# Linux / macOS (run as the trailarr user, or your own user)
-cd "$INSTALL_DIR/backend"
-uv sync --no-cache-dir
-```
+=== "Linux"
 
-```powershell
-# Windows
-cd "$InstallDir\backend"
-uv sync --no-cache-dir
-```
+    If you created a `trailarr` system user in Step 3, run `uv sync` as that user so the
+    virtual environment is owned correctly:
+
+    ```bash
+    cd "$INSTALL_DIR/backend"
+    sudo -u trailarr uv sync --no-cache-dir
+    ```
+
+    !!! note "uv not found when using sudo?"
+        `sudo -u trailarr` starts a minimal shell that does not inherit your `PATH`, so `uv`
+        may not be found even though `which uv` shows it for your own account.
+        Pick one fix:
+
+        **Option A — install uv system-wide (recommended):**
+        ```bash
+        sudo cp "$(which uv)" /usr/local/bin/uv
+        sudo chmod +x /usr/local/bin/uv
+        # now retry:
+        sudo -u trailarr uv sync --no-cache-dir
+        ```
+
+        **Option B — pass the full path to uv:**
+        ```bash
+        sudo -u trailarr "$(which uv)" sync --no-cache-dir
+        ```
+
+=== "macOS"
+
+    ```bash
+    cd "$INSTALL_DIR/backend"
+    uv sync --no-cache-dir
+    ```
+
+=== "Windows"
+
+    ```powershell
+    cd "$InstallDir\backend"
+    uv sync --no-cache-dir
+    ```
 
 This creates a `.venv/` directory inside `backend/` and installs all Python dependencies
 (including `yt-dlp` and `rich`).
@@ -164,7 +194,7 @@ The default location the installer uses is `$INSTALL_DIR/bin/`:
 === "Linux"
 
     ```bash
-    mkdir -p "$INSTALL_DIR/bin"
+    sudo mkdir -p "$INSTALL_DIR/bin"
 
     curl -L -o /tmp/ffmpeg.tar.xz \
       "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
@@ -234,7 +264,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     APP_VERSION=vX.Y.Z
     APP_DATA_DIR=/var/lib/trailarr
     APP_PORT=7889
-    APP_MODE=Direct Linux
+    APP_MODE="Direct Linux"
     TZ=America/New_York
 
     FFMPEG_PATH=/opt/trailarr/bin/ffmpeg
@@ -259,7 +289,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     APP_VERSION=vX.Y.Z
     APP_DATA_DIR=$DATA_DIR
     APP_PORT=7889
-    APP_MODE=Direct macOS
+    APP_MODE="Direct macOS"
     TZ=$(readlink /etc/localtime | sed 's|.*/zoneinfo/||')
 
     FFMPEG_PATH=$INSTALL_DIR/bin/ffmpeg
@@ -282,7 +312,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     APP_VERSION=vX.Y.Z
     APP_DATA_DIR=C:\ProgramData\Trailarr
     APP_PORT=7889
-    APP_MODE=Direct Windows
+    APP_MODE="Direct Windows"
     TZ=America/New_York
 
     FFMPEG_PATH=C:\Program Files\Trailarr\bin\ffmpeg.exe
@@ -308,20 +338,30 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
 
 Before starting for the first time, apply the database migrations:
 
-=== "Linux / macOS"
+=== "Linux"
+
+    Run as the `trailarr` user so it can write to `$DATA_DIR`:
+
+    ```bash
+    sudo -u trailarr env \
+      APP_DATA_DIR="$DATA_DIR" \
+      PYTHONPATH="$INSTALL_DIR/backend" \
+      "$INSTALL_DIR/backend/.venv/bin/alembic" -c "$INSTALL_DIR/backend/alembic.ini" upgrade head
+    ```
+
+=== "macOS"
 
     ```bash
     cd "$INSTALL_DIR/backend"
-    # Load the .env so PYTHONPATH is set
-    set -a; source "$DATA_DIR/.env"; set +a
-
-    .venv/bin/alembic upgrade head
+    APP_DATA_DIR="$DATA_DIR" PYTHONPATH="$INSTALL_DIR/backend" .venv/bin/alembic upgrade head
     ```
 
 === "Windows"
 
     ```powershell
     cd "$InstallDir\backend"
+    $env:APP_DATA_DIR = $DataDir
+    $env:PYTHONPATH   = "$InstallDir\backend"
     & ".venv\Scripts\alembic.exe" upgrade head
     ```
 
@@ -331,13 +371,22 @@ Before starting for the first time, apply the database migrations:
 
 Run Trailarr directly to confirm everything works before setting up a service:
 
-=== "Linux / macOS"
+=== "Linux"
+
+    Run as the `trailarr` user so it can write logs and the database to `$DATA_DIR`:
+
+    ```bash
+    sudo -u trailarr env \
+      APP_DATA_DIR="$DATA_DIR" \
+      PYTHONPATH="$INSTALL_DIR/backend" \
+      "$INSTALL_DIR/backend/.venv/bin/uvicorn" main:trailarr_api --host 0.0.0.0 --port 7889
+    ```
+
+=== "macOS"
 
     ```bash
     cd "$INSTALL_DIR/backend"
-    set -a; source "$DATA_DIR/.env"; set +a
-
-    .venv/bin/uvicorn main:trailarr_api --host 0.0.0.0 --port 7889
+    APP_DATA_DIR="$DATA_DIR" PYTHONPATH="$INSTALL_DIR/backend" .venv/bin/uvicorn main:trailarr_api --host 0.0.0.0 --port 7889
     ```
 
 === "Windows"
@@ -475,11 +524,19 @@ Press `Ctrl+C` to stop it before continuing.
     If you don't want a system service, you can just start Trailarr in a terminal or
     add it to your shell's startup (`.bashrc`, `~/.profile`, etc.):
 
+    **Linux** — run as the `trailarr` user (e.g. add to a `@reboot` cron entry via `sudo -u trailarr crontab -e`):
     ```bash
-    # Linux / macOS — add to a startup script or cron @reboot
-    cd /opt/trailarr/backend
-    set -a; source /var/lib/trailarr/.env; set +a
-    exec .venv/bin/uvicorn main:trailarr_api --host 0.0.0.0 --port 7889
+    sudo -u trailarr env \
+      APP_DATA_DIR=/var/lib/trailarr \
+      PYTHONPATH=/opt/trailarr/backend \
+      /opt/trailarr/backend/.venv/bin/uvicorn main:trailarr_api --host 0.0.0.0 --port 7889
+    ```
+
+    **macOS** — add to `~/.profile` or a `@reboot` cron entry:
+    ```bash
+    cd /usr/local/opt/trailarr/backend
+    APP_DATA_DIR="$HOME/.local/share/trailarr" PYTHONPATH=/usr/local/opt/trailarr/backend \
+      exec .venv/bin/uvicorn main:trailarr_api --host 0.0.0.0 --port 7889
     ```
 
 ---
@@ -557,3 +614,86 @@ before starting uvicorn.
 
 **Web UI doesn't load (404)** — Check that `frontend-build/` exists inside `$INSTALL_DIR`.
 If you cloned the repo, you need to run the Angular build first (Step 1, Option B).
+
+---
+
+## Uninstall
+
+=== "Linux"
+
+    **1. Stop and remove the systemd service:**
+    ```bash
+    sudo systemctl stop trailarr
+    sudo systemctl disable trailarr
+    sudo rm /etc/systemd/system/trailarr.service
+    sudo systemctl daemon-reload
+    ```
+
+    **2. Remove the CLI wrapper** (if installed in Step 10):
+    ```bash
+    sudo rm -f /usr/local/bin/trailarr
+    ```
+
+    **3. Remove application files:**
+    ```bash
+    sudo rm -rf /opt/trailarr
+    ```
+
+    **4. Remove the system user:**
+    ```bash
+    sudo userdel trailarr
+    ```
+
+    **5. Remove data and logs** (optional — skip if you want to keep your config and database):
+    ```bash
+    sudo rm -rf /var/lib/trailarr /var/log/trailarr
+    ```
+
+=== "macOS"
+
+    **1. Unload and remove the launchd service** (if installed in Step 9):
+    ```bash
+    launchctl unload -w ~/Library/LaunchAgents/com.trailarr.app.plist
+    rm ~/Library/LaunchAgents/com.trailarr.app.plist
+    ```
+
+    **2. Remove the CLI wrapper** (if installed in Step 10):
+    ```bash
+    sudo rm -f /usr/local/bin/trailarr
+    ```
+
+    **3. Remove application files:**
+    ```bash
+    sudo rm -rf /usr/local/opt/trailarr
+    ```
+
+    **4. Remove data and logs** (optional — skip if you want to keep your config and database):
+    ```bash
+    rm -rf "$HOME/.local/share/trailarr" "$HOME/Library/Logs/trailarr"
+    ```
+
+=== "Windows"
+
+    **1. Stop and remove the NSSM service** (if installed in Step 9):
+    ```powershell
+    $nssm = "C:\Program Files\Trailarr\bin\nssm.exe"
+    & $nssm stop Trailarr
+    & $nssm remove Trailarr confirm
+    ```
+
+    **2. Remove application files:**
+    ```powershell
+    Remove-Item -Recurse -Force "C:\Program Files\Trailarr"
+    ```
+
+    **3. Remove from PATH** (if added in Step 10):
+    ```powershell
+    $path = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $newPath = ($path -split ";") -notlike "*Program Files\Trailarr*" -join ";"
+    [Environment]::SetEnvironmentVariable("Path", $newPath, "Machine")
+    ```
+
+    **4. Remove data and logs** (optional — skip if you want to keep your config and database):
+    ```powershell
+    Remove-Item -Recurse -Force "C:\ProgramData\Trailarr"
+    ```

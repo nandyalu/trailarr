@@ -206,7 +206,7 @@ if not images_dir.exists():
     images_dir.mkdir(parents=True, exist_ok=True)
 else:
     logging.debug("Mounting images directory for frontend!")
-images_mount_path = images_dir.as_posix()
+images_mount_path = "/images"
 logging.debug(
     f"Mounting images directory '{images_dir}' at '{images_mount_path}'"
 )
