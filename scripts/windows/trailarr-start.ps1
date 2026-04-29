@@ -6,8 +6,9 @@ $InstallDir = "C:\Program Files\Trailarr"
 $DataDir    = "C:\ProgramData\Trailarr"
 $LogFile    = "$DataDir\logs\trailarr.log"
 
-$env:APP_DATA_DIR = $DataDir
-$env:PYTHONPATH   = "$InstallDir\backend"
+$env:APP_DATA_DIR  = $DataDir
+$env:PYTHONPATH    = "$InstallDir\backend"
+$env:PYTHONUTF8    = "1"
 
 & "$InstallDir\backend\.venv\Scripts\python.exe" `
     "$InstallDir\scripts\start\start.py" *>> $LogFile

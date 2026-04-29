@@ -18,7 +18,9 @@ def ask_port(default: int = 7889) -> int:
     )
     while not (1024 <= port <= 65535):
         console.print("[error]  Port must be between 1024 and 65535[/error]")
-        port = IntPrompt.ask("  Web interface port", default=default, console=console)
+        port = IntPrompt.ask(
+            "  Web interface port", default=default, console=console
+        )
     return port
 
 
@@ -48,10 +50,10 @@ def write_initial_config(
         "YTDLP_PATH": str(ytdlp_path),
         "PYTHON_EXECUTABLE": str(python_executable),
         "PYTHONPATH": str(install_dir / "backend"),
-        "MONITOR_INTERVAL": "60",
-        "WAIT_FOR_MEDIA": "true",
-        "UPDATE_YTDLP": "false",
-        "LOG_LEVEL": "INFO",
+        "MONITOR_INTERVAL": str(60),
+        "WAIT_FOR_MEDIA": str("true"),
+        "UPDATE_YTDLP": str("false"),
+        "LOG_LEVEL": str("INFO"),
     }
 
     env_path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,5 +102,9 @@ def _detect_timezone() -> str:
 
 
 def _app_mode() -> str:
-    modes = {"Linux": "Direct Linux", "Darwin": "Direct macOS", "Windows": "Direct Windows"}
+    modes = {
+        "Linux": "Direct Linux",
+        "Darwin": "Direct macOS",
+        "Windows": "Direct Windows",
+    }
     return modes.get(platform.system(), "Direct")

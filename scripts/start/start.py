@@ -38,7 +38,7 @@ _BIN_DIR = _INSTALL_DIR / "bin"
 _IS_WINDOWS = platform.system() == "Windows"
 _VENV_BIN = _VENV_DIR / "Scripts" if _IS_WINDOWS else _VENV_DIR / "bin"
 _PYTHON = _VENV_BIN / ("python.exe" if _IS_WINDOWS else "python")
-_UVICORN = _VENV_BIN / ("uvicorn.exe" if _IS_WINDOWS else "uvicorn")
+
 
 
 # ---------------------------------------------------------------------------
@@ -58,13 +58,9 @@ def _get_console():
 # ---------------------------------------------------------------------------
 
 def _load_env(env_path: Path) -> dict[str, str]:
-    result: dict[str, str] = {}
-    if env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                result[k.strip()] = v.strip()
+    # Use dotenv's own parser so it correctly handles whatever quoting set_key writes.
+    from dotenv import dotenv_values
+    result: dict[str, str] = {k: v for k, v in dotenv_values(env_path).items() if v is not None}
     # Merge into os.environ so subprocess calls inherit them
     os.environ.update(result)
     return result
@@ -224,15 +220,15 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
     port = env.get("APP_PORT", "7889")
     url_base = env.get("URL_BASE", "").strip("/")
 
-    cmd = [str(_UVICORN), "main:trailarr_api", "--host", "0.0.0.0", "--port", port]
+    cmd = [str(_PYTHON), "-m", "uvicorn", "main:trailarr_api", "--host", "0.0.0.0", "--port", port]
     if url_base:
         cmd += ["--root-path", f"/{url_base}"]
 
     _log(f"\n  Starting uvicorn on port {port}...", console)
     os.chdir(str(_BACKEND_DIR))
 
-    # exec replaces this process — uvicorn becomes PID 1 in the service
-    os.execv(str(_UVICORN), cmd)
+    # exec replaces this process with Python running uvicorn
+    os.execv(str(_PYTHON), cmd)
 
 
 # ---------------------------------------------------------------------------
