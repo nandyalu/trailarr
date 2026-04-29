@@ -204,6 +204,22 @@ class PlexConnectionManager:
                     source=EventSource.SYSTEM,
                     source_detail="PlexRefresh",
                 )
+            # Re-evaluate monitor only for Plex-only items — Arr-linked items
+            # have their monitor state owned by the Arr connection.
+            # MONITOR_NEW only affects newly-created items — preserve existing state.
+            if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
+                new_monitor = self._check_monitoring(existing.trailer_exists)
+                if new_monitor != existing.monitor:
+                    event_manager.track_monitor_changed(
+                        media_id=existing.id,
+                        old_monitor=existing.monitor,
+                        new_monitor=new_monitor,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                    )
+                    media_manager.update_monitor_and_trailer_exists_bulk(
+                        [(existing.id, new_monitor, existing.trailer_exists)]
+                    )
             logger.debug(
                 f"Merged Plex data for '{existing.title}' (id={existing.id})"
             )
