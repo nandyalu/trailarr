@@ -486,38 +486,35 @@ Press `Ctrl+C` to stop it before continuing.
     launchctl list com.trailarr.app
     ```
 
-=== "Windows (NSSM)"
+=== "Windows (Task Scheduler)"
 
-    [NSSM](https://nssm.cc) (Non-Sucking Service Manager) wraps any executable as a Windows Service.
-
-    1. Download `nssm.exe` from [nssm.cc](https://nssm.cc/download) and place it somewhere in your PATH
-       (e.g., `C:\Program Files\Trailarr\bin\nssm.exe`).
-
-    2. Open an elevated PowerShell and run:
+    Open a **regular PowerShell** (not "Run as Administrator") and run the
+    setup script bundled with Trailarr:
 
     ```powershell
-    $nssm    = "C:\Program Files\Trailarr\bin\nssm.exe"
-    $python  = "C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe"
-    $script  = "C:\Program Files\Trailarr\scripts\start\start.py"
-    $logFile = "C:\ProgramData\Trailarr\logs\trailarr.log"
-
-    & $nssm install Trailarr $python $script
-    & $nssm set Trailarr AppDirectory  "C:\Program Files\Trailarr"
-    & $nssm set Trailarr AppEnvironmentExtra `
-        "APP_DATA_DIR=C:\ProgramData\Trailarr" `
-        "PYTHONPATH=C:\Program Files\Trailarr\backend"
-    & $nssm set Trailarr AppStdout     $logFile
-    & $nssm set Trailarr AppStderr     $logFile
-    & $nssm set Trailarr AppRotateFiles 1
-    & $nssm set Trailarr Start         SERVICE_AUTO_START
-    & $nssm set Trailarr DisplayName   "Trailarr"
-    & $nssm start Trailarr
+    & "C:\Program Files\Trailarr\scripts\windows\setup-startup.ps1"
     ```
 
-    Verify:
+    This registers a Task Scheduler task that starts Trailarr automatically
+    when **you** log in, running as your user account so mapped network drives
+    and UNC shares are fully accessible.
+
+    Start it immediately without rebooting:
+
     ```powershell
-    Get-Service Trailarr
+    Start-ScheduledTask -TaskName "Trailarr"
     ```
+
+    Check that it is running:
+
+    ```powershell
+    (Get-ScheduledTask -TaskName "Trailarr").State   # should print "Running"
+    ```
+
+    !!! note "Non-default install paths"
+        If you installed to a different directory, edit
+        `scripts\windows\trailarr-start.ps1` and update the `$InstallDir` and
+        `$DataDir` variables before running the setup script.
 
 === "Run manually (any OS)"
 
@@ -674,11 +671,9 @@ If you cloned the repo, you need to run the Angular build first (Step 1, Option 
 
 === "Windows"
 
-    **1. Stop and remove the NSSM service** (if installed in Step 9):
+    **1. Remove the startup task** (if installed in Step 9):
     ```powershell
-    $nssm = "C:\Program Files\Trailarr\bin\nssm.exe"
-    & $nssm stop Trailarr
-    & $nssm remove Trailarr confirm
+    & "C:\Program Files\Trailarr\scripts\windows\remove-startup.ps1"
     ```
 
     **2. Remove application files:**

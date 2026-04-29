@@ -129,11 +129,19 @@ class FilesHandler:
 
     @staticmethod
     def _list_windows_drives() -> list[FolderInfo]:
-        """Return a FolderInfo entry for every available drive on Windows."""
+        """Return a FolderInfo entry for every logical drive registered with Windows.
+
+        Uses GetLogicalDrives() instead of os.path.isdir() so that mapped network
+        drives are included even when the process runs in a different logon session
+        (e.g. a Windows service) than the user who created the mapping.
+        """
+        import ctypes
+
+        bitmask: int = ctypes.windll.kernel32.GetLogicalDrives()  # type: ignore[attr-defined]
         drives: list[FolderInfo] = []
-        for letter in string.ascii_uppercase:
-            drive = f"{letter}:/"
-            if os.path.isdir(drive):
+        for i, letter in enumerate(string.ascii_uppercase):
+            if bitmask & (1 << i):
+                drive = f"{letter}:/"
                 drives.append(
                     FolderInfo(
                         type="folder",
@@ -154,9 +162,12 @@ class FilesHandler:
         Returns:
             list[FolderInfo]: List of FolderInfo objects representing files and folders \
                 inside a given folder."""
-        # On Windows, treat "/" or "" as a virtual root that lists all drives.
-        if sys.platform == "win32" and folder_path in ("/", ""):
-            return FilesHandler._list_windows_drives()
+        if sys.platform == "win32":
+            # Normalise backslashes so "Z:\foo\" and "Z:/foo/" are equivalent.
+            folder_path = folder_path.replace("\\", "/")
+            # Treat "/" or "" as a virtual root that lists all drives.
+            if folder_path in ("/", ""):
+                return FilesHandler._list_windows_drives()
         _is_dir = await aiofiles.os.path.isdir(folder_path)
         if not _is_dir:
             return []

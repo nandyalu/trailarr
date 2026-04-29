@@ -1,12 +1,7 @@
-"""Windows-specific installer: installs to Program Files, creates NSSM Windows service."""
+"""Windows-specific installer: installs to Program Files, registers Task Scheduler startup task."""
 
-import io
 import os
-import shutil
 import subprocess
-import sys
-import urllib.request
-import zipfile
 from pathlib import Path, WindowsPath
 
 from common.display import console, print_info, print_success, print_warning, step_context
@@ -15,8 +10,7 @@ from platforms.base import BaseInstaller
 _INSTALL_DIR = Path("C:/Program Files/Trailarr")
 _DATA_DIR = Path("C:/ProgramData/Trailarr")
 _LOG_DIR = _DATA_DIR / "logs"
-_SERVICE_NAME = "Trailarr"
-_NSSM_URL = "https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip"
+_TASK_NAME = "Trailarr"
 
 
 class WindowsInstaller(BaseInstaller):
@@ -51,46 +45,32 @@ class WindowsInstaller(BaseInstaller):
                 directory.mkdir(parents=True, exist_ok=True)
 
     def create_service(self, port: int) -> None:
-        with step_context("Installing NSSM service wrapper"):
-            nssm = self._get_nssm()
+        with step_context("Registering Task Scheduler startup task"):
+            start_script = _INSTALL_DIR / "scripts" / "windows" / "trailarr-start.ps1"
+            username = os.environ.get("USERNAME", "")
+            if not username:
+                raise RuntimeError("Could not determine current Windows username")
 
-        with step_context("Creating Windows service"):
-            python_exec = str(self._python_exec())
-            start_script = str(_INSTALL_DIR / "scripts" / "start" / "start.py")
-            log_file = str(_LOG_DIR / "trailarr.log")
-
-            # Remove existing service if present
-            subprocess.run([str(nssm), "stop", _SERVICE_NAME], capture_output=True)
-            subprocess.run([str(nssm), "remove", _SERVICE_NAME, "confirm"], capture_output=True)
-
-            # Install service
-            subprocess.run([str(nssm), "install", _SERVICE_NAME, python_exec, start_script], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "AppDirectory", str(_INSTALL_DIR)], check=True)
-            subprocess.run(
-                [str(nssm), "set", _SERVICE_NAME, "AppEnvironmentExtra",
-                 f"APP_DATA_DIR={_DATA_DIR}",
-                 f"PYTHONPATH={_INSTALL_DIR / 'backend'}",
-                 f"PATH={_INSTALL_DIR / 'backend' / '.venv' / 'Scripts'};{_INSTALL_DIR / 'bin'};{os.environ.get('PATH', '')}"],
-                check=True,
+            ps = f"""
+$action   = New-ScheduledTaskAction -Execute 'powershell.exe' `
+              -Argument '-WindowStyle Hidden -NonInteractive -ExecutionPolicy Bypass -File "{start_script}"'
+$trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
+              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
+$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType Interactive -RunLevel Limited
+Register-ScheduledTask -TaskName '{_TASK_NAME}' `
+  -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
+  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
+Start-ScheduledTask -TaskName '{_TASK_NAME}'
+"""
+            result = subprocess.run(
+                ["powershell.exe", "-NonInteractive", "-Command", ps],
+                capture_output=True,
+                text=True,
             )
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "AppStdout", log_file], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "AppStderr", log_file], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "AppRotateFiles", "1"], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "AppRotateBytes", "10485760"], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "Start", "SERVICE_AUTO_START"], check=True)
-            subprocess.run([str(nssm), "set", _SERVICE_NAME, "DisplayName", "Trailarr"], check=True)
-            subprocess.run(
-                [str(nssm), "set", _SERVICE_NAME, "Description",
-                 "Trailarr - Trailer downloader for Radarr and Sonarr"],
-                check=True,
-            )
-
-            result = subprocess.run([str(nssm), "start", _SERVICE_NAME], capture_output=True, text=True)
-            if result.returncode == 0:
-                print_success(f"Windows service '{_SERVICE_NAME}' started")
-            else:
-                print_warning(f"Service installed but did not start automatically: {result.stderr.strip()}")
-                print_warning(f"Start manually: Start-Service {_SERVICE_NAME}")
+            if result.returncode != 0:
+                raise RuntimeError(f"Failed to register task:\n{result.stderr.strip()}")
+            print_success(f"Task Scheduler startup task registered for {username}")
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI command"):
@@ -109,31 +89,6 @@ class WindowsInstaller(BaseInstaller):
             print_success(f"CLI installed: {cmd_wrapper}")
             _print_cli_hints()
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
-    def _get_nssm(self) -> Path:
-        nssm_dest = _INSTALL_DIR / "bin" / "nssm.exe"
-        if nssm_dest.exists():
-            return nssm_dest
-
-        print_info("Downloading NSSM (Windows service wrapper)...")
-        raw = urllib.request.urlopen(_NSSM_URL, timeout=60).read()  # noqa: S310
-        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-            # Find nssm.exe for the appropriate architecture
-            arch = "win64" if sys.maxsize > 2**32 else "win32"
-            for name in zf.namelist():
-                if arch in name and name.endswith("nssm.exe"):
-                    nssm_dest.parent.mkdir(parents=True, exist_ok=True)
-                    nssm_dest.write_bytes(zf.read(name))
-                    break
-
-        if not nssm_dest.exists():
-            raise RuntimeError("Failed to extract nssm.exe from downloaded archive")
-
-        print_success(f"NSSM installed: {nssm_dest}")
-        return nssm_dest
 
 
 def _add_to_system_path(new_path: str) -> None:
