@@ -44,6 +44,20 @@ class WindowsInstaller(BaseInstaller):
             ]:
                 directory.mkdir(parents=True, exist_ok=True)
 
+            # The installer runs as Administrator, so dirs under ProgramData
+            # may inherit ACLs that deny write access to the normal user who
+            # will run the app via Task Scheduler.  Grant the installing user
+            # full control so dotenv and SQLite can write freely.
+            username = os.environ.get("USERNAME", "")
+            if username:
+                result = subprocess.run(
+                    ["icacls", str(_DATA_DIR), "/grant", f"{username}:(OI)(CI)F", "/T"],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    print_warning(f"Could not set data directory permissions: {result.stderr.strip()}")
+
     def create_service(self, port: int) -> None:
         with step_context("Registering Task Scheduler startup task"):
             start_script = _INSTALL_DIR / "scripts" / "windows" / "trailarr-start.ps1"

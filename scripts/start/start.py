@@ -27,10 +27,14 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 _SCRIPT_DIR = Path(__file__).parent.resolve()
-_INSTALL_DIR = _SCRIPT_DIR.parent.parent   # scripts/start/ → scripts/ → install root
+_INSTALL_DIR = (
+    _SCRIPT_DIR.parent.parent
+)  # scripts/start/ → scripts/ → install root
 
 # Allow override via environment (set by the service unit file)
-_DATA_DIR = Path(os.environ.get("APP_DATA_DIR", str(_INSTALL_DIR.parent / "data")))
+_DATA_DIR = Path(
+    os.environ.get("APP_DATA_DIR", str(_INSTALL_DIR.parent / "data"))
+)
 _BACKEND_DIR = _INSTALL_DIR / "backend"
 _VENV_DIR = _BACKEND_DIR / ".venv"
 _BIN_DIR = _INSTALL_DIR / "bin"
@@ -40,14 +44,15 @@ _VENV_BIN = _VENV_DIR / "Scripts" if _IS_WINDOWS else _VENV_DIR / "bin"
 _PYTHON = _VENV_BIN / ("python.exe" if _IS_WINDOWS else "python")
 
 
-
 # ---------------------------------------------------------------------------
 # Rich console (available after uv sync installed rich into the venv)
 # ---------------------------------------------------------------------------
 
+
 def _get_console():
     try:
         from rich.console import Console
+
         return Console()
     except ImportError:
         return None
@@ -57,10 +62,14 @@ def _get_console():
 # Utilities
 # ---------------------------------------------------------------------------
 
+
 def _load_env(env_path: Path) -> dict[str, str]:
     # Use dotenv's own parser so it correctly handles whatever quoting set_key writes.
     from dotenv import dotenv_values
-    result: dict[str, str] = {k: v for k, v in dotenv_values(env_path).items() if v is not None}
+
+    result: dict[str, str] = {
+        k: v for k, v in dotenv_values(env_path).items() if v is not None
+    }
     # Merge into os.environ so subprocess calls inherit them
     os.environ.update(result)
     return result
@@ -94,6 +103,7 @@ def _log(msg: str, console=None) -> None:
 # Steps
 # ---------------------------------------------------------------------------
 
+
 def _print_banner(env: dict[str, str], console) -> None:
     version = env.get("APP_VERSION", "unknown")
     port = env.get("APP_PORT", "7889")
@@ -117,7 +127,10 @@ def _print_banner(env: dict[str, str], console) -> None:
             )
         )
     else:
-        print(f"\n=== Trailarr {version} | {mode} | port {port} ===\n", flush=True)
+        print(
+            f"\n=== Trailarr {version} | {mode} | port {port} ===\n",
+            flush=True,
+        )
 
 
 def _ensure_dirs(data_dir: Path, console) -> None:
@@ -155,7 +168,10 @@ def _detect_gpus_and_update_env(env_path: Path, console) -> None:
             names = ", ".join(g.name for g in gpus)
             _log(f"  GPU(s) detected: {names}", console)
         else:
-            _log("  No GPU hardware detected; CPU encoding will be used", console)
+            _log(
+                "  No GPU hardware detected; CPU encoding will be used",
+                console,
+            )
     except Exception as exc:
         _log(f"  GPU detection skipped: {exc}", console)
 
@@ -192,7 +208,11 @@ def _backup_database(data_dir: Path, console) -> None:
     _log(f"  Database backed up: {dest.name}", console)
 
     # Keep only the most recent 30 backups
-    backups = sorted(backups_dir.glob("trailarr_*.db"), key=lambda p: p.stat().st_mtime, reverse=True)
+    backups = sorted(
+        backups_dir.glob("trailarr_*.db"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
     for old in backups[30:]:
         old.unlink(missing_ok=True)
 
@@ -220,7 +240,16 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
     port = env.get("APP_PORT", "7889")
     url_base = env.get("URL_BASE", "").strip("/")
 
-    cmd = [str(_PYTHON), "-m", "uvicorn", "main:trailarr_api", "--host", "0.0.0.0", "--port", port]
+    cmd = [
+        f'"{str(_PYTHON)}"',
+        "-m",
+        "uvicorn",
+        "main:trailarr_api",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        port,
+    ]
     if url_base:
         cmd += ["--root-path", f"/{url_base}"]
 
@@ -235,6 +264,7 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     console = _get_console()
     env_path = _DATA_DIR / ".env"
@@ -246,6 +276,7 @@ def main() -> None:
 
         if console:
             from rich.rule import Rule
+
             console.rule("[bold]Starting Trailarr[/bold]")
         else:
             print("=" * 60, flush=True)

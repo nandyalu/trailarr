@@ -671,13 +671,16 @@ If you cloned the repo, you need to run the Angular build first (Step 1, Option 
 
 === "Windows"
 
-    **1. Remove the startup task** (if installed in Step 9):
+    **1. Stop and remove the startup task** (if installed in Step 9):
     ```powershell
     & "C:\Program Files\Trailarr\scripts\windows\remove-startup.ps1"
     ```
+    This stops any running Trailarr process and unregisters the Task Scheduler task.
 
     **2. Remove application files:**
     ```powershell
+    # Navigate away first — deleting a directory you're sitting in will fail
+    cd C:\
     Remove-Item -Recurse -Force "C:\Program Files\Trailarr"
     ```
 
