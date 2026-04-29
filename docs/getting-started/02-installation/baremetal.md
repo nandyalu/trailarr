@@ -4,7 +4,7 @@ Trailarr supports native direct installation on **Linux, macOS, and Windows** â€
 The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python package manager that also manages Python versions.
 
 !!! tip "Need more control?"
-    See the [Self Install](self-install.md) guide if the installer script doesn't work in your
+    See the [Build and Install](self-install.md) guide if the installer script doesn't work in your
     environment, or if you want to set up each step manually.
 
 !!! info "System Requirements"

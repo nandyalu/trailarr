@@ -120,8 +120,8 @@ nav:
       - getting-started/02-installation/index.md
       - Docker Compose: getting-started/02-installation/docker-compose.md
       - Docker Run: getting-started/02-installation/docker-run.md
-      - Bare Metal: getting-started/02-installation/baremetal.md
-      - Self Install: getting-started/02-installation/self-install.md
+      - Direct Install: getting-started/02-installation/baremetal.md
+      - Build and Install: getting-started/02-installation/self-install.md
       - Unraid: getting-started/02-installation/unraid.md
       - Hardware Acceleration: getting-started/02-installation/hardware-acceleration.md
     - Setup:

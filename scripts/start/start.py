@@ -183,9 +183,10 @@ def _update_ytdlp(env: dict[str, str], console) -> None:
 
     _log("  UPDATE_YTDLP=true — updating yt-dlp...", console)
     uv = shutil.which("uv") or str(_INSTALL_DIR / ".local" / "bin" / "uv")
+    venv_python = _VENV_BIN / ("python.exe" if _IS_WINDOWS else "python")
     result = subprocess.run(
-        [uv, "sync", "--no-cache-dir"],
-        cwd=str(_BACKEND_DIR),
+        [uv, "pip", "install", "--python", str(venv_python),
+         "--upgrade", "yt-dlp[curl-cffi,default]"],
         capture_output=True,
         text=True,
     )

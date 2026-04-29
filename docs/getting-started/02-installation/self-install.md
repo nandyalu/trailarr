@@ -1,4 +1,4 @@
-# Self Installation
+# Build and Install
 
 This page is for users who want to install Trailarr manually — step by step, without running the automated installer script. This is useful when:
 
@@ -595,7 +595,7 @@ and supported codec details.
 
 ---
 
-## Troubleshooting self-installs
+## Troubleshooting
 
 **`uv sync` fails** — Make sure you're running it from the `backend/` directory (where
 `pyproject.toml` lives). Check that Python 3.13+ is available: `uv python list`.
