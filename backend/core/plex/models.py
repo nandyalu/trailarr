@@ -8,6 +8,26 @@ from pydantic import (
     model_validator,
 )
 
+_RESOLUTION_MAP = {
+    "sd": 480,
+    "hd": 720,
+    "fhd": 1080,
+    "2k": 1440,
+    "uhd": 2160,
+    "4k": 2160,
+    "8k": 4320,
+}
+
+
+def _parse_resolution(value) -> int:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        if value.isdigit():
+            return int(value)
+        return _RESOLUTION_MAP.get(value.lower(), 0)
+    return 0
+
 
 class PlexLibrarySection(BaseModel):
     allowSync: bool = Field(default=False)
@@ -62,16 +82,27 @@ class PlexMediaExtra(BaseModel):
     title: str = Field(default="")
     subtype: str = Field(default="")
     guid: str = Field(default="")
-    resolution: int = Field(
-        default=0,
-        validation_alias=AliasPath("Media", 0, "videoResolution"),
-    )
+    resolution: int = Field(default=0)
     language: str = Field(
         default="",
         validation_alias=AliasPath(
             "Media", 0, "Part", 0, "Stream", 1, "language"
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_best_resolution(cls, data):
+        if not isinstance(data, dict):
+            return data
+        best = 0
+        for media in data.get("Media", []):
+            if isinstance(media, dict):
+                res = _parse_resolution(media.get("videoResolution", 480))
+                if res > best:
+                    best = res
+        data["resolution"] = best
+        return data
 
 
 class PlexMediaItem(BaseModel):
