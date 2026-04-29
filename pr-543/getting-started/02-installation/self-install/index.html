@@ -3485,7 +3485,7 @@ See <a href="../../05-reference/environment-variables.md">Environment Variables<
 Press <code>Ctrl+C</code> to stop it before continuing.</p>
 <hr>
 <h2 id="step-9-set-up-a-system-service">Step 9 — Set up a system service</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="8:4"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio"><input id="__tabbed_8_2" name="__tabbed_8" type="radio"><input id="__tabbed_8_3" name="__tabbed_8" type="radio"><input id="__tabbed_8_4" name="__tabbed_8" type="radio"><div class="tabbed-labels"><label for="__tabbed_8_1">Linux (systemd)</label><label for="__tabbed_8_2">macOS (launchd)</label><label for="__tabbed_8_3">Windows (NSSM)</label><label for="__tabbed_8_4">Run manually (any OS)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:4"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio"><input id="__tabbed_8_2" name="__tabbed_8" type="radio"><input id="__tabbed_8_3" name="__tabbed_8" type="radio"><input id="__tabbed_8_4" name="__tabbed_8" type="radio"><div class="tabbed-labels"><label for="__tabbed_8_1">Linux (systemd)</label><label for="__tabbed_8_2">macOS (launchd)</label><label for="__tabbed_8_3">Windows (Task Scheduler)</label><label for="__tabbed_8_4">Run manually (any OS)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Create <code>/etc/systemd/system/trailarr.service</code>:</p>
@@ -3559,50 +3559,39 @@ Press <code>Ctrl+C</code> to stop it before continuing.</p>
 </span></code></pre></div><p></p>
 </div>
 <div class="tabbed-block">
-<p><a href="https://nssm.cc">NSSM</a> (Non-Sucking Service Manager) wraps any executable as a Windows Service.</p>
-<ol>
-<li>
-<p>Download <code>nssm.exe</code> from <a href="https://nssm.cc/download">nssm.cc</a> and place it somewhere in your PATH
-   (e.g., <code>C:\Program Files\Trailarr\bin\nssm.exe</code>).</p>
-</li>
-<li>
-<p>Open an elevated PowerShell and run:</p>
-</li>
-</ol>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="nv">$nssm</span>    <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\bin\nssm.exe"</span>
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="nv">$python</span>  <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe"</span>
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="nv">$script</span>  <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\scripts\start\start.py"</span>
-</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="nv">$logFile</span> <span class="p">=</span> <span class="s2">"C:\ProgramData\Trailarr\logs\trailarr.log"</span>
-</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
-</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="n">install</span> <span class="n">Trailarr</span> <span class="nv">$python</span> <span class="nv">$script</span>
-</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">AppDirectory</span>  <span class="s2">"C:\Program Files\Trailarr"</span>
-</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">AppEnvironmentExtra</span> <span class="p">`</span>
-</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>    <span class="s2">"APP_DATA_DIR=C:\ProgramData\Trailarr"</span> <span class="p">`</span>
-</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>    <span class="s2">"PYTHONPATH=C:\Program Files\Trailarr\backend"</span>
-</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">AppStdout</span>     <span class="nv">$logFile</span>
-</span><span id="__span-31-12"><a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">AppStderr</span>     <span class="nv">$logFile</span>
-</span><span id="__span-31-13"><a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">AppRotateFiles</span> <span class="n">1</span>
-</span><span id="__span-31-14"><a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="nb">Start </span>        <span class="n">SERVICE_AUTO_START</span>
-</span><span id="__span-31-15"><a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">set </span><span class="n">Trailarr</span> <span class="n">DisplayName</span>   <span class="s2">"Trailarr"</span>
-</span><span id="__span-31-16"><a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="nb">start </span><span class="n">Trailarr</span>
+<p>Open a <strong>regular PowerShell</strong> (not "Run as Administrator") and run the
+setup script bundled with Trailarr:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">&amp;</span> <span class="s2">"C:\Program Files\Trailarr\scripts\windows\setup-startup.ps1"</span>
 </span></code></pre></div>
-<p>Verify:
-</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nb">Get-Service</span> <span class="n">Trailarr</span>
-</span></code></pre></div><p></p>
+<p>This registers a Task Scheduler task that starts Trailarr automatically
+when <strong>you</strong> log in, running as your user account so mapped network drives
+and UNC shares are fully accessible.</p>
+<p>Start it immediately without rebooting:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nb">Start-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s2">"Trailarr"</span>
+</span></code></pre></div>
+<p>Check that it is running:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="p">(</span><span class="nb">Get-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s2">"Trailarr"</span><span class="p">).</span><span class="n">State</span>   <span class="c"># should print "Running"</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Non-default install paths</p>
+<p>If you installed to a different directory, edit
+<code>scripts\windows\trailarr-start.ps1</code> and update the <code>$InstallDir</code> and
+<code>$DataDir</code> variables before running the setup script.</p>
+</div>
 </div>
 <div class="tabbed-block">
 <p>If you don't want a system service, you can just start Trailarr in a terminal or
 add it to your shell's startup (<code>.bashrc</code>, <code>~/.profile</code>, etc.):</p>
 <p><strong>Linux</strong> — run as the <code>trailarr</code> user (e.g. add to a <code>@reboot</code> cron entry via <code>sudo -u trailarr crontab -e</code>):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>sudo<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>env<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">  </span><span class="nv">APP_DATA_DIR</span><span class="o">=</span>/var/lib/trailarr<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">  </span><span class="nv">PYTHONPATH</span><span class="o">=</span>/opt/trailarr/backend<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">  </span>/opt/trailarr/backend/.venv/bin/uvicorn<span class="w"> </span>main:trailarr_api<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">7889</span>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>sudo<span class="w"> </span>-u<span class="w"> </span>trailarr<span class="w"> </span>env<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">  </span><span class="nv">APP_DATA_DIR</span><span class="o">=</span>/var/lib/trailarr<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">  </span><span class="nv">PYTHONPATH</span><span class="o">=</span>/opt/trailarr/backend<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">  </span>/opt/trailarr/backend/.venv/bin/uvicorn<span class="w"> </span>main:trailarr_api<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">7889</span>
 </span></code></pre></div><p></p>
 <p><strong>macOS</strong> — add to <code>~/.profile</code> or a <code>@reboot</code> cron entry:
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nb">cd</span><span class="w"> </span>/usr/local/opt/trailarr/backend
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nv">APP_DATA_DIR</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.local/share/trailarr"</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span>/usr/local/opt/trailarr/backend<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">  </span><span class="nb">exec</span><span class="w"> </span>.venv/bin/uvicorn<span class="w"> </span>main:trailarr_api<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">7889</span>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nb">cd</span><span class="w"> </span>/usr/local/opt/trailarr/backend
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="nv">APP_DATA_DIR</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.local/share/trailarr"</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span>/usr/local/opt/trailarr/backend<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span><span class="nb">exec</span><span class="w"> </span>.venv/bin/uvicorn<span class="w"> </span>main:trailarr_api<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">7889</span>
 </span></code></pre></div><p></p>
 </div>
 </div>
@@ -3614,30 +3603,30 @@ add it to your shell's startup (<code>.bashrc</code>, <code>~/.profile</code>, e
 <div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio"><input id="__tabbed_9_2" name="__tabbed_9" type="radio"><div class="tabbed-labels"><label for="__tabbed_9_1">Linux / macOS</label><label for="__tabbed_9_2">Windows</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nv">PYTHON</span><span class="o">=</span><span class="s2">"</span><span class="nv">$INSTALL_DIR</span><span class="s2">/backend/.venv/bin/python"</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="nv">CLI_SCRIPT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$INSTALL_DIR</span><span class="s2">/scripts/cli/trailarr_cli.py"</span>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>sudo<span class="w"> </span>tee<span class="w"> </span>/usr/local/bin/trailarr<span class="w"> </span>&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="s">#!/bin/sh</span>
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="s">exec $PYTHON $CLI_SCRIPT "\$@"</span>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="s">EOF</span>
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>sudo<span class="w"> </span>chmod<span class="w"> </span>+x<span class="w"> </span>/usr/local/bin/trailarr
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>trailarr<span class="w"> </span>status
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nv">PYTHON</span><span class="o">=</span><span class="s2">"</span><span class="nv">$INSTALL_DIR</span><span class="s2">/backend/.venv/bin/python"</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="nv">CLI_SCRIPT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$INSTALL_DIR</span><span class="s2">/scripts/cli/trailarr_cli.py"</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>sudo<span class="w"> </span>tee<span class="w"> </span>/usr/local/bin/trailarr<span class="w"> </span>&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="s">#!/bin/sh</span>
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="s">exec $PYTHON $CLI_SCRIPT "\$@"</span>
+</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="s">EOF</span>
+</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>sudo<span class="w"> </span>chmod<span class="w"> </span>+x<span class="w"> </span>/usr/local/bin/trailarr
+</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a>
+</span><span id="__span-36-10"><a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a>trailarr<span class="w"> </span>status
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nv">$python</span>    <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe"</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="nv">$cliScript</span> <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\scripts\cli\trailarr_cli.py"</span>
-</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
-</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="s2">"@echo off</span><span class="se">`n`"</span><span class="s2">$python</span><span class="se">`"</span><span class="s2"> </span><span class="se">`"</span><span class="s2">$cliScript</span><span class="se">`"</span><span class="s2"> %*"</span> <span class="p">|</span> <span class="p">`</span>
-</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>    <span class="nb">Set-Content</span> <span class="s2">"C:\Program Files\Trailarr\trailarr.cmd"</span> <span class="n">-Encoding</span> <span class="n">ASCII</span>
-</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>
-</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="c"># Add to PATH (run in elevated shell, then restart)</span>
-</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a><span class="nv">$path</span> <span class="p">=</span> <span class="no">[Environment]</span><span class="p">::</span><span class="n">GetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
-</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a><span class="k">if</span> <span class="p">(</span><span class="nv">$path</span> <span class="o">-notlike</span> <span class="s2">"*Program Files\Trailarr*"</span><span class="p">)</span> <span class="p">{</span>
-</span><span id="__span-36-10"><a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a>    <span class="no">[Environment]</span><span class="p">::</span><span class="n">SetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"$path;C:\Program Files\Trailarr"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
-</span><span id="__span-36-11"><a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a><span class="p">}</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nv">$python</span>    <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe"</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="nv">$cliScript</span> <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\scripts\cli\trailarr_cli.py"</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="s2">"@echo off</span><span class="se">`n`"</span><span class="s2">$python</span><span class="se">`"</span><span class="s2"> </span><span class="se">`"</span><span class="s2">$cliScript</span><span class="se">`"</span><span class="s2"> %*"</span> <span class="p">|</span> <span class="p">`</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>    <span class="nb">Set-Content</span> <span class="s2">"C:\Program Files\Trailarr\trailarr.cmd"</span> <span class="n">-Encoding</span> <span class="n">ASCII</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="c"># Add to PATH (run in elevated shell, then restart)</span>
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a><span class="nv">$path</span> <span class="p">=</span> <span class="no">[Environment]</span><span class="p">::</span><span class="n">GetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a><span class="k">if</span> <span class="p">(</span><span class="nv">$path</span> <span class="o">-notlike</span> <span class="s2">"*Program Files\Trailarr*"</span><span class="p">)</span> <span class="p">{</span>
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a>    <span class="no">[Environment]</span><span class="p">::</span><span class="n">SetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"$path;C:\Program Files\Trailarr"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a><span class="p">}</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3646,12 +3635,12 @@ add it to your shell's startup (<code>.bashrc</code>, <code>~/.profile</code>, e
 <h2 id="gpu-hardware-acceleration">GPU Hardware Acceleration</h2>
 <p>If you have a compatible GPU, install the appropriate drivers and then set the corresponding
 environment variables in your <code>.env</code> before starting Trailarr:</p>
-<div class="language-ini highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># Detected automatically by start.py — set manually if auto-detection fails</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="na">GPU_AVAILABLE_NVIDIA</span><span class="o">=</span><span class="s">true</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="na">GPU_DEVICE_NVIDIA</span><span class="o">=</span><span class="s">/dev/dri/renderD128</span><span class="w">    </span><span class="c1"># Linux only</span>
-</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>
-</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="na">GPU_AVAILABLE_INTEL</span><span class="o">=</span><span class="s">false</span>
-</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="na">GPU_AVAILABLE_AMD</span><span class="o">=</span><span class="s">false</span>
+<div class="language-ini highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># Detected automatically by start.py — set manually if auto-detection fails</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="na">GPU_AVAILABLE_NVIDIA</span><span class="o">=</span><span class="s">true</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="na">GPU_DEVICE_NVIDIA</span><span class="o">=</span><span class="s">/dev/dri/renderD128</span><span class="w">    </span><span class="c1"># Linux only</span>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="na">GPU_AVAILABLE_INTEL</span><span class="o">=</span><span class="s">false</span>
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="na">GPU_AVAILABLE_AMD</span><span class="o">=</span><span class="s">false</span>
 </span></code></pre></div>
 <p>See <a href="../hardware-acceleration/">Hardware Acceleration</a> for the full driver installation guide
 and supported codec details.</p>
@@ -3673,55 +3662,53 @@ If you cloned the repo, you need to run the Angular build first (Step 1, Option 
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>1. Stop and remove the systemd service:</strong>
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>trailarr
-</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>trailarr
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/etc/systemd/system/trailarr.service
-</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>trailarr
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>trailarr
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/etc/systemd/system/trailarr.service
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
 </span></code></pre></div><p></p>
 <p><strong>2. Remove the CLI wrapper</strong> (if installed in Step 10):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/usr/local/bin/trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/usr/local/bin/trailarr
 </span></code></pre></div><p></p>
 <p><strong>3. Remove application files:</strong>
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/opt/trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/opt/trailarr
 </span></code></pre></div><p></p>
 <p><strong>4. Remove the system user:</strong>
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>sudo<span class="w"> </span>userdel<span class="w"> </span>trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>sudo<span class="w"> </span>userdel<span class="w"> </span>trailarr
 </span></code></pre></div><p></p>
 <p><strong>5. Remove data and logs</strong> (optional — skip if you want to keep your config and database):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/lib/trailarr<span class="w"> </span>/var/log/trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/lib/trailarr<span class="w"> </span>/var/log/trailarr
 </span></code></pre></div><p></p>
 </div>
 <div class="tabbed-block">
 <p><strong>1. Unload and remove the launchd service</strong> (if installed in Step 9):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>launchctl<span class="w"> </span>unload<span class="w"> </span>-w<span class="w"> </span>~/Library/LaunchAgents/com.trailarr.app.plist
-</span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>rm<span class="w"> </span>~/Library/LaunchAgents/com.trailarr.app.plist
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>launchctl<span class="w"> </span>unload<span class="w"> </span>-w<span class="w"> </span>~/Library/LaunchAgents/com.trailarr.app.plist
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>rm<span class="w"> </span>~/Library/LaunchAgents/com.trailarr.app.plist
 </span></code></pre></div><p></p>
 <p><strong>2. Remove the CLI wrapper</strong> (if installed in Step 10):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/usr/local/bin/trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>/usr/local/bin/trailarr
 </span></code></pre></div><p></p>
 <p><strong>3. Remove application files:</strong>
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/usr/local/opt/trailarr
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/usr/local/opt/trailarr
 </span></code></pre></div><p></p>
 <p><strong>4. Remove data and logs</strong> (optional — skip if you want to keep your config and database):
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.local/share/trailarr"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/Library/Logs/trailarr"</span>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.local/share/trailarr"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/Library/Logs/trailarr"</span>
 </span></code></pre></div><p></p>
 </div>
 <div class="tabbed-block">
-<p><strong>1. Stop and remove the NSSM service</strong> (if installed in Step 9):
-</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="nv">$nssm</span> <span class="p">=</span> <span class="s2">"C:\Program Files\Trailarr\bin\nssm.exe"</span>
-</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="n">stop</span> <span class="n">Trailarr</span>
-</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="p">&amp;</span> <span class="nv">$nssm</span> <span class="n">remove</span> <span class="n">Trailarr</span> <span class="n">confirm</span>
+<p><strong>1. Remove the startup task</strong> (if installed in Step 9):
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="p">&amp;</span> <span class="s2">"C:\Program Files\Trailarr\scripts\windows\remove-startup.ps1"</span>
 </span></code></pre></div><p></p>
 <p><strong>2. Remove application files:</strong>
-</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="nb">Remove-Item</span> <span class="n">-Recurse</span> <span class="n">-Force</span> <span class="s2">"C:\Program Files\Trailarr"</span>
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="nb">Remove-Item</span> <span class="n">-Recurse</span> <span class="n">-Force</span> <span class="s2">"C:\Program Files\Trailarr"</span>
 </span></code></pre></div><p></p>
 <p><strong>3. Remove from PATH</strong> (if added in Step 10):
-</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="nv">$path</span> <span class="p">=</span> <span class="no">[Environment]</span><span class="p">::</span><span class="n">GetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
-</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="nv">$newPath</span> <span class="p">=</span> <span class="p">(</span><span class="nv">$path</span> <span class="n">-split</span> <span class="s2">";"</span><span class="p">)</span> <span class="o">-notlike</span> <span class="s2">"*Program Files\Trailarr*"</span> <span class="n">-join</span> <span class="s2">";"</span>
-</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="no">[Environment]</span><span class="p">::</span><span class="n">SetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="nv">$newPath</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="nv">$path</span> <span class="p">=</span> <span class="no">[Environment]</span><span class="p">::</span><span class="n">GetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
+</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="nv">$newPath</span> <span class="p">=</span> <span class="p">(</span><span class="nv">$path</span> <span class="n">-split</span> <span class="s2">";"</span><span class="p">)</span> <span class="o">-notlike</span> <span class="s2">"*Program Files\Trailarr*"</span> <span class="n">-join</span> <span class="s2">";"</span>
+</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="no">[Environment]</span><span class="p">::</span><span class="n">SetEnvironmentVariable</span><span class="p">(</span><span class="s2">"Path"</span><span class="p">,</span> <span class="nv">$newPath</span><span class="p">,</span> <span class="s2">"Machine"</span><span class="p">)</span>
 </span></code></pre></div><p></p>
 <p><strong>4. Remove data and logs</strong> (optional — skip if you want to keep your config and database):
-</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="nb">Remove-Item</span> <span class="n">-Recurse</span> <span class="n">-Force</span> <span class="s2">"C:\ProgramData\Trailarr"</span>
+</p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="nb">Remove-Item</span> <span class="n">-Recurse</span> <span class="n">-Force</span> <span class="s2">"C:\ProgramData\Trailarr"</span>
 </span></code></pre></div><p></p>
 </div>
 </div>
@@ -3748,7 +3735,7 @@ If you cloned the repo, you need to run the Angular build first (Step 1, Option 
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="April 28, 2026 03:22:34 UTC">April 28, 2026 03:22:34</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="April 29, 2026 01:33:25 UTC">April 29, 2026 01:33:25</span>
   </span>
 
     
