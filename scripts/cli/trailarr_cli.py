@@ -246,6 +246,9 @@ def _reinstall_cli() -> None:
         venv_python = _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "python.exe"
         wrapper = _INSTALL_DIR / "trailarr.cmd"
         wrapper.write_text(f'@echo off\n"{venv_python}" "{cli_src}" %*\n', encoding="utf-8")
+        # Re-copy python.exe → trailarr.exe so Task Manager shows "trailarr.exe"
+        trailarr_exe = venv_python.parent / "trailarr.exe"
+        shutil.copy2(venv_python, trailarr_exe)
 
 
 # ---------------------------------------------------------------------------

@@ -91,6 +91,12 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
             cli_src = _INSTALL_DIR / "scripts" / "cli" / "trailarr_cli.py"
             python_exec = self._python_exec()
 
+            # Copy python.exe → trailarr.exe so Task Manager shows "trailarr.exe"
+            # instead of "python.exe".  The copy is self-contained inside the venv.
+            import shutil
+            trailarr_exe = python_exec.parent / "trailarr.exe"
+            shutil.copy2(python_exec, trailarr_exe)
+
             # Create trailarr.cmd in the install dir
             cmd_wrapper = _INSTALL_DIR / "trailarr.cmd"
             cmd_wrapper.write_text(

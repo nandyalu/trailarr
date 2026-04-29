@@ -41,7 +41,7 @@ _BIN_DIR = _INSTALL_DIR / "bin"
 
 _IS_WINDOWS = platform.system() == "Windows"
 _VENV_BIN = _VENV_DIR / "Scripts" if _IS_WINDOWS else _VENV_DIR / "bin"
-_PYTHON = _VENV_BIN / ("python.exe" if _IS_WINDOWS else "python")
+_PYTHON = _VENV_BIN / ("trailarr.exe" if _IS_WINDOWS else "python")
 
 
 # ---------------------------------------------------------------------------

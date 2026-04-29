@@ -10,5 +10,5 @@ $env:APP_DATA_DIR  = $DataDir
 $env:PYTHONPATH    = "$InstallDir\backend"
 $env:PYTHONUTF8    = "1"
 
-& "$InstallDir\backend\.venv\Scripts\python.exe" `
+& "$InstallDir\backend\.venv\Scripts\trailarr.exe" `
     "$InstallDir\scripts\start\start.py" *>> $LogFile
