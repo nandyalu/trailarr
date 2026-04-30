@@ -202,15 +202,12 @@ def _download_with_ytdlp(
             errors="replace",
         )
 
-        # Log all output in a single call and check for sign-in errors
+        # Collect output for error reporting
         combined_output = ""
         if result.stdout:
             combined_output += f"STDOUT:\n{result.stdout}\n"
         if result.stderr:
             combined_output += f"STDERR:\n{result.stderr}"
-
-        if combined_output:
-            logger.debug(f"YT-DLP Output::\n{combined_output}")
 
         # Check for sign-in errors in stderr
         if result.stderr:
@@ -223,16 +220,24 @@ def _download_with_ytdlp(
                     msg = (
                         "Youtube bot detection kicked in, sign in to download"
                     )
-                raise DownloadFailedError(msg)
+                raise DownloadFailedError(msg, output=combined_output)
 
         if result.returncode != 0:
             msg = f"yt-dlp command failed with exit code {result.returncode}"
-            raise DownloadFailedError(f"Error downloading video. {msg}")
+            raise DownloadFailedError(
+                f"Error downloading video. {msg}", output=combined_output
+            )
 
         # Find the downloaded file
         downloaded_file = _find_downloaded_file(file_path)
         if not downloaded_file:
-            raise DownloadFailedError("Downloaded file not found")
+            raise DownloadFailedError(
+                "Downloaded file not found", output=combined_output
+            )
+
+        # Only log the full output on success (errors carry it in the exception)
+        if combined_output:
+            logger.debug(f"YT-DLP Output::\n{combined_output}")
 
     except subprocess.TimeoutExpired:
         msg = "yt-dlp download timed out after 15 minutes"
@@ -277,15 +282,12 @@ def _convert_video(
             errors="replace",
         )
 
-        # Log all output in a single call
+        # Collect output for error reporting
         combined_output = ""
         if result.stdout:
             combined_output += f"STDOUT:\n{result.stdout}\n"
         if result.stderr:
             combined_output += f"STDERR:\n{result.stderr}"
-
-        if combined_output:
-            logger.debug(f"FFMPEG Output::\n{combined_output}")
 
         if result.returncode != 0:
             # If the conversion fails, retry without hardware acceleration
@@ -295,13 +297,21 @@ def _convert_video(
                     f" {result.returncode}, retrying without hardware"
                     " acceleration (if enabled)"
                 )
+                if combined_output:
+                    logger.warning(f"FFMPEG Output::\n{combined_output}")
                 # Retry the conversion with fallback
                 return _convert_video(
                     profile, input_file, output_file, retry=False
                 )
             # If the conversion fails again, raise an exception
             msg = f"FFmpeg command failed with exit code {result.returncode}"
-            raise ConversionFailedError(f"Error converting video. {msg}")
+            raise ConversionFailedError(
+                f"Error converting video. {msg}", output=combined_output
+            )
+
+        # Only log the full output on success (errors carry it in the exception)
+        if combined_output:
+            logger.debug(f"FFMPEG Output::\n{combined_output}")
 
     except subprocess.TimeoutExpired:
         msg = "FFmpeg conversion timed out after 15 minutes"

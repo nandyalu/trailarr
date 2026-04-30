@@ -7,13 +7,19 @@ class ConnectionTimeoutError(Exception):
 class ConversionFailedError(Exception):
     """Raised when a video conversion fails"""
 
-    pass
+    def __init__(self, message: str, output: str | None = None):
+        super().__init__(message)
+        if output:
+            self.add_note(output)
 
 
 class DownloadFailedError(Exception):
     """Raised when a video download fails"""
 
-    pass
+    def __init__(self, message: str, output: str | None = None):
+        super().__init__(message)
+        if output:
+            self.add_note(output)
 
 
 class FileMoveFailedError(Exception):
