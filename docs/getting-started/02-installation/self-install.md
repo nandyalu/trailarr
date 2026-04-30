@@ -261,7 +261,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
 
     ```bash
     sudo tee /var/lib/trailarr/.env > /dev/null << 'EOF'
-    APP_VERSION=vX.Y.Z
+    APP_VERSION="vX.Y.Z"
     APP_DATA_DIR=/var/lib/trailarr
     APP_PORT=7889
     APP_MODE="Direct Linux"
@@ -286,7 +286,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
 
     ```bash
     cat > "$DATA_DIR/.env" << EOF
-    APP_VERSION=vX.Y.Z
+    APP_VERSION="vX.Y.Z"
     APP_DATA_DIR=$DATA_DIR
     APP_PORT=7889
     APP_MODE="Direct macOS"
@@ -309,7 +309,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
 
     ```powershell
     @"
-    APP_VERSION=vX.Y.Z
+    APP_VERSION="vX.Y.Z"
     APP_DATA_DIR=C:\ProgramData\Trailarr
     APP_PORT=7889
     APP_MODE="Direct Windows"
