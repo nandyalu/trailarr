@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from config.logs.db_utils import flush_logs_to_db
 from config.timing_middleware import setup_timing_middleware
 from core.base.database.utils import init_db  # noqa: F401
-from api.v1.authentication import validate_api_key_cookie, validate_login
+from api.v1.authentication import validate_api_key_cookie
 from app_logger import ModuleLogger
 from api.utils import format_google_docstring
 from api.v1.routes import api_v1_router
@@ -269,40 +269,25 @@ def get_sanitized_path(messy_path: str) -> Path | None:
     return file_path
 
 
-def serve_index_html_with_cookie():
-    response = FileResponse(index_html_path)
-    response.set_cookie(
-        key="trailarr_api_key",
-        value=app_settings.api_key,
-        path=app_settings.url_base or "/",
-        samesite="lax",
-        httponly=True,  # Frontend JS needs access
-    )
-    return response
-
-
 # Mount static frontend files to serve frontend
 # Mount these at the end so that it won't interfere with other routes
 @trailarr_api.get(
     "/{rest_of_path:path}",
     include_in_schema=False,
-    dependencies=[Depends(validate_login)],
 )
 async def serve_frontend(rest_of_path: str = ""):
     if rest_of_path.startswith("api"):
         # If the path starts with "api", it's an API request and not \
         # meant for the frontend
         return HTMLResponse(status_code=404)
-    else:
-        # Otherwise, it's a frontend request and should be handled by Angular
-        if rest_of_path == "":
-            # If no specific path is provided, serve index.html
-            return serve_index_html_with_cookie()
-        # Sanitize the rest_of_path to prevent directory traversal attacks
-        file_path = get_sanitized_path(rest_of_path)
-        if file_path is None:
-            return HTMLResponse(status_code=404)
-        if file_path.is_file():
-            # If the path corresponds to a static file, return the file
-            return FileResponse(file_path)
-        return serve_index_html_with_cookie()
+    # Otherwise, it's a frontend request and should be handled by Angular
+    if rest_of_path == "":
+        return FileResponse(index_html_path)
+    # Sanitize the rest_of_path to prevent directory traversal attacks
+    file_path = get_sanitized_path(rest_of_path)
+    if file_path is None:
+        return HTMLResponse(status_code=404)
+    if file_path.is_file():
+        # If the path corresponds to a static file, return the file
+        return FileResponse(file_path)
+    return FileResponse(index_html_path)
