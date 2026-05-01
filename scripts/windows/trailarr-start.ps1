@@ -10,5 +10,10 @@ $env:APP_DATA_DIR  = $DataDir
 $env:PYTHONPATH    = "$InstallDir\backend"
 $env:PYTHONUTF8    = "1"
 
+# Tell PowerShell to decode subprocess stdout/stderr as UTF-8 so that
+# Python's Unicode output (box-drawing characters etc.) is not garbled
+# when *>> appends it to the log file.
+$OutputEncoding    = [System.Text.Encoding]::UTF8
+
 & "$InstallDir\backend\.venv\Scripts\trailarr.exe" `
     "$InstallDir\scripts\start\start.py" *>> $LogFile

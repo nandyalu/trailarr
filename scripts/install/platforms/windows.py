@@ -4,7 +4,13 @@ import os
 import subprocess
 from pathlib import Path, WindowsPath
 
-from common.display import console, print_info, print_success, print_warning, step_context
+from common.display import (
+    console,
+    print_info,
+    print_success,
+    print_warning,
+    step_context,
+)
 from platforms.base import BaseInstaller
 
 _INSTALL_DIR = Path("C:/Program Files/Trailarr")
@@ -51,19 +57,32 @@ class WindowsInstaller(BaseInstaller):
             username = os.environ.get("USERNAME", "")
             if username:
                 result = subprocess.run(
-                    ["icacls", str(_DATA_DIR), "/grant", f"{username}:(OI)(CI)F", "/T"],
+                    [
+                        "icacls",
+                        str(_DATA_DIR),
+                        "/grant",
+                        f"{username}:(OI)(CI)F",
+                        "/T",
+                    ],
                     capture_output=True,
                     text=True,
                 )
                 if result.returncode != 0:
-                    print_warning(f"Could not set data directory permissions: {result.stderr.strip()}")
+                    print_warning(
+                        "Could not set data directory permissions:"
+                        f" {result.stderr.strip()}"
+                    )
 
     def create_service(self, port: int) -> None:
         with step_context("Registering Task Scheduler startup task"):
-            start_script = _INSTALL_DIR / "scripts" / "windows" / "trailarr-start.ps1"
+            start_script = (
+                _INSTALL_DIR / "scripts" / "windows" / "trailarr-start.ps1"
+            )
             username = os.environ.get("USERNAME", "")
             if not username:
-                raise RuntimeError("Could not determine current Windows username")
+                raise RuntimeError(
+                    "Could not determine current Windows username"
+                )
 
             ps = f"""
 $action   = New-ScheduledTaskAction -Execute 'powershell.exe' `
@@ -83,8 +102,12 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
                 text=True,
             )
             if result.returncode != 0:
-                raise RuntimeError(f"Failed to register task:\n{result.stderr.strip()}")
-            print_success(f"Task Scheduler startup task registered for {username}")
+                raise RuntimeError(
+                    f"Failed to register task:\n{result.stderr.strip()}"
+                )
+            print_success(
+                f"Task Scheduler startup task registered for {username}"
+            )
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI command"):
@@ -94,6 +117,7 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
             # Copy python.exe → trailarr.exe so Task Manager shows "trailarr.exe"
             # instead of "python.exe".  The copy is self-contained inside the venv.
             import shutil
+
             trailarr_exe = python_exec.parent / "trailarr.exe"
             shutil.copy2(python_exec, trailarr_exe)
 
@@ -110,7 +134,6 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
             _print_cli_hints()
 
 
-
 def _add_to_system_path(new_path: str) -> None:
     """Add a directory to the Windows system PATH (machine-level) if not already present."""
     try:
@@ -124,8 +147,13 @@ def _add_to_system_path(new_path: str) -> None:
         )
         current, _ = winreg.QueryValueEx(key, "Path")
         if new_path.lower() not in current.lower():
-            winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, current + ";" + new_path)
-            print_success(f"Added {new_path} to system PATH (restart shell to take effect)")
+            winreg.SetValueEx(
+                key, "Path", 0, winreg.REG_EXPAND_SZ, current + ";" + new_path
+            )
+            print_success(
+                f"Added {new_path} to system PATH (restart shell to take"
+                " effect)"
+            )
         winreg.CloseKey(key)
     except Exception as e:
         print_warning(f"Could not update system PATH automatically: {e}")

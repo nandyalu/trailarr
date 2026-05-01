@@ -131,6 +131,7 @@ run_installer() {
     uv run \
         --python "${PYTHON_VERSION}" \
         --with rich \
+        --with tzlocal \
         "$INSTALLER" \
         --source-dir "$SOURCE_DIR" \
         --version "$APP_VERSION"

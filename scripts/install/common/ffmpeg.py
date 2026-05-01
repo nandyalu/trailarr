@@ -40,6 +40,10 @@ def download_ffmpeg(bin_dir: Path) -> tuple[Path, Path]:
     if machine in ("arm64", "aarch64"):
         machine = "aarch64"
 
+    # Windows reports "amd64"; normalize to match the URL dict keys
+    if machine == "amd64":
+        machine = "x86_64"
+
     platform_key = f"{system}-{machine}"
     url = _FFMPEG_URLS.get(platform_key)
 

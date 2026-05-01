@@ -41,8 +41,7 @@ elif _IS_MACOS:
 elif _IS_WINDOWS:
     _INSTALL_DIR = Path("C:/Program Files/Trailarr")
     _DATA_DIR = Path("C:/ProgramData/Trailarr")
-    _SERVICE_NAME = "Trailarr"
-    _NSSM = _INSTALL_DIR / "bin" / "nssm.exe"
+    _TASK_NAME = "Trailarr"
 
 _GITHUB_REPO = "nandyalu/trailarr"
 
@@ -99,11 +98,12 @@ def _service_start() -> None:
         else:
             _err(r.stderr.strip() or "Failed to start service")
     elif _IS_WINDOWS:
-        r = _run("sc", "start", _SERVICE_NAME)
+        r = _run("powershell", "-NonInteractive", "-Command",
+                 f"Start-ScheduledTask -TaskName '{_TASK_NAME}'")
         if r.returncode == 0:
-            _ok(f"Service '{_SERVICE_NAME}' started")
+            _ok(f"Task '{_TASK_NAME}' started")
         else:
-            _err(r.stderr.strip() or "Failed to start service")
+            _err(r.stderr.strip() or "Failed to start task")
 
 
 def _service_stop() -> None:
@@ -112,7 +112,8 @@ def _service_stop() -> None:
     elif _IS_MACOS:
         r = _run("launchctl", "stop", _LAUNCHD_LABEL)
     elif _IS_WINDOWS:
-        r = _run("sc", "stop", _SERVICE_NAME)
+        r = _run("powershell", "-NonInteractive", "-Command",
+                 f"Stop-ScheduledTask -TaskName '{_TASK_NAME}'")
     else:
         return
     if r.returncode == 0:
@@ -132,7 +133,12 @@ def _service_status() -> None:
     elif _IS_MACOS:
         result = subprocess.run(["launchctl", "list", _LAUNCHD_LABEL], check=False)
     elif _IS_WINDOWS:
-        result = subprocess.run(["sc", "query", _SERVICE_NAME], check=False)
+        result = subprocess.run(
+            ["powershell", "-NonInteractive", "-Command",
+             f"Get-ScheduledTask -TaskName '{_TASK_NAME}' | "
+             f"Select-Object TaskName, State, Description"],
+            check=False,
+        )
 
 
 def _service_logs(lines: int) -> None:
@@ -148,7 +154,8 @@ def _service_logs(lines: int) -> None:
         log_file = _DATA_DIR / "logs" / "trailarr.log"
         if log_file.exists():
             subprocess.run(
-                ["powershell", "-NoProfile", "-Command", f"Get-Content '{log_file}' -Tail {lines}"]
+                ["powershell", "-NoProfile", "-Command",
+                 f"Get-Content '{log_file}' -Tail {lines} -Encoding utf8"]
             )
         else:
             _warn(f"Log file not found: {log_file}")
@@ -286,8 +293,9 @@ def _uninstall() -> None:
         _PLIST_PATH.unlink(missing_ok=True)
         Path("/usr/local/bin/trailarr").unlink(missing_ok=True)
     elif _IS_WINDOWS:
-        if _NSSM.exists():
-            _run(str(_NSSM), "remove", _SERVICE_NAME, "confirm")
+        _run("powershell", "-NonInteractive", "-Command",
+             f"Stop-ScheduledTask -TaskName '{_TASK_NAME}' -ErrorAction SilentlyContinue; "
+             f"Unregister-ScheduledTask -TaskName '{_TASK_NAME}' -Confirm:$false -ErrorAction SilentlyContinue")
 
     if _INSTALL_DIR.exists():
         shutil.rmtree(_INSTALL_DIR, ignore_errors=True)

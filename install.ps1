@@ -23,6 +23,10 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Capture script path at script scope before any function calls.
+# $MyInvocation inside a function returns function context, not script path.
+$ScriptFile = $PSCommandPath
+
 $GitHubRepo   = 'nandyalu/trailarr'
 $PythonVersion = '3.13'
 
@@ -55,11 +59,15 @@ function Ensure-Admin {
     $isAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
         Write-Warn "Not running as Administrator — re-launching with elevation..."
-        $scriptPath = $MyInvocation.ScriptName
-        if (-not $scriptPath) { $scriptPath = $PSCommandPath }
+        if (-not $ScriptFile) {
+            Write-Err "Cannot determine script path. Please save install.ps1 to disk and re-run as Administrator."
+            Read-Host "`nPress Enter to close"
+            exit 1
+        }
         Start-Process powershell.exe `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
-            -Verb RunAs
+            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptFile`"" `
+            -Verb RunAs `
+            -Wait
         exit
     }
     Write-Success "Running as Administrator"
@@ -159,6 +167,7 @@ function Run-Installer {
     & uv run `
         --python $PythonVersion `
         --with rich `
+        --with tzlocal `
         $installer `
         --source-dir $SourceDir `
         --version $AppVersion
@@ -167,6 +176,13 @@ function Run-Installer {
         Write-Err "Installation failed (exit code $LASTEXITCODE)"
         exit $LASTEXITCODE
     }
+
+    # Reload PATH from registry so trailarr commands work in this session
+    # without requiring the user to open a new terminal.
+    $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath    = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path    = ($machinePath, $userPath | Where-Object { $_ }) -join ';'
+    Write-Info "PATH refreshed — trailarr commands are available in this terminal"
 }
 
 # --------------------------------------------------------------------------
@@ -187,6 +203,10 @@ try {
     Check-Uv
     Download-Release
     Run-Installer
+} catch {
+    Write-Err "Unexpected error: $_"
+    Read-Host "`nPress Enter to close"
+    exit 1
 } finally {
     Cleanup
 }

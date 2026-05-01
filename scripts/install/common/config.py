@@ -68,34 +68,8 @@ def write_initial_config(
 
 def _detect_timezone() -> str:
     try:
-        import subprocess
-
-        if platform.system() == "Linux":
-            result = subprocess.run(
-                ["timedatectl", "show", "--property=Timezone", "--value"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-            tz = result.stdout.strip()
-            if tz:
-                return tz
-        elif platform.system() == "Darwin":
-            tz_path = Path("/etc/localtime").resolve()
-            parts = tz_path.parts
-            if "zoneinfo" in parts:
-                idx = parts.index("zoneinfo")
-                return "/".join(parts[idx + 1 :])
-        elif platform.system() == "Windows":
-            result = subprocess.run(
-                ["powershell", "-Command", "[System.TimeZoneInfo]::Local.Id"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-            tz = result.stdout.strip()
-            if tz:
-                return tz
+        from tzlocal import get_localzone
+        return str(get_localzone())
     except Exception:
         pass
     return "UTC"

@@ -99,7 +99,7 @@ def print_completion(install_dir: str, data_dir: str, port: int, os_name: str) -
     instructions: dict[str, str] = {
         "Linux": "sudo systemctl status trailarr",
         "Darwin": "launchctl list com.trailarr.app",
-        "Windows": "Get-Service -Name Trailarr",
+        "Windows": "Get-ScheduledTask -TaskName Trailarr",
     }
     status_cmd = instructions.get(os_name, "trailarr status")
 
@@ -114,10 +114,11 @@ def print_completion(install_dir: str, data_dir: str, port: int, os_name: str) -
                 (f"{data_dir}\n", "white"),
                 ("  Web interface: ", "dim"),
                 (f"http://localhost:{port}\n\n", "bold cyan"),
-                ("Check service status:\n", "dim"),
+                ("Check status:\n", "dim"),
                 (f"  {status_cmd}\n\n", "white"),
                 ("View logs:\n", "dim"),
                 ("  trailarr logs\n\n", "white"),
+                ("  (open a new terminal if 'trailarr' is not found)\n\n", "dim"),
                 ("Documentation:\n", "dim"),
                 ("  https://github.com/nandyalu/trailarr", "cyan"),
             ),
