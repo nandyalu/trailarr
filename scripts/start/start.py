@@ -242,14 +242,11 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
     url_base = env.get("URL_BASE", "").strip("/")
 
     cmd = [
-        f'"{str(_PYTHON)}"',
-        "-m",
-        "uvicorn",
+        str(_PYTHON),
+        "-m", "uvicorn",
         "main:trailarr_api",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        port,
+        "--host", "0.0.0.0",
+        "--port", port,
     ]
     if url_base:
         cmd += ["--root-path", f"/{url_base}"]
@@ -257,8 +254,17 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
     _log(f"\n  Starting uvicorn on port {port}...", console)
     os.chdir(str(_BACKEND_DIR))
 
-    # exec replaces this process with Python running uvicorn
-    os.execv(str(_PYTHON), cmd)
+    if _IS_WINDOWS:
+        # os.execv on Windows spawns a new console process instead of
+        # replacing the current one, causing a blank terminal window to
+        # appear. Using subprocess.run with CREATE_NO_WINDOW keeps uvicorn
+        # as a child of the PowerShell task (so the log redirect stays
+        # active and Stop-ScheduledTask kills the whole tree).
+        result = subprocess.run(cmd, creationflags=subprocess.CREATE_NO_WINDOW)
+        sys.exit(result.returncode)
+    else:
+        # On POSIX, execv truly replaces this process in-place.
+        os.execv(str(_PYTHON), cmd)
 
 
 # ---------------------------------------------------------------------------
