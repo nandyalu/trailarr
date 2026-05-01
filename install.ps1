@@ -59,13 +59,27 @@ function Ensure-Admin {
     $isAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
         Write-Warn "Not running as Administrator — re-launching with elevation..."
-        if (-not $ScriptFile) {
-            Write-Err "Cannot determine script path. Please save install.ps1 to disk and re-run as Administrator."
-            Read-Host "`nPress Enter to close"
-            exit 1
+
+        $scriptPath = $ScriptFile
+        if (-not $scriptPath) {
+            # Running via irm | iex — no file on disk.
+            # Save the script to a temp file so we can re-launch it elevated.
+            Write-Info "Saving installer to temp file for elevation..."
+            $scriptPath = Join-Path $env:TEMP "trailarr-install.ps1"
+            $rawUrl = "https://raw.githubusercontent.com/$GitHubRepo/main/install.ps1"
+            try {
+                Invoke-WebRequest -Uri $rawUrl -OutFile $scriptPath -UseBasicParsing
+            } catch {
+                Write-Err "Could not save installer to temp file: $_"
+                Write-Host "`n  Run this in an elevated PowerShell instead:" -ForegroundColor White
+                Write-Host "  irm $rawUrl | iex" -ForegroundColor Yellow
+                Read-Host "`nPress Enter to close"
+                exit 1
+            }
         }
+
         Start-Process powershell.exe `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptFile`"" `
+            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
             -Verb RunAs `
             -Wait
         exit
@@ -189,7 +203,7 @@ function Run-Installer {
 # Cleanup
 # --------------------------------------------------------------------------
 function Cleanup {
-    if ($script:TempDir -and (Test-Path $script:TempDir)) {
+    if ((Test-Path variable:script:TempDir) -and $script:TempDir -and (Test-Path $script:TempDir)) {
         Remove-Item -Recurse -Force $script:TempDir -ErrorAction SilentlyContinue
     }
 }
