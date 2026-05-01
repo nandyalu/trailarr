@@ -3,6 +3,8 @@ import hashlib
 import os
 import re
 import shutil
+import string
+import sys
 import zoneinfo
 import aiofiles.os
 from pydantic import BaseModel, Field
@@ -70,6 +72,7 @@ class FilesHandler:
     """Utility class to handle files and folders."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
+    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -125,6 +128,32 @@ class FilesHandler:
         )
 
     @staticmethod
+    def _list_windows_drives() -> list[FolderInfo]:
+        """Return a FolderInfo entry for every logical drive registered with Windows.
+
+        Uses GetLogicalDrives() instead of os.path.isdir() so that mapped network
+        drives are included even when the process runs in a different logon session
+        (e.g. a Windows service) than the user who created the mapping.
+        """
+        import ctypes
+
+        bitmask: int = ctypes.windll.kernel32.GetLogicalDrives()  # type: ignore[attr-defined]
+        drives: list[FolderInfo] = []
+        for i, letter in enumerate(string.ascii_uppercase):
+            if bitmask & (1 << i):
+                drive = f"{letter}:/"
+                drives.append(
+                    FolderInfo(
+                        type="folder",
+                        name=f"{letter}:",
+                        path=drive,
+                        size="0 KB",
+                        created="",
+                    )
+                )
+        return drives
+
+    @staticmethod
     async def get_folder_files_simple(folder_path: str) -> list[FolderInfo]:
         """Get information about all files and folders in a given \
             folder (non-recursive).\n
@@ -133,6 +162,12 @@ class FilesHandler:
         Returns:
             list[FolderInfo]: List of FolderInfo objects representing files and folders \
                 inside a given folder."""
+        if sys.platform == "win32":
+            # Normalise backslashes so "Z:\foo\" and "Z:/foo/" are equivalent.
+            folder_path = folder_path.replace("\\", "/")
+            # Treat "/" or "" as a virtual root that lists all drives.
+            if folder_path in ("/", ""):
+                return FilesHandler._list_windows_drives()
         _is_dir = await aiofiles.os.path.isdir(folder_path)
         if not _is_dir:
             return []
@@ -226,10 +261,16 @@ class FilesHandler:
         return True
 
     @staticmethod
-    def is_trailer_file(file_name: str) -> bool:
+    def is_trailer_file(
+        file_name: str, file_size_bytes: int | None = None
+    ) -> bool:
         """Check if a file is a trailer file based on its name.\n
         Args:
             file_name (str): Name of the file to check.\n
+            file_size_bytes (int | None): Size of the file in bytes. \
+                When provided, files >= 100 MB are not treated as trailers \
+                even if the name matches, to avoid false positives for media \
+                whose title contains the word 'trailer'.\n
         Returns:
             bool: True if the file is a trailer, False otherwise."""
         if not FilesHandler.is_video_file(file_name):
@@ -239,6 +280,11 @@ class FilesHandler:
             return False
         # Check if the file name contains 'trailer'
         if "trailer" in file_name.lower():
+            if (
+                file_size_bytes is not None
+                and file_size_bytes >= FilesHandler.TRAILER_MAX_SIZE_BYTES
+            ):
+                return False
             return True
         return False
 
@@ -297,11 +343,12 @@ class FilesHandler:
             path (str): Folder path to check for a trailer file.\n
         Returns:
             bool: True if a trailer file exists in the folder, False otherwise.
+
         """
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if FilesHandler.is_trailer_file(entry.name):
+            if FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
                 return True
         return False
 
@@ -368,7 +415,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not FilesHandler.is_trailer_file(entry.name):
+            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
                 continue
             return entry.path
         return None
@@ -396,7 +443,7 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if FilesHandler.is_trailer_file(sub_entry.name):
+                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):

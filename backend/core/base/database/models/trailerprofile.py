@@ -107,6 +107,11 @@ class _TrailerProfileBase(AppSQLModel):
     stop_monitoring: bool = True
     custom_folder: str = "{media_folder}"
     notify_plex: bool = False
+    skip_if_plex_trailer: bool = False
+    skip_if_plex_trailer_resolution: int = Field(
+        default=1080,
+        sa_column=Column(Integer, server_default="1080", nullable=False),
+    )
 
 
 class TrailerProfile(_TrailerProfileBase, table=True):
@@ -190,6 +195,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "remove_silence",
             "stop_monitoring",
             "notify_plex",
+            "skip_if_plex_trailer",
         ]
 
     @classmethod
@@ -203,6 +209,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "video_resolution",
             "min_duration",
             "max_duration",
+            "skip_if_plex_trailer_resolution",
         ]
 
     @field_validator(
@@ -214,6 +221,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "remove_silence",
         "stop_monitoring",
         "notify_plex",
+        "skip_if_plex_trailer",
         mode="before",
     )
     @classmethod
@@ -304,6 +312,16 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         raise ValueError(
             f"Invalid video resolution: '{v}'. Valid resolutions are:"
             f" {VALID_VIDEO_RESOLUTIONS}"
+        )
+
+    @field_validator("skip_if_plex_trailer_resolution", mode="after")
+    @classmethod
+    def validate_skip_if_plex_trailer_resolution(cls, v: int) -> int:
+        if v in VALID_VIDEO_RESOLUTIONS:
+            return v
+        raise ValueError(
+            f"Invalid skip_if_plex_trailer_resolution: '{v}'. Valid resolutions"
+            f" are: {VALID_VIDEO_RESOLUTIONS}"
         )
 
     @field_validator("video_format", mode="after")

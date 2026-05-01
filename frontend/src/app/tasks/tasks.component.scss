@@ -261,6 +261,10 @@
     background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
   }
 
+  &.edit svg {
+    fill: var(--color-on-surface-variant);
+  }
+
   &.running {
     cursor: default;
 
@@ -273,6 +277,61 @@
       background: transparent;
     }
   }
+}
+
+// ── Error icon ───────────────────────────────────────────────────────────────
+
+.error-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+  vertical-align: middle;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    fill: var(--color-danger);
+    transition: transform 150ms;
+  }
+
+  &.active svg {
+    transform: rotate(180deg);
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  }
+}
+
+// ── Error panel ───────────────────────────────────────────────────────────────
+
+.error-panel {
+  margin: 0 0 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
+  color: var(--color-on-surface);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.error-panel-label {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-danger);
+  margin-right: 0.5rem;
+  vertical-align: middle;
 }
 
 // ── Edit dialog ───────────────────────────────────────────────────────────────
@@ -289,6 +348,23 @@
 
   &::backdrop {
     background-color: rgb(0 0 0 / 50%);
+  }
+
+  &.cancel:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  }
+
+  &.running {
+    cursor: default;
+
+    svg {
+      fill: var(--color-primary);
+      animation: spin-animation 1.5s linear infinite;
+    }
+
+    &:hover {
+      background: transparent;
+    }
   }
 }
 

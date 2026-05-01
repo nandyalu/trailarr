@@ -1,18 +1,43 @@
+import secrets
 from typing import Annotated
 import bcrypt
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException
 from fastapi.security import (
     APIKeyHeader,
     APIKeyQuery,
-    HTTPBasic,
-    HTTPBasicCredentials,
 )
 
 from config.settings import app_settings
 
-# Dependency to validate HTTP Basic Authentication in frontend
-# auto_error=False allows bypassing auth when webui_disable_auth is True
-browser_security = HTTPBasic(auto_error=False)
+# In-memory session store — cleared on app restart
+_sessions: set[str] = set()
+
+
+def create_session() -> str:
+    token = secrets.token_hex(32)
+    _sessions.add(token)
+    return token
+
+
+def get_session() -> str:
+    """Returns the current session token if valid,
+    otherwise creates a new one.
+    > **Only used in status check endpoint when webui auth is disabled!** \n
+    Returns:
+        str: A valid session token
+    """
+    for token in _sessions:
+        if _is_valid_session(token):
+            return token
+    return create_session()
+
+
+def delete_session(token: str) -> None:
+    _sessions.discard(token)
+
+
+def _is_valid_session(token: str | None) -> bool:
+    return bool(token and token in _sessions)
 
 
 # Hash a string using bcrypt
@@ -76,52 +101,6 @@ def verify_password(plain_password: str) -> bool:
     )
 
 
-def validate_login(
-    credentials: Annotated[
-        HTTPBasicCredentials | None, Depends(browser_security)
-    ] = None,
-):
-    """Validates the login credentials provided by the user \n
-    Or bypasses auth if `webui_disable_auth` is True \n
-    Args:
-        credentials (HTTPBasicCredentials): The login credentials \n
-    Raises:
-        HTTPException: If the username or password is incorrect"""
-    # For disabled auth, always return True
-    if app_settings.webui_disable_auth:
-        return True
-    if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing credentials",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    is_correct_username = verify_username(credentials.username)
-    is_correct_password = verify_password(credentials.password)
-    if not (is_correct_username and is_correct_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return True
-
-
-def logout_user() -> dict:
-    """Force logout by returning a 401 response with WWW-Authenticate header.
-    This clears browser's cached Basic Auth credentials.
-    Returns:
-        dict: Logout success message
-    Raises:
-        HTTPException: Always raises 401 to clear browser credentials
-    """
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Logged out successfully. Please log in again.",
-        headers={"WWW-Authenticate": 'Basic realm="Trailarr"'},
-    )
-
-
 # Dependency to validate the API key provided in the query or header
 header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
 query_schema = APIKeyQuery(name="api_key", auto_error=False)
@@ -136,49 +115,45 @@ def verify_api_key(api_key: str) -> bool:
     return api_key == app_settings.api_key
 
 
-# Websockets does not support query parameters, so we need to validate the API key from the cookie
-# Since websockets are only used for the frontend, we can use the cookie to validate the API key
-# Dependency to validate the API key provided in the cookie
+# Dependency to validate the API key provided in the cookie, or a valid session token.
+# Used for WebSocket connections (which can only send cookies, not headers).
 def validate_api_key_cookie(
     trailarr_api_key: Annotated[str | None, Cookie()] = None,
+    trailarr_session: Annotated[str | None, Cookie()] = None,
 ) -> bool:
-    """Validates the API key provided in the cookie \n
+    """Validates the session token or API key provided in cookies \n
     Args:
-        trailarr_api_key (Annotated[str | None, Cookie]): The API key provided in the cookie \n
+        trailarr_api_key (str | None): Legacy API key cookie \n
+        trailarr_session (str | None): Session token cookie \n
     Raises:
-        HTTPException: If the API key is missing or invalid"""
-    # Check if the API key is provide and valid
+        HTTPException: If neither a valid session nor API key is present"""
+    if _is_valid_session(trailarr_session):
+        return True
     if trailarr_api_key and verify_api_key(trailarr_api_key):
         return True
-    # Raise an exception if the API key is missing
-    raise HTTPException(status_code=401, detail="API key is missing")
+    raise HTTPException(status_code=401, detail="Not authenticated")
 
 
-# Dependency to validate the API key provided in the query/header/cookie
+# Dependency to validate the API key provided in the query/header/cookie,
+# or a valid session token (for frontend requests).
 def validate_api_key(
     query_api_key: str | None = Depends(query_schema),
     header_api_key: str | None = Depends(header_scheme),
     trailarr_api_key: Annotated[str | None, Cookie()] = None,
+    trailarr_session: Annotated[str | None, Cookie()] = None,
 ) -> bool:
-    """Validates the API key provided in the query, header or cookie \n
+    """Validates the API key or session token \n
+    Accepts: session cookie (frontend), API key in header, query, or cookie \n
     Args:
         query_api_key (str | None): The API key provided in the query \n
         header_api_key (str | None): The API key provided in the header \n
-        trailarr_api_key (Annotated[str | None, Cookie]): The API key provided in the cookie \n
+        trailarr_api_key (str | None): Legacy API key cookie \n
+        trailarr_session (str | None): Session token cookie \n
     Raises:
-        HTTPException: If the API key is missing or invalid"""
-    _api_key = ""
-    # Check if the API key is provided in query
-    if query_api_key:
-        _api_key = query_api_key
-    # Check if the API key is provided in header
-    if header_api_key:
-        _api_key = header_api_key
-    # Check if the API key is provided in cookie
-    if trailarr_api_key:
-        _api_key = trailarr_api_key
-    # Check if the API key is valid
+        HTTPException: If authentication fails"""
+    if _is_valid_session(trailarr_session):
+        return True
+    _api_key = query_api_key or header_api_key or trailarr_api_key or ""
     if _api_key and verify_api_key(_api_key):
         return True
-    # Raise an exception if the API key is missing
-    raise HTTPException(status_code=401, detail="API key is missing")
+    raise HTTPException(status_code=401, detail="Authentication required")

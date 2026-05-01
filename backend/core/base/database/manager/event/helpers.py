@@ -75,7 +75,8 @@ def track_media_added(
             create_event(event_create)
         except Exception as e:
             logger.warning(
-                f"Failed to track youtube_id_changed event for [{media_id}]: {e}"
+                "Failed to track youtube_id_changed event for"
+                f" [{media_id}]: {e}"
             )
 
     # 3. Create monitor_changed event to track initial monitor status
@@ -243,6 +244,169 @@ def track_trailer_detected(
     except Exception as e:
         logger.warning(
             f"Failed to track trailer_detected event for [{media_id}]: {e}"
+        )
+
+
+def track_plex_linked(
+    media_id: int,
+    connection_name: str,
+    plex_rating_key: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a media item is linked to a Plex connection for the first time.
+
+    Only fires when a previously-unlinked (or differently-linked) Arr-sourced
+    row is associated with a Plex item via folder-path matching.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Plex connection.
+        plex_rating_key (str): The Plex ratingKey assigned to this item.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "PlexRefresh").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.PLEX_LINKED,
+            source=source,
+            source_detail=source_detail,
+            new_value=connection_name,
+            old_value=plex_rating_key,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track plex_linked event for [{media_id}]: {e}"
+        )
+
+
+def track_plex_unlinked(
+    media_id: int,
+    connection_name: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+    *,
+    _session: Session | None = None,
+) -> None:
+    """Track when a media item loses its Plex link.
+
+    Fires when a Plex connection is deleted (for Arr-sourced rows that had
+    plex_connection_id pointing to the deleted connection) or when a media
+    item is explicitly disassociated from Plex.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Plex connection being removed.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "ConnectionDeleted").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.PLEX_UNLINKED,
+            source=source,
+            source_detail=source_detail,
+            old_value=connection_name,
+        )
+        create_event(event_create, _session=_session)  # type: ignore
+    except Exception as e:
+        logger.warning(
+            f"Failed to track plex_unlinked event for [{media_id}]: {e}"
+        )
+
+
+def track_plex_scan_triggered(
+    media_id: int,
+    scan_path: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a targeted Plex library scan is triggered for a media item.
+
+    Args:
+        media_id (int): The ID of the media item.
+        scan_path (str): The Plex-side folder path sent to the scan endpoint.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "TrailerDownloaded").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.PLEX_SCAN_TRIGGERED,
+            source=source,
+            source_detail=source_detail,
+            new_value=scan_path,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track plex_scan_triggered event for [{media_id}]: {e}"
+        )
+
+
+def track_arr_linked(
+    media_id: int,
+    connection_name: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a Plex-only item is adopted by an Arr connection for the first time.
+
+    Fires once when arr_id changes from 0 to a real Arr id via folder-path
+    matching during an Arr connection refresh.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Arr connection.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "ConnectionRefresh").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.ARR_LINKED,
+            source=source,
+            source_detail=source_detail,
+            new_value=connection_name,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track arr_linked event for [{media_id}]: {e}"
+        )
+
+
+def track_arr_unlinked(
+    media_id: int,
+    connection_name: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when an Arr-linked item is demoted back to Plex-only.
+
+    Fires when a media item is removed from the Arr application but its
+    files remain on disk and Plex still tracks it.
+
+    Args:
+        media_id (int): The ID of the media item.
+        connection_name (str): The name of the Arr connection being removed.
+        source (EventSource): The source of the event.
+        source_detail (str): Additional details (e.g. "ConnectionRefresh").
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.ARR_UNLINKED,
+            source=source,
+            source_detail=source_detail,
+            old_value=connection_name,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track arr_unlinked event for [{media_id}]: {e}"
         )
 
 

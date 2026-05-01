@@ -85,6 +85,10 @@ class MediaBase(AppSQLModel):
     trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
+    plex_rating_key: str | None = None
+    plex_section_key: str | None = None
+    plex_connection_id: int | None = None
+    plex_trailer: bool | None = None
     status: MonitorStatus = Field(
         default=MonitorStatus.MISSING,
         sa_column=Column(
@@ -108,6 +112,9 @@ class Media(MediaBase, table=True):
         foreign_key="connection.id", index=True, ondelete="CASCADE"
     )
     is_movie: bool = Field(default=True, index=True)
+    plex_connection_id: int | None = Field(  # type: ignore[assignment]
+        default=None, foreign_key="connection.id", ondelete="SET NULL"
+    )
 
     added_at: datetime = Field(default_factory=get_current_time)
     updated_at: datetime = Field(default_factory=get_current_time)
@@ -209,6 +216,7 @@ class MediaUpdate(MediaBase):
     trailer_exists: bool | None = None  # type: ignore
     monitor: bool | None = None  # type: ignore
     arr_monitored: bool | None = None  # type: ignore
+    plex_trailer: bool | None = None  # type: ignore
 
     downloaded_at: datetime | None = None
     updated_at: datetime = Field(default_factory=get_current_time)

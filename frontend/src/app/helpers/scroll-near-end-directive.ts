@@ -1,60 +1,61 @@
-import {Directive, ElementRef, EventEmitter, HostListener, inject, Input, OnInit, Output} from '@angular/core';
+import {
+  AfterViewInit,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Directive({
   selector: '[appScrollNearEnd]',
   standalone: true,
 })
-export class ScrollNearEndDirective implements OnInit {
+export class ScrollNearEndDirective implements AfterViewInit {
   private readonly el = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
 
-  @Output() nearEnd: EventEmitter<void> = new EventEmitter<void>();
+  @Output() nearEnd = new EventEmitter<void>();
 
-  /**
-   * threshold in PX when to emit before page end scroll
-   */
   @Input() threshold = 200;
 
-  private window!: Window;
+  private sentinel!: HTMLDivElement;
+  private observer!: IntersectionObserver;
 
-  ngOnInit() {
-    // save window object for type safety
-    this.window = window;
-    // console.log('Scroll near end directive initialized');
-  }
+  ngAfterViewInit(): void {
+    this.sentinel = document.createElement('div');
+    this.sentinel.style.cssText = 'height:1px;width:1px;pointer-events:none;';
+    this.el.nativeElement.appendChild(this.sentinel);
 
-  @HostListener('window:scroll', ['$event'])
-  windowScrollEvent(event: any) {
-    // height of whole window page
-    const heightOfWholePage = this.window.document.documentElement.scrollHeight;
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            this.nearEnd.emit();
+            // Unobserve + re-observe after one rAF tick so the browser
+            // re-evaluates intersection state — this re-fires on large screens
+            // where the sentinel stays visible after new items are added,
+            // driving the initial-load bootstrapping loop until content
+            // overflows the viewport or the consumer's guard is hit.
+            this.observer.unobserve(this.sentinel);
+            requestAnimationFrame(() => {
+              if (this.sentinel.isConnected) {
+                this.observer.observe(this.sentinel);
+              }
+            });
+          }
+        }
+      },
+      { rootMargin: `0px 0px ${this.threshold}px 0px` },
+    );
 
-    // how big in pixels the element is
-    const heightOfElement = this.el.nativeElement.scrollHeight;
+    this.observer.observe(this.sentinel);
 
-    // currently scrolled Y position
-    const currentScrolledY = this.window.scrollY;
-
-    // height of opened window - shrinks if console is opened
-    const innerHeight = this.window.innerHeight;
-
-    const spaceOfElementAndPage = heightOfWholePage - heightOfElement;
-
-    const scrollToBottom = heightOfElement - innerHeight - currentScrolledY + spaceOfElementAndPage;
-
-    // console.log('windowScrollToBottom:', scrollToBottom);
-
-    // console.log(
-    //   currentScrolledY,
-    //   innerHeight,
-    //   heightOfWholePage,
-    //   spaceOfElementAndPage
-    // );
-
-    if (scrollToBottom < this.threshold) {
-      // console.log(
-      //     '%c [WinScrollNearEndDirective]: emit',
-      //     'color: #bada55; font-size: 20px'
-      // );
-      this.nearEnd.emit();
-    }
+    this.destroyRef.onDestroy(() => {
+      this.observer.disconnect();
+      this.sentinel.remove();
+    });
   }
 }

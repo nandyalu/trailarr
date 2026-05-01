@@ -2,6 +2,7 @@ from sqlmodel import Session
 
 from . import base
 from core.base.database.models.connection import (
+    ArrType,
     ConnectionRead,
     ConnectionUpdate,
 )
@@ -40,6 +41,17 @@ async def update(
     )
     # Validate the connection details
     await base.validate_connection(db_connection)
+    # For Plex connections, refresh the machine identifier in case the server changed
+    if db_connection.arr_type == ArrType.PLEX:
+        from core.plex.api_manager import PlexAPI
+
+        _id = f"trailarr_{db_connection.id}"
+        plex_api = PlexAPI(
+            db_connection.url, db_connection.api_key, identifier=_id
+        )
+        db_connection.machine_identifier = (
+            await plex_api.get_machine_identifier()
+        )
     # Commit the changes to the database
     _session.add(db_connection)
     _session.commit()

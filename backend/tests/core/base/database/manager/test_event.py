@@ -58,7 +58,7 @@ class TestEventManager:
             txdb_id="tt1234567",
         )
         result = media_manager.create_or_update_bulk([media_data])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_create_event(self):
         """Test creating a new event."""
@@ -237,7 +237,7 @@ class TestEventHelpers:
             txdb_id="tt7654321",
         )
         result = media_manager.create_or_update_bulk([media_data])
-        self.media, _, _ = result[0]
+        self.media, _, _, _ = result[0]
 
     def test_track_media_added(self):
         """Test tracking media_added event creates media_added, youtube_id, and monitor events."""
@@ -252,7 +252,7 @@ class TestEventHelpers:
             monitor=True,
         )
         result = media_manager.create_or_update_bulk([media_data])
-        test_media, _, _ = result[0]
+        test_media, _, _, _ = result[0]
 
         event_manager.track_media_added(
             media=test_media,

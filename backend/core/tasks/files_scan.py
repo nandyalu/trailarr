@@ -1,5 +1,6 @@
 import os
 import threading
+from datetime import datetime, timezone
 from app_logger import ModuleLogger
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.filefolderinfo as files_manager
@@ -11,6 +12,46 @@ from core.download.trailers.service import record_new_trailer_download
 from core.files.media_scanner import MediaScanner
 
 logger = ModuleLogger("TrailersFilesScan")
+
+
+def _ctime_matches_stored(ctime: float, stored: datetime) -> bool:
+    """Compare filesystem st_ctime (UTC epoch float) to a stored datetime.
+    SQLite returns naive datetimes in local time — use .astimezone() to convert
+    to UTC, not .replace() which would mislabel local time as UTC."""
+    if stored.tzinfo is None:
+        stored = stored.astimezone(timezone.utc)
+    return abs(ctime - stored.timestamp()) <= 1
+
+
+def _has_folder_changed(folder_path: str, media_id: int, tz) -> bool:
+    """Check root folder and immediate subdirs against stored modified times.
+    Returns True if a scan is needed, False if nothing has changed."""
+    stored = files_manager.get_folder_modified_times(media_id)
+    if not stored:
+        return True  # No stored data — first scan
+
+    try:
+        stored_root = stored.get(folder_path)
+        if stored_root is None or not _ctime_matches_stored(
+            os.stat(folder_path).st_ctime, stored_root
+        ):
+            return True
+
+        with os.scandir(folder_path) as entries:
+            for entry in entries:
+                if entry.is_dir(follow_symlinks=False):
+                    stored_sub = stored.get(entry.path)
+                    ctime = entry.stat(follow_symlinks=False).st_ctime
+                    ctime_local = datetime.fromtimestamp(ctime, tz=tz)
+                    ctime_utc = ctime_local.astimezone(timezone.utc)
+                    if stored_sub is None or not _ctime_matches_stored(
+                        ctime_utc.timestamp(), stored_sub
+                    ):
+                        return True
+    except OSError:
+        return True  # Can't stat — safer to scan
+
+    return False
 
 
 async def scan_media_folder(
@@ -31,6 +72,13 @@ async def scan_media_folder(
         return 0, 0
     if scanner is None:
         scanner = MediaScanner()
+    if not user_initiated and not _has_folder_changed(
+        media.folder_path, media.id, scanner.tz
+    ):
+        return 0, 0
+    logger.debug(
+        f"Scanning files for '{media.title}' [{media.id}] — folder changed"
+    )
 
     # Get the folder files info
     files_info = await scanner.get_folder_files(media.folder_path, media.id)
@@ -89,6 +137,11 @@ async def scan_media_folder(
                 source=_source,
                 source_detail="FilesScan",
             )
+
+    # If no trailer files exist on disk but media is marked as having trailers, reset
+    if not trailer_paths and media.trailer_exists:
+        media.trailer_exists = False
+        media_manager.update_trailer_exists(media.id, False)
 
     return new_count, missing_count
 

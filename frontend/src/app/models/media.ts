@@ -90,6 +90,10 @@ export interface Media {
   downloads: Download[];
   files: FileFolderInfo | null;
 
+  plex_rating_key: string | null;
+  plex_connection_id: number | null;
+  plex_trailer: boolean | null;
+
   // Additional properties
   isImageLoaded: boolean;
 }

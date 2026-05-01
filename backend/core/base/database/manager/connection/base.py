@@ -1,4 +1,5 @@
 from sqlmodel import Session
+from core.plex.api_manager import PlexAPI
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
 from core.base.database.models.connection import (
@@ -51,9 +52,16 @@ async def validate_connection(connection: ConnectionBase) -> str:
     if connection.arr_type == ArrType.RADARR:
         arr_connection = RadarrManager(connection.url, connection.api_key)
         status_message = await arr_connection.get_system_status()
-    if connection.arr_type == ArrType.SONARR:
+    elif connection.arr_type == ArrType.SONARR:
         arr_connection = SonarrManager(connection.url, connection.api_key)
         status_message = await arr_connection.get_system_status()
+    elif connection.arr_type == ArrType.PLEX:
+        plex_connection = PlexAPI(
+            connection.url,
+            connection.api_key,
+            identifier="trailarr_1234",
+        )
+        status_message = await plex_connection.get_system_status()
 
     return status_message
 

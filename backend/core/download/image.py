@@ -19,9 +19,14 @@ IMAGES_PATH = Path(app_settings.app_data_dir, "web", "images")
 STATIC_PATH_MOVIES = IMAGES_PATH / "movies"
 STATIC_PATH_SHOWS = IMAGES_PATH / "shows"
 
+_IMAGES_URL_PREFIX = "/images"
 
-# TODO: For v1.0.0 release - Change the paths saved in DB to paths \
-# relative to `images` folder and serve them statically from there.
+
+def _url_to_fs_path(url_path: str) -> Path:
+    """Convert a /images/... URL path back to the filesystem path.
+    Also handles legacy absolute filesystem paths stored by older versions."""
+    rel = url_path.removeprefix(_IMAGES_URL_PREFIX + "/")
+    return IMAGES_PATH / rel
 
 
 @alru_cache
@@ -75,28 +80,32 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
     filename = get_md5_filename(media.image_url)
     file_path = base_path / f"{filename}.jpg"
     # Check if a poster/artwork already exists
+    url_path = _IMAGES_URL_PREFIX + "/" + file_path.relative_to(IMAGES_PATH).as_posix()
     if media.image_path:
         # Check if the existing path matches with new path
-        if media.image_path != file_path.as_posix():
+        if media.image_path != url_path:
             logger.debug(
                 f"Image updated for media id: [{media.id}], deleting old"
                 f" image! Path: '{media.image_path}'"
             )
-            await delete_image(media.image_path)
+            await delete_image(str(_url_to_fs_path(media.image_path)))
     # Update the image path
-    media.image_path = file_path.as_posix()
+    media.image_path = url_path
     # Check if the file exists
     if await aiofiles.os.path.exists(file_path):
         return False  # Poster/Artwork already exist
     return True
 
 
-async def download_image(url: str) -> Image.Image:
+async def download_image(
+    url: str, headers: dict | None = None
+) -> Image.Image:
     """Download an image from a URL. \n
     Args:
-        url (str): URL of the image."""
+        url (str): URL of the image.
+        headers (dict | None): Optional extra HTTP headers (e.g. X-Plex-Token)."""
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
+        async with session.get(url, headers=headers) as response:
             response.raise_for_status()
             image_data = await response.read()
             image_file = BytesIO(image_data)
@@ -127,10 +136,13 @@ async def process_image(
     image_dimensions = POSTER if media.is_poster else FANART
     # Download image from URL and save it to disk
     try:
-        image = await download_image(media.image_url)
+        image = await download_image(media.image_url, headers=media.headers)
         image.thumbnail(image_dimensions)
         image.save(
-            media.image_path, format="JPEG", optimize=True, progressive=True
+            _url_to_fs_path(media.image_path),
+            format="JPEG",
+            optimize=True,
+            progressive=True,
         )
         logger.debug(
             f"Image downloaded for media id: [{media.id}], "

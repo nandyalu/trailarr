@@ -1,9 +1,9 @@
 import {HttpClient, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {TrailerProfileCreate} from 'generated-sources/openapi';
 import {Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {CustomFilter, CustomFilterCreate, FilterType} from '../models/customfilter';
+import {TrailerProfileCreate} from '../models/trailerprofile';
 
 @Injectable({
   providedIn: 'root',

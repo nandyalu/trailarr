@@ -1,4 +1,4 @@
-from .create import create_or_update_bulk
+from .create import create, create_or_update_bulk
 from .delete import delete_except
 from .read import (
     read,
@@ -6,30 +6,39 @@ from .read import (
     read_all_raw,
     read_all_by_connection,
     read_all_generator,
+    read_arr_linked_to_plex_connection,
+    read_by_folder_path,
     read_recent,
     read_recently_downloaded,
     read_updated_after,
 )
 from .search import search
 from .update import (
+    demote_arr_items_with_plex_to_plex_only,
     update_media_image,
     update_media_status,
     update_monitor_and_trailer_exists_bulk,
     update_monitoring,
     update_monitoring_bulk,
     update_no_trailers_exist,
+    update_plex_fields,
+    update_plex_trailer,
     update_trailer_exists,
     update_ytid,
 )
 
 __all__ = [
+    "create",
     "create_or_update_bulk",
     "delete_except",
+    "demote_arr_items_with_plex_to_plex_only",
     "read",
     "read_all",
     "read_all_raw",
     "read_all_by_connection",
     "read_all_generator",
+    "read_arr_linked_to_plex_connection",
+    "read_by_folder_path",
     "read_recent",
     "read_recently_downloaded",
     "read_updated_after",
@@ -40,6 +49,8 @@ __all__ = [
     "update_monitoring",
     "update_monitoring_bulk",
     "update_no_trailers_exist",
+    "update_plex_fields",
+    "update_plex_trailer",
     "update_trailer_exists",
     "update_ytid",
 ]

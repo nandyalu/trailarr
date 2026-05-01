@@ -5,8 +5,10 @@ import threading
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
+import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
+from core.base.database.models.connection import ArrType
 from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MediaRead, MonitorStatus
@@ -18,6 +20,94 @@ from core.download.video_analysis import VideoInfo
 from exceptions import DownloadFailedError, StopEventSetError
 
 logger = ModuleLogger("TrailersDownloader")
+
+
+async def _check_plex_trailer(
+    media: MediaRead, profile: TrailerProfileRead
+) -> bool:
+    """Return True if Plex already has a trailer for this item.
+
+    Calls get_library_item_extras for the media's plex_rating_key and checks
+    for any extra with subtype 'trailer'. Persists the result to plex_trailer
+    on the DB row so it's available for display in the frontend.
+    Only runs when profile.skip_if_plex_trailer is True and the media is
+    linked to a Plex connection.
+    """
+    if not profile.skip_if_plex_trailer:
+        return False
+    if not (media.plex_connection_id and media.plex_rating_key):
+        return False
+    try:
+        conn = connection_manager.read(media.plex_connection_id)
+        if conn.arr_type != ArrType.PLEX:
+            return False
+        from core.plex.api_manager import PlexAPI
+
+        api = PlexAPI(
+            server_url=conn.url,
+            token=conn.api_key,
+            identifier=f"trailarr_{conn.id}",
+        )
+        extras = await api.get_library_item_extras(media.plex_rating_key)
+        remote_trailers = [
+            e
+            for e in extras
+            if e.subtype == "trailer" and not e.guid.startswith("file://")
+        ]
+        resolution_threshold = profile.skip_if_plex_trailer_resolution
+        if resolution_threshold > 0:
+            has_trailer = any(
+                e.resolution >= resolution_threshold for e in remote_trailers
+            )
+        else:
+            has_trailer = len(remote_trailers) > 0
+        media_manager.update_plex_trailer(media.id, has_trailer)
+        return has_trailer
+    except Exception as e:
+        logger.warning(
+            f"Failed to check Plex trailer for '{media.title}'"
+            f" [{media.id}]: {e}"
+        )
+        return False
+
+
+async def _notify_plex(media: MediaRead) -> None:
+    """Trigger a targeted Plex scan for a media item after trailer download.
+
+    Reads the Plex connection, builds a PlexConnectionManager, and calls
+    ``trigger_item_scan``.  Requires ``plex_connection_id``, ``plex_section_key``,
+    and ``folder_path`` to all be set on the media row; silently skips if any
+    are missing.
+    """
+    if not (
+        media.plex_connection_id
+        and media.plex_section_key
+        and media.folder_path
+    ):
+        logger.debug(
+            f"Skipping Plex scan notify for '{media.title}' [{media.id}]:"
+            " missing plex_connection_id, plex_section_key, or folder_path"
+        )
+        return
+    try:
+        conn = connection_manager.read(media.plex_connection_id)
+        if conn.arr_type != ArrType.PLEX:
+            return
+        # Import here to avoid a circular import at module level
+        from core.plex.connection_manager import PlexConnectionManager
+
+        plex_manager = PlexConnectionManager(conn)
+        await plex_manager.trigger_item_scan(
+            media_id=media.id,
+            section_key=media.plex_section_key,
+            folder_path=media.folder_path,
+            source=EventSource.SYSTEM,
+            source_detail="TrailerDownloaded",
+        )
+    except Exception as e:
+        logger.warning(
+            f"Failed to notify Plex for '{media.title}' [{media.id}]: {e}"
+        )
 
 
 def __update_media_status(
@@ -165,6 +255,14 @@ async def download_trailer(
     if profile.always_search:
         media.youtube_trailer_id = None
 
+    # Skip download if Plex already has a trailer and profile says to
+    if await _check_plex_trailer(media, profile):
+        logger.info(
+            f"Plex already has a trailer for '{media.title}' [{media.id}],"
+            " skipping download (skip_if_plex_trailer=True)"
+        )
+        return False
+
     # Get the video ID, search if needed
     video_id = trailer_search.get_video_id(media, profile, exclude)
     media.youtube_trailer_id = video_id
@@ -200,6 +298,10 @@ async def download_trailer(
             source=EventSource.SYSTEM,
             source_detail="TrailerDownload",
         )
+
+        # Notify Plex to scan the media folder if enabled in the profile
+        if profile.notify_plex:
+            await _notify_plex(media)
 
         msg = (
             f"Trailer downloaded successfully for {media.title} [{media.id}]"

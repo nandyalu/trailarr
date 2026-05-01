@@ -1,4 +1,5 @@
 import os
+import platform
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
@@ -63,6 +64,27 @@ _VIDEO_CODECS_VAAPI = {
     "vp8": "vp8_vaapi",
     "vp9": "vp9_vaapi",
     "av1": "av1_vaapi",
+}
+
+# Windows: Intel QSV (via DirectX / Intel Media SDK)
+_VIDEO_CODECS_QSV = {
+    "h264": "h264_qsv",
+    "h265": "hevc_qsv",
+    "vp9": "vp9_qsv",
+    "av1": "av1_qsv",
+}
+
+# Windows: AMD AMF (Advanced Media Framework)
+_VIDEO_CODECS_AMF = {
+    "h264": "h264_amf",
+    "h265": "hevc_amf",
+    "av1": "av1_amf",
+}
+
+# macOS: VideoToolbox (Apple's hardware encoder, covers Intel and Apple Silicon)
+_VIDEO_CODECS_VIDEOTOOLBOX = {
+    "h264": "h264_videotoolbox",
+    "h265": "hevc_videotoolbox",
 }
 
 _ACODEC_FALLBACK = "opus"
@@ -205,6 +227,83 @@ def _get_video_options_nvidia(
     return video_options
 
 
+def _get_video_options_videotoolbox(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate ffmpeg video options for Apple VideoToolbox (macOS)."""
+    if vcodec not in _VIDEO_CODECS_VIDEOTOOLBOX:
+        logger.warning(
+            f"Video codec '{vcodec}' not supported by VideoToolbox, using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    vencoder = _VIDEO_CODECS_VIDEOTOOLBOX[vcodec]
+
+    if video_stream is not None and video_stream.codec_name == vcodec:
+        logger.debug(f"Video already in '{vcodec}', copying stream")
+        return ["-i", input_file, "-c:v", "copy"]
+
+    logger.debug(f"Converting video to '{vcodec}' using VideoToolbox")
+    return [
+        "-i", input_file,
+        "-c:v", vencoder,
+        "-q:v", "65",
+        "-b:v", "0",
+    ]
+
+
+def _get_video_options_qsv(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate ffmpeg video options for Intel QSV (Windows)."""
+    if vcodec not in _VIDEO_CODECS_QSV:
+        logger.warning(
+            f"Video codec '{vcodec}' not supported by Intel QSV, using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    vencoder = _VIDEO_CODECS_QSV[vcodec]
+
+    if video_stream is not None and video_stream.codec_name == vcodec:
+        logger.debug(f"Video already in '{vcodec}', copying stream")
+        return ["-i", input_file, "-c:v", "copy"]
+
+    logger.debug(f"Converting video to '{vcodec}' using Intel QSV")
+    return [
+        "-hwaccel", "qsv",
+        "-i", input_file,
+        "-c:v", vencoder,
+        "-preset", "fast",
+        "-global_quality", "22",
+        "-b:v", "0",
+    ]
+
+
+def _get_video_options_amf(
+    vcodec: str, input_file: str, video_stream: StreamInfo | None = None
+) -> list[str]:
+    """Generate ffmpeg video options for AMD AMF (Windows)."""
+    if vcodec not in _VIDEO_CODECS_AMF:
+        logger.warning(
+            f"Video codec '{vcodec}' not supported by AMD AMF, using CPU"
+        )
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
+    vencoder = _VIDEO_CODECS_AMF[vcodec]
+
+    if video_stream is not None and video_stream.codec_name == vcodec:
+        logger.debug(f"Video already in '{vcodec}', copying stream")
+        return ["-i", input_file, "-c:v", "copy"]
+
+    logger.debug(f"Converting video to '{vcodec}' using AMD AMF")
+    return [
+        "-i", input_file,
+        "-c:v", vencoder,
+        "-quality", "balanced",
+        "-b:v", "0",
+    ]
+
+
 def _get_video_options_vaapi(
     vcodec: str, input_file: str, video_stream: StreamInfo | None = None
 ) -> list[str]:
@@ -215,6 +314,18 @@ def _get_video_options_vaapi(
         video_stream (StreamInfo, Optional=None): Video stream info
     Returns:
         list[str]: FFMPEG command list."""
+    if platform.system() == "Darwin":
+        # VAAPI doesn't exist on macOS; VideoToolbox covers all GPU vendors
+        return _get_video_options_videotoolbox(vcodec, input_file, video_stream)
+
+    if platform.system() == "Windows":
+        # VAAPI is Linux-only; dispatch to the appropriate Windows encoder
+        if app_settings.gpu_available_intel and app_settings.gpu_enabled_intel:
+            return _get_video_options_qsv(vcodec, input_file, video_stream)
+        if app_settings.gpu_available_amd and app_settings.gpu_enabled_amd:
+            return _get_video_options_amf(vcodec, input_file, video_stream)
+        return _get_video_options_cpu(vcodec, input_file, video_stream)
+
     if vcodec not in _VIDEO_CODECS_VAAPI:
         logger.warning(
             f"Video codec '{vcodec}' not supported by VAAPI hardware encoder,"

@@ -11,8 +11,10 @@ import {
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router} from '@angular/router';
-import {TrailerProfileCreate} from 'generated-sources/openapi';
+import {TrailerProfileCreate} from 'src/app/models/trailerprofile';
 import {CustomFilter} from 'src/app/models/customfilter';
+import {ArrType} from 'src/app/models/connection';
+import {ConnectionService} from 'src/app/services/connection.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -38,6 +40,7 @@ import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialo
 })
 export class EditProfileComponent {
   protected profileService = inject(ProfileService);
+  private readonly connectionService = inject(ConnectionService);
   private readonly router = inject(Router);
 
   profileId = input(0, {
@@ -73,6 +76,11 @@ export class EditProfileComponent {
   videoFormatOptions = ['h264', 'h265', 'vp8', 'vp9', 'av1', 'copy'];
   videoResolutionOptions = ['480', '720', '1080', '1440', '2160', '0']; // '0' for best
   subtitleFormatOptions = ['srt', 'vtt'];
+  plexResolutionOptions = ['480', '720', '1080', '1440', '2160'];
+
+  protected readonly hasPlex = computed(() =>
+    this.connectionService.connectionsResource.value().some((c) => c.arr_type === ArrType.Plex)
+  );
 
   helpLinks = {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
@@ -82,6 +90,7 @@ export class EditProfileComponent {
     subtitle: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/subtitle/',
     search: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/',
     filters: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/',
+    plex: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/plex/',
   };
 
   // Disabled options
@@ -348,7 +357,13 @@ export class EditProfileComponent {
 
   protected onConfirmDelete() {
     this.closeDeleteDialog();
-    this.profileService.deleteProfile(this.profileId());
-    this.router.navigate(['/settings/profiles']);
+    this.profileService.deleteProfile(this.profileId()).subscribe({
+      next: () => {
+        this.router.navigate(['/settings/profiles']);
+      },
+      error: () => {
+        // Error toast already shown by the service
+      },
+    });
   }
 }

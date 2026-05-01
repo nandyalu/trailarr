@@ -108,7 +108,12 @@ However, this will have no effect on items:
 
 ### Delete
 
-This will Delete the downloaded trailer file (if it exists).
+This will delete **ALL downloaded trailer files** for each selected Media item that has trailers.
+
+Clicking Delete will show a confirmation dialog displaying the number of selected items before proceeding.
+
+!!! warning
+    This deletes **every** trailer file on disk for the selected items — not just one. This cannot be reversed!
 
 ### Cancel
 

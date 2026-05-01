@@ -4,12 +4,10 @@ import {
   Component,
   computed,
   effect,
-  ElementRef,
   HostListener,
   inject,
   input,
   signal,
-  viewChild,
   ViewContainerRef,
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -73,11 +71,23 @@ export class MediaDetailsComponent {
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
-    if (connection.arr_type.toLowerCase() == 'radarr') {
+    const arrType = connection.arr_type.toLowerCase();
+    if (arrType == 'radarr') {
       return baseUrl + '/movie/' + media.txdb_id;
-    } else {
+    } else if (arrType == 'sonarr') {
       return baseUrl + '/series/' + media.title_slug;
     }
+    return '';
+  });
+
+  plex_url = computed(() => {
+    const media = this.selectedMedia();
+    if (!media?.plex_rating_key || !media?.plex_connection_id) return '';
+    const connections = this.connectionService.connectionsResource.value();
+    const connection = connections.find((c) => c.id === media.plex_connection_id);
+    if (!connection?.machine_identifier) return '';
+    const baseUrl = (connection.external_url?.length > 0 ? connection.external_url : connection.url).replace(/\/$/, '');
+    return `${baseUrl}/web/index.html#!/server/${connection.machine_identifier}/details?key=%2Flibrary%2Fmetadata%2F${media.plex_rating_key}`;
   });
 
   // Load media data when the media ID changes
@@ -124,11 +134,6 @@ export class MediaDetailsComponent {
           // If there is no previous media, navigate to the last media in the list
           this.router.navigate([RouteMedia, previousMedia1.id]);
         }
-      }
-      // Check if the 'Delete' key is pressed
-      else if (event.key === 'Delete' || event.key === 'Backspace') {
-        // If the 'Delete' key is pressed, show the delete dialog
-        this.showDeleteDialog();
       }
     }
   }
@@ -251,41 +256,4 @@ export class MediaDetailsComponent {
     window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
   }
 
-  // Reference to the dialog element
-  readonly deleteDialog = viewChild.required<ElementRef<HTMLDialogElement>>('deleteDialog');
-
-  /**
-   * Displays the delete dialog modal.
-   * This method opens the delete dialog by calling the `showModal` method
-   * on the native element of the delete dialog.
-   *
-   * @returns {void}
-   */
-  showDeleteDialog(): void {
-    this.deleteDialog().nativeElement.showModal(); // Open the dialog
-  }
-
-  /**
-   * Closes the delete dialog.
-   *
-   * This method is used to close the delete dialog by accessing the native element
-   * and invoking the `close` method on it.
-   */
-  closeDeleteDialog(): void {
-    this.deleteDialog().nativeElement.close(); // Close the dialog
-  }
-
-  /**
-   * Handles the confirmation of trailer deletion.
-   * Closes the delete dialog and calls the media service to delete the trailer.
-   * Updates the media object to reflect that the trailer no longer exists.
-   */
-  onConfirmDelete() {
-    // console.log('Deleting trailer');
-    this.closeDeleteDialog();
-    this.mediaService.deleteMediaTrailer(this.mediaId()).subscribe((res: string) => {
-      console.log(res);
-      this.selectedMedia()!.trailer_exists = false;
-    });
-  }
 }

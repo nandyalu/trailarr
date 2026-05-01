@@ -11,7 +11,7 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {applyEach, form, FormField, maxLength, minLength, pattern, readonly, required, schema} from '@angular/forms/signals';
+import {applyEach, form, FormField, maxLength, minLength, pattern, readonly, required, schema, validate} from '@angular/forms/signals';
 import {Router} from '@angular/router';
 import {ArrType, ConnectionCreate, MonitorType, PathMappingCreate} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
@@ -61,7 +61,7 @@ export class EditConnectionComponent {
   connectionCreate = signal<ConnectionCreate>({
     api_key: '',
     arr_type: ArrType.Radarr,
-    monitor: MonitorType.New,
+    monitor: MonitorType.None,
     name: '',
     path_mappings: [],
     url: '',
@@ -81,6 +81,17 @@ export class EditConnectionComponent {
     maxLength(schema.api_key, 50, {message: 'API Key cannot be longer than 50 characters.'});
     required(schema.arr_type, {message: 'ARR Type is required.'});
     required(schema.monitor, {message: 'Monitor Type is required.'});
+    validate(schema.monitor, ({valueOf}) => {
+      if (this.isCreate() && valueOf(schema.monitor) === MonitorType.New) {
+        return {
+          kind: 'forbiddenSelection',
+          forbiddenSelection: true,
+          message:
+            'The "New" monitor option is not allowed when creating a new connection because there are no existing items to monitor as new. Please select a different monitor type.',
+        };
+      }
+      return null;
+    });
     required(schema.name, {message: 'Connection Name is required.'});
     minLength(schema.name, 3, {message: 'Connection Name must be at least 3 characters long.'});
     required(schema.url, {message: 'URL is required.'});
@@ -322,14 +333,8 @@ export class EditConnectionComponent {
   deleteConnection() {
     if (!this.connectionService.connectionExists(this.connectionId())) return;
     this.connectionService.deleteConnection(this.connectionId()).subscribe({
-      next: (result) => {
-        this.submitResult.set(`Connection deleted successfully: ${result}`);
-        this.connectionService.connectionsResource.reload();
-        setTimeout(() => {
-          this.router.navigate(['/settings/connections']).then(() => {
-            this.connectionService.connectionsResource.reload();
-          });
-        }, 3000);
+      next: () => {
+        this.router.navigate(['/settings/connections']);
       },
       error: (error) => {
         console.error('Error deleting connection:', error);

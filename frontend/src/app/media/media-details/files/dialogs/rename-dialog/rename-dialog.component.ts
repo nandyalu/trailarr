@@ -1,6 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {FilesService} from 'generated-sources/openapi';
+import {FilesService} from 'src/app/services/files.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 
 @Component({
@@ -36,7 +36,7 @@ export class RenameDialogComponent implements AfterViewInit {
   renameFile(): void {
     let selectedFileBasePath = this.filePath().split('/').slice(0, -1).join('/');
     let newPath = selectedFileBasePath + '/' + this.renamedFileName();
-    this.filesService.renameFileFolApiV1FilesRenamePost({old_path: this.filePath(), new_path: newPath}).subscribe((result) => {
+    this.filesService.renameFileFol(this.filePath(), newPath).subscribe((result) => {
       const msg = result ? 'File renamed successfully!' : 'Failed to rename file!';
       this.webSocketService.showToast(msg, result ? 'success' : 'error');
       this.closeDialog();

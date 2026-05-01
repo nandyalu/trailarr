@@ -27,9 +27,9 @@ class SearchMedia(BaseModel):
     id: int
     title: str
     year: int
-    youtube_trailer_id: str
-    imdb_id: str
-    txdb_id: str
+    youtube_trailer_id: str | None
+    imdb_id: str | None
+    txdb_id: str | None
     is_movie: bool
     poster_path: str | None
 
@@ -52,6 +52,10 @@ class Settings(BaseModel):
     log_level: str
     monitor_enabled: bool
     monitor_interval: int
+    server_hostname: str
+    server_model: str
+    server_platform: str
+    server_platform_version: str
     server_start_time: str
     timezone: str
     update_available: bool

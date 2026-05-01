@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, Renderer2, signal} from '@angular/core';
 import {debounce, form, FormField} from '@angular/forms/signals';
 import {Router, RouterLink} from '@angular/router';
+import {AuthService} from 'src/app/services/auth.service';
 import {SettingsService} from 'src/app/services/settings.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {RouteHome, RouteMedia} from 'src/routing';
@@ -15,6 +16,7 @@ import {MediaService} from '../../services/media.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TopnavComponent {
+  private readonly authService = inject(AuthService);
   private readonly elementRef = inject(ElementRef);
   private readonly mediaService = inject(MediaService);
   private readonly renderer = inject(Renderer2);
@@ -32,6 +34,7 @@ export class TopnavComponent {
   searchResults = signal<SearchMedia[]>([]);
   selectedIndex = signal(-1);
   selectedId = signal(-1);
+  loginDisabled = this.settingsService.settingsResource.value()?.webui_disable_auth ?? false;
 
   protected readonly RouteHome = RouteHome;
 
@@ -147,28 +150,10 @@ export class TopnavComponent {
   }
 
   logout() {
-    // Clear api_key from cookies first
-    document.cookie = 'trailarr_api_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;';
-
-    console.log('Logging out...');
-
-    // Close all subscriptions to WebSocket to avoid memory leaks
     this.websocketService.close();
-
-    // Call logout endpoint to clear browser's Basic Auth credentials
-    // This will cause a 401 response which clears the browser's cached credentials
-    this.settingsService.logout().subscribe({
-      next: () => {
-        // This won't execute since logout always returns 401
-        console.log('Logout successful, reloading page...');
-        window.location.reload();
-      },
-      error: () => {
-        // The 401 response is expected - it clears the cached credentials
-        console.log('Browser credentials cleared, reloading page...');
-        // Force page reload to show login dialog
-        window.location.reload();
-      },
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']),
     });
   }
 

@@ -14,6 +14,7 @@ def get_current_time():
 class ArrType(Enum):
     RADARR = "radarr"
     SONARR = "sonarr"
+    PLEX = "plex"
 
 
 class MonitorType(Enum):
@@ -75,6 +76,7 @@ class Connection(ConnectionBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     added_at: datetime = Field(default_factory=get_current_time)
+    machine_identifier: str | None = Field(default=None)
     path_mappings: list[PathMapping] = Relationship(cascade_delete=True)
 
 
@@ -89,6 +91,7 @@ class ConnectionRead(ConnectionBase):
 
     id: int
     added_at: datetime
+    machine_identifier: str | None = None
     path_mappings: list[PathMappingCRU]
 
     @field_validator("added_at", mode="after")

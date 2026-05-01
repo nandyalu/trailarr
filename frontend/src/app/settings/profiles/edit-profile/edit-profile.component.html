@@ -89,6 +89,43 @@
     </div>
   </details>
 </section>
+<!-- Plex Settings — only shown when at least one Plex connection exists -->
+@if (hasPlex()) {
+<section>
+  <details open>
+    <summary>
+      <span>Plex</span>
+      <help-link-icon [link]="helpLinks.plex" />
+    </summary>
+    <hr />
+    <div class="setting-group">
+      <app-options-setting
+        name="Notify Plex"
+        description="Trigger a Plex library scan after a trailer is downloaded so it appears immediately."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.notify_plex"
+        (optionChange)="profileService.updateSetting('notify_plex', $event)"
+      />
+      <app-options-setting
+        name="Skip If Plex Has Trailer"
+        description="Skip downloading a trailer if Plex already has one for this item."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.skip_if_plex_trailer"
+        (optionChange)="profileService.updateSetting('skip_if_plex_trailer', $event)"
+      />
+      @if (profile()?.skip_if_plex_trailer) {
+        <app-options-setting
+          name="Skip If Plex Trailer Resolution"
+          description="Minimum resolution the Plex trailer must have before skipping the download."
+          [options]="plexResolutionOptions"
+          [selectedOption]="profile()?.skip_if_plex_trailer_resolution"
+          (optionChange)="profileService.updateSetting('skip_if_plex_trailer_resolution', $event)"
+        />
+      }
+    </div>
+  </details>
+</section>
+}
 <!-- File Settings -->
 <section>
   <details open>

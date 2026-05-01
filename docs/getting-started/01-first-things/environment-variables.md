@@ -78,6 +78,9 @@ This environment variable is used to disable the authentication for the web inte
         - WEBUI_DISABLE_AUTH=True # This will disable the web UI authentication
 ```
 
+!!! warning "Use with caution"
+    When auth is disabled, a `session_id` is generated to use with frontend without authentication by calling auth endpoints. These endpoints can be reached from other apps or services to get a `session_id` and use that for authentication. So, use with caution!
+
 ### `WEBUI_PASSWORD`
 
 - Default is `trailarr` (hashed).

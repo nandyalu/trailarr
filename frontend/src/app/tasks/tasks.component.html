@@ -24,8 +24,23 @@
             <div class="task-top">
               <span class="task-name">{{ task.task_name }}</span>
               <span class="badge" [class]="'badge-task-' + task.status">{{ task.status }}</span>
-              @if (task.last_run) {
-                <span class="badge" [class]="'badge-job-' + task.last_run.status">{{ task.last_run.status }}</span>
+              @if (task.last_run; as lastRun) {
+                <span class="badge" [class]="'badge-job-' + lastRun.status">{{ lastRun.status }}</span>
+                @if (lastRun.status === 'failed' && lastRun.error_message) {
+                  <button
+                    class="error-icon-btn"
+                    [class.active]="expandedErrorId() === lastRun.id"
+                    (click)="toggleError(lastRun.id)"
+                    title="Show error"
+                    aria-label="Show error"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" aria-hidden="true">
+                      <path
+                        d="M40-120l440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"
+                      />
+                    </svg>
+                  </button>
+                }
               }
             </div>
             <div class="task-meta">
@@ -88,6 +103,14 @@
             </button>
           </div>
         </div>
+        @if (task.last_run; as lastRun) {
+          @if (lastRun.status === 'failed' && lastRun.error_message && expandedErrorId() === lastRun.id) {
+            <div class="error-panel">
+              <span class="error-panel-label">Error</span>
+              {{ lastRun.error_message }}
+            </div>
+          }
+        }
       }
     </div>
   }
@@ -110,6 +133,20 @@
             <div class="task-top">
               <span class="task-name">{{ job.task_name }}</span>
               <span class="badge" [class]="'badge-job-' + job.status">{{ job.status }}</span>
+              @if (job.status === 'failed' && job.error_message) {
+                <button
+                  class="error-icon-btn"
+                  [class.active]="expandedErrorId() === job.id"
+                  (click)="toggleError(job.id)"
+                  title="Show error"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M40-120l440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"
+                    />
+                  </svg>
+                </button>
+              }
             </div>
             <div class="task-meta">
               <span class="meta-item">
@@ -151,6 +188,12 @@
             }
           </div>
         </div>
+        @if (job.status === 'failed' && job.error_message && expandedErrorId() === job.id) {
+          <div class="error-panel">
+            <span class="error-panel-label">Error</span>
+            {{ job.error_message }}
+          </div>
+        }
       }
     </div>
   }

@@ -21,6 +21,18 @@ Additional Media Status details can be viewed by hovering (click on it in Mobile
 !!! tip "Season Count for TV Show"
     This will also show a `Season Count` of the selected Media if it's a TV Show. This is coming from `Sonarr` and `Trailarr` can only read it, cannot update it!
 
+### Plex Trailer Status
+
+If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is configured and this media item has been linked to a Plex library entry, the details panel will show whether Plex already has a remote trailer available for it.
+
+| Status | Meaning |
+|--------|---------|
+| ✅ Plex has trailer | Plex has at least one internet-sourced trailer for this item |
+| ❌ No Plex trailer | Plex does not have a remote trailer (or the item is not linked to Plex) |
+
+!!! tip ""
+    This status is what Trailarr checks when **Skip if Plex Trailer** is enabled in a profile. If Plex already has a qualifying trailer, Trailarr will skip the download for that media item.
+
 ## YouTube Trailer ID
 
 ![Media - YouTube Trailer ID](media-youtube-trailer-id.png)
@@ -48,7 +60,7 @@ This can be used to let Trailarr search for a trailer for the `Media` by selecti
 
 ## Action Buttons
 
-There are 3 actions buttons that can appear depending on the selected Media
+There are up to 2 action buttons that can appear depending on the selected Media.
 
 ### Watch 
 
@@ -57,18 +69,15 @@ There are 3 actions buttons that can appear depending on the selected Media
 
 ### Download
 
-- Appears when a trailer is not downloaded for the selected Media OR when a new video ID/URL is added in the `YouTube Trailer ID` field.
+- Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
 - This will schedule a task for Trailarr to download a trailer for this Media, uses `YouTube Trailer ID` if provided/existing.
 
-### Delete
+!!! tip "Multiple trailers"
+    Because Trailarr supports downloading multiple trailers per media item (via [Stop Monitoring](../../settings/profiles/settings/general.md#stop-monitoring) in a Profile), the Download button is always shown so you can trigger additional downloads at any time.
 
-- Appears when the selected Media has a downloaded trailer.
-- Deletes the trailer file.
-- Asks for a confirmation before Deleting.
-
-!!! warning
-    This will Delete the trailer file on disk! Cannot be reversed!
+!!! tip ""
+    To delete a trailer, use the **Files Section** below — click the trailer file and choose **Delete**.
 
 ## Downloads Section
 
