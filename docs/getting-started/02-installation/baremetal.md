@@ -44,10 +44,9 @@ The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python packa
 
 === "Windows"
 
-    Download [install.ps1](https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1),
-    then right-click it and choose **Run with PowerShell** (it will self-elevate to Administrator).
+    !!! warning ""
+        Needs to be run from an elevated PowerShell (Run as Administrator)
 
-    Or from an elevated PowerShell:
     ```powershell
     Set-ExecutionPolicy Bypass -Scope Process -Force
     irm https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1 | iex
