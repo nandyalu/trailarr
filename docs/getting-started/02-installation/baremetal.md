@@ -36,6 +36,9 @@ The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python packa
 
 ## Step 2 — Install Trailarr
 
+!!! success "sudo/Admin"
+    Trailarr installation script require sudo/admin permissions so that it can install to set proper permissions as well as configure it to startup on boot. However, the actuall app is run as a non-root user on linux and macOS, and as the installing user on Windows.
+
 === "Linux / macOS"
 
     ```bash

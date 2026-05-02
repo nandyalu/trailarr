@@ -10,7 +10,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from common.display import console, make_download_progress, print_success, print_warning
+from common.display import console, make_download_progress, print_info, print_warning
 
 # yt-dlp/FFmpeg-Builds provides static GPL binaries for Linux and Windows.
 # macOS binaries come from evermeet.cx (John Van Sickle style static builds).
@@ -76,7 +76,7 @@ def download_ffmpeg(bin_dir: Path) -> tuple[Path, Path]:
             p.chmod(p.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     _verify(ffmpeg_dest, ffprobe_dest)
-    print_success(f"ffmpeg installed to {bin_dir}")
+    print_info(f"ffmpeg installed to {bin_dir}")
     return ffmpeg_dest, ffprobe_dest
 
 

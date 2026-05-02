@@ -1,13 +1,10 @@
 # Register Trailarr as a Task Scheduler startup task for the current user.
-# Run this from a regular (non-elevated) PowerShell so the task is owned by
-# your account and inherits your drive mappings.
 
-$InstallDir  = "C:\Program Files\Trailarr"
-$StartScript = "$InstallDir\scripts\windows\trailarr-start.ps1"
+$InstallDir = "C:\Program Files\Trailarr"
+$Exe        = "$InstallDir\backend\.venv\Scripts\trailarr.exe"
+$Script     = "$InstallDir\scripts\start\start.py"
 
-$action = New-ScheduledTaskAction `
-    -Execute   "powershell.exe" `
-    -Argument  "-WindowStyle Hidden -NonInteractive -ExecutionPolicy Bypass -File `"$StartScript`""
+$action = New-ScheduledTaskAction -Execute "`"$Exe`"" -Argument "`"$Script`""
 
 $trigger = New-ScheduledTaskTrigger -AtLogon -User $env:USERNAME
 
@@ -19,7 +16,7 @@ $settings = New-ScheduledTaskSettingsSet `
 
 $principal = New-ScheduledTaskPrincipal `
     -UserId    $env:USERNAME `
-    -LogonType Interactive `
+    -LogonType S4U `
     -RunLevel  Limited
 
 Register-ScheduledTask `
