@@ -72,6 +72,26 @@ class WindowsInstaller(BaseInstaller):
                         f" {result.stderr.strip()}"
                     )
 
+    def copy_files(self) -> None:
+        super().copy_files()
+        # The installer runs as Administrator, but the Task Scheduler service
+        # runs as the current user (RunLevel Limited). Grant that user write
+        # access to index.html so update_base_href() can patch <base href> at
+        # runtime for URL_BASE support.
+        username = os.environ.get("USERNAME", "")
+        index_html = _INSTALL_DIR / "frontend-build" / "browser" / "index.html"
+        if username and index_html.exists():
+            result = subprocess.run(
+                ["icacls", str(index_html), "/grant", f"{username}:(W)"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                print_warning(
+                    "Could not set write permissions on index.html:"
+                    f" {result.stderr.strip()}"
+                )
+
     def create_service(self, port: int) -> None:
         with step_context("Registering Task Scheduler startup task"):
             exe = (

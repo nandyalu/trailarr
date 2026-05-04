@@ -92,9 +92,8 @@ EXPOSE ${APP_PORT}
 
 # Set permissions for appuser on /app directory
 # Use 755 so appuser (running as 'other') can read/execute without needing ownership
-RUN chmod -R 755 /app \
-    # index.html is patched at runtime by update_base_href() to set URL_BASE; appuser needs write access
-    && chmod o+w /app/frontend-build/browser/index.html
+# index.html ownership is transferred to appuser in finalize_user_setup() at runtime
+RUN chmod -R 755 /app
 
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
