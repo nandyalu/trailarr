@@ -1,15 +1,5 @@
 import {TitleCasePipe} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostListener,
-  inject,
-  input,
-  signal,
-  ViewContainerRef,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, input, signal, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
@@ -99,9 +89,10 @@ export class MediaDetailsComponent {
     const media = this.selectedMedia();
     if (media) {
       this.trailer_url = media.youtube_trailer_id || '';
-      if (media.status !== 'downloading') {
-        this.isLoadingDownload.set(false);
-      }
+      this.isLoadingDownload.set(media.status === 'downloading');
+      // if (media.status !== 'downloading') {
+      //   this.isLoadingDownload.set(false);
+      // }
     }
   });
 
@@ -255,5 +246,4 @@ export class MediaDetailsComponent {
     }
     window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
   }
-
 }

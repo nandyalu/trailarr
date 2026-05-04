@@ -15,6 +15,7 @@ from .read import (
 from .search import search
 from .update import (
     demote_arr_items_with_plex_to_plex_only,
+    update_media_exists,
     update_media_image,
     update_media_status,
     update_monitor_and_trailer_exists_bulk,
@@ -43,6 +44,7 @@ __all__ = [
     "read_recently_downloaded",
     "read_updated_after",
     "search",
+    "update_media_exists",
     "update_media_image",
     "update_media_status",
     "update_monitor_and_trailer_exists_bulk",

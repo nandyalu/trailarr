@@ -259,11 +259,8 @@ def update_no_trailers_exist(
     if db_media.trailer_exists is True:
         db_media.updated_at = datetime.now(timezone.utc)
     db_media.trailer_exists = False
-    # Update status based on monitor status
-    if db_media.monitor:
-        db_media.status = MonitorStatus.MONITORED
-    else:
-        db_media.status = MonitorStatus.MISSING
+    # Update status based on monitor status, but don't interrupt an active download
+    db_media.status = base.get_status(db_media.monitor, False, db_media.status)
     _session.add(db_media)
     _session.commit()
     return None
@@ -294,17 +291,44 @@ def update_trailer_exists(
     if db_media.trailer_exists != trailer_exists:
         db_media.updated_at = datetime.now(timezone.utc)
     db_media.trailer_exists = trailer_exists
-    # If trailer exists, disable monitoring
+    # If trailer exists, disable monitoring and mark downloaded
     if trailer_exists:
         db_media.monitor = False
         db_media.status = MonitorStatus.DOWNLOADED
     else:
-        if db_media.monitor:
-            db_media.status = MonitorStatus.MONITORED
-        else:
-            db_media.status = MonitorStatus.MISSING
+        # Don't interrupt an active download
+        db_media.status = base.get_status(
+            db_media.monitor, trailer_exists, db_media.status
+        )
     _session.add(db_media)
     if _commit:
+        _session.commit()
+    return None
+
+
+@write_session
+def update_media_exists(
+    media_id: int,
+    media_exists: bool,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update the media_exists flag of a media item in the database by id.\n
+    Args:
+        media_id (int): The id of the media to update.
+        media_exists (bool): Whether the media file exists on disk.
+        _session (Session, Optional): A session to use for the database connection. \
+            Default is `None`, in which case a new session will be created.
+    Returns:
+        None
+    Raises:
+        ItemNotFoundError: If the media item with provided id doesn't exist.
+    """
+    db_media = base._get_db_item(media_id, _session)
+    if db_media.media_exists != media_exists:
+        db_media.media_exists = media_exists
+        db_media.updated_at = datetime.now(timezone.utc)
+        _session.add(db_media)
         _session.commit()
     return None
 
@@ -343,6 +367,7 @@ def update_plex_fields(
     plex_rating_key: str | None,
     plex_section_key: str | None,
     plex_connection_id: int | None,
+    media_filename: str | None = None,
     *,
     _session: Session = None,  # type: ignore
 ) -> None:
@@ -354,12 +379,27 @@ def update_plex_fields(
         plex_rating_key (str | None): The Plex ratingKey for targeted refreshes.
         plex_section_key (str | None): The Plex library section key.
         plex_connection_id (int | None): FK to the Plex Connection row.
+        media_filename (str | None): When provided, update the media_filename field.
+            Only pass this for Plex-only items (arr_id=0); leave None for Arr-linked rows.
         _session (Session, Optional): A session to use for the database connection.
     """
     db_media = base._get_db_item(media_id, _session)
+    changed = (
+        db_media.plex_rating_key != plex_rating_key
+        or db_media.plex_section_key != plex_section_key
+        or db_media.plex_connection_id != plex_connection_id
+        or (
+            media_filename is not None
+            and db_media.media_filename != media_filename
+        )
+    )
+    if not changed:
+        return None
     db_media.plex_rating_key = plex_rating_key
     db_media.plex_section_key = plex_section_key
     db_media.plex_connection_id = plex_connection_id
+    if media_filename is not None:
+        db_media.media_filename = media_filename
     db_media.updated_at = datetime.now(timezone.utc)
     _session.add(db_media)
     _session.commit()

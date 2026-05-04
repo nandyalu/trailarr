@@ -49,6 +49,8 @@ def parse_plex_item(
         imdb_id=item.imdb_id,
         txdb_id=txdb_id,
         folder_path=item.media_folder if item.media_folder else None,
+        media_filename=item.media_filename,
+        media_exists=bool(item.media_filename),
         plex_rating_key=item.ratingKey if item.ratingKey else None,
         plex_section_key=section_key,
         plex_connection_id=connection_id,

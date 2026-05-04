@@ -19,6 +19,7 @@ def make_mock_media(
     folder_path: str | None = "/media/Test Movie (2025)",
     downloads: list | None = None,
     trailer_exists: bool = False,
+    media_exists: bool = False,
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=media_id,
@@ -26,6 +27,7 @@ def make_mock_media(
         folder_path=folder_path,
         downloads=downloads if downloads is not None else [],
         trailer_exists=trailer_exists,
+        media_exists=media_exists,
     )
 
 
@@ -226,3 +228,129 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files.assert_called_once_with(
             media.folder_path, media.id
         )
+
+    @pytest.mark.asyncio
+    async def test_folder_gone_resets_trailer_exists(self):
+        """When the folder is inaccessible/deleted, trailer_exists is cleared."""
+        media = make_mock_media(trailer_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=None)
+
+        with patch(
+            "core.tasks.files_scan.media_manager.update_trailer_exists"
+        ) as mock_update:
+            new, missing = await scan_media_folder(media, scanner=mock_scanner)
+
+        assert (new, missing) == (0, 0)
+        mock_update.assert_called_once_with(media.id, False)
+
+    @pytest.mark.asyncio
+    async def test_folder_gone_no_trailers_skips_update(self):
+        """When the folder is gone but trailer_exists is already False, no update."""
+        media = make_mock_media(trailer_exists=False)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=None)
+
+        with patch(
+            "core.tasks.files_scan.media_manager.update_trailer_exists"
+        ) as mock_update:
+            new, missing = await scan_media_folder(media, scanner=mock_scanner)
+
+        assert (new, missing) == (0, 0)
+        mock_update.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_folder_gone_resets_media_exists(self):
+        """When the folder is gone and media_exists is True, it is cleared."""
+        media = make_mock_media(media_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=None)
+
+        with patch(
+            "core.tasks.files_scan.media_manager.update_media_exists"
+        ) as mock_update:
+            new, missing = await scan_media_folder(media, scanner=mock_scanner)
+
+        assert (new, missing) == (0, 0)
+        mock_update.assert_called_once_with(media.id, False)
+
+    @pytest.mark.asyncio
+    async def test_folder_gone_media_already_false_skips_update(self):
+        """When the folder is gone and media_exists is already False, no update."""
+        media = make_mock_media(media_exists=False)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=None)
+
+        with patch(
+            "core.tasks.files_scan.media_manager.update_media_exists"
+        ) as mock_update:
+            new, missing = await scan_media_folder(media, scanner=mock_scanner)
+
+        assert (new, missing) == (0, 0)
+        mock_update.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_stale_media_exists_true_corrected_to_false(self):
+        """When media_exists=True in DB but no media file on disk, it is reset."""
+        media = make_mock_media(media_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.get_trailer_paths = MagicMock(return_value=set())
+
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch(
+                "core.tasks.files_scan.FilesHandler.check_media_exists",
+                return_value=False,
+            ),
+            patch(
+                "core.tasks.files_scan.media_manager.update_media_exists"
+            ) as mock_update,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_update.assert_called_once_with(media.id, False)
+
+    @pytest.mark.asyncio
+    async def test_stale_media_exists_false_corrected_to_true(self):
+        """When media_exists=False in DB but media file exists on disk, it is set True."""
+        media = make_mock_media(media_exists=False)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.get_trailer_paths = MagicMock(return_value=set())
+
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch(
+                "core.tasks.files_scan.FilesHandler.check_media_exists",
+                return_value=True,
+            ),
+            patch(
+                "core.tasks.files_scan.media_manager.update_media_exists"
+            ) as mock_update,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_update.assert_called_once_with(media.id, True)
+
+    @pytest.mark.asyncio
+    async def test_media_exists_already_correct_skips_update(self):
+        """When media_exists in DB matches disk, no update is made."""
+        media = make_mock_media(media_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.get_trailer_paths = MagicMock(return_value=set())
+
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch(
+                "core.tasks.files_scan.FilesHandler.check_media_exists",
+                return_value=True,
+            ),
+            patch(
+                "core.tasks.files_scan.media_manager.update_media_exists"
+            ) as mock_update,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_update.assert_not_called()
