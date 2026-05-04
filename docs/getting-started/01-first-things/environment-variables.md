@@ -111,7 +111,9 @@ To change the password, go to `Settings > About > Password` in web interface.
     Once you change your password, don't forget to remove the `WEBUI_PASSWORD` environment variable from the docker-compose file.
 
 
-### FILES_FULL_SCAN
+### `FILES_FULL_SCAN`
+
+<!-- md:version:add 0.9.1 -->
 
 - Default: `false`
 

@@ -60,6 +60,8 @@ Enable this setting to wait for media to be downloaded before downloading traile
 
 ### Force Full Files Scan
 
+<!-- md:version:add 0.9.1 -->
+
 - Default is `false`
 - Environment variable: `FILES_FULL_SCAN`
 
