@@ -264,6 +264,7 @@ class _Config:
             "app_theme": self.app_theme,
             "delete_corrupted_trailers": self.delete_corrupted_trailers,
             "delete_trailer_connection": self.delete_trailer_connection,
+            "files_full_scan": self.files_full_scan,
             "delete_trailer_media": self.delete_trailer_media,
             "ffmpeg_timeout": self.ffmpeg_timeout,
             "gpu_available_nvidia": self.gpu_available_nvidia,
@@ -389,6 +390,12 @@ class _Config:
     )
     """Delete corrupted trailers during trailer cleanup task.
         - Default is True.
+        - Valid values are True/False."""
+
+    files_full_scan = bool_property("FILES_FULL_SCAN", default=False)
+    """Force a full scan of all media folders on the next run, bypassing the
+        folder-change optimisation. Auto-resets to False after the scan completes.
+        - Default is False.
         - Valid values are True/False."""
 
     ffmpeg_timeout = int_property(

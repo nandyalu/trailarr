@@ -33,22 +33,22 @@ $PythonVersion = '3.13'
 # --------------------------------------------------------------------------
 # Helpers
 # --------------------------------------------------------------------------
-function Write-Info    { param($m) Write-Host "  →  $m" -ForegroundColor Cyan }
-function Write-Success { param($m) Write-Host "  ✓  $m" -ForegroundColor Green }
-function Write-Warn    { param($m) Write-Host "  ⚠  $m" -ForegroundColor Yellow }
-function Write-Err     { param($m) Write-Host "  ✗  $m" -ForegroundColor Red }
+function Write-Info    { param($m) Write-Host "  [>]  $m" -ForegroundColor Cyan }
+function Write-Success { param($m) Write-Host "  [+]  $m" -ForegroundColor Green }
+function Write-Warn    { param($m) Write-Host "  [!]  $m" -ForegroundColor Yellow }
+function Write-Err     { param($m) Write-Host "  [x]  $m" -ForegroundColor Red }
 
 function Write-Banner {
-    Write-Host @"
-`n
+    Write-Host @'
+
  _____ ____      _    ___ _        _    ____  ____
 |_   _|  _ \    / \  |_ _| |      / \  |  _ \|  _ \
   | | | |_) |  / _ \  | || |     / _ \ | |_) | |_) |
   | | |  _ <  / ___ \ | || |___ / ___ \|  _ <|  _ <
   |_| |_| \_\/_/   \_\___|_____/_/   \_\_| \_\_| \_\
 
-"@ -ForegroundColor Cyan
-    Write-Host "  Bootstrap Installer — Windows`n" -ForegroundColor Cyan
+'@ -ForegroundColor Cyan
+    Write-Host "  Bootstrap Installer - Windows`n" -ForegroundColor Cyan
 }
 
 # --------------------------------------------------------------------------
@@ -58,11 +58,11 @@ function Ensure-Admin {
     $currentPrincipal = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
     $isAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
-        Write-Warn "Not running as Administrator — re-launching with elevation..."
+        Write-Warn "Not running as Administrator - re-launching with elevation..."
 
         $scriptPath = $ScriptFile
         if (-not $scriptPath) {
-            # Running via irm | iex — no file on disk.
+            # Running via irm | iex - no file on disk.
             # Save the script to a temp file so we can re-launch it elevated.
             Write-Info "Saving installer to temp file for elevation..."
             $scriptPath = Join-Path $env:TEMP "trailarr-install.ps1"
@@ -79,10 +79,14 @@ function Ensure-Admin {
         }
 
         Start-Process powershell.exe `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
-            -Verb RunAs `
-            -Wait
-        exit
+            -ArgumentList "-NoExit -NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
+            -Verb RunAs
+        # Don't call exit here - that would close the user's terminal when
+        # run via irm | iex.  Just signal that elevation was handed off and
+        # return so the caller can stop cleanly.
+        Write-Success "Elevation requested. Please check the new PowerShell window."
+        $script:ElevationLaunched = $true
+        return
     }
     Write-Success "Running as Administrator"
 }
@@ -196,7 +200,7 @@ function Run-Installer {
     $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
     $userPath    = [System.Environment]::GetEnvironmentVariable('Path', 'User')
     $env:Path    = ($machinePath, $userPath | Where-Object { $_ }) -join ';'
-    Write-Info "PATH refreshed — trailarr commands are available in this terminal"
+    Write-Info "PATH refreshed - trailarr commands are available in this terminal"
 }
 
 # --------------------------------------------------------------------------
@@ -214,6 +218,9 @@ function Cleanup {
 try {
     Write-Banner
     Ensure-Admin
+    # If elevation was handed off to a new window, stop here without
+    # closing the terminal (return exits the script, not the host).
+    if ((Test-Path variable:script:ElevationLaunched) -and $script:ElevationLaunched) { return }
     Check-Uv
     Download-Release
     Run-Installer

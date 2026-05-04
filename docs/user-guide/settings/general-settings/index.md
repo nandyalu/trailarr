@@ -58,6 +58,20 @@ Enable this setting to disable authentication for the WebUI. Use with caution, a
 
 Enable this setting to wait for media to be downloaded before downloading trailers.
 
+### Force Full Files Scan
+
+<!-- md:version:add 0.9.1 -->
+
+- Default is `false`
+- Environment variable: `FILES_FULL_SCAN`
+
+When enabled, the next **Scan Media Folders** task run will scan every media folder in full, bypassing the folder-change optimisation that normally skips unchanged folders.
+
+This is a one-shot fix for situations where `trailer_exists` or `media_exists` flags are stale (e.g. a trailer was deleted externally while the folder itself was not modified). Once the full scan completes, the setting is **automatically reset to `false`** — future scans resume the optimised behaviour.
+
+!!! tip
+    You can also set `FILES_FULL_SCAN=true` as an environment variable or in your `.env` file and restart the app. The setting will reset itself after the first scan run.
+
 
 ## Advanced Settings
 

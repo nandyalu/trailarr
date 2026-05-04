@@ -152,6 +152,11 @@ finalize_user_setup() {
     # access it without needing ownership, avoiding a slow recursive chown on startup.
     box_echo "Changing the owner of '$APP_DATA_DIR' directory to '$APPUSER'"
     chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
+
+    # Transfer ownership of index.html to appuser so update_base_href() can patch
+    # the <base href> tag at startup for URL_BASE support. Only this one file needs
+    # write access — the rest of /app stays root-owned (755).
+    chown "$APPUSER" /app/frontend-build/browser/index.html 2>/dev/null || true
     box_echo "--------------------------------------------------------------------------";
 
     box_echo "Ensuring appuser has access to GPU-related groups..."

@@ -179,7 +179,8 @@
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
 					"LOG_LEVEL": "ERROR",
-					"APP_VERSION": "0.6.7"
+					"APP_VERSION": "0.9.1",
+					"APP_DATA_DIR": "../temp-config"
 				}
 			},
 			"group": {

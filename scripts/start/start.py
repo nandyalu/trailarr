@@ -11,7 +11,7 @@ Flow:
   4. Check / update yt-dlp if UPDATE_YTDLP=true
   5. Backup database
   6. Run Alembic migrations
-  7. exec uvicorn (replaces this process)
+  7. Run uvicorn in-process
 """
 
 import os
@@ -22,19 +22,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+
 # ---------------------------------------------------------------------------
 # Resolve paths
 # ---------------------------------------------------------------------------
 
 _SCRIPT_DIR = Path(__file__).parent.resolve()
-_INSTALL_DIR = (
-    _SCRIPT_DIR.parent.parent
-)  # scripts/start/ → scripts/ → install root
-
-# Allow override via environment (set by the service unit file)
-_DATA_DIR = Path(
-    os.environ.get("APP_DATA_DIR", str(_INSTALL_DIR.parent / "data"))
-)
+_INSTALL_DIR = _SCRIPT_DIR.parent.parent  # scripts/start/ → scripts/ → install root
 _BACKEND_DIR = _INSTALL_DIR / "backend"
 _VENV_DIR = _BACKEND_DIR / ".venv"
 _BIN_DIR = _INSTALL_DIR / "bin"
@@ -42,6 +36,23 @@ _BIN_DIR = _INSTALL_DIR / "bin"
 _IS_WINDOWS = platform.system() == "Windows"
 _VENV_BIN = _VENV_DIR / "Scripts" if _IS_WINDOWS else _VENV_DIR / "bin"
 _PYTHON = _VENV_BIN / ("trailarr.exe" if _IS_WINDOWS else "python")
+
+# On Windows the data dir lives under ProgramData; on other platforms it is
+# passed via the service unit or defaults to a sibling of the install root.
+_DEFAULT_DATA_DIR = (
+    Path("C:/ProgramData/Trailarr") if _IS_WINDOWS
+    else _INSTALL_DIR.parent / "data"
+)
+_DATA_DIR = Path(os.environ.get("APP_DATA_DIR", str(_DEFAULT_DATA_DIR)))
+
+# Ensure the backend package is importable without relying on PYTHONPATH
+# being set externally (Task Scheduler doesn't inherit shell env vars).
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+
+# Propagate to subprocesses (alembic, etc.) and enforce UTF-8 text I/O.
+os.environ.setdefault("PYTHONPATH", str(_BACKEND_DIR))
+os.environ.setdefault("PYTHONUTF8", "1")
 
 
 # ---------------------------------------------------------------------------
@@ -238,33 +249,19 @@ def _run_migrations(console) -> None:
 
 
 def _start_uvicorn(env: dict[str, str], console) -> None:
-    port = env.get("APP_PORT", "7889")
+    port = int(env.get("APP_PORT", "7889"))
     url_base = env.get("URL_BASE", "").strip("/")
-
-    cmd = [
-        str(_PYTHON),
-        "-m", "uvicorn",
-        "main:trailarr_api",
-        "--host", "0.0.0.0",
-        "--port", port,
-    ]
-    if url_base:
-        cmd += ["--root-path", f"/{url_base}"]
 
     _log(f"\n  Starting uvicorn on port {port}...", console)
     os.chdir(str(_BACKEND_DIR))
 
-    if _IS_WINDOWS:
-        # os.execv on Windows spawns a new console process instead of
-        # replacing the current one, causing a blank terminal window to
-        # appear. Using subprocess.run with CREATE_NO_WINDOW keeps uvicorn
-        # as a child of the PowerShell task (so the log redirect stays
-        # active and Stop-ScheduledTask kills the whole tree).
-        result = subprocess.run(cmd, creationflags=subprocess.CREATE_NO_WINDOW)
-        sys.exit(result.returncode)
-    else:
-        # On POSIX, execv truly replaces this process in-place.
-        os.execv(str(_PYTHON), cmd)
+    import uvicorn
+    uvicorn.run(
+        "main:trailarr_api",
+        host="0.0.0.0",
+        port=port,
+        root_path=f"/{url_base}" if url_base else "",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -272,7 +269,22 @@ def _start_uvicorn(env: dict[str, str], console) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _redirect_output_to_log() -> None:
+    """When not attached to a terminal (e.g. Task Scheduler), write to log file."""
+    try:
+        if sys.stdout.isatty():
+            return
+    except Exception:
+        pass
+    log_dir = _DATA_DIR / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    f = open(log_dir / "trailarr.log", "a", encoding="utf-8", buffering=1)
+    sys.stdout = f
+    sys.stderr = f
+
+
 def main() -> None:
+    _redirect_output_to_log()
     console = _get_console()
     env_path = _DATA_DIR / ".env"
 

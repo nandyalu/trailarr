@@ -2,6 +2,7 @@ import os
 import threading
 from datetime import datetime, timezone
 from app_logger import ModuleLogger
+from config.settings import app_settings
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.download as download_manager
@@ -83,10 +84,20 @@ async def scan_media_folder(
     # Get the folder files info
     files_info = await scanner.get_folder_files(media.folder_path, media.id)
     if not files_info:
+        # Folder is gone — reset both flags if they are stale
+        if media.trailer_exists:
+            media_manager.update_trailer_exists(media.id, False)
+        if media.media_exists:
+            media_manager.update_media_exists(media.id, False)
         return 0, 0
 
     # Update the file/folder info in the database
     files_manager.update(media, files_info)
+
+    # Sync media_exists with what is actually on disk
+    disk_media_exists = await scanner.check_media_exists(files_info)
+    if disk_media_exists != media.media_exists:
+        media_manager.update_media_exists(media.id, disk_media_exists)
 
     # Get trailer paths
     trailer_paths = scanner.get_trailer_paths(files_info)
@@ -153,6 +164,13 @@ async def scan_all_media_folders(
         and update the database with download records."""
     logger.info("Scanning disk for files and trailers.")
 
+    force_full_scan = app_settings.files_full_scan
+    if force_full_scan:
+        logger.info(
+            "FILES_FULL_SCAN is enabled — running full scan,"
+            " bypassing folder-change check."
+        )
+
     # Get all media items
     all_media = media_manager.read_all_generator
 
@@ -171,7 +189,7 @@ async def scan_all_media_folders(
         try:
             media_count += 1
             new, missing = await scan_media_folder(
-                media, scanner, user_initiated=False
+                media, scanner, user_initiated=force_full_scan
             )
             new_trailers += new
             missing_trailers += missing
@@ -180,6 +198,12 @@ async def scan_all_media_folders(
                 f"Error scanning media folder for '{media.title}'"
                 f" [{media.id}]: {e}"
             )
+
+    # Auto-reset so the optimisation resumes on future scans
+    if force_full_scan:
+        app_settings.files_full_scan = False
+        logger.info("FILES_FULL_SCAN reset to False after full scan.")
+
     logger.info(
         "Completed scanning disk for files and trailers. "
         f"Total media scanned: {media_count}. "

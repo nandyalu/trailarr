@@ -1,4 +1,4 @@
-from sqlmodel import Session, select, text
+from sqlmodel import Session, desc, select, text
 from . import base
 from core.base.database.models.download import (
     Download,
@@ -40,7 +40,7 @@ def read_all_raw(
     Returns:
         list[dict]: List of all downloads as dictionaries.
     """
-    query = text("SELECT * FROM download")
+    query = text("SELECT * FROM download ORDER BY added_at DESC")
     result = _session.execute(query)
     rows = []
     for row in result.mappings():
@@ -62,7 +62,7 @@ def read_all(
     Returns:
         list[DownloadRead]: List of downloads (read-only).
     """
-    statement = select(Download)
+    statement = select(Download).order_by(desc(Download.added_at))
     db_downloads = _session.exec(statement).all()
     return base.convert_to_read_list(db_downloads)
 
@@ -83,6 +83,7 @@ def read_by_media_id(
         list[DownloadRead]: List of downloads (read-only).
     """
     statement = select(Download).where(Download.media_id == media_id)
+    statement = statement.order_by(desc(Download.added_at))
     db_downloads = _session.exec(statement).all()
     return base.convert_to_read_list(db_downloads)
 
@@ -103,5 +104,6 @@ def read_by_profile_id(
         list[DownloadRead]: List of downloads (read-only).
     """
     statement = select(Download).where(Download.profile_id == profile_id)
+    statement = statement.order_by(desc(Download.added_at))
     db_downloads = _session.exec(statement).all()
     return base.convert_to_read_list(db_downloads)

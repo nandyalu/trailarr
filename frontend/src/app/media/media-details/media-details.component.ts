@@ -1,15 +1,5 @@
 import {TitleCasePipe} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostListener,
-  inject,
-  input,
-  signal,
-  ViewContainerRef,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, input, signal, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
@@ -99,9 +89,10 @@ export class MediaDetailsComponent {
     const media = this.selectedMedia();
     if (media) {
       this.trailer_url = media.youtube_trailer_id || '';
-      if (media.status !== 'downloading') {
-        this.isLoadingDownload.set(false);
-      }
+      this.isLoadingDownload.set(media.status === 'downloading');
+      // if (media.status !== 'downloading') {
+      //   this.isLoadingDownload.set(false);
+      // }
     }
   });
 
@@ -161,24 +152,24 @@ export class MediaDetailsComponent {
   }
 
   /**
-   * Downloads the trailer for the current media if the trailer ID has changed.
+   * Downloads the trailer for the current media.
    *
-   * This method checks if the new trailer URL contains the old trailer ID and if the trailer already exists.
-   * If the trailer ID is the same and the trailer exists, it does not proceed with the download.
-   * Otherwise, it sets the loading state to true and initiates the download process via the media service.
+   * This method sets the loading state to true and initiates the download process via the media service.
+   * Once the download is complete, the loading state is set to false.
    *
    * @param {number} profileId - The ID of the profile to use for downloading the trailer.
    *
    * @returns {void}
    */
   downloadTrailer(profileId: number): void {
-    const old_id = this.selectedMedia()?.youtube_trailer_id?.toLowerCase() || '';
-    const new_id = this.trailer_url.toLowerCase();
-    const trailer_exists = this.selectedMedia()?.trailer_exists || false;
-    if (old_id && new_id.includes(old_id) && trailer_exists) {
-      // Trailer id is the same, no need to download
-      return;
-    }
+    // const old_id = this.selectedMedia()?.youtube_trailer_id?.toLowerCase() || '';
+    // const new_id = this.trailer_url.toLowerCase();
+    // const trailer_exists = this.selectedMedia()?.trailer_exists || false;
+    // if (old_id && new_id.includes(old_id) && trailer_exists) {
+    //   // Trailer id is the same, no need to download
+    //   this.webSocketService.showToast('Trailer ID is the same as the existing one. No need to download.', 'Error');
+    //   return;
+    // }
     this.isLoadingDownload.set(true);
     // console.log('Downloading trailer');
     this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {
@@ -255,5 +246,4 @@ export class MediaDetailsComponent {
     }
     window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
   }
-
 }

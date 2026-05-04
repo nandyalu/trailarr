@@ -3,11 +3,10 @@
 import json
 import platform
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from rich.panel import Panel
-from rich.table import Table
 from rich.text import Text
 
 from common.display import console
@@ -78,6 +77,7 @@ def print_gpu_report(gpus: list[GPUInfo]) -> None:
             lines.append(f"  ({gpu.device_path})", style="dim")
         lines.append("\n")
 
+    system = platform.system()
     vendors_shown: set[str] = set()
     for gpu in gpus:
         if gpu.vendor in vendors_shown or gpu.vendor == "apple":
@@ -87,19 +87,27 @@ def print_gpu_report(gpus: list[GPUInfo]) -> None:
         if not instructions:
             continue
 
+        # Filter driver instructions to entries relevant to the current OS.
+        filtered = {
+            distro: cmd for distro, cmd in instructions.items()
+            if (system == "Windows" and distro == "Windows")
+            or (system != "Windows" and distro != "Windows")
+        }
+        if not filtered:
+            continue
+
         lines.append(f"\n  To enable {_accel_label(gpu.vendor)}, install drivers:\n", style="bold")
-        for distro, cmd in instructions.items():
+        for distro, cmd in filtered.items():
             lines.append(f"    {distro:<18}", style="dim")
             lines.append(f"{cmd}\n", style="white")
 
     if "apple" in {g.vendor for g in gpus}:
         lines.append("\n  Metal hardware acceleration is built-in — no drivers needed.\n", style="green")
 
-    lines.append(
-        "\nAfter installing drivers, restart Trailarr and enable\n"
-        "Hardware Acceleration in [bold]Settings → Video Processing[/bold].",
-        style="dim",
-    )
+    # Use Text.append_text so Rich markup inside is rendered, not printed literally.
+    lines.append("\nAfter installing drivers, restart Trailarr and enable\nHardware Acceleration in ", style="dim")
+    lines.append("Settings > Video Processing", style="bold")
+    lines.append(".", style="dim")
 
     console.print(
         Panel(

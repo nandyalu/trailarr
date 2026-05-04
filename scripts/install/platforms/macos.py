@@ -45,6 +45,21 @@ class MacOSInstaller(BaseInstaller):
             ]:
                 directory.mkdir(parents=True, exist_ok=True)
 
+    def copy_files(self) -> None:
+        super().copy_files()
+        # The installer runs as root (sudo), but the launchd service runs as
+        # SUDO_USER. Transfer ownership of index.html so that user can write it
+        # at runtime — update_base_href() patches <base href> for URL_BASE.
+        sudo_user = os.environ.get("SUDO_USER", "")
+        index_html = _INSTALL_DIR / "frontend-build" / "browser" / "index.html"
+        if sudo_user and index_html.exists():
+            import pwd as _pwd
+            try:
+                pw = _pwd.getpwnam(sudo_user)
+                os.chown(index_html, pw.pw_uid, pw.pw_gid)
+            except (KeyError, OSError) as e:
+                print_warning(f"Could not set ownership of index.html: {e}")
+
     def create_service(self, port: int) -> None:
         with step_context("Creating launchd service"):
             python_exec = str(self._python_exec())

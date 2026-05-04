@@ -1,5 +1,7 @@
 # Direct Installation
 
+<!-- md:version:upd 0.9.0 -->
+
 Trailarr supports native direct installation on **Linux, macOS, and Windows** — no Docker required.
 The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python package manager that also manages Python versions.
 
@@ -35,6 +37,9 @@ The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python packa
 ---
 
 ## Step 2 — Install Trailarr
+
+!!! success "sudo/Admin"
+    Trailarr installation script requires sudo/admin permissions so that it can install to set proper permissions as well as configure it to startup on boot. However, the actual app is run as a non-root user on linux and macOS, and as the installing user on Windows.
 
 === "Linux / macOS"
 

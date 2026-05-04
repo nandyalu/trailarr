@@ -190,11 +190,21 @@ class PlexConnectionManager:
             # Only fire PLEX_LINKED when this row wasn't already linked to this
             # connection — avoids a noisy event on every routine refresh.
             newly_linked = existing.plex_connection_id != self.connection_id
+            # For Plex-only items (arr_id=0), keep media_filename in sync with
+            # what Plex reports. Arr-linked rows leave this to the Arr refresh.
+            # Only pass when non-empty so a show-level item (no Media Part) never
+            # blanks out a previously correct value.
+            plex_media_filename = (
+                item.media_filename
+                if not existing.arr_id and item.media_filename
+                else None
+            )
             media_manager.update_plex_fields(
                 media_id=existing.id,
                 plex_rating_key=item.ratingKey or None,
                 plex_section_key=section.key,
                 plex_connection_id=self.connection_id,
+                media_filename=plex_media_filename,
             )
             if newly_linked:
                 event_manager.track_plex_linked(

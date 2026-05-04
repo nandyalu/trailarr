@@ -83,6 +83,16 @@
         [selectedOption]="settings()?.wait_for_media"
         (optionChange)="updateSetting('wait_for_media', $event)"
       />
+      <app-options-setting
+        name="Force Full Files Scan"
+        description="Force the next 'Scan Media Folders' run to scan all folders, ignoring the folder-change check."
+        descriptionExtra="Useful if trailer_exists or media_exists flags are stale. Automatically resets to False once the full scan completes."
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.files_full_scan"
+        [colorType]="'warning'"
+        [colorTypeOption]="'true'"
+        (optionChange)="updateSetting('files_full_scan', $event)"
+      />
     </div>
   </details>
 </section>

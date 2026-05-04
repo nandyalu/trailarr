@@ -7,7 +7,6 @@ from pathlib import Path, WindowsPath
 from common.display import (
     console,
     print_info,
-    print_success,
     print_warning,
     step_context,
 )
@@ -73,11 +72,32 @@ class WindowsInstaller(BaseInstaller):
                         f" {result.stderr.strip()}"
                     )
 
+    def copy_files(self) -> None:
+        super().copy_files()
+        # The installer runs as Administrator, but the Task Scheduler service
+        # runs as the current user (RunLevel Limited). Grant that user write
+        # access to index.html so update_base_href() can patch <base href> at
+        # runtime for URL_BASE support.
+        username = os.environ.get("USERNAME", "")
+        index_html = _INSTALL_DIR / "frontend-build" / "browser" / "index.html"
+        if username and index_html.exists():
+            result = subprocess.run(
+                ["icacls", str(index_html), "/grant", f"{username}:(W)"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                print_warning(
+                    "Could not set write permissions on index.html:"
+                    f" {result.stderr.strip()}"
+                )
+
     def create_service(self, port: int) -> None:
         with step_context("Registering Task Scheduler startup task"):
-            start_script = (
-                _INSTALL_DIR / "scripts" / "windows" / "trailarr-start.ps1"
+            exe = (
+                _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "trailarr.exe"
             )
+            script = _INSTALL_DIR / "scripts" / "start" / "start.py"
             username = os.environ.get("USERNAME", "")
             if not username:
                 raise RuntimeError(
@@ -85,12 +105,11 @@ class WindowsInstaller(BaseInstaller):
                 )
 
             ps = f"""
-$action   = New-ScheduledTaskAction -Execute 'powershell.exe' `
-              -Argument '-WindowStyle Hidden -NonInteractive -ExecutionPolicy Bypass -File "{start_script}"'
+$action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
 $trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
               -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
-$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType Interactive -RunLevel Limited
+$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
 Register-ScheduledTask -TaskName '{_TASK_NAME}' `
   -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
   -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
@@ -105,7 +124,7 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
                 raise RuntimeError(
                     f"Failed to register task:\n{result.stderr.strip()}"
                 )
-            print_success(
+            print_info(
                 f"Task Scheduler startup task registered for {username}"
             )
 
@@ -130,7 +149,7 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
 
             # Add install dir to system PATH if not already present
             _add_to_system_path(str(_INSTALL_DIR))
-            print_success(f"CLI installed: {cmd_wrapper}")
+            print_info(f"CLI installed: {cmd_wrapper}")
             _print_cli_hints()
 
 
@@ -150,7 +169,7 @@ def _add_to_system_path(new_path: str) -> None:
             winreg.SetValueEx(
                 key, "Path", 0, winreg.REG_EXPAND_SZ, current + ";" + new_path
             )
-            print_success(
+            print_info(
                 f"Added {new_path} to system PATH (restart shell to take"
                 " effect)"
             )

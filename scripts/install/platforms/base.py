@@ -100,7 +100,6 @@ class BaseInstaller(ABC):
         )
 
     def detect_and_report_gpu(self) -> None:
-        print_section("GPU Hardware Acceleration")
         gpus = detect_gpus()
         print_gpu_report(gpus)
 

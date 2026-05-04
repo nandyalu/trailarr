@@ -39,11 +39,12 @@ BANNER = r"""
 
 
 def print_banner(version: str) -> None:
-    console.print(f"[bold cyan]{BANNER}[/bold cyan]")
+    import platform
+    os_name = platform.system() or "Unknown"
     console.print(
         Panel(
-            f"[bold]Version:[/bold] {version}\n"
-            "[bold]Cross-platform installer[/bold] — Linux · macOS · Windows",
+            f"[bold]Version:[/bold]  {version}\n"
+            f"[bold]Platform:[/bold] {os_name}",
             style="blue",
             expand=False,
         )
