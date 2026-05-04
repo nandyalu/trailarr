@@ -1,5 +1,7 @@
 # Direct Installation
 
+<!-- md:version:upd 0.9.0 -->
+
 Trailarr supports native direct installation on **Linux, macOS, and Windows** — no Docker required.
 The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python package manager that also manages Python versions.
 

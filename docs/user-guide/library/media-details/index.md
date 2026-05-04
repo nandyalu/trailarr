@@ -69,6 +69,8 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 ### Download
 
+<!-- md:version:upd 0.9.1 -->
+
 - Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
 - This will schedule a task for Trailarr to download a trailer for this Media, uses `YouTube Trailer ID` if provided/existing.
@@ -158,3 +160,8 @@ Deletes the selected file upon confirmation.
 !!! warning
     This will Delete the trailer file on disk! Cannot be reversed!
 
+## Events Section
+
+This section displays the Events related to the media item essentially like a history of what changes happened on this item.
+
+See [Events](../../events/index.md) for more details on individual events.

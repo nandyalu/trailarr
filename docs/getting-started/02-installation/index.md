@@ -1,5 +1,7 @@
 # Installation
 
+<!-- md:version:upd 0.9.0 -->
+
 Trailarr can be installed using Docker (recommended) or directly on your system for advanced use cases.
 
 We have guides for installing Trailarr using these methods:
