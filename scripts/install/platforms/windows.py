@@ -74,7 +74,9 @@ class WindowsInstaller(BaseInstaller):
 
     def create_service(self, port: int) -> None:
         with step_context("Registering Task Scheduler startup task"):
-            exe = _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "trailarr.exe"
+            exe = (
+                _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "trailarr.exe"
+            )
             script = _INSTALL_DIR / "scripts" / "start" / "start.py"
             username = os.environ.get("USERNAME", "")
             if not username:
@@ -83,7 +85,7 @@ class WindowsInstaller(BaseInstaller):
                 )
 
             ps = f"""
-$action   = New-ScheduledTaskAction -Execute '"{exe}"' -Argument '"{script}"'
+$action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
 $trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
               -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable

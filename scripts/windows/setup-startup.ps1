@@ -4,7 +4,7 @@ $InstallDir = "C:\Program Files\Trailarr"
 $Exe        = "$InstallDir\backend\.venv\Scripts\trailarr.exe"
 $Script     = "$InstallDir\scripts\start\start.py"
 
-$action = New-ScheduledTaskAction -Execute "`"$Exe`"" -Argument "`"$Script`""
+$action = New-ScheduledTaskAction -Execute $Exe -Argument "`"$Script`""
 
 $trigger = New-ScheduledTaskTrigger -AtLogon -User $env:USERNAME
 
