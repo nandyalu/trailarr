@@ -30,8 +30,13 @@
   position: absolute;
   top: 5px;
   right: 5px;
-  height: 24px;
-  width: 24px;
+  height: 28px;
+  width: 28px;
+  padding: 3px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  border-radius: 50%;
 }
 
 .media-card label {
@@ -40,6 +45,7 @@
   flex-direction: column;
   height: 100%;
 }
+
 
 .media-card img {
   flex-grow: 1;
@@ -103,5 +109,7 @@
 }
 
 .media-card:hover {
-  box-shadow: 0px 0px 10px 5px var(--color-outline);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px var(--color-outline-variant);
+  scale: 1.04;
 }
