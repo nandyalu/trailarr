@@ -11,7 +11,6 @@ from core.base.database.models.event import EventSource
 from core.base.database.models.media import MediaRead
 from core.download.trailers.service import record_new_trailer_download
 from core.files.media_scanner import MediaScanner
-from core.files_handler import FilesHandler
 
 logger = ModuleLogger("TrailersFilesScan")
 
@@ -96,7 +95,7 @@ async def scan_media_folder(
     files_manager.update(media, files_info)
 
     # Sync media_exists with what is actually on disk
-    disk_media_exists = FilesHandler.check_media_exists(media.folder_path)
+    disk_media_exists = await scanner.check_media_exists(files_info)
     if disk_media_exists != media.media_exists:
         media_manager.update_media_exists(media.id, disk_media_exists)
 

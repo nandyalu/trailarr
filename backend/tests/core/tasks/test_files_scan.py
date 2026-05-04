@@ -295,14 +295,11 @@ class TestScanMediaFolder:
         media = make_mock_media(media_exists=True)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=False)
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
             patch("core.tasks.files_scan.files_manager.update"),
-            patch(
-                "core.tasks.files_scan.FilesHandler.check_media_exists",
-                return_value=False,
-            ),
             patch(
                 "core.tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,
@@ -317,14 +314,11 @@ class TestScanMediaFolder:
         media = make_mock_media(media_exists=False)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=True)
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
             patch("core.tasks.files_scan.files_manager.update"),
-            patch(
-                "core.tasks.files_scan.FilesHandler.check_media_exists",
-                return_value=True,
-            ),
             patch(
                 "core.tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,
@@ -339,14 +333,11 @@ class TestScanMediaFolder:
         media = make_mock_media(media_exists=True)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=True)
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
             patch("core.tasks.files_scan.files_manager.update"),
-            patch(
-                "core.tasks.files_scan.FilesHandler.check_media_exists",
-                return_value=True,
-            ),
             patch(
                 "core.tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,

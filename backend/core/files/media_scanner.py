@@ -139,6 +139,40 @@ class MediaScanner:
             media_id=media_id,
         )
 
+    def _has_media_file(self, folder_info: FileFolderInfoCreate) -> bool:
+        """Recursively check if any video file >= 100 MB exists in the tree."""
+        for child in folder_info.children:
+            if child.type == FileFolderType.FILE:
+                if (
+                    child.size >= self.TRAILER_MAX_SIZE_BYTES
+                    and child.name.lower().endswith(self.VIDEO_EXTENSIONS)
+                ):
+                    return True
+            elif child.type == FileFolderType.FOLDER:
+                if self._has_media_file(child):
+                    return True
+        return False
+
+    async def check_media_exists(
+        self,
+        folder_info: FileFolderInfoCreate | None,
+        folder_path: str = "",
+        media_id: int = 0,
+    ) -> bool:
+        """Check if a media file (video >= 100 MB) exists in the folder tree.
+
+        Uses pre-fetched folder_info to avoid a second disk scan. If
+        folder_info is None and folder_path is provided, scans the folder
+        first via get_folder_files.
+        """
+        if folder_info is None:
+            if not folder_path:
+                return False
+            folder_info = await self.get_folder_files(folder_path, media_id)
+            if folder_info is None:
+                return False
+        return self._has_media_file(folder_info)
+
     def get_trailer_paths(self, folder_info: FileFolderInfoCreate) -> set[str]:
         """Get a list of trailer file paths from the given FolderInfo object.\n
         Args:
