@@ -5,6 +5,7 @@ export interface Settings {
   app_theme: string;
   delete_corrupted_trailers: boolean;
   delete_trailer_connection: boolean;
+  files_full_scan: boolean;
   delete_trailer_media: boolean;
   ffmpeg_timeout: number;
   gpu_available_amd: boolean;

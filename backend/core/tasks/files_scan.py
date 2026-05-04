@@ -2,6 +2,7 @@ import os
 import threading
 from datetime import datetime, timezone
 from app_logger import ModuleLogger
+from config.settings import app_settings
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.download as download_manager
@@ -164,6 +165,13 @@ async def scan_all_media_folders(
         and update the database with download records."""
     logger.info("Scanning disk for files and trailers.")
 
+    force_full_scan = app_settings.files_full_scan
+    if force_full_scan:
+        logger.info(
+            "FILES_FULL_SCAN is enabled — running full scan,"
+            " bypassing folder-change check."
+        )
+
     # Get all media items
     all_media = media_manager.read_all_generator
 
@@ -182,7 +190,7 @@ async def scan_all_media_folders(
         try:
             media_count += 1
             new, missing = await scan_media_folder(
-                media, scanner, user_initiated=False
+                media, scanner, user_initiated=force_full_scan
             )
             new_trailers += new
             missing_trailers += missing
@@ -191,6 +199,12 @@ async def scan_all_media_folders(
                 f"Error scanning media folder for '{media.title}'"
                 f" [{media.id}]: {e}"
             )
+
+    # Auto-reset so the optimisation resumes on future scans
+    if force_full_scan:
+        app_settings.files_full_scan = False
+        logger.info("FILES_FULL_SCAN reset to False after full scan.")
+
     logger.info(
         "Completed scanning disk for files and trailers. "
         f"Total media scanned: {media_count}. "
