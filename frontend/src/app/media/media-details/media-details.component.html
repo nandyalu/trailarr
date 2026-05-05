@@ -174,8 +174,8 @@
             <div class="input-row">
               <div class="labeled-input">
                 <span class="text-md sm-none">https://www.youtube.com/watch?v=</span>
-                <span class="text-md sm-show">Youtube ID/URL:</span>
-                <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="Youtube Video ID / URL" />
+                <span class="text-md sm-show">YouTube ID/URL:</span>
+                <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="YouTube Video ID / URL" />
               </div>
               @if (selectedMedia_.youtube_trailer_id == '' && trailer_url == '' && !isLoadingDownload()) {
                 <span class="search-button icon-link" title="Search Trailer" (click)="openProfileSelectDialog(true)">
@@ -247,7 +247,7 @@
         </div>
         <div class="media-details-row">
           @if (selectedMedia_.youtube_trailer_id) {
-            <button (click)="openTrailer()" class="primary" title="Watch Trailer on Youtube">Watch</button>
+            <button (click)="openTrailer()" class="primary" title="Watch Trailer on YouTube">Watch</button>
           }
           <button
             (click)="openProfileSelectDialog(false)"

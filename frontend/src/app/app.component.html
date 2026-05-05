@@ -33,12 +33,12 @@
   <dialog #sessionEndingDialog>
     <div class="dialog-content" (click)="$event.stopPropagation()">
       <h2>Extend Session?</h2>
-      <p>You we gone for a while, we are about to close your session!</p>
+      <p>You were gone for a while, we are about to close your session!</p>
       <p>{{ sessionEndTime() | timeRemaining | async }} remaining</p>
       <div class="loading-container">
         <div class="loading-container-inner">
           <div class="dash first"></div>
-          <div class="dash seconde"></div>
+          <div class="dash second"></div>
           <div class="dash third"></div>
           <div class="dash fourth"></div>
         </div>
@@ -51,11 +51,11 @@
   <dialog #sessionEndedDialog>
     <div class="dialog-content" (click)="$event.stopPropagation()">
       <h2>Session Timed Out!</h2>
-      <p>You we gone for a while, we closed your session!</p>
+      <p>You were gone for a while, we closed your session!</p>
       <div class="loading-container">
         <div class="loading-container-inner">
           <div class="dash first"></div>
-          <div class="dash seconde"></div>
+          <div class="dash second"></div>
           <div class="dash third"></div>
           <div class="dash fourth"></div>
         </div>

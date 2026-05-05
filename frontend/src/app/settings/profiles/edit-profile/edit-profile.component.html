@@ -158,7 +158,7 @@
       />
       <app-options-setting
         name="Folder Enabled"
-        description="Save trailer file in a seperate folder inside Media folder."
+        description="Save trailer file in a separate folder inside Media folder."
         [options]="trueFalseOptions"
         [selectedOption]="profile()?.folder_enabled"
         (optionChange)="profileService.updateSetting('folder_enabled', $event)"
@@ -331,7 +331,7 @@
       <app-range-setting
         name="Min Duration"
         description="Minimum video duration (in seconds) to consider while searching."
-        descriptionExtra="Default is 30. Minimum is 30. Should be atmost `Maximum Duration - 60`."
+        descriptionExtra="Default is 30. Minimum is 30. Should be at most `Maximum Duration - 60`."
         [minValue]="30"
         [maxValue]="minLimitMax()"
         [value]="profile()?.min_duration ?? 30"
@@ -341,7 +341,7 @@
       <app-range-setting
         name="Max Duration"
         description="Maximum video duration (in seconds) to consider while searching."
-        descriptionExtra="Default is 600. Maximum is 600. Should be atleast `Minimum Duration + 60`."
+        descriptionExtra="Default is 600. Maximum is 600. Should be at least `Minimum Duration + 60`."
         [minValue]="maxLimitMin()"
         [maxValue]="600"
         [value]="profile()?.max_duration ?? 600"
