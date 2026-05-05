@@ -33,7 +33,7 @@ jobs:
         run: cd backend && uv run python -m pytest tests
 
       - name: Get Coverage Report
-        uses: orgoro/coverage@v3.2
+        uses: orgoro/coverage@v3.3
         with:
             coverageFile: backend/coverage.xml
             token: ${{ secrets.GITHUB_TOKEN }}
