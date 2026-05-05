@@ -23,6 +23,8 @@ export class AppComponent implements OnDestroy, OnInit {
   private readonly websocketService = inject(WebsocketService);
 
   protected messages = signal<MessageData[]>([]);
+  protected readonly pinnedToasts = signal(new Set<MessageData>());
+  private readonly toastTimeouts = new Map<MessageData, ReturnType<typeof setTimeout>>();
   private toastSubscription?: Subscription;
 
   private extendTimeoutId: any;
@@ -39,10 +41,8 @@ export class AppComponent implements OnDestroy, OnInit {
     this.toastSubscription = this.websocketService.toastMessage.subscribe({
       next: (data: MessageData) => {
         this.messages.update((msgs) => [...msgs, data]);
-        setTimeout(() => {
-          // Remove last message after 3 seconds
-          this.messages.update((msgs) => msgs.filter((msg) => msg !== data));
-        }, 3000);
+        const id = setTimeout(() => this.removeMessage(data), 3000);
+        this.toastTimeouts.set(data, id);
       },
     });
   }
@@ -79,6 +79,24 @@ export class AppComponent implements OnDestroy, OnInit {
     if (this.sessionTimeoutId) {
       clearTimeout(this.sessionTimeoutId);
     }
+    this.toastTimeouts.forEach((id) => clearTimeout(id));
+  }
+
+  removeMessage(data: MessageData): void {
+    clearTimeout(this.toastTimeouts.get(data));
+    this.toastTimeouts.delete(data);
+    this.pinnedToasts.update((s) => {
+      const n = new Set(s);
+      n.delete(data);
+      return n;
+    });
+    this.messages.update((msgs) => msgs.filter((m) => m !== data));
+  }
+
+  stopAutoClose(data: MessageData): void {
+    clearTimeout(this.toastTimeouts.get(data));
+    this.toastTimeouts.delete(data);
+    this.pinnedToasts.update((s) => new Set(s).add(data));
   }
 
   // Non-required: dialogs are only in the DOM when isAuthenticated() is true

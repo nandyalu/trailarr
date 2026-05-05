@@ -98,12 +98,77 @@
 }
 
 .toast {
-  text-wrap: wrap;
-  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface);
   animation: slideInRight 0.3s ease-out forwards;
+  cursor: pointer;
+}
+
+.toast-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+.toast-message {
+  flex: 1;
+  text-wrap: wrap;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  opacity: 0.7;
+  flex-shrink: 0;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    display: block;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: toastProgress 3s linear forwards;
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.toast.pinned .toast-progress {
+  display: none;
 }
 
 .info {
