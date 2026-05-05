@@ -120,9 +120,27 @@
   width: 3rem;
 }
 
-.search-title {
+.search-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin: auto 0.5rem;
+}
+
+.search-title {
   text-align: left;
+}
+
+.search-connection {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.navsearch-results .title.no-results {
+  cursor: default;
+  color: var(--color-on-surface-variant);
+  justify-content: center;
+  font-style: italic;
 }
 
 .navsearch-results .title:hover,

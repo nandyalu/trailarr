@@ -66,26 +66,19 @@
     <form id="searchForm" class="navsearch-form">
       <input type="search" autocomplete="off" [formField]="searchForm.query" placeholder="Search for media..." aria-label="search" />
     </form>
-    <div class="navsearch-results" [class.active]="searchResults().length > 0">
-      <!-- <button *ngIf="searchResults.length > 0" (click)="searchResults = []">Close</button> -->
-
-      @for (result of searchResults(); track result) {
-        <div
-          class="title"
-          [class.selected]="result.id === selectedId()"
-          [routerLink]="result.id === -1 ? null : ['/media/', result.id]"
-          (click)="clearSearchResults()"
-        >
-          @if (result.id > 0) {
-            <img src="{{ result.poster_path || 'assets/poster-lg.png' }}" alt="{{ result.title }}" class="search-poster" />
-          }
-          @if (result.id > 0) {
-            <span class="search-title">{{ result.title + ' (' + result.year + ')' }}</span>
-          }
-          @if (result.id < 0) {
-            <span class="search-title">{{ result.title }}</span>
-          }
-        </div>
+    <div class="navsearch-results" [class.active]="previousSearchQuery().length >= 3">
+      @if (searchResults().length === 0) {
+        <div class="title no-results">No results found</div>
+      } @else {
+        @for (result of searchResults(); track result.id) {
+          <div class="title" [class.selected]="result.id === selectedId()" [routerLink]="['/media/', result.id]" (click)="clearSearchResults()">
+            <img [src]="result.poster_path || 'assets/poster-lg.png'" [alt]="result.title" class="search-poster" />
+            <div class="search-info">
+              <span class="search-title">{{ result.title }} ({{ result.year }})</span>
+              <span class="search-connection">{{ getConnectionName(result.connection_id) }}</span>
+            </div>
+          </div>
+        }
       }
     </div>
   </div>

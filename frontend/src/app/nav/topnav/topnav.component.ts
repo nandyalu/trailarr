@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, Renderer2, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Renderer2, signal} from '@angular/core';
 import {debounce, form, FormField} from '@angular/forms/signals';
 import {Router, RouterLink} from '@angular/router';
 import {AuthService} from 'src/app/services/auth.service';
+import {ConnectionService} from 'src/app/services/connection.service';
 import {SettingsService} from 'src/app/services/settings.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
 import {RouteHome, RouteMedia} from 'src/routing';
-import {SearchMedia} from '../../models/media';
+import {Media} from '../../models/media';
 import {MediaService} from '../../services/media.service';
 
 @Component({
@@ -17,12 +18,17 @@ import {MediaService} from '../../services/media.service';
 })
 export class TopnavComponent {
   private readonly authService = inject(AuthService);
+  private readonly connectionService = inject(ConnectionService);
   private readonly elementRef = inject(ElementRef);
   private readonly mediaService = inject(MediaService);
   private readonly renderer = inject(Renderer2);
   private readonly router = inject(Router);
   private readonly settingsService = inject(SettingsService);
   private readonly websocketService = inject(WebsocketService);
+
+  readonly connectionNameMap = computed(
+    () => new Map(this.connectionService.connectionsResource.value()?.map((c) => [c.id, c.name]) ?? []),
+  );
 
   searchQuery = signal({
     query: '',
@@ -31,7 +37,7 @@ export class TopnavComponent {
     debounce(schema.query, 400);
   });
   previousSearchQuery = signal('');
-  searchResults = signal<SearchMedia[]>([]);
+  searchResults = signal<Media[]>([]);
   selectedIndex = signal(-1);
   selectedId = signal(-1);
   loginDisabled = this.settingsService.settingsResource.value()?.webui_disable_auth ?? false;
@@ -157,25 +163,11 @@ export class TopnavComponent {
     });
   }
 
-  protected readonly noSearchResult: SearchMedia = {
-    id: -1,
-    title: 'No results found',
-    imdb_id: '',
-    txdb_id: '',
-    poster_path: '',
-    year: 0,
-    youtube_trailer_id: '',
-    is_movie: true,
-  };
+  getConnectionName(connectionId: number): string {
+    return this.connectionNameMap().get(connectionId) ?? '';
+  }
+
   onSearch(query: string = '') {
-    // console.log('Search query: %s', this.searchQuery);
-    this.mediaService.searchMedia(query).subscribe((media_list: SearchMedia[]) => {
-      // console.log('Search results: %o', media_list);
-      if (media_list.length === 0) {
-        this.searchResults.set([this.noSearchResult]);
-        return;
-      }
-      this.searchResults.set(media_list);
-    });
+    this.searchResults.set(this.mediaService.searchLocal(query));
   }
 }
