@@ -19,19 +19,21 @@ export class TasksService {
     defaultValue: {tasks: [], jobs: [], configs: []},
   });
 
-  readonly scheduledTasks = computed<QuivTask[]>(() => {
-    const {tasks, jobs, configs} = this.tasksDataResource.value();
-
-    const lastJobByTaskId = new Map<string, QuivJob>();
-    for (const job of jobs) {
-      const existing = lastJobByTaskId.get(job.task_id);
+  private readonly latestJobByTaskId = computed<Map<string, QuivJob>>(() => {
+    const map = new Map<string, QuivJob>();
+    for (const job of this.tasksDataResource.value().jobs) {
+      const existing = map.get(job.task_id);
       if (!existing || job.started_at > existing.started_at) {
-        lastJobByTaskId.set(job.task_id, job);
+        map.set(job.task_id, job);
       }
     }
+    return map;
+  });
 
+  readonly scheduledTasks = computed<QuivTask[]>(() => {
+    const {tasks, configs} = this.tasksDataResource.value();
+    const lastJobByTaskId = this.latestJobByTaskId();
     const configByName = new Map(configs.map((c) => [c.task_name, c]));
-
     return tasks.map((task) => ({
       ...task,
       last_run: lastJobByTaskId.get(task.id) ?? null,
@@ -39,7 +41,11 @@ export class TasksService {
     }));
   });
 
-  readonly jobs = computed<QuivJob[]>(() => this.tasksDataResource.value().jobs);
+  readonly jobs = computed<QuivJob[]>(() =>
+    [...this.latestJobByTaskId().values()].sort(
+      (a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime(),
+    ),
+  );
   readonly isLoading = this.tasksDataResource.isLoading;
 
   refreshData() {
