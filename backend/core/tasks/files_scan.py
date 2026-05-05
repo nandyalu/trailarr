@@ -55,6 +55,89 @@ def _has_folder_changed(folder_path: str, media_id: int, tz) -> bool:
     return False
 
 
+def _handle_folder_gone(media: MediaRead) -> None:
+    """Reset stale flags when the media folder is inaccessible or deleted."""
+    if media.trailer_exists:
+        media_manager.update_trailer_exists(media.id, False)
+    if media.media_exists:
+        media_manager.update_media_exists(media.id, False)
+
+
+async def _process_trailer_changes(
+    media: MediaRead,
+    trailer_paths: set[str],
+    existing_downloads: list,
+    source: EventSource,
+) -> tuple[int, int]:
+    """Detect new trailers and mark deleted downloads, then reconcile trailer_exists.
+
+    Returns:
+        tuple[int, int]: (new_trailer_count, missing_trailer_count)
+    """
+    existing_paths = {d.path for d in existing_downloads}
+
+    # New trailer files found on disk that are not yet recorded as downloads
+    new_count = 0
+    for t_path in trailer_paths:
+        if t_path in existing_paths:
+            continue
+        new_count += 1
+        logger.info(
+            f"Found new trailer file: '{t_path}' for '{media.title}'"
+            f" [{media.id}]"
+        )
+        await record_new_trailer_download(media, 0, t_path)
+        event_manager.track_trailer_detected(
+            media_id=media.id,
+            source=source,
+            source_detail="FilesScan",
+        )
+        if not media.trailer_exists and not media.monitor:
+            # Guard: skip when monitor=True — the download task may still be working
+            # through remaining profiles (e.g. a stop_monitoring=False profile ran
+            # first; a higher-priority profile is still pending). Setting
+            # trailer_exists=True would also force monitor=False and prevent those
+            # profiles from running.
+            media.trailer_exists = True
+            media_manager.update_trailer_exists(media.id, True)
+
+    # Downloads whose file no longer exists on disk
+    missing_count = 0
+    for download in existing_downloads:
+        if download.path in trailer_paths:
+            continue
+        if not os.path.exists(download.path):
+            missing_count += 1
+            logger.info(
+                f"Trailer file deleted for download: '{download.path}' for"
+                f" '{media.title}' [{media.id}]"
+            )
+            download_manager.mark_as_deleted(download.id)
+            event_manager.track_trailer_deleted(
+                media_id=media.id,
+                reason="file_not_found",
+                source=source,
+                source_detail="FilesScan",
+            )
+
+    # Reconcile trailer_exists in both directions
+    if not trailer_paths and media.trailer_exists:
+        # No trailers on disk but flag is True → reset
+        media.trailer_exists = False
+        media_manager.update_trailer_exists(media.id, False)
+    elif trailer_paths and not media.trailer_exists and not media.monitor:
+        # Trailers exist on disk but flag is stale False.
+        # Guard: skip when monitor=True — the download task may still be working
+        # through remaining profiles (e.g. a stop_monitoring=False profile ran
+        # first; a higher-priority profile is still pending). Setting
+        # trailer_exists=True would also force monitor=False and prevent those
+        # profiles from running.
+        media.trailer_exists = True
+        media_manager.update_trailer_exists(media.id, True)
+
+    return new_count, missing_count
+
+
 async def scan_media_folder(
     media: MediaRead,
     scanner: MediaScanner | None = None,
@@ -64,10 +147,10 @@ async def scan_media_folder(
         and update the database with download records.
     Args:
         media (MediaRead): The media item to scan.
-        scanner (FolderScan | None): Optional FolderScan instance to use for scanning.
+        scanner (MediaScanner | None): Optional scanner instance to use.
+        user_initiated (bool): When False, skips scan if folder is unchanged.
     Returns:
-        tuple[int, int]: A tuple containing the number of new trailer files found \
-            and the number of missing trailer files.
+        tuple[int, int]: Number of new trailer files found and missing trailers.
     """
     if not media.folder_path:
         return 0, 0
@@ -81,80 +164,23 @@ async def scan_media_folder(
         f"Scanning files for '{media.title}' [{media.id}] — folder changed"
     )
 
-    # Get the folder files info
     files_info = await scanner.get_folder_files(media.folder_path, media.id)
     if not files_info:
-        # Folder is gone — reset both flags if they are stale
-        if media.trailer_exists:
-            media_manager.update_trailer_exists(media.id, False)
-        if media.media_exists:
-            media_manager.update_media_exists(media.id, False)
+        _handle_folder_gone(media)
         return 0, 0
 
-    # Update the file/folder info in the database
     files_manager.update(media, files_info)
 
-    # Sync media_exists with what is actually on disk
     disk_media_exists = await scanner.check_media_exists(files_info)
     if disk_media_exists != media.media_exists:
         media_manager.update_media_exists(media.id, disk_media_exists)
 
-    # Get trailer paths
     trailer_paths = scanner.get_trailer_paths(files_info)
-
-    # Get all existing downloads with existing files for this media
     all_downloads = [d for d in media.downloads if d.file_exists]
-    existing_paths = {d.path for d in all_downloads}
-
-    # Check if any trailer paths are new downloads
-    new_count = 0
-    _source = EventSource.USER if user_initiated else EventSource.SYSTEM
-    for t_path in trailer_paths:
-        if t_path in existing_paths:
-            # Already recorded as download
-            continue
-        # New trailer download found
-        new_count += 1
-        logger.info(
-            f"Found new trailer file: '{t_path}' for '{media.title}'"
-            f" [{media.id}]"
-        )
-        await record_new_trailer_download(media, 0, t_path)
-        event_manager.track_trailer_detected(
-            media_id=media.id,
-            source=_source,
-            source_detail="FilesScan",
-        )
-        if not media.trailer_exists:
-            media.trailer_exists = True
-            media_manager.update_trailer_exists(media.id, True)
-
-    # Mark downloads as non-existent if file is deleted
-    missing_count = 0
-    for download in all_downloads:
-        if download.path in trailer_paths:
-            # Already found in current scan
-            continue
-        if not os.path.exists(download.path):
-            missing_count += 1
-            logger.info(
-                f"Trailer file deleted for download: '{download.path}' for"
-                f" '{media.title}' [{media.id}]"
-            )
-            download_manager.mark_as_deleted(download.id)
-            event_manager.track_trailer_deleted(
-                media_id=media.id,
-                reason="file_not_found",
-                source=_source,
-                source_detail="FilesScan",
-            )
-
-    # If no trailer files exist on disk but media is marked as having trailers, reset
-    if not trailer_paths and media.trailer_exists:
-        media.trailer_exists = False
-        media_manager.update_trailer_exists(media.id, False)
-
-    return new_count, missing_count
+    source = EventSource.USER if user_initiated else EventSource.SYSTEM
+    return await _process_trailer_changes(
+        media, trailer_paths, all_downloads, source
+    )
 
 
 async def scan_all_media_folders(
