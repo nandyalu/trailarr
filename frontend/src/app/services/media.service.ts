@@ -215,6 +215,49 @@ export class MediaService {
     return this.httpClient.get<SearchMedia[]>(url, {params: params});
   }
 
+  searchLocal(query: string, limit = 25): Media[] {
+    const bracketPattern = /\[([^\]]*)\]/g;
+    const filters: string[] = [];
+    let match;
+    while ((match = bracketPattern.exec(query)) !== null) {
+      const f = match[1].trim();
+      if (f) filters.push(f);
+    }
+    const baseQuery = query
+      .replace(/\[([^\]]*)\]/g, '')
+      .trim()
+      .toLowerCase();
+
+    return this.combinedMedia()
+      .filter((m) => {
+        if (baseQuery) {
+          if (!m.title.toLowerCase().includes(baseQuery) && !m.clean_title.toLowerCase().includes(baseQuery)) return false;
+        }
+        for (const f of filters) {
+          if (/^id=\d+$/i.test(f)) {
+            // id=<number> → exact id match
+            if (m.id !== parseInt(f.slice(3), 10)) return false;
+          } else if (/^\d{4}$/.test(f)) {
+            // Exactly 4 digits → year (exact)
+            if (m.year !== parseInt(f, 10)) return false;
+          } else {
+            // Everything else → language, imdb_id, txdb_id, studio, youtube_trailer_id
+            const fl = f.toLowerCase();
+            if (
+              !m.language.toLowerCase().includes(fl) &&
+              !(m.imdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.txdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.studio ?? '').toLowerCase().includes(fl) &&
+              !(m.youtube_trailer_id ?? '').toLowerCase().includes(fl)
+            )
+              return false;
+          }
+        }
+        return true;
+      })
+      .slice(0, limit);
+  }
+
   /**
    * Updates the status of multiple media items in a batch operation.
    *

@@ -227,10 +227,39 @@ def _update() -> None:
     _info("Updating Python dependencies...")
     uv = shutil.which("uv")
     if uv:
-        r = subprocess.run([uv, "sync", "--no-cache-dir"], cwd=str(_INSTALL_DIR / "backend"),
-                           capture_output=True, text=True)
+        backend_dir = _INSTALL_DIR / "backend"
+        uv_python_dir = backend_dir / ".uv-python"
+        uv_python_dir.mkdir(parents=True, exist_ok=True)
+        env = {k: v for k, v in os.environ.items() if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")}
+        env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
+
+        subprocess.run(
+            [uv, "python", "install", "cpython-3.13"],
+            capture_output=True, text=True, env=env,
+        )
+        python_bins = sorted(uv_python_dir.glob("cpython-3.13*/bin/python3*"))
+        python_bin = next((p for p in python_bins if not p.name.endswith(("-config", ".1"))), None)
+
+        sync_cmd = [uv, "sync", "--no-cache"]
+        if python_bin:
+            sync_cmd += ["--python", str(python_bin)]
+
+        r = subprocess.run(sync_cmd, cwd=str(backend_dir), capture_output=True, text=True, env=env)
         if r.returncode == 0:
             _ok("Python dependencies updated")
+            if _IS_LINUX:
+                import pwd
+                try:
+                    uid = pwd.getpwnam("trailarr").pw_uid
+                    gid = pwd.getpwnam("trailarr").pw_gid
+                    for p in backend_dir.rglob("*"):
+                        try:
+                            os.chown(p, uid, gid)
+                        except OSError:
+                            pass
+                    os.chown(backend_dir, uid, gid)
+                except KeyError:
+                    pass
         else:
             _warn(f"uv sync warning: {r.stderr[:200]}")
 
@@ -266,17 +295,29 @@ def _uninstall() -> None:
     if console:
         from rich.prompt import Confirm
         confirmed = Confirm.ask(
-            "  [bold red]This will remove Trailarr and all its data. Continue?[/bold red]",
+            "  [bold red]Remove Trailarr (service + application files)?[/bold red]",
             default=False,
             console=console,
         )
     else:
-        answer = input("Remove Trailarr and all data? (y/N): ").strip().lower()
+        answer = input("Remove Trailarr (service + application files)? (y/N): ").strip().lower()
         confirmed = answer in ("y", "yes")
 
     if not confirmed:
         _info("Uninstall cancelled.")
         return
+
+    if console:
+        from rich.prompt import Confirm
+        remove_data = Confirm.ask(
+            f"  [bold yellow]Also delete data directory ({_DATA_DIR})?\n"
+            "  This contains your database, backups, and config.[/bold yellow]",
+            default=False,
+            console=console,
+        )
+    else:
+        answer = input(f"Also delete data directory {_DATA_DIR}? (database, backups, config) (y/N): ").strip().lower()
+        remove_data = answer in ("y", "yes")
 
     _service_stop()
 
@@ -299,10 +340,14 @@ def _uninstall() -> None:
 
     if _INSTALL_DIR.exists():
         shutil.rmtree(_INSTALL_DIR, ignore_errors=True)
-    if _DATA_DIR.exists():
-        shutil.rmtree(_DATA_DIR, ignore_errors=True)
 
-    _ok("Trailarr has been removed.")
+    if remove_data and _DATA_DIR.exists():
+        shutil.rmtree(_DATA_DIR, ignore_errors=True)
+        _ok("Trailarr and data directory have been removed.")
+    else:
+        if _DATA_DIR.exists():
+            _info(f"Data directory kept at: {_DATA_DIR}")
+        _ok("Trailarr has been removed.")
 
 
 # ---------------------------------------------------------------------------

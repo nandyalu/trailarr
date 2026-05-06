@@ -79,59 +79,6 @@
   }
 }
 
-.toast-container {
-  position: fixed;
-  top: 5rem;
-  right: 3rem;
-  z-index: 999;
-  max-width: 25%;
-  // padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  @media (width < 765px) {
-    max-width: 80%;
-    right: 1rem;
-    padding: 0.5rem;
-  }
-}
-
-.toast {
-  text-wrap: wrap;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: var(--color-surface-container-high);
-  color: var(--color-on-surface);
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-.info {
-  background-color: var(--color-info);
-  color: var(--color-info-text);
-}
-
-.success {
-  background-color: var(--color-success);
-  color: var(--color-success-text);
-}
-
-.error {
-  background-color: var(--color-warning);
-  color: var(--color-warning-text);
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
 
 .dialog-content {
   padding: 1rem;
@@ -167,7 +114,7 @@
   animation: spin 3s linear infinite;
 }
 
-.seconde {
+.second {
   transform-origin: center right;
   animation: spin2 3s linear infinite;
   animation-delay: 0.2s;

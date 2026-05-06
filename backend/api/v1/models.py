@@ -43,6 +43,7 @@ class Settings(BaseModel):
     delete_trailer_connection: bool
     delete_trailer_media: bool
     ffmpeg_timeout: int
+    files_full_scan: bool
     gpu_available_amd: bool
     gpu_available_intel: bool
     gpu_available_nvidia: bool

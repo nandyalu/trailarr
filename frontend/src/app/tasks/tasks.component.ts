@@ -34,7 +34,7 @@ export class TasksComponent {
   constructor() {
     this.websocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
       if (msg.reload?.includes('tasks')) {
-        this.refreshTaskData();
+        setTimeout(() => this.refreshTaskData(), 500);
       }
     });
   }
