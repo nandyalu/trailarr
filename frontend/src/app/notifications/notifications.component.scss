@@ -1,0 +1,146 @@
+.toast-container {
+  position: fixed;
+  top: 5rem;
+  right: 3rem;
+  z-index: 999;
+  max-width: 25%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (width < 765px) {
+    max-width: 80%;
+    right: 1rem;
+    padding: 0.5rem;
+  }
+}
+
+.toast {
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.toast-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+.toast-message {
+  flex: 1;
+  text-wrap: wrap;
+}
+
+.toast-close,
+.toast-pin {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  flex-shrink: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    display: block;
+  }
+}
+
+.toast:hover .toast-pin {
+  visibility: visible;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.toast.pinned .toast-close {
+  visibility: visible;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .toast-pin {
+    visibility: visible;
+    opacity: 0.7;
+  }
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: toastProgress 3s linear forwards;
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.toast.pinned .toast-progress {
+  display: none;
+}
+
+.toast:hover:not(.pinned) .toast-progress {
+  animation-play-state: paused;
+}
+
+.info {
+  background-color: var(--color-info);
+  color: var(--color-info-text);
+}
+
+.success {
+  background-color: var(--color-success);
+  color: var(--color-success-text);
+}
+
+.error {
+  background-color: var(--color-warning);
+  color: var(--color-warning-text);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

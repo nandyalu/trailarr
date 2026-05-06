@@ -19,30 +19,8 @@
         }
       </main>
     </div>
-    <!-- Container to show Websocket messages received from server -->
-    <div class="toast-container">
-      @for (msg of messages(); track msg) {
-        <div class="toast" [class]="msg.type.toLowerCase()" [class.pinned]="pinnedToasts().has(msg)" (click)="stopAutoClose(msg)">
-          <div class="toast-header">
-            @if (msg.type === 'success') {
-              <svg viewBox="0 0 24 24" class="toast-icon"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-            } @else if (msg.type === 'error') {
-              <svg viewBox="0 0 24 24" class="toast-icon"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-            } @else {
-              <svg viewBox="0 0 24 24" class="toast-icon"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-            }
-            <span class="toast-message">{{ msg.message }}</span>
-            <button class="toast-pin" [attr.aria-pressed]="pinnedToasts().has(msg)" aria-label="Pin notification" (click)="$event.stopPropagation(); stopAutoClose(msg)">
-              <svg viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z"/></svg>
-            </button>
-            <button class="toast-close" aria-label="Close notification" (click)="$event.stopPropagation(); removeMessage(msg)">
-              <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-          </div>
-          <div class="toast-progress"></div>
-        </div>
-      }
-    </div>
+    <!-- Notifications / toast messages -->
+    <app-notifications />
   </div>
 
   <!-- Session Timing Out Dialog -->
@@ -60,23 +38,6 @@
         </div>
       </div>
       <button class="primary" (click)="extendTime()">Extend Session</button>
-    </div>
-  </dialog>
-
-  <!-- Session Timed Out Dialog -->
-  <dialog #sessionEndedDialog>
-    <div class="dialog-content" (click)="$event.stopPropagation()">
-      <h2>Session Timed Out!</h2>
-      <p>You were gone for a while, we closed your session!</p>
-      <div class="loading-container">
-        <div class="loading-container-inner">
-          <div class="dash first"></div>
-          <div class="dash second"></div>
-          <div class="dash third"></div>
-          <div class="dash fourth"></div>
-        </div>
-      </div>
-      <button class="secondary" (click)="reloadPage()" tabindex="1">Refresh</button>
     </div>
   </dialog>
 } @else {
