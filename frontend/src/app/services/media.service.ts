@@ -223,7 +223,10 @@ export class MediaService {
       const f = match[1].trim();
       if (f) filters.push(f);
     }
-    const baseQuery = query.replace(/\[([^\]]*)\]/g, '').trim().toLowerCase();
+    const baseQuery = query
+      .replace(/\[([^\]]*)\]/g, '')
+      .trim()
+      .toLowerCase();
 
     return this.combinedMedia()
       .filter((m) => {
@@ -234,20 +237,18 @@ export class MediaService {
           if (/^id=\d+$/i.test(f)) {
             // id=<number> → exact id match
             if (m.id !== parseInt(f.slice(3), 10)) return false;
-          } else if (/^[a-zA-Z]{2}$/.test(f)) {
-            // Exactly 2 letters → language (exact)
-            if (m.language.toLowerCase() !== f.toLowerCase()) return false;
           } else if (/^\d{4}$/.test(f)) {
             // Exactly 4 digits → year (exact)
             if (m.year !== parseInt(f, 10)) return false;
           } else {
-            // Everything else → imdb_id, txdb_id, studio, youtube_trailer_id
+            // Everything else → language, imdb_id, txdb_id, studio, youtube_trailer_id
             const fl = f.toLowerCase();
             if (
-              !m.imdb_id.toLowerCase().includes(fl) &&
-              !m.txdb_id.toLowerCase().includes(fl) &&
-              !m.studio.toLowerCase().includes(fl) &&
-              !m.youtube_trailer_id.toLowerCase().includes(fl)
+              !m.language.toLowerCase().includes(fl) &&
+              !(m.imdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.txdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.studio ?? '').toLowerCase().includes(fl) &&
+              !(m.youtube_trailer_id ?? '').toLowerCase().includes(fl)
             )
               return false;
           }

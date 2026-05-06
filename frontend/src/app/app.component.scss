@@ -126,7 +126,8 @@
   text-wrap: wrap;
 }
 
-.toast-close {
+.toast-close,
+.toast-pin {
   background: none;
   border: none;
   cursor: pointer;
@@ -145,6 +146,10 @@
   &:hover {
     opacity: 1;
   }
+}
+
+.toast-pin[aria-pressed='true'] {
+  opacity: 1;
 }
 
 .toast-progress {

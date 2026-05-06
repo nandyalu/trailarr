@@ -114,11 +114,11 @@ export class TopnavComponent {
       searchInput?.focus(); // Focus the search input field
       return;
     }
+    if (event.key === 'Escape' && this.previousSearchQuery().length >= 3) {
+      this.clearSearchResults();
+      return;
+    }
     if (this.searchResults().length > 0) {
-      if (event.key === 'Escape') {
-        this.clearSearchResults();
-        return;
-      }
       let firstId = this.searchResults()[0].id;
       let lastId = this.searchResults()[this.searchResults().length - 1].id;
       if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {

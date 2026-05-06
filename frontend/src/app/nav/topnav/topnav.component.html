@@ -68,7 +68,7 @@
     </form>
     <div class="navsearch-results" [class.active]="previousSearchQuery().length >= 3">
       @if (searchResults().length === 0) {
-        <div class="title no-results">No results found</div>
+        <div class="title no-results" (click)="clearSearchResults()">No results found</div>
       } @else {
         @for (result of searchResults(); track result.id) {
           <div class="title" [class.selected]="result.id === selectedId()" [routerLink]="['/media/', result.id]" (click)="clearSearchResults()">

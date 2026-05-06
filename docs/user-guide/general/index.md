@@ -31,9 +31,8 @@ Trailarr detects what to search based on the shape of the bracket value:
 | Filter shape | Searches in | Match type |
 |---|---|---|
 | `[id=<number>]` (e.g. `[id=2]`) | Trailarr ID | Exact |
-| Exactly 2 letters (e.g. `[en]`) | Language | Exact |
 | Exactly 4 digits (e.g. `[2026]`) | Year | Exact |
-| Anything else (e.g. `[tt0133093]`) | IMDb ID, TXDB ID, Studio, YouTube ID | Contains |
+| Anything else (e.g. `[english]`) | Language, IMDb ID, TXDB ID, Studio, YouTube ID | Contains |
 
 #### Examples
 
@@ -41,8 +40,8 @@ Trailarr detects what to search based on the shape of the bracket value:
 |---|---|
 | `matrix` | Titles containing "matrix" |
 | `matrix [1999]` | "Matrix" titles from 1999 |
-| `[2024] [en]` | All English-language media from 2024 |
-| `z [2026] [en]` | Titles containing "z", year 2026, language English |
+| `[2024] [english]` | All English-language media from 2024 |
+| `z [2026] [malayalam]` | Titles containing "z", year 2026, language Malayalam |
 | `[tt0133093]` | Media with that IMDb ID |
 | `[Warner]` | Media where studio contains "Warner" |
 
