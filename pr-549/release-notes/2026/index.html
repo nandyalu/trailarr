@@ -3002,10 +3002,9 @@
 <ul>
 <li><strong>Improved Search</strong> — Search is now instant (client-side, no API call). Results include the connection name so the same title from different connections (e.g. Radarr + Plex) can be told apart. Search now supports bracket filter syntax for precise lookups — see <a href="../../user-guide/general/">Search Documentation</a> for details:<ul>
 <li><code>[id=&lt;number&gt;]</code> — exact Trailarr ID match (e.g. <code>[id=2]</code>)</li>
-<li><code>[XX]</code> (2 letters) — exact language match (e.g. <code>[en]</code>)</li>
 <li><code>[YYYY]</code> (4 digits) — exact year match (e.g. <code>[2026]</code>)</li>
-<li><code>[anything else]</code> — searches IMDb ID, TXDB ID, Studio, YouTube ID (e.g. <code>[tt0133093]</code>, <code>[Warner]</code>)</li>
-<li>Multiple brackets are AND'd together: <code>z [2026] [en]</code> returns titles containing "z", year 2026, language English.</li>
+<li><code>[anything else]</code> — searches language, IMDb ID, TXDB ID, Studio, YouTube ID (e.g. <code>[tt0133093]</code>, <code>[Warner]</code>)</li>
+<li>Multiple brackets are AND'd together: <code>z [2026] [english]</code> returns titles containing "z", year 2026, language English.</li>
 </ul>
 </li>
 <li><strong>Toast Notification Improvements</strong> — Toast messages now show a type icon (✓ success, ⚠ error, ℹ info), a close button to dismiss immediately, and a progress bar that depletes over 3 seconds. Hovering over the toast will pause timer and show an option to pin it open (hides the progress bar) until manually closed.</li>
@@ -3314,7 +3313,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="May 6, 2026 05:26:22 UTC">May 6, 2026 05:26:22</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="May 6, 2026 05:28:12 UTC">May 6, 2026 05:28:12</span>
   </span>
 
     
