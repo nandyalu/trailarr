@@ -12,13 +12,9 @@ export interface MessageData {
   providedIn: 'root',
 })
 export class WebsocketService {
-  private socket$!: WebSocketSubject<any>;
+  private socket$?: WebSocketSubject<any>;
   websocketSubscription?: Subscription;
   toastMessage = new Subject<MessageData>();
-
-  constructor() {
-    this.connect();
-  }
 
   public connect(): Observable<MessageData> {
     if (!this.socket$ || this.socket$.closed) {
@@ -63,6 +59,6 @@ export class WebsocketService {
     if (this.websocketSubscription) {
       this.websocketSubscription.unsubscribe();
     }
-    this.socket$.complete();
+    this.socket$?.complete();
   }
 }

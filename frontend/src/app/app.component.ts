@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {msMinute} from 'src/util';
 import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
@@ -21,6 +21,14 @@ export class AppComponent implements OnDestroy, OnInit {
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly websocketService = inject(WebsocketService);
+
+  constructor() {
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        this.websocketService.connect();
+      }
+    });
+  }
 
   private extendTimeoutId: any;
   private sessionTimeoutId: any;
