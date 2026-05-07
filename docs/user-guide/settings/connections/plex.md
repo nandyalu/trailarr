@@ -96,6 +96,9 @@ Each entry has two fields:
 !!! tip
     Click **Add library folders** to auto-populate entries from your Plex libraries, then fill in each **Path in Trailarr** field. Remove any libraries you do not want Trailarr to manage.
 
+!!! info "Untracked library sections are skipped automatically"
+    During each Plex sync, Trailarr compares each library section's root folder against your configured library folders. If a section's folders don't match any entry, the entire section is skipped with a single log line — no per-item noise. This is normal if you have Plex libraries (e.g. music, photos) that you haven't added path mappings for.
+
 ---
 
 ## Machine Identifier
@@ -116,7 +119,7 @@ A unique identifier for your Plex Media Server instance, used internally by Trai
 | Feature | Description |
 |---------|-------------|
 | **Media linking** | Trailarr scans your Plex libraries and matches media items from Radarr/Sonarr to their Plex counterparts. |
-| **Trailer detection** | Trailarr reads the extras/trailers available in Plex for each matched item, so profiles can skip downloading if a trailer already exists. |
+| **Trailer detection** | The weekly [Refresh Plex Trailer Flags](../../tasks/index.md#refresh-plex-trailer-flags) task checks whether Plex has a remote trailer for each linked item and caches the result. Profiles can use this to skip downloading if Plex already has a qualifying trailer. |
 | **Plex notifications** | After a trailer is downloaded, Trailarr can trigger a Plex library refresh so the new file appears in Plex immediately. |
 
 !!! tip ""

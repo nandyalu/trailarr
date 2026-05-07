@@ -25,10 +25,9 @@ Additional Media Status details can be viewed by hovering (click on it in Mobile
 
 If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is configured and this media item has been linked to a Plex library entry, the details panel will show whether Plex already has a remote trailer available for it.
 
-!!! warning ""
-    - Even if media item is linked to Plex, Trailarr will not check for the Plex trailer availability right away as it might change over time.
-    - Trailarr will only **check** the Plex trailer **availablility** while processing the media item in a `Download Missing Trailers` task.
-    - So the **Plex Trailer Status** will be shown once that check is complete.
+!!! info ""
+    - The Plex trailer status is refreshed by the [Refresh Plex Trailer Flags](../../tasks/index.md#refresh-plex-trailer-flags) task, which runs weekly (first run within a few minutes of adding a Plex connection).
+    - New media items that haven't been scanned yet will show no status until the next task run or until they are processed by `Download Missing Trailers`.
 
 | Status | Meaning |
 |--------|---------|

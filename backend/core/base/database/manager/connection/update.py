@@ -1,12 +1,33 @@
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from . import base
 from core.base.database.models.connection import (
     ArrType,
     ConnectionRead,
     ConnectionUpdate,
+    PathMapping,
 )
 from core.base.database.utils.engine import write_session
+
+
+@write_session
+def update_path_mapping_section_key(
+    pm_id: int,
+    section_key: str,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Persist the detected Plex library section key on a path mapping row.
+
+    Called by PlexConnectionManager the first time it discovers which section
+    a path mapping belongs to.  Skips gracefully if the row is not found.
+    """
+    pm = _session.exec(select(PathMapping).where(PathMapping.id == pm_id)).first()
+    if pm is None:
+        return
+    pm.plex_section_key = section_key
+    _session.add(pm)
+    _session.commit()
 
 
 @write_session

@@ -4,6 +4,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 from app_logger import ModuleLogger
+import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
@@ -88,6 +89,11 @@ class PlexConnectionManager:
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
         self.monitor = connection.monitor
+        # Refresh-run counters — reset at the start of each refresh() call.
+        self._stats_added = 0
+        self._stats_updated = 0
+        self._stats_linked = 0
+        self._stats_sections_scanned = 0
         self.api = PlexAPI(
             server_url=connection.url,
             token=connection.api_key,
@@ -140,6 +146,38 @@ class PlexConnectionManager:
             if plex_folder.startswith(pm.path_from):
                 return True
         return False
+
+    def _section_is_tracked(self, section: PlexLibrarySection) -> bool:
+        """Return True if any path mapping covers this section's root folders.
+
+        Normalises trailing slashes before comparing so that Plex paths (which
+        may omit the trailing slash) match stored path_from values (which are
+        always stored with one).
+        """
+        for pm in self.all_path_mappings:
+            pm_prefix = pm.path_from.rstrip("/\\")
+            for folder in section.folders:
+                if folder.rstrip("/\\").startswith(pm_prefix):
+                    return True
+        return False
+
+    def _persist_section_keys(self, section: PlexLibrarySection) -> None:
+        """Cache the section key on path mappings that cover this section.
+
+        Only writes to the DB when plex_section_key is still None — a one-time
+        operation per mapping so subsequent refreshes skip the write entirely.
+        """
+        for pm in self.all_path_mappings:
+            if pm.plex_section_key is not None:
+                continue
+            pm_prefix = pm.path_from.rstrip("/\\")
+            for folder in section.folders:
+                if folder.rstrip("/\\").startswith(pm_prefix):
+                    connection_manager.update_path_mapping_section_key(
+                        pm.id, section.key
+                    )
+                    pm.plex_section_key = section.key
+                    break
 
     def _reverse_path_mapping(self, path: str) -> str:
         """Convert a Trailarr-internal path back to the Plex-side path.
@@ -230,6 +268,9 @@ class PlexConnectionManager:
                     media_manager.update_monitor_and_trailer_exists_bulk(
                         [(existing.id, new_monitor, existing.trailer_exists)]
                     )
+            self._stats_updated += 1
+            if newly_linked:
+                self._stats_linked += 1
             logger.debug(
                 f"Merged Plex data for '{existing.title}' (id={existing.id})"
             )
@@ -275,6 +316,7 @@ class PlexConnectionManager:
             media_manager.update_monitor_and_trailer_exists_bulk(
                 [(media_read.id, monitor, trailer_exists)]
             )
+            self._stats_added += 1
             logger.debug(f"Created new Plex-only media row for '{item.title}'")
 
     async def _process_movie_section(
@@ -339,6 +381,14 @@ class PlexConnectionManager:
 
     async def _process_section(self, section: PlexLibrarySection) -> None:
         """Dispatch to the correct section processor based on library type."""
+        if not self._section_is_tracked(section):
+            logger.info(
+                f"Plex section '{section.title}' [{section.key}] has no"
+                " configured path mappings — skipping."
+            )
+            return
+        self._persist_section_keys(section)
+        self._stats_sections_scanned += 1
         if section.type in _MOVIE_SECTION_TYPES:
             await self._process_movie_section(section)
         elif section.type in _SHOW_SECTION_TYPES:
@@ -386,6 +436,10 @@ class PlexConnectionManager:
 
     async def refresh(self) -> None:
         """Fetch all Plex libraries and sync them into the database."""
+        self._stats_added = 0
+        self._stats_updated = 0
+        self._stats_linked = 0
+        self._stats_sections_scanned = 0
         logger.info(
             f"Starting Plex refresh for connection '{self.connection_name}'"
         )
@@ -409,5 +463,9 @@ class PlexConnectionManager:
                     f"Error processing section '{section.title}': {e}"
                 )
         logger.info(
-            f"Plex refresh completed for connection '{self.connection_name}'"
+            f"Plex refresh complete for '{self.connection_name}':"
+            f" {self._stats_sections_scanned}/{len(sections)} sections scanned,"
+            f" {self._stats_added} added,"
+            f" {self._stats_updated} updated,"
+            f" {self._stats_linked} newly linked."
         )

@@ -34,6 +34,7 @@ class PathMappingCRU(AppSQLModel):
     connection_id: int | None = Field(default=None)
     path_from: str
     path_to: str
+    plex_section_key: str | None = Field(default=None)
 
 
 class PathMapping(AppSQLModel, table=True):
@@ -49,6 +50,7 @@ class PathMapping(AppSQLModel, table=True):
     )
     path_from: str
     path_to: str
+    plex_section_key: str | None = Field(default=None)
 
 
 class ConnectionBase(AppSQLModel):
