@@ -37,4 +37,4 @@ jobs:
         with:
             coverageFile: backend/coverage.xml
             token: ${{ secrets.GITHUB_TOKEN }}
-            pathPrefix: backend
+            sourceDir: backend
