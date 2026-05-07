@@ -221,6 +221,7 @@ async def _process_single_media_item(
             return successful_downloads, skipped_items + 1
 
         _profile_name = profile.customfilter.filter_name
+        download_attempted = False
         try:
             logger.info(
                 f"Processing download for {media.title} [{media.id}]"
@@ -230,6 +231,7 @@ async def _process_single_media_item(
                 media, profile, profile.retry_count, _stop_event=_stop_event
             )
             if download_successful:
+                download_attempted = True
                 successful_downloads += 1
                 if profile.stop_monitoring:
                     logger.info(
@@ -238,6 +240,7 @@ async def _process_single_media_item(
                     )
                     break
         except (DownloadFailedError, Exception):
+            download_attempted = True
             logger.warning(
                 f"Failed to download trailer for {media.title} with profile:"
                 f" {_profile_name}. Continuing to next profile."
@@ -245,7 +248,8 @@ async def _process_single_media_item(
             skipped_items += 1
         finally:
             total_processed += 1
-            await utils.sleep_between_downloads(total_processed, logger)
+            if download_attempted:
+                await utils.sleep_between_downloads(total_processed, logger)
 
     _profile_count = len(profiles)
     _msg = f"Completed processing for media '{media.title}' [{media.id}]."

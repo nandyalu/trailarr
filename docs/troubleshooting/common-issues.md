@@ -57,6 +57,33 @@ Sometimes the cookies might not work right away. You can try the following steps
 6. If the issue still persists, you can hop on to the [Discord server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} for further help.
 
 
+## Slow Downloads / Long Pauses Between Trailers
+
+Trailarr intentionally sleeps between trailer downloads to avoid triggering YouTube's rate-limiting, which can result in temporary blocks on your server's IP address or — if you have configured a cookies file — on your YouTube account.
+
+The sleep duration scales with the number of trailers downloaded in the current run:
+
+| Trailers downloaded so far | Additional sleep |
+|----------------------------|-----------------|
+| < 10                       | ~2 minutes      |
+| 10 – 49                    | ~4 minutes      |
+| 50 – 99                    | ~6 minutes      |
+| 100 – 199                  | ~7 minutes      |
+| 200 – 499                  | ~9 minutes      |
+| 500 +                      | ~10 minutes     |
+
+A random jitter of 0–60 seconds is added on top, so the actual pause per download ranges from roughly **2 to 11 minutes** depending on batch size. This is expected behavior and not a bug.
+
+!!! note "Skipped items do not trigger a sleep"
+    If a download is skipped (e.g. Plex already has a trailer and the profile has *Skip if Plex trailer* enabled), no sleep is added for that item. The delay only applies when an actual download attempt is made.
+
+!!! warning "Using cookies increases the risk"
+    When a `cookies.txt` file is configured, downloads are tied to your YouTube account. Aggressive downloading without pauses can flag the account for suspicious activity and result in a ban. The sleep delays are especially important in this case. See the [YouTube Cookies](#youtube-cookies) section for setup guidance and best practices.
+
+If your library is large, the initial bulk download run will naturally take many hours. This is by design. Subsequent runs only download trailers for newly added media, so the pauses become infrequent once the backlog is cleared.
+
+---
+
 ## Windows Docker Desktop Users
 ### Known Issue - File Access Slowness and Workaround
 Windows users of Docker Desktop often experience slow read/write speeds when using volume mounts. This is a known limitation of file sharing between the Windows host and Docker containers.
