@@ -79,6 +79,22 @@ Tasks can be edited to change their name, interval and delay.
 
     All delays also includes an extra random time between `0 - 60` seconds.
 
+### **Refresh Plex Trailer Flags**
+
+<!-- md:version:new 0.9.3 -->
+
+- Runs once a week (first run starts 10 minutes after app launch, only if a Plex connection exists).
+- For each media item linked to a Plex connection, calls the Plex API to check whether Plex already has a remote (internet-sourced) trailer and stores the result in the database.
+- The [Download Missing Trailers](#download-missing-trailers) task reads this cached flag instead of calling Plex on every run, which significantly reduces API calls for large libraries.
+- Automatically triggered within 3 minutes whenever a new Plex connection is added, so newly linked media is scanned promptly.
+- Only appears in the Tasks page if at least one Plex connection has been added.
+
+!!! note "Only remote trailers are counted"
+    Locally stored trailer files (e.g. ones Trailarr itself downloaded) are not counted as Plex trailers. Only internet-sourced trailers provided by Plex are considered.
+
+!!! info "Cached flag behaviour"
+    Once a media item has been scanned, the cached `True`/`False` value is used by the download task until the next refresh run. New media items added between runs have no cached value yet and will trigger a live Plex API check on their first download attempt.
+
 ### **Image Refresh**
 
 - Runs every 6 hours (first run starts 12 minutes after app launch).

@@ -23,6 +23,7 @@ def mock_media():
     media.language = "en"
     media.monitor = True
     media.trailer_exists = False
+    media.plex_connection_id = None  # Not Plex-linked; keeps _check_plex_trailer from hitting the API
     media.model_dump.return_value = {
         "id": 1,
         "title": "Test Movie",
@@ -54,6 +55,7 @@ def mock_profile():
     profile.stop_monitoring = True
     profile.always_search = False
     profile.remove_silence = False
+    profile.skip_if_plex_trailer = False  # Not testing Plex skip; keeps _check_plex_trailer inactive
     return profile
 
 
@@ -524,6 +526,7 @@ class TestCheckPlexTrailer:
         media.title = "Test Movie"
         media.plex_connection_id = 10
         media.plex_rating_key = "123"
+        media.plex_trailer = None  # Simulate unscanned item so the API fast-path is skipped
         return media
 
     @pytest.fixture

@@ -37,6 +37,12 @@ async def _check_plex_trailer(
         return False
     if not (media.plex_connection_id and media.plex_rating_key):
         return False
+
+    # Use cached flag set by the weekly plex_trailer_refresh task.
+    # None means the item hasn't been scanned yet — fall through to the API call.
+    if media.plex_trailer is not None:
+        return media.plex_trailer
+
     try:
         conn = connection_manager.read(media.plex_connection_id)
         if conn.arr_type != ArrType.PLEX:
