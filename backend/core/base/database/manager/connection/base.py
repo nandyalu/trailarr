@@ -11,6 +11,7 @@ from core.base.database.models.connection import (
     PathMapping,
 )
 from core.base.database.utils.engine import read_session
+from core.base.utils.path_utils import normalize_trailing_slash
 from exceptions import ItemNotFoundError
 
 
@@ -66,30 +67,6 @@ async def validate_connection(connection: ConnectionBase) -> str:
     return status_message
 
 
-def end_path_with_slash(path: str) -> str:
-    """End a path with a slash if it does not already have one \n
-    Args:
-        path (str): The path to end with a slash \n
-    Returns:
-        str: The path with a slash at the end
-    """
-    # Check if path has a slash '/' (Linux/MacOS)
-    if path.count("/") > 1:
-        # End path with a slash if it does not have one
-        if not path.endswith("/"):
-            path += "/"
-        return path
-    # Check if path has a backslash '\' (Windows)
-    # Python uses double backslashes for escape characters, so we need to check for '\\'
-    # to escape the backslash itself which will be a single backslash in the path
-    if path.count("\\") > 1:
-        # End path with a slash if it does not have one
-        if not path.endswith("\\"):
-            path += "\\"
-        return path
-    return path
-
-
 def _convert_path_mappings(
     connection: ConnectionCreate | ConnectionUpdate,
 ) -> list[PathMapping]:
@@ -102,11 +79,11 @@ def _convert_path_mappings(
     db_path_mappings: list[PathMapping] = []
     for path_mapping in connection.path_mappings:
         db_path_mapping = PathMapping.model_validate(path_mapping)
-        # Make sure that path_from/path_to ends with a slash
-        db_path_mapping.path_from = end_path_with_slash(
+        # Ensure path_from/path_to end with the correct separator for their type
+        db_path_mapping.path_from = normalize_trailing_slash(
             db_path_mapping.path_from
         )
-        db_path_mapping.path_to = end_path_with_slash(db_path_mapping.path_to)
+        db_path_mapping.path_to = normalize_trailing_slash(db_path_mapping.path_to)
         db_path_mappings.append(db_path_mapping)
     return db_path_mappings
 

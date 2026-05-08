@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {msMinute} from 'src/util';
 import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
@@ -16,6 +16,10 @@ import {LoadIndicatorComponent} from './shared/load-indicator';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:click)': 'resetIdleTimer()',
+    '(document:keypress)': 'resetIdleTimer()',
+  },
 })
 export class AppComponent implements OnDestroy, OnInit {
   protected readonly authService = inject(AuthService);
@@ -41,9 +45,7 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   // Uncomment the below code to enable mouse movement detection too!
-  // @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:click')
-  @HostListener('document:keypress')
+  // host: { '(document:mousemove)': 'resetIdleTimer()' }
   resetIdleTimer(): void {
     // Activity detected, reset the idle timer
     clearTimeout(this.sessionTimeoutId);

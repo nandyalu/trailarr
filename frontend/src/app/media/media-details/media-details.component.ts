@@ -1,5 +1,5 @@
 import {TitleCasePipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, input, signal, ViewContainerRef} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, ViewContainerRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
@@ -33,6 +33,9 @@ import {MediaEventsComponent} from './media-events/media-events.component';
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown)': 'handleKeyboardEvent($event)',
+  },
 })
 export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
@@ -96,8 +99,6 @@ export class MediaDetailsComponent {
     }
   });
 
-  // Add Hostlisteners to handle keyboard shortcuts
-  @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     // Check if the active element is an input, textarea, or contenteditable element
     const activeElement = document.activeElement as HTMLElement;

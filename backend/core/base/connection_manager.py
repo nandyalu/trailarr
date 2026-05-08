@@ -9,6 +9,7 @@ import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaReadDC
+from core.base.utils.path_utils import apply_path_mappings
 from core.files_handler import FilesHandler
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.media import (
@@ -88,43 +89,13 @@ class BaseConnectionManager(ABC):
         except Exception:
             return None
 
-    def _remove_end_slash(self, path: str) -> str:
-        """Remove the end slash from the path. \n
-        Args:
-            path (str): The path to remove the end slash from. \n
-        Returns:
-            str: The path without the end slash."""
-        # Linux paths
-        if path.endswith("/"):
-            return path[:-1]
-        # Windows paths
-        if path.endswith("\\"):
-            return path[:-1]
-        # No end slash
-        return path
-
     def _apply_path_mappings_to_path(self, path: str) -> str:
         """Apply the path mappings to the given path. \n
         Args:
             path (str): The path to apply the mappings to. \n
         Returns:
             str: The updated path."""
-        if not path:
-            return path
-        for path_mapping in self.path_mappings:
-            if path.startswith(path_mapping.path_from):
-                path = path.replace(
-                    path_mapping.path_from, path_mapping.path_to
-                )
-                break
-            # Apply path mappings to the root folders that doesn't have a trailing slash
-            _path_from = self._remove_end_slash(path_mapping.path_from)
-            _path_to = self._remove_end_slash(path_mapping.path_to)
-            if path.startswith(_path_from):
-                path = path.replace(_path_from, _path_to)
-                break
-        path = path.replace("\\", "/")
-        return path
+        return apply_path_mappings(path, self.path_mappings)
 
     async def get_rootfolders(self) -> list[str]:
         """Get the root folders from the Arr application. \n

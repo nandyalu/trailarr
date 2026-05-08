@@ -39,7 +39,7 @@ export class TasksComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.tasksService.refreshData();
   }
 

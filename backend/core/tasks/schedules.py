@@ -195,22 +195,22 @@ def schedule_all_tasks() -> None:
     logger.info("All tasks scheduled!")
 
 
-def ensure_plex_trailer_refresh_scheduled(delay_seconds: float = 180.0) -> None:
-    """Register the plex_trailer_refresh task, or trigger a one-shot run if already scheduled.
+def ensure_plex_trailer_refresh_scheduled(
+    delay_seconds: float = 180.0,
+) -> None:
+    """Register or trigger the plex_trailer_refresh task when a Plex connection is added.
 
-    Called when a Plex connection is added. On the first ever Plex connection
-    the recurring weekly task is seeded into the DB and added to the scheduler.
-    On subsequent Plex connection additions a one-shot run is triggered instead
-    so the newly linked media items are scanned promptly.
+    Uses the scheduler as the source of truth: if the recurring weekly job is not
+    in the scheduler (first connection or post-restart gap), it is registered now.
+    If already scheduled, a one-shot run is triggered for the newly added connection.
     """
-    existing_config = get_task_config("plex_trailer_refresh")
     func = TASK_REGISTRY["plex_trailer_refresh"]
+    config = _get_or_create_config("plex_trailer_refresh", _PLEX_TRAILER_REFRESH_DEFAULTS)
 
-    if existing_config is None:
-        # First Plex connection — register the recurring weekly task.
-        defaults = dict(_PLEX_TRAILER_REFRESH_DEFAULTS)
-        defaults["delay_seconds"] = delay_seconds
-        config = _get_or_create_config("plex_trailer_refresh", defaults)
+    all_tasks = scheduler.get_all_tasks(include_run_once=False)
+    is_scheduled = any(t.task_name == config.task_name for t in all_tasks)
+
+    if not is_scheduled:
         scheduler.add_task(
             task_name=config.task_name,
             func=func,
@@ -219,11 +219,10 @@ def ensure_plex_trailer_refresh_scheduled(delay_seconds: float = 180.0) -> None:
             run_once=False,
         )
         logger.info(
-            f"Registered 'Refresh Plex Trailer Flags' task (first run in"
+            "Registered 'Refresh Plex Trailer Flags' task (first run in"
             f" {delay_seconds}s)."
         )
     else:
-        # Task already registered — trigger an extra one-shot run.
         scheduler.add_task(
             task_name="Refresh Plex Trailer Flags (triggered)",
             func=func,
@@ -232,7 +231,8 @@ def ensure_plex_trailer_refresh_scheduled(delay_seconds: float = 180.0) -> None:
             run_once=True,
         )
         logger.info(
-            f"Triggered one-shot 'Refresh Plex Trailer Flags' run in {delay_seconds}s."
+            "Triggered one-shot 'Refresh Plex Trailer Flags' run in"
+            f" {delay_seconds}s."
         )
 
 

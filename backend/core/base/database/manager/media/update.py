@@ -425,6 +425,29 @@ def update_plex_trailer(
     db_media.updated_at = datetime.now(timezone.utc)
     _session.add(db_media)
     _session.commit()
+
+
+@write_session
+def update_plex_trailer_bulk(
+    updates: list[tuple[int, bool | None]],
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update plex_trailer flags for multiple media items in a single transaction.
+
+    Args:
+        updates: List of (media_id, plex_trailer) pairs to apply.
+        _session (Session, Optional): A session to use for the database connection.
+    """
+    now = datetime.now(timezone.utc)
+    for media_id, plex_trailer in updates:
+        db_media = base._get_db_item(media_id, _session)
+        if db_media is None:
+            continue
+        db_media.plex_trailer = plex_trailer
+        db_media.updated_at = now
+        _session.add(db_media)
+    _session.commit()
     return None
 
 

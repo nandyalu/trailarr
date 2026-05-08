@@ -24,6 +24,7 @@ from .update import (
     update_no_trailers_exist,
     update_plex_fields,
     update_plex_trailer,
+    update_plex_trailer_bulk,
     update_trailer_exists,
     update_ytid,
 )
@@ -53,6 +54,7 @@ __all__ = [
     "update_no_trailers_exist",
     "update_plex_fields",
     "update_plex_trailer",
+    "update_plex_trailer_bulk",
     "update_trailer_exists",
     "update_ytid",
 ]

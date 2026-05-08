@@ -9,6 +9,7 @@ import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.event import EventSource
+from core.base.utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
 from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
@@ -106,18 +107,7 @@ class PlexConnectionManager:
     # ------------------------------------------------------------------
 
     def _apply_path_mapping(self, path: str) -> str:
-        if not path:
-            return path
-        for pm in self.path_mappings:
-            if path.startswith(pm.path_from):
-                path = path.replace(pm.path_from, pm.path_to)
-                break
-            _from = pm.path_from.rstrip("/").rstrip("\\")
-            _to = pm.path_to.rstrip("/").rstrip("\\")
-            if path.startswith(_from):
-                path = path.replace(_from, _to)
-                break
-        return path.replace("\\", "/")
+        return apply_path_mappings(path, self.path_mappings)
 
     def _check_monitoring(self, trailer_exists: bool) -> bool:
         """Return the monitor value for a newly-created Plex-only media item.
@@ -143,21 +133,15 @@ class PlexConnectionManager:
     def _is_in_configured_library(self, plex_folder: str) -> bool:
         """Return True if *plex_folder* falls under any configured path_from."""
         for pm in self.all_path_mappings:
-            if plex_folder.startswith(pm.path_from):
+            if is_subpath(pm.path_from, plex_folder):
                 return True
         return False
 
     def _section_is_tracked(self, section: PlexLibrarySection) -> bool:
-        """Return True if any path mapping covers this section's root folders.
-
-        Normalises trailing slashes before comparing so that Plex paths (which
-        may omit the trailing slash) match stored path_from values (which are
-        always stored with one).
-        """
+        """Return True if any path mapping covers this section's root folders."""
         for pm in self.all_path_mappings:
-            pm_prefix = pm.path_from.rstrip("/\\")
             for folder in section.folders:
-                if folder.rstrip("/\\").startswith(pm_prefix):
+                if is_subpath(pm.path_from, folder):
                     return True
         return False
 
@@ -170,9 +154,8 @@ class PlexConnectionManager:
         for pm in self.all_path_mappings:
             if pm.plex_section_key is not None:
                 continue
-            pm_prefix = pm.path_from.rstrip("/\\")
             for folder in section.folders:
-                if folder.rstrip("/\\").startswith(pm_prefix):
+                if is_subpath(pm.path_from, folder):
                     connection_manager.update_path_mapping_section_key(
                         pm.id, section.key
                     )
@@ -186,18 +169,7 @@ class PlexConnectionManager:
         side of a mapping we return the ``path_from`` (Plex) side.  Used when
         building the path argument for a targeted Plex library scan.
         """
-        if not path:
-            return path
-        for pm in self.path_mappings:
-            if path.startswith(pm.path_to):
-                return path.replace(pm.path_to, pm.path_from, 1).replace(
-                    "\\", "/"
-                )
-            _to = pm.path_to.rstrip("/").rstrip("\\")
-            _from = pm.path_from.rstrip("/").rstrip("\\")
-            if path.startswith(_to):
-                return path.replace(_to, _from, 1).replace("\\", "/")
-        return path
+        return reverse_path_mappings(path, self.path_mappings)
 
     async def _process_item(
         self,
