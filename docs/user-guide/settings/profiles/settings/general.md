@@ -33,7 +33,7 @@ This setting determines the order in which profile is applied when multiple prof
 
 ## Retry Count
 
-<!-- md:version:add 0.6.10 -->
+{{ version_badge("add", "0.6.10") }}
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|

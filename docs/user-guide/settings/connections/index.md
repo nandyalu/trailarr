@@ -39,7 +39,7 @@ Turns off monitoring for the connection and does not download any trailers.
 
 ## Plex Connection
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Plex connections work differently from Radarr/Sonarr connections. See [Plex Connection Fields](./plex.md) for a full field reference and [Plex Connection Setup](../../../getting-started/03-setup/plex-connection.md) for a step-by-step guide.
 

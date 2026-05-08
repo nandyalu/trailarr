@@ -1,6 +1,6 @@
 # Tasks
 
-<!-- md:version:upd 0.8.0 -->
+{{ version_badge("upd", "0.8.0") }}
 
 The Tasks page shows all background jobs that keep Trailarr running smoothly. You can view scheduled jobs, see their status, and run them manually if needed.
 
@@ -51,7 +51,7 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Scan All Media Folders**
 
-<!-- md:version:upd 0.9.0 -->
+{{ version_badge("upd", "0.9.0") }}
 
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 8 minutes after app launch).
 - Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers and marks download records as deleted if files are missing.
@@ -81,7 +81,7 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Refresh Plex Trailer Flags**
 
-<!-- md:version:new 0.9.3 -->
+{{ version_badge("add", "0.9.3") }}
 
 - Runs once a week (first run starts 10 minutes after app launch, only if a Plex connection exists).
 - For each media item linked to a Plex connection, calls the Plex API to check whether Plex already has a remote (internet-sourced) trailer and stores the result in the database.

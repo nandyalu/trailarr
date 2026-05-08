@@ -73,7 +73,7 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 ### Download
 
-<!-- md:version:upd 0.9.1 -->
+{{ version_badge("upd", "0.9.1") }}
 
 - Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
@@ -112,7 +112,7 @@ It shows the following details:
 
 ## Files Section
 
-<!-- md:version:upd 0.6.5 -->
+{{ version_badge("upd", "0.6.5") }}
 
 ![Media Details - Files](media-files-open.png)
 

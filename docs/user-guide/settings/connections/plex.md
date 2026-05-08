@@ -1,6 +1,6 @@
 # Plex Connection Fields
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 This page describes the fields available when adding or editing a **Plex** connection. For a step-by-step setup guide, see [Plex Connection](../../../getting-started/03-setup/plex-connection.md).
 

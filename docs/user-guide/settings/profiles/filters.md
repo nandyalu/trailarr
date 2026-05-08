@@ -60,7 +60,7 @@ Here are the available string filters:
 | `IMDB ID`        | IMDB ID of the media. Eg: 'tt0133093'                                          |
 | `TXDB ID`       | TMDB ID for Movies, TVDB ID for Series. Eg: '603' (movie) 'i-am-groot' (series) |
 | `Title Slug`     | Title slug of the media. Eg: 'the-matrix'                                      |
-| `Status`         | Status of the media. One of [downloaded, downloading, missing, monitored]      |
+| `Status`         | Status of the media. One of [[downloaded, downloading, missing, monitored]]      |
 
 ### Date Filters
 
@@ -75,7 +75,7 @@ Here are the available date filters:
 
 ### File Filters 
 
-<!-- md:version:add 0.6.5 -->
+{{ version_badge("add", "0.6.5") }}
 
 Here are the available file filters:
 
@@ -139,7 +139,7 @@ The conditions determine how the value is compared against the property. The ava
 
 ### File Conditions
 
-<!-- md:version:add 0.6.5 -->
+{{ version_badge("add", "0.6.5") }}
 
 | Condition         | Description                                            |
 |------------------:|:-------------------------------------------------------|

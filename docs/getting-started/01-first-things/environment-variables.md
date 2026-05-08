@@ -113,7 +113,7 @@ To change the password, go to `Settings > About > Password` in web interface.
 
 ### `FILES_FULL_SCAN`
 
-<!-- md:version:add 0.9.1 -->
+{{ version_badge("add", "0.9.1") }}
 
 - Default: `false`
 

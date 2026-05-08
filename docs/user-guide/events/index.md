@@ -1,6 +1,6 @@
 # Events
 
-<!-- md:version:add 0.7.0 -->
+{{ version_badge("add", "0.7.0") }}
 
 Trailarr tracks important events for each media item, giving you visibility into what's happening with your trailers. Events help you understand when and why changes occur to your media library.
 
@@ -10,7 +10,7 @@ Trailarr tracks important events for each media item, giving you visibility into
 
 ## Event Sources
 
-<!-- md:version:upd 0.9.0 -->
+{{ version_badge("upd", "0.9.0") }}
 
 Events are triggered by two sources:
 
@@ -164,7 +164,7 @@ Logged when Trailarr skips downloading a trailer for a media item.
 
 ### Plex Linked
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Logged when a media item is successfully matched to an item in a Plex library.
 
@@ -181,7 +181,7 @@ This event is created when Trailarr syncs with your Plex connection and finds a 
 
 ### Plex Unlinked
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Logged when the Plex link for a media item is removed.
 
@@ -198,7 +198,7 @@ Logged when the Plex link for a media item is removed.
 
 ### Plex Scan Triggered
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Logged when Trailarr requests a Plex library refresh after a successful trailer download.
 
@@ -213,7 +213,7 @@ This event is only created when **Notify Plex** is enabled in the Trailer Profil
 
 ### Arr Linked
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Logged when a media item that was previously tracked only by Plex is adopted by a Radarr or Sonarr connection.
 
@@ -231,7 +231,7 @@ This event is created when a Radarr or Sonarr connection sync finds an existing 
 
 ### Arr Unlinked
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 Logged when a media item is removed from Radarr or Sonarr but its files remain on disk and it is still tracked by Plex.
 

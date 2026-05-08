@@ -1,7 +1,7 @@
 
 # Reverse Proxy Configuration
 
-<!-- md:version:add 0.6.7 -->
+{{ version_badge("add", "0.6.7") }}
 
 When hosting Trailarr behind a reverse proxy (like Nginx, Apache, Caddy, Traefik, etc.), certain configurations are necessary to ensure that the application functions correctly. This includes proper routing of requests and handling of headers.
 

@@ -15,7 +15,7 @@ Enable this setting to monitor trailers for connections. When enabled, the app w
 
 ### Monitor Interval
 
-<!-- md:version:upd 0.8.0 -->
+{{ version_badge("upd", "0.8.0") }}
 
 !!! warning ""
     This no longer has any effect on the tasks. Tasks frequency can be individually configured since `v0.8.0`. This setting will be removed in later versions.
@@ -41,7 +41,7 @@ Select the theme for the app UI.
 
 ### WebUI Disable Authentication
 
-<!-- md:version:add 0.6.6 -->
+{{ version_badge("add", "0.6.6") }}
 
 - Default is `false`
 
@@ -60,7 +60,7 @@ Enable this setting to wait for media to be downloaded before downloading traile
 
 ### Force Full Files Scan
 
-<!-- md:version:add 0.9.1 -->
+{{ version_badge("add", "0.9.1") }}
 
 - Default is `false`
 - Environment variable: `FILES_FULL_SCAN`
@@ -111,7 +111,7 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
 
 ### FFMPEG Timeout
 
-<!-- md:version:add 0.6.6 -->
+{{ version_badge("add", "0.6.6") }}
 
 - Default is `15` minutes. Minimum is `10`. Maximum is `300`.
 
@@ -143,7 +143,7 @@ Enable this setting to delete the downloaded trailers only when the media files 
 
 ### Delete Corrupted Trailers
 
-<!-- md:version:add 0.6.7 -->
+{{ version_badge("add", "0.6.7") }}
 
 - Default is `true`
 
@@ -192,7 +192,7 @@ Enable this setting to update `yt-dlp` to the latest version on every app start.
 
 ### URL Base
 
-<!-- md:version:upd 0.6.7 -->
+{{ version_badge("upd", "0.6.7") }}
 
 - Default is  `(empty)`
 

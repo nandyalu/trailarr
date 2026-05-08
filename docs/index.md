@@ -58,12 +58,13 @@ We don't have an official video yet, but there is a video by [AlienTech42](https
 Trailarr is built using the following libraries and tools:
 
 - [Angular](https://angular.dev/){:target="_blank"}
-- [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
 - [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
-- [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material){:target="_blank"}
+- [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
 - [Python](https://www.python.org/){:target="_blank"}
+- [Python-ffmpeg](https://github.com/nandyalu/python-ffmpeg){:target="_blank"}
 - [Quiv](https://nandyalu.github.io/quiv/){:target="_blank"}
 - [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
+- [Zensical](https://zensical.org/){:target="_blank"}
 
 
 ## Support
@@ -80,7 +81,7 @@ If you still need help, please use the below:
 
 ## Issues
 
-If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/trailarr/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/trailarr/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
 ## Roadmap
 

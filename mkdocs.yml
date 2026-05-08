@@ -3,6 +3,7 @@ site_url: https://nandyalu.github.io/trailarr
 site_description: Trailarr is a simple, lightweight, and easy-to-use media server for your personal media collection.
 repo_name: nandyalu/trailarr
 repo_url: https://github.com/nandyalu/trailarr
+copyright: Copyright &copy; 2024 - 2026 nandyalu
 theme:
   name: material
   language: en
@@ -54,8 +55,6 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
-hooks:
-  - docs/hooks.py
 plugins:
   - search
   - git-revision-date-localized:
@@ -95,6 +94,8 @@ markdown_extensions:
       alternate_style: true
       combine_header_slug: true
   - md_in_html
+  - zensical.extensions.macros:
+      module_name: docs/hooks
 extra:
   social:
     - icon: fontawesome/brands/github 
