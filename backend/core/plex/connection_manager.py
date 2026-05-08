@@ -209,7 +209,7 @@ class PlexConnectionManager:
                 if not existing.arr_id and item.media_filename
                 else None
             )
-            media_manager.update_plex_fields(
+            plex_fields_changed = media_manager.update_plex_fields(
                 media_id=existing.id,
                 plex_rating_key=item.ratingKey or None,
                 plex_section_key=section.key,
@@ -227,6 +227,7 @@ class PlexConnectionManager:
             # Re-evaluate monitor only for Plex-only items — Arr-linked items
             # have their monitor state owned by the Arr connection.
             # MONITOR_NEW only affects newly-created items — preserve existing state.
+            monitor_changed = False
             if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
                 new_monitor = self._check_monitoring(existing.trailer_exists)
                 if new_monitor != existing.monitor:
@@ -240,7 +241,9 @@ class PlexConnectionManager:
                     media_manager.update_monitor_and_trailer_exists_bulk(
                         [(existing.id, new_monitor, existing.trailer_exists)]
                     )
-            self._stats_updated += 1
+                    monitor_changed = True
+            if plex_fields_changed or monitor_changed:
+                self._stats_updated += 1
             if newly_linked:
                 self._stats_linked += 1
             logger.debug(

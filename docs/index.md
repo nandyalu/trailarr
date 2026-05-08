@@ -35,7 +35,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Features
 
-- Manages multiple Radarr and Sonarr instances to find media
+- Manages multiple Radarr, Sonarr, or Plex instances to find media.
 - Detects existing trailers for media items.
 - Downloads trailer and organizes it in the media folder.
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
@@ -43,7 +43,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 - Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
 
-> Let us know that you appreciate the project by giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
+> Let us know that you appreciate the project by giving us a ⭐ on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
 
 ## Installation & Setup
 
