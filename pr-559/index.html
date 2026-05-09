@@ -2785,7 +2785,7 @@
   <a href="https://github.com/nandyalu/trailarr/commits/" target="_blank"><a class="glightbox" href="https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github" data-type="image" data-width="100%"><img src="https://img.shields.io/github/last-commit/nandyalu/trailarr?logo=github" alt="GitHub last commit"></a></a>
 </p>
 
-<p>Trailarr is a Docker application to download and manage trailers for your <a href="https://radarr.video/" target="_blank">Radarr</a>, and <a href="https://sonarr.tv/" target="_blank">Sonarr</a> libraries.</p>
+<p>Trailarr is a Docker application to download and manage trailers for your media libraries.</p>
 <p>GitHub: <a href="https://github.com/nandyalu/trailarr/" target="_blank">https://github.com/nandyalu/trailarr/</a></p>
 <p>Docker Hub: <a href="https://hub.docker.com/r/nandyalu/trailarr/" target="_blank">https://hub.docker.com/r/nandyalu/trailarr/</a></p>
 <p>Documentation: <a href="https://nandyalu.github.io/trailarr/">https://nandyalu.github.io/trailarr</a></p>
@@ -2794,9 +2794,9 @@
 <h2 id="features">Features</h2>
 <ul>
 <li>Manages multiple Radarr, Sonarr, or Plex instances to find media.</li>
-<li>Detects existing trailers for media items.</li>
+<li>Detects existing trailers for media items. Can skip downloading if a PlexPass trailer exists (with a minimum resolution check).</li>
 <li>Downloads trailer and organizes it in the media folder.</li>
-<li>Follows plex naming conventions. Works with <a href="https://www.plex.tv/" target="_blank">Plex</a>, <a href="https://emby.media/" target="_blank">Emby</a>, <a href="https://jellyfin.org/" target="_blank">Jellyfin</a>, etc.</li>
+<li>Customizable file names for downloaded trailer files, defaults to Plex naming conventions. Works with <a href="https://www.plex.tv/" target="_blank">Plex</a>, <a href="https://emby.media/" target="_blank">Emby</a>, <a href="https://jellyfin.org/" target="_blank">Jellyfin</a>, etc.</li>
 <li>Customizable profiles to manage trailer downloads and processing.</li>
 <li>Responsive UI to view media items and manage trailers.</li>
 <li>Built with Angular and FastAPI.</li>
@@ -2810,16 +2810,57 @@
 <p><a href="https://www.youtube.com/watch?v=Hz31zWEtY5k" target="_blank" title="Setting up Trailarr - AlienTech42"><img alt="Setting up Trailarr - AlienTech42" src="http://img.youtube.com/vi/Hz31zWEtY5k/maxresdefault.jpg" /></a></p>
 <h2 id="dependencies">Dependencies</h2>
 <p>Trailarr is built using the following libraries and tools:</p>
-<ul>
-<li><a href="https://angular.dev/" target="_blank">Angular</a></li>
-<li><a href="https://fastapi.tiangolo.com" target="_blank">FastAPI</a></li>
-<li><a href="https://ffmpeg.org/" target="_blank">Ffmpeg</a></li>
-<li><a href="https://www.python.org/" target="_blank">Python</a></li>
-<li><a href="https://github.com/nandyalu/python-ffmpeg" target="_blank">Python-ffmpeg</a></li>
-<li><a href="https://nandyalu.github.io/quiv/" target="_blank">Quiv</a></li>
-<li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">Yt-dlp</a></li>
-<li><a href="https://zensical.org/" target="_blank">Zensical</a></li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Tool / Library</th>
+<th>Used For</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Angular</td>
+<td>Frontend UI framework</td>
+<td><a href="https://angular.dev/" target="_blank">angular.dev</a></td>
+</tr>
+<tr>
+<td>FastAPI</td>
+<td>Backend REST API framework</td>
+<td><a href="https://fastapi.tiangolo.com" target="_blank">fastapi.tiangolo.com</a></td>
+</tr>
+<tr>
+<td>FFmpeg</td>
+<td>Video processing and conversion</td>
+<td><a href="https://ffmpeg.org/" target="_blank">ffmpeg.org</a></td>
+</tr>
+<tr>
+<td>Python</td>
+<td>Backend language runtime</td>
+<td><a href="https://www.python.org/" target="_blank">python.org</a></td>
+</tr>
+<tr>
+<td>Python-ffmpeg</td>
+<td>Python bindings for FFmpeg</td>
+<td><a href="https://github.com/nandyalu/python-ffmpeg" target="_blank">github.com/nandyalu/python-ffmpeg</a></td>
+</tr>
+<tr>
+<td>Quiv</td>
+<td>Async task scheduler</td>
+<td><a href="https://nandyalu.github.io/quiv/" target="_blank">nandyalu.github.io/quiv</a></td>
+</tr>
+<tr>
+<td>yt-dlp</td>
+<td>Trailer downloading from video sites</td>
+<td><a href="https://github.com/yt-dlp/yt-dlp" target="_blank">github.com/yt-dlp/yt-dlp</a></td>
+</tr>
+<tr>
+<td>Zensical</td>
+<td>Documentation theme</td>
+<td><a href="https://zensical.org/" target="_blank">zensical.org</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="support">Support</h2>
 <p>If you have any questions or need help, please read the <a href="https://nandyalu.github.io/trailarr/troubleshooting/faq/">FAQ</a> first. </p>
 <p>If you still need help, please use the below:</p>
