@@ -21,7 +21,7 @@
 </p>
 
 
-Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/){:target="_blank"}, and [Sonarr](https://sonarr.tv/){:target="_blank"} libraries.
+Trailarr is a Docker application to download and manage trailers for your media libraries.
 
 GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
@@ -36,9 +36,9 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 ## Features
 
 - Manages multiple Radarr, Sonarr, or Plex instances to find media.
-- Detects existing trailers for media items.
+- Detects existing trailers for media items. Can skip downloading if a PlexPass trailer exists (with a minimum resolution check).
 - Downloads trailer and organizes it in the media folder.
-- Follows plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
+- Customizable file names for downloaded trailer files, defaults to Plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
 - Customizable profiles to manage trailer downloads and processing.
 - Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
@@ -57,14 +57,16 @@ We don't have an official video yet, but there is a video by [AlienTech42](https
 
 Trailarr is built using the following libraries and tools:
 
-- [Angular](https://angular.dev/){:target="_blank"}
-- [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
-- [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
-- [Python](https://www.python.org/){:target="_blank"}
-- [Python-ffmpeg](https://github.com/nandyalu/python-ffmpeg){:target="_blank"}
-- [Quiv](https://nandyalu.github.io/quiv/){:target="_blank"}
-- [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
-- [Zensical](https://zensical.org/){:target="_blank"}
+| Tool / Library | Used For | Link |
+|---|---|---|
+| Angular | Frontend UI framework | [angular.dev](https://angular.dev/){:target="_blank"} |
+| FastAPI | Backend REST API framework | [fastapi.tiangolo.com](https://fastapi.tiangolo.com){:target="_blank"} |
+| FFmpeg | Video processing and conversion | [ffmpeg.org](https://ffmpeg.org/){:target="_blank"} |
+| Python | Backend language runtime | [python.org](https://www.python.org/){:target="_blank"} |
+| Python-ffmpeg | Python bindings for FFmpeg | [github.com/nandyalu/python-ffmpeg](https://github.com/nandyalu/python-ffmpeg){:target="_blank"} |
+| Quiv | Async task scheduler | [nandyalu.github.io/quiv](https://nandyalu.github.io/quiv/){:target="_blank"} |
+| yt-dlp | Trailer downloading from video sites | [github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"} |
+| Zensical | Documentation theme | [zensical.org](https://zensical.org/){:target="_blank"} |
 
 
 ## Support
