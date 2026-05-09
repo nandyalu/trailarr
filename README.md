@@ -62,8 +62,7 @@ Trailarr is built using the following libraries and tools:
 | Angular | Frontend UI framework | [angular.dev](https://angular.dev/) |
 | FastAPI | Backend REST API framework | [fastapi.tiangolo.com](https://fastapi.tiangolo.com) |
 | FFmpeg | Video processing and conversion | [ffmpeg.org](https://ffmpeg.org/) |
-| Python | Backend language runtime | [python.org](https://www.python.org/) |
-| Python-ffmpeg | Python bindings for FFmpeg | [github.com/nandyalu/python-ffmpeg](https://github.com/nandyalu/python-ffmpeg) |
+| Python-ffmpeg | Python docker image with yt-dlp, ffmpeg and hardware acceleration drivers pre-installed | [github.com/nandyalu/python-ffmpeg](https://github.com/nandyalu/python-ffmpeg) |
 | Quiv | Async task scheduler | [nandyalu.github.io/quiv](https://nandyalu.github.io/quiv/) |
 | yt-dlp | Trailer downloading from video sites | [github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp) |
 | Zensical | Documentation theme | [zensical.org](https://zensical.org/) |
