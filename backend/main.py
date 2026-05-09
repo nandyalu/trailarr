@@ -280,6 +280,16 @@ async def serve_frontend(rest_of_path: str = ""):
         # If the path starts with "api", it's an API request and not \
         # meant for the frontend
         return HTMLResponse(status_code=404)
+    # Strip the url_base prefix if configured (e.g., reverse proxy setups).
+    # When url_base="/trailarr", index.html has <base href="/trailarr/">,
+    # so the browser requests static files at /trailarr/chunk.js. The backend
+    # must strip the prefix to find the actual files in frontend_dir.
+    url_base_path = app_settings.url_base.lstrip("/")
+    if url_base_path:
+        if rest_of_path.startswith(url_base_path + "/"):
+            rest_of_path = rest_of_path[len(url_base_path) + 1 :]
+        elif rest_of_path == url_base_path:
+            rest_of_path = ""
     # Otherwise, it's a frontend request and should be handled by Angular
     if rest_of_path == "":
         return FileResponse(index_html_path)

@@ -1,7 +1,8 @@
 from pathlib import Path
 from unittest.mock import patch
 import pytest
-from main import get_sanitized_path
+from fastapi.responses import FileResponse, HTMLResponse
+from main import get_sanitized_path, serve_frontend
 
 
 @pytest.fixture
@@ -129,3 +130,141 @@ class TestGetSanitizedPath:
         result = get_sanitized_path("file-with-dash_and_underscore.txt")
         assert result is not None
         assert result.is_file()
+
+
+@pytest.fixture
+def frontend_dir_with_files(tmp_path):
+    """Create a temporary frontend directory with a JS file and index.html."""
+    frontend_dir = tmp_path / "frontend-build" / "browser"
+    frontend_dir.mkdir(parents=True, exist_ok=True)
+    (frontend_dir / "index.html").write_text("<html></html>")
+    (frontend_dir / "chunk-ABC123.js").write_text("console.log('hello');")
+    assets_dir = frontend_dir / "assets"
+    assets_dir.mkdir(exist_ok=True)
+    (assets_dir / "style.css").write_text("body {}")
+    return frontend_dir
+
+
+class TestServeFrontendUrlBase:
+
+    @pytest.mark.asyncio
+    async def test_no_url_base_serves_index(self, frontend_dir_with_files):
+        """Root path serves index.html when no url_base is set."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = ""
+            response = await serve_frontend("")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == index_path
+
+    @pytest.mark.asyncio
+    async def test_no_url_base_serves_js_file(self, frontend_dir_with_files):
+        """JS file is served correctly when no url_base is set."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = ""
+            response = await serve_frontend("chunk-ABC123.js")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == frontend_dir_with_files / "chunk-ABC123.js"
+
+    @pytest.mark.asyncio
+    async def test_url_base_serves_index_at_base_path(
+        self, frontend_dir_with_files
+    ):
+        """Request for url_base path alone serves index.html."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = "/trailarr"
+            response = await serve_frontend("trailarr")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == index_path
+
+    @pytest.mark.asyncio
+    async def test_url_base_serves_index_at_base_path_with_slash(
+        self, frontend_dir_with_files
+    ):
+        """Request for url_base path with trailing slash serves index.html."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = "/trailarr"
+            response = await serve_frontend("trailarr/")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == index_path
+
+    @pytest.mark.asyncio
+    async def test_url_base_strips_prefix_for_js_file(
+        self, frontend_dir_with_files
+    ):
+        """JS file is served correctly after stripping url_base prefix."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = "/trailarr"
+            response = await serve_frontend("trailarr/chunk-ABC123.js")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == frontend_dir_with_files / "chunk-ABC123.js"
+
+    @pytest.mark.asyncio
+    async def test_url_base_strips_prefix_for_css_file(
+        self, frontend_dir_with_files
+    ):
+        """CSS file is served correctly after stripping url_base prefix."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = "/trailarr"
+            response = await serve_frontend("trailarr/assets/style.css")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == frontend_dir_with_files / "assets" / "style.css"
+
+    @pytest.mark.asyncio
+    async def test_url_base_angular_route_serves_index(
+        self, frontend_dir_with_files
+    ):
+        """Angular route under url_base serves index.html for SPA routing."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = "/trailarr"
+            response = await serve_frontend("trailarr/movies")
+        assert isinstance(response, FileResponse)
+        assert Path(response.path) == index_path
+
+    @pytest.mark.asyncio
+    async def test_api_path_returns_404(self, frontend_dir_with_files):
+        """Paths starting with 'api' return 404."""
+        index_path = frontend_dir_with_files / "index.html"
+        with (
+            patch("main.frontend_dir", frontend_dir_with_files),
+            patch("main.index_html_path", index_path),
+            patch("main.app_settings") as mock_settings,
+        ):
+            mock_settings.url_base = ""
+            response = await serve_frontend("api/v1/media")
+        assert isinstance(response, HTMLResponse)
+        assert response.status_code == 404
