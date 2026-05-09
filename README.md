@@ -21,7 +21,7 @@
 </p>
 
 
-Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/) libraries.
+Trailarr is a Docker application to download and manage trailers for your media libraries.
 
 GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/)
 
@@ -36,9 +36,9 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 ## Features
 
 - Manages multiple Radarr, Sonarr, or Plex instances to find media.
-- Detects existing trailers for media items.
+- Detects existing trailers for media items. Can skip downloading if a PlexPass trailer exists (with a minimum resolution check).
 - Downloads trailer and organizes it in the media folder.
-- Follows plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
+- Customizable file names for downloaded trailer files, defaults to Plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
 - Customizable profiles to manage trailer downloads and processing.
 - Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
