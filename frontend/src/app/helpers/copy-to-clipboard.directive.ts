@@ -1,8 +1,12 @@
-import {Directive, ElementRef, HostListener, inject, input} from '@angular/core';
+import {Directive, ElementRef, inject, input} from '@angular/core';
 import {WebsocketService} from '../services/websocket.service';
 
 @Directive({
   selector: '[appCopyToClipboard]',
+  host: {
+    '(click)': 'onClick()',
+    '(keydown.enter)': 'onClick()',
+  },
 })
 export class CopyToClipboardDirective {
   textToCopy = input.required<string>();
@@ -14,8 +18,6 @@ export class CopyToClipboardDirective {
     this.element.nativeElement.classList.add('copy');
   }
 
-  @HostListener('click')
-  @HostListener('keydown.enter')
   onClick(): void {
     this.copyToClipboard(this.textToCopy());
     console.log('Element with copy button clicked!');

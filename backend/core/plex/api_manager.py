@@ -299,7 +299,17 @@ class PlexAPI:
         params = urlencode({"path": path})
         url = f"{self.server_url}/library/sections/{section_key}/refresh?{params}"
         try:
-            await self.get_query_json(url, method="GET")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=self.headers, ssl=False) as resp:
+                    if resp.status == 401:
+                        raise ConnectionError(
+                            "Plex authentication failed — invalid token"
+                        )
+                    if resp.status not in (200, 204):
+                        error_text = await resp.text()
+                        raise ConnectionError(
+                            f"Plex returned {resp.status}: {error_text}"
+                        )
             logger.debug(
                 f"Triggered path scan for section {section_key}, path '{path}'"
             )

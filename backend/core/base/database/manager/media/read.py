@@ -98,6 +98,7 @@ def read_all_generator(
     movies_only: bool | None = None,
     monitored_only: bool = False,
     downloaded_only: bool = False,
+    plex_linked_only: bool = False,
     *,
     _session: Session = None,  # type: ignore
 ) -> Generator[MediaRead, None, None]:
@@ -109,6 +110,7 @@ def read_all_generator(
             If `None`, it will return both movies and series.
         monitored_only (bool, Optional=False): Flag to get only monitored media.
         downloaded_only (bool, Optional=False): Flag to get only downloaded media.
+        plex_linked_only (bool, Optional=False): Flag to get only media linked to a Plex connection.
         _session (Session, Optional=None): A session to use for the database connection.\n
             Default is None, in which case a new session will be created.\n
     Yields:
@@ -121,6 +123,11 @@ def read_all_generator(
         statement = _apply_filter(statement, "monitored")
     if downloaded_only:
         statement = _apply_filter(statement, "downloaded")
+    if plex_linked_only:
+        statement = statement.where(
+            col(Media.plex_connection_id).is_not(None),
+            col(Media.plex_rating_key).is_not(None),
+        )
     stream = _session.exec(statement)
     for db_media in stream:
         yield MediaRead.model_validate(db_media)

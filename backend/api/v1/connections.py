@@ -5,11 +5,13 @@ from api.v1 import websockets
 
 import core.base.database.manager.connection as connection_manager
 from core.base.database.models.connection import (
+    ArrType,
     ConnectionCreate,
     ConnectionRead,
     ConnectionUpdate,
 )
 from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
+from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -86,6 +88,8 @@ async def create_connection(connection: ConnectionCreate) -> str:
     try:
         result, connection_id = await connection_manager.create(connection)
         await refresh_connection(connection_id)
+        if connection.arr_type == ArrType.PLEX:
+            ensure_plex_trailer_refresh_scheduled(delay_seconds=180.0)
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Failed to add Connection!", "Error"

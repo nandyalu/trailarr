@@ -370,7 +370,7 @@ def update_plex_fields(
     media_filename: str | None = None,
     *,
     _session: Session = None,  # type: ignore
-) -> None:
+) -> bool:
     """Update only the Plex-specific fields on a media item.\n
     Used during Plex connection refresh to layer Plex metadata onto an
     existing Arr-sourced media row without overwriting Arr fields.\n
@@ -382,6 +382,8 @@ def update_plex_fields(
         media_filename (str | None): When provided, update the media_filename field.
             Only pass this for Plex-only items (arr_id=0); leave None for Arr-linked rows.
         _session (Session, Optional): A session to use for the database connection.
+    Returns:
+        bool: True if any field was changed and the DB was updated, False if no-op.
     """
     db_media = base._get_db_item(media_id, _session)
     changed = (
@@ -394,7 +396,7 @@ def update_plex_fields(
         )
     )
     if not changed:
-        return None
+        return False
     db_media.plex_rating_key = plex_rating_key
     db_media.plex_section_key = plex_section_key
     db_media.plex_connection_id = plex_connection_id
@@ -403,7 +405,7 @@ def update_plex_fields(
     db_media.updated_at = datetime.now(timezone.utc)
     _session.add(db_media)
     _session.commit()
-    return None
+    return True
 
 
 @write_session
@@ -424,6 +426,29 @@ def update_plex_trailer(
     db_media.plex_trailer = plex_trailer
     db_media.updated_at = datetime.now(timezone.utc)
     _session.add(db_media)
+    _session.commit()
+
+
+@write_session
+def update_plex_trailer_bulk(
+    updates: list[tuple[int, bool | None]],
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Update plex_trailer flags for multiple media items in a single transaction.
+
+    Args:
+        updates: List of (media_id, plex_trailer) pairs to apply.
+        _session (Session, Optional): A session to use for the database connection.
+    """
+    now = datetime.now(timezone.utc)
+    for media_id, plex_trailer in updates:
+        db_media = _session.get(Media, media_id)
+        if db_media is None:
+            continue
+        db_media.plex_trailer = plex_trailer
+        db_media.updated_at = now
+        _session.add(db_media)
     _session.commit()
     return None
 

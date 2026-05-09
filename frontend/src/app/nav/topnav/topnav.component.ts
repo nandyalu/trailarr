@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Renderer2, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Renderer2, signal} from '@angular/core';
 import {debounce, form, FormField} from '@angular/forms/signals';
 import {Router, RouterLink} from '@angular/router';
 import {AuthService} from 'src/app/services/auth.service';
@@ -15,6 +15,11 @@ import {MediaService} from '../../services/media.service';
   templateUrl: './topnav.component.html',
   styleUrl: './topnav.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:click)': 'clickout($event)',
+    '(document:mousemove)': 'disableSelection($event)',
+    '(document:keydown)': 'handleKeyboardEvent($event)',
+  },
 })
 export class TopnavComponent {
   private readonly authService = inject(AuthService);
@@ -84,14 +89,12 @@ export class TopnavComponent {
     this.selectedIndex.set(-1);
   }
 
-  @HostListener('document:click', ['$event'])
   clickout(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.clearSearchResults();
     }
   }
 
-  @HostListener('document:mousemove', ['$event'])
   disableSelection(event: Event) {
     if (this.searchResults().length > 0) {
       this.selectedId.set(-1);
@@ -99,7 +102,6 @@ export class TopnavComponent {
     }
   }
 
-  @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     const activeElement = document.activeElement as HTMLElement;
 

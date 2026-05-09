@@ -13,12 +13,15 @@ from core.base.database.models.task_config import (
     ScheduledTaskConfig,
     ScheduledTaskConfigRead,
 )
+import core.base.database.manager.connection as connection_manager
+from core.base.database.models.connection import ArrType
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import delete_old_logs, trailer_cleanup
 from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
+from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
 from core.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")
@@ -71,6 +74,14 @@ async def _download_missing_trailers(
     await download_missing_trailers(_stop_event=_stop_event)
 
 
+@with_logging_context
+async def _refresh_plex_trailer_flags(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
+    """Refresh the plex_trailer flag for all Plex-linked media items."""
+    await refresh_plex_trailer_flags(_stop_event=_stop_event)
+
+
 # Maps each stable task_key to its handler function.
 TASK_REGISTRY: dict[str, Callable] = {
     "api_refresh": _refresh_api_data,
@@ -79,6 +90,7 @@ TASK_REGISTRY: dict[str, Callable] = {
     "update_check": _check_for_update,
     "cleanup": _cleanup_trailers,
     "download_trailers": _download_missing_trailers,
+    "plex_trailer_refresh": _refresh_plex_trailer_flags,
 }
 
 
@@ -135,6 +147,14 @@ def _get_or_create_config(
     return config
 
 
+_PLEX_TRAILER_REFRESH_DEFAULTS: dict[str, str | float] = {
+    "task_key": "plex_trailer_refresh",
+    "task_name": "Refresh Plex Trailer Flags",
+    "interval_seconds": 604800.0,  # 7 days
+    "delay_seconds": 600.0,  # 10 minutes on startup
+}
+
+
 def schedule_all_tasks() -> None:
     """Schedule all background tasks, reading intervals from the DB.
 
@@ -154,7 +174,66 @@ def schedule_all_tasks() -> None:
             run_once=False,
         )
         # logger.info(f"Scheduled '{config.task_name}' (key={task_key!r})")
+
+    # Schedule the Plex trailer refresh task only if a Plex connection exists.
+    plex_connections = [
+        c for c in connection_manager.read_all() if c.arr_type == ArrType.PLEX
+    ]
+    if plex_connections:
+        config = _get_or_create_config(
+            "plex_trailer_refresh", _PLEX_TRAILER_REFRESH_DEFAULTS
+        )
+        scheduler.add_task(
+            task_name=config.task_name,
+            func=TASK_REGISTRY["plex_trailer_refresh"],
+            interval=config.interval_seconds,
+            delay=config.delay_seconds,
+            run_once=False,
+        )
+        logger.info("Scheduled 'Refresh Plex Trailer Flags' task.")
+
     logger.info("All tasks scheduled!")
+
+
+def ensure_plex_trailer_refresh_scheduled(
+    delay_seconds: float = 180.0,
+) -> None:
+    """Register or trigger the plex_trailer_refresh task when a Plex connection is added.
+
+    Uses the scheduler as the source of truth: if the recurring weekly job is not
+    in the scheduler (first connection or post-restart gap), it is registered now.
+    If already scheduled, a one-shot run is triggered for the newly added connection.
+    """
+    func = TASK_REGISTRY["plex_trailer_refresh"]
+    config = _get_or_create_config("plex_trailer_refresh", _PLEX_TRAILER_REFRESH_DEFAULTS)
+
+    all_tasks = scheduler.get_all_tasks(include_run_once=False)
+    is_scheduled = any(t.task_name == config.task_name for t in all_tasks)
+
+    if not is_scheduled:
+        scheduler.add_task(
+            task_name=config.task_name,
+            func=func,
+            interval=config.interval_seconds,
+            delay=delay_seconds,
+            run_once=False,
+        )
+        logger.info(
+            "Registered 'Refresh Plex Trailer Flags' task (first run in"
+            f" {delay_seconds}s)."
+        )
+    else:
+        scheduler.add_task(
+            task_name="Refresh Plex Trailer Flags (triggered)",
+            func=func,
+            interval=86400.0,
+            delay=delay_seconds,
+            run_once=True,
+        )
+        logger.info(
+            "Triggered one-shot 'Refresh Plex Trailer Flags' run in"
+            f" {delay_seconds}s."
+        )
 
 
 def reschedule_task(

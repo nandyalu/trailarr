@@ -150,3 +150,10 @@ LOG_LEVEL=Info                 # Logging level
 - **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
+
+## After Every Fix / Feature / Update
+
+After completing any bug fix, feature, or notable change, always ask the user:
+
+1. **Release notes** — "Should this be added to the release notes? If so, which version?" Release notes live in `docs/release-notes/2026.md`. Add entries under the appropriate version heading using the existing format (Bug Fixes / What's New / Other Changes sections with emoji).
+2. **Docs update** — "Do any documentation pages need to be updated for this change?" Docs live under `docs/`.

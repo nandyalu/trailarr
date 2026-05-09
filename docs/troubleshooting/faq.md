@@ -46,4 +46,13 @@ The amount of time it takes to convert a 3 minute video usually takes around 1-2
 If you are using a Raspberry Pi or a low powered server, it might take longer to convert the video. You can check the (debug) logs to see the progress of the conversion process.
 
 !!! info
-    YouTube trailers are usually in `vp9` video codec and `opus` audio codec, so setting theses codecs in Trailarr settings will prevent conversion. Most modern players support these codecs, so you can use these codecs in Trailarr settings to speed up the process.
+    YouTube trailers are usually in `vp9` video codec and `opus` audio codec, so setting these codecs in Trailarr settings will prevent conversion on most downloads. Most modern players support these codecs, so you can use these codecs in Trailarr settings to speed up the process.
+
+
+## Why does Trailarr wait so long between downloads?
+
+Trailarr deliberately sleeps between trailer downloads to avoid rate-limiting by YouTube. Downloading too many videos in quick succession can get your server's IP address — or your YouTube account if you're using a cookies file — temporarily or permanently blocked.
+
+The pause ranges from roughly 2 to 11 minutes per download, increasing as the batch gets larger. This is expected behavior. Once the initial backlog is downloaded, subsequent runs only process newly added media so the delays become infrequent.
+
+See the [Slow Downloads](./common-issues.md#slow-downloads-long-pauses-between-trailers) section in Common Issues for the full breakdown.

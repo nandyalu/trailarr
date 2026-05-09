@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://www.python.org/" target="_blank"><img src="https://img.shields.io/badge/python-3.13-3670A0?style=flat&logo=python" alt="Python"></a>
   <a href="https://fastapi.tiangolo.com" target="_blank"><img src="https://img.shields.io/badge/FastAPI-0.136.1-009688.svg?style=flat&logo=FastAPI" alt="FastAPI"></a>
-  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.2.11-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
+  <a href="https://angular.dev/" target="_blank"><img src="https://img.shields.io/badge/angular-21.2.12-%23DD0031.svg?style=flat&logo=angular" alt="Angular"></a>
   <a href="https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file" target="_blank"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
@@ -21,7 +21,7 @@
 </p>
 
 
-Trailarr is a Docker application to download and manage trailers for your [Radarr](https://radarr.video/){:target="_blank"}, and [Sonarr](https://sonarr.tv/){:target="_blank"} libraries.
+Trailarr is a Docker application to download and manage trailers for your media libraries.
 
 GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
@@ -35,15 +35,15 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Features
 
-- Manages multiple Radarr and Sonarr instances to find media
-- Detects existing trailers for media items.
+- Manages multiple Radarr, Sonarr, or Plex instances to find media.
+- Detects existing trailers for media items. Can skip downloading if a PlexPass trailer exists (with a minimum resolution check).
 - Downloads trailer and organizes it in the media folder.
-- Follows plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
+- Customizable file names for downloaded trailer files, defaults to Plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
 - Customizable profiles to manage trailer downloads and processing.
 - Responsive UI to view media items and manage trailers.
 - Built with Angular and FastAPI.
 
-> Let us know that you appreciate the project by giving us a star on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
+> Let us know that you appreciate the project by giving us a ⭐ on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
 
 ## Installation & Setup
 
@@ -57,13 +57,15 @@ We don't have an official video yet, but there is a video by [AlienTech42](https
 
 Trailarr is built using the following libraries and tools:
 
-- [Angular](https://angular.dev/){:target="_blank"}
-- [Ffmpeg](https://ffmpeg.org/){:target="_blank"}
-- [FastAPI](https://fastapi.tiangolo.com){:target="_blank"}
-- [Material for Mkdocs](https://github.com/squidfunk/mkdocs-material){:target="_blank"}
-- [Python](https://www.python.org/){:target="_blank"}
-- [Quiv](https://nandyalu.github.io/quiv/){:target="_blank"}
-- [Yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"}
+| Tool / Library | Used For | Link |
+|---|---|---|
+| Angular | Frontend UI framework | [angular.dev](https://angular.dev/){:target="_blank"} |
+| FastAPI | Backend REST API framework | [fastapi.tiangolo.com](https://fastapi.tiangolo.com){:target="_blank"} |
+| FFmpeg | Video processing and conversion | [ffmpeg.org](https://ffmpeg.org/){:target="_blank"} |
+| Python-ffmpeg | Python docker image with yt-dlp, ffmpeg and hardware acceleration drivers pre-installed | [github.com/nandyalu/python-ffmpeg](https://github.com/nandyalu/python-ffmpeg){:target="_blank"} |
+| Quiv | Background task scheduler | [nandyalu.github.io/quiv](https://nandyalu.github.io/quiv/){:target="_blank"} |
+| yt-dlp | Trailer downloading from video sites | [github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp){:target="_blank"} |
+| Zensical | Documentation | [zensical.org](https://zensical.org/){:target="_blank"} |
 
 
 ## Support
@@ -80,7 +82,7 @@ If you still need help, please use the below:
 
 ## Issues
 
-If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/trailarr/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended).
+If you encounter any bugs/issues, please create an issue on the [GitHub repository](https://github.com/nandyalu/trailarr/issues){:target="_blank"} or post on our [Discord Server](https://discord.gg/KKPr5kQEzQ){:target="_blank"}.
 
 ## Roadmap
 

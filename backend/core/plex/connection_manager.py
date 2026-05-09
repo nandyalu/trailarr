@@ -4,10 +4,12 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 from app_logger import ModuleLogger
+import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.event import EventSource
+from core.base.utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
 from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
@@ -88,6 +90,11 @@ class PlexConnectionManager:
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
         self.monitor = connection.monitor
+        # Refresh-run counters — reset at the start of each refresh() call.
+        self._stats_added = 0
+        self._stats_updated = 0
+        self._stats_linked = 0
+        self._stats_sections_scanned = 0
         self.api = PlexAPI(
             server_url=connection.url,
             token=connection.api_key,
@@ -100,18 +107,7 @@ class PlexConnectionManager:
     # ------------------------------------------------------------------
 
     def _apply_path_mapping(self, path: str) -> str:
-        if not path:
-            return path
-        for pm in self.path_mappings:
-            if path.startswith(pm.path_from):
-                path = path.replace(pm.path_from, pm.path_to)
-                break
-            _from = pm.path_from.rstrip("/").rstrip("\\")
-            _to = pm.path_to.rstrip("/").rstrip("\\")
-            if path.startswith(_from):
-                path = path.replace(_from, _to)
-                break
-        return path.replace("\\", "/")
+        return apply_path_mappings(path, self.path_mappings)
 
     def _check_monitoring(self, trailer_exists: bool) -> bool:
         """Return the monitor value for a newly-created Plex-only media item.
@@ -137,9 +133,34 @@ class PlexConnectionManager:
     def _is_in_configured_library(self, plex_folder: str) -> bool:
         """Return True if *plex_folder* falls under any configured path_from."""
         for pm in self.all_path_mappings:
-            if plex_folder.startswith(pm.path_from):
+            if is_subpath(pm.path_from, plex_folder):
                 return True
         return False
+
+    def _section_is_tracked(self, section: PlexLibrarySection) -> bool:
+        """Return True if any path mapping covers this section's root folders."""
+        for pm in self.all_path_mappings:
+            for folder in section.folders:
+                if is_subpath(pm.path_from, folder):
+                    return True
+        return False
+
+    def _persist_section_keys(self, section: PlexLibrarySection) -> None:
+        """Cache the section key on path mappings that cover this section.
+
+        Only writes to the DB when plex_section_key is still None — a one-time
+        operation per mapping so subsequent refreshes skip the write entirely.
+        """
+        for pm in self.all_path_mappings:
+            if pm.plex_section_key is not None:
+                continue
+            for folder in section.folders:
+                if is_subpath(pm.path_from, folder):
+                    connection_manager.update_path_mapping_section_key(
+                        pm.id, section.key
+                    )
+                    pm.plex_section_key = section.key
+                    break
 
     def _reverse_path_mapping(self, path: str) -> str:
         """Convert a Trailarr-internal path back to the Plex-side path.
@@ -148,18 +169,7 @@ class PlexConnectionManager:
         side of a mapping we return the ``path_from`` (Plex) side.  Used when
         building the path argument for a targeted Plex library scan.
         """
-        if not path:
-            return path
-        for pm in self.path_mappings:
-            if path.startswith(pm.path_to):
-                return path.replace(pm.path_to, pm.path_from, 1).replace(
-                    "\\", "/"
-                )
-            _to = pm.path_to.rstrip("/").rstrip("\\")
-            _from = pm.path_from.rstrip("/").rstrip("\\")
-            if path.startswith(_to):
-                return path.replace(_to, _from, 1).replace("\\", "/")
-        return path
+        return reverse_path_mappings(path, self.path_mappings)
 
     async def _process_item(
         self,
@@ -199,7 +209,7 @@ class PlexConnectionManager:
                 if not existing.arr_id and item.media_filename
                 else None
             )
-            media_manager.update_plex_fields(
+            plex_fields_changed = media_manager.update_plex_fields(
                 media_id=existing.id,
                 plex_rating_key=item.ratingKey or None,
                 plex_section_key=section.key,
@@ -217,6 +227,7 @@ class PlexConnectionManager:
             # Re-evaluate monitor only for Plex-only items — Arr-linked items
             # have their monitor state owned by the Arr connection.
             # MONITOR_NEW only affects newly-created items — preserve existing state.
+            monitor_changed = False
             if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
                 new_monitor = self._check_monitoring(existing.trailer_exists)
                 if new_monitor != existing.monitor:
@@ -230,6 +241,11 @@ class PlexConnectionManager:
                     media_manager.update_monitor_and_trailer_exists_bulk(
                         [(existing.id, new_monitor, existing.trailer_exists)]
                     )
+                    monitor_changed = True
+            if plex_fields_changed or monitor_changed:
+                self._stats_updated += 1
+            if newly_linked:
+                self._stats_linked += 1
             logger.debug(
                 f"Merged Plex data for '{existing.title}' (id={existing.id})"
             )
@@ -275,6 +291,7 @@ class PlexConnectionManager:
             media_manager.update_monitor_and_trailer_exists_bulk(
                 [(media_read.id, monitor, trailer_exists)]
             )
+            self._stats_added += 1
             logger.debug(f"Created new Plex-only media row for '{item.title}'")
 
     async def _process_movie_section(
@@ -339,6 +356,14 @@ class PlexConnectionManager:
 
     async def _process_section(self, section: PlexLibrarySection) -> None:
         """Dispatch to the correct section processor based on library type."""
+        if not self._section_is_tracked(section):
+            logger.info(
+                f"Plex section '{section.title}' [{section.key}] has no"
+                " configured path mappings — skipping."
+            )
+            return
+        self._persist_section_keys(section)
+        self._stats_sections_scanned += 1
         if section.type in _MOVIE_SECTION_TYPES:
             await self._process_movie_section(section)
         elif section.type in _SHOW_SECTION_TYPES:
@@ -386,6 +411,10 @@ class PlexConnectionManager:
 
     async def refresh(self) -> None:
         """Fetch all Plex libraries and sync them into the database."""
+        self._stats_added = 0
+        self._stats_updated = 0
+        self._stats_linked = 0
+        self._stats_sections_scanned = 0
         logger.info(
             f"Starting Plex refresh for connection '{self.connection_name}'"
         )
@@ -409,5 +438,9 @@ class PlexConnectionManager:
                     f"Error processing section '{section.title}': {e}"
                 )
         logger.info(
-            f"Plex refresh completed for connection '{self.connection_name}'"
+            f"Plex refresh complete for '{self.connection_name}':"
+            f" {self._stats_sections_scanned}/{len(sections)} sections scanned,"
+            f" {self._stats_added} added,"
+            f" {self._stats_updated} updated,"
+            f" {self._stats_linked} newly linked."
         )

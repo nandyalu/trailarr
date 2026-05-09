@@ -48,7 +48,7 @@ Adding a Plex connection is optional, but unlocks some powerful features:
 
 Once the Plex connection is saved, Trailarr will begin linking your existing media items to their corresponding entries in Plex during the next connection sync. You can watch this happen in real time on the [Events](../../user-guide/events/index.md) page — look for `Plex Linked` events.
 
-For each successfully linked item, Trailarr will know whether Plex already has a trailer, which can then be used by your [Trailer Profiles](../../user-guide/settings/profiles/index.md) to skip unnecessary downloads.
+Within a few minutes, the [Refresh Plex Trailer Flags](../../user-guide/tasks/index.md#refresh-plex-trailer-flags) task will run automatically and check whether Plex already has a trailer for each linked item. This result is cached and used by your Trailer Profiles to decide whether to skip downloading.
 
 !!! tip "Configure Plex behaviour per profile"
     Head to `Settings > Profiles`, edit a profile, and look for the **Plex** section to enable trailer skip logic and Plex notifications. See the [Plex profile settings](../../user-guide/settings/profiles/settings/plex.md) reference for details.

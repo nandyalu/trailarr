@@ -1,6 +1,6 @@
 # Build and Install
 
-<!-- md:version:add 0.9.0 -->
+{{ version_badge("add", "0.9.0") }}
 
 This page is for users who want to install Trailarr manually — step by step, without running the automated installer script. This is useful when:
 
@@ -332,7 +332,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
 
 !!! tip "All settings"
     All other settings (connections, profiles, etc.) can be configured from the web UI.
-    See [Environment Variables](../../05-reference/environment-variables.md) for a full reference.
+    See [Environment Variables](../01-first-things/environment-variables.md) for a full reference.
 
 ---
 

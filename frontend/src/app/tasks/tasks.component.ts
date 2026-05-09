@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
 import {RouteLogs} from '../../routing';
@@ -18,7 +18,7 @@ import {WebsocketService} from '../services/websocket.service';
   styleUrl: './tasks.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TasksComponent {
+export class TasksComponent implements OnInit {
   private readonly tasksService = inject(TasksService);
   private readonly websocketService = inject(WebsocketService);
   private readonly editDialog = viewChild.required<ElementRef<HTMLDialogElement>>('editDialog');
@@ -37,6 +37,10 @@ export class TasksComponent {
         setTimeout(() => this.refreshTaskData(), 500);
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.tasksService.refreshData();
   }
 
   refreshTaskData() {
