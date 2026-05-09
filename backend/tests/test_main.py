@@ -146,6 +146,7 @@ def frontend_dir_with_files(tmp_path):
 
 
 class TestServeFrontendUrlBase:
+    """Tests for serve_frontend with url_base configured for reverse proxy setups."""
 
     @pytest.mark.asyncio
     async def test_no_url_base_serves_index(self, frontend_dir_with_files):

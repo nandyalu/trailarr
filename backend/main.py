@@ -284,7 +284,7 @@ async def serve_frontend(rest_of_path: str = ""):
     # When url_base="/trailarr", index.html has <base href="/trailarr/">,
     # so the browser requests static files at /trailarr/chunk.js. The backend
     # must strip the prefix to find the actual files in frontend_dir.
-    url_base_path = app_settings.url_base.lstrip("/")
+    url_base_path = (app_settings.url_base or "").lstrip("/")
     if url_base_path:
         if rest_of_path.startswith(url_base_path + "/"):
             rest_of_path = rest_of_path[len(url_base_path) + 1 :]
