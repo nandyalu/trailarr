@@ -2988,6 +2988,36 @@
 <li><code>/trailarr/</code> -&gt; Your Sub-Directory path -&gt; set the same for <code>URL Base</code> setting in Trailarr</li>
 </ul>
 </div>
+<div class="admonition info">
+<p class="admonition-title">Recommended headers</p>
+<p>The following headers preserve information about the original request that would otherwise be lost when the proxy forwards it:</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-Forwarded-For</code></td>
+<td>Original client IP address — added automatically by most proxies</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-Proto</code></td>
+<td>Original protocol (<code>http</code> or <code>https</code>)</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-Host</code></td>
+<td>Original host name (<code>mysuperapp.com</code>)</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-Prefix</code></td>
+<td>Sub-directory prefix (<code>/trailarr</code>) — required for correct frontend routing in sub-directory setups</td>
+</tr>
+</tbody>
+</table>
+</div>
 <h3 id="nginx">Nginx</h3>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sub-Domain</label><label for="__tabbed_1_2">Sub-Directory</label></div>
 <div class="tabbed-content">
@@ -3002,9 +3032,10 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w">           </span><span class="nv">$remote_addr</span><span class="p">;</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w">     </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w">   </span><span class="nv">$scheme</span><span class="p">;</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Host</span><span class="w">    </span><span class="nv">$host</span><span class="p">;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">}</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -3018,9 +3049,10 @@
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w">           </span><span class="nv">$remote_addr</span><span class="p">;</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w">     </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w">   </span><span class="nv">$scheme</span><span class="p">;</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Prefix</span><span class="w">  </span><span class="s">/trailarr</span><span class="p">;</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">}</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Host</span><span class="w">    </span><span class="nv">$host</span><span class="p">;</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Prefix</span><span class="w">  </span><span class="s">/trailarr</span><span class="p">;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="p">}</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3032,20 +3064,23 @@
 <div class="language-apache highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="s">*:80</span><span class="nt">&gt;</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nb">ServerName</span><span class="w"> </span>trailarr.mydomain.com
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nb">ProxyPreserveHost</span><span class="w"> </span><span class="k">On</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span><span class="w"> </span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nb">ProxyPassReverse</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="nt">&lt;/VirtualHost&gt;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Proto<span class="w"> </span><span class="s2">&quot;%{REQUEST_SCHEME}s&quot;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Host<span class="w"> </span><span class="s2">&quot;%{HTTP_HOST}s&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nt">&lt;/VirtualHost&gt;</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="language-apache highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="s">*:80</span><span class="nt">&gt;</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nb">ServerName</span><span class="w"> </span>mydomain.com
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nb">ProxyPreserveHost</span><span class="w"> </span><span class="k">On</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">&quot;/trailarr/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span><span class="w"> </span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nb">ProxyPass</span><span class="w"> </span><span class="s2">&quot;/trailarr/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nb">ProxyPassReverse</span><span class="w"> </span><span class="s2">&quot;/trailarr/&quot;</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.231:7889/&quot;</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Prefix<span class="w"> </span><span class="s2">&quot;/trailarr&quot;</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nt">&lt;/VirtualHost&gt;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Proto<span class="w"> </span><span class="s2">&quot;%{REQUEST_SCHEME}s&quot;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Host<span class="w"> </span><span class="s2">&quot;%{HTTP_HOST}s&quot;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-Forwarded-Prefix<span class="w"> </span><span class="s2">&quot;/trailarr&quot;</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nt">&lt;/VirtualHost&gt;</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3055,14 +3090,17 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>trailarr.mydomain.com {
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    reverse_proxy http://192.168.1.231:7889 
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>}
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    reverse_proxy http://192.168.1.231:7889 {
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        header_up X-Forwarded-Host {host}
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    }
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>}
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>reverse_proxy /trailarr/* http://192.168.1.231:7889 { 
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    header_up X-Forwarded-Prefix /trailarr
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>reverse_proxy /trailarr/* http://192.168.1.231:7889 {
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    header_up X-Forwarded-Host   {host}
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    header_up X-Forwarded-Prefix /trailarr
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>}
 </span></code></pre></div>
 </div>
 </div>
@@ -3091,25 +3129,30 @@
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailarr-service</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">      </span><span class="nt">middlewares</span><span class="p">:</span>
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">strip-trailarr</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="nt">trailarr-service</span><span class="p">:</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nt">loadBalancer</span><span class="p">:</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="nt">servers</span><span class="p">:</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://192.168.1.231:7889&quot;</span><span class="w"> </span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span><span class="nt">middlewares</span><span class="p">:</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="nt">strip-trailarr</span><span class="p">:</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="nt">stripPrefix</span><span class="p">:</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">        </span><span class="nt">prefixes</span><span class="p">:</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/trailarr&quot;</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailarr-headers</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nt">services</span><span class="p">:</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nt">trailarr-service</span><span class="p">:</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="nt">loadBalancer</span><span class="p">:</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="nt">servers</span><span class="p">:</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://192.168.1.231:7889&quot;</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span><span class="nt">middlewares</span><span class="p">:</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="nt">strip-trailarr</span><span class="p">:</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">      </span><span class="nt">stripPrefix</span><span class="p">:</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">        </span><span class="nt">prefixes</span><span class="p">:</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/trailarr&quot;</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">    </span><span class="nt">trailarr-headers</span><span class="p">:</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">      </span><span class="nt">headers</span><span class="p">:</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">        </span><span class="nt">customRequestHeaders</span><span class="p">:</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">          </span><span class="nt">X-Forwarded-Prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/trailarr&quot;</span>
 </span></code></pre></div>
 </div>
 </div>
 </div>
 <h2 id="additional-notes">Additional Notes</h2>
 <ul>
-<li>Forward the <code>X-Forwarded-Prefix</code> header from reverse proxy to Trailarr. <em>Optional but helps</em></li>
+<li>Forward the <code>X-Forwarded-Prefix</code> header from reverse proxy to Trailarr. <em>Recommended — ensures the correct frontend is served when accessed through the proxy.</em></li>
 <li>Restart Trailarr and reverse proxy to apply the new configuration.</li>
-<li>Once you add the <code>URL Base</code> and restart Trailarr, you will <strong>NOT</strong> be able to access the application at the <strong>root URL</strong> or <strong>local IP and port</strong>.</li>
+<li>After setting <code>URL Base</code> and restarting, Trailarr is accessible at <strong>both</strong> the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>).</li>
 <li>
 <p>You may need to clear your browser cache or perform a hard refresh to load the resources correctly.</p>
 <div class="admonition tip">
@@ -3118,7 +3161,7 @@
 </div>
 </li>
 <li>
-<p>If you encounter any issues, and want to revert back to root access, find the <code>.env</code> file in <code>config/</code> folder and remove the value set for <code>URL_BASE</code>, then restart the application.</p>
+<p>If you encounter any issues, and want to revert back to root-only access, find the <code>.env</code> file in <code>config/</code> folder and remove the value set for <code>URL_BASE</code>, then restart the application.</p>
 </li>
 </ul>
 <div class="admonition success">
@@ -3126,13 +3169,14 @@
 <p>If you are using a different reverse proxy, and successfully configured it to work with Trailarr in a sub-directory, please consider sharing your configuration by opening a new issue or a pull request on our <a href="https://github.com/nandyalu/trailarr/" target="_blank">GitHub repository</a> and we will update the documentation accordingly.</p>
 </div>
 <h2 id="how-it-works">How It Works</h2>
-<p>When the <code>URL Base</code> is set and restart Trailarr, Trailarr does the following:</p>
+<p>When <code>URL Base</code> is set and Trailarr restarts, it does the following:</p>
 <ul>
-<li>Identifies that a <code>URL Base</code> is set.</li>
-<li>Adds a <code>root-path</code> option to the FastAPI application, which tells FastAPI to serve all routes under the specified base path.</li>
-<li>Adjusts the <code>base href</code> in the HTML templates to ensure that all relative URLs for resources (like CSS, JS, images) are correctly prefixed with the <code>URL Base</code>.</li>
+<li>Keeps the root <code>index.html</code> with <code>&lt;base href="/"&gt;</code> so the app remains accessible at the local IP and port (<code>http://your-ip:7889/</code>).</li>
+<li>Creates a <code>/{url_base}/</code> subfolder inside the frontend build directory containing a separate <code>index.html</code> patched with <code>&lt;base href="/{url_base}/"&gt;</code>. This makes the app also accessible at <code>http://your-ip:7889/{url_base}/</code> and via the reverse proxy sub-directory URL.</li>
+<li>Registers a middleware that strips the <code>/{url_base}</code> prefix from API, WebSocket, and other server-side requests arriving without a reverse proxy (i.e., direct local access at <code>http://your-ip:7889/{url_base}/api/...</code>), so they are routed correctly without any proxy stripping needed.</li>
+<li>Reads the <code>X-Forwarded-Prefix</code> header (sent by the reverse proxy) to decide which <code>index.html</code> to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.</li>
 </ul>
-<p>This ensures that when the application is accessed via the reverse proxy in a sub-directory, all routes and resources are correctly resolved.</p>
+<p>Both access methods work simultaneously after a single restart — no trade-off between local and proxied access.</p>
 
 
 

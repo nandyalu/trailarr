@@ -3027,11 +3027,16 @@
 <li>Added <strong>Expanded</strong> and <strong>Table</strong> views in media pages with an option to select fields to display.</li>
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>None in this release.</li>
+</ul>
 <p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python and npm packages to latest versions.</li>
+<li><strong>Improved <code>URL_BASE</code> / reverse-proxy support</strong> — Trailarr now serves the frontend correctly at both the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>) simultaneously. Previously, setting <code>URL_BASE</code> broke direct local access. If you use a reverse proxy with a sub-directory setup, please review your configuration to ensure the recommended headers (<code>X-Forwarded-For</code>, <code>X-Forwarded-Proto</code>, <code>X-Forwarded-Host</code>, <code>X-Forwarded-Prefix</code>) are forwarded correctly — see the <a href="../../user-guide/reverse-proxy/">Reverse Proxy Configuration</a> docs for updated examples.</li>
+</ul>
 <h2 id="v093-beta-may-08-2026"><strong>v0.9.3-beta</strong> - <em>May 08, 2026</em></h2>
-<p><strong>What's New:</strong> ✨
-<strong>Bug Fixes:</strong> 🐛
-<strong>Other Changes:</strong> ⚡</p>
+<p><strong>What's New:</strong> ✨</p>
 <ul>
 <li><strong>Refresh Plex Trailer Flags Task</strong> — New weekly task that caches whether Plex already has a trailer for each media item, eliminating repeated Plex API calls during every download run. See <a href="../../user-guide/tasks/#refresh-plex-trailer-flags">Tasks</a> for details.</li>
 <li><strong>Plex refresh summary log</strong> — The Plex connection refresh now logs a single summary line at completion: how many library sections were scanned (vs total), and how many media items were added, updated, or newly linked. Example: <code>Plex refresh complete for 'My Plex': 2/5 sections scanned, 12 added, 847 updated, 3 newly linked.</code></li>
