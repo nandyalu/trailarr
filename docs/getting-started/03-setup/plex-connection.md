@@ -7,7 +7,8 @@ Adding a Plex connection is optional, but unlocks some powerful features:
 - **Plex notifications** — After a trailer is downloaded, Trailarr can trigger a Plex library scan so the trailer appears in Plex immediately (configurable per profile).
 
 !!! note ""
-    A Plex connection works alongside your existing Radarr/Sonarr connections — it does not replace them. You still need at least one Radarr or Sonarr connection to use Trailarr.
+    - A Plex connection works alongside your existing Radarr/Sonarr connections — it does not replace them.
+    - You can use Trailarr with only a Plex connection or just with Radarr/Sonarr connections.
 
 ---
 

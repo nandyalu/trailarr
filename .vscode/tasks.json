@@ -219,6 +219,33 @@
 			"problemMatcher": [],
 		},
 		{
+			"label": "Launch FastAPI (launch.py)",
+			"detail": "Run FastAPI via launch.py — creates config/logs dirs, runs migrations, starts uvicorn on port 7890",
+			"type": "shell",
+			"command": "uv run python ./scripts/launch.py",
+			"icon": {
+				"id": "play-circle",
+				"color": "terminal.ansiGreen"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHONDONTWRITEBYTECODE": "1",
+					"PYTHONUNBUFFERED": "1",
+					"APP_VERSION": "0.9.3"
+				}
+			},
+			"isBackground": true,
+			"group": {
+				"kind": "none",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Run FastAPI with startup script",
 			"detail": "Run FastAPI with the startup script",
 			"type": "shell",
@@ -234,6 +261,8 @@
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
 					// "WEBUI_DISABLE_AUTH": "true"
+					"APP_DATA_DIR": "${workspaceFolder}/config",
+					"APP_VERSION": "0.9.3"
 				}
 			},
 			"group": {
