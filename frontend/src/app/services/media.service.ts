@@ -168,11 +168,21 @@ export class MediaService {
     // Load global view field configs from localStorage once on startup
     const savedExpandedFields = localStorage.getItem('TrailarrExpandedFields');
     if (savedExpandedFields) {
-      try { this.expandedFields.set(JSON.parse(savedExpandedFields)); } catch {}
+      try {
+        const parsed: unknown = JSON.parse(savedExpandedFields);
+        if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) {
+          this.expandedFields.set(parsed);
+        }
+      } catch {}
     }
     const savedTableColumns = localStorage.getItem('TrailarrTableColumns');
     if (savedTableColumns) {
-      try { this.tableColumns.set(JSON.parse(savedTableColumns)); } catch {}
+      try {
+        const parsed: unknown = JSON.parse(savedTableColumns);
+        if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) {
+          this.tableColumns.set(parsed);
+        }
+      } catch {}
     }
 
     // Subscribe to WebSocket updates to reload media data when necessary

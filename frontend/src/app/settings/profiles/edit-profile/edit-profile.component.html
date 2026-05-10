@@ -466,7 +466,7 @@
   <edit-filter-dialog [filterType]="'TRAILER'" [customFilter]="customFilter()" (dialogClosed)="onFilterDialogClosed($event)" />
 }
 
-<dialog #deleteProfileDialog class="delete-dialog" (click)="closeDeleteDialog()">
+<dialog #deleteProfileDialog class="delete-dialog" (click)="closeDeleteDialog()" (cancel)="$event.preventDefault(); closeDeleteDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header danger">
       <h2 class="app-dialog-title">Delete Profile</h2>
@@ -487,7 +487,7 @@
   </div>
 </dialog>
 
-<dialog #copyProfileDialog (click)="closeCopyProfileDialog()">
+<dialog #copyProfileDialog (click)="closeCopyProfileDialog()" (cancel)="$event.preventDefault(); closeCopyProfileDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Duplicate Profile</h2>
@@ -511,7 +511,7 @@
   </div>
 </dialog>
 
-<dialog #jsonEditDialog (click)="closeJsonEditDialog()">
+<dialog #jsonEditDialog (click)="closeJsonEditDialog()" (cancel)="$event.preventDefault(); closeJsonEditDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Edit Profile JSON</h2>

@@ -1,6 +1,6 @@
 <div class="toast-container">
   @for (msg of messages(); track msg) {
-    <div class="toast" [class]="msg.type.toLowerCase()" [class.pinned]="pinnedToasts().has(msg)"
+    <div [class]="'toast ' + msg.type.toLowerCase()" [class.pinned]="pinnedToasts().has(msg)"
       [class.hovered]="hoveredToasts().has(msg)"
       (mouseenter)="pauseAutoClose(msg)"
       (mouseleave)="resumeIfNotPinned(msg)">

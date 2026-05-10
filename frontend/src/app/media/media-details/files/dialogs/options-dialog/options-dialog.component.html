@@ -1,4 +1,4 @@
-<dialog #optionsDialog (click)="closeDialog(true)">
+<dialog #optionsDialog (click)="closeDialog(true)" (cancel)="$event.preventDefault(); closeDialog(true)">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Options</h2>

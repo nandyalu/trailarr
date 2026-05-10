@@ -1,4 +1,4 @@
-<dialog #videoEditDialog (click)="closeVideoEditDialog()">
+<dialog #videoEditDialog (click)="closeVideoEditDialog()" (cancel)="$event.preventDefault(); closeVideoEditDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Trim Video</h2>

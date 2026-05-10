@@ -1,4 +1,4 @@
-<dialog #pathSelectDialog>
+<dialog #pathSelectDialog (cancel)="$event.preventDefault(); closeDialog()">
   <h2>Select a Path for '{{ name() }}'</h2>
   <hr />
   <input type="text" [(ngModel)]="path" placeholder="Enter path here" />

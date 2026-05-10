@@ -1,4 +1,4 @@
-<dialog #editCustomFilterDialog (click)="closeDialog(-1)">
+<dialog #editCustomFilterDialog (click)="closeDialog(-1)" (cancel)="$event.preventDefault(); closeDialog(-1)">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">{{ customFilter() ? 'Edit Filter' : 'Add Filter' }}</h2>

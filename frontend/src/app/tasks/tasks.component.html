@@ -204,7 +204,7 @@
 </div>
 
 <!-- ── Edit Task Dialog ── -->
-<dialog #editDialog class="edit-dialog" (click)="$event.target === $event.currentTarget && closeEditDialog()">
+<dialog #editDialog class="edit-dialog" (click)="$event.target === $event.currentTarget && closeEditDialog()" (cancel)="$event.preventDefault(); closeEditDialog()">
   @if (editingTask(); as task) {
     <div class="dialog-content">
       <h2 class="dialog-title">Edit Task</h2>

@@ -1,4 +1,4 @@
-<dialog #dialog (click)="closeDialog()">
+<dialog #dialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   @if (textFileLoading()) {
     <app-load-indicator class="loading-indicator" />
   } @else {

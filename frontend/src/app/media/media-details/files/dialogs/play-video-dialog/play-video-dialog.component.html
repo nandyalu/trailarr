@@ -1,4 +1,4 @@
-<dialog #videoDialog (click)="closeDialog()">
+<dialog #videoDialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Play Video</h2>

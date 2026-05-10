@@ -244,7 +244,7 @@
     </div>
   </div>
 </dialog>
-<dialog #deleteConnectionDialog class="delete-dialog" (click)="closeDeleteDialog()">
+<dialog #deleteConnectionDialog class="delete-dialog" (click)="closeDeleteDialog()" (cancel)="$event.preventDefault(); closeDeleteDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header danger">
       <h2 class="app-dialog-title">Delete Connection</h2>

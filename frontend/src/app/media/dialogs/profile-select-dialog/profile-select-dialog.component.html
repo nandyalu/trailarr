@@ -1,4 +1,4 @@
-<dialog #profileSelectDialog (click)="onCancel()">
+<dialog #profileSelectDialog (click)="onCancel()" (cancel)="$event.preventDefault(); onCancel()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Select Trailer Profile</h2>

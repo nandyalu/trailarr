@@ -179,7 +179,7 @@
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
 					"LOG_LEVEL": "ERROR",
-					"APP_VERSION": "0.9.1",
+					"APP_VERSION": "0.9.4",
 					"APP_DATA_DIR": "../temp-config"
 				}
 			},
@@ -232,7 +232,7 @@
 				"env": {
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
-					"APP_VERSION": "0.9.3"
+					"APP_VERSION": "0.9.4"
 				}
 			},
 			"isBackground": true,
@@ -262,7 +262,7 @@
 					"PYTHONUNBUFFERED": "1",
 					// "WEBUI_DISABLE_AUTH": "true"
 					"APP_DATA_DIR": "${workspaceFolder}/config",
-					"APP_VERSION": "0.9.3"
+					"APP_VERSION": "0.9.4"
 				}
 			},
 			"group": {

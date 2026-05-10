@@ -70,7 +70,7 @@
   </div>
 </div>
 
-<dialog #deleteConfirmDialog class="delete-confirm" (click)="closeDeleteConfirmDialog()">
+<dialog #deleteConfirmDialog class="delete-confirm" (click)="closeDeleteConfirmDialog()" (cancel)="$event.preventDefault(); closeDeleteConfirmDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header danger">
       <h2 class="app-dialog-title">Delete Trailers</h2>

@@ -23,7 +23,7 @@ export class PosterComponent {
   protected readonly inEditMode = this.mediaService.inEditMode;
   protected readonly selectedMediaID = this.mediaService.selectedMediaID;
 
-  protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this);
+  protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this.mediaService);
 
   onNearEndScroll(): void {
     if (this.displayCount() >= this.filteredSortedMedia().length) return;

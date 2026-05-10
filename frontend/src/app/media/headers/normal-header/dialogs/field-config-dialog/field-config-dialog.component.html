@@ -1,4 +1,4 @@
-<dialog #fieldConfigDialog (click)="onCancel()">
+<dialog #fieldConfigDialog (click)="onCancel()" (cancel)="$event.preventDefault(); onCancel()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Configure Fields</h2>

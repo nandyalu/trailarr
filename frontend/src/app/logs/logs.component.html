@@ -166,7 +166,7 @@
 </div>
 
 <!-- Traceback Dialog -->
-<dialog #tracebackDialog class="traceback-dialog" (click)="onDialogClick($event)">
+<dialog #tracebackDialog class="traceback-dialog" (click)="onDialogClick($event)" (cancel)="$event.preventDefault(); closeTraceback()">
   @if (tracebackLog(); as log) {
     <div class="traceback-content" (click)="$event.stopPropagation()">
       <div class="traceback-header">

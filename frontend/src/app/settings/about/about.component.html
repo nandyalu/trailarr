@@ -104,7 +104,7 @@
   </section>
 </div>
 
-<dialog #passwordUpdateDialog (click)="closePwUpdateDialog()">
+<dialog #passwordUpdateDialog (click)="closePwUpdateDialog()" (cancel)="$event.preventDefault(); closePwUpdateDialog()">
   @if (dialogOpen) {
     <form class="dialog-content" (click)="$event.stopPropagation()">
       <h2>Update Login Credentials</h2>

@@ -1,4 +1,4 @@
-<dialog #videoInfoDialog (click)="closeDialog()">
+<dialog #videoInfoDialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   @if (videoInfoLoading()) {
     <app-load-indicator class="loading-indicator" />
   } @else {

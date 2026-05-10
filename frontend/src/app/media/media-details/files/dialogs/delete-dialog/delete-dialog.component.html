@@ -1,4 +1,4 @@
-<dialog #deleteDialog class="delete-dialog" (click)="closeDialog()">
+<dialog #deleteDialog class="delete-dialog" (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header danger">
       <h2 class="app-dialog-title">Confirm Delete</h2>

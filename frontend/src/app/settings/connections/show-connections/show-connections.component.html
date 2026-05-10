@@ -66,7 +66,7 @@
 }
 
 <!-- Type picker dialog -->
-<dialog #addTypeDialog (click)="addTypeDialog.close()">
+<dialog #addTypeDialog (click)="addTypeDialog.close()" (cancel)="$event.preventDefault(); addTypeDialog.close()">
   <div class="dialog-content" (click)="$event.stopPropagation()">
     <h3>What would you like to add?</h3>
     <div class="add-type-options">

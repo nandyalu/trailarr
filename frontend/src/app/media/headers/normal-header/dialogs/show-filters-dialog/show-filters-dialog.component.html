@@ -1,5 +1,5 @@
 <!-- Dialog to show List of Custom Filters -->
-<dialog #showFiltersDialog (click)="closeDialog(true)">
+<dialog #showFiltersDialog (click)="closeDialog(true)" (cancel)="$event.preventDefault(); closeDialog(true)">
   <div class="app-dialog-container" (click)="$event.stopPropagation()">
     <div class="app-dialog-header">
       <h2 class="app-dialog-title">Custom Filters</h2>
