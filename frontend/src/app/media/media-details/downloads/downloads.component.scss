@@ -46,7 +46,7 @@
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface-variant);
   border-radius: 0.5rem;
-  border: 1px solid var(--color-outline);
+  box-shadow: var(--shadow-level2);
 }
 
 .download-main {

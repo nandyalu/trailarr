@@ -3,11 +3,12 @@ import {Media} from 'src/app/models/media';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {MediaService} from 'src/app/services/media.service';
 import {DisplayTitlePipe} from '../../pipes/display-title.pipe';
+import {FieldConfigDialogComponent, FieldOption} from './dialogs/field-config-dialog/field-config-dialog.component';
 import {ShowFiltersDialogComponent} from './dialogs/show-filters-dialog/show-filters-dialog.component';
 
 @Component({
   selector: 'app-normal-header',
-  imports: [DisplayTitlePipe, ShowFiltersDialogComponent],
+  imports: [DisplayTitlePipe, FieldConfigDialogComponent, ShowFiltersDialogComponent],
   templateUrl: './normal-header.component.html',
   styleUrl: './normal-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,9 @@ export class NormalHeaderComponent {
   protected readonly selectedSort = this.mediaService.selectedSort;
   protected readonly sortAscending = this.mediaService.sortAscending;
   protected readonly selectedFilter = this.mediaService.selectedFilter;
+  protected readonly selectedView = this.mediaService.selectedView;
+  protected readonly expandedFields = this.mediaService.expandedFields;
+  protected readonly tableColumns = this.mediaService.tableColumns;
 
   // Signals from Custom Filter Service
   protected readonly customFilters = this.customfilterService.viewFilters;
@@ -40,6 +44,54 @@ export class NormalHeaderComponent {
     return this.filterOptions().concat(this.customFilters().map((f) => f.filter_name));
   });
   protected readonly showFiltersDialogOpen = signal(false);
+  protected readonly fieldConfigDialogOpen = signal(false);
+
+  readonly viewOptions = ['poster', 'expanded', 'table'] as const;
+
+  // Field/column option definitions for the config dialog
+  readonly expandedFieldOptions: FieldOption[] = [
+    {key: 'year', label: 'Year'},
+    {key: 'overview', label: 'Overview'},
+    {key: 'runtime', label: 'Runtime'},
+    {key: 'language', label: 'Language'},
+    {key: 'studio', label: 'Studio'},
+    {key: 'season_count', label: 'Season Count'},
+    {key: 'status', label: 'Status'},
+    {key: 'monitor', label: 'Monitored'},
+    {key: 'arr_monitored', label: 'Arr Monitored'},
+    {key: 'media_exists', label: 'Media Exists'},
+    {key: 'trailer_exists', label: 'Trailer Exists'},
+    {key: 'imdb_id', label: 'IMDB ID'},
+    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
+    {key: 'folder_path', label: 'Folder Path'},
+    {key: 'media_filename', label: 'Filename'},
+    {key: 'added_at', label: 'Date Added'},
+    {key: 'updated_at', label: 'Date Updated'},
+    {key: 'downloaded_at', label: 'Date Downloaded'},
+    {key: 'plex_rating_key', label: 'Plex Rating Key'},
+    {key: 'plex_trailer', label: 'Plex Trailer'},
+  ];
+  readonly tableColumnOptions: FieldOption[] = [
+    {key: 'year', label: 'Year'},
+    {key: 'status', label: 'Status'},
+    {key: 'runtime', label: 'Runtime'},
+    {key: 'language', label: 'Language'},
+    {key: 'studio', label: 'Studio'},
+    {key: 'season_count', label: 'Season Count'},
+    {key: 'monitor', label: 'Monitored'},
+    {key: 'arr_monitored', label: 'Arr Monitored'},
+    {key: 'media_exists', label: 'Media Exists'},
+    {key: 'trailer_exists', label: 'Trailer Exists'},
+    {key: 'imdb_id', label: 'IMDB ID'},
+    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
+    {key: 'folder_path', label: 'Folder Path'},
+    {key: 'media_filename', label: 'Filename'},
+    {key: 'added_at', label: 'Date Added'},
+    {key: 'updated_at', label: 'Date Updated'},
+    {key: 'downloaded_at', label: 'Date Downloaded'},
+    {key: 'plex_rating_key', label: 'Plex Rating Key'},
+    {key: 'plex_trailer', label: 'Plex Trailer'},
+  ];
 
   // Effect to retrieve sort and filter options when moviesOnly changes
   effect1 = effect(() => {
@@ -81,6 +133,11 @@ export class NormalHeaderComponent {
     }
     if (savedSortAscending) {
       this.sortAscending.set(savedSortAscending == 'true');
+    }
+    // Retrieve the view preference from the local session
+    const savedView = localStorage.getItem(`Trailarr${pageType}View`);
+    if (savedView === 'poster' || savedView === 'expanded' || savedView === 'table') {
+      this.selectedView.set(savedView);
     }
   }
 
@@ -130,11 +187,36 @@ export class NormalHeaderComponent {
     return;
   }
 
+  setView(view: 'poster' | 'expanded' | 'table'): void {
+    this.selectedView.set(view);
+    const moviesOnlyValue = this.moviesOnly();
+    const pageType = moviesOnlyValue == null ? 'AllMedia' : moviesOnlyValue ? 'Movies' : 'Series';
+    localStorage.setItem(`Trailarr${pageType}View`, view);
+  }
+
   openShowFiltersDialog(): void {
     this.showFiltersDialogOpen.set(true);
   }
 
   onShowFiltersDialogClosed(): void {
     this.showFiltersDialogOpen.set(false);
+  }
+
+  openFieldConfigDialog(): void {
+    this.fieldConfigDialogOpen.set(true);
+  }
+
+  onFieldConfigDialogClosed(): void {
+    this.fieldConfigDialogOpen.set(false);
+  }
+
+  onFieldsChanged(fields: string[]): void {
+    if (this.selectedView() === 'expanded') {
+      this.expandedFields.set(fields);
+      localStorage.setItem('TrailarrExpandedFields', JSON.stringify(fields));
+    } else {
+      this.tableColumns.set(fields);
+      localStorage.setItem('TrailarrTableColumns', JSON.stringify(fields));
+    }
   }
 }

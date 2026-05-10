@@ -1,35 +1,24 @@
-.center {
-  margin: auto;
+dialog {
+  max-width: min(75vw, 900px);
+  width: min(75vw, 900px);
+
+  @media (width < 765px) {
+    max-width: 95vw;
+    width: 95vw;
+  }
 }
 
-dialog app-load-indicator {
+.loading-indicator {
   margin: 4rem;
 }
 
-.text-dialog {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin: 1.5rem;
-  max-width: 75vw;
-  max-height: 75vh;
-
-  @media (width < 765px) {
-    max-width: 90vw;
-    margin: 1rem;
-  }
+.text-body {
+  padding: 0;
 }
 
 .text-content {
   width: 100%;
-  max-width: 75vw;
-  max-height: 70vh;
-  overflow-y: auto;
-  border: 1px solid var(--color-outline);
-  border-radius: 1rem;
-  margin: 0.25rem;
+  background-color: var(--color-surface-container-highest);
 
   pre {
     padding: 1rem;
@@ -40,6 +29,7 @@ dialog app-load-indicator {
     line-height: 0;
     --indent: 2rem;
     --lineHeight: 2;
+    margin: 0;
 
     code {
       counter-increment: listing;
@@ -76,12 +66,4 @@ dialog app-load-indicator {
       }
     }
   }
-}
-
-.buttons-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  gap: 1rem;
-  width: 70%;
 }

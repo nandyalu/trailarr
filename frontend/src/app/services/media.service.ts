@@ -35,6 +35,9 @@ export class MediaService {
   readonly selectedSort = signal<keyof Media>('added_at');
   readonly sortAscending = signal<boolean>(true);
   readonly selectedFilter = signal<string>('all');
+  readonly selectedView = signal<'poster' | 'expanded' | 'table'>('poster');
+  readonly expandedFields = signal<string[]>(['overview', 'runtime', 'language']);
+  readonly tableColumns = signal<string[]>(['year', 'status', 'runtime', 'language', 'added_at']);
 
   // Resources
   readonly mediaResource = httpResource<Media[]>(() => ({url: this.mediaUrl + 'all_raw'}), {
@@ -162,6 +165,16 @@ export class MediaService {
   });
 
   constructor() {
+    // Load global view field configs from localStorage once on startup
+    const savedExpandedFields = localStorage.getItem('TrailarrExpandedFields');
+    if (savedExpandedFields) {
+      try { this.expandedFields.set(JSON.parse(savedExpandedFields)); } catch {}
+    }
+    const savedTableColumns = localStorage.getItem('TrailarrTableColumns');
+    if (savedTableColumns) {
+      try { this.tableColumns.set(JSON.parse(savedTableColumns)); } catch {}
+    }
+
     // Subscribe to WebSocket updates to reload media data when necessary
     this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
       if (msg.reload?.includes('media')) {

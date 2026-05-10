@@ -1,93 +1,61 @@
-/* File: settings.component.scss */
-.settings-container {
-  display: flex;
-  flex-direction: column;
-  margin: 1rem;
-
-  @media (width < 765px) {
-    margin: 0.5rem;
-  }
-}
-
 .settingsnav {
-  position: sticky;
-  top: 76px;
-  left: 0;
-  right: 0;
-  z-index: 99;
-  margin: 0;
-  padding: 0;
   display: flex;
-  flex-direction: row;
-  background-color: var(--color-surface-container-low);
-  color: var(--color-on-surface);
+  position: sticky;
+  top: calc(76px + 0.5rem);
+  z-index: 99;
+  margin: 0.5rem;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  box-shadow: var(--shadow-level2);
 
   @media (width < 765px) {
-    order: 2;
-    justify-content: space-around;
     position: fixed;
     top: auto;
-    bottom: 76px;
-  }
-}
-
-.settingsnav > * {
-  flex: 1;
-}
-
-.settings-content {
-  order: 2;
-  padding: 0.5rem;
-
-  @media (width < 765px) {
-    margin-bottom: 80px;
-    order: 1;
+    bottom: 78px;
+    left: 0;
+    right: 0;
+    margin: 0.25rem;
+    z-index: 200;
   }
 }
 
 .setnav-btn {
-  margin: 0;
-  padding: 0.8rem;
-  box-sizing: border-box;
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   text-decoration: none;
-  color: inherit;
+  color: var(--color-on-surface);
   text-align: center;
-  font-weight: 400;
-  transition: 0.3s;
-  cursor: pointer;
-  border-radius: 0;
-  border-bottom: 2px solid transparent;
-}
-
-.setnav-btn.active {
-  background-color: var(--color-secondary-container);
-  opacity: 1;
-  font-weight: 600;
-  color: var(--color-on-secondary-container);
-  border-bottom: 2px solid var(--color-primary);
-}
-
-.setnav-btn:not(.active):hover {
-  background-color: var(--color-secondary-container);
-  opacity: 0.6;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-on-secondary-container);
-  border-bottom: 2px solid var(--color-primary);
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-secondary-container) 60%, transparent);
+    color: var(--color-on-secondary-container);
+  }
+
+  &.active {
+    background-color: var(--color-secondary-container);
+    color: var(--color-on-secondary-container);
+    font-weight: 600;
+  }
 }
 
-/* @media (max-width: 765px) {
-    .settings-container {
-        grid-template-rows: 1fr auto;
-    }
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0.5rem 0.5rem;
 
-    .settingsnav {
-      grid-row: 2;
-      justify-content:space-around;
-      top: auto;
-      bottom: 0;
-    }
+  @media (width < 765px) {
+    margin: 0 0.25rem;
+    padding-bottom: calc(78px + 3.5rem);
+  }
+}
 
-    .settings-content {
-      grid-row: 1;
-    }
-} */
+.settings-content {
+  padding: 0.5rem 0;
+}

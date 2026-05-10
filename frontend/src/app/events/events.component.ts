@@ -2,9 +2,9 @@ import {AsyncPipe, TitleCasePipe} from '@angular/common';
 import {httpResource} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute, RouterLink} from '@angular/router';
-import {debounceTime, distinctUntilChanged} from 'rxjs';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {debounceTime, distinctUntilChanged, take} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {TimediffPipe} from '../helpers/timediff.pipe';
 import {EVENT_SOURCE_LABELS, EVENT_TYPE_LABELS, EventRead, EventSource, EventType} from '../models/event';
@@ -16,7 +16,6 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
   selector: 'app-events',
   imports: [
     AsyncPipe,
-    FormsModule,
     LoadIndicatorComponent,
     ReactiveFormsModule,
     RouterLink,
@@ -33,6 +32,7 @@ export class EventsComponent implements OnInit {
   private readonly eventsService = inject(EventsService);
   private readonly mediaService = inject(MediaService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly title = 'Events';
   readonly eventTypes = EventType;
@@ -44,6 +44,20 @@ export class EventsComponent implements OnInit {
 
   searchForm = new FormControl();
   displayCount = signal(50);
+  searchQuery = signal<string>('');
+  selectedEventType = signal<EventType | 'all'>('all');
+  selectedEventSource = signal<EventSource | 'all'>('all');
+  limit = signal(500);
+
+  readonly selectedSourceLabel = computed(() => {
+    const src = this.selectedEventSource();
+    return src === 'all' ? 'All Sources' : this.eventSourceLabels[src];
+  });
+
+  readonly selectedTypeLabel = computed(() => {
+    const type = this.selectedEventType();
+    return type === 'all' ? 'All Events' : this.eventTypeLabels[type];
+  });
 
   protected readonly allEvents = httpResource<EventRead[]>(
     () => ({
@@ -58,12 +72,6 @@ export class EventsComponent implements OnInit {
     {defaultValue: []},
   );
 
-  searchQuery = signal<string>('');
-  selectedEventType = signal<EventType | 'all'>('all');
-  selectedEventSource = signal<EventSource | 'all'>('all');
-  limit = signal(500);
-
-  // Map of media ID to media title for display
   protected readonly mediaTitlesMap = computed(() => {
     const media = this.mediaService.combinedMedia();
     const titlesMap = new Map<number, string>();
@@ -101,12 +109,73 @@ export class EventsComponent implements OnInit {
     this.displayCount.set(50);
   });
 
+  setEventType(type: EventType | 'all'): void {
+    this.selectedEventType.set(type);
+    this.persistState();
+  }
+
+  setEventSource(source: EventSource | 'all'): void {
+    this.selectedEventSource.set(source);
+    this.persistState();
+  }
+
+  private persistState(): void {
+    const type = this.selectedEventType();
+    const source = this.selectedEventSource();
+    const q = this.searchQuery();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        type: type !== 'all' ? type : null,
+        source: source !== 'all' ? source : null,
+        q: q || null,
+      },
+      replaceUrl: true,
+    });
+
+    if (type !== 'all') localStorage.setItem('TrailarrEventsType', type);
+    else localStorage.removeItem('TrailarrEventsType');
+
+    if (source !== 'all') localStorage.setItem('TrailarrEventsSource', source);
+    else localStorage.removeItem('TrailarrEventsSource');
+
+    if (q) localStorage.setItem('TrailarrEventsSearch', q);
+    else localStorage.removeItem('TrailarrEventsSearch');
+  }
+
   ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
-      const eventType = params['type'];
-      if (eventType && Object.values(EventType).includes(eventType)) {
-        this.selectedEventType.set(eventType);
+    // Read localStorage first (lower priority)
+    const savedType = localStorage.getItem('TrailarrEventsType') as EventType;
+    if (savedType && Object.values(EventType).includes(savedType)) {
+      this.selectedEventType.set(savedType);
+    }
+    const savedSource = localStorage.getItem('TrailarrEventsSource') as EventSource;
+    if (savedSource && Object.values(EventSource).includes(savedSource)) {
+      this.selectedEventSource.set(savedSource);
+    }
+    const savedSearch = localStorage.getItem('TrailarrEventsSearch');
+    if (savedSearch) {
+      this.searchForm.setValue(savedSearch);
+      this.searchQuery.set(savedSearch);
+    }
+
+    // Read URL params — overrides localStorage (take(1): only initial params, we own the URL after that)
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
+      const type = params['type'];
+      if (type && Object.values(EventType).includes(type)) {
+        this.selectedEventType.set(type as EventType);
       }
+      const source = params['source'];
+      if (source && Object.values(EventSource).includes(source)) {
+        this.selectedEventSource.set(source as EventSource);
+      }
+      const q = params['q'];
+      if (q) {
+        this.searchForm.setValue(q);
+        this.searchQuery.set(q);
+      }
+      // media_id is a one-shot deep link from the media detail page
       const mediaId = params['media_id'];
       if (mediaId) {
         this.searchForm.setValue(mediaId);
@@ -116,34 +185,8 @@ export class EventsComponent implements OnInit {
 
     this.searchForm.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       this.searchQuery.set(value || '');
+      this.persistState();
     });
-  }
-
-  getEventIcon(eventType: EventType): string {
-    switch (eventType) {
-      case EventType.MEDIA_ADDED:
-        return 'add_circle';
-      case EventType.MONITOR_CHANGED:
-        return 'visibility';
-      case EventType.YOUTUBE_ID_CHANGED:
-        return 'link';
-      case EventType.TRAILER_DETECTED:
-        return 'search';
-      case EventType.TRAILER_DOWNLOADED:
-        return 'download';
-      case EventType.TRAILER_DELETED:
-        return 'delete';
-      case EventType.DOWNLOAD_SKIPPED:
-        return 'block';
-      case EventType.PLEX_LINKED:
-        return 'link';
-      case EventType.PLEX_UNLINKED:
-        return 'link_off';
-      case EventType.PLEX_SCAN_TRIGGERED:
-        return 'sync';
-      default:
-        return 'info';
-    }
   }
 
   getEventDescription(event: EventRead): string {

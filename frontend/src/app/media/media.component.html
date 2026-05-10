@@ -23,7 +23,16 @@
         <p>No media items found matching the selected filter!</p>
       </div>
     }
-    <!-- Add a switch statement here for different views -->
-    <media-poster-card />
+    @switch (selectedView()) {
+      @case ('expanded') {
+        <media-expanded-card />
+      }
+      @case ('table') {
+        <media-table-view />
+      }
+      @default {
+        <media-poster-card />
+      }
+    }
   }
 </div>

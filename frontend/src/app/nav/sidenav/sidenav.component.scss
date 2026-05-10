@@ -1,102 +1,114 @@
-/* File: sidenav.component.scss */
 .navmenu {
   overflow: auto;
   width: 210px;
   height: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0.25rem 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: start;
-  justify-items: stretch;
+  align-items: stretch;
 }
 
 .sidenav-button {
-  margin: 0;
-  padding: 1rem 1rem 1rem 2rem;
-  box-sizing: border-box;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
-  text-align: start;
-  font-weight: 400;
   display: flex;
   align-items: center;
-  transition: 0.3s;
+  gap: 0.5rem;
+  margin: 0.15rem 0.5rem;
+  padding: 0.75rem 1.25rem 0.75rem 1rem;
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  color: var(--color-on-surface);
+  font-weight: 400;
+  font-size: 0.95rem;
   cursor: pointer;
-  border-radius: 0; /* Remove border radius */
-  border-bottom: 2px solid transparent; /* Add a transparent bottom border */
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.sidenav-button .icon {
+  order: 2;
+  flex-shrink: 0;
+  margin: 0 0 0 auto;
+  height: 1.5rem;
+  width: 1.5rem;
+  fill: currentColor;
+}
+
+.sidenav-button:hover {
+  background-color: color-mix(in srgb, var(--color-secondary-container) 60%, transparent);
+  color: var(--color-on-secondary-container);
 }
 
 .sidenav-button.active,
 .sidenav-button.active2 {
   background-color: var(--color-secondary-container);
-  opacity: 1;
+  color: var(--color-on-secondary-container);
   font-weight: 600;
-  color: var(--color-on-secondary-container);
-  border-bottom: 2px solid var(--color-primary); /* Add a bottom border on hover */
-}
-
-.sidenav-button:not(.active, .active2):hover {
-  background-color: var(--color-secondary-container);
-  opacity: 0.6;
-  font-weight: 500;
-  color: var(--color-on-secondary-container);
-  border-bottom: 2px solid var(--color-primary); /* Add a bottom border on hover */
+  box-shadow: inset -3px 0 0 var(--color-primary);
 }
 
 .sidenav-button:last-child {
   margin-bottom: auto;
 }
 
-.sidenav-button .icon {
-  margin: 0;
-  margin-right: 0.5rem; /* Add space between the icon and the text */
-  height: 1.75rem;
-  width: 1.75rem;
-  padding: 0.25rem;
-}
-
+/* Tablet — icon rail */
 @media (max-width: 1100px) {
   .navmenu {
     width: auto;
+    padding: 0.25rem 0;
+    align-items: center;
   }
+
   .sidenav-button {
-    padding: 1rem;
+    margin: 0.15rem 0.25rem;
+    padding: 0.75rem;
+    box-shadow: none !important;
   }
-  .sidenav-button .btntext {
-    display: none;
-  }
+
   .sidenav-button .icon {
     margin: auto;
   }
+
+  .sidenav-button .btntext {
+    display: none;
+  }
 }
 
+/* Mobile — bottom bar */
 @media (max-width: 765px) {
   .navmenu {
     flex-direction: row;
     width: 100%;
     height: 78px;
-    margin: 0;
-    padding: 0;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding: 0.25rem;
     justify-content: space-evenly;
     align-items: center;
   }
 
   .sidenav-button {
-    padding: 0; /* Remove padding from the right */
-    width: auto; /* Allow the button to take only the necessary width */
-    border-radius: 0; /* Remove border radius */
-    border-bottom: 2px solid transparent; /* Add a transparent bottom border */
+    flex-direction: column; /* icon (first in DOM) on top, text on bottom */
+    gap: 0.15rem;
+    padding: 0.4rem 0.75rem;
+    margin: 0;
+    font-size: 0.7rem;
+    justify-content: center;
+    box-shadow: none !important;
+  }
+
+  .sidenav-button .btntext {
+    display: block;
   }
 
   .sidenav-button .icon {
-    margin: 0.5rem;
-    height: 1.75rem;
-    width: 1.75rem;
+    order: 0;
+    margin: auto;
+    height: 1.4rem;
+    width: 1.4rem;
   }
 
   .sidenav-button:last-child {

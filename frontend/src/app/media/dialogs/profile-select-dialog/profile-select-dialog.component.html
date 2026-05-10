@@ -1,16 +1,25 @@
-<dialog #profileSelectDialog (close)="onCancel()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h3>Select Trailer Profile</h3>
-    <p>Select a profile to use for searching/downloading</p>
-    <label for="profile-select">Select a Profile:</label>
-    <select name="profiles" id="profile-select" [(ngModel)]="selectedProfileID" required="true">
-      @for (profile of allProfiles(); track profile.id) {
-        <option [value]="profile.id" [selected]="profile.id === selectedProfileID()">{{ profile.customfilter.filter_name }}</option>
-      }
-    </select>
-    <div class="buttons-row">
+<dialog #profileSelectDialog (click)="onCancel()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Select Trailer Profile</h2>
+      <button class="app-dialog-close" (click)="onCancel()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p class="profile-description">Select a profile to use for searching/downloading</p>
+      <label class="profile-label" for="profile-select">Profile</label>
+      <select name="profiles" id="profile-select" [(ngModel)]="selectedProfileID" required="true">
+        @for (profile of allProfiles(); track profile.id) {
+          <option [value]="profile.id" [selected]="profile.id === selectedProfileID()">{{ profile.customfilter.filter_name }}</option>
+        }
+      </select>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="onCancel()">Cancel</button>
       <button class="primary" [disabled]="!selectedProfileID()" (click)="onConfirm()">Confirm</button>
-      <button class="danger" (click)="onCancel()">Cancel</button>
     </div>
   </div>
 </dialog>

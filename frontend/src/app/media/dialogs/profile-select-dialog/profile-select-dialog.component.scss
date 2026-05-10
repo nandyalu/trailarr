@@ -1,35 +1,35 @@
-.dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  min-width: max(25vw, min(300px, 80vw));
+dialog {
+  min-width: max(25vw, min(340px, 90vw));
 }
 
-h3 {
-  font-size: larger;
-  font-weight: 700;
-  margin: 1rem;
+.profile-description {
+  margin: 0 0 1rem;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9rem;
 }
 
-label {
-  font-size: 1rem;
+.profile-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
   color: var(--color-on-surface);
-  padding: 0 0.5rem;
-  transition: 0.5s;
 }
 
 select {
-  min-width: 15rem;
+  width: 100%;
   height: 3rem;
-  margin: auto;
   padding: 0.25rem 0.5rem;
   font-family: inherit;
-  font-size: 1.25rem;
+  font-size: 1rem;
   background-color: var(--color-surface-container-high);
-  color: var(--color-tertiary);
+  color: var(--color-on-surface);
   border: 1px solid var(--color-outline);
   border-radius: 0.5rem;
+  box-sizing: border-box;
+
+  option {
+    background-color: var(--color-surface-container-high);
+  }
 }
 
 .ng-touched.ng-invalid:not(form):not(div) {

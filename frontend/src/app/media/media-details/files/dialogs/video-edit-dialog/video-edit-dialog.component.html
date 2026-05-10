@@ -1,69 +1,69 @@
 <dialog #videoEditDialog (click)="closeVideoEditDialog()">
-  <div class="video-edit-dialog" (click)="$event.stopPropagation()">
-    <div class="dialog-header">
-      <h2>Trim Video</h2>
-      <i class="close" (click)="closeVideoEditDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Trim Video</h2>
+      <button class="app-dialog-close" (click)="closeVideoEditDialog()" title="Close">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="m249-186-63-63 231-231-231-230 63-64 231 230 231-230 63 64-230 230 230 231-63 63-231-230-231 230Z" />
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
         </svg>
-      </i>
+      </button>
     </div>
 
-    <div class="video-container">
-      <video #videoElement controls>
-        <source [src]="getVideoUrl()" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    </div>
+    <div class="app-dialog-body trim-body">
+      <div class="video-container">
+        <video #videoElement controls>
+          <source [src]="getVideoUrl()" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
 
-    <div class="trim-controls">
-      <div class="time-inputs-row">
-        <div class="time-input-group">
-          <label for="startTime">Start Time:</label>
-          <div class="input-with-button">
-            <input
-              id="startTime"
-              type="text"
-              [(ngModel)]="startTimestamp"
-              placeholder="00:00:00 or 00:00"
-              pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
-            />
-            <button type="button" class="secondary small" (click)="setCurrentTimeAsStart()">Use Current</button>
-            <button type="button" class="secondary small" (click)="seekToStart()">Seek</button>
+      <div class="trim-controls">
+        <div class="time-inputs-row">
+          <div class="time-input-group">
+            <label for="startTime">Start Time:</label>
+            <div class="input-with-button">
+              <input
+                id="startTime"
+                type="text"
+                [(ngModel)]="startTimestamp"
+                placeholder="00:00:00 or 00:00"
+                pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+              />
+              <button type="button" class="secondary small" (click)="setCurrentTimeAsStart()">Use Current</button>
+              <button type="button" class="secondary small" (click)="seekToStart()">Seek</button>
+            </div>
+          </div>
+
+          <div class="time-input-group">
+            <label for="endTime">End Time:</label>
+            <div class="input-with-button">
+              <input
+                id="endTime"
+                type="text"
+                [(ngModel)]="endTimestamp"
+                placeholder="00:00:00 or 00:00"
+                pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+              />
+              <button type="button" class="secondary small" (click)="setCurrentTimeAsEnd()">Use Current</button>
+              <button type="button" class="secondary small" (click)="seekToEnd()">Seek</button>
+            </div>
           </div>
         </div>
 
-        <div class="time-input-group">
-          <label for="endTime">End Time:</label>
-          <div class="input-with-button">
-            <input
-              id="endTime"
-              type="text"
-              [(ngModel)]="endTimestamp"
-              placeholder="00:00:00 or 00:00"
-              pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
-            />
-            <button type="button" class="secondary small" (click)="setCurrentTimeAsEnd()">Use Current</button>
-            <button type="button" class="secondary small" (click)="seekToEnd()">Seek</button>
-          </div>
+        <div class="output-input-group">
+          <label for="outputFile">Output Filename:</label>
+          <input id="outputFile" type="text" [(ngModel)]="outputFileName" placeholder="filename_trimmed.mp4" />
         </div>
-      </div>
-
-      <div class="output-input-group">
-        <label for="outputFile">Output Filename:</label>
-        <input id="outputFile" type="text" [(ngModel)]="outputFileName" placeholder="filename_trimmed.mp4" />
       </div>
     </div>
 
-    <div class="dialog-actions">
+    <div class="app-dialog-footer">
       @if (isProcessing()) {
         <app-load-indicator />
         <span class="processing-text">Processing video...</span>
       } @else {
-        <div class="action-buttons">
-          <button class="primary" (click)="trimVideo()">Trim Video</button>
-          <button class="tertiary" (click)="closeVideoEditDialog()">Cancel</button>
-        </div>
+        <button class="tertiary" (click)="closeVideoEditDialog()">Cancel</button>
+        <button class="primary" (click)="trimVideo()">Trim Video</button>
       }
     </div>
   </div>

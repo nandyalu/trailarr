@@ -1,17 +1,26 @@
 <dialog #renameDialog (click)="closeDialog()">
-  <div class="rename-dialog" (click)="$event.stopPropagation()">
-    <h2>Rename</h2>
-    <input
-      id="rename-file"
-      class="rename-input"
-      type="text"
-      [ngModel]="renamedFileName()"
-      (ngModelChange)="renamedFileName.set($event)"
-      placeholder="New Name"
-    />
-    <div class="buttons-row">
-      <button class="primary" (click)="renameFile()">Rename</button>
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Rename File</h2>
+      <button class="app-dialog-close" (click)="closeDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <input
+        id="rename-file"
+        class="rename-input"
+        type="text"
+        [ngModel]="renamedFileName()"
+        (ngModelChange)="renamedFileName.set($event)"
+        placeholder="New Name"
+      />
+    </div>
+    <div class="app-dialog-footer">
       <button class="tertiary" (click)="closeDialog()">Cancel</button>
+      <button class="primary" (click)="renameFile()">Rename</button>
     </div>
   </div>
 </dialog>

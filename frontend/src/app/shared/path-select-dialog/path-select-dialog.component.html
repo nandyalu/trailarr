@@ -13,7 +13,8 @@
     }
   </section>
   <div class="buttons-row">
-    <button [disabled]="!path().endsWith(pathShouldEndWith()) || isSubmitted()" (click)="submitValue()">
+    <button class="secondary" (click)="cancelDialog()">Cancel</button>
+    <button class="primary" [disabled]="!path().endsWith(pathShouldEndWith()) || isSubmitted()" (click)="submitValue()">
       <span> Confirm </span>
       @if (isSubmitted()) {
         <span class="loading-icon">
@@ -26,6 +27,5 @@
         </span>
       }
     </button>
-    <button class="danger" (click)="cancelDialog()">Cancel</button>
   </div>
 </dialog>
