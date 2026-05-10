@@ -214,10 +214,8 @@
 
 .empty-state {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 3rem 1rem;
+  justify-content: center;
+  padding: 2rem 1rem;
 }
 
 .empty-text {
@@ -225,10 +223,6 @@
   color: var(--color-on-surface-variant);
   font-size: 0.9375rem;
   text-align: center;
-}
-
-.empty-btn {
-  margin-left: 0;
 }
 
 // ── Add-type picker dialog ────────────────────────────────────────────────────

@@ -61,13 +61,7 @@
   </div>
 } @else {
   <div class="empty-state">
-    <p class="empty-text">No connections yet. Add a Radarr, Sonarr, or Plex server to get started.</p>
-    <button class="btn primary empty-btn" (click)="addTypeDialog.showModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-      </svg>
-      <span>Add New</span>
-    </button>
+    <p class="empty-text">No connections configured yet. Click <strong>Add New</strong> above to connect a Radarr, Sonarr, or Plex server.</p>
   </div>
 }
 
