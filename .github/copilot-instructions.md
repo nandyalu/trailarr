@@ -174,7 +174,7 @@ Use these VSCode tasks (defined in `.vscode/tasks.json`):
 
 - **Backend:** Python 3.13, FastAPI, SQLModel, Alembic, SQLite
 - **Frontend:** Angular 20, TypeScript, Jest testing
-- **Documentation:** Mkdocs Material, Markdown files
+- **Documentation:** Zensical (port of Material for Mkdocs), Markdown files
 - **Testing:** Pytest for backend, Jest for frontend
 - **Media Processing:** ffmpeg, yt-dlp
 - **Containerization:** Docker with multi-stage builds

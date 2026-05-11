@@ -1,4 +1,4 @@
-"""MkDocs hooks for custom macros and filters."""
+"""Zensical macros for custom version badges."""
 
 # Version links mapping - UPDATE THESE WHEN VERSIONS ARE RELEASED
 VERSION_LINKS: dict[str, str] = {
@@ -47,7 +47,7 @@ def define_env(env):
             f"/trailarr/release-notes/{link}"
         )
 
-        # Use a raw <a> tag so MkDocs's link resolver does not mangle the URL.
+        # Use a raw <a> tag so Zensical's link resolver does not mangle the URL.
         return (
             f'{_action["icon"]}{{ title="{_action["text"]} v{version}"'
             f' {_action["style"]} }} <a href="{link}">v{version}</a>'
