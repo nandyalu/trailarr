@@ -1,0 +1,106 @@
+.expanded-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(600px, 100%), 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+
+  @media (width < 765px) {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+}
+
+// Expanded-specific card overrides (targets the shell host, which carries .media-card)
+.media-card {
+  background-color: var(--color-surface-container-high);
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  aspect-ratio: 8 / 3;
+  transition: transform 0.25s, box-shadow 0.25s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px var(--color-outline-variant);
+  }
+
+  @media (width < 765px) {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+// Projected content styles
+.expanded-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.05) 100%);
+  pointer-events: none;
+}
+
+.expanded-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  pointer-events: none;
+}
+
+.expanded-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expanded-year {
+  font-weight: 400;
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin-left: 0.25rem;
+}
+
+.expanded-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.expanded-overview {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.expanded-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.expanded-tag {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+}
+
+.expanded-tag-path {
+  max-width: 24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

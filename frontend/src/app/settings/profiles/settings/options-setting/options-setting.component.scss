@@ -1,75 +1,83 @@
 :host {
   display: grid;
   grid-template-columns: 3fr 2fr;
-  justify-items: start;
   align-items: center;
-  margin: 1.5rem 0.5rem;
+  padding: 1rem 0.5rem;
   gap: 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   @container (width < 40rem) {
     grid-template-columns: 1fr;
   }
 }
 
+// ── Label ─────────────────────────────────────────────────────────────────────
+
 .content-label {
   display: flex;
   flex-direction: column;
-  text-align: left;
-  gap: 0.5rem;
-  width: 100%;
+  gap: 0.25rem;
+
+  span {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-on-surface);
+  }
+
+  small {
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+    font-weight: 400;
+    line-height: 1.4;
+  }
 }
 
-label,
-span {
-  font-weight: bold;
-  text-wrap: nowrap;
-}
+.text-default span { color: var(--color-on-surface); }
+.text-warning span { color: var(--color-warning); }
+.text-danger  span { color: var(--color-danger); }
 
-svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  cursor: pointer;
-}
+// ── Options bar ───────────────────────────────────────────────────────────────
 
 .options-bar {
-  padding: 0.25rem;
   display: flex;
+  padding: 0.2rem;
   background-color: var(--color-surface-container-high);
-  border-radius: 10px;
-  // border: 0.5px solid var(--color-outline);
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-outline-variant);
 }
+
+.border-default { border-color: var(--color-outline-variant); }
+.border-warning  { border-color: var(--color-warning); }
+.border-danger   { border-color: var(--color-danger); }
 
 .option-label {
-  padding: 10px;
+  padding: 0.5rem 0.875rem;
   cursor: pointer;
-  border-radius: 10px;
-  transition: 0.3s ease;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
   flex: 1 1 auto;
   text-align: center;
-}
+  font-size: 0.875rem;
 
-.option-label:has(input:focus-visible) {
-  outline: -webkit-focus-ring-color auto 1px;
-}
-
-.option-name {
-  border-radius: 10px;
-  border: none;
-  transition: all 0.15s ease-in-out;
+  &:has(input:focus-visible) {
+    outline: -webkit-focus-ring-color auto 1px;
+  }
 }
 
 .option__selected {
-  background-color: var(--color-tertiary-container);
+  background-color: var(--color-secondary-container);
   font-weight: 600;
-  color: var(--color-on-tertiary-container);
-  transition: 0.3s ease;
+  color: var(--color-on-secondary-container);
 }
 
 .option__disabled {
-  // background-color: var(--color-surface-container-low);
-  opacity: 0.8;
+  opacity: 0.4;
   cursor: not-allowed;
-  text-decoration: line-through 2px var(--color-danger);
+  pointer-events: none;
 }
 
 .option__warning {
@@ -77,21 +85,22 @@ svg {
 }
 
 .option__selected.option__warning {
-  background-color: var(--color-warning);
-  color: var(--color-warning-text);
+  background-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  color: var(--color-warning);
+  font-weight: 600;
 }
 
 .option__danger {
-  color: var(--color-error);
+  color: var(--color-danger);
 }
 
 .option__selected.option__danger {
-  background-color: var(--color-error-container);
-  color: var(--color-on-error-container);
+  background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
-input {
-  // display: none;
+input[type='radio'] {
   clip: rect(0 0 0 0);
   clip-path: inset(100%);
   width: 1px;

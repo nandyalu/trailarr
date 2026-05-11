@@ -1,0 +1,30 @@
+<dialog #fieldConfigDialog (click)="onCancel()" (cancel)="$event.preventDefault(); onCancel()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Configure Fields</h2>
+      <button class="app-dialog-close" (click)="onCancel()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <div class="fields-list">
+        @for (option of fieldOptions(); track option.key) {
+          <label class="field-option">
+            <input
+              type="checkbox"
+              [checked]="isChecked(option.key)"
+              (change)="toggleField(option.key, $any($event.target).checked)"
+            />
+            <span>{{ option.label }}</span>
+          </label>
+        }
+      </div>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="onCancel()">Cancel</button>
+      <button class="primary" (click)="onConfirm()">Apply</button>
+    </div>
+  </div>
+</dialog>

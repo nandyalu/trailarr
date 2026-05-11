@@ -38,6 +38,16 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
       - `trailarr.mydomain.com` -> Your Sub-Domain
       - `/trailarr/` -> Your Sub-Directory path -> set the same for `URL Base` setting in Trailarr
 
+!!! info "Recommended headers"
+    The following headers preserve information about the original request that would otherwise be lost when the proxy forwards it:
+
+    | Header | Purpose |
+    |---|---|
+    | `X-Forwarded-For` | Original client IP address — added automatically by most proxies |
+    | `X-Forwarded-Proto` | Original protocol (`http` or `https`) |
+    | `X-Forwarded-Host` | Original host name (`mysuperapp.com`) |
+    | `X-Forwarded-Prefix` | Sub-directory prefix (`/trailarr`) — required for correct frontend routing in sub-directory setups |
+
 ### Nginx
 
 === "Sub-Domain"
@@ -52,6 +62,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
             proxy_set_header X-Real-IP           $remote_addr;
             proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto   $scheme;
+            proxy_set_header X-Forwarded-Host    $host;
 
         }
     }
@@ -69,6 +80,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
             proxy_set_header X-Real-IP           $remote_addr;
             proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto   $scheme;
+            proxy_set_header X-Forwarded-Host    $host;
             proxy_set_header X-Forwarded-Prefix  /trailarr;
         }
     }
@@ -82,9 +94,10 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
     <VirtualHost *:80>
         ServerName trailarr.mydomain.com
         ProxyPreserveHost On
-        ProxyPass "/" "http://192.168.1.231:7889/" 
+        ProxyPass "/" "http://192.168.1.231:7889/"
         ProxyPassReverse "/" "http://192.168.1.231:7889/"
-
+        RequestHeader set X-Forwarded-Proto "%{REQUEST_SCHEME}s"
+        RequestHeader set X-Forwarded-Host "%{HTTP_HOST}s"
     </VirtualHost>
     ```
 
@@ -93,8 +106,10 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
     <VirtualHost *:80>
         ServerName mydomain.com
         ProxyPreserveHost On
-        ProxyPass "/trailarr/" "http://192.168.1.231:7889/" 
+        ProxyPass "/trailarr/" "http://192.168.1.231:7889/"
         ProxyPassReverse "/trailarr/" "http://192.168.1.231:7889/"
+        RequestHeader set X-Forwarded-Proto "%{REQUEST_SCHEME}s"
+        RequestHeader set X-Forwarded-Host "%{HTTP_HOST}s"
         RequestHeader set X-Forwarded-Prefix "/trailarr"
     </VirtualHost>
     ```
@@ -105,13 +120,16 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
 === "Sub-Domain"
     ```caddy
     trailarr.mydomain.com {
-        reverse_proxy http://192.168.1.231:7889 
+        reverse_proxy http://192.168.1.231:7889 {
+            header_up X-Forwarded-Host {host}
+        }
     }
     ```
 
 === "Sub-Directory"
     ```caddy
-    reverse_proxy /trailarr/* http://192.168.1.231:7889 { 
+    reverse_proxy /trailarr/* http://192.168.1.231:7889 {
+        header_up X-Forwarded-Host   {host}
         header_up X-Forwarded-Prefix /trailarr
     }
     ```
@@ -142,30 +160,35 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
           service: trailarr-service
           middlewares:
             - strip-trailarr
+            - trailarr-headers
       services:
         trailarr-service:
-        loadBalancer:
-          servers:
-            - url: "http://192.168.1.231:7889" 
+          loadBalancer:
+            servers:
+              - url: "http://192.168.1.231:7889"
       middlewares:
         strip-trailarr:
           stripPrefix:
             prefixes:
               - "/trailarr"
+        trailarr-headers:
+          headers:
+            customRequestHeaders:
+              X-Forwarded-Prefix: "/trailarr"
     ```
 
 
 ## Additional Notes
 
-- Forward the `X-Forwarded-Prefix` header from reverse proxy to Trailarr. _Optional but helps_
+- Forward the `X-Forwarded-Prefix` header from reverse proxy to Trailarr. _Recommended — ensures the correct frontend is served when accessed through the proxy._
 - Restart Trailarr and reverse proxy to apply the new configuration.
-- Once you add the `URL Base` and restart Trailarr, you will __NOT__ be able to access the application at the __root URL__ or __local IP and port__.
+- After setting `URL Base` and restarting, Trailarr is accessible at **both** the local URL (`http://your-ip:7889/`) and the sub-directory URL (`https://mydomain.com/trailarr/`).
 - You may need to clear your browser cache or perform a hard refresh to load the resources correctly.
 
     !!! tip
         `Ctrl + Shift + I` to open Developer Tools -> right-click the `Refresh` button -> select `Empty Cache and Hard Reload`
 
-- If you encounter any issues, and want to revert back to root access, find the `.env` file in `config/` folder and remove the value set for `URL_BASE`, then restart the application.
+- If you encounter any issues, and want to revert back to root-only access, find the `.env` file in `config/` folder and remove the value set for `URL_BASE`, then restart the application.
 
 
 !!! success
@@ -173,10 +196,11 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
 
 ## How It Works
 
-When the `URL Base` is set and restart Trailarr, Trailarr does the following:
+When `URL Base` is set and Trailarr restarts, it does the following:
 
-- Identifies that a `URL Base` is set.
-- Adds a `root-path` option to the FastAPI application, which tells FastAPI to serve all routes under the specified base path.
-- Adjusts the `base href` in the HTML templates to ensure that all relative URLs for resources (like CSS, JS, images) are correctly prefixed with the `URL Base`.
+- Keeps the root `index.html` with `<base href="/">` so the app remains accessible at the local IP and port (`http://your-ip:7889/`).
+- Creates a `/{url_base}/` subfolder inside the frontend build directory containing a separate `index.html` patched with `<base href="/{url_base}/">`. This makes the app also accessible at `http://your-ip:7889/{url_base}/` and via the reverse proxy sub-directory URL.
+- Registers a middleware that strips the `/{url_base}` prefix from API, WebSocket, and other server-side requests arriving without a reverse proxy (i.e., direct local access at `http://your-ip:7889/{url_base}/api/...`), so they are routed correctly without any proxy stripping needed.
+- Reads the `X-Forwarded-Prefix` header (sent by the reverse proxy) to decide which `index.html` to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.
 
-This ensures that when the application is accessed via the reverse proxy in a sub-directory, all routes and resources are correctly resolved.
+Both access methods work simultaneously after a single restart — no trade-off between local and proxied access.

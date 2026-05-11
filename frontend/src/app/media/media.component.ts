@@ -6,11 +6,13 @@ import {MediaService} from '../services/media.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 import {EditHeaderComponent} from './headers/edit-header/edit-header.component';
 import {NormalHeaderComponent} from './headers/normal-header/normal-header.component';
+import {ExpandedComponent} from './media-cards/expanded/expanded.component';
 import {PosterComponent} from './media-cards/poster/poster.component';
+import {TableComponent} from './media-cards/table/table.component';
 
 @Component({
   selector: 'app-media',
-  imports: [EditHeaderComponent, FormsModule, LoadIndicatorComponent, NormalHeaderComponent, PosterComponent],
+  imports: [EditHeaderComponent, ExpandedComponent, FormsModule, LoadIndicatorComponent, NormalHeaderComponent, PosterComponent, TableComponent],
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +26,7 @@ export class MediaComponent implements OnInit {
   protected readonly moviesOnly = this.mediaService.moviesOnly;
   protected readonly filteredSortedMedia = this.mediaService.filteredSortedMedia;
   protected readonly inEditMode = this.mediaService.inEditMode;
+  protected readonly selectedView = this.mediaService.selectedView;
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);

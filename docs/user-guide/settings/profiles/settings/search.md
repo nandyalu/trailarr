@@ -131,6 +131,33 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 !!! tip "All Words Must Be Absent"
     If any excluded word is present in the title, the trailer will be skipped.
 
+## Allowed Uploader IDs
+
+| Type    | Required | Default | Valid Values                                   |
+|:-------:|:--------:|:-------:|:----------------------------------------------:|
+| String  | No       | (empty) | Comma-separated list of uploader handles or channel IDs |
+
+**Purpose**: Restrict trailer downloads to specific YouTube channels. When set, a video is only downloaded if its uploader matches one of the entries in the list.
+
+**How it Works**:
+
+- Leave empty to allow videos from any channel (default behaviour).
+- Each entry is matched against the video's **uploader handle** (e.g. `@WarnerBrosPictures`) or **channel ID** (e.g. `UCbmNph6atAoGfqLoCL_duAg`). Either format works.
+- Entries are separated by `,` (comma); at least one must match.
+- Matching is exact (not a substring search), so `@Warner` will not match `@WarnerBrosPictures`.
+
+**Examples**:
+
+- `@WarnerBrosPictures` — only download trailers uploaded by the Warner Bros. Pictures channel.
+- `@UniversalPictures, @ParamountPictures` — accept trailers from either Universal or Paramount.
+- `UCbmNph6atAoGfqLoCL_duAg` — match by channel ID instead of handle.
+
+!!! tip "Finding a Channel's Uploader ID"
+    Open the YouTube channel page and copy the `@handle` from the URL or page header. For the channel ID, check the channel's **About** page or use a tool like [YouTube Channel ID Finder](https://commentpicker.com/youtube-channel-id.php).
+
+!!! note
+    This filter only applies to YouTube search results. If a `YouTube Trailer ID` is set directly on a media item, it bypasses all search filters including this one.
+
 ## Yt-dlp Extra Options
 
 | Type    | Required | Default | Valid Values                  |

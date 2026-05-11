@@ -1,14 +1,20 @@
-<dialog #videoInfoDialog (click)="closeDialog()">
+<dialog #videoInfoDialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   @if (videoInfoLoading()) {
-    <app-load-indicator class="center" />
+    <app-load-indicator class="loading-indicator" />
   } @else {
-    <div class="info-dialog">
-      <h1>Video Properties</h1>
-      <div class="info-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-container" (click)="$event.stopPropagation()">
+      <div class="app-dialog-header">
+        <h2 class="app-dialog-title">Video Properties</h2>
+        <button class="app-dialog-close" (click)="closeDialog()" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+          </svg>
+        </button>
+      </div>
+      <div class="app-dialog-body">
         @if (videoInfo(); as info) {
-          <section open>
-            <h2>File Info</h2>
-            <hr />
+          <section>
+            <h3>File Info</h3>
             <div class="info-content">
               <span>File Name</span>
               <code>{{ info.name }}</code>
@@ -56,8 +62,7 @@
           </section>
           @if (info.youtube_channel || info.youtube_id) {
             <section>
-              <h2>YouTube Info</h2>
-              <hr />
+              <h3>YouTube Info</h3>
               @if (info.youtube_channel) {
                 <div class="info-content">
                   <span>Channel ID</span>
@@ -78,8 +83,7 @@
           }
           @for (stream of info.streams; track stream.index) {
             <section>
-              <h2>Track {{ stream.index }}: {{ stream.codec_type | titlecase }}</h2>
-              <hr />
+              <h3>Track {{ stream.index }}: {{ stream.codec_type | titlecase }}</h3>
               @if (stream.codec_name) {
                 <div class="info-content">
                   <span>Codec</span>
@@ -113,12 +117,10 @@
             </section>
           }
         } @else {
-          <h2>Video Info</h2>
-          <hr />
-          <code class="video-info"> Unable to fetch video info. </code>
+          <p class="no-info">Unable to fetch video info.</p>
         }
       </div>
-      <div class="buttons-row">
+      <div class="app-dialog-footer">
         <button class="tertiary" (click)="closeDialog()">Close</button>
       </div>
     </div>

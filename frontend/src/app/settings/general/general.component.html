@@ -195,8 +195,8 @@
       <help-link-icon [link]="helpLinks.experimental" />
     </summary>
     <hr />
+    <p class="section-info">These are experimental options, might not work as expected!</p>
     <div class="setting-group">
-      <p>These are experimental options, might not work as expected!</p>
       @if (settings()?.gpu_available_nvidia) {
         <app-options-setting
           name="NVIDIA GPU Acceleration"

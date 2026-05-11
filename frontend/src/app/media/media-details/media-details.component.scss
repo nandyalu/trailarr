@@ -4,8 +4,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   margin: 1rem;
-  border: 1px solid var(--color-outline);
-  border-radius: 10px;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-level2);
   position: relative;
 
   @media (width < 768px) {
@@ -44,7 +44,7 @@
   background-size: cover;
   background-position: center;
   opacity: 0.4;
-  border-radius: 10px;
+  border-radius: 0.5rem;
 }
 
 .media-poster {
@@ -170,7 +170,7 @@
   align-items: stretch;
   width: 100%;
   border: 1px solid var(--color-outline);
-  border-radius: 6px;
+  border-radius: 0.5rem;
 }
 
 .labeled-input span {
@@ -248,20 +248,6 @@
   animation: spin-animation 2s linear infinite;
 }
 
-.dialog-content {
-  background-color: var(--color-on-error-container);
-  color: var(--color-on-error);
-  padding: 1rem;
-  text-align: center;
-}
-
-dialog::backdrop {
-  background-image: linear-gradient(0deg, grey, #690005);
-}
-
-.dialog-content button {
-  margin: 10px;
-}
 
 @media (max-width: 765px) {
   .media-details-card {

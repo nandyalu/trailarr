@@ -61,8 +61,8 @@
 .media-files-container .media-files {
   width: 100%;
   display: block;
-  border: 1px solid var(--color-outline);
-  border-radius: 4px;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-level2);
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface-variant);
   overflow-y: auto;

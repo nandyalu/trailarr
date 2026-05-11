@@ -1,13 +1,17 @@
 :host {
-  display: contents;
+  display: block;
+  border-bottom: 1px solid var(--color-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .content {
   display: grid;
   grid-template-columns: 3fr 2fr;
-  justify-items: start;
   align-items: center;
-  margin: 1.5rem 0.5rem;
+  padding: 1rem 0.5rem;
   gap: 1rem;
 
   @container (width < 40rem) {
@@ -15,38 +19,33 @@
   }
 }
 
+// ── Label ─────────────────────────────────────────────────────────────────────
+
 .content-label {
   display: flex;
   flex-direction: column;
-  text-align: left;
-  gap: 0.5rem;
-  width: 100%;
-}
+  gap: 0.25rem;
 
-label,
-span {
-  font-weight: bold;
-  text-wrap: nowrap;
-}
-
-svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  cursor: pointer;
-}
-
-button {
-  width: 2.5rem;
-  height: 2.5rem;
-  @container (width < 40rem) {
-    width: 2rem;
-    height: 2rem;
+  label {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-on-surface);
+    cursor: pointer;
   }
 
-  &:disabled {
-    cursor: not-allowed;
+  small {
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+    font-weight: 400;
+    line-height: 1.4;
   }
 }
+
+.text-default label { color: var(--color-on-surface); }
+.text-warning label  { color: var(--color-warning); }
+.text-danger  label  { color: var(--color-danger); }
+
+// ── Input ─────────────────────────────────────────────────────────────────────
 
 .content-input {
   display: flex;
@@ -54,73 +53,128 @@ button {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
 }
 
 .wrapper {
   display: inline-block;
-  width: 5rem;
-  height: 3rem;
   position: relative;
+  width: 5rem;
+  height: 2.75rem;
 }
 
-.folder-icon {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: auto;
-  right: 0;
-  cursor: pointer;
-  height: auto;
+.wrapper__long {
+  flex: 1;
   width: auto;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  max-width: calc(100% - 6rem);
 
-  svg {
-    height: 2rem;
-    width: 2rem;
+  @container (width < 40rem) {
+    max-width: none;
   }
 }
 
 input {
   width: 100%;
   height: 100%;
-  padding: 0.25rem;
-  text-align: center;
+  padding: 0 0.75rem;
   font-family: inherit;
-  background-color: var(--color-surface-container-high);
+  font-size: 0.9375rem;
+  background-color: var(--color-surface);
   color: var(--color-on-surface);
-  // border: 1px solid var(--color-outline);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 0.5rem;
-}
+  outline: none;
+  box-sizing: border-box;
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
 
-.wrapper__long {
-  width: auto;
-  // min-width: 15rem;
-  flex: 1;
-  max-width: calc(100% - 6rem);
-  @container (width < 40rem) {
-    // flex: 1;
-    width: auto;
-    max-width: none;
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  }
+
+  &.input__folder {
+    padding: 0 2.75rem 0 0.5rem;
+  }
+
+  &.input__long {
+    field-sizing: content;
+    text-align: left;
+  }
+
+  &.input__disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--color-surface-container-high);
   }
 }
 
-.input__long {
-  field-sizing: content;
-  font-size: larger;
+.border-default { border-color: var(--color-outline-variant); }
+.border-warning  { border-color: var(--color-warning); }
+.border-danger   { border-color: var(--color-danger); }
+
+// ── Folder button ─────────────────────────────────────────────────────────────
+
+.folder-icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  background-color: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+  border-left: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  transition: background-color 0.15s;
+
+  svg {
+    width: 1.375rem;
+    height: 1.375rem;
+    fill: var(--color-on-surface-variant);
+  }
+
+  &:hover {
+    background-color: var(--color-surface-container-highest);
+  }
 }
 
-.input__folder {
-  padding: 0.25rem 3rem 0.25rem 0.25rem;
-}
+// ── Action buttons ────────────────────────────────────────────────────────────
 
-.input__disabled {
-  background-color: var(--color-surface-container-low);
-  // background-image: repeating-linear-gradient(45deg, transparent, transparent 20px, var(--color-outline) 20px, var(--color-outline) 24px);
-  cursor: not-allowed;
-  text-decoration: line-through 2px var(--color-danger);
+.icononly-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &.secondary {
+    background-color: var(--color-surface-container-high);
+    svg { fill: var(--color-on-surface-variant); }
+    &:hover { background-color: var(--color-surface-container-highest); }
+  }
+
+  &.primary {
+    background-color: var(--color-primary);
+    svg { fill: var(--color-on-primary); }
+    &:hover { background-color: color-mix(in srgb, var(--color-primary) 85%, black); }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
 }

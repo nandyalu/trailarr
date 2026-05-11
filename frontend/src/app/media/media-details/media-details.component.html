@@ -145,10 +145,10 @@
                   @if (!selectedMedia_.is_movie) {
                     <p>Seasons: {{ selectedMedia_.season_count }}</p>
                   }
-                  <p>Monitored: {{ selectedMedia_.monitor }}</p>
-                  <p>Downloaded: {{ selectedMedia_.trailer_exists }}</p>
+                  <p>Monitored: {{ selectedMedia_.monitor ? 'True' : 'False' }}</p>
+                  <p>Downloaded: {{ selectedMedia_.trailer_exists ? 'True' : 'False' }}</p>
                   @if (selectedMedia_.plex_trailer !== null) {
-                    <p>Plex Trailer: {{ selectedMedia_.plex_trailer }}</p>
+                    <p>Plex Trailer: {{ selectedMedia_.plex_trailer ? 'True' : 'False' }}</p>
                   }
                   <p>Added: {{ selectedMedia_.added_at.toLocaleString() }}</p>
                   <p>Updated: {{ selectedMedia_.updated_at.toLocaleString() }}</p>

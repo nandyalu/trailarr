@@ -1,0 +1,56 @@
+name: Bump Version
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  bump:
+    name: Bump version files and regenerate OpenAPI spec
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Bump version in pyproject.toml
+        run: sed -i "s/^version = .*/version = \"${{ steps.version.outputs.version }}\"/" backend/pyproject.toml
+
+      - name: Bump version in package.json
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --prefix frontend
+
+      - name: Bump APP_VERSION in tasks.json
+        run: |
+          sed -i "s/\"APP_VERSION\": \"[^\"]*\"/\"APP_VERSION\": \"${{ steps.version.outputs.version }}\"/g" .vscode/tasks.json
+
+      - name: Set up Python with uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: backend
+
+      - name: Install backend dependencies
+        run: uv sync
+        working-directory: backend
+
+      - name: Generate OpenAPI spec
+        run: |
+          APP_VERSION=${{ github.ref_name }} PYTHONPATH=$(pwd) uv run python export_openapi.py
+        working-directory: backend
+
+      - name: Commit and push to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backend/pyproject.toml frontend/package.json frontend/package-lock.json \
+                  .vscode/tasks.json docs/references/api-docs/openapi.json
+          git commit -m "chore: bump version to ${{ github.ref_name }}" || echo "Nothing to commit"
+          git push origin main

@@ -1,15 +1,12 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {RouterLink} from '@angular/router';
-import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
 import {RemoveStartingSlashPipe} from 'src/app/helpers/remove-starting-slash.pipe';
 import {ScrollNearEndDirective} from 'src/app/helpers/scroll-near-end-directive';
 import {MediaService} from 'src/app/services/media.service';
-import {RouteMedia} from 'src/routing';
-import {StatusIconComponent} from '../status-icon/status-icon.component';
+import {MediaCardShellComponent} from '../media-card-shell/media-card-shell.component';
 
 @Component({
   selector: 'media-poster-card',
-  imports: [DisplayTitlePipe, RemoveStartingSlashPipe, RouterLink, ScrollNearEndDirective, StatusIconComponent],
+  imports: [MediaCardShellComponent, RemoveStartingSlashPipe, ScrollNearEndDirective],
   templateUrl: './poster.component.html',
   styleUrl: './poster.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,23 +23,10 @@ export class PosterComponent {
   protected readonly inEditMode = this.mediaService.inEditMode;
   protected readonly selectedMediaID = this.mediaService.selectedMediaID;
 
-  // Functions from Media Service
-  protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this);
+  protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this.mediaService);
 
-  // Constants
-  protected readonly RouteMedia = RouteMedia;
-
-  /**
-   * Handles the event when the user scrolls near the end of the media list.
-   * Loads more media items into the display list if there are more items to show.
-   *
-   * @returns {void} This method does not return a value.
-   */
   onNearEndScroll(): void {
-    // Load more media when near the end of the scroll
-    if (this.displayCount() >= this.filteredSortedMedia().length) {
-      return;
-    }
+    if (this.displayCount() >= this.filteredSortedMedia().length) return;
     this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
 }

@@ -1,37 +1,25 @@
-.rename-dialog {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin: 1.5rem;
-  max-width: 75vw;
-  max-height: 75vh;
-
-  @media (width < 765px) {
-    max-width: 90vw;
-    margin: 1rem;
-  }
+dialog {
+  max-width: min(600px, 90vw);
 }
 
 .rename-input {
-  field-sizing: content;
-  min-width: 50vw;
-  max-width: 75vw;
-  padding: 1rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--color-outline);
-  border-radius: 1rem;
-  font-size: 1.2rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  box-sizing: border-box;
+  min-width: min(50vw, 400px);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+  }
 
   @media (width < 765px) {
-    max-width: 90vw;
+    min-width: unset;
   }
-}
-
-.buttons-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  gap: 1rem;
-  width: 70%;
 }

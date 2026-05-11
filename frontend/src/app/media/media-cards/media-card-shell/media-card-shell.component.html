@@ -1,0 +1,19 @@
+@if (inEditMode()) {
+  <input
+    type="checkbox"
+    [id]="checkboxId()"
+    class="media-card-checkbox"
+    (click)="$event.stopPropagation()"
+    (change)="checkedChange.emit($any($event.target).checked)"
+    [checked]="isChecked()"
+  />
+  <label [for]="checkboxId()" class="card-overlay"></label>
+} @else {
+  <a
+    class="card-overlay"
+    [routerLink]="['/' + RouteMedia, media().id]"
+    (click)="cardClicked.emit()"
+  ></a>
+}
+<ng-content />
+<media-status-icon [status]="media().status" class="status-icon" />

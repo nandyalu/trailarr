@@ -93,6 +93,19 @@ def __has_excluded_words(exclude_words: str, title: str) -> bool:
     return __has_any_words(exclude_list, title)
 
 
+def __is_allowed_uploader(info: dict, uploader_ids: str, id: str) -> bool:
+    """Return True if the video uploader matches the allowed list, or the list is empty."""
+    allowed = [u.strip() for u in uploader_ids.split(",") if u.strip()]
+    if not allowed:
+        return True
+    video_uploader_id = str(info.get("uploader_id", ""))
+    video_channel_id = str(info.get("channel_id", ""))
+    if not any(u in (video_uploader_id, video_channel_id) for u in allowed):
+        logger.debug(f"Skipping video from non-allowed uploader: {id}")
+        return False
+    return True
+
+
 def _yt_search_filter(
     info: dict,
     *,
@@ -119,6 +132,13 @@ def _yt_search_filter(
     if duration and duration > max_duration:
         logger.debug(f"Skipping long video (>{max_duration}): {id}")
         return f"The video is longer than {max_duration} seconds"
+    # Shorts URLs contain /shorts/ — these are vertical videos
+    url = str(info.get("url", ""))
+    if "/shorts/" in url:
+        logger.debug(f"Skipping vertical (Shorts) video: {id}")
+        return "The video is a vertical (Shorts) video"
+    if not __is_allowed_uploader(info, profile.uploader_ids, id):
+        return "The video uploader is not in the allowed list"
     title = str(info.get("title", ""))
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")

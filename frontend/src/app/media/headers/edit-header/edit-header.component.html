@@ -70,12 +70,23 @@
   </div>
 </div>
 
-<dialog #deleteConfirmDialog (click)="closeDeleteConfirmDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Delete Trailers</h2>
-    <p>This will delete <strong>ALL trailers</strong> for <strong>{{ checkedMediaIDs().length }} selected media item(s)</strong>.</p>
-    <p>Are you sure?</p>
-    <button class="danger" (click)="onConfirmBatchDelete()" tabindex="2">Delete</button>
-    <button class="secondary" (click)="closeDeleteConfirmDialog()" tabindex="1">Cancel</button>
+<dialog #deleteConfirmDialog class="delete-confirm" (click)="closeDeleteConfirmDialog()" (cancel)="$event.preventDefault(); closeDeleteConfirmDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header danger">
+      <h2 class="app-dialog-title">Delete Trailers</h2>
+      <button class="app-dialog-close" (click)="closeDeleteConfirmDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p class="delete-confirm-message">This will delete <strong>ALL trailers</strong> for <strong>{{ checkedMediaIDs().length }} selected media item(s)</strong>.</p>
+      <p class="delete-confirm-message">Are you sure?</p>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeDeleteConfirmDialog()" tabindex="1">Cancel</button>
+      <button class="danger" (click)="onConfirmBatchDelete()" tabindex="2">Delete</button>
+    </div>
   </div>
 </dialog>

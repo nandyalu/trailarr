@@ -1,87 +1,84 @@
 @let connections = connectionsResource.value();
 
-<div class="sett-conn-container">
-  @if (isLoading()) {
-    <app-load-indicator class="center" />
-  } @else {
-    <div class="title-block">
-      <h2>Connections</h2>
-      <i class="icononly-button" [class.loading]="connectionsResource.isLoading()" title="Refresh" (click)="connectionsResource.reload()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="refresh-icon">
-          <path
-            d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
-          />
-        </svg>
-      </i>
-    </div>
-
-    <!-- Type picker dialog -->
-    <dialog #addTypeDialog class="add-type-dialog">
-      <h3>What would you like to add?</h3>
-      <div class="add-type-options">
-        <button class="type-option-button" [routerLink]="[RouteAdd]" (click)="addTypeDialog.close()">
-          <span class="type-name">Radarr / Sonarr</span>
-          <span class="type-desc">Arr media management apps</span>
-        </button>
-        <button class="type-option-button plex-type" [routerLink]="[RoutePlex, RouteAdd]" (click)="addTypeDialog.close()">
-          <span class="type-name">Plex</span>
-          <span class="type-desc">Plex Media Server</span>
-        </button>
-      </div>
-      <button class="link-button" (click)="addTypeDialog.close()">Cancel</button>
-    </dialog>
-
-    <button class="animated-button top-right-button" (click)="addTypeDialog.showModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-      </svg>
-      <span class="text">Add New</span>
-    </button>
-    <hr />
-
-    @if (resultMessage()) {
-      <p class="result-{{ resultType() }}">{{ resultMessage() }}</p>
-    }
-
-    @if (connections && connections.length > 0) {
-      <div class="connection-container">
-        @for (connection of connections; track $index) {
-          <div class="connection-card">
-            @if (connection.arr_type === 'plex') {
-              <a class="card-link" [routerLink]="[RoutePlex, connection.id]"></a>
-            } @else {
-              <a class="card-link" [routerLink]="[connection.id]"></a>
-            }
-            <h3 class="title">{{ connection.name }}</h3>
-            <div class="content">
-              <p class="url-text" [title]="connection.url">URL: {{ connection.url }}</p>
-              <p>Monitor: {{ connection.monitor | uppercase }}</p>
-              <p>Added: {{ connection.added_at | date: 'mediumDate' }}</p>
-            </div>
-            <div class="link-image">
-              @let _url = connection.external_url.length > 0 ? connection.external_url : connection.url;
-              <a target="_blank" href="{{ _url }}">
-                @switch (connection.arr_type) {
-                  @case ('radarr') {
-                    <img src="assets/radarr_128.png" />
-                  }
-                  @case ('sonarr') {
-                    <img src="assets/sonarr_128.png" />
-                  }
-                  @case ('plex') {
-                    <img src="assets/plex_logo.svg" />
-                  }
-                }
-              </a>
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="center">
-        <div class="all-empty-card center" role="button" tabindex="0" (click)="addTypeDialog.showModal()">Add New!</div>
-        <p class="text-primary">I'm all alone here!. Click the "ADD" button to add some Radarr/Sonarr instances to let the magic happen!</p>
-      </div>
-    }
-  }
+<div class="title-block">
+  <h2>Connections</h2>
+  <button
+    class="icononly-button"
+    [class.loading]="connectionsResource.isLoading()"
+    title="Refresh"
+    (click)="connectionsResource.reload()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+      />
+    </svg>
+  </button>
+  <button class="btn primary" (click)="addTypeDialog.showModal()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+    </svg>
+    <span>Add New</span>
+  </button>
 </div>
+
+@if (resultMessage()) {
+  <p class="result-{{ resultType() }}">{{ resultMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <app-load-indicator />
+} @else if (connections && connections.length > 0) {
+  <div class="connection-grid">
+    @for (connection of connections; track $index) {
+      <div class="connection-card">
+        @if (connection.arr_type === 'plex') {
+          <a class="card-link" [routerLink]="[RoutePlex, connection.id]"></a>
+        } @else {
+          <a class="card-link" [routerLink]="[connection.id]"></a>
+        }
+        <div class="card-logo">
+          @let _url = connection.external_url.length > 0 ? connection.external_url : connection.url;
+          <a target="_blank" [href]="_url" class="logo-link" title="Open in browser">
+            @switch (connection.arr_type) {
+              @case ('radarr') { <img src="assets/radarr_128.png" alt="Radarr" /> }
+              @case ('sonarr') { <img src="assets/sonarr_128.png" alt="Sonarr" /> }
+              @case ('plex')   { <img src="assets/plex_logo.svg"  alt="Plex" class="plex-logo" /> }
+            }
+          </a>
+        </div>
+        <div class="card-body">
+          <h3 class="card-name">{{ connection.name }}</h3>
+          <p class="card-url" [title]="connection.url">{{ connection.url }}</p>
+          <div class="card-meta">
+            <span class="meta-chip">{{ connection.monitor | uppercase }}</span>
+            <span class="meta-sep">·</span>
+            <span>{{ connection.added_at | date: 'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="empty-state">
+    <p class="empty-text">No connections configured yet. Click <strong>Add New</strong> above to connect a Radarr, Sonarr, or Plex server.</p>
+  </div>
+}
+
+<!-- Type picker dialog -->
+<dialog #addTypeDialog (click)="addTypeDialog.close()" (cancel)="$event.preventDefault(); addTypeDialog.close()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h3>What would you like to add?</h3>
+    <div class="add-type-options">
+      <button class="type-option-button" [routerLink]="[RouteAdd]" (click)="addTypeDialog.close()">
+        <span class="type-name">Radarr / Sonarr</span>
+        <span class="type-desc">Arr media management apps</span>
+      </button>
+      <button class="type-option-button plex-type" [routerLink]="[RoutePlex, RouteAdd]" (click)="addTypeDialog.close()">
+        <span class="type-name">Plex</span>
+        <span class="type-desc">Plex Media Server</span>
+      </button>
+    </div>
+    <button class="cancel-link" (click)="addTypeDialog.close()">Cancel</button>
+  </div>
+</dialog>

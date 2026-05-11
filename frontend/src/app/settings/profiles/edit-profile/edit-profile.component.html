@@ -11,15 +11,15 @@
       />
     </svg>
   </i>
+  <button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
+      />
+    </svg>
+    <span class="text">Delete</span>
+  </button>
 </div>
-<button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-    <path
-      d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
-    />
-  </svg>
-  <span class="text">Delete</span>
-</button>
 <hr />
 @if (invalidFormatsWarning().length > 0) {
   <div class="border-warning sticky-warning">
@@ -384,6 +384,20 @@
         (onSubmit)="profileService.updateSetting('exclude_words', $event)"
       />
       <app-text-setting
+        name="Allowed Uploader IDs"
+        description="Only download videos from these YouTube channels. Comma-separated list of uploader handles or channel IDs."
+        descriptionExtra="Eg: '@WarnerBrosPictures, UCbmNph6atAoGfqLoCL_duAg'. Leave empty to allow all channels."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        [placeholder]="'Uploader IDs (optional)'"
+        [autocomplete]="'off'"
+        [minLength]="0"
+        [maxLength]="500"
+        [value]="profile()?.uploader_ids ?? ''"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('uploader_ids', $event)"
+      />
+      <app-text-setting
         name="Yt-dlp Extra Options"
         description="Additional options to pass to yt-dlp when downloading trailers."
         descriptionExtra="Advanced use cases only. Use with caution!"
@@ -466,44 +480,68 @@
   <edit-filter-dialog [filterType]="'TRAILER'" [customFilter]="customFilter()" (dialogClosed)="onFilterDialogClosed($event)" />
 }
 
-<dialog #deleteProfileDialog class="error" (click)="closeDeleteDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Delete Profile</h2>
-    <p>This will Delete the profile and no longer use it for downloads</p>
-    <p>Delete the profile?</p>
-    <div class="buttons-row">
+<dialog #deleteProfileDialog class="delete-dialog" (click)="closeDeleteDialog()" (cancel)="$event.preventDefault(); closeDeleteDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header danger">
+      <h2 class="app-dialog-title">Delete Profile</h2>
+      <button class="app-dialog-close" (click)="closeDeleteDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p>This will delete the profile and it will no longer be used for downloads.</p>
+      <p>Delete the profile?</p>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeDeleteDialog()">Cancel</button>
       <button class="danger" (click)="onConfirmDelete()">Delete</button>
-      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
     </div>
   </div>
 </dialog>
 
-<dialog #copyProfileDialog (click)="closeCopyProfileDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Duplicate Profile</h2>
-    <p>This will create a copy of the current profile.</p>
-    <div class="input-wrapper">
-      <label for="new-profile-name">New Profile Name</label>
-      <input type="text" id="new-profile-name" class="new-profile-name" [(ngModel)]="newProfileName" placeholder="New Profile Name" />
+<dialog #copyProfileDialog (click)="closeCopyProfileDialog()" (cancel)="$event.preventDefault(); closeCopyProfileDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Duplicate Profile</h2>
+      <button class="app-dialog-close" (click)="closeCopyProfileDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
     </div>
-    <div class="buttons-row">
+    <div class="app-dialog-body">
+      <p class="dialog-hint">This will create a copy of the current profile.</p>
+      <div class="input-wrapper">
+        <label for="new-profile-name">New Profile Name</label>
+        <input type="text" id="new-profile-name" class="new-profile-name" [(ngModel)]="newProfileName" placeholder="New Profile Name" />
+      </div>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeCopyProfileDialog()">Cancel</button>
       <button class="primary" [disabled]="!newProfileName()" (click)="onConfirmCopy()">Duplicate</button>
-      <button class="secondary" (click)="closeCopyProfileDialog()">Cancel</button>
     </div>
   </div>
 </dialog>
 
-<dialog #jsonEditDialog (click)="closeJsonEditDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Edit Profile JSON</h2>
-    <p>This will allow you to edit the profile JSON directly.</p>
-    <div class="input-wrapper">
-      <label for="profile-json">Profile JSON</label>
+<dialog #jsonEditDialog (click)="closeJsonEditDialog()" (cancel)="$event.preventDefault(); closeJsonEditDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Edit Profile JSON</h2>
+      <button class="app-dialog-close" (click)="closeJsonEditDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p class="dialog-hint">Edit the profile JSON directly. Invalid JSON will not be saved.</p>
       <textarea id="profile-json" class="json-editor" [(ngModel)]="profileJSON" #jsonEditor></textarea>
     </div>
-    <div class="buttons-row">
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeJsonEditDialog()">Cancel</button>
       <button class="primary" [disabled]="!profileJSON()" (click)="onJsonEditSave()">Save</button>
-      <button class="secondary" (click)="closeJsonEditDialog()">Cancel</button>
     </div>
   </div>
 </dialog>

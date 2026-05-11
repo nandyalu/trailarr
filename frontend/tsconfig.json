@@ -2,10 +2,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    // "baseUrl": "./",
+    "rootDir": "./src",
     "paths": {
-      // A new catch-all that replaces the baseUrl:
-      "*": ["./*"],
+      "src/*": ["./src/*"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

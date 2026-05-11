@@ -1,7 +1,7 @@
 <div class="media-header">
   <!-- Refresh Button -->
   <button
-    class="icononly-button"
+    class="header-refresh-btn"
     [class.loading]="mediaService.mediaResource.isLoading()"
     title="Refresh"
     (click)="mediaService.refreshContent()"
@@ -22,6 +22,15 @@
     <span>Edit</span>
   </button>
   <div class="empty-space"></div>
+  <!-- View Options -->
+  <button class="media-header-button dropdown" popovertarget="viewDropdown" aria-label="View" title="View">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
+      <path
+        d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"
+      />
+    </svg>
+    <span>{{ selectedView() | displayTitle }}</span>
+  </button>
   <!-- Sort Options -->
   <button class="media-header-button dropdown" popovertarget="sortDropdown" aria-label="Sort" title="Sort">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
@@ -101,6 +110,49 @@
   </div>
 </div>
 
+<!-- View Options Dropdown -->
+<div id="viewDropdown" popover="auto" class="popover">
+  <div class="viewitem-dropdown" role="listbox" aria-label="View Options">
+    @for (viewOption of viewOptions; track viewOption) {
+      <button
+        class="viewitem-dropdown-option"
+        role="option"
+        [aria-selected]="selectedView() == viewOption"
+        [autofocus]="selectedView() == viewOption"
+        (click)="setView(viewOption)"
+      >
+        {{ viewOption | displayTitle }}
+        @if (selectedView() == viewOption) {
+          <div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+              <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
+            </svg>
+          </div>
+        }
+      </button>
+    }
+    @if (selectedView() !== 'poster') {
+      <button class="viewitem-dropdown-option" (click)="openFieldConfigDialog()" aria-label="Configure Fields" title="Configure Fields">
+        <span>Configure Fields</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+          <path
+            d="M421-97v-248h83v83h353v83H504v82h-83Zm-318-82v-83h270v83H103Zm187-178v-82H103v-82h187v-84h83v248h-83Zm131-82v-82h436v82H421Zm166-176v-248h83v82h187v83H670v83h-83Zm-484-83v-83h436v83H103Z"
+          />
+        </svg>
+      </button>
+    }
+  </div>
+</div>
+
 @if (showFiltersDialogOpen()) {
   <show-filters-dialog (closed)="onShowFiltersDialogClosed()" />
+}
+
+@if (fieldConfigDialogOpen()) {
+  <app-field-config-dialog
+    [fieldOptions]="selectedView() === 'expanded' ? expandedFieldOptions : tableColumnOptions"
+    [selectedFields]="selectedView() === 'expanded' ? expandedFields() : tableColumns()"
+    (fieldsChanged)="onFieldsChanged($event)"
+    (closed)="onFieldConfigDialogClosed()"
+  />
 }

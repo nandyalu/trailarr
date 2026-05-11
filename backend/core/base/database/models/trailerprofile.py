@@ -99,6 +99,7 @@ class _TrailerProfileBase(AppSQLModel):
     )
     exclude_words: str = Field(default="")
     include_words: str = Field(default="")
+    uploader_ids: str = Field(default="")
     ytdlp_extra_options: str = Field(
         default="",
         sa_column=Column(String, server_default=text("('')"), nullable=False),

@@ -1,1 +1,83 @@
-<p>expanded works!</p>
+<div class="expanded-grid" appScrollNearEnd (nearEnd)="onNearEndScroll()" role="listbox" aria-multiselectable="true">
+  @for (media of displayMedia(); track media.id) {
+    <app-media-card-shell
+      [media]="media"
+      [inEditMode]="inEditMode()"
+      [isChecked]="checkedMediaIDs().includes(media.id)"
+      (checkedChange)="onMediaChecked(media, $event)"
+      (cardClicked)="selectedMediaID.set(media.id)"
+      [style.background-image]="'url(' + ((media.fanart_path || media.poster_path) | removeStartingSlash) + ')'"
+    >
+      <div class="expanded-gradient-overlay"></div>
+      <div class="expanded-meta">
+        <h3 class="expanded-title">
+          {{ media.title }}
+          @if (hasField('year') && media.year) {
+            <span class="expanded-year">({{ media.year }})</span>
+          }
+        </h3>
+        <div class="expanded-fields">
+          @if (hasField('overview') && media.overview) {
+            <p class="expanded-overview">{{ media.overview }}</p>
+          }
+          <div class="expanded-tags">
+            @if (hasField('runtime') && media.runtime) {
+              <span class="expanded-tag">{{ media.runtime | durationConvert }}</span>
+            }
+            @if (hasField('language') && media.language) {
+              <span class="expanded-tag">{{ media.language }}</span>
+            }
+            @if (hasField('studio') && media.studio) {
+              <span class="expanded-tag">{{ media.studio }}</span>
+            }
+            @if (hasField('season_count') && !media.is_movie && media.season_count) {
+              <span class="expanded-tag">{{ media.season_count }} Season{{ media.season_count !== 1 ? 's' : '' }}</span>
+            }
+            @if (hasField('status')) {
+              <span class="expanded-tag">{{ media.status }}</span>
+            }
+            @if (hasField('monitor')) {
+              <span class="expanded-tag">{{ media.monitor ? 'Monitored' : 'Unmonitored' }}</span>
+            }
+            @if (hasField('arr_monitored')) {
+              <span class="expanded-tag">Arr: {{ media.arr_monitored ? 'Monitored' : 'Unmonitored' }}</span>
+            }
+            @if (hasField('media_exists')) {
+              <span class="expanded-tag">Media: {{ media.media_exists ? 'Yes' : 'No' }}</span>
+            }
+            @if (hasField('trailer_exists')) {
+              <span class="expanded-tag">Trailer: {{ media.trailer_exists ? 'Yes' : 'No' }}</span>
+            }
+            @if (hasField('imdb_id') && media.imdb_id) {
+              <span class="expanded-tag">IMDB: {{ media.imdb_id }}</span>
+            }
+            @if (hasField('txdb_id') && media.txdb_id) {
+              <span class="expanded-tag">TVDB/TMDB: {{ media.txdb_id }}</span>
+            }
+            @if (hasField('folder_path') && media.folder_path) {
+              <span class="expanded-tag expanded-tag-path" [title]="media.folder_path">{{ media.folder_path }}</span>
+            }
+            @if (hasField('media_filename') && media.media_filename) {
+              <span class="expanded-tag expanded-tag-path" [title]="media.media_filename">{{ media.media_filename }}</span>
+            }
+            @if (hasField('added_at') && media.added_at) {
+              <span class="expanded-tag">Added: {{ media.added_at | date: 'mediumDate' }}</span>
+            }
+            @if (hasField('updated_at') && media.updated_at) {
+              <span class="expanded-tag">Updated: {{ media.updated_at | date: 'mediumDate' }}</span>
+            }
+            @if (hasField('downloaded_at') && media.downloaded_at) {
+              <span class="expanded-tag">Downloaded: {{ media.downloaded_at | date: 'mediumDate' }}</span>
+            }
+            @if (hasField('plex_rating_key') && media.plex_rating_key) {
+              <span class="expanded-tag">Plex Key: {{ media.plex_rating_key }}</span>
+            }
+            @if (hasField('plex_trailer')) {
+              <span class="expanded-tag">Plex Trailer: {{ media.plex_trailer ? 'Yes' : 'No' }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    </app-media-card-shell>
+  }
+</div>

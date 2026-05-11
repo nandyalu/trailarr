@@ -1,17 +1,18 @@
-@if (isCreate()) {
-  <h2>Create Connection</h2>
-} @else {
-  <h2>Edit Connection</h2>
-  <button class="icon-button danger top-right-button" (click)="showDeleteDialog()">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-      <path
-        d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
-      />
-    </svg>
-    <span class="text">Delete</span>
-  </button>
-}
-<hr />
+<div class="title-block">
+  @if (isCreate()) {
+    <h2>Create Connection</h2>
+  } @else {
+    <h2>Edit Connection</h2>
+    <button class="top-right-button" (click)="showDeleteDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+          d="M259.09-114.02q-28.45 0-48.41-19.89-19.96-19.89-19.96-48.24v-565.94h-45.07v-68.13h198.28v-34.3h271.9v34.3h198.52v68.13h-45.07v565.94q0 27.6-20.33 47.86-20.34 20.27-48.04 20.27H259.09Zm441.82-634.07H259.09v565.94h441.82v-565.94ZM363.89-266.24h64.07v-399h-64.07v399Zm168.15 0h64.31v-399h-64.31v399ZM259.09-748.09v565.94-565.94Z"
+        />
+      </svg>
+      <span class="text">Delete</span>
+    </button>
+  }
+</div>
 @if (isLoading() || !connectionForm) {
   <app-load-indicator />
 } @else {
@@ -119,28 +120,23 @@
 
     <!-- #region Path Mappings -->
     @if (arePathMappingsAdded()) {
-      <div class="d-row" style="justify-content: flex-start">
-        <h3>Path Mappings</h3>
-        <help-link-icon [link]="'https://nandyalu.github.io/trailarr/getting-started/03-setup/connections/#2-path-mappings'" />
-      </div>
-      <hr />
-      <div class="mappings-wrapper">
+      <div class="mappings-section">
+        <div class="mappings-header">
+          <h3>Path Mappings</h3>
+          <help-link-icon [link]="'https://nandyalu.github.io/trailarr/getting-started/03-setup/connections/#2-path-mappings'" />
+        </div>
         @for (mapping of connectionForm.path_mappings; let i = $index; track connectionCreate().path_mappings[i].path_from) {
-          <div class="d-row mappings">
-            <div class="input-group">
-              <label [for]="'path_from' + i">Path From</label>
-              <input
-                [id]="'path_from' + i"
-                type="text"
-                [formField]="mapping.path_from"
-                placeholder="Arr Internal Path"
-                [readOnly]="true"
-                autocomplete="off"
-              />
+          <div class="mapping-row">
+            <div class="mapping-from-group">
+              <span class="mappings-label">Arr Path</span>
+              <code class="mapping-from">{{ connectionCreate().path_mappings[i].path_from }}</code>
             </div>
-            <div class="input-group">
-              <label [for]="'path_to' + i">Path To</label>
-              <div class="input-wrapper">
+            <svg class="mapping-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/>
+            </svg>
+            <div class="mapping-to-group">
+              <label [for]="'path_to' + i" class="mappings-label">Trailarr Path</label>
+              <div class="mapping-to">
                 <input
                   [id]="'path_to' + i"
                   type="text"
@@ -148,26 +144,23 @@
                   placeholder="Trailarr Internal Path"
                   autocomplete="off"
                 />
-                <button class="tertiary folder-icon" (click)="openPathSelectDialog(i)" type="button" title="Select Path">
+                <button class="folder-btn" (click)="openPathSelectDialog(i)" type="button" title="Select Path">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path
-                      d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"
-                    />
+                    <path d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"/>
                   </svg>
                 </button>
               </div>
             </div>
             <button
-              class="icononly-button tertiary"
+              class="remove-btn"
               [id]="'remove' + i"
               type="button"
-              name="Remove Path Mapping"
+              title="Remove Path Mapping"
               (click)="removePathMapping(i)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
               </svg>
-              <!-- <span class="text">Remove</span> -->
             </button>
           </div>
         }
@@ -184,9 +177,16 @@
 
     <!-- #region Action Buttons -->
     <div class="buttons-row">
+      <button class="btn secondary" id="cancel" type="button" (click)="onCancel()">
+        <!-- Close Icon - Google Fonts W:400 G: 200 S: 48px -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m247-195-51-52 233-233-233-234 51-52 234 234 232-234 51 52-232 234 232 233-51 52-232-234-234 234Z" />
+        </svg>
+        <span class="text">Cancel</span>
+      </button>
       @if (isReadyToSubmit()) {
         <button
-          class="animated-button primary"
+          class="btn primary"
           id="submit"
           type="submit"
           [disabled]="!connectionForm().dirty() || !connectionForm().valid()"
@@ -202,7 +202,7 @@
         </button>
       } @else {
         <button
-          class="animated-button primary"
+          class="btn primary"
           id="test"
           type="test"
           [disabled]="!connectionForm().dirty() || connectionForm().invalid()"
@@ -217,13 +217,6 @@
           <span class="text">Test</span>
         </button>
       }
-      <button class="animated-button secondary" id="cancel" type="button" (click)="onCancel()">
-        <!-- Close Icon - Google Fonts W:400 G: 200 S: 48px -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="m247-195-51-52 233-233-233-234 51-52 234 234 232-234 51 52-232 234 232 233-51 52-232-234-234 234Z" />
-        </svg>
-        <span class="text">Cancel</span>
-      </button>
     </div>
     <!-- #endregion Action Buttons -->
 
@@ -233,23 +226,41 @@
   </form>
 }
 <dialog #cancelDialog (click)="closeCancelDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Unsaved Changes</h2>
-    <p>Changes will be lost. Are you sure you want to cancel?</p>
-    <div class="buttons-row">
-      <button class="danger" (click)="onConfirmCancel()">Yes</button>
-      <button class="primary" (click)="closeCancelDialog()">No</button>
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Unsaved Changes</h2>
+      <button class="app-dialog-close" (click)="closeCancelDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p>Changes will be lost. Are you sure you want to cancel?</p>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeCancelDialog()">No</button>
+      <button class="danger" (click)="onConfirmCancel()">Yes, Cancel</button>
     </div>
   </div>
 </dialog>
-<dialog #deleteConnectionDialog (click)="closeDeleteDialog()">
-  <div class="dialog-content" (click)="$event.stopPropagation()">
-    <h2>Delete Connection</h2>
-    <p>This will Delete the connection and no longer monitor its Media</p>
-    <p>Delete the connection?</p>
-    <div class="buttons-row">
+<dialog #deleteConnectionDialog class="delete-dialog" (click)="closeDeleteDialog()" (cancel)="$event.preventDefault(); closeDeleteDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header danger">
+      <h2 class="app-dialog-title">Delete Connection</h2>
+      <button class="app-dialog-close" (click)="closeDeleteDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p>This will delete the connection and it will no longer monitor its media.</p>
+      <p>Delete the connection?</p>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="tertiary" (click)="closeDeleteDialog()">Cancel</button>
       <button class="danger" (click)="onConfirmDelete()">Delete</button>
-      <button class="secondary" (click)="closeDeleteDialog()">Cancel</button>
     </div>
   </div>
 </dialog>

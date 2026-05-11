@@ -19,7 +19,7 @@
   z-index: 100;
   position: sticky;
   top: 0;
-  background-color: var(--color-surface-container-high);
+  background-color: var(--color-surface-container);
   color: var(--color-on-surface);
 }
 
@@ -40,7 +40,7 @@
 .sidebar {
   width: auto;
   z-index: 100;
-  background-color: var(--color-surface-container);
+  background-color: var(--color-surface-container-low);
   color: var(--color-on-surface);
   order: 1;
   position: sticky;
@@ -66,8 +66,7 @@
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  /* overflow-x: hidden;
-  overflow-y: auto; */
+  min-width: 0;
   order: 2;
   background-color: var(--color-surface-dim);
   color: var(--color-on-surface);

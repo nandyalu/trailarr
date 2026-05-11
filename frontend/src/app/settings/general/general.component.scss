@@ -1,64 +1,77 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  // position: relative;
+  gap: 0.75rem;
+
+  > h2 {
+    display: none;
+  }
+
+  > hr {
+    display: none;
+  }
 }
 
 .center {
-  position: fixed;
-  inset: 50vh 50vw;
-  transform: translate(-50%, -50%);
-  align-self: center;
-  justify-self: center;
-  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
 }
 
 .sticky-warning {
   position: sticky;
-  top: 122px;
+  top: calc(76px + 4rem);
   z-index: 10;
-  padding: 0 1rem;
-  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  font-size: larger;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-warning);
   background-color: var(--color-surface-container);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
 }
 
 details {
-  margin: 0.5rem 0;
-  border: 1px solid var(--color-outline);
-  border-radius: 0.5rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
   background-color: var(--color-surface-container);
+  overflow: hidden;
 }
 
 summary {
-  padding: 1rem;
-  font-weight: bold;
+  padding: 0.875rem 1rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
   cursor: pointer;
   color: var(--color-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100vw - 260px);
-
   display: flex;
   align-items: center;
   justify-content: space-between;
+  list-style: none;
+  user-select: none;
 
-  @media (width < 1100px) {
-    max-width: calc(100vw - 100px);
+  &::-webkit-details-marker {
+    display: none;
   }
-  @media (width < 765px) {
-    max-width: calc(100vw - 50px);
-  }
+}
+
+details[open] > summary {
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .setting-group {
   display: flex;
   flex-direction: column;
-  margin: 0 0.5rem;
+  padding: 0.25rem 0.5rem;
   container-type: inline-size;
+}
+
+.section-info {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant);
+  background-color: color-mix(in srgb, var(--color-warning) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent);
 }

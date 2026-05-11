@@ -1,60 +1,43 @@
-.dialog-content {
-  margin: 1rem;
-  position: relative;
+dialog {
+  max-width: min(360px, 90vw);
 }
 
-.dialog-header {
-  position: relative;
-}
-
-.dialog-content .close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  cursor: pointer;
-  border-radius: 50%;
-
-  svg {
-    height: 2rem;
-    width: 2rem;
-    fill: var(--color-on-surface);
-    padding: 0;
-  }
+.options-body {
+  padding: 0.5rem;
 }
 
 .dialog-options {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
 }
 
 .icon-link {
   display: flex;
   align-items: center;
-  text-decoration: none;
-  transition: all 0.4s;
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 1rem 3rem 1rem 0;
-  border-bottom: 1px solid var(--color-outline);
-  font-size: 1.25rem;
-
-  span {
-    height: 1.5rem;
-  }
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  color: var(--color-on-surface);
+  transition: background-color 0.15s;
 
   svg {
     width: 1.5rem;
     height: 1.5rem;
-    fill: var(--color-on-surface);
-    padding: 0;
-    margin: 0 0.5rem;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 }
 
 .danger-option {
   color: var(--color-error);
 
-  svg {
-    fill: var(--color-error);
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
   }
 }

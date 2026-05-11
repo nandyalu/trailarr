@@ -122,6 +122,141 @@ Plex and Arr connections can track the same physical media. The system merges by
 - Angular Signals for reactivity (zoneless change detection)
 - Dev server proxies `/api` to backend on port 7888 (see `src/proxy.conf.json`)
 
+### Frontend Styling Conventions
+
+The app uses a **Material Design 3 (MD3)** token system. Always use the established CSS custom properties — never hardcode colors or shadows.
+
+**Color tokens:**
+```scss
+var(--color-primary)                    // accent / interactive
+var(--color-on-primary)                 // text on primary bg
+var(--color-secondary-container)        // active tab/nav bg
+var(--color-on-secondary-container)     // text on secondary container
+var(--color-surface)                    // base surface
+var(--color-surface-container-low)      // subtle background
+var(--color-surface-container)          // card / dialog background
+var(--color-surface-container-high)     // elevated surface
+var(--color-surface-container-highest)  // highest elevation surface
+var(--color-on-surface)                 // primary text
+var(--color-on-surface-variant)         // secondary text / icons
+var(--color-outline)                    // borders, meta labels
+var(--color-outline-variant)            // subtle dividers
+var(--color-success) / --color-warning / --color-danger / --color-info
+var(--shadow-level2)                    // sticky headers
+var(--shadow-level3)                    // dialogs / popovers
+```
+
+**Sticky floating headers** (used in every page — logs, events, tasks, settings):
+```scss
+.page-header {
+  position: sticky;
+  top: calc(76px + 0.5rem);   // 76px = topnav height
+  z-index: 99;
+  margin: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  box-shadow: var(--shadow-level2);
+}
+```
+
+**Card sections** (tasks, settings details, about sections):
+```scss
+.card {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  overflow: hidden;           // clips child border-radius
+}
+.card-header {
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface-container-high);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+```
+
+**Button shapes:**
+- **Action buttons (text + icon):** `border-radius: 0.625rem` (10px squircle) — used for Save, Delete, Duplicate, dialog confirm buttons
+- **Icon-only buttons:** `border-radius: 50%` (circle) — used for refresh, close, edit pencil
+- **Tab / nav items:** `border-radius: 0.5rem` inside a pill container (`border-radius: 0.75rem`)
+- **Never** use `border-radius: 9999px` for buttons — that's the pill container shape only
+
+**Button color patterns:**
+```scss
+// Primary action
+background-color: var(--color-primary);
+color: var(--color-on-primary);
+&:hover { background-color: color-mix(in srgb, var(--color-primary) 85%, black); }
+
+// Secondary / neutral
+background-color: var(--color-surface-container-high);
+color: var(--color-on-surface);
+&:hover { background-color: var(--color-surface-container-highest); }
+
+// Danger (destructive)
+background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+color: var(--color-danger);
+&:hover { background-color: color-mix(in srgb, var(--color-danger) 20%, transparent); }
+
+// Icon button hover (generic)
+&:hover { background-color: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+```
+
+**Dropdowns** — use the CSS Popover API, never custom JS toggles:
+```html
+<button popovertarget="myDropdown">Label</button>
+<div id="myDropdown" popover="auto" class="popover">
+  <div class="dropdown-list" role="listbox">
+    <button role="option" [attr.aria-selected]="isSelected" (click)="select(item)">...</button>
+  </div>
+</div>
+```
+```scss
+.popover {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  margin: 0.25rem 0 0;
+  padding: 0.35rem;
+  background-color: var(--color-surface-container-high);
+  box-shadow: var(--shadow-level3);
+}
+```
+
+**Dialogs** — use native `<dialog>` with `showModal()` / `.close()`:
+```scss
+dialog {
+  border: none;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  padding: 0;
+  box-shadow: var(--shadow-level3);
+  &::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(4px);
+  }
+}
+```
+
+**State persistence** (filters, search, selected options) — always persist to both URL and localStorage:
+```typescript
+// URL: router.navigate([], { queryParams: { key: value ?? null }, replaceUrl: true })
+// localStorage: localStorage.setItem('TrailarrFeatureKey', value)
+// Priority: localStorage (low) → URL params (high, read with take(1) in ngOnInit)
+// Default values are omitted from URL and localStorage (use null to remove param)
+```
+
+**Focus rings** on inputs and selects:
+```scss
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+```
+
+**Mobile breakpoints:** `765px` (bottom nav bar replaces sidenav), `1100px` (icon-only rail replaces full sidenav).
+
 ### Docker Build
 
 Multi-stage: Stage 1 builds Angular frontend (Node.js), Stage 2 packages backend with Python/FFmpeg. Uses `nandyalu/python-ffmpeg` base image (Python 3.13 + uv + FFmpeg + yt-dlp).

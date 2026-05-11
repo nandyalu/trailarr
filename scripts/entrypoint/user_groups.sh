@@ -153,9 +153,11 @@ finalize_user_setup() {
     box_echo "Changing the owner of '$APP_DATA_DIR' directory to '$APPUSER'"
     chown -R "$APPUSER":"$APPGROUP" "$APP_DATA_DIR"
 
-    # Transfer ownership of index.html to appuser so update_base_href() can patch
-    # the <base href> tag at startup for URL_BASE support. Only this one file needs
-    # write access — the rest of /app stays root-owned (755).
+    # Give appuser ownership of the frontend browser directory and index.html so it
+    # can patch <base href> and create the URL_BASE subfolder at startup.
+    # Only the directory entry and index.html need write access — child files stay
+    # root-owned (755) and are readable by appuser without ownership.
+    chown "$APPUSER" /app/frontend-build/browser 2>/dev/null || true
     chown "$APPUSER" /app/frontend-build/browser/index.html 2>/dev/null || true
     box_echo "--------------------------------------------------------------------------";
 

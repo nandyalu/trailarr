@@ -1,0 +1,32 @@
+dialog {
+  min-width: max(18vw, min(320px, 90vw));
+}
+
+.fields-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem 0.5rem;
+}
+
+.field-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.25rem;
+  color: var(--color-on-surface);
+  font-size: 0.8rem;
+
+  input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+}

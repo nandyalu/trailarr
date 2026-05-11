@@ -1,17 +1,26 @@
-<dialog #dialog (click)="closeDialog()">
+<dialog #dialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
   @if (textFileLoading()) {
-    <app-load-indicator class="center" />
+    <app-load-indicator class="loading-indicator" />
   } @else {
-    <div class="text-dialog" (click)="$event.stopPropagation()">
-      <h2>{{ fileName() }}</h2>
-      <div class="text-content">
-        <pre>
-        @for (line of selectedFileText(); track $index) {
-          <code>{{line}}</code>
-        }
-      </pre>
+    <div class="app-dialog-container" (click)="$event.stopPropagation()">
+      <div class="app-dialog-header">
+        <h2 class="app-dialog-title">{{ fileName() }}</h2>
+        <button class="app-dialog-close" (click)="closeDialog()" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+          </svg>
+        </button>
       </div>
-      <div class="buttons-row">
+      <div class="app-dialog-body text-body">
+        <div class="text-content">
+          <pre>
+            @for (line of selectedFileText(); track $index) {
+              <code>{{line}}</code>
+            }
+          </pre>
+        </div>
+      </div>
+      <div class="app-dialog-footer">
         <button class="tertiary" (click)="closeDialog()">Close</button>
       </div>
     </div>

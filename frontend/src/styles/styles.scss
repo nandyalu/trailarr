@@ -48,6 +48,7 @@
 html {
   height: 100%;
   color-scheme: dark light;
+  scrollbar-gutter: stable;
 }
 
 /* body {
@@ -322,7 +323,7 @@ hr {
 button {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 0.625rem;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
@@ -379,7 +380,7 @@ button.danger {
   background-color: var(--color-secondary);
   color: var(--color-on-secondary);
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 0.625rem;
   gap: 0.25rem;
   padding: 0.5rem;
   cursor: pointer;
@@ -603,22 +604,25 @@ button > svg {
 dialog {
   display: none;
   padding: 0;
+  border: none;
   opacity: 0;
   margin: auto;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   translate: 0 25vh;
-  transition-property: overlay display opacity;
-  transition-duration: 1s;
+  transition-property: overlay display opacity translate;
+  transition-duration: 0.45s;
   transition-behavior: allow-discrete;
 }
 
 dialog[open] {
-  display: block;
+  display: flex;
+  flex-direction: column;
   opacity: 1;
   translate: 0 0;
-  text-align: center;
-  background-color: var(--color-surface-container-highest);
+  background-color: var(--color-surface-container);
   color: var(--color-on-surface);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 
   /* stylelint-disable-next-line at-rule-no-unknown */
   @starting-style {
@@ -628,26 +632,24 @@ dialog[open] {
 }
 
 dialog.error[open] {
-  background-color: var(--color-on-error-container);
-  color: var(--color-on-error);
-  padding: 1rem;
-  text-align: center;
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
 }
 
 dialog::backdrop {
-  background-image: linear-gradient(0deg, var(--color-surface-variant), var(--color-background));
+  background-color: rgba(0, 0, 0, 0.5);
   transition-property: display opacity overlay;
-  transition-duration: 1s;
+  transition-duration: 0.45s;
   transition-behavior: allow-discrete;
   opacity: 0;
 }
 
 dialog.error::backdrop {
-  background-image: linear-gradient(0deg, grey, #690005);
+  background-color: rgba(105, 0, 5, 0.5);
 }
 
 dialog[open]::backdrop {
-  opacity: 0.75;
+  opacity: 1;
 }
 
 /* stylelint-disable-next-line at-rule-no-unknown */
@@ -655,6 +657,94 @@ dialog[open]::backdrop {
   dialog[open]::backdrop {
     opacity: 0;
   }
+}
+
+/* Shared dialog structure utilities */
+.app-dialog-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.app-dialog-header.danger {
+  background-color: var(--color-error-container);
+  border-bottom-color: var(--color-error);
+
+  .app-dialog-title {
+    color: var(--color-on-error-container);
+  }
+
+  .app-dialog-close svg {
+    fill: var(--color-on-error-container);
+  }
+
+  .app-dialog-close:hover {
+    background-color: color-mix(in srgb, var(--color-error) 15%, transparent);
+  }
+}
+
+.app-dialog-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-on-surface);
+  flex: 1;
+  text-align: left;
+}
+
+.app-dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--color-surface-container-high);
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: var(--color-on-surface-variant);
+  }
+}
+
+.app-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+.app-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--color-outline-variant);
+  flex-shrink: 0;
 }
 
 /* ALL EMPTY CARD */

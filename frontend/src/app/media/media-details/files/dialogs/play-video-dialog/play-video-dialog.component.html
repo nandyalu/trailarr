@@ -1,3 +1,15 @@
-<dialog #videoDialog (click)="closeDialog()">
-  <div (click)="$event.stopPropagation()" #videoDialogContent></div>
+<dialog #videoDialog (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Play Video</h2>
+      <button class="app-dialog-close" (click)="closeDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body video-body">
+      <div #videoDialogContent></div>
+    </div>
+  </div>
 </dialog>

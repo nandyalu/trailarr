@@ -1,1 +1,69 @@
-<p>table works!</p>
+<div class="table-wrapper" appScrollNearEnd (nearEnd)="onNearEndScroll()">
+  <table class="media-table" role="grid">
+    <thead>
+      <tr>
+        @if (inEditMode()) {
+          <th class="col-check" scope="col">
+            <input
+              type="checkbox"
+              (change)="checkAll($any($event.target).checked)"
+              [checked]="checkedMediaIDs().length > 0 && checkedMediaIDs().length === filteredSortedMedia().length"
+              title="Select All"
+            />
+          </th>
+        }
+        <th class="col-status" scope="col"></th>
+        <th class="col-title" scope="col">Title</th>
+        @for (col of activeColumns(); track col.key) {
+          <th [class]="'col-' + col.key" scope="col">{{ col.label }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (media of displayMedia(); track media.id) {
+        <tr
+          class="media-row"
+          [class.checked]="checkedMediaIDs().includes(media.id)"
+        >
+          @if (inEditMode()) {
+            <td class="col-check">
+              <input
+                type="checkbox"
+                [id]="'tbl-' + media.id"
+                (click)="$event.stopPropagation()"
+                (change)="onMediaChecked(media, $any($event.target).checked)"
+                [checked]="checkedMediaIDs().includes(media.id)"
+              />
+            </td>
+          }
+          <td class="col-status">
+            <media-status-icon [status]="media.status" class="table-status-icon" />
+          </td>
+          <td class="col-title">
+            @if (!inEditMode()) {
+              <a
+                [routerLink]="['/' + RouteMedia, media.id]"
+                (click)="selectedMediaID.set(media.id)"
+                class="title-link"
+                [title]="media.title + ' (' + (media.status | displayTitle) + ')'"
+              >{{ media.title }}</a>
+            } @else {
+              <span [title]="media.title">{{ media.title }}</span>
+            }
+          </td>
+          @for (col of activeColumns(); track col.key) {
+            <td [class]="'col-' + col.key">
+              @if (isDateColumn(col.key)) {
+                {{ getDateValue(media, col.key) | date: 'mediumDate' }}
+              } @else if (isRuntimeColumn(col.key)) {
+                {{ media.runtime | durationConvert }}
+              } @else {
+                {{ getCellValue(media, col.key) }}
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

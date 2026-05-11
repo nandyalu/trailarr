@@ -1,11 +1,20 @@
-<dialog #deleteDialog (click)="closeDialog()">
-  <div class="delete-dialog" (click)="$event.stopPropagation()">
-    <h3>Confirm Delete</h3>
-    <code>{{ fileName() }}</code>
-    <p>Are you sure you want to delete this file?</p>
-    <div class="buttons-row">
-      <button class="danger" (click)="deleteFile()">Confirm</button>
+<dialog #deleteDialog class="delete-dialog" (click)="closeDialog()" (cancel)="$event.preventDefault(); closeDialog()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header danger">
+      <h2 class="app-dialog-title">Confirm Delete</h2>
+      <button class="app-dialog-close" (click)="closeDialog()" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      <p class="delete-message">Are you sure you want to delete this file?</p>
+      <code class="delete-filename">{{ fileName() }}</code>
+    </div>
+    <div class="app-dialog-footer">
       <button class="tertiary" (click)="closeDialog()">Cancel</button>
+      <button class="danger" (click)="deleteFile()">Delete</button>
     </div>
   </div>
 </dialog>

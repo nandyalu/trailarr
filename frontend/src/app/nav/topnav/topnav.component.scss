@@ -5,6 +5,7 @@
   align-items: center;
   flex-direction: row;
   width: 100%;
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .navlogo {
@@ -23,6 +24,7 @@
 
 .trailarr .logo-text {
   fill: var(--color-on-surface);
+  transition: fill 0.2s;
 }
 
 .trailarr:hover .logo-text {
@@ -38,7 +40,6 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: auto;
   flex-grow: 1;
   padding: 0.25rem;
   position: relative;
@@ -50,74 +51,75 @@
 
 .navsearch-form input {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--color-outline);
+  padding: 0.5rem 1.25rem;
+  border: none;
   border-radius: 0.5rem;
   margin: 0;
   font-size: 1rem;
-  background-color: var(--color-surface-variant);
-  color: var(--color-on-surface-variant);
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  box-shadow: var(--shadow-level1);
+  transition: background-color 0.2s, box-shadow 0.2s;
 
   &:focus {
-    outline: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    outline: none;
+    background-color: var(--color-surface-container-highest);
+    box-shadow: var(--shadow-level2);
   }
 }
 
-/* navsearch-form input:focus { For custom focus color
-  color: rgb(0, 255, 255);
-  background-color: #212121;
-  outline-color: rgb(0, 255, 255);
-  box-shadow: -3px -3px 15px rgb(0, 255, 255);
-  transition: .1s;
-  transition-property: box-shadow;
-} */
-
 .navsearch-results {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 2%;
   color: var(--color-on-surface);
-  background-color: var(--color-surface-container-high);
-  border: 0.5px solid var(--color-outline);
-  border-radius: 5px;
-  visibility: hidden;
-  opacity: 0;
-  display: none;
-  z-index: 10;
-}
-
-.active {
-  visibility: visible;
-  opacity: 1;
+  background-color: var(--color-surface-container-highest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-level3);
   display: flex;
   flex-direction: column;
   max-height: 40vh;
   max-width: 60vw;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: 0.4rem;
   scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
-  transition: 0.25s;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  z-index: 10;
 
   @media (width < 765px) {
     max-width: 75vw;
   }
 }
 
+.navsearch-results.active {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
 .navsearch-results .title {
   display: flex;
   min-width: 300px;
   width: auto;
-  padding: 0.5rem;
+  padding: 0.4rem 0.5rem;
   text-align: left;
   text-wrap: pretty;
   cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s;
 }
 
 .search-poster {
   width: 3rem;
+  border-radius: 4px;
 }
 
 .search-info {
@@ -146,7 +148,7 @@
 .navsearch-results .title:hover,
 .navsearch-results .title:focus,
 .navsearch-results .selected {
-  background-color: var(--color-surface-variant);
+  background-color: var(--color-secondary-container);
   outline: none;
 }
 
@@ -158,8 +160,8 @@
 @media (max-width: 900px) {
   .navlogo {
     width: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 
   .navlogotext {
@@ -167,15 +169,24 @@
   }
 }
 
-button {
+.icononly-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
+  border-radius: 50%;
+  padding: 0.4rem;
   height: 2.5rem;
+  width: 2.5rem;
+  transition: background-color 0.2s;
 
   svg {
     fill: var(--color-error);
+    height: 1.5rem;
+    width: 1.5rem;
   }
 
   &:hover {
-    transform: scale(1.2);
+    background-color: color-mix(in srgb, var(--color-error) 15%, transparent);
   }
 }
