@@ -26,6 +26,7 @@ export interface TrailerProfileRead {
   always_search?: boolean;
   exclude_words?: string;
   include_words?: string;
+  uploader_ids?: string;
   ytdlp_extra_options?: string;
   stop_monitoring?: boolean;
   custom_folder?: string;
@@ -60,6 +61,7 @@ export interface TrailerProfileCreate {
   always_search?: boolean;
   exclude_words?: string;
   include_words?: string;
+  uploader_ids?: string;
   ytdlp_extra_options?: string;
   stop_monitoring?: boolean;
   custom_folder?: string;
