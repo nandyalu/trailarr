@@ -119,6 +119,11 @@ def _yt_search_filter(
     if duration and duration > max_duration:
         logger.debug(f"Skipping long video (>{max_duration}): {id}")
         return f"The video is longer than {max_duration} seconds"
+    # Shorts URLs contain /shorts/ — these are vertical videos
+    url = str(info.get("url", ""))
+    if "/shorts/" in url:
+        logger.debug(f"Skipping vertical (Shorts) video: {id}")
+        return "The video is a vertical (Shorts) video"
     title = str(info.get("title", ""))
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
