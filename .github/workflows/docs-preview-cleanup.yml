@@ -19,7 +19,7 @@ jobs:
 
       - name: Remove docs preview for PR
         run: |
-          PREVIEW_DIR="site/pr-${{ github.event.pull_request.number }}"
+          PREVIEW_DIR="pr-${{ github.event.pull_request.number }}"
           if [ -d "$PREVIEW_DIR" ]; then
             rm -rf "$PREVIEW_DIR"
             echo "Deleted $PREVIEW_DIR"
