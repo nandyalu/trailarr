@@ -11,17 +11,21 @@ from common.env_file import update_env_var
 
 def ask_port(default: int = 7889) -> int:
     print_section("Configuration")
-    port = IntPrompt.ask(
-        "  Web interface port",
-        default=default,
-        console=console,
-    )
-    while not (1024 <= port <= 65535):
-        console.print("[error]  Port must be between 1024 and 65535[/error]")
+    try:
         port = IntPrompt.ask(
-            "  Web interface port", default=default, console=console
+            "  Web interface port",
+            default=default,
+            console=console,
         )
-    return port
+        while not (1024 <= port <= 65535):
+            console.print("[error]  Port must be between 1024 and 65535[/error]")
+            port = IntPrompt.ask(
+                "  Web interface port", default=default, console=console
+            )
+        return port
+    except EOFError:
+        console.print(f"  Web interface port: [bold]{default}[/bold] (using default)")
+        return default
 
 
 def write_initial_config(

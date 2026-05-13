@@ -134,7 +134,7 @@ run_installer() {
         --with tzlocal \
         "$INSTALLER" \
         --source-dir "$SOURCE_DIR" \
-        --version "$APP_VERSION"
+        --version "$APP_VERSION" < /dev/tty
 }
 
 # --------------------------------------------------------------------------
