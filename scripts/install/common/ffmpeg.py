@@ -76,7 +76,6 @@ def download_ffmpeg(bin_dir: Path) -> tuple[Path, Path]:
             p.chmod(p.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     _verify(ffmpeg_dest, ffprobe_dest)
-    print_info(f"ffmpeg installed to {bin_dir}")
     return ffmpeg_dest, ffprobe_dest
 
 
@@ -100,24 +99,26 @@ def _download_with_progress(url: str, description: str) -> bytes:
 
 def _download_tarxz(url: str, bin_dir: Path, ffmpeg_dest: Path, ffprobe_dest: Path) -> None:
     raw = _download_with_progress(url, "Downloading ffmpeg (tar.xz)")
-    with tarfile.open(fileobj=io.BytesIO(raw), mode="r:xz") as tf:
-        for member in tf.getmembers():
-            name = Path(member.name).name
-            if name in ("ffmpeg", "ffprobe"):
-                dest = ffmpeg_dest if name == "ffmpeg" else ffprobe_dest
-                extracted = tf.extractfile(member)
-                if extracted:
-                    dest.write_bytes(extracted.read())
+    with console.status("[step]Copying ffmpeg files...[/step]"):
+        with tarfile.open(fileobj=io.BytesIO(raw), mode="r:xz") as tf:
+            for member in tf.getmembers():
+                name = Path(member.name).name
+                if name in ("ffmpeg", "ffprobe"):
+                    dest = ffmpeg_dest if name == "ffmpeg" else ffprobe_dest
+                    extracted = tf.extractfile(member)
+                    if extracted:
+                        dest.write_bytes(extracted.read())
 
 
 def _download_zip(url: str, bin_dir: Path, ffmpeg_dest: Path, ffprobe_dest: Path) -> None:
     raw = _download_with_progress(url, "Downloading ffmpeg (zip)")
-    with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-        for info in zf.infolist():
-            name = Path(info.filename).name
-            if name in ("ffmpeg.exe", "ffprobe.exe", "ffmpeg", "ffprobe"):
-                dest = ffmpeg_dest if "ffmpeg" in name else ffprobe_dest
-                dest.write_bytes(zf.read(info.filename))
+    with console.status("[step]Copying ffmpeg files...[/step]"):
+        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+            for info in zf.infolist():
+                name = Path(info.filename).name
+                if name in ("ffmpeg.exe", "ffprobe.exe", "ffmpeg", "ffprobe"):
+                    dest = ffmpeg_dest if "ffmpeg" in name else ffprobe_dest
+                    dest.write_bytes(zf.read(info.filename))
 
 
 def _download_macos_ffmpeg(
@@ -128,11 +129,12 @@ def _download_macos_ffmpeg(
         if not url:
             continue
         raw = _download_with_progress(url, f"Downloading {tool} (macOS)")
-        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-            for name in zf.namelist():
-                if Path(name).name == tool:
-                    dest.write_bytes(zf.read(name))
-                    break
+        with console.status("[step]Copying ffmpeg files...[/step]"):
+            with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                for name in zf.namelist():
+                    if Path(name).name == tool:
+                        dest.write_bytes(zf.read(name))
+                        break
 
 
 def _verify(ffmpeg: Path, ffprobe: Path) -> None:

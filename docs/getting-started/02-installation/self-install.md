@@ -490,33 +490,39 @@ Press `Ctrl+C` to stop it before continuing.
 
 === "Windows (Task Scheduler)"
 
-    Open a **regular PowerShell** (not "Run as Administrator") and run the
-    setup script bundled with Trailarr:
+    Open an **elevated PowerShell** (Run as Administrator) and run:
 
     ```powershell
-    & "C:\Program Files\Trailarr\scripts\windows\setup-startup.ps1"
+    $exe    = "C:\Program Files\Trailarr\backend\.venv\Scripts\trailarr.exe"
+    $script = "C:\Program Files\Trailarr\scripts\start\start.py"
+    $user   = $env:USERNAME
+
+    $action   = New-ScheduledTaskAction -Execute $exe -Argument "`"$script`""
+    $trigger  = New-ScheduledTaskTrigger -AtLogon -User $user
+    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
+                  -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
+                  -DisallowStartIfOnBatteries $false -StopIfGoingOnBatteries $false
+    $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType S4U -RunLevel Limited
+
+    Register-ScheduledTask -TaskName 'Trailarr' `
+      -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
+      -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
     ```
 
     This registers a Task Scheduler task that starts Trailarr automatically
     when **you** log in, running as your user account so mapped network drives
-    and UNC shares are fully accessible.
+    and UNC shares are fully accessible. The task runs regardless of power/battery state.
 
     Start it immediately without rebooting:
 
     ```powershell
-    Start-ScheduledTask -TaskName "Trailarr"
-    ```
-
-    Check that it is running:
-
-    ```powershell
-    (Get-ScheduledTask -TaskName "Trailarr").State   # should print "Running"
+    Start-ScheduledTask -TaskName 'Trailarr'
+    (Get-ScheduledTask -TaskName 'Trailarr').State   # should print "Running"
     ```
 
     !!! note "Non-default install paths"
-        If you installed to a different directory, edit
-        `scripts\windows\trailarr-start.ps1` and update the `$InstallDir` and
-        `$DataDir` variables before running the setup script.
+        Replace `C:\Program Files\Trailarr` with your chosen `$InstallDir` if you
+        installed to a different location.
 
 === "Run manually (any OS)"
 

@@ -62,8 +62,8 @@ The installer will:
 1. Download the latest release (includes pre-built web interface)
 2. Set up an isolated Python environment with `uv sync`
 3. Download the correct ffmpeg static binary for your OS and CPU architecture
-4. Ask you to choose a port (default `7889`)
-5. Create and start a system service (systemd / launchd / Windows Service)
+4. Automatically select an available port starting from `7889`
+5. Create and start a system service (systemd / launchd / Task Scheduler)
 6. Detect GPU hardware and display driver installation instructions
 
 ---
@@ -114,7 +114,7 @@ The installer will:
     C:\Program Files\Trailarr\  # Application
     ├── backend\                # Python source + .venv\
     ├── frontend-build\         # Web interface
-    ├── bin\                    # ffmpeg.exe, ffprobe.exe, nssm.exe
+    ├── bin\                    # ffmpeg.exe, ffprobe.exe
     └── scripts\                # start.py, cli\
 
     C:\ProgramData\Trailarr\    # Data (persists across updates)
@@ -124,7 +124,7 @@ The installer will:
     ├── logs\
     └── web\images\
 
-    Windows Service: "Trailarr"
+    Task Scheduler task: "Trailarr"
     ```
 
 ---
@@ -171,9 +171,9 @@ You can also use OS-native tools directly:
 === "Windows"
 
     ```powershell
-    Start-Service Trailarr
-    Stop-Service Trailarr
-    Get-Service Trailarr
+    Start-ScheduledTask -TaskName 'Trailarr'
+    Stop-ScheduledTask -TaskName 'Trailarr'
+    (Get-ScheduledTask -TaskName 'Trailarr').State
     Get-Content "C:\ProgramData\Trailarr\logs\trailarr.log" -Tail 50 -Wait
     ```
 
@@ -288,9 +288,9 @@ Your data directory is **never modified** during an update.
 trailarr uninstall
 ```
 
-You will be asked to confirm before anything is removed.
+You will be asked to confirm before anything is removed, and separately asked
+whether to also delete your data directory (database, backups, config).
 This removes the application, service, and CLI.
-The data directory is also removed — back it up first if needed.
 
 ---
 

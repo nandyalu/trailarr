@@ -85,6 +85,7 @@ def make_download_progress() -> Progress:
         TransferSpeedColumn(),
         TimeRemainingColumn(),
         console=console,
+        transient=True,
     )
 
 
@@ -115,10 +116,15 @@ def print_completion(install_dir: str, data_dir: str, port: int, os_name: str) -
                 (f"{data_dir}\n", "white"),
                 ("  Web interface: ", "dim"),
                 (f"http://localhost:{port}\n\n", "bold cyan"),
-                ("Check status:\n", "dim"),
-                (f"  {status_cmd}\n\n", "white"),
-                ("View logs:\n", "dim"),
-                ("  trailarr logs\n\n", "white"),
+                ("CLI commands:\n", "dim"),
+                ("  trailarr run       ", "white"), ("— Start Trailarr\n", "dim"),
+                ("  trailarr stop      ", "white"), ("— Stop Trailarr\n", "dim"),
+                ("  trailarr restart   ", "white"), ("— Restart Trailarr\n", "dim"),
+                ("  trailarr status    ", "white"), ("— Show service status\n", "dim"),
+                ("  trailarr logs      ", "white"), ("— View logs\n", "dim"),
+                ("  trailarr update    ", "white"), ("— Update to latest version\n", "dim"),
+                ("  trailarr uninstall ", "white"), ("— Remove Trailarr\n", "dim"),
+                ("  run, stop, restart, update, uninstall require " + ("Run as Administrator" if os_name == "Windows" else "sudo") + "\n\n", "dim italic"),
                 ("  (open a new terminal if 'trailarr' is not found)\n\n", "dim"),
                 ("Documentation:\n", "dim"),
                 ("  https://github.com/nandyalu/trailarr", "cyan"),

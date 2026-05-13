@@ -6,7 +6,7 @@ import pwd
 import subprocess
 from pathlib import Path
 
-from common.display import console, print_section, print_success, print_warning, step_context
+from common.display import console, print_info, print_section, print_success, print_warning, step_context
 from platforms.base import BaseInstaller
 
 _INSTALL_DIR = Path("/opt/trailarr")
@@ -42,7 +42,7 @@ class LinuxInstaller(BaseInstaller):
                     ["useradd", "-r", "-d", str(_INSTALL_DIR), "-s", "/bin/false", "-m", "trailarr"],
                     check=True,
                 )
-                print_success("Created system user 'trailarr'")
+                print_info("Created system user 'trailarr'")
 
             for directory in [_INSTALL_DIR, _DATA_DIR, _LOG_DIR, _DATA_DIR / "logs", _DATA_DIR / "backups", _DATA_DIR / "web" / "images", _DATA_DIR / "tmp"]:
                 directory.mkdir(parents=True, exist_ok=True)
@@ -156,10 +156,9 @@ WantedBy=multi-user.target
 """
             service_path = Path("/etc/systemd/system/trailarr.service")
             service_path.write_text(unit, encoding="utf-8")
-            subprocess.run(["systemctl", "daemon-reload"], check=True)
-            subprocess.run(["systemctl", "enable", "trailarr"], check=True)
-            subprocess.run(["systemctl", "start", "trailarr"], check=False)
-            print_success("Systemd service created and enabled (trailarr.service)")
+            subprocess.run(["systemctl", "daemon-reload"], check=True, capture_output=True)
+            subprocess.run(["systemctl", "enable", "trailarr"], check=True, capture_output=True)
+            subprocess.run(["systemctl", "start", "trailarr"], check=False, capture_output=True)
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI"):
@@ -171,8 +170,7 @@ WantedBy=multi-user.target
                 encoding="utf-8",
             )
             wrapper.chmod(0o755)
-            print_success("CLI installed: /usr/local/bin/trailarr")
-            _print_cli_hints()
+        print_info("CLI installed: /usr/local/bin/trailarr")
 
 
 def _chown_recursive(path: Path, uid: int, gid: int) -> None:
@@ -185,11 +183,3 @@ def _chown_recursive(path: Path, uid: int, gid: int) -> None:
                 pass
 
 
-def _print_cli_hints() -> None:
-    from common.display import print_info
-    print_info("trailarr run       — Start Trailarr")
-    print_info("trailarr stop      — Stop Trailarr")
-    print_info("trailarr status    — Show service status")
-    print_info("trailarr logs      — View logs")
-    print_info("trailarr update    — Update to latest version")
-    print_info("trailarr uninstall — Remove Trailarr")

@@ -123,8 +123,18 @@ def _service_stop() -> None:
 
 
 def _service_restart() -> None:
-    _service_stop()
-    _service_start()
+    if _IS_LINUX:
+        r = _run("systemctl", "restart", _SERVICE_NAME)
+        if r.returncode == 0:
+            _ok(f"Service '{_SERVICE_NAME}' restarted")
+        else:
+            _err(r.stderr.strip() or "Failed to restart service")
+    elif _IS_MACOS:
+        _service_stop()
+        _service_start()
+    elif _IS_WINDOWS:
+        _service_stop()
+        _service_start()
 
 
 def _service_status() -> None:
@@ -143,7 +153,14 @@ def _service_status() -> None:
 
 def _service_logs(lines: int) -> None:
     if _IS_LINUX:
+        log_file = _DATA_DIR / "logs" / "trailarr.log"
+        _info(f"=== Startup logs (journalctl) ===")
         subprocess.run(["journalctl", "-u", _SERVICE_NAME, "-n", str(lines), "--no-pager"])
+        _info(f"=== Application logs ({log_file}) ===")
+        if log_file.exists() and log_file.stat().st_size > 0:
+            subprocess.run(["tail", "-n", str(lines), str(log_file)])
+        else:
+            _warn("Application log file not found or empty — service may have failed to start.")
     elif _IS_MACOS:
         log_file = Path.home() / "Library" / "Logs" / "trailarr" / "trailarr.log"
         if log_file.exists():
@@ -343,11 +360,9 @@ def _uninstall() -> None:
 
     if remove_data and _DATA_DIR.exists():
         shutil.rmtree(_DATA_DIR, ignore_errors=True)
-        _ok("Trailarr and data directory have been removed.")
-    else:
-        if _DATA_DIR.exists():
-            _info(f"Data directory kept at: {_DATA_DIR}")
-        _ok("Trailarr has been removed.")
+    elif _DATA_DIR.exists():
+        _info(f"Data folder at '{_DATA_DIR}' has been kept")
+    _ok("Trailarr successfully uninstalled")
 
 
 # ---------------------------------------------------------------------------
@@ -357,6 +372,10 @@ def _uninstall() -> None:
 def _usage() -> None:
     if console:
         from rich.panel import Panel
+        if _IS_WINDOWS:
+            elevation_hint = "run, stop, restart, update, uninstall require Run as Administrator"
+        else:
+            elevation_hint = "run, stop, restart, update, uninstall require sudo"
         console.print(
             Panel(
                 "  [bold]trailarr run[/bold]         — Start the service\n"
@@ -365,7 +384,8 @@ def _usage() -> None:
                 "  [bold]trailarr status[/bold]      — Show service status\n"
                 "  [bold]trailarr logs [N][/bold]    — Show last N lines (default 50)\n"
                 "  [bold]trailarr update[/bold]      — Update to latest version\n"
-                "  [bold]trailarr uninstall[/bold]   — Remove Trailarr",
+                "  [bold]trailarr uninstall[/bold]   — Remove Trailarr\n\n"
+                f"  [dim italic]{elevation_hint}[/dim italic]",
                 title="[bold cyan]Trailarr CLI[/bold cyan]",
                 border_style="blue",
             )
