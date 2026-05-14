@@ -1,9 +1,13 @@
 name: Bump Version
 
 on:
-  push:
-    tags:
-      - 'v*'
+  pull_request:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag (e.g. v0.9.5)'
+        required: true
 
 jobs:
   bump:
@@ -11,16 +15,30 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # For pull_request: only run if PR title starts with a semver tag, e.g. "v0.9.5 - Some title"
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.pull_request.title, 'v')
 
     steps:
-      - name: Checkout main branch
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.version_tag }}"
+          else
+            TITLE="${{ github.event.pull_request.title }}"
+            TAG=$(echo "$TITLE" | grep -oP '^v\d+\.\d+\.\d+')
+          fi
+          if [ -z "$TAG" ]; then
+            echo "No valid semver tag found, skipping."
+            exit 0
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Checkout branch
         uses: actions/checkout@v6
         with:
-          ref: main
-
-      - name: Extract version from tag
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.head_ref }}
 
       - name: Bump version in pyproject.toml
         run: sed -i "s/^version = .*/version = \"${{ steps.version.outputs.version }}\"/" backend/pyproject.toml
@@ -43,14 +61,14 @@ jobs:
 
       - name: Generate OpenAPI spec
         run: |
-          APP_VERSION=${{ github.ref_name }} PYTHONPATH=$(pwd) uv run python export_openapi.py
+          APP_VERSION=${{ steps.version.outputs.tag }} PYTHONPATH=$(pwd) uv run python export_openapi.py
         working-directory: backend
 
-      - name: Commit and push to main
+      - name: Commit version bump to PR branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add backend/pyproject.toml frontend/package.json frontend/package-lock.json \
                   .vscode/tasks.json docs/references/api-docs/openapi.json
-          git commit -m "chore: bump version to ${{ github.ref_name }}" || echo "Nothing to commit"
-          git push origin main
+          git commit -m "chore: bump version to ${{ steps.version.outputs.tag }}" || echo "Nothing to commit"
+          git push origin HEAD
