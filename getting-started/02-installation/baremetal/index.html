@@ -3189,8 +3189,8 @@ Restart PowerShell after installation.</p>
 <li>Download the latest release (includes pre-built web interface)</li>
 <li>Set up an isolated Python environment with <code>uv sync</code></li>
 <li>Download the correct ffmpeg static binary for your OS and CPU architecture</li>
-<li>Ask you to choose a port (default <code>7889</code>)</li>
-<li>Create and start a system service (systemd / launchd / Windows Service)</li>
+<li>Automatically select an available port starting from <code>7889</code></li>
+<li>Create and start a system service (systemd / launchd / Task Scheduler)</li>
 <li>Detect GPU hardware and display driver installation instructions</li>
 </ol>
 <hr />
@@ -3235,7 +3235,7 @@ Restart PowerShell after installation.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>C:\Program Files\Trailarr\  # Application
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├── backend\                # Python source + .venv\
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>├── frontend-build\         # Web interface
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>├── bin\                    # ffmpeg.exe, ffprobe.exe, nssm.exe
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>├── bin\                    # ffmpeg.exe, ffprobe.exe
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>└── scripts\                # start.py, cli\
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>C:\ProgramData\Trailarr\    # Data (persists across updates)
@@ -3245,7 +3245,7 @@ Restart PowerShell after installation.</p>
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>├── logs\
 </span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>└── web\images\
 </span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>Windows Service: &quot;Trailarr&quot;
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>Task Scheduler task: &quot;Trailarr&quot;
 </span></code></pre></div>
 </div>
 </div>
@@ -3285,9 +3285,9 @@ that affect the service (run, stop, restart, update, uninstall).</p>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">Start-Service</span> <span class="n">Trailarr</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">Stop-Service</span> <span class="n">Trailarr</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">Get-Service</span> <span class="n">Trailarr</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">Start-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">Stop-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">(</span><span class="nb">Get-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span><span class="p">).</span><span class="n">State</span>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nb">Get-Content</span> <span class="s2">&quot;C:\ProgramData\Trailarr\logs\trailarr.log&quot;</span> <span class="n">-Tail</span> <span class="n">50</span> <span class="n">-Wait</span>
 </span></code></pre></div>
 </div>
@@ -3426,9 +3426,9 @@ The configuration file is at:</p>
 <h2 id="uninstalling">Uninstalling</h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>trailarr<span class="w"> </span>uninstall
 </span></code></pre></div>
-<p>You will be asked to confirm before anything is removed.
-This removes the application, service, and CLI.
-The data directory is also removed — back it up first if needed.</p>
+<p>You will be asked to confirm before anything is removed, and separately asked
+whether to also delete your data directory (database, backups, config).
+This removes the application, service, and CLI.</p>
 <hr />
 <h2 id="troubleshooting">Troubleshooting</h2>
 <h3 id="service-wont-start">Service won't start</h3>
