@@ -33,7 +33,7 @@ jobs:
           sed -i "s/\"APP_VERSION\": \"[^\"]*\"/\"APP_VERSION\": \"${{ steps.version.outputs.version }}\"/g" .vscode/tasks.json
 
       - name: Set up Python with uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           working-directory: backend
 
