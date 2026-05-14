@@ -101,6 +101,7 @@ download_release() {
         error "Download failed"
         exit 1
     }
+    printf '\r\033[K'
     success "Download complete"
 
     info "Extracting archive..."

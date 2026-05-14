@@ -6,7 +6,7 @@ import pwd
 import subprocess
 from pathlib import Path
 
-from common.display import console, print_section, print_success, print_warning, step_context
+from common.display import print_info, print_warning, step_context
 from platforms.base import BaseInstaller
 
 _INSTALL_DIR = Path("/opt/trailarr")
@@ -36,15 +36,34 @@ class LinuxInstaller(BaseInstaller):
             # Create system user if not exists
             try:
                 pwd.getpwnam("trailarr")
-                print_warning("User 'trailarr' already exists, skipping creation")
+                print_warning(
+                    "User 'trailarr' already exists, skipping creation"
+                )
             except KeyError:
                 subprocess.run(
-                    ["useradd", "-r", "-d", str(_INSTALL_DIR), "-s", "/bin/false", "-m", "trailarr"],
+                    [
+                        "useradd",
+                        "-r",
+                        "-d",
+                        str(_INSTALL_DIR),
+                        "-s",
+                        "/bin/false",
+                        "-m",
+                        "trailarr",
+                    ],
                     check=True,
                 )
-                print_success("Created system user 'trailarr'")
+                print_info("Created system user 'trailarr'")
 
-            for directory in [_INSTALL_DIR, _DATA_DIR, _LOG_DIR, _DATA_DIR / "logs", _DATA_DIR / "backups", _DATA_DIR / "web" / "images", _DATA_DIR / "tmp"]:
+            for directory in [
+                _INSTALL_DIR,
+                _DATA_DIR,
+                _LOG_DIR,
+                _DATA_DIR / "logs",
+                _DATA_DIR / "backups",
+                _DATA_DIR / "web" / "images",
+                _DATA_DIR / "tmp",
+            ]:
                 directory.mkdir(parents=True, exist_ok=True)
 
             # Set ownership
@@ -72,6 +91,7 @@ class LinuxInstaller(BaseInstaller):
     def setup_python(self) -> None:
         with step_context("Setting up Python environment (uv sync)"):
             import shutil as _shutil
+
             uv = _shutil.which("uv")
             if not uv:
                 raise RuntimeError("uv not found in PATH.")
@@ -83,7 +103,11 @@ class LinuxInstaller(BaseInstaller):
             uv_python_dir.mkdir(parents=True, exist_ok=True)
 
             # Clear VIRTUAL_ENV to avoid conflicts with the outer `uv run` environment.
-            env = {k: v for k, v in os.environ.items() if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")}
+            env = {
+                k: v
+                for k, v in os.environ.items()
+                if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")
+            }
             env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
 
             # Explicitly install Python 3.13 into our directory so uv doesn't fall
@@ -97,10 +121,21 @@ class LinuxInstaller(BaseInstaller):
 
             # Locate the installed binary to pass explicitly to `uv sync`, ensuring
             # the venv's pyvenv.cfg points to our Python, not root's.
-            python_bins = sorted(uv_python_dir.glob("cpython-3.13*/bin/python3*"))
-            python_bin = next((p for p in python_bins if not p.name.endswith(("-config", ".1"))), None)
+            python_bins = sorted(
+                uv_python_dir.glob("cpython-3.13*/bin/python3*")
+            )
+            python_bin = next(
+                (
+                    p
+                    for p in python_bins
+                    if not p.name.endswith(("-config", ".1"))
+                ),
+                None,
+            )
             if not python_bin:
-                raise RuntimeError(f"Python 3.13 not found in {uv_python_dir} after install")
+                raise RuntimeError(
+                    f"Python 3.13 not found in {uv_python_dir} after install"
+                )
 
             result = subprocess.run(
                 [uv, "sync", "--no-cache", "--python", str(python_bin)],
@@ -156,10 +191,32 @@ WantedBy=multi-user.target
 """
             service_path = Path("/etc/systemd/system/trailarr.service")
             service_path.write_text(unit, encoding="utf-8")
-            subprocess.run(["systemctl", "daemon-reload"], check=True)
-            subprocess.run(["systemctl", "enable", "trailarr"], check=True)
-            subprocess.run(["systemctl", "start", "trailarr"], check=False)
-            print_success("Systemd service created and enabled (trailarr.service)")
+            subprocess.run(
+                ["systemctl", "daemon-reload"], check=True, capture_output=True
+            )
+            subprocess.run(
+                ["systemctl", "enable", "trailarr"],
+                check=True,
+                capture_output=True,
+            )
+            start_result = subprocess.run(
+                ["systemctl", "start", "trailarr"],
+                check=False,
+                capture_output=True,
+            )
+            if start_result.returncode != 0:
+                error_details: list[str] = [
+                    "Failed to start trailarr service."
+                ]
+                if start_result.stderr:
+                    error_details.append(
+                        f"stderr:\n{start_result.stderr.strip()}"
+                    )
+                if start_result.stdout:
+                    error_details.append(
+                        f"stdout:\n{start_result.stdout.strip()}"
+                    )
+                raise RuntimeError("\n".join(error_details))
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI"):
@@ -167,12 +224,11 @@ WantedBy=multi-user.target
             wrapper = Path("/usr/local/bin/trailarr")
             python_exec = self._python_exec()
             wrapper.write_text(
-                f"#!/bin/sh\nexec {python_exec} {cli_src} \"$@\"\n",
+                f'#!/bin/sh\nexec {python_exec} {cli_src} "$@"\n',
                 encoding="utf-8",
             )
             wrapper.chmod(0o755)
-            print_success("CLI installed: /usr/local/bin/trailarr")
-            _print_cli_hints()
+        print_info("CLI installed: /usr/local/bin/trailarr")
 
 
 def _chown_recursive(path: Path, uid: int, gid: int) -> None:
@@ -183,13 +239,3 @@ def _chown_recursive(path: Path, uid: int, gid: int) -> None:
                 os.chown(child, uid, gid)
             except OSError:
                 pass
-
-
-def _print_cli_hints() -> None:
-    from common.display import print_info
-    print_info("trailarr run       — Start Trailarr")
-    print_info("trailarr stop      — Stop Trailarr")
-    print_info("trailarr status    — Show service status")
-    print_info("trailarr logs      — View logs")
-    print_info("trailarr update    — Update to latest version")
-    print_info("trailarr uninstall — Remove Trailarr")

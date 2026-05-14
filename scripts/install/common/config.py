@@ -1,26 +1,24 @@
 """Interactive configuration wizard for Trailarr installation."""
 
 import platform
+import socket
 from pathlib import Path
 
-from rich.prompt import IntPrompt
-
-from common.display import console, print_section, print_success
+from common.display import print_info, print_section, print_success
 from common.env_file import update_env_var
 
 
 def ask_port(default: int = 7889) -> int:
     print_section("Configuration")
-    port = IntPrompt.ask(
-        "  Web interface port",
-        default=default,
-        console=console,
-    )
-    while not (1024 <= port <= 65535):
-        console.print("[error]  Port must be between 1024 and 65535[/error]")
-        port = IntPrompt.ask(
-            "  Web interface port", default=default, console=console
-        )
+    port = default
+    while port <= 65535:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("", port))
+                break
+            except OSError:
+                port += 1
+    print_info(f"Web interface port: {port}" + (" (default)" if port == default else f" (port {default} in use)"))
     return port
 
 

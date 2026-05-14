@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from common.config import ask_port, write_initial_config
-from common.display import console, print_section, print_step, print_success, step_context
+from common.display import console, print_info, print_section, print_step, print_success, step_context
 from common.ffmpeg import download_ffmpeg
 from common.gpu import detect_gpus, print_gpu_report
 
@@ -79,8 +79,9 @@ class BaseInstaller(ABC):
                 raise RuntimeError(f"uv sync failed:\n{result.stderr}")
 
     def download_ffmpeg_binary(self) -> None:
-        with step_context("Downloading ffmpeg"):
-            self.ffmpeg_path, self.ffprobe_path = download_ffmpeg(self.bin_dir)
+        self.ffmpeg_path, self.ffprobe_path = download_ffmpeg(self.bin_dir)
+        print_success("ffmpeg downloaded")
+        print_info(f"ffmpeg installed to {self.bin_dir}")
 
     def write_config(self, port: int) -> None:
         venv_bin = self.venv_dir / "Scripts" if sys.platform == "win32" else self.venv_dir / "bin"

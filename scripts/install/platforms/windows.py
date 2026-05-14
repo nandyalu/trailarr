@@ -98,28 +98,29 @@ class WindowsInstaller(BaseInstaller):
                     )
 
     def create_service(self, port: int) -> None:
-        with step_context("Registering Task Scheduler startup task"):
-            exe = (
-                _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "trailarr.exe"
+        exe = (
+            _INSTALL_DIR / "backend" / ".venv" / "Scripts" / "trailarr.exe"
+        )
+        script = _INSTALL_DIR / "scripts" / "start" / "start.py"
+        username = os.environ.get("USERNAME", "")
+        if not username:
+            raise RuntimeError(
+                "Could not determine current Windows username"
             )
-            script = _INSTALL_DIR / "scripts" / "start" / "start.py"
-            username = os.environ.get("USERNAME", "")
-            if not username:
-                raise RuntimeError(
-                    "Could not determine current Windows username"
-                )
 
-            ps = f"""
+        ps = f"""
 $action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
 $trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
-              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
+              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
+              -DisallowStartIfOnBatteries $false -StopIfGoingOnBatteries $false
 $principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
 Register-ScheduledTask -TaskName '{_TASK_NAME}' `
   -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
   -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
 Start-ScheduledTask -TaskName '{_TASK_NAME}'
 """
+        with step_context("Registering Task Scheduler startup task"):
             result = subprocess.run(
                 ["powershell.exe", "-NonInteractive", "-Command", ps],
                 capture_output=True,
@@ -129,9 +130,7 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
                 raise RuntimeError(
                     f"Failed to register task:\n{result.stderr.strip()}"
                 )
-            print_info(
-                f"Task Scheduler startup task registered for {username}"
-            )
+        print_info(f"Task Scheduler startup task registered for {username}")
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI command"):
@@ -154,8 +153,7 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
 
             # Add install dir to system PATH if not already present
             _add_to_system_path(str(_INSTALL_DIR))
-            print_info(f"CLI installed: {cmd_wrapper}")
-            _print_cli_hints()
+        print_info(f"CLI installed: {cmd_wrapper}")
 
 
 def _add_to_system_path(new_path: str) -> None:
@@ -184,10 +182,3 @@ def _add_to_system_path(new_path: str) -> None:
         print_warning(f"Add manually: {new_path}")
 
 
-def _print_cli_hints() -> None:
-    print_info("trailarr run       — Start Trailarr")
-    print_info("trailarr stop      — Stop Trailarr")
-    print_info("trailarr status    — Show service status")
-    print_info("trailarr logs      — View logs")
-    print_info("trailarr update    — Update to latest version")
-    print_info("trailarr uninstall — Remove Trailarr")
