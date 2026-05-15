@@ -1,9 +1,11 @@
 export const RouteAbout = 'about';
+export const RouteActivity = 'activity';
 export const RouteAdd = 'add';
 export const RouteConnections = 'connections';
 export const RouteEdit = 'edit';
 export const RouteEvents = 'events';
 export const RouteHome = 'home';
+export const RouteIssues = 'issues';
 export const RouteLogs = 'logs';
 export const RouteMedia = 'media';
 export const RouteMovies = 'movies';

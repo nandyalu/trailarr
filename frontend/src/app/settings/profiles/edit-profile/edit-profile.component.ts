@@ -10,8 +10,10 @@ import {
   viewChild,
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {TrailerProfileCreate} from 'src/app/models/trailerprofile';
+import {SettingsService} from 'src/app/services/settings.service';
+import {RouteGeneral, RouteSettings} from 'src/routing';
 import {CustomFilter} from 'src/app/models/customfilter';
 import {ArrType} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
@@ -32,6 +34,7 @@ import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialo
     LoadIndicatorComponent,
     OptionsSettingComponent,
     RangeSettingComponent,
+    RouterLink,
     TextSettingComponent,
   ],
   templateUrl: './edit-profile.component.html',
@@ -41,7 +44,11 @@ import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialo
 export class EditProfileComponent {
   protected profileService = inject(ProfileService);
   private readonly connectionService = inject(ConnectionService);
+  private readonly settingsService = inject(SettingsService);
   private readonly router = inject(Router);
+
+  protected readonly RouteSettings = RouteSettings;
+  protected readonly RouteGeneral = RouteGeneral;
 
   profileId = input(0, {
     transform: (value: any) => {
@@ -71,6 +78,7 @@ export class EditProfileComponent {
   });
 
   trueFalseOptions = ['true', 'false'];
+  videoTypeOptions = ['trailer', 'teaser', 'clip', 'behind the scenes', 'bloopers', 'featurette', 'opening credits'];
   fileFormatOptions = ['mkv', 'mp4', 'webm'];
   audioFormatOptions = ['aac', 'ac3', 'eac3', 'flac', 'opus', 'copy'];
   videoFormatOptions = ['h264', 'h265', 'vp8', 'vp9', 'av1', 'copy'];
@@ -81,6 +89,11 @@ export class EditProfileComponent {
   protected readonly hasPlex = computed(() =>
     this.connectionService.connectionsResource.value().some((c) => c.arr_type === ArrType.Plex)
   );
+
+  protected readonly tmdbKeyMissing = computed(() => {
+    const _profile = this.profile();
+    return _profile?.video_type !== 'trailer' && !this.settingsService.settings()?.tmdb_api_key;
+  });
 
   helpLinks = {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',

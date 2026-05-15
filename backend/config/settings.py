@@ -290,6 +290,7 @@ class _Config:
             "wait_for_media": self.wait_for_media,
             "webui_disable_auth": self.webui_disable_auth,
             "webui_username": self.webui_username,
+            "tmdb_api_key": self.tmdb_api_key,
             "yt_cookies_path": self.yt_cookies_path,
             "ytdlp_version": self.ytdlp_version,
         }
@@ -451,6 +452,11 @@ class _Config:
     """Password for the WebUI (hashed and stored).
         - Default is 'trailarr'.
         - Valid values are any hashed string of password."""
+
+    tmdb_api_key = str_property("TMDB_API_KEY", default="")
+    """TMDB API key for fetching trailer metadata.
+        - Default is empty string (disabled).
+        - Valid values are any TMDB v3 API key string."""
 
     yt_cookies_path = str_property("YT_COOKIES_PATH", default="")
     """Path to the YouTube cookies file.

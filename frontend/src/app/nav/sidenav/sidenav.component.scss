@@ -56,6 +56,26 @@
   margin-bottom: auto;
 }
 
+.issue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.3rem;
+  border-radius: 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background-color: var(--color-warning);
+  color: #000;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+  &.urgent {
+    background-color: var(--color-danger);
+    color: #fff;
+  }
+}
+
 /* Tablet — icon rail */
 @media (max-width: 1100px) {
   .navmenu {

@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
-from enum import Enum
 from pydantic import field_validator
-from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
+from sqlalchemy import Boolean, Column, String, text
 from sqlmodel import Field, Integer, Relationship
 
 from core.base.database.models.filefolderinfo import FileFolderInfo
@@ -19,15 +18,6 @@ def get_current_time():
 
 def get_current_year():
     return datetime.now(timezone.utc).year
-
-
-class MonitorStatus(Enum):
-    """Monitor status for media. \n"""
-
-    DOWNLOADED = "downloaded"
-    DOWNLOADING = "downloading"
-    MISSING = "missing"
-    MONITORED = "monitored"
 
 
 class MediaBase(AppSQLModel):
@@ -82,21 +72,12 @@ class MediaBase(AppSQLModel):
     fanart_url: str | None = None
     poster_path: str | None = None
     fanart_path: str | None = None
-    trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
     plex_rating_key: str | None = None
     plex_section_key: str | None = None
     plex_connection_id: int | None = None
     plex_trailer: bool | None = None
-    status: MonitorStatus = Field(
-        default=MonitorStatus.MISSING,
-        sa_column=Column(
-            sa_Enum(MonitorStatus, native_enum=False),
-            server_default=text("'MISSING'"),
-            nullable=False,
-        ),
-    )
 
 
 class Media(MediaBase, table=True):
@@ -131,7 +112,6 @@ class MediaCreate(MediaBase):
     - language: "en"
     - runtime: 0
     - youtube_trailer_id: None
-    - trailer_exists: False
     - monitor: False
     - arr_monitored: False
     """
@@ -213,7 +193,6 @@ class MediaUpdate(MediaBase):
     media_exists: bool | None = None  # type: ignore
     media_filename: str | None = None  # type: ignore
     folder_path: str | None = None  # type: ignore
-    trailer_exists: bool | None = None  # type: ignore
     monitor: bool | None = None  # type: ignore
     arr_monitored: bool | None = None  # type: ignore
     plex_trailer: bool | None = None  # type: ignore

@@ -68,10 +68,10 @@ class TestUpdatePlexTrailer:
         assert self.media.plex_trailer is None
 
     def test_update_does_not_touch_other_fields(self):
-        """update_plex_trailer only changes plex_trailer, not title or status."""
+        """update_plex_trailer only changes plex_trailer, not title or year."""
         original_title = self.media.title
-        original_status = self.media.status
+        original_year = self.media.year
         media_manager.update_plex_trailer(self.media.id, True)
         updated = media_manager.read(self.media.id)
         assert updated.title == original_title
-        assert updated.status == original_status
+        assert updated.year == original_year

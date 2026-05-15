@@ -30,6 +30,61 @@
     </ul>
   </div>
 }
+<!-- Scope & Type Settings -->
+<section>
+  <details open>
+    <summary>
+      <span>Scope &amp; Type</span>
+    </summary>
+    <hr />
+    @if (tmdbKeyMissing()) {
+      <div class="border-warning">
+        <p>Non-trailer video types require a TMDB API key. Configure it in <a [routerLink]="['/', RouteSettings, RouteGeneral]">General Settings</a>.</p>
+      </div>
+    }
+    <div class="setting-group">
+      <app-options-setting
+        name="Video Type"
+        description="Type of video to search for and download."
+        [options]="videoTypeOptions"
+        [selectedOption]="profile()?.video_type"
+        (optionChange)="profileService.updateSetting('video_type', $event)"
+      />
+      <app-options-setting
+        name="Scope"
+        description="Apply this profile to Movies or Series only."
+        [options]="['Movies', 'Series']"
+        [selectedOption]="profile()?.for_movies ? 'Movies' : 'Series'"
+        (optionChange)="profileService.updateSetting('for_movies', $event === 'Movies')"
+      />
+      @if (!profile()?.for_movies) {
+        <app-options-setting
+          name="Download Season Videos"
+          description="Create a separate download entry for each season (series only)."
+          [options]="trueFalseOptions"
+          [selectedOption]="profile()?.download_season_videos"
+          (optionChange)="profileService.updateSetting('download_season_videos', $event)"
+        />
+      }
+      <app-text-setting
+        name="Max Count"
+        description="Maximum number of videos to download per media item per season."
+        descriptionExtra="Default is 1. Minimum is 1. Maximum is 20."
+        [isNumberType]="true"
+        [isLongInput]="false"
+        [placeholder]="'Max Count'"
+        [autocomplete]="'off'"
+        [minLength]="1"
+        [maxLength]="2"
+        [minValue]="1"
+        [maxValue]="20"
+        [value]="profile()?.max_count ?? 1"
+        [disabled]="false"
+        (onSubmit)="profileService.updateSetting('max_count', $event)"
+      />
+    </div>
+  </details>
+</section>
 <!-- General Settings -->
 <section>
   <details open>

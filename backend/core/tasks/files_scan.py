@@ -57,8 +57,6 @@ def _has_folder_changed(folder_path: str, media_id: int, tz) -> bool:
 
 def _handle_folder_gone(media: MediaRead) -> None:
     """Reset stale flags when the media folder is inaccessible or deleted."""
-    if media.trailer_exists:
-        media_manager.update_trailer_exists(media.id, False)
     if media.media_exists:
         media_manager.update_media_exists(media.id, False)
 
@@ -69,7 +67,7 @@ async def _process_trailer_changes(
     existing_downloads: list,
     source: EventSource,
 ) -> tuple[int, int]:
-    """Detect new trailers and mark deleted downloads, then reconcile trailer_exists.
+    """Detect new trailers and mark deleted downloads.
 
     Returns:
         tuple[int, int]: (new_trailer_count, missing_trailer_count)
@@ -92,14 +90,6 @@ async def _process_trailer_changes(
             source=source,
             source_detail="FilesScan",
         )
-        if not media.trailer_exists and not media.monitor:
-            # Guard: skip when monitor=True — the download task may still be working
-            # through remaining profiles (e.g. a stop_monitoring=False profile ran
-            # first; a higher-priority profile is still pending). Setting
-            # trailer_exists=True would also force monitor=False and prevent those
-            # profiles from running.
-            media.trailer_exists = True
-            media_manager.update_trailer_exists(media.id, True)
 
     # Downloads whose file no longer exists on disk
     missing_count = 0
@@ -119,21 +109,6 @@ async def _process_trailer_changes(
                 source=source,
                 source_detail="FilesScan",
             )
-
-    # Reconcile trailer_exists in both directions
-    if not trailer_paths and media.trailer_exists:
-        # No trailers on disk but flag is True → reset
-        media.trailer_exists = False
-        media_manager.update_trailer_exists(media.id, False)
-    elif trailer_paths and not media.trailer_exists and not media.monitor:
-        # Trailers exist on disk but flag is stale False.
-        # Guard: skip when monitor=True — the download task may still be working
-        # through remaining profiles (e.g. a stop_monitoring=False profile ran
-        # first; a higher-priority profile is still pending). Setting
-        # trailer_exists=True would also force monitor=False and prevent those
-        # profiles from running.
-        media.trailer_exists = True
-        media_manager.update_trailer_exists(media.id, True)
 
     return new_count, missing_count
 

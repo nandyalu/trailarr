@@ -5,7 +5,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from . import base
 import core.base.database.manager.connection as connection_manager
-from core.base.database.models.media import Media, MediaRead, MonitorStatus
+from core.base.database.models.media import Media, MediaRead
 from core.base.database.utils.engine import read_session
 
 
@@ -283,7 +283,7 @@ def read_recently_downloaded(
     limit = max(1, min(limit, 100))
     statement = (
         select(Media)
-        .where(Media.status == MonitorStatus.DOWNLOADED)
+        .where(col(Media.downloaded_at).is_not(None))
         .order_by(desc(Media.downloaded_at))
         .offset(offset)
         .limit(limit)
@@ -333,17 +333,16 @@ def _apply_filter(
         SelectOfScalar[Media]: The updated statement with the filter applied.
     """
     if filter_by == "downloaded":
-        statement = statement.where(col(Media.trailer_exists).is_(True))
+        statement = statement.where(col(Media.downloaded_at).is_not(None))
         return statement
     if filter_by == "monitored":
         statement = statement.where(col(Media.monitor).is_(True))
         return statement
     if filter_by == "missing":
-        statement = statement.where(col(Media.trailer_exists).is_(False))
+        statement = statement.where(col(Media.downloaded_at).is_(None))
         return statement
     if filter_by == "unmonitored":
         statement = statement.where(col(Media.monitor).is_(False))
-        statement = statement.where(col(Media.trailer_exists).is_(False))
         return statement
     # If filter_by is `all` or doesn't match any of the above,
     # return the statement as is

@@ -23,8 +23,8 @@ def get_stats(
     statement = select(Media.id).where(col(Media.downloaded_at).is_not(None))
     _downloaded = len(_session.exec(statement).all())
 
-    # Detected trailers count
-    statement = select(Media.id).where(col(Media.trailer_exists).is_(True))
+    # Detected trailers count (media with at least one downloaded_at timestamp)
+    statement = select(Media.id).where(col(Media.downloaded_at).is_not(None))
     _detected = len(_session.exec(statement).all())
 
     # Movies Total

@@ -15,6 +15,7 @@ import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/pro
 import {DownloadsComponent} from './downloads/downloads.component';
 import {FilesComponent} from './files/files.component';
 import {MediaEventsComponent} from './media-events/media-events.component';
+import {TrailerStatusComponent} from './trailer-status/trailer-status.component';
 
 @Component({
   selector: 'app-media-details',
@@ -27,6 +28,7 @@ import {MediaEventsComponent} from './media-events/media-events.component';
     LoadIndicatorComponent,
     MediaEventsComponent,
     RemoveStartingSlashPipe,
+    TrailerStatusComponent,
     RouterLink,
     TitleCasePipe,
   ],

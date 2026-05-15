@@ -1,0 +1,16 @@
+<!-- Activity Tabs: Issues | Events | Logs -->
+<div class="settingsnav">
+  <a class="setnav-btn" [routerLink]="RouteIssues" routerLinkActive="active">
+    Issues
+    @if (issueCount() > 0) {
+      <span class="issue-count">{{ issueCount() }}</span>
+    }
+  </a>
+  <a class="setnav-btn" [routerLink]="RouteEvents" routerLinkActive="active">Events</a>
+  <a class="setnav-btn" [routerLink]="RouteLogs" routerLinkActive="active">Logs</a>
+</div>
+<div class="settings-container">
+  <div class="settings-content">
+    <router-outlet />
+  </div>
+</div>

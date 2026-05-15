@@ -10,7 +10,6 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.event import EventSource
 from core.base.utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
-from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
 from core.plex.models import PlexLibrarySection, PlexMediaItem
@@ -109,20 +108,17 @@ class PlexConnectionManager:
     def _apply_path_mapping(self, path: str) -> str:
         return apply_path_mappings(path, self.path_mappings)
 
-    def _check_monitoring(self, trailer_exists: bool) -> bool:
+    def _check_monitoring(self) -> bool:
         """Return the monitor value for a newly-created Plex-only media item.
 
         Plex items have no arr_monitored concept; MONITOR_SYNC treats presence
-        in the Plex library as implicitly monitored (arr_monitored=True)."""
-        if trailer_exists:
-            return False
+        in the Plex library as implicitly monitored (arr_monitored=True).
+        Trailer existence is no longer checked here — the file scanner handles it."""
         if self.monitor == MonitorType.MONITOR_NONE:
             return False
         # MONITOR_MISSING, MONITOR_NEW, MONITOR_SYNC all resolve to True:
-        # - MISSING: no trailer → monitor
+        # - MISSING: monitor all items without a downloaded trailer
         # - NEW: Plex-only items are always newly created → monitor
-        #        Existing items don't call this function since they won't
-        #        be re-created → no change
         # - SYNC: Plex library presence = monitored → monitor
         return True
 
@@ -229,7 +225,7 @@ class PlexConnectionManager:
             # MONITOR_NEW only affects newly-created items — preserve existing state.
             monitor_changed = False
             if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
-                new_monitor = self._check_monitoring(existing.trailer_exists)
+                new_monitor = self._check_monitoring()
                 if new_monitor != existing.monitor:
                     event_manager.track_monitor_changed(
                         media_id=existing.id,
@@ -238,9 +234,7 @@ class PlexConnectionManager:
                         source=EventSource.SYSTEM,
                         source_detail="PlexRefresh",
                     )
-                    media_manager.update_monitor_and_trailer_exists_bulk(
-                        [(existing.id, new_monitor, existing.trailer_exists)]
-                    )
+                    media_manager.update_monitor_only(existing.id, new_monitor)
                     monitor_changed = True
             if plex_fields_changed or monitor_changed:
                 self._stats_updated += 1
@@ -266,14 +260,8 @@ class PlexConnectionManager:
                 source=EventSource.SYSTEM,
                 source_detail="PlexRefresh",
             )
-            # Check trailer and apply monitoring logic for Plex-only items
-            trailer_exists = False
-            if media_read.folder_path:
-                trailer_exists = await FilesHandler.check_trailer_exists(
-                    path=media_read.folder_path,
-                    check_inline_file=True,
-                )
-            monitor = self._check_monitoring(trailer_exists)
+            # Apply monitoring logic for Plex-only items
+            monitor = self._check_monitoring()
             if monitor != media_read.monitor:
                 event_manager.track_monitor_changed(
                     media_id=media_read.id,
@@ -282,15 +270,7 @@ class PlexConnectionManager:
                     source=EventSource.SYSTEM,
                     source_detail="PlexRefresh",
                 )
-            if trailer_exists and not media_read.trailer_exists:
-                event_manager.track_trailer_detected(
-                    media_id=media_read.id,
-                    source=EventSource.SYSTEM,
-                    source_detail="PlexRefresh",
-                )
-            media_manager.update_monitor_and_trailer_exists_bulk(
-                [(media_read.id, monitor, trailer_exists)]
-            )
+                media_manager.update_monitor_only(media_read.id, monitor)
             self._stats_added += 1
             logger.debug(f"Created new Plex-only media row for '{item.title}'")
 

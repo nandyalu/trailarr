@@ -27,26 +27,31 @@ npm install
 
 ```bash
 # FastAPI backend (from /app/backend) - requires database setup first
+mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --host 0.0.0.0 --port 7888
+
+# FastAPI also exposes the frontend (static build) at the root (localhost:7888) when running. Make sure you run `ng build` in frontend dir on changes.
 
 # Angular frontend (from /app/frontend) - proxies API to localhost:7888
 npm run start   # http://localhost:4200
+
 ```
 
 ### Database Setup
 
 ```bash
-# Required before running the backend server
+# Required before running the backend server (from /app/backend)
 mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
-cd backend
 APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 ```
 
 ### Testing
 
 ```bash
-# Backend tests (from /app/backend) - ~333 tests, ~6s
+# Backend tests (from /app/backend) - ~500 tests, ~6s
 # Note: use `uv run python` — plain `python` is not in PATH
+# Tests use an in-memory SQLite DB; APP_DATA_DIR is NOT required for tests
 PYTHONPATH=$(pwd) uv run python -m pytest tests/ -v
 PYTHONPATH=$(pwd) uv run python -m pytest tests/path/to/test_file.py -v   # single file
 
@@ -98,8 +103,18 @@ Layered architecture:
 - All endpoints and background tasks are async/await
 - Database migrations auto-applied on startup via `init_db()`
 - WebSocket broadcasting for real-time task/event updates
-- `APP_DATA_DIR` env var required for all runtime operations
+- `APP_DATA_DIR` env var required for all runtime operations (not needed for tests)
 - `EventType` is stored as VARCHAR (`native_enum=False`) — adding new enum values does **not** require an Alembic migration
+- `TrailerStatusEnum` and `TrailerSourceEnum` (in `models/mediatrailerstatus.py`) are also VARCHAR — same rule applies
+- `IssueType` and `EntityType` (in `models/issue.py`) are also VARCHAR — same rule applies
+
+**Trailer tracking (as of v0.9.5):**
+- `Media.trailer_exists` and `Media.status` (MonitorStatus) have been **removed** from the DB model — the frontend computes these from `MediaTrailerStatus` rows
+- `MediaTrailerStatus` is the source of truth: one row per `(media_id, profile_id, season, sequence)`
+- `Issue` records actionable problems (missing files, failed connections) — auto-created and auto-resolved by the app
+- `trailerstatusmanager.py` — CRUD for `MediaTrailerStatus`
+- `issuemanager.py` — upsert/resolve/list for `Issue`
+- `downloaded_at IS NOT NULL` on `Media` is used as a proxy for "has trailer" in filters and stats
 
 **Plex ↔ Arr media linking:**
 Plex and Arr connections can track the same physical media. The system merges by `folder_path`:
@@ -273,9 +288,18 @@ Pre-configured in `.vscode/tasks.json`:
 ## Required Environment Variables
 
 ```bash
-APP_DATA_DIR=/path/to/config   # Config, database, logs location (REQUIRED)
+APP_DATA_DIR=/path/to/config   # Config, database, logs location (REQUIRED for server; not needed for tests)
 PYTHONPATH=/path/to/backend    # Required for backend dev/testing
 LOG_LEVEL=Info                 # Logging level
+TMDB_API_KEY=                  # Optional: TMDB v3 API key for trailer metadata lookups
+```
+
+**Quick dev setup (all in one):**
+```bash
+cd /app/backend
+mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
+PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --host 0.0.0.0 --port 7888
 ```
 
 ## Key Conventions
@@ -285,6 +309,8 @@ LOG_LEVEL=Info                 # Logging level
 - **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
+- **TrailerStatusEnum / TrailerSourceEnum / IssueType / EntityType**: also stored as VARCHAR — same rule, no migration needed for new values
+- **Do not add `trailer_exists` or `status` (MonitorStatus) back to `Media`** — these were intentionally removed in v0.9.5; the frontend derives them from `MediaTrailerStatus` rows
 
 ## After Every Fix / Feature / Update
 

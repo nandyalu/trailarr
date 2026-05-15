@@ -1,0 +1,68 @@
+<div class="issues-page">
+  @if (isLoading()) {
+    <div class="empty-state">Loading issues…</div>
+  } @else if (issues().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">✓</span>
+      No issues — everything looks good.
+    </div>
+  } @else {
+    @if (connectionIssues().length > 0) {
+      <section class="issue-group">
+        <h3 class="group-title">Connections</h3>
+        @for (issue of connectionIssues(); track issue.id) {
+          <div class="issue-card danger">
+            <div class="issue-header">
+              <span class="issue-label">{{ issueLabel(issue) }}</span>
+              @if (issue.entity_name) {
+                <span class="entity-name">{{ issue.entity_name }}</span>
+              }
+            </div>
+            <p class="issue-description">{{ issue.description }}</p>
+            @if (issue.details) {
+              <p class="issue-details">{{ issue.details }}</p>
+            }
+            <div class="issue-actions">
+              <a class="btn btn-primary" [routerLink]="['/', RouteSettings, RouteConnections]">Edit Connection</a>
+              <button class="btn btn-dismiss" (click)="dismiss(issue)" title="Dismiss (may reappear if condition persists)">Dismiss</button>
+            </div>
+            <div class="issue-meta">
+              <span>Detected: {{ issue.created_at | date:'medium' }}</span>
+              @if (issue.updated_at !== issue.created_at) {
+                <span>Last seen: {{ issue.updated_at | date:'medium' }}</span>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+    @if (fileIssues().length > 0) {
+      <section class="issue-group">
+        <h3 class="group-title">Trailer Files</h3>
+        @for (issue of fileIssues(); track issue.id) {
+          <div class="issue-card warning">
+            <div class="issue-header">
+              <span class="issue-label">{{ issueLabel(issue) }}</span>
+              @if (issue.entity_name) {
+                <span class="entity-name">{{ issue.entity_name }}</span>
+              }
+            </div>
+            <p class="issue-description">{{ issue.description }}</p>
+            @if (issue.details) {
+              <p class="issue-details">{{ issue.details }}</p>
+            }
+            <div class="issue-actions">
+              <button class="btn btn-dismiss" (click)="dismiss(issue)" title="Dismiss (may reappear if condition persists)">Dismiss</button>
+            </div>
+            <div class="issue-meta">
+              <span>Detected: {{ issue.created_at | date:'medium' }}</span>
+              @if (issue.updated_at !== issue.created_at) {
+                <span>Last seen: {{ issue.updated_at | date:'medium' }}</span>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

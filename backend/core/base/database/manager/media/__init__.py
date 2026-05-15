@@ -19,13 +19,12 @@ from .update import (
     update_media_image,
     update_media_status,
     update_monitor_and_trailer_exists_bulk,
+    update_monitor_only,
     update_monitoring,
     update_monitoring_bulk,
-    update_no_trailers_exist,
     update_plex_fields,
     update_plex_trailer,
     update_plex_trailer_bulk,
-    update_trailer_exists,
     update_ytid,
 )
 
@@ -49,12 +48,11 @@ __all__ = [
     "update_media_image",
     "update_media_status",
     "update_monitor_and_trailer_exists_bulk",
+    "update_monitor_only",
     "update_monitoring",
     "update_monitoring_bulk",
-    "update_no_trailers_exist",
     "update_plex_fields",
     "update_plex_trailer",
     "update_plex_trailer_bulk",
-    "update_trailer_exists",
     "update_ytid",
 ]

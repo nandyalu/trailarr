@@ -153,6 +153,23 @@ Enable this setting to allow the `Trailer Cleanup` task to automatically delete 
     Disabling this means corrupted files will remain on disk and may need to be manually removed. A Warning log will be generated for each corrupted file detected during the cleanup task.
 
 
+## Integrations
+
+### TMDB API Key
+
+{{ version_badge("add", "0.9.5") }}
+
+- Default is `(empty)`
+- Environment variable: `TMDB_API_KEY`
+
+Enter your [The Movie Database (TMDB)](https://www.themoviedb.org/){:target="_blank"} v3 API key. When set, Trailarr can fetch trailer metadata directly from TMDB, which is required for downloading non-trailer video types (teasers, clips, featurettes, bloopers, behind the scenes, opening credits) via Trailer Profiles.
+
+!!! tip "Getting a free TMDB API Key"
+    Sign up at [themoviedb.org](https://www.themoviedb.org/){:target="_blank"} and request an API key at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api){:target="_blank"}. The v3 (Read Access Token) key is free.
+
+!!! note
+    Without a TMDB API Key, only the `trailer` video type is fully supported. Profiles set to other video types will fall back to a direct YouTube search.
+
 ## Experimental Settings
 
 These are experimental options, might not work as expected! You can enable them if you want to try. Please report any issues on [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"} (recommended) or [Github](https://github.com/nandyalu/trailarr/){:target="_blank"}

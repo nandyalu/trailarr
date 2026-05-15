@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
 import {NavigationEnd, Router, RouterLink, RouterLinkActive} from '@angular/router';
-import {RouteEvents, RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteSeries, RouteSettings, RouteTasks} from 'src/routing';
+import {RouteActivity, RouteHome, RouteMedia, RouteMovies, RouteSeries, RouteSettings, RouteTasks} from 'src/routing';
+import {IssueService} from '../../services/issue.service';
 
 @Component({
   selector: 'app-sidenav',
@@ -10,14 +11,17 @@ import {RouteEvents, RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteSeries,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidenavComponent {
-  protected readonly RouteEvents = RouteEvents;
+  protected readonly RouteActivity = RouteActivity;
   protected readonly RouteHome = RouteHome;
-  protected readonly RouteLogs = RouteLogs;
   protected readonly RouteMedia = RouteMedia;
   protected readonly RouteMovies = RouteMovies;
   protected readonly RouteSeries = RouteSeries;
   protected readonly RouteSettings = RouteSettings;
   protected readonly RouteTasks = RouteTasks;
+
+  protected readonly issueService = inject(IssueService);
+  protected readonly issueCount = this.issueService.openCount;
+  protected readonly issueUrgent = this.issueService.hasUrgent;
 
   protected readonly router = inject(Router);
   protected readonly previousUrl = signal('');

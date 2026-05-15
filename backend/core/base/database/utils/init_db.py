@@ -10,6 +10,8 @@ from core.base.database.models.event import Event
 from core.base.database.models.media import Media
 from core.base.database.models.filter import Filter
 from core.base.database.models.customfilter import CustomFilter
+from core.base.database.models.issue import Issue
+from core.base.database.models.mediatrailerstatus import MediaTrailerStatus
 from core.base.database.models.task_config import ScheduledTaskConfig
 from core.base.database.models.trailerprofile import TrailerProfile
 
@@ -26,6 +28,8 @@ __ALL__ = [
     Media,
     Filter,
     CustomFilter,
+    Issue,
+    MediaTrailerStatus,
     ScheduledTaskConfig,
     TrailerProfile,
 ]

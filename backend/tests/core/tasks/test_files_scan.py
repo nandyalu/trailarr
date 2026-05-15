@@ -18,7 +18,6 @@ def make_mock_media(
     title: str = "Test Movie",
     folder_path: str | None = "/media/Test Movie (2025)",
     downloads: list | None = None,
-    trailer_exists: bool = False,
     media_exists: bool = False,
     monitor: bool = False,
 ) -> SimpleNamespace:
@@ -27,7 +26,6 @@ def make_mock_media(
         title=title,
         folder_path=folder_path,
         downloads=downloads if downloads is not None else [],
-        trailer_exists=trailer_exists,
         media_exists=media_exists,
         monitor=monitor,
     )
@@ -232,14 +230,14 @@ class TestScanMediaFolder:
         )
 
     @pytest.mark.asyncio
-    async def test_folder_gone_resets_trailer_exists(self):
-        """When the folder is inaccessible/deleted, trailer_exists is cleared."""
-        media = make_mock_media(trailer_exists=True)
+    async def test_folder_gone_resets_media_exists_when_set(self):
+        """When the folder is inaccessible/deleted and media_exists=True, it is cleared."""
+        media = make_mock_media(media_exists=True)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan.media_manager.update_trailer_exists"
+            "core.tasks.files_scan.media_manager.update_media_exists"
         ) as mock_update:
             new, missing = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -247,14 +245,14 @@ class TestScanMediaFolder:
         mock_update.assert_called_once_with(media.id, False)
 
     @pytest.mark.asyncio
-    async def test_folder_gone_no_trailers_skips_update(self):
-        """When the folder is gone but trailer_exists is already False, no update."""
-        media = make_mock_media(trailer_exists=False)
+    async def test_folder_gone_no_media_exists_skips_update(self):
+        """When the folder is gone and media_exists is already False, no update."""
+        media = make_mock_media(media_exists=False)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan.media_manager.update_trailer_exists"
+            "core.tasks.files_scan.media_manager.update_media_exists"
         ) as mock_update:
             new, missing = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -349,11 +347,10 @@ class TestScanMediaFolder:
         mock_update.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_stale_trailer_exists_corrected_to_true(self):
-        """When trailer_exists=False but trailers are already recorded as downloads,
-        the flag is corrected to True (monitor=False means no active download)."""
+    async def test_already_recorded_trailer_not_re_recorded(self):
+        """When a trailer is already recorded as a download, it is not re-recorded."""
         existing_dl = SimpleNamespace(path="/media/Test Movie (2025)/Test Movie-trailer.mkv", file_exists=True)
-        media = make_mock_media(trailer_exists=False, monitor=False, downloads=[existing_dl])
+        media = make_mock_media(monitor=False, downloads=[existing_dl])
         trailer_path = existing_dl.path
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
@@ -363,9 +360,6 @@ class TestScanMediaFolder:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
@@ -375,43 +369,12 @@ class TestScanMediaFolder:
         # Trailer was already recorded — no new download entry
         mock_record.assert_not_called()
         assert new == 0
-        # Flag corrected upward because monitor=False
-        mock_trailer_update.assert_called_once_with(media.id, True)
 
     @pytest.mark.asyncio
-    async def test_stale_trailer_exists_not_corrected_when_monitored(self):
-        """When monitor=True, trailer_exists is NOT corrected upward even if trailers
-        exist on disk — the download task may still be working through other profiles."""
-        existing_dl = SimpleNamespace(path="/media/Test Movie (2025)/Test Movie-trailer.mkv", file_exists=True)
-        media = make_mock_media(trailer_exists=False, monitor=True, downloads=[existing_dl])
-        trailer_path = existing_dl.path
-        mock_scanner = MagicMock()
-        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
-        mock_scanner.check_media_exists = AsyncMock(return_value=False)
-        mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
-
-        with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
-            patch("core.tasks.files_scan.record_new_trailer_download"),
-        ):
-            new, missing = await scan_media_folder(media, scanner=mock_scanner)
-
-        # Flag must NOT be corrected while monitor=True
-        mock_trailer_update.assert_not_called()
-        assert new == 0
-
-    @pytest.mark.asyncio
-    async def test_new_trailer_found_while_monitored_records_but_skips_flag(self):
-        """When a truly new trailer is found on disk (not yet a download record)
-        while monitor=True, we record the download but must NOT flip trailer_exists —
-        the download task is still working through remaining profiles."""
+    async def test_new_trailer_on_disk_is_recorded(self):
+        """When a new trailer is found on disk (not yet a download record), it is recorded."""
         trailer_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
-        # No existing downloads — file is brand new
-        media = make_mock_media(trailer_exists=False, monitor=True, downloads=[])
+        media = make_mock_media(monitor=True, downloads=[])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=False)
@@ -420,9 +383,6 @@ class TestScanMediaFolder:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
@@ -433,5 +393,3 @@ class TestScanMediaFolder:
         # File is new — download is recorded
         mock_record.assert_called_once()
         assert new == 1
-        # But flag must NOT be flipped while monitor=True
-        mock_trailer_update.assert_not_called()

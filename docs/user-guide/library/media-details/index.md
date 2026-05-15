@@ -18,6 +18,9 @@ If a trailer hasn't been downloaded for Media, it can be either Monitored or UnM
 
 Additional Media Status details can be viewed by hovering (click on it in Mobile) on `Status` field.
 
+!!! info "Status is derived from Trailer Profiles"
+    Since v0.9.5, the summary status badge is computed from the individual [Trailer Profiles](#trailer-profiles-section) rows rather than stored as a single flag. The badge reflects the most relevant state across all profiles: `Downloading` takes highest priority, then `Downloaded`, then `Monitored` (pending), then `Missing`.
+
 !!! tip "Season Count for TV Show"
     This will also show a `Season Count` of the selected Media if it's a TV Show. This is coming from `Sonarr` and `Trailarr` can only read it, cannot update it!
 
@@ -84,6 +87,45 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 !!! tip ""
     To delete a trailer, use the **Files Section** below — click the trailer file and choose **Delete**.
+
+## Trailer Profiles Section
+
+{{ version_badge("add", "0.9.5") }}
+
+This section shows the per-profile trailer tracking status for the media item. Every [Trailer Profile](../../settings/profiles/index.md) that applies to this media has one or more rows here, each with its own independent status.
+
+### Layout
+
+Rows are grouped by profile. Each group shows the **profile name** and **video type** (e.g. *Trailer*, *Teaser*). Within a group, each row represents one download slot:
+
+- **Season label** — `Series` for the show-level slot, `Season 1` / `Season 2` / … for season-specific slots (when [Download Season Videos](../../settings/profiles/settings/general.md#download-season-videos) is enabled on the profile).
+- **Sequence number** — shown as `#2`, `#3`, … when [Max Count](../../settings/profiles/settings/general.md#max-count) is greater than 1 and multiple slots exist for the same profile and season.
+- **Status badge** — the current download state (see table below).
+- **Source chip** — shown only when the status is *Downloaded*: `App` (Trailarr downloaded it) or `Manual` (file was detected on disk and attributed to this profile, not actively downloaded by Trailarr).
+
+### Status Values
+
+| Status | Colour | Meaning |
+|--------|--------|---------|
+| **Pending** | Yellow | Trailarr will attempt a download on the next `Download Missing Trailers` run. |
+| **Downloading** | Blue | A download is currently in progress for this slot. |
+| **Downloaded** | Green | A video has been successfully downloaded (or detected on disk). |
+| **Failed** | Red | The last download attempt failed. Trailarr will retry on the next run. |
+| **Skipped** | Grey | Another profile with `Stop Monitoring = true` already downloaded a video; this profile was skipped. |
+| **Unmonitored** | Grey | You explicitly told Trailarr never to download for this profile/media combination. |
+| **Not Available** | Grey | No video of the requested type was found (e.g. TMDB returned no result). |
+
+### Skip / Re-enable Actions
+
+- **Skip** — available on *Pending*, *Failed*, or *Skipped* rows. Sets the row to `Unmonitored` so Trailarr will never attempt a download for this profile on this specific media item. Useful for skipping one title without disabling the profile globally.
+- **Re-enable** — available on *Unmonitored* rows. Resets the row back to `Pending` so Trailarr will attempt a download again on the next run.
+
+!!! tip "Unmonitored is never overwritten automatically"
+    Once you set a row to *Unmonitored*, Trailarr will never overwrite that choice — not during filter reapplication, not during any sync. Only the **Re-enable** button can change it back.
+
+### Manually-placed trailers
+
+If Trailarr detects a trailer file on disk that was not downloaded by the app (e.g. you copied it manually), it will attempt to attribute the file to a matching profile and create or update a row with status *Downloaded* and source *Manual*. If no profile can be matched, an unattributed row (profile: *Manual / Unattributed*) is created to track the file.
 
 ## Downloads Section
 

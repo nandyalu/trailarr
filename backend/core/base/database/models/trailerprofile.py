@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 from pydantic import field_validator, model_validator
 from sqlalchemy import Boolean, Integer
@@ -28,6 +29,9 @@ VALID_YT_DICT = {
     "title_slug": "title_slug",
     "txdb_id": "txdb_id",
     "year": "year",
+    "season": "season",
+    "sequence": "sequence",
+    "video_type": "video_type",
 }
 
 VALID_FILE_DICT = {
@@ -46,7 +50,20 @@ VALID_FILE_DICT = {
     "resolution": "video_resolution",
     "vcodec": "video_format",
     "youtube_id": "youtube_id",
+    "season": "season",
+    "sequence": "sequence",
+    "video_type": "video_type",
 }
+
+
+class VideoType(str, Enum):
+    TRAILER = "trailer"
+    TEASER = "teaser"
+    CLIP = "clip"
+    BEHIND_THE_SCENES = "behind the scenes"
+    BLOOPERS = "bloopers"
+    FEATURETTE = "featurette"
+    OPENING_CREDITS = "opening credits"
 
 
 class _TrailerProfileBase(AppSQLModel):
@@ -60,6 +77,21 @@ class _TrailerProfileBase(AppSQLModel):
     """
 
     enabled: bool = True
+    video_type: VideoType = VideoType.TRAILER
+    for_movies: bool = Field(
+        default=True,
+        sa_column=Column(Boolean, server_default="1", nullable=False),
+    )
+    download_season_videos: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    max_count: int = Field(
+        default=1,
+        ge=1,
+        le=20,
+        sa_column=Column(Integer, server_default="1", nullable=False),
+    )
     priority: int = Field(
         default=0,
         ge=0,
@@ -189,6 +221,8 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         """
         return field_name in [
             "enabled",
+            "for_movies",
+            "download_season_videos",
             "folder_enabled",
             "subtitles_enabled",
             "always_search",
@@ -206,6 +240,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         """
         return field_name in [
             "priority",
+            "max_count",
             "audio_volume_level",
             "video_resolution",
             "min_duration",
@@ -215,6 +250,8 @@ class TrailerProfile(_TrailerProfileBase, table=True):
 
     @field_validator(
         "enabled",
+        "for_movies",
+        "download_season_videos",
         "folder_enabled",
         "subtitles_enabled",
         "always_search",
@@ -249,6 +286,15 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             return v
         raise ValueError(
             f"Invalid priority value: '{v}'. Valid range is 0 to 1000."
+        )
+
+    @field_validator("max_count", mode="after")
+    @classmethod
+    def validate_max_count(cls, v: int) -> int:
+        if 1 <= v <= 20:
+            return v
+        raise ValueError(
+            f"Invalid max_count value: '{v}'. Valid range is 1 to 20."
         )
 
     @field_validator("file_format", mode="after")

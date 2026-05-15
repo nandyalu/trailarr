@@ -152,9 +152,7 @@ def _create_or_update(
             db_media,
             media_create,
             ignore_attrs={
-                "trailer_exists",
                 "monitor",
-                "status",
                 "updated_at",
                 "downloaded_at",
                 "youtube_trailer_id",

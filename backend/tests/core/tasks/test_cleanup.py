@@ -101,25 +101,19 @@ class TestTrailerCleanup:
 
     @pytest.mark.asyncio
     async def test_cleanup_media_without_downloads(self):
-        """Test cleanup for media with no downloads triggers update."""
+        """Test cleanup for media with no downloads is skipped gracefully."""
         media = create_mock_media(
             media_id=1, title="No Downloads", downloads=[]
         )
 
-        with (
-            patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
-            ) as mock_read,
-            patch(
-                "core.tasks.cleanup.media_manager.update_no_trailers_exist"
-            ) as mock_update,
-        ):
+        with patch(
+            "core.tasks.cleanup.media_manager.read_all_generator"
+        ) as mock_read:
             mock_read.return_value = iter([media])
 
             result = await trailer_cleanup()
 
             assert result is None
-            mock_update.assert_called_once_with(1)
 
     @pytest.mark.asyncio
     async def test_cleanup_skips_already_deleted_downloads(self):
@@ -520,9 +514,6 @@ class TestTrailerCleanup:
                 "core.tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.media_manager.update_no_trailers_exist"
-            ) as mock_update_no_trailers,
-            patch(
                 "core.tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
@@ -543,4 +534,3 @@ class TestTrailerCleanup:
             result = await trailer_cleanup()
 
             assert result is None
-            mock_update_no_trailers.assert_called_once_with(1)

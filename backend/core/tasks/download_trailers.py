@@ -124,7 +124,6 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     skipped_titles = {
         "invalid_media_id": [],
         "missing_folder_path": [],
-        "trailer_exists": [],
         "media_not_found": [],
     }
     for media_id in media_ids:
@@ -140,9 +139,6 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
                 continue
             if not FilesHandler.check_folder_exists(db_media.folder_path):
                 skipped_titles["missing_folder_path"].append(db_media.title)
-                continue
-            if db_media.trailer_exists:
-                skipped_titles["trailer_exists"].append(db_media.title)
                 continue
         if app_settings.wait_for_media:
             if check_folder:

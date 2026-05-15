@@ -2,7 +2,7 @@ import {AsyncPipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
-import {RouteLogs} from '../../routing';
+import {RouteActivity, RouteLogs} from '../../routing';
 import {DurationPipe} from '../helpers/duration.pipe';
 import {IntervalPipe} from '../helpers/interval.pipe';
 import {TimediffPipe} from '../helpers/timediff.pipe';
@@ -29,6 +29,7 @@ export class TasksComponent implements OnInit {
   editingTask = signal<QuivTask | null>(null);
   isSaving = signal(false);
   expandedErrorId = signal<string | null>(null);
+  protected readonly RouteActivity = RouteActivity;
   protected readonly RouteLogs = RouteLogs;
 
   constructor() {

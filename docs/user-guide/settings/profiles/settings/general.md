@@ -1,4 +1,62 @@
 
+## Video Type
+
+{{ version_badge("add", "0.9.5") }}
+
+| Type   | Required | Default | Valid Values                                                                        |
+|:------:|:--------:|:-------:|:-----------------------------------------------------------------------------------:|
+| String | Yes      | trailer | trailer, teaser, clip, behind the scenes, bloopers, featurette, opening credits     |
+
+Select the type of video to search for and download. Defaults to `trailer`.
+
+!!! note "TMDB API Key required for non-trailer types"
+    Searching for video types other than `trailer` requires a TMDB API Key to be set in **Settings > General > Integrations**. Without it, the profile will fall back to searching YouTube directly, which may yield less accurate results.
+
+!!! tip
+    Use separate profiles with different video types to download, for example, both a trailer and a featurette for the same media item.
+
+## For Movies
+
+{{ version_badge("add", "0.9.5") }}
+
+| Type    | Required | Default | Valid Values          |
+|:-------:|:--------:|:-------:|:---------------------:|
+| Boolean | Yes      | true    | true (Movies) or false (Series) |
+
+Set the scope of this profile: **Movies only** (`true`) or **Series only** (`false`). A Movies profile is applied only to movies from Radarr; a Series profile is applied only to series from Sonarr.
+
+!!! warning "One profile per scope"
+    A single profile cannot apply to both movies and series. Create separate profiles if you want to download trailers for both.
+
+!!! info "Auto-detected on upgrade"
+    When upgrading from a version before 0.9.5, this value is automatically detected for existing profiles based on their filters and name. Profiles where the scope cannot be determined are **disabled** and must be reviewed manually.
+
+## Download Season Videos
+
+{{ version_badge("add", "0.9.5") }}
+
+!!! note ""
+    Only available on **Series** profiles (`For Movies = false`).
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | false   | true or false |
+
+When enabled, Trailarr creates one download tracking entry per season (plus one for the series overall) and searches for a trailer for each season separately. Disabled by default — existing series behaviour (one trailer per series) is unchanged until you opt in.
+
+## Max Count
+
+{{ version_badge("add", "0.9.5") }}
+
+| Type    | Required | Default | Valid Values |
+|:-------:|:--------:|:-------:|:------------:|
+| Integer | Yes      | 1       | 1 to 10      |
+
+The maximum number of videos to download per media item for this profile. Setting it to `3`, for example, will download up to 3 videos for each matched media item. Each download is tracked as a separate status row with its own sequence number.
+
+!!! tip
+    Use this with `Stop Monitoring = false` when you want to collect multiple trailers or extras for the same media without stopping monitoring after the first download.
+
 ## Profile Name
 
 | Type   | Required | Valid Values                            |

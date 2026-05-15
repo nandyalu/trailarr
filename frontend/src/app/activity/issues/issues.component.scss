@@ -1,0 +1,123 @@
+.issues-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--color-on-surface-variant);
+  font-size: 1rem;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  color: var(--color-success);
+}
+
+.issue-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.issue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  border-left: 4px solid transparent;
+
+  &.danger {
+    border-left-color: var(--color-danger);
+    background-color: color-mix(in srgb, var(--color-danger) 6%, var(--color-surface-container));
+  }
+  &.warning {
+    border-left-color: var(--color-warning);
+    background-color: color-mix(in srgb, var(--color-warning) 6%, var(--color-surface-container));
+  }
+}
+
+.issue-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.issue-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.entity-name {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+}
+
+.issue-description {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.issue-details {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-family: monospace;
+}
+
+.issue-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.4rem 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.15s;
+
+  &.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    &:hover { background-color: color-mix(in srgb, var(--color-primary) 85%, black); }
+  }
+
+  &.btn-dismiss {
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface-variant);
+    &:hover { background-color: var(--color-surface-container-highest); }
+  }
+}
+
+.issue-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}

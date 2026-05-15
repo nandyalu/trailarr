@@ -12,9 +12,11 @@ Here's an overview of what you'll find:
     - **Series**: Shows a list of Series (TV Shows) from all Sonarr connections.
     - **[Media Details](./library/media-details/index.md)**: In-depth information about individual movies or series.
 
-- **[Events](./events/index.md)**: Track important events for your media items, including trailer downloads, deletions, and status changes.
+- **Activity**: A unified section consolidating Issues, Events, and Logs:
+    - **Issues**: Actionable problems detected by Trailarr (missing files, connection failures, invalid tokens). Issues are auto-resolved when the underlying condition clears. The nav badge shows the count of open issues and turns red when an urgent issue is present.
+    - **[Events](./events/index.md)**: Track important events for your media items, including trailer downloads, deletions, and status changes.
+    - **[Logs](./logs/index.md)**: Check recent application logs for monitoring and troubleshooting.
 - **[Tasks](./tasks/index.md)**: View and manage scheduled tasks and the current task queue.
-- **[Logs](./logs/index.md)**: Check recent application logs for monitoring and troubleshooting.
 - **[Settings](./settings/index.md)**: Configure Trailarr to your liking.
     - **[General Settings](./settings/general-settings/index.md)**: Basic application settings.
     - **[Connections](./settings/connections/index.md)**: Manage your connections to services like Radarr and Sonarr.

@@ -111,6 +111,23 @@ To change the password, go to `Settings > About > Password` in web interface.
     Once you change your password, don't forget to remove the `WEBUI_PASSWORD` environment variable from the docker-compose file.
 
 
+### `TMDB_API_KEY`
+
+{{ version_badge("add", "0.9.5") }}
+
+- Default: `(empty)`
+
+Your [The Movie Database (TMDB)](https://www.themoviedb.org/){:target="_blank"} v3 API key. Required for downloading non-trailer video types (teasers, clips, featurettes, bloopers, behind the scenes, opening credits) via Trailer Profiles.
+
+Get a free key at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api){:target="_blank"}.
+
+```yaml
+    environment:
+        - TMDB_API_KEY=your_api_key_here
+```
+
+This setting can also be configured from the web interface under **Settings > General > Integrations > TMDB API Key**.
+
 ### `FILES_FULL_SCAN`
 
 {{ version_badge("add", "0.9.1") }}

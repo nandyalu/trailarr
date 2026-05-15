@@ -11,7 +11,7 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ArrType
 from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaUpdateDC
-from core.base.database.models.media import MediaRead, MonitorStatus
+from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video
@@ -116,49 +116,31 @@ async def _notify_plex(media: MediaRead) -> None:
         )
 
 
+_DOWNLOADING = "downloading"
+_DOWNLOADED = "downloaded"
+_MISSING = "missing"
+
+
 def __update_media_status(
-    media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
+    media: MediaRead, type: str, profile: TrailerProfileRead
 ):
     """Update the media status in the database."""
-    if type == MonitorStatus.DOWNLOADING:
-        update = MediaUpdateDC(
-            id=media.id,
-            monitor=True,
-            status=MonitorStatus.DOWNLOADING,
-        )
+    if type == _DOWNLOADING:
+        update = MediaUpdateDC(id=media.id, monitor=True)
         if profile.stop_monitoring:
-            # Save the youtube ID for trailers only (stop_monitoring = True)
             update.yt_id = media.youtube_trailer_id
-    elif type == MonitorStatus.DOWNLOADED:
-        _monitor = True
-        if profile.stop_monitoring:
-            # Stop monitoring after download if set in profile and save youtube ID
-            _monitor = False
+    elif type == _DOWNLOADED:
+        _monitor = not profile.stop_monitoring
         update = MediaUpdateDC(
             id=media.id,
             monitor=_monitor,
-            status=MonitorStatus.DOWNLOADED,
-            trailer_exists=profile.stop_monitoring,
             downloaded_at=datetime.now(timezone.utc),
         )
         if profile.stop_monitoring:
-            # Save the youtube ID for trailers only (stop_monitoring = True)
             update.yt_id = media.youtube_trailer_id
-    elif type == MonitorStatus.MISSING:
-        update = MediaUpdateDC(
-            id=media.id,
-            monitor=True,
-            status=MonitorStatus.MISSING,
-        )
-        if media.trailer_exists:
-            # If trailer exists but download failed, it should be marked as DOWNLOADED
-            update = MediaUpdateDC(
-                id=media.id,
-                monitor=False,
-                status=MonitorStatus.DOWNLOADED,
-            )
+    elif type == _MISSING:
+        update = MediaUpdateDC(id=media.id, monitor=True)
     else:
-        # Handle other statuses if needed
         return None
 
     # Track monitor change event if monitor status changed
@@ -254,7 +236,7 @@ async def download_trailer(
         exclude = []
 
     # Exclude the current trailer ID if it exists
-    if media.trailer_exists and media.youtube_trailer_id:
+    if media.youtube_trailer_id:
         exclude.append(media.youtube_trailer_id)
 
     # Ignore the current trailer ID if always_search is enabled
@@ -282,7 +264,7 @@ async def download_trailer(
         return False
 
     try:
-        __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
+        __update_media_status(media, _DOWNLOADING, profile)
         # Download the trailer and verify
         output_file, video_info = __download_and_verify_trailer(
             media, video_id, profile, _stop_event=_stop_event
@@ -291,7 +273,7 @@ async def download_trailer(
         final_path = trailer_file.move_trailer_to_folder(
             output_file, media, profile, video_info
         )
-        __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
+        __update_media_status(media, _DOWNLOADED, profile)
         # Record the download in the database
         await record_new_trailer_download(
             media, profile.id, final_path, video_id, video_info
@@ -318,7 +300,7 @@ async def download_trailer(
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
-        __update_media_status(media, MonitorStatus.MISSING, profile)
+        __update_media_status(media, _MISSING, profile)
         if _stop_event and _stop_event.is_set():
             logger.info(
                 f"Download stopped for {media.title} [{media.id}] due to stop"

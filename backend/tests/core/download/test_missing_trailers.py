@@ -4,13 +4,11 @@ import datetime
 import pytest
 from unittest.mock import MagicMock, patch
 from core.download.trailers.missing import download_missing_trailers
-from core.base.database.models.media import MediaRead, MonitorStatus
+from core.base.database.models.media import MediaRead
 
 
-@pytest.fixture
-def mock_media_no_trailer():
-    """Create a mock media object without a trailer."""
-    return MediaRead(
+def _make_media(**kwargs) -> MediaRead:
+    defaults = dict(
         id=1,
         connection_id=1,
         arr_id=1,
@@ -22,56 +20,37 @@ def mock_media_no_trailer():
         studio="Test Studio",
         txdb_id="12345",
         title_slug="test-movie",
-        trailer_exists=False,
         monitor=True,
         arr_monitored=True,
-        status=MonitorStatus.MONITORED,
         media_exists=False,
         media_filename="",
         season_count=0,
         runtime=120,
-        added_at=datetime.datetime(
-            2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        ),
-        updated_at=datetime.datetime(
-            2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        ),
+        added_at=datetime.datetime(2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc),
         downloaded_at=None,
     )
+    defaults.update(kwargs)
+    return MediaRead(**defaults)
+
+
+@pytest.fixture
+def mock_media_no_trailer():
+    """Create a mock media object without a trailer."""
+    return _make_media(id=1, monitor=True, downloaded_at=None)
 
 
 @pytest.fixture
 def mock_media_with_trailer():
     """Create a mock media object with a trailer."""
-    return MediaRead(
+    return _make_media(
         id=2,
-        connection_id=1,
-        arr_id=2,
-        is_movie=True,
         title="Test Movie 2",
         clean_title="test movie 2",
-        year=2024,
-        language="en",
-        studio="Test Studio",
         txdb_id="12346",
         title_slug="test-movie-2",
-        trailer_exists=True,  # Has trailer
         monitor=True,
-        arr_monitored=True,
-        status=MonitorStatus.DOWNLOADED,
-        media_exists=False,
-        media_filename="",
-        season_count=0,
-        runtime=120,
-        added_at=datetime.datetime(
-            2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        ),
-        updated_at=datetime.datetime(
-            2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        ),
-        downloaded_at=datetime.datetime(
-            2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        ),
+        downloaded_at=datetime.datetime(2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc),
     )
 
 
@@ -91,34 +70,7 @@ async def test_download_missing_trailers_prevents_infinite_loop():
         # Configure settings
         mock_settings.monitor_enabled = True
 
-        media = MediaRead(
-            id=1,
-            connection_id=1,
-            arr_id=1,
-            is_movie=True,
-            title="Test Movie",
-            clean_title="test movie",
-            year=2024,
-            language="en",
-            studio="Test Studio",
-            txdb_id="12345",
-            title_slug="test-movie",
-            trailer_exists=False,  # No trailer
-            monitor=True,  # Still monitored
-            arr_monitored=True,
-            status=MonitorStatus.MONITORED,  # Still MONITORED status
-            media_exists=False,
-            media_filename="",
-            season_count=0,
-            runtime=120,
-            added_at=datetime.datetime(
-                2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-            ),
-            updated_at=datetime.datetime(
-                2024, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-            ),
-            downloaded_at=None,
-        )
+        media = _make_media(monitor=True, downloaded_at=None)
 
         # Database should always yield the same media item
         # This simulates the scenario where download fails and media remains monitored

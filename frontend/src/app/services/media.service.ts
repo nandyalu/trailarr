@@ -5,7 +5,8 @@ import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
-import {buildDownloadMap, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {applyTrailerStatuses, buildDownloadMap, buildTrailerStatusMap, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {MediaTrailerStatus, TrailerStatusEnum} from '../models/mediatrailerstatus';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
 
@@ -67,6 +68,18 @@ export class MediaService {
       return new Map<number, FileFolderInfo>();
     },
   });
+  readonly mediaTrailerStatusResource = httpResource<Map<number, MediaTrailerStatus[]>>(
+    () => ({url: this.mediaUrl + 'trailer-statuses-raw'}),
+    {
+      defaultValue: new Map<number, MediaTrailerStatus[]>(),
+      parse: (response) => {
+        if (response && Array.isArray(response)) {
+          return buildTrailerStatusMap(response as MediaTrailerStatus[]);
+        }
+        return new Map<number, MediaTrailerStatus[]>();
+      },
+    },
+  );
 
   // Computed Signals
   /** Combined media list with associated files and downloads */
@@ -74,14 +87,15 @@ export class MediaService {
     const mediaList = this.mediaResource.value();
     const downloadsMap = this.mediaDownloadsResource.value();
     const filesMap = this.mediaFilesResource.value();
+    const statusesMap = this.mediaTrailerStatusResource.value();
     return mediaList.map((media) => {
       const downloads = downloadsMap.get(media.id) || [];
       const files = filesMap.get(media.id) || null;
-      return {
-        ...media,
-        files: files,
-        downloads: downloads,
-      };
+      const statuses = statusesMap.get(media.id) || [];
+      return applyTrailerStatuses(
+        {...media, files, downloads},
+        statuses,
+      );
     });
   });
 
@@ -196,6 +210,9 @@ export class MediaService {
       if (msg.reload?.includes('downloads')) {
         this.mediaDownloadsResource.reload();
       }
+      if (msg.reload?.includes('trailer_statuses')) {
+        this.mediaTrailerStatusResource.reload();
+      }
     });
   }
 
@@ -208,6 +225,12 @@ export class MediaService {
     this.mediaResource.reload();
     this.mediaFilesResource.reload();
     this.mediaDownloadsResource.reload();
+    this.mediaTrailerStatusResource.reload();
+  }
+
+  setTrailerStatus(statusId: number, status: TrailerStatusEnum): Observable<any> {
+    const url = `${this.mediaUrl}trailer-status/${statusId}`;
+    return this.httpClient.patch(url, null, {params: {new_status: status}});
   }
 
   /**

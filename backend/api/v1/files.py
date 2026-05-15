@@ -281,8 +281,5 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
                 is_trailer_file = True
                 download_manager.mark_as_deleted(d.id)
         if is_trailer_file:
-            logger.info(f"Updating trailer status for media_id: {media_id}")
-            has_remaining = any(d.file_exists and d.path != path for d in all_downloads)
-            if not has_remaining:
-                media_manager.update_trailer_exists(media_id, False)
+            logger.info(f"Trailer file deleted for media_id: {media_id}")
     return deleted_status

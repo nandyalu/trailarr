@@ -22,13 +22,18 @@
     </svg>
     <span class="btntext">Series</span>
   </a>
-  <a class="sidenav-button" [routerLink]="RouteEvents" routerLinkActive="active">
+  <a class="sidenav-button" [routerLink]="RouteActivity" routerLinkActive="active">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
-        d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Zm80 240v-80h400v80H280Zm0 160v-80h280v80H280Z"
+        d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"
       />
     </svg>
-    <span class="btntext">Events</span>
+    <span class="btntext">
+      Activity
+      @if (issueCount() > 0) {
+        <span class="issue-badge" [class.urgent]="issueUrgent()">{{ issueCount() }}</span>
+      }
+    </span>
   </a>
   <a class="sidenav-button" [routerLink]="RouteTasks" routerLinkActive="active">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
@@ -37,14 +42,6 @@
       />
     </svg>
     <span class="btntext">Tasks</span>
-  </a>
-  <a class="sidenav-button" [routerLink]="RouteLogs" routerLinkActive="active">
-    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-      <path
-        d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm-80 480q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"
-      />
-    </svg>
-    <span class="btntext">Logs</span>
   </a>
   <a class="sidenav-button" [routerLink]="RouteSettings" routerLinkActive="active">
     <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">

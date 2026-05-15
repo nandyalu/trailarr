@@ -1,10 +1,15 @@
 import {CustomFilter, CustomFilterCreate} from './customfilter';
+import {VideoType} from './mediatrailerstatus';
 
 export interface TrailerProfileRead {
   id: number;
   customfilter_id: number;
   customfilter: CustomFilter;
   enabled?: boolean;
+  video_type?: VideoType;
+  for_movies?: boolean;
+  download_season_videos?: boolean;
+  max_count?: number;
   priority?: number;
   retry_count?: number;
   file_format?: string;
@@ -40,6 +45,10 @@ export interface TrailerProfileCreate {
   customfilter_id?: number | null;
   customfilter: CustomFilterCreate;
   enabled?: boolean;
+  video_type?: VideoType;
+  for_movies?: boolean;
+  download_season_videos?: boolean;
+  max_count?: number;
   priority?: number;
   retry_count?: number;
   file_format?: string;

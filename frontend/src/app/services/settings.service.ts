@@ -14,6 +14,7 @@ export class SettingsService {
   private filesUrl = environment.apiUrl + environment.files;
 
   readonly settingsResource = httpResource<Settings>(() => this.settingsUrl);
+  readonly settings = this.settingsResource.value;
   readonly filesPath = signal<string>('');
   readonly filesResource = httpResource<FolderInfo[]>(
     () => {

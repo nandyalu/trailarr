@@ -1,4 +1,5 @@
 import {FileFolderInfo} from './filefolderinfo';
+import {buildTrailerStatusMap, computeMonitorStatus, computeTrailerExists, MediaTrailerStatus} from './mediatrailerstatus';
 
 export interface Download {
   id: number;
@@ -42,6 +43,8 @@ export function mapDownload(download: any): Download {
   };
 }
 
+export {buildTrailerStatusMap} from './mediatrailerstatus';
+
 export function buildDownloadMap(downloads: Download[]): Map<number, Download[]> {
   const downloadMap = new Map<number, Download[]>();
 
@@ -79,16 +82,18 @@ export interface Media {
   fanart_url: string;
   poster_path: string;
   fanart_path: string;
-  trailer_exists: boolean;
   monitor: boolean;
   arr_monitored: boolean;
-  status: string;
   id: number;
   added_at: Date;
   updated_at: Date;
   downloaded_at: Date;
   downloads: Download[];
   files: FileFolderInfo | null;
+  trailer_statuses: MediaTrailerStatus[];
+  // Computed locally from trailer_statuses — not sent by backend
+  trailer_exists: boolean;
+  status: string;
 
   plex_rating_key: string | null;
   plex_connection_id: number | null;
@@ -103,13 +108,26 @@ export function mapMedia(media: any): Media {
     ...media,
     is_movie: Boolean(media.is_movie),
     media_exists: Boolean(media.media_exists),
-    trailer_exists: Boolean(media.trailer_exists),
     monitor: Boolean(media.monitor),
     arr_monitored: Boolean(media.arr_monitored),
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),
+    trailer_statuses: [],
+    // Computed after trailer_statuses are merged in by the service
+    trailer_exists: Boolean(media.downloaded_at),
+    status: media.monitor ? 'Monitored' : 'Missing',
     isImageLoaded: false,
+  };
+}
+
+/** Re-compute the derived trailer_exists and status fields from trailer_statuses. */
+export function applyTrailerStatuses(media: Media, statuses: MediaTrailerStatus[]): Media {
+  return {
+    ...media,
+    trailer_statuses: statuses,
+    trailer_exists: computeTrailerExists(statuses),
+    status: computeMonitorStatus(statuses, media.monitor),
   };
 }
 
