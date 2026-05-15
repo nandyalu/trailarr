@@ -29,7 +29,6 @@ export interface Settings {
   url_base: string;
   version: string;
   wait_for_media: boolean;
-  webui_disable_auth: boolean;
   webui_username: string;
   tmdb_api_key: string;
   yt_cookies_path: string;

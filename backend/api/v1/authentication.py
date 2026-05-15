@@ -19,19 +19,6 @@ def create_session() -> str:
     return token
 
 
-def get_session() -> str:
-    """Returns the current session token if valid,
-    otherwise creates a new one.
-    > **Only used in status check endpoint when webui auth is disabled!** \n
-    Returns:
-        str: A valid session token
-    """
-    for token in _sessions:
-        if _is_valid_session(token):
-            return token
-    return create_session()
-
-
 def delete_session(token: str) -> None:
     _sessions.discard(token)
 
@@ -113,6 +100,24 @@ def verify_api_key(api_key: str) -> bool:
     Returns:
         bool: True if the API key is valid, False otherwise"""
     return api_key == app_settings.api_key
+
+
+def verify_login(username: str, password: str, valid_api_key: str | None) -> None:
+    """Verifies login credentials unless a valid API key is already present. \n
+    Raises:
+        HTTPException: 401 if no valid API key and credentials are incorrect"""
+    if not valid_api_key:
+        if not (verify_username(username) and verify_password(password)):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+def validate_api_key_header(
+    header_api_key: str | None = Depends(header_scheme),
+) -> str | None:
+    """Returns the X-API-KEY header value if it is a valid API key, else None."""
+    if header_api_key and verify_api_key(header_api_key):
+        return header_api_key
+    return None
 
 
 # Dependency to validate the API key provided in the cookie, or a valid session token.

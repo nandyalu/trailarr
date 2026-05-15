@@ -41,14 +41,9 @@ Select the theme for the app UI.
 
 ### WebUI Disable Authentication
 
-{{ version_badge("add", "0.6.6") }}
-
-- Default is `false`
-
-Enable this setting to disable authentication for the WebUI. Use with caution, as this will allow anyone with access to the WebUI to control the app without needing to log in.
-
-!!! warning
-    Disabling WebUI authentication can expose your app to unauthorized access. Only disable this if you are running the app in a secure environment.
+!!! failure "Removed"
+    This setting has been removed. To bypass the login page when running behind a reverse proxy, forward the `X-API-KEY` header from your proxy instead.
+    See [Reverse Proxy → Bypassing the Login Page](../../reverse-proxy.md#bypassing-the-login-page) for per-proxy configuration examples.
 
 ## File Settings
 

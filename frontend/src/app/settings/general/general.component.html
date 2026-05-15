@@ -54,16 +54,6 @@
         [selectedOption]="settings()?.app_theme | titlecase"
         (optionChange)="updateSetting('app_theme', $event)"
       />
-      <app-options-setting
-        name="WebUI Disable Authentication"
-        description="Enable or disable authentication for the WebUI."
-        descriptionExtra="True - Auth disabled, False - Auth Enabled"
-        [options]="trueFalseOptions"
-        [selectedOption]="settings()?.webui_disable_auth"
-        [colorType]="'warning'"
-        [colorTypeOption]="'true'"
-        (optionChange)="updateSetting('webui_disable_auth', $event)"
-      />
     </div>
   </details>
 </section>

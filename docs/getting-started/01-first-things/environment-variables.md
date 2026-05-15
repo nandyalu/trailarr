@@ -69,17 +69,9 @@ For a list of valid timezones, see [tz database time zones](https://en.wikipedia
 
 ### `WEBUI_DISABLE_AUTH`
 
-- Default is `False`.
-
-This environment variable is used to disable the authentication for the web interface.
-    
-```yaml
-    environment:
-        - WEBUI_DISABLE_AUTH=True # This will disable the web UI authentication
-```
-
-!!! warning "Use with caution"
-    When auth is disabled, a `session_id` is generated to use with frontend without authentication by calling auth endpoints. These endpoints can be reached from other apps or services to get a `session_id` and use that for authentication. So, use with caution!
+!!! failure "Removed"
+    `WEBUI_DISABLE_AUTH` has been removed. To bypass the login page when Trailarr is behind a reverse proxy, configure your proxy to forward the `X-API-KEY` header instead.
+    See [Reverse Proxy → Bypassing the Login Page](../../user-guide/reverse-proxy.md#bypassing-the-login-page) for per-proxy configuration examples.
 
 ### `WEBUI_PASSWORD`
 

@@ -45,8 +45,6 @@ export class TopnavComponent {
   searchResults = signal<Media[]>([]);
   selectedIndex = signal(-1);
   selectedId = signal(-1);
-  loginDisabled = this.settingsService.settingsResource.value()?.webui_disable_auth ?? false;
-
   protected readonly RouteHome = RouteHome;
 
   // Get theme from settings and apply it

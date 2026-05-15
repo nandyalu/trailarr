@@ -178,6 +178,59 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
     ```
 
 
+## Bypassing the Login Page
+
+{{ version_badge("add", "0.10.0") }}
+
+If Trailarr is behind a reverse proxy that controls access (e.g. VPN, SSO, or IP allowlist), you can skip the login page automatically by having the proxy forward your API key in the `X-API-KEY` request header.
+
+When Trailarr receives a valid `X-API-KEY` header on `/api/v1/auth/status`, it auto-creates a session and sets the session cookie — so the browser proceeds directly without showing the login page.
+
+!!! warning "Keep the API key secret"
+    Anyone who can send a request with the correct `X-API-KEY` header will be authenticated. Only use this on a network where the proxy is the sole entry point.
+
+### How to find your API key
+
+Go to **Settings → General** and copy the value shown in the **API Key** field.
+
+### Proxy configuration snippets
+
+Add the highlighted header to your existing proxy config:
+
+=== "Nginx"
+    ```nginx hl_lines="4"
+    location / {
+        proxy_pass http://192.168.1.231:7889;
+        # ... your other headers ...
+        proxy_set_header X-API-KEY "your-api-key-here";
+    }
+    ```
+
+=== "Apache"
+    ```apache hl_lines="3"
+    ProxyPass "/" "http://192.168.1.231:7889/"
+    ProxyPassReverse "/" "http://192.168.1.231:7889/"
+    RequestHeader set X-API-KEY "your-api-key-here"
+    ```
+
+=== "Caddy"
+    ```caddy hl_lines="3"
+    trailarr.mydomain.com {
+        reverse_proxy http://192.168.1.231:7889 {
+            header_up X-API-KEY "your-api-key-here"
+        }
+    }
+    ```
+
+=== "Traefik"
+    ```yaml hl_lines="4-6"
+    middlewares:
+      trailarr-headers:
+        headers:
+          customRequestHeaders:
+            X-API-KEY: "your-api-key-here"
+    ```
+
 ## Additional Notes
 
 - Forward the `X-Forwarded-Prefix` header from reverse proxy to Trailarr. _Recommended — ensures the correct frontend is served when accessed through the proxy._
