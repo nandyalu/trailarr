@@ -281,7 +281,6 @@ Multi-stage: Stage 1 builds Angular frontend (Node.js), Stage 2 packages backend
 Pre-configured in `.vscode/tasks.json`:
 - **Frontend build** — `npm run build`
 - **Fastapi run** — starts FastAPI dev server
-- **Generate OpenAPI Files** — updates OpenAPI spec and generates frontend client
 - **Create Alembic Migration** — runs `scripts/create_migration.sh`
 - **Upgrade Python Dependencies** — `uv sync --upgrade`
 
@@ -306,7 +305,6 @@ PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --
 
 - **Python**: PEP-8, type hints everywhere, async/await, specific exception types, log errors where caught
 - **Angular**: Standalone components, Signals for reactivity, SCSS for styles, service-based state
-- **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
 - **TrailerStatusEnum / TrailerSourceEnum / IssueType / EntityType**: also stored as VARCHAR — same rule, no migration needed for new values
