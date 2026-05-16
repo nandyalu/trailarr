@@ -6,8 +6,10 @@ from config.settings import app_settings
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.download as download_manager
+import core.base.database.manager.issuemanager as issue_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.event import EventSource
+from core.base.database.models.issue import EntityType, IssueType
 from core.base.database.models.media import MediaRead
 from core.download.trailers.service import record_new_trailer_download
 from core.files.media_scanner import MediaScanner
@@ -65,14 +67,34 @@ async def _process_trailer_changes(
     media: MediaRead,
     trailer_paths: set[str],
     existing_downloads: list,
+    deleted_downloads: list,
     source: EventSource,
 ) -> tuple[int, int]:
     """Detect new trailers and mark deleted downloads.
+
+    *existing_downloads* — downloads where file_exists=True.
+    *deleted_downloads* — downloads where file_exists=False (previously marked missing).
 
     Returns:
         tuple[int, int]: (new_trailer_count, missing_trailer_count)
     """
     existing_paths = {d.path for d in existing_downloads}
+    # Index previously-deleted downloads by path so we can resolve their issues
+    # quickly when the file comes back.
+    deleted_by_path = {d.path: d for d in deleted_downloads}
+
+    # Resolve FILE_DELETED issues for any previously-missing file that is back.
+    for t_path in trailer_paths:
+        if t_path in deleted_by_path:
+            old_download = deleted_by_path[t_path]
+            resolved = issue_manager.resolve_issue(
+                IssueType.FILE_DELETED, EntityType.DOWNLOAD, old_download.id
+            )
+            if resolved:
+                logger.info(
+                    f"Trailer file restored: '{t_path}' for '{media.title}'"
+                    f" [{media.id}] — FILE_DELETED issue resolved."
+                )
 
     # New trailer files found on disk that are not yet recorded as downloads
     new_count = 0
@@ -108,6 +130,16 @@ async def _process_trailer_changes(
                 reason="file_not_found",
                 source=source,
                 source_detail="FilesScan",
+            )
+            issue_manager.upsert_issue(
+                issue_type=IssueType.FILE_DELETED,
+                entity_type=EntityType.DOWNLOAD,
+                entity_id=download.id,
+                description=(
+                    f"Trailer file for '{media.title}' was deleted externally."
+                    f" Path: {download.path}"
+                ),
+                details=download.path,
             )
 
     return new_count, missing_count
@@ -151,10 +183,11 @@ async def scan_media_folder(
         media_manager.update_media_exists(media.id, disk_media_exists)
 
     trailer_paths = scanner.get_trailer_paths(files_info)
-    all_downloads = [d for d in media.downloads if d.file_exists]
+    existing_downloads = [d for d in media.downloads if d.file_exists]
+    deleted_downloads = [d for d in media.downloads if not d.file_exists]
     source = EventSource.USER if user_initiated else EventSource.SYSTEM
     return await _process_trailer_changes(
-        media, trailer_paths, all_downloads, source
+        media, trailer_paths, existing_downloads, deleted_downloads, source
     )
 
 

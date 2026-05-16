@@ -85,12 +85,11 @@ async def get_all_media_raw() -> list[dict]:
 
 @media_router.get("/trailer-statuses-raw")
 async def get_all_trailer_statuses_raw() -> list[dict]:
-    """Get all MediaTrailerStatus rows as raw JSON objects (for bulk frontend load). \n
+    """Get all MediaTrailerStatus rows as raw dicts with joined profile fields (for bulk frontend load). \n
     Returns:
         list[dict]: List of MediaTrailerStatus rows. \n
     """
-    rows = trailer_status_manager.get_all_rows()
-    return [row.model_dump() for row in rows]
+    return trailer_status_manager.get_all_rows()
 
 
 @media_router.get("/downloads_raw")
@@ -520,6 +519,7 @@ async def delete_media_trailer(media_id: int) -> str:
         for d in live:
             await FilesHandler.delete_file(d.path)
             download_manager.mark_as_deleted(d.id)
+            trailer_status_manager.on_file_deleted(d.id)
 
         # Track trailer_deleted event (once per media item, not per file)
         event_manager.track_trailer_deleted(
@@ -605,8 +605,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
 @media_router.get("/{media_id}/trailer-statuses")
 async def get_trailer_statuses(media_id: int) -> list[MediaTrailerStatusRead]:
     """Return all MediaTrailerStatus rows for a media item."""
-    rows = trailer_status_manager.get_rows_for_media(media_id)
-    return [MediaTrailerStatusRead.model_validate(row) for row in rows]
+    return trailer_status_manager.get_rows_for_media(media_id)
 
 
 @media_router.patch("/trailer-status/{row_id}", status_code=status.HTTP_204_NO_CONTENT)

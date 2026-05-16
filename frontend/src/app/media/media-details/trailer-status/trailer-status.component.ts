@@ -64,9 +64,11 @@ export class TrailerStatusComponent {
 
   async setUnmonitored(row: MediaTrailerStatus): Promise<void> {
     await this.mediaService.setTrailerStatus(row.id, 'unmonitored' as TrailerStatusEnum).toPromise();
+    this.mediaService.mediaTrailerStatusResource.reload();
   }
 
   async resetPending(row: MediaTrailerStatus): Promise<void> {
     await this.mediaService.setTrailerStatus(row.id, 'pending' as TrailerStatusEnum).toPromise();
+    this.mediaService.mediaTrailerStatusResource.reload();
   }
 }

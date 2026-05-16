@@ -5,6 +5,7 @@ from app_logger import ModuleLogger
 import core.base.database.manager.download as download_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.media as media_manager
+import core.base.database.manager.trailerstatusmanager as trailer_status_manager
 from core.download import video_analysis
 from core.files_handler import FilesHandler, FolderInfo
 
@@ -280,6 +281,7 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
             if d.path == path:
                 is_trailer_file = True
                 download_manager.mark_as_deleted(d.id)
+                trailer_status_manager.on_file_deleted(d.id)
         if is_trailer_file:
             logger.info(f"Trailer file deleted for media_id: {media_id}")
     return deleted_status

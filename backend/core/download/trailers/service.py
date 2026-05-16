@@ -3,8 +3,10 @@ from datetime import datetime, timezone
 
 from app_logger import ModuleLogger
 import core.base.database.manager.download as download_manager
+import core.base.database.manager.trailerstatusmanager as trailer_status_manager
 from core.base.database.models.download import DownloadCreate
 from core.base.database.models.media import MediaRead
+from core.base.database.models.mediatrailerstatus import TrailerStatusEnum
 from core.download.video_analysis import VideoInfo, get_media_info
 from core.files_handler import FilesHandler
 
@@ -97,6 +99,7 @@ async def record_new_trailer_download(
     file_path: str,
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
+    status_row_id: int | None = None,
 ) -> None:
     """
     Records a new trailer download in the database with comprehensive metadata.
@@ -191,7 +194,11 @@ async def record_new_trailer_download(
         )
 
         # Save to database using dedicated download manager
-        download_manager.create(download)
+        created = download_manager.create(download)
+        if status_row_id is not None:
+            trailer_status_manager.update_row_status(
+                status_row_id, TrailerStatusEnum.DOWNLOADED, created.id
+            )
         logger.debug(
             "Successfully recorded new trailer download for media"
             f" {media.title} [{media.id}]"

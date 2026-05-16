@@ -219,6 +219,7 @@ async def download_trailer(
     retry_count: int = 2,
     exclude: list[str] | None = None,
     _stop_event: threading.Event | None = None,
+    status_row_id: int | None = None,
 ) -> bool:
     """Download trailer for a media object with given profile.
     Args:
@@ -274,9 +275,9 @@ async def download_trailer(
             output_file, media, profile, video_info
         )
         __update_media_status(media, _DOWNLOADED, profile)
-        # Record the download in the database
+        # Record the download in the database and link the status row
         await record_new_trailer_download(
-            media, profile.id, final_path, video_id, video_info
+            media, profile.id, final_path, video_id, video_info, status_row_id
         )
 
         # Track trailer_downloaded event

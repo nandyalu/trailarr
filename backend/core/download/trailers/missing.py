@@ -2,36 +2,21 @@ import threading
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.manager import trailerprofile
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
-from core.base.utils.filters import matches_filters
+import core.base.database.manager.trailerprofile as trailerprofile_manager
+import core.base.database.manager.trailerstatusmanager as trailer_status_manager
+from core.base.database.models.mediatrailerstatus import TrailerStatusEnum
 from core.download import trailer as trailer_downloader
 from core.download.trailers import utils
 from core.files_handler import FilesHandler
-from exceptions import DownloadFailedError
+from exceptions import DownloadFailedError, ItemNotFoundError
 
 logger = ModuleLogger("TrailerDownloadTasks")
 
 
-def _find_matching_profiles(
-    db_media: MediaRead, trailer_profiles: list[TrailerProfileRead]
-) -> list[TrailerProfileRead]:
-    """Find all matching profiles for a media item and return them."""
-    matching_profiles = []
-    for profile in trailer_profiles:
-        if matches_filters(db_media, profile.customfilter.filters):
-            matching_profiles.append(profile)
-
-    # Sort profiles by priority, lower number = higher priority
-    matching_profiles.sort(key=lambda p: p.priority)
-    return matching_profiles
-
-
 def _is_valid_media(
-    db_media: MediaRead,
+    db_media,
     check_folder: bool = True,
 ) -> bool:
     """Check if a media item is valid for downloading."""
@@ -90,30 +75,27 @@ def _is_valid_media(
     return True
 
 
-# def _check_file_already_downloaded(
-#     media: MediaRead, profile: TrailerProfileRead
-# ) -> bool:
-#     """Check if the trailer file for the given profile already exists for media."""
-#     if not media.folder_path:
-#         return False
-
-#     file_name = get_trailer_filename(media, profile, profile.file_format, 1)
-
-#     return FilesHandler.check_file_exists(media.folder_path, file_name)
-
-
 async def download_missing_trailers(
     _stop_event: threading.Event | None = None,
 ) -> None:
-    """Download missing trailers for monitored media items."""
-    # Exit if monitoring is disabled
+    """Download missing trailers by working through PENDING MediaTrailerStatus rows.
+
+    Rows are pulled in priority order (profile.priority ASC, media_id, sequence ASC).
+    On success the row is marked DOWNLOADED (via record_new_trailer_download).
+    On failure after all retries the row is marked FAILED.
+    When stop_monitoring=True on the profile, all remaining PENDING rows for the
+    same media are marked SKIPPED so lower-priority profiles are not attempted.
+    """
     if not app_settings.monitor_enabled:
         logger.warning("Monitoring is disabled, skipping trailers download")
         return
 
+    total_attempted = 0
     successful_downloads = 0
-    skipped_items = 0
-    processed_media_ids = set()  # Track processed media to avoid reprocessing
+    failed_downloads = 0
+    # Track media_ids whose folder/media we cannot access this run to avoid
+    # repeatedly re-querying the same unresolvable media.
+    skipped_media_ids: set[int] = set()
 
     while True:
         if _stop_event and _stop_event.is_set():
@@ -122,50 +104,63 @@ async def download_missing_trailers(
             )
             return
 
-        db_media_list = media_manager.read_all_generator(monitored_only=True)
-        trailer_profiles = trailerprofile.get_trailerprofiles()
+        # Fetch a batch so we can filter out already-skipped media without
+        # needing an extra DB round-trip per row.
+        batch = trailer_status_manager.get_pending_rows(limit=50)
+        # Filter rows whose media we already know is inaccessible this run.
+        eligible = [r for r in batch if r.media_id not in skipped_media_ids]
 
-        if not trailer_profiles:
-            logger.warning(
-                "No TrailerProfiles found, skipping download trailers"
-            )
-            return
-
-        enabled_profiles = [p for p in trailer_profiles if p.enabled]
-
-        if not enabled_profiles:
-            logger.warning(
-                "No enabled TrailerProfiles found, skipping download"
-            )
-            return
-
-        media_to_process = None
-        matching_profiles_for_media = []
-
-        for db_media in db_media_list:
-            # Skip media that was already processed in this run
-            if db_media.id in processed_media_ids:
-                continue
-            matching_profiles = _find_matching_profiles(
-                db_media, enabled_profiles
-            )
-            if matching_profiles:
-                media_to_process = db_media
-                matching_profiles_for_media = matching_profiles
-                db_media_list.close()  # Close the generator
-                break  # Found a media item to process
-
-        if not media_to_process:
-            logger.info("No more media items to process.")
+        if not eligible:
+            logger.info("No more PENDING trailer status rows to process.")
             break
 
-        # Clear the lists to free up memory before processing
-        db_media_list = None
-        trailer_profiles = None
-        enabled_profiles = None
+        row = eligible[0]
 
-        # Process the found media item
-        # Ensure exceptions are caught to continue processing other items
+        # Load media
+        try:
+            db_media = media_manager.read(row.media_id)
+        except (ItemNotFoundError, Exception) as e:
+            logger.warning(
+                f"Media {row.media_id} not found for status row {row.id}"
+                f" — marking FAILED. Error: {e}"
+            )
+            trailer_status_manager.update_row_status(row.id, TrailerStatusEnum.FAILED)
+            failed_downloads += 1
+            continue
+
+        # Load profile
+        try:
+            profile = trailerprofile_manager.get_trailerprofile(row.profile_id)
+        except (ItemNotFoundError, Exception) as e:
+            logger.warning(
+                f"Profile {row.profile_id} not found for status row {row.id}"
+                f" — marking SKIPPED. Error: {e}"
+            )
+            trailer_status_manager.update_row_status(row.id, TrailerStatusEnum.SKIPPED)
+            continue
+
+        if not profile.enabled:
+            logger.info(
+                f"Profile '{profile.customfilter.filter_name}' is disabled"
+                f" — marking row {row.id} SKIPPED."
+            )
+            trailer_status_manager.update_row_status(row.id, TrailerStatusEnum.SKIPPED)
+            continue
+
+        check_folder = profile.custom_folder == "{media_folder}"
+        if not _is_valid_media(db_media, check_folder):
+            # Folder/media not yet accessible — leave PENDING, skip this
+            # media for the remainder of this run.
+            skipped_media_ids.add(row.media_id)
+            continue
+
+        _profile_name = profile.customfilter.filter_name
+        logger.info(
+            f"Downloading trailer for '{db_media.title}' [{db_media.id}]"
+            f" using profile '{_profile_name}' (row {row.id},"
+            f" sequence {row.sequence})"
+        )
+
         try:
             if _stop_event and _stop_event.is_set():
                 logger.info(
@@ -173,87 +168,49 @@ async def download_missing_trailers(
                 )
                 return
 
-            downloads, skips = await _process_single_media_item(
-                media_to_process,
-                matching_profiles_for_media,
-                successful_downloads + skipped_items,
-                _stop_event=_stop_event,
-            )
-            successful_downloads += downloads
-            skipped_items += skips
-        except Exception as e:
-            logger.exception(
-                "Unexpected error processing media"
-                f" '{media_to_process.title}' [{media_to_process.id}]: {e}"
-            )
-        finally:
-            processed_media_ids.add(media_to_process.id)
-
-    logger.info(
-        "Finished downloading missing trailers. Processed:"
-        f" {len(processed_media_ids)} Successful downloads:"
-        f" {successful_downloads}, Skipped items: {skipped_items}"
-    )
-
-
-async def _process_single_media_item(
-    media: MediaRead,
-    profiles: list[TrailerProfileRead],
-    total_processed: int = 0,
-    _stop_event: threading.Event | None = None,
-) -> tuple[int, int]:
-    """Process a single media item and download all matching trailers."""
-    logger.info(
-        f"Processing media '{media.title}' [{media.id}] for trailer downloads."
-    )
-    successful_downloads = 0
-    skipped_items = 0
-
-    for profile in profiles:
-        if _stop_event and _stop_event.is_set():
-            logger.info(
-                "Stop event set, terminating processing of single media item."
-            )
-            return successful_downloads, skipped_items
-
-        check_folder = profile.custom_folder == "{media_folder}"
-        if not _is_valid_media(media, check_folder):
-            return successful_downloads, skipped_items + 1
-
-        _profile_name = profile.customfilter.filter_name
-        download_attempted = False
-        try:
-            logger.info(
-                f"Processing download for {media.title} [{media.id}]"
-                f" using profile: {_profile_name}"
-            )
             download_successful = await trailer_downloader.download_trailer(
-                media, profile, profile.retry_count, _stop_event=_stop_event
+                db_media,
+                profile,
+                profile.retry_count,
+                _stop_event=_stop_event,
+                status_row_id=row.id,
             )
+            total_attempted += 1
+
             if download_successful:
-                download_attempted = True
                 successful_downloads += 1
                 if profile.stop_monitoring:
-                    logger.info(
-                        f"Stopping monitoring for {media.title} after"
-                        f" successful download with profile: {_profile_name}"
+                    skipped = trailer_status_manager.set_pending_rows_skipped_for_media(
+                        db_media.id, exclude_row_id=row.id
                     )
-                    break
-        except (DownloadFailedError, Exception):
-            download_attempted = True
-            logger.warning(
-                f"Failed to download trailer for {media.title} with profile:"
-                f" {_profile_name}. Continuing to next profile."
-            )
-            skipped_items += 1
-        finally:
-            total_processed += 1
-            if download_attempted:
-                await utils.sleep_between_downloads(total_processed, logger)
+                    if skipped:
+                        logger.info(
+                            f"stop_monitoring=True — marked {skipped} sibling"
+                            f" PENDING row(s) for media {db_media.id} as SKIPPED."
+                        )
 
-    _profile_count = len(profiles)
-    _msg = f"Completed processing for media '{media.title}' [{media.id}]."
-    _msg += f" Downloads: {successful_downloads}/{_profile_count}"
-    _msg += f", Skipped: {skipped_items}/{_profile_count}"
-    logger.info(_msg)
-    return successful_downloads, skipped_items
+        except DownloadFailedError:
+            total_attempted += 1
+            failed_downloads += 1
+            logger.warning(
+                f"Download failed for '{db_media.title}' with profile"
+                f" '{_profile_name}' after all retries — marking row {row.id} FAILED."
+            )
+            trailer_status_manager.update_row_status(row.id, TrailerStatusEnum.FAILED)
+        except Exception as e:
+            total_attempted += 1
+            failed_downloads += 1
+            logger.exception(
+                f"Unexpected error processing row {row.id} for"
+                f" '{db_media.title}' [{db_media.id}]: {e}"
+            )
+            trailer_status_manager.update_row_status(row.id, TrailerStatusEnum.FAILED)
+
+        await utils.sleep_between_downloads(total_attempted, logger)
+
+    logger.info(
+        "Finished downloading missing trailers."
+        f" Attempted: {total_attempted},"
+        f" Successful: {successful_downloads},"
+        f" Failed: {failed_downloads}."
+    )
