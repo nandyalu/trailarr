@@ -46,7 +46,7 @@
               <span class="expanded-tag">Media: {{ media.media_exists ? 'Yes' : 'No' }}</span>
             }
             @if (hasField('trailer_exists')) {
-              <span class="expanded-tag">Trailer: {{ media.trailer_exists ? 'Yes' : 'No' }}</span>
+              <span class="expanded-tag">Trailers: {{ trailerDownloadedCount(media) }}/{{ media.trailer_statuses.length }}</span>
             }
             @if (hasField('imdb_id') && media.imdb_id) {
               <span class="expanded-tag">IMDB: {{ media.imdb_id }}</span>

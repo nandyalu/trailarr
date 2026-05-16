@@ -13,20 +13,6 @@ Enable this setting to monitor trailers for connections. When enabled, the app w
 !!! note
     Disabling this will disable monitoring of media for all connections.
 
-### Monitor Interval
-
-{{ version_badge("upd", "0.8.0") }}
-
-!!! warning ""
-    This no longer has any effect on the tasks. Tasks frequency can be individually configured since `v0.8.0`. This setting will be removed in later versions.
-
-- Default is `60` minutes. Minimum is `10` minutes`. 
-
-Frequency (in minutes) to check for new media in Radarr/Sonarr.
-
-!!! info Restart Required
-    Changing this setting will require a restart of the app (container) to take effect.
-
 ### App Theme
 
 - Default is `Auto`. Available options are `Light`, `Dark`, and `Auto`.

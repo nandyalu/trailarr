@@ -12,7 +12,7 @@ from core.base.database.models.issue import (
     IssueRead,
     IssueType,
 )
-from core.base.database.utils.engine import write_session
+from core.base.database.utils.engine import write_session, read_session
 
 logger = ModuleLogger("IssueManager")
 
@@ -88,7 +88,7 @@ def resolve_issue(
     return True
 
 
-@write_session
+@read_session
 def get_issues(
     entity_type: EntityType | None = None,
     *,
@@ -99,6 +99,48 @@ def get_issues(
     if entity_type is not None:
         stmt = stmt.where(Issue.entity_type == entity_type)
     rows = _session.exec(stmt).all()
+    return [IssueRead.model_validate(row) for row in rows]
+
+
+@write_session
+def resolve_all_for_entity(
+    entity_type: EntityType,
+    entity_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> int:
+    """Delete all issue rows for the given (entity_type, entity_id).
+
+    Returns the number of rows deleted. Called when an entity (e.g. a connection
+    or a media item) is removed so all associated issues are cleaned up at once.
+    """
+    rows = _session.exec(
+        select(Issue).where(
+            Issue.entity_type == entity_type,
+            col(Issue.entity_id) == entity_id,
+        )
+    ).all()
+    count = len(rows)
+    for row in rows:
+        _session.delete(row)
+    _session.commit()
+    return count
+
+
+@read_session
+def get_for_entity(
+    entity_type: EntityType,
+    entity_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[IssueRead]:
+    """Return all open issues for a specific (entity_type, entity_id) pair."""
+    rows = _session.exec(
+        select(Issue).where(
+            Issue.entity_type == entity_type,
+            col(Issue.entity_id) == entity_id,
+        )
+    ).all()
     return [IssueRead.model_validate(row) for row in rows]
 
 

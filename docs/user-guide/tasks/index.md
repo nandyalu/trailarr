@@ -37,7 +37,7 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Arr Data Refresh**
 
-- Runs every 60 minutes (first run starts 30 seconds after app launch) (configurable in [Settings > General > Monitor Interval](../settings/general-settings/index.md#monitor-interval)).
+- Runs every 60 minutes (first run starts 30 seconds after app launch) (configurable in Settings > Tasks).
 - Connects to all Radarr and Sonarr connections to sync media items and their status in Trailarr.
 - Applies `Monitor` and `Status` values, and scans for trailers for new items.
 - Runs as a background job; first run starts 30 seconds after app launch.
@@ -94,6 +94,22 @@ Tasks can be edited to change their name, interval and delay.
 
 !!! info "Cached flag behaviour"
     Once a media item has been scanned, the cached `True`/`False` value is used by the download task until the next refresh run. New media items added between runs have no cached value yet and will trigger a live Plex API check on their first download attempt.
+
+### **Refresh TMDB Videos**
+
+{{ version_badge("add", "0.9.5") }}
+
+- Runs once a week (first run starts 30 minutes after app launch).
+- Requires a **TMDB API Key** configured in [General Settings](../settings/general-settings/index.md#tmdb-api-key). If no key is set the task exits immediately with a warning.
+- For each monitored media item that has `PENDING` or `NOT_AVAILABLE` `MediaTrailerStatus` rows on a profile whose **Video Type** is not `trailer`:
+    - Calls the TMDB videos endpoint for that media's TMDB/TVDB ID.
+    - If TMDB **has** a matching video → resets `NOT_AVAILABLE` rows back to `PENDING` so the download loop picks them up.
+    - If TMDB **has no** matching video → sets `PENDING` rows to `NOT_AVAILABLE` so they are skipped until the next weekly check.
+- For `trailer`-type rows, also queries TMDB to pre-cache the YouTube key on the media row, reducing API calls during the download task.
+- Sleeps briefly between requests to respect TMDB API rate limits.
+
+!!! note "Trailer type always falls back to YouTube search"
+    `NOT_AVAILABLE` is never set for rows where the profile `video_type` is `trailer` — YouTube search is always available as a fallback for trailers, so those rows stay `PENDING`.
 
 ### **Image Refresh**
 

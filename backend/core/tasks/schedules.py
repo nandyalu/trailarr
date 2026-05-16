@@ -3,7 +3,6 @@ from typing import Callable
 
 from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
-from config.settings import app_settings
 from core.base.database.manager.task_config import (
     create_task_config,
     get_task_config,
@@ -22,6 +21,7 @@ from core.tasks.cleanup import delete_old_logs, trailer_cleanup
 from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
+from core.tasks.tmdb_refresh import refresh_tmdb_videos
 from core.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")
@@ -82,6 +82,14 @@ async def _refresh_plex_trailer_flags(
     await refresh_plex_trailer_flags(_stop_event=_stop_event)
 
 
+@with_logging_context
+async def _refresh_tmdb_videos(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
+    """Refresh TMDB video availability for PENDING/NOT_AVAILABLE trailer-status rows."""
+    await refresh_tmdb_videos(_stop_event=_stop_event)
+
+
 # Maps each stable task_key to its handler function.
 TASK_REGISTRY: dict[str, Callable] = {
     "api_refresh": _refresh_api_data,
@@ -91,17 +99,20 @@ TASK_REGISTRY: dict[str, Callable] = {
     "cleanup": _cleanup_trailers,
     "download_trailers": _download_missing_trailers,
     "plex_trailer_refresh": _refresh_plex_trailer_flags,
+    "tmdb_refresh": _refresh_tmdb_videos,
 }
 
 
+_DEFAULT_MONITOR_INTERVAL_SECONDS = 3600.0  # 60 minutes
+
+
 def _build_defaults() -> list[dict[str, str | float]]:
-    """Return default task config dicts using current app settings."""
-    monitor_interval_seconds = app_settings.monitor_interval * 60.0
+    """Return default task config dicts. Only used when no DB row exists yet."""
     return [
         {
             "task_key": "api_refresh",
             "task_name": "Arr Data Refresh",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": _DEFAULT_MONITOR_INTERVAL_SECONDS,
             "delay_seconds": 30.0,
         },
         {
@@ -113,13 +124,13 @@ def _build_defaults() -> list[dict[str, str | float]]:
         {
             "task_key": "scan_disk",
             "task_name": "Scan All Media Folders",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": _DEFAULT_MONITOR_INTERVAL_SECONDS,
             "delay_seconds": 480.0,
         },
         {
             "task_key": "download_trailers",
             "task_name": "Download Missing Trailers",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": _DEFAULT_MONITOR_INTERVAL_SECONDS,
             "delay_seconds": 900.0,
         },
         {
@@ -154,6 +165,13 @@ _PLEX_TRAILER_REFRESH_DEFAULTS: dict[str, str | float] = {
     "delay_seconds": 600.0,  # 10 minutes on startup
 }
 
+_TMDB_REFRESH_DEFAULTS: dict[str, str | float] = {
+    "task_key": "tmdb_refresh",
+    "task_name": "Refresh TMDB Videos",
+    "interval_seconds": 604800.0,  # 7 days
+    "delay_seconds": 1800.0,  # 30 minutes on startup
+}
+
 
 def schedule_all_tasks() -> None:
     """Schedule all background tasks, reading intervals from the DB.
@@ -174,6 +192,16 @@ def schedule_all_tasks() -> None:
             run_once=False,
         )
         # logger.info(f"Scheduled '{config.task_name}' (key={task_key!r})")
+
+    # Schedule the weekly TMDB video refresh task (exits early if no API key set).
+    tmdb_config = _get_or_create_config("tmdb_refresh", _TMDB_REFRESH_DEFAULTS)
+    scheduler.add_task(
+        task_name=tmdb_config.task_name,
+        func=TASK_REGISTRY["tmdb_refresh"],
+        interval=tmdb_config.interval_seconds,
+        delay=tmdb_config.delay_seconds,
+        run_once=False,
+    )
 
     # Schedule the Plex trailer refresh task only if a Plex connection exists.
     plex_connections = [

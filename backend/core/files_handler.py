@@ -72,7 +72,7 @@ class FilesHandler:
     """Utility class to handle files and folders."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    TRAILER_MAX_SIZE_BYTES = 250 * 1024 * 1024  # 250 MB
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -415,7 +415,9 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
+            if not FilesHandler.is_trailer_file(
+                entry.name, entry.stat().st_size
+            ):
                 continue
             return entry.path
         return None
@@ -443,7 +445,9 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size):
+                if FilesHandler.is_trailer_file(
+                    sub_entry.name, sub_entry.stat().st_size
+                ):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):

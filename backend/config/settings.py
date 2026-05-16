@@ -245,7 +245,6 @@ class _Config:
         self.api_key = getenv_str("API_KEY", "")
         self.log_level = getenv_str("LOG_LEVEL", "INFO")
         # self.monitor_enabled = getenv_bool("MONITOR_ENABLED", True)
-        self.monitor_interval = getenv_int("MONITOR_INTERVAL", 60)
         self.wait_for_media = getenv_bool("WAIT_FOR_MEDIA", False)
         # If the webui_password is empty, set it to the default
         # Handle whitespace and empty strings (even improperly escaped quotes)
@@ -275,7 +274,6 @@ class _Config:
             "gpu_enabled_amd": self.gpu_enabled_amd,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
-            "monitor_interval": self.monitor_interval,
             "server_hostname": self.server_hostname,
             "server_model": self.server_model,
             "server_platform": self.server_platform,
@@ -409,11 +407,6 @@ class _Config:
     """Monitor enabled for the application.
         - Default is True.
         - Valid values are True/False."""
-
-    monitor_interval = int_property("MONITOR_INTERVAL", default=60, min_=10)
-    """Monitor interval for the application.
-        - Default is 60 minutes. Minimum is 10
-        - Valid values are integers."""
 
     wait_for_media = bool_property("WAIT_FOR_MEDIA", default=False)
     """Wait for media to be available.

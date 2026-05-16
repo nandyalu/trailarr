@@ -16,7 +16,6 @@ export interface Settings {
   gpu_enabled_nvidia: boolean;
   log_level: string;
   monitor_enabled: boolean;
-  monitor_interval: number;
   server_hostname: string;
   server_model: string;
   server_platform: string;

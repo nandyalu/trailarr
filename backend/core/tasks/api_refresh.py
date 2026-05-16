@@ -2,7 +2,9 @@ import threading
 
 from config.logging_context import with_logging_context
 import core.base.database.manager.connection as connection_manager
+import core.base.database.manager.issuemanager as issue_manager
 from core.base.database.models.connection import ArrType, ConnectionRead
+from core.base.database.models.issue import EntityType, IssueType
 from core.plex.connection_manager import PlexConnectionManager
 from core.radarr.connection_manager import RadarrConnectionManager
 from core.sonarr.connection_manager import SonarrConnectionManager
@@ -12,6 +14,19 @@ from core.tasks.image_refresh import refresh_images
 from core.tasks import scheduler
 
 logger = ModuleLogger("APIRefreshTasks")
+
+# Track consecutive refresh failures per connection_id in memory.
+# Resets on app restart; 3 consecutive failures trigger a CONNECTION_FAILED issue.
+_CONNECTION_FAILURE_THRESHOLD = 3
+_consecutive_failures: dict[int, int] = {}
+
+_AUTH_ERROR_KEYWORDS = ("unauthorized", "access restricted", "api key")
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    """Return True if the exception looks like a token/auth failure (HTTP 401/403)."""
+    msg = str(exc).lower()
+    return any(kw in msg for kw in _AUTH_ERROR_KEYWORDS)
 
 
 async def api_refresh(_stop_event: threading.Event | None = None) -> None:
@@ -58,7 +73,51 @@ async def api_refresh_by_id(
         return
 
     # Refresh data from API
-    await connection_db_manager.refresh()
+    try:
+        await connection_db_manager.refresh()
+    except Exception as exc:
+        _consecutive_failures[connection.id] = (
+            _consecutive_failures.get(connection.id, 0) + 1
+        )
+        failures = _consecutive_failures[connection.id]
+        logger.error(
+            f"Connection '{connection.name}' refresh failed"
+            f" ({failures} consecutive failure(s)): {exc}"
+        )
+        if _is_auth_error(exc):
+            issue_manager.upsert_issue(
+                issue_type=IssueType.TOKEN_INVALID,
+                entity_type=EntityType.CONNECTION,
+                entity_id=connection.id,
+                description=(
+                    f"API token for connection '{connection.name}' was rejected."
+                    " Update the API key in Settings → Connections."
+                ),
+                details=str(exc),
+            )
+        elif failures >= _CONNECTION_FAILURE_THRESHOLD:
+            issue_manager.upsert_issue(
+                issue_type=IssueType.CONNECTION_FAILED,
+                entity_type=EntityType.CONNECTION,
+                entity_id=connection.id,
+                description=(
+                    f"Connection '{connection.name}' has failed"
+                    f" {failures} consecutive time(s)."
+                    " Check the URL and network access in Settings → Connections."
+                ),
+                details=str(exc),
+            )
+        return
+
+    # Successful refresh — reset failure counter and resolve any open issues.
+    if connection.id in _consecutive_failures:
+        del _consecutive_failures[connection.id]
+    issue_manager.resolve_issue(
+        IssueType.CONNECTION_FAILED, EntityType.CONNECTION, connection.id
+    )
+    issue_manager.resolve_issue(
+        IssueType.TOKEN_INVALID, EntityType.CONNECTION, connection.id
+    )
     logger.info(f"Data refreshed for connection: {connection.name}")
 
     # Refresh images after API refresh to download/update images for new media
