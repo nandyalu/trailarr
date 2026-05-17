@@ -23,7 +23,7 @@ logger = ModuleLogger("AlembicMigrations")
 
 # Default monitor interval is 60 minutes → 3600 seconds.
 # Users who have customised MONITOR_INTERVAL can update via the UI after migration.
-_MONITOR_INTERVAL_SECONDS = app_settings.monitor_interval * 60.0
+_MONITOR_INTERVAL_SECONDS = 60.0 * 60.0
 
 _DEFAULT_TASKS = [
     {

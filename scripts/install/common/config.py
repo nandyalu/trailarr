@@ -18,7 +18,10 @@ def ask_port(default: int = 7889) -> int:
                 break
             except OSError:
                 port += 1
-    print_info(f"Web interface port: {port}" + (" (default)" if port == default else f" (port {default} in use)"))
+    print_info(
+        f"Web interface port: {port}"
+        + (" (default)" if port == default else f" (port {default} in use)")
+    )
     return port
 
 
@@ -48,7 +51,6 @@ def write_initial_config(
         "YTDLP_PATH": str(ytdlp_path),
         "PYTHON_EXECUTABLE": str(python_executable),
         "PYTHONPATH": str(install_dir / "backend"),
-        "MONITOR_INTERVAL": str(60),
         "WAIT_FOR_MEDIA": str("true"),
         "UPDATE_YTDLP": str("false"),
         "LOG_LEVEL": str("INFO"),
@@ -67,6 +69,7 @@ def write_initial_config(
 def _detect_timezone() -> str:
     try:
         from tzlocal import get_localzone
+
         return str(get_localzone())
     except Exception:
         pass
