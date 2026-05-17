@@ -11,7 +11,6 @@ COPY ./frontend/package*.json ./
 # COPY ./frontend/ng-openapi-gen.json ./
 
 # Install dependencies
-RUN npm install
 RUN npm ci
 
 # Copy frontend source files
