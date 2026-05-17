@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-# THESE MODELS ARE ONLY FOR API RESPONSES
-
 
 class BatchUpdate(BaseModel):
     media_ids: list[int]

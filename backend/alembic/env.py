@@ -5,7 +5,7 @@ from sqlalchemy import Connection, engine_from_config, pool, text as sa_text
 
 from alembic import context
 
-from core.base.database.utils.init_db import AppSQLModel
+from db.init_db import AppSQLModel
 from config.settings import app_settings
 import app_logger  # noqa: F401
 

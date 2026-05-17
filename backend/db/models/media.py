@@ -1,0 +1,201 @@
+from datetime import datetime, timezone
+from pydantic import field_validator
+from sqlalchemy import Boolean, Column, String, text
+from sqlmodel import Field, Integer, Relationship
+
+from db.models.filefolderinfo import FileFolderInfo
+from db.models.base import AppSQLModel
+from db.models.download import (
+    Download,
+    DownloadCreate,
+    DownloadRead,
+)
+
+
+def get_current_time():
+    return datetime.now(timezone.utc)
+
+
+def get_current_year():
+    return datetime.now(timezone.utc).year
+
+
+class MediaBase(AppSQLModel):
+    """Base class for the Media model. \n
+    Note: \n
+        🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
+    Use MediaCreate, MediaRead, MediaUpdate models instead.
+    """
+
+    connection_id: int
+    arr_id: int = Field(index=True)
+    is_movie: bool = Field(default=True, index=True)
+    title: str = Field(index=True)
+    clean_title: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
+    year: int = Field(default_factory=get_current_year, index=True)
+    language: str = Field(default="en", index=True)
+    studio: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    media_exists: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    media_filename: str = Field(
+        default="",
+        sa_column=Column(String, server_default=text("('')"), nullable=False),
+    )
+    season_count: int = Field(
+        default=0,
+        sa_column=Column(Integer, server_default="0", nullable=False),
+    )
+    overview: str | None = None
+    runtime: int = 0
+    # website: str | None = None
+    youtube_trailer_id: str | None = None
+    folder_path: str | None = None
+    imdb_id: str | None = Field(default=None, index=True)
+    txdb_id: str = Field(index=True)
+    title_slug: str = Field(
+        default="",
+        sa_column=Column(
+            String, server_default=text("('')"), index=True, nullable=False
+        ),
+    )
+    poster_url: str | None = None
+    fanart_url: str | None = None
+    poster_path: str | None = None
+    fanart_path: str | None = None
+    monitor: bool = Field(default=False)
+    arr_monitored: bool = Field(default=False)
+    plex_rating_key: str | None = None
+    plex_section_key: str | None = None
+    plex_connection_id: int | None = None
+    plex_trailer: bool | None = None
+
+
+class Media(MediaBase, table=True):
+    """Media model for the database. \n
+    This class is used for database CRUD operations only \n
+    Note: \n
+        🚨**DO NOT USE THIS CLASS DIRECTLY.**🚨 \n
+    Use MediaCreate, MediaRead, MediaUpdate models instead.
+    """
+
+    id: int | None = Field(default=None, primary_key=True)
+    connection_id: int = Field(
+        foreign_key="connection.id", index=True, ondelete="CASCADE"
+    )
+    is_movie: bool = Field(default=True, index=True)
+    plex_connection_id: int | None = Field(  # type: ignore[assignment]
+        default=None, foreign_key="connection.id", ondelete="SET NULL"
+    )
+
+    added_at: datetime = Field(default_factory=get_current_time)
+    updated_at: datetime = Field(default_factory=get_current_time)
+    downloaded_at: datetime | None = Field(default=None)
+    downloads: list[Download] = Relationship(cascade_delete=True)
+    files_info: list[FileFolderInfo] = Relationship(cascade_delete=True)
+
+
+class MediaCreate(MediaBase):
+    """Media model for creating a new media objects. \n
+    Defaults:
+    - is_movie: True
+    - year: current year
+    - language: "en"
+    - runtime: 0
+    - youtube_trailer_id: None
+    - monitor: False
+    - arr_monitored: False
+    """
+
+    downloads: list[DownloadCreate] = []
+    # files_info: list[FileFolderInfoCreate] = []
+
+
+class MediaRead(MediaBase):
+    """Media model for reading media."""
+
+    id: int
+    added_at: datetime
+    updated_at: datetime
+    downloaded_at: datetime | None
+    downloads: list[DownloadRead] = []
+    # files_info: list[FileFolderInfoRead] = Field(default=[])
+    # files_tree: FileFolderInfoRead | None = None
+
+    @field_validator("added_at", "updated_at", "downloaded_at", mode="after")
+    @classmethod
+    def correct_timezone(cls, value: datetime) -> datetime:
+        return cls.set_timezone_to_utc(value)
+
+    # NOTE: We are not using this as it is causing performance issues
+
+    # @model_validator(mode="after")
+    # def compute_files_tree(self) -> Self:
+    #     """
+    #     Automatically converts the flat 'files' list into a nested tree
+    #     whenever this model is created.
+    #     """
+    #     # print(f"Computing files_tree for Media ID: {self.id}...")
+    #     if not self.files_info:
+    #         return self
+
+    #     # 1. Map IDs to objects
+    #     item_map = {item.id: item for item in self.files_info}
+    #     root_node = None
+
+    #     # 2. Build relationships
+    #     for item in self.files_info:
+    #         if item.parent_id is None:
+    #             root_node = item
+    #         else:
+    #             parent = item_map.get(item.parent_id)
+    #             if parent:
+    #                 # Append to children (ensure your Read model has children: list = [])
+    #                 if item not in parent.children:
+    #                     parent.children.append(item)
+
+    #     # 3. Sort the tree (optional, uses your __lt__ logic)
+    #     if root_node:
+    #         self._sort_node(root_node)
+    #     self.files_tree = root_node
+    #     return self
+
+    # def _sort_node(self, node: FileFolderInfoRead):
+    #     """Recursive helper to sort children."""
+    #     node.children.sort()
+    #     for child in node.children:
+    #         self._sort_node(child)
+
+
+class MediaUpdate(MediaBase):
+    """Media model for updating media. \n
+    Defaults:
+    - updated_at: current time [if any field is updated]
+    """
+
+    id: int
+    connection_id: int | None = None  # type: ignore
+    arr_id: int | None = None  # type: ignore
+    title: str | None = None  # type: ignore
+    year: int | None = None  # type: ignore
+    language: str | None = None  # type: ignore
+    runtime: int | None = None  # type: ignore
+    txdb_id: str | None = None  # type: ignore
+    media_exists: bool | None = None  # type: ignore
+    media_filename: str | None = None  # type: ignore
+    folder_path: str | None = None  # type: ignore
+    monitor: bool | None = None  # type: ignore
+    arr_monitored: bool | None = None  # type: ignore
+    plex_trailer: bool | None = None  # type: ignore
+
+    downloaded_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=get_current_time)
