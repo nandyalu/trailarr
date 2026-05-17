@@ -27,7 +27,7 @@ npm install
 
 ```bash
 # FastAPI backend (from /app/backend) - requires database setup first
-mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+mkdir -p /tmp/trailarr-config/web
 APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --host 0.0.0.0 --port 7888
 
@@ -42,14 +42,14 @@ npm run start   # http://localhost:4200
 
 ```bash
 # Required before running the backend server (from /app/backend)
-mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+mkdir -p /tmp/trailarr-config/web
 APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 ```
 
 ### Testing
 
 ```bash
-# Backend tests (from /app/backend) - ~500 tests, ~6s
+# Backend tests (from /app/backend) - ~720 tests, ~6s
 # Note: use `uv run python` — plain `python` is not in PATH
 # Tests use an in-memory SQLite DB; APP_DATA_DIR is NOT required for tests
 PYTHONPATH=$(pwd) uv run python -m pytest tests/ -v
@@ -82,38 +82,94 @@ uv run alembic upgrade head
 
 ### Backend (`/app/backend/`)
 
-Layered architecture:
+Strict layered architecture — each layer only calls the layer below it:
 
-- `main.py` — FastAPI app entry point (`trailarr_api`)
-- `api/v1/` — Route handlers (media, tasks, connections, settings, events, logs, websockets, etc.)
-- `core/` — Business logic
-  - `base/database/models/` — SQLModel ORM models
-  - `base/database/manager/` — Database access managers (one per model type)
-  - `base/arr_manager/` — Base Radarr/Sonarr integration
-  - `base/connection_manager.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
-  - `radarr/`, `sonarr/` — App-specific logic
-  - `plex/` — Plex connection manager, API client, data parser, models
-  - `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
-  - `download/trailers/` — Trailer download orchestration via yt-dlp
-  - `files_handler.py` — File management
-- `config/settings.py` — Environment-based configuration; settings persisted to `.env` in `APP_DATA_DIR`
-- `tests/` — pytest test suite
+```
+api/  →  services/  →  db/repos/  →  db/models/
+           ↓
+       integrations/   download/   utils/
+```
+
+**Top-level files:**
+- `main.py` — FastAPI app entry point (`trailarr_api`), lifespan, middleware
+- `app_logger.py` — Structured logging setup
+- `exceptions.py` — Custom exception types
+
+**`db/` — Pure data layer (no business logic)**
+- `engine.py` — SQLite engine, WAL mode, session factory
+- `init_db.py` — DB init + Alembic migration on startup
+- `models/` — One SQLModel file per domain (`connection.py`, `media.py`, `event.py`, `trailerprofile.py`, `mediatrailerstatus.py`, `issue.py`, `customfilter.py`, `download.py`, `filefolderinfo.py`, `task_config.py`)
+- `repos/` — One module per model; pure DB access only, no business logic (`connection.py`, `media.py`, `event.py`, `trailer_profile.py`, `trailer_status.py`, `issue.py`, `custom_filter.py`, `download.py`, `file_info.py`, `task_config.py`, `stats.py`)
+
+**`services/` — Business logic layer**
+- `connection_service.py` — validate, rootfolders, CRUD, `refresh_connection` with failure tracking
+- `arr_connection_manager.py` — `BaseConnectionManager`; Arr/Plex refresh orchestration (parse → upsert → monitor → clean up)
+- `media_service.py` — monitor toggle, batch update, yt-id update
+- `event_service.py` — `track_*` helpers; all event tracking is fire-and-forget (exceptions swallowed)
+- `files_service.py` — `FilesHandler` filesystem utilities; `delete_trailer_download` service action
+- `image_service.py` — poster/fanart refresh orchestration
+- `tmdb_service.py` — TMDB video lookup, YouTube key extraction
+- `trailer_profile_service.py` — CRUD + `_sync_status_rows` after every write
+- `scan_service.py` — media scan orchestration
+- `issue_service.py` — upsert/resolve pass-through to repo
+- `plex_service.py` — Plex-specific media refresh
+- `cleanup_service.py` — trailer file verification and cleanup
+
+**`integrations/` — External API clients**
+- `arr/http.py` — `AsyncRequestManager` (base HTTP client for Arr APIs)
+- `arr/base.py` — `AsyncBaseArrManager` (shared Radarr/Sonarr methods)
+- `arr/radarr.py` — `RadarrManager` + data parser + connection manager
+- `arr/sonarr.py` — `SonarrManager` + data parser + connection manager
+- `plex/client.py` — Plex HTTP client
+- `plex/models.py` — Plex-specific data models
+- `plex/parser.py` — `parse_plex_item()`
+- `plex/sync.py` — `PlexConnectionManager`
+
+**`download/` — Trailer download pipeline**
+- `pipeline.py` — Orchestration: search → download → analyse → move → record
+- `search.py` — YouTube search via yt-dlp
+- `video.py` — `download_video()` via yt-dlp
+- `analysis.py` — `VideoInfo`, `get_media_info()` via ffprobe
+- `filename.py` — `get_trailer_filename()` / `get_trailer_path()`
+- `conversion.py` — Video conversion via ffmpeg
+- `image.py` — `refresh_media_images()` via aiohttp
+
+**`tasks/` — Scheduler entry points only (no business logic)**
+- `scheduler.py` — Quiv init + WS event listeners
+- `schedules.py` — `TASK_REGISTRY`, `schedule_all_tasks()`
+- `api_refresh.py`, `files_scan.py`, `image_refresh.py`, `cleanup.py`, `plex_refresh.py`, `tmdb_refresh.py` — thin wrappers that call services
+
+**`ws/` — WebSocket**
+- `manager.py` — `WSConnectionManager` singleton; `broadcast()` for bulk ops
+
+**`api/v1/` — HTTP + WebSocket endpoints**
+- `routes.py` — Aggregates all routers
+- `deps.py` — `validate_api_key`, session deps
+- `ws_endpoint.py` — `/ws/{client_id}` WebSocket endpoint
+- `endpoints/` — One file per domain (media, connections, files, events, settings, tasks, trailer_profiles, custom_filters, issues, logs, auth)
+
+**`config/settings.py`** — `_Config` singleton; settings persisted to `.env` in `APP_DATA_DIR`
+
+**`utils/`** — Shared helpers
+- `path_utils.py` — Path mapping, subpath checks, trailing-slash normalisation
+- `filters.py` — `matches_filters()` for custom filter evaluation
+- `media_scanner.py` — `MediaScanner` for filesystem scan
+- `docker_check.py` — Docker environment detection
 
 **Key patterns:**
 - All endpoints and background tasks are async/await
+- DB sessions (`@read_session` / `@write_session`) are applied only in `db/repos/` — never in services or above
 - Database migrations auto-applied on startup via `init_db()`
 - WebSocket broadcasting for real-time task/event updates
 - `APP_DATA_DIR` env var required for all runtime operations (not needed for tests)
 - `EventType` is stored as VARCHAR (`native_enum=False`) — adding new enum values does **not** require an Alembic migration
-- `TrailerStatusEnum` and `TrailerSourceEnum` (in `models/mediatrailerstatus.py`) are also VARCHAR — same rule applies
-- `IssueType` and `EntityType` (in `models/issue.py`) are also VARCHAR — same rule applies
+- `TrailerStatusEnum` and `TrailerSourceEnum` (in `db/models/mediatrailerstatus.py`) are also VARCHAR — same rule applies
+- `IssueType` and `EntityType` (in `db/models/issue.py`) are also VARCHAR — same rule applies
 
-**Trailer tracking (as of v0.9.5):**
-- `Media.trailer_exists` and `Media.status` (MonitorStatus) have been **removed** from the DB model — the frontend computes these from `MediaTrailerStatus` rows
+**Trailer tracking:**
+- `Media.trailer_exists` and `Media.status` (MonitorStatus) are **not** in the DB model — the frontend derives them from `MediaTrailerStatus` rows
 - `MediaTrailerStatus` is the source of truth: one row per `(media_id, profile_id, season, sequence)`
 - `Issue` records actionable problems (missing files, failed connections) — auto-created and auto-resolved by the app
-- `trailerstatusmanager.py` — CRUD for `MediaTrailerStatus`
-- `issuemanager.py` — upsert/resolve/list for `Issue`
 - `downloaded_at IS NOT NULL` on `Media` is used as a proxy for "has trailer" in filters and stats
 
 **Plex ↔ Arr media linking:**
@@ -121,7 +177,7 @@ Plex and Arr connections can track the same physical media. The system merges by
 - Plex sync: before creating, checks `read_by_folder_path()` — if an Arr row exists, updates only `plex_*` fields (fires `PLEX_LINKED`)
 - Arr sync: before creating, checks `_read_plex_only_by_folder_path()` — if a Plex-only row (`arr_id=0`) exists at the same path, adopts it with Arr fields (fires `ARR_LINKED`)
 - When an item is removed from Arr but still in Plex: demoted back to Plex-only (`connection_id → plex_connection_id`, `arr_id → 0`) instead of deleted (fires `ARR_UNLINKED`)
-- `media_manager.create_or_update_bulk()` returns `(MediaRead, created, updated, arr_linked)` — 4-tuple
+- `media_repo.create_or_update_bulk()` returns `(MediaRead, created, updated, arr_linked)` — 4-tuple
 
 ### Frontend (`/app/frontend/src/app/`)
 
@@ -296,7 +352,7 @@ TMDB_API_KEY=                  # Optional: TMDB v3 API key for trailer metadata 
 **Quick dev setup (all in one):**
 ```bash
 cd /app/backend
-mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
+mkdir -p /tmp/trailarr-config/web
 APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --host 0.0.0.0 --port 7888
 ```
@@ -306,9 +362,9 @@ PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --
 - **Python**: PEP-8, type hints everywhere, async/await, specific exception types, log errors where caught
 - **Angular**: Standalone components, Signals for reactivity, SCSS for styles, service-based state
 - **Database changes**: Always create Alembic migration after SQLModel model changes
-- **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
+- **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `db/models/event.py` and add a `track_*` helper in `services/event_service.py`
 - **TrailerStatusEnum / TrailerSourceEnum / IssueType / EntityType**: also stored as VARCHAR — same rule, no migration needed for new values
-- **Do not add `trailer_exists` or `status` (MonitorStatus) back to `Media`** — these were intentionally removed in v0.9.5; the frontend derives them from `MediaTrailerStatus` rows
+- **Do not add `trailer_exists` or `status` (MonitorStatus) back to `Media`** — intentionally absent; the frontend derives them from `MediaTrailerStatus` rows
 
 ## After Every Fix / Feature / Update
 

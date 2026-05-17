@@ -24,7 +24,7 @@ logging = ModuleLogger("Main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.info("Starting Trailarr2")
+    logging.info("Starting Trailarr application")
     init_db()
     schedule_all_tasks()
     scheduler.start()
@@ -32,13 +32,13 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
     flush_records_to_db()
     flush_logs_to_db()
-    logging.info("Trailarr2 shutdown complete")
+    logging.info("Trailarr application shutdown complete")
 
 
-APP_NAME = "Trailarr2"
+APP_NAME = "Trailarr"
 APP_VERSION = app_settings.version
 
-logging.info("Creating Trailarr2 application")
+logging.info("Creating Trailarr application")
 trailarr_api = FastAPI(
     lifespan=lifespan,
     openapi_url="/api/v1/openapi.json",
@@ -95,10 +95,19 @@ def custom_openapi():
         version=APP_VERSION,
         openapi_version=trailarr_api.openapi_version,
         routes=trailarr_api.routes,
-        contact={"name": "Trailarr - Github", "url": "https://github.com/nandyalu/trailarr"},
-        license_info={"name": "GNU GPL 3.0", "url": "https://github.com/nandyalu/trailarr/blob/main/LICENSE"},
+        contact={
+            "name": "Trailarr - Github",
+            "url": "https://github.com/nandyalu/trailarr",
+        },
+        license_info={
+            "name": "GNU GPL 3.0",
+            "url": "https://github.com/nandyalu/trailarr/blob/main/LICENSE",
+        },
         servers=[
-            {"url": f"{app_settings.url_base}/", "description": "Current host"},
+            {
+                "url": f"{app_settings.url_base}/",
+                "description": "Current host",
+            },
             {
                 "url": "{protocol}://{hostpath}",
                 "variables": {

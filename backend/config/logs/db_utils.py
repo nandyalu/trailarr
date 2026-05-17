@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager, contextmanager
 from sqlalchemy import text as sa_text
 from sqlmodel import Session, create_engine
@@ -6,6 +7,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from config.logs.model import LogBase, AppLogRecord  # noqa F401
 from config.settings import app_settings
+
+os.makedirs(f"{app_settings.app_data_dir}/logs", exist_ok=True)
 
 logs_db = f"sqlite:///{app_settings.app_data_dir}/logs/logs.db"
 logs_async_db = f"sqlite+aiosqlite:///{app_settings.app_data_dir}/logs/logs.db"
