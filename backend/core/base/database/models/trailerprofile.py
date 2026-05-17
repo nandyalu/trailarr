@@ -77,7 +77,10 @@ class _TrailerProfileBase(AppSQLModel):
     """
 
     enabled: bool = True
-    video_type: VideoType = VideoType.TRAILER
+    video_type: VideoType = Field(
+        default=VideoType.TRAILER,
+        sa_column=Column(String, nullable=False),
+    )
     for_movies: bool = Field(
         default=True,
         sa_column=Column(Boolean, server_default="1", nullable=False),

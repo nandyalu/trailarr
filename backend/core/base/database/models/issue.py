@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 
 from pydantic import field_validator
-from sqlmodel import Field
+from sqlmodel import Column, Field, String
 
 from core.base.database.models.base import AppSQLModel
 
@@ -32,8 +32,8 @@ class IssueBase(AppSQLModel):
     👉Use :class:`IssueRead` to read data.👈
     """
 
-    issue_type: IssueType
-    entity_type: EntityType
+    issue_type: IssueType = Field(sa_column=Column(String, nullable=False))
+    entity_type: EntityType = Field(sa_column=Column(String, nullable=False))
     entity_id: int
     description: str
     details: str | None = None

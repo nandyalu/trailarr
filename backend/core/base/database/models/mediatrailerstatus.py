@@ -3,7 +3,7 @@ from enum import Enum
 
 from pydantic import field_validator
 from sqlalchemy import Integer
-from sqlmodel import Column, Field
+from sqlmodel import Column, Field, String
 
 from core.base.database.models.base import AppSQLModel
 
@@ -44,8 +44,14 @@ class MediaTrailerStatusBase(AppSQLModel):
     sequence: int = Field(
         default=1, sa_column=Column(Integer, server_default="1", nullable=False)
     )
-    status: TrailerStatusEnum = TrailerStatusEnum.PENDING
-    source: TrailerSourceEnum = TrailerSourceEnum.APP
+    status: TrailerStatusEnum = Field(
+        default=TrailerStatusEnum.PENDING,
+        sa_column=Column(String, nullable=False),
+    )
+    source: TrailerSourceEnum = Field(
+        default=TrailerSourceEnum.APP,
+        sa_column=Column(String, nullable=False),
+    )
     linked_download_id: int | None = None
 
 
