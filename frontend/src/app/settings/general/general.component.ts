@@ -53,12 +53,16 @@ export class GeneralComponent {
   }
 
   updateSetting(key: keyof Settings, value: any) {
+    const previousSettings = this.settingsService.settingsResource.value();
+    this.settingsService.settingsResource.update((s) => (s ? {...s, [key]: value} : s));
     this.settingsService.updateSetting(key, value).subscribe((msg) => {
-      // Show update result message
       const status = msg.toLowerCase().includes('error') ? 'Error' : 'Success';
       this.webSocketService.showToast(msg, status);
-      // Update the settings after the change
-      this.settingsService.settingsResource.reload();
+      if (status === 'Error') {
+        this.settingsService.settingsResource.update(() => previousSettings);
+      } else {
+        this.settingsService.settingsResource.reload();
+      }
     });
   }
 }

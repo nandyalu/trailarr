@@ -3,7 +3,6 @@ import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {DurationConvertPipe} from 'src/app/helpers/duration-pipe';
 import {RemoveStartingSlashPipe} from 'src/app/helpers/remove-starting-slash.pipe';
 import {ScrollNearEndDirective} from 'src/app/helpers/scroll-near-end-directive';
-import {TrailerStatusEnum} from 'src/app/models/mediatrailerstatus';
 import {MediaService} from 'src/app/services/media.service';
 import {MediaCardShellComponent} from '../media-card-shell/media-card-shell.component';
 
@@ -33,9 +32,7 @@ export class ExpandedComponent {
   }
 
   protected trailerDownloadedCount(media: any): number {
-    return (media.trailer_statuses ?? []).filter(
-      (s: any) => s.status === TrailerStatusEnum.DOWNLOADED
-    ).length;
+    return (media.trailer_statuses ?? []).filter((s: any) => s.status === 'downloaded').length;
   }
 
   onNearEndScroll(): void {

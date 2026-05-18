@@ -114,6 +114,15 @@ export class ProfileService {
       throw new Error('No profile selected');
     }
 
+    const previousProfiles = this.allProfiles.value();
+    this.allProfiles.update((profiles) => {
+      const index = profiles.findIndex((p) => p.id === selectedId);
+      if (index === -1) return profiles;
+      const updated = [...profiles];
+      updated[index] = {...profiles[index], [key]: value};
+      return updated;
+    });
+
     this.http.post<TrailerProfileRead>(`${this.profilesUrl}${selectedId}/setting`, {key, value}).subscribe({
       next: (updatedProfile) => {
         this.allProfiles.update((profiles) => {
@@ -128,6 +137,7 @@ export class ProfileService {
         this.websocketService.showToast(`${_key} set to '${value}' successfully!`, 'success');
       },
       error: (error) => {
+        this.allProfiles.update(() => previousProfiles);
         let errorMessage = 'An unknown error occurred!';
         if (error.error instanceof ErrorEvent) {
           errorMessage = `Error: ${error.error.message}`;
