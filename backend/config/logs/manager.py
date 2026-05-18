@@ -1,6 +1,12 @@
+import asyncio
 from datetime import datetime, timedelta
+from sqlalchemy import delete as sa_delete
 from sqlmodel import col, desc, or_, select
-from config.logs.db_utils import get_async_logs_session
+from config.logs.db_utils import (
+    compact_logs_db,
+    flush_logs_to_db,
+    get_async_logs_session,
+)
 from config.logs.model import (
     AppLogRecord,
     AppLogRecordRead,
@@ -64,14 +70,15 @@ async def delete_old_logs(days: int = 30) -> int:
     """Delete logs older than the specified number of days."""
     date_threshold = datetime.now() - timedelta(days=days)
     async with get_async_logs_session() as session:
-        stmt = select(AppLogRecord).where(
-            col(AppLogRecord.created) < date_threshold
+        result = await session.execute(
+            sa_delete(AppLogRecord).where(
+                col(AppLogRecord.created) < date_threshold
+            )
         )
-        logs_to_delete = await session.exec(stmt)
-        logs_to_delete = logs_to_delete.all()
-        count = len(logs_to_delete)
-        if logs_to_delete:
-            for log in logs_to_delete:
-                await session.delete(log)
-            await session.commit()
-        return count
+        await session.commit()
+        deleted = result.rowcount or 1  # type: ignore
+    if deleted > 0:
+        # Truncate the WAL then compact freed pages off the main file
+        await asyncio.to_thread(flush_logs_to_db)
+        await asyncio.to_thread(compact_logs_db)
+    return deleted

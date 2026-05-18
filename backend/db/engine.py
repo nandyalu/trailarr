@@ -56,9 +56,9 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def flush_records_to_db():
-    """Flush in-memory records to the database."""
+    """Checkpoint and truncate the WAL back to zero bytes."""
     with engine.connect() as connection:
-        connection.execute(sa_text("PRAGMA wal_checkpoint(FULL);"))
+        connection.execute(sa_text("PRAGMA wal_checkpoint(TRUNCATE);"))
         connection.commit()
 
 
