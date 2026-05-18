@@ -3091,6 +3091,7 @@
 <ul>
 <li><strong>Profile priority not honoured in download order</strong> — The trailer download loop was ordering PENDING rows by the profile's database ID instead of its <code>Priority</code> setting, and in ascending order. Profiles with a higher Priority value are now processed first, matching the documented behaviour.</li>
 <li><strong>Trailer file size limit</strong> - Increased the file size limit for detecting it as a trailer to 250 MB as some larger bitrate files could be around 200 MB.</li>
+<li><strong>Profile settings radio buttons lagging behind selection</strong> — Clicking a radio button on the Edit Profile page (e.g. Video Format, File Format) previously waited for the backend to respond before visually updating, causing a noticeable lag. The UI now updates immediately on click and reverts if the backend call fails.</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
 <ul>
