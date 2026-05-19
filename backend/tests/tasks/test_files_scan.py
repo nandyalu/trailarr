@@ -261,7 +261,7 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("services.scan_service.file_info_repo.sync_file_tree"),
+            patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists") as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -277,7 +277,7 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("services.scan_service.file_info_repo.sync_file_tree"),
+            patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists") as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -293,7 +293,7 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("services.scan_service.file_info_repo.sync_file_tree"),
+            patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists") as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -311,7 +311,7 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
 
         with (
-            patch("services.scan_service.file_info_repo.sync_file_tree"),
+            patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists"),
             patch("services.scan_service.record_new_trailer_download") as mock_record,
         ):
@@ -330,7 +330,7 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
 
         with (
-            patch("services.scan_service.file_info_repo.sync_file_tree"),
+            patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists"),
             patch("services.scan_service.record_new_trailer_download") as mock_record,
             patch("services.scan_service.event_service.track_trailer_detected"),
