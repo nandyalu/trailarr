@@ -133,7 +133,7 @@ async def scan_media_folder(
             media_repo.update_media_exists(media.id, False)
         return 0, 0
 
-    file_info_repo.sync_file_tree(media.id, files_info)
+    file_info_repo.upsert(media, files_info)
 
     disk_media_exists = await scanner.check_media_exists(files_info)
     if disk_media_exists != media.media_exists:
