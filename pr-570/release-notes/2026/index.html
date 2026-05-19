@@ -3090,7 +3090,7 @@
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li><strong>Profile priority not honoured in download order</strong> — The trailer download loop was ordering PENDING rows by the profile's database ID instead of its <code>Priority</code> setting, and in ascending order. Profiles with a higher Priority value are now processed first, matching the documented behaviour.</li>
-<li><strong>Trailer file size limit</strong> - Increased the file size limit for detecting it as a trailer to 250 MB as some larger bitrate files could be around 200 MB.</li>
+<li><strong>Trailer re-download loop on large files</strong> — The file scanner was not recognising downloaded trailers larger than 100 MB, which caused a repeated re-download loop: the scanner missed the file, silently reset <code>trailer_exists</code> to false, the connection refresh re-enabled monitoring, and the download task picked it up again. Fixed by: (1) files placed inside a recognised trailer folder (e.g. <code>Trailers/</code>) are now always detected as trailers regardless of size; (2) inline files with "trailer" in the name up to 200 MB pass without extra checks; (3) inline files over 200 MB are verified via ffprobe — if their duration is ≤ 10 minutes they are treated as trailers.</li>
 <li><strong>Profile settings radio buttons lagging behind selection</strong> — Clicking a radio button on the Edit Profile page (e.g. Video Format, File Format) previously waited for the backend to respond before visually updating, causing a noticeable lag. The UI now updates immediately on click and reverts if the backend call fails.</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
