@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime as dt
 import os
 from pathlib import Path
@@ -7,15 +8,24 @@ import zoneinfo
 
 import aiofiles.os
 
+from app_logger import ModuleLogger
 from db.models.filefolderinfo import FileFolderInfoCreate, FileFolderType
 import db.repos.trailer_profile as trailer_profile_repo
+from download import analysis as video_analysis
+
+logger = ModuleLogger("MediaScanner")
 
 
 class MediaScanner:
     """Handles scanning of folders and files of media."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    # A video file >= this size is treated as a real media file, not a trailer.
+    MEDIA_FILE_MIN_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    # Files with 'trailer' in name below this size are trailers without needing ffprobe.
+    TRAILER_QUICK_MAX_SIZE_BYTES = 200 * 1024 * 1024  # 200 MB
+    # Matches the default max_duration in TrailerProfile — anything longer is not a trailer.
+    TRAILER_MAX_DURATION_SECONDS = 600  # 10 minutes
 
     def __init__(self) -> None:
         self.tz = self._get_system_timezone()
@@ -33,25 +43,67 @@ class MediaScanner:
         trailer_folders.add("trailers")
         return {folder.lower().strip() for folder in trailer_folders}
 
-    def is_trailer_file(self, file_name: str, file_size_bytes: int | None = None) -> bool:
-        if not file_name:
+    def is_trailer_file(
+        self, file_path: str, file_size_bytes: int | None = None
+    ) -> bool | None:
+        """Check if a file is a trailer based on its path and size.
+
+        Returns:
+            True  — confirmed trailer (folder-based or small inline file).
+            False — confirmed not a trailer.
+            None  — has 'trailer' in name but exceeds the quick size limit;
+                    caller should verify via _check_large_name_trailer.
+        """
+        if not file_path:
             return False
-        if not file_name.lower().endswith(self.VIDEO_EXTENSIONS):
+        if not file_path.lower().endswith(self.VIDEO_EXTENSIONS):
             return False
+        file_name = Path(file_path).name
         if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
             return False
-        if "trailer" in file_name.lower():
-            if file_size_bytes is not None and file_size_bytes >= self.TRAILER_MAX_SIZE_BYTES:
-                return False
-            return True
-        folder_name = Path(file_name).parent.name.lower().strip()
+        # Folder placement is authoritative — no size limit applies.
+        folder_name = Path(file_path).parent.name.lower().strip()
         if folder_name and folder_name in self.trailer_folders:
+            return True
+        if "trailer" in file_name.lower():
+            if (
+                file_size_bytes is not None
+                and file_size_bytes >= self.TRAILER_QUICK_MAX_SIZE_BYTES
+            ):
+                # Too large for a quick answer — caller must run ffprobe.
+                return None
             return True
         return False
 
+    async def _check_large_name_trailer(self, file_path: str) -> bool:
+        """Use ffprobe to verify a large inline file with 'trailer' in its name.
+
+        Checks duration: anything over TRAILER_MAX_DURATION_SECONDS is a movie
+        or TV episode, not a trailer.
+        """
+        media_info = await asyncio.to_thread(
+            video_analysis.get_media_info, file_path
+        )
+        if media_info is None:
+            return False
+        if media_info.duration_seconds <= 0:
+            return False
+        is_trailer = media_info.duration_seconds <= self.TRAILER_MAX_DURATION_SECONDS
+        if not is_trailer:
+            logger.debug(
+                f"'{Path(file_path).name}' duration {media_info.duration_seconds}s"
+                f" exceeds {self.TRAILER_MAX_DURATION_SECONDS}s limit"
+                " — not treated as trailer"
+            )
+        return is_trailer
+
     async def _get_file_info(self, entry: os.DirEntry[str], media_id: int) -> FileFolderInfoCreate:
         info = await aiofiles.os.stat(entry.path)
-        is_trailer = self.is_trailer_file(entry.name, info.st_size)
+        trailer_check = self.is_trailer_file(entry.path, info.st_size)
+        if trailer_check is None:
+            is_trailer = await self._check_large_name_trailer(entry.path)
+        else:
+            is_trailer = trailer_check
         return FileFolderInfoCreate(
             type=FileFolderType.FILE,
             name=unicodedata.normalize("NFKD", entry.name),
@@ -90,7 +142,7 @@ class MediaScanner:
     def _has_media_file(self, folder_info: FileFolderInfoCreate) -> bool:
         for child in folder_info.children:
             if child.type == FileFolderType.FILE:
-                if child.size >= self.TRAILER_MAX_SIZE_BYTES and child.name.lower().endswith(self.VIDEO_EXTENSIONS):
+                if child.size >= self.MEDIA_FILE_MIN_SIZE_BYTES and child.name.lower().endswith(self.VIDEO_EXTENSIONS):
                     return True
             elif child.type == FileFolderType.FOLDER:
                 if self._has_media_file(child):
