@@ -115,53 +115,173 @@ def upgrade() -> None:
         " columns to trailerprofile table"
     )
 
+    # --- Backfill for_movies for existing profiles ---
+    # Rules (priority order):
+    #   1. Any filter has is_movie=true  → for_movies=True
+    #   2. Any filter has is_movie=false → for_movies=False
+    #   3. Profile name contains movie/radarr → for_movies=True
+    #   4. Profile name contains series/show/sonarr → for_movies=False
+    #   5. Else → for_movies=True, enabled=False (user must review)
+    conn = op.get_bind()
+    rows = conn.execute(sa.text("""
+        SELECT tp.id, LOWER(cf.filter_name), LOWER(f.filter_value)
+        FROM trailerprofile tp
+        JOIN customfilter cf ON cf.id = tp.customfilter_id
+        LEFT JOIN "filter" f
+            ON f.customfilter_id = cf.id AND LOWER(f.filter_by) = 'is_movie'
+    """)).fetchall()
+
+    profile_data: dict = {}
+    for profile_id, name, filter_value in rows:
+        if profile_id not in profile_data:
+            profile_data[profile_id] = {"name": name or "", "is_movie_values": set()}
+        if filter_value is not None:
+            profile_data[profile_id]["is_movie_values"].add(filter_value)
+
+    for profile_id, data in profile_data.items():
+        name: str = data["name"]
+        values: set = data["is_movie_values"]
+        disable = False
+
+        if "true" in values:
+            for_movies = 1
+        elif "false" in values:
+            for_movies = 0
+        elif any(kw in name for kw in ("movie", "radarr")):
+            for_movies = 1
+        elif any(kw in name for kw in ("series", "show", "sonarr")):
+            for_movies = 0
+        else:
+            for_movies = 1
+            disable = True
+
+        if disable:
+            conn.execute(
+                sa.text(
+                    "UPDATE trailerprofile SET for_movies = :fm, enabled = 0"
+                    " WHERE id = :id"
+                ),
+                {"fm": for_movies, "id": profile_id},
+            )
+        else:
+            conn.execute(
+                sa.text("UPDATE trailerprofile SET for_movies = :fm WHERE id = :id"),
+                {"fm": for_movies, "id": profile_id},
+            )
+
+    logger.info("Backfilled 'for_movies' for existing trailer profiles")
+
+    # --- Backfill MediaTrailerStatus ---
+    # NOTE: trailer_exists and status columns are dropped AFTER this backfill
+    # so that Steps 2.5 and 3 can read trailer_exists to avoid creating duplicate
+    # PENDING rows for media that already has a trailer on disk.
+    conn = op.get_bind()
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Step 1: Profile-linked downloads (download.file_exists=True, profile_id>0).
+    # One row per (media_id, profile_id); use the latest download record as the link.
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO mediatrailerstatus
+                (media_id, profile_id, season, sequence, status, source,
+                 linked_download_id, created_at, updated_at)
+            SELECT
+                d.media_id,
+                d.profile_id,
+                0, 1, 'downloaded', 'app',
+                MAX(d.id), :now, :now
+            FROM download d
+            WHERE d.file_exists = 1 AND d.profile_id > 0
+            GROUP BY d.media_id, d.profile_id
+            """
+        ),
+        {"now": now},
+    )
+    logger.info("Backfilled profile-linked downloaded MediaTrailerStatus rows")
+
+    # Step 2: Downloaded media with no profile-linked record (manual / unattributed).
+    # Covers: download.file_exists=True with profile_id=0, or downloaded_at set
+    # with no file_exists=True download at all.
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO mediatrailerstatus
+                (media_id, profile_id, season, sequence, status, source,
+                 linked_download_id, created_at, updated_at)
+            SELECT m.id, NULL, 0, 1, 'downloaded', 'manual', NULL, :now, :now
+            FROM media m
+            WHERE m.downloaded_at IS NOT NULL
+              AND m.id NOT IN (
+                  SELECT d.media_id FROM download d
+                  WHERE d.file_exists = 1 AND d.profile_id > 0
+              )
+            """
+        ),
+        {"now": now},
+    )
+    logger.info("Backfilled manual downloaded MediaTrailerStatus rows")
+
+    # Step 2.5: Media with trailer_exists=True but no downloaded_at and no existing row.
+    # These items have a trailer on disk that was never formally recorded via the
+    # download pipeline (e.g. manually placed files, or pre-pipeline era records).
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO mediatrailerstatus
+                (media_id, profile_id, season, sequence, status, source,
+                 linked_download_id, created_at, updated_at)
+            SELECT m.id, NULL, 0, 1, 'downloaded', 'manual', NULL, :now, :now
+            FROM media m
+            WHERE m.trailer_exists = 1
+              AND m.downloaded_at IS NULL
+              AND m.id NOT IN (
+                  SELECT mts.media_id FROM mediatrailerstatus mts
+              )
+            """
+        ),
+        {"now": now},
+    )
+    logger.info("Backfilled manual downloaded rows for trailer_exists=1 media without downloaded_at")
+
+    # Step 3: All remaining media with no trailer and no existing row → pending.
+    # Includes both monitored and unmonitored; the download task skips unmonitored.
+    # Excludes media covered by Steps 1, 2, and 2.5 via the NOT IN subquery.
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO mediatrailerstatus
+                (media_id, profile_id, season, sequence, status, source,
+                 linked_download_id, created_at, updated_at)
+            SELECT m.id, NULL, 0, 1, 'pending', 'app', NULL, :now, :now
+            FROM media m
+            WHERE m.downloaded_at IS NULL
+              AND (m.trailer_exists = 0 OR m.trailer_exists IS NULL)
+              AND m.id NOT IN (
+                  SELECT mts.media_id FROM mediatrailerstatus mts
+              )
+            """
+        ),
+        {"now": now},
+    )
+    logger.info("Backfilled pending MediaTrailerStatus rows for all remaining media")
+
+    # --- Delete stale filter rows referencing dropped columns ---
+    # trailer_exists and status are no longer on Media; any filter using them
+    # would silently evaluate to False and break create_rows_for_new_media /
+    # _sync_status_rows for ALL existing profiles (including the two default ones).
+    conn.execute(
+        sa.text("DELETE FROM \"filter\" WHERE filter_by IN ('trailer_exists', 'status')")
+    )
+    logger.info("Deleted stale 'trailer_exists' and 'status' filter rows")
+
     # --- Drop trailer_exists and status from media ---
+    # Dropped AFTER backfill so Steps 2.5 and 3 could use trailer_exists above.
     with op.batch_alter_table("media", schema=None) as batch_op:
         batch_op.drop_column("trailer_exists")
         batch_op.drop_column("status")
     logger.info("Dropped 'trailer_exists' and 'status' columns from media table")
-
-    # --- Backfill MediaTrailerStatus for existing DOWNLOADED media ---
-    # For media that had downloaded_at set, create a single DOWNLOADED row
-    # with profile_id=NULL (manually placed / unattributed).
-    conn = op.get_bind()
-    from datetime import datetime, timezone
-    now = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        sa.text(
-            """
-            INSERT INTO mediatrailerstatus
-                (media_id, profile_id, season, sequence, status, source,
-                 linked_download_id, created_at, updated_at)
-            SELECT
-                m.id, NULL, 0, 1, 'downloaded', 'manual',
-                NULL, :now, :now
-            FROM media m
-            WHERE m.downloaded_at IS NOT NULL
-            """
-        ),
-        {"now": now},
-    )
-    logger.info("Backfilled MediaTrailerStatus rows for existing downloaded media")
-
-    # --- Backfill MediaTrailerStatus for monitored media without downloads ---
-    conn.execute(
-        sa.text(
-            """
-            INSERT INTO mediatrailerstatus
-                (media_id, profile_id, season, sequence, status, source,
-                 linked_download_id, created_at, updated_at)
-            SELECT
-                m.id, NULL, 0, 1, 'pending', 'app',
-                NULL, :now, :now
-            FROM media m
-            WHERE m.monitor = 1
-              AND m.downloaded_at IS NULL
-            """
-        ),
-        {"now": now},
-    )
-    logger.info("Backfilled pending MediaTrailerStatus rows for monitored media")
 
 
 def downgrade() -> None:

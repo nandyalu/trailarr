@@ -38,6 +38,9 @@
     "python.testing.pytestEnabled": true,
     "todo-tree.tree.showBadges": true,
     "python.analysis.autoImportCompletions": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend"
+    ],
     "task.allowAutomaticTasks": "off",
     "task.autoDetect": "off",
     "typescript.tsc.autoDetect": "off",

@@ -53,13 +53,10 @@ def setup_frontend(app: FastAPI) -> None:
     url_base = app_settings.url_base        # e.g. "/trailarr" or ""
     url_base_name = url_base.strip("/")     # e.g. "trailarr" or ""
 
-    # Always ensure root index.html has <base href="/"> so local / access works.
     root_index = frontend_dir / "index.html"
     if root_index.is_file():
         update_base_href(root_index, "/")
 
-    # When URL_BASE is set, create the subfolder with the prefixed index.html
-    # and register the middleware that strips the prefix for server-side routes.
     subfolder: Path | None = None
     sub_index: Path | None = None
     if url_base_name:
@@ -69,13 +66,11 @@ def setup_frontend(app: FastAPI) -> None:
         app.add_middleware(URLBasePrefixMiddleware, url_base=url_base)
         logging.debug(f"URLBasePrefixMiddleware registered for '{url_base}'")
 
-    # Mount /images — must come before the catch-all route.
     images_dir = Path(app_settings.app_data_dir, "web", "images")
     images_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/images", StaticFiles(directory=images_dir), name="images")
     logging.debug(f"Mounted /images from '{images_dir}'")
 
-    # Build and include the frontend router.
     router = _build_router(frontend_dir, root_index, subfolder, sub_index, url_base_name)
     app.include_router(router)
     logging.debug("Frontend router registered")
@@ -101,9 +96,7 @@ def _build_router(
     async def serve_frontend(
         request: Request, rest_of_path: str = ""
     ) -> Response:
-        # ── Local access at /{url_base}/* ────────────────────────────────────
-        # The browser loaded the app at http://localhost:7889/{url_base}/ and
-        # Angular resolves assets/routes relative to <base href="/{url_base}/">.
+        # Local access at /{url_base}/*
         if url_base_name and (
             rest_of_path == url_base_name
             or rest_of_path.startswith(url_base_name + "/")
@@ -111,15 +104,12 @@ def _build_router(
             sub_path = rest_of_path[len(url_base_name):].lstrip("/")
             if not sub_path:
                 return FileResponse(sub_index)
-            # Assets live in frontend_dir; sub_path is safe to resolve there.
             file_path = _sanitize_path(frontend_dir, sub_path)
             if file_path and file_path.is_file():
                 return FileResponse(file_path)
             return FileResponse(sub_index)
 
-        # ── Reverse-proxy access (proxy strips prefix, sends X-Forwarded-Prefix) ──
-        # The proxy already stripped /{url_base} so rest_of_path has no prefix,
-        # but X-Forwarded-Prefix tells us which index.html the browser expects.
+        # Reverse-proxy access (proxy strips prefix, sends X-Forwarded-Prefix)
         if url_base_name:
             fwd_prefix = request.headers.get("X-Forwarded-Prefix", "").strip("/")
             if fwd_prefix == url_base_name:
@@ -130,7 +120,7 @@ def _build_router(
                     return FileResponse(file_path)
                 return FileResponse(sub_index)
 
-        # ── Normal root access at / ───────────────────────────────────────────
+        # Normal root access at /
         if rest_of_path.startswith("api"):
             return HTMLResponse(status_code=404)
         if not rest_of_path:

@@ -1,23 +1,36 @@
 
 ## Video Type
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
-| Type   | Required | Default | Valid Values                                                                        |
-|:------:|:--------:|:-------:|:-----------------------------------------------------------------------------------:|
-| String | Yes      | trailer | trailer, teaser, clip, behind the scenes, bloopers, featurette, opening credits     |
+| Type   | Required | Default | Valid Values                                                                                |
+|:------:|:--------:|:-------:|:-------------------------------------------------------------------------------------------:|
+| String | Yes      | trailer | trailer, teaser, clip, behind the scenes, bloopers, featurette, opening credits, other      |
 
 Select the type of video to search for and download. Defaults to `trailer`.
 
-!!! note "TMDB API Key required for non-trailer types"
-    Searching for video types other than `trailer` requires a TMDB API Key to be set in **Settings > General > Integrations**. Without it, the profile will fall back to searching YouTube directly, which may yield less accurate results.
+How the app searches based on the selected type:
+
+| Video Type                                                         | How the app finds the video                                                    |
+|:-------------------------------------------------------------------|:-------------------------------------------------------------------------------|
+| `trailer`                                                          | YouTube search using the **Search Query** template                             |
+| `other`                                                            | YouTube search using the **Search Query** template (custom content via yt-dlp) |
+| `teaser`, `clip`, `behind the scenes`, `bloopers`, `featurette`, `opening credits` | TMDB API lookup — requires a TMDB API Key                       |
+
+!!! note "TMDB API Key required for specific video types"
+    Searching for `teaser`, `clip`, `behind the scenes`, `bloopers`, `featurette`, and `opening credits` requires a TMDB API Key to be set in **Settings > General > Integrations**. Without it, those profiles will mark items as `Not Available` instead of downloading.
+
+    `trailer` and `other` always use YouTube search and do **not** require a TMDB API Key.
+
+!!! tip "Use `other` for fully custom downloads"
+    Set **Video Type** to `other` and customise the **Search Query** template to download any content via yt-dlp — music videos, interviews, behind-the-scenes reels that aren't in TMDB, etc. The `{video_type}` placeholder resolves to `other` in this mode, so you can use it in your file name template to keep files organised.
 
 !!! tip
     Use separate profiles with different video types to download, for example, both a trailer and a featurette for the same media item.
 
 ## For Movies
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 | Type    | Required | Default | Valid Values          |
 |:-------:|:--------:|:-------:|:---------------------:|
@@ -33,7 +46,7 @@ Set the scope of this profile: **Movies only** (`true`) or **Series only** (`fal
 
 ## Download Season Videos
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 !!! note ""
     Only available on **Series** profiles (`For Movies = false`).
@@ -46,7 +59,7 @@ When enabled, Trailarr creates one download tracking entry per season (plus one 
 
 ## Max Count
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 | Type    | Required | Default | Valid Values |
 |:-------:|:--------:|:-------:|:------------:|
@@ -110,13 +123,21 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true or false |
 
-This setting indicates whether Trailarr should stop monitoring the media item after a successful download using this profile. Useful for trailer profiles where you want to download multiple trailers or extras for the same media item.
+When enabled, Trailarr will unmonitor the media item **and cancel all other pending downloads** across every profile once this profile successfully downloads a video.
 
-This setting will save the downloaded video id as the trailer id for the media after a successful download. So, if you are creating a profile to download additional videos (like extras or optional other language trailers), set this to `false`.
+**How the download loop works:** Trailarr only processes rows in `Pending` status. Once a profile's row transitions to `Downloaded`, `Skipped`, or `Not Available`, it is never re-processed. This means the loop naturally stops working on a media item once every profile row is resolved — `Stop Monitoring` is an explicit override on top of that, not a requirement for the loop to stop.
 
-!!! example
-    If you want to download 2 trailers (English and Spanish) for every media item, you would create trailer profiles like this:
-    
+!!! warning "Stop Monitoring cancels all other profiles for that media"
+    When a download succeeds and `Stop Monitoring` is `true`, Trailarr marks every other `Pending` row for that media item — across **all** profiles — as `Skipped`. This includes rows for TMDB-based video types (featurette, teaser, etc.) that may not have found a video yet.
+
+    **If you have any TMDB-type profiles alongside a trailer profile, set `Stop Monitoring` to `false` on the trailer profile**, otherwise the featurette / teaser rows will be skipped as soon as the trailer lands, before TMDB has a chance to find those videos.
+
+!!! tip "Use Stop Monitoring only when you want to fully stop after this profile"
+    Leave `Stop Monitoring` as `false` (the default) if you want all your profiles to independently run to completion. Set it to `true` only on the *last* profile you want to run — the one where a successful download means you're done with that media item entirely.
+
+!!! example "Multiple language trailers"
+    Download a Spanish trailer first, then an English trailer, and stop after the English one:
+
     ```
         Profile Name: Spanish Trailer
         Stop Monitoring: false
@@ -124,7 +145,24 @@ This setting will save the downloaded video id as the trailer id for the media a
         -------------------------------
         Profile Name: English Trailer
         Stop Monitoring: true
-        Priority: 0 (or any lower number than the Spanish Trailer profile)
+        Priority: 0
     ```
 
-    This way, Trailarr will first use the `Spanish Trailer` profile to download the Spanish trailer. Since `Stop Monitoring` is set to `false`, Trailarr will continue to monitor the media item after the download. Next, it will use the `English Trailer` profile to download the English trailer. After this download, since `Stop Monitoring` is set to `true`, Trailarr will stop monitoring the media item.
+    Trailarr processes the higher-priority Spanish profile first. Because `Stop Monitoring` is `false`, the English profile's row remains `Pending` and is picked up next. After the English trailer downloads, `Stop Monitoring` is `true` so the media is unmonitored and any remaining pending rows are skipped.
+
+!!! example "Trailer + featurette (TMDB)"
+    Download a trailer via YouTube search and a featurette via TMDB, without either cancelling the other:
+
+    ```
+        Profile Name: Movie Trailer
+        Video Type: trailer
+        Stop Monitoring: false   ← must be false, or featurette row gets skipped
+        Priority: 10
+        -------------------------------
+        Profile Name: Movie Featurette
+        Video Type: featurette   ← uses TMDB; video may appear days after release
+        Stop Monitoring: false
+        Priority: 0
+    ```
+
+    Both profiles run independently. If TMDB has no featurette yet, that row stays `Not Available` and will not block or affect the trailer download.

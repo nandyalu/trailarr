@@ -12,7 +12,6 @@ from alembic import op
 import sqlalchemy as sa
 import sqlmodel.sql.sqltypes
 from app_logger import ModuleLogger
-from config.settings import app_settings
 
 revision: str = "b3d2f1a4c8e9"
 down_revision: Union[str, None] = "ae0d134607f9"
@@ -21,9 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 logger = ModuleLogger("AlembicMigrations")
 
-# Default monitor interval is 60 minutes → 3600 seconds.
-# Users who have customised MONITOR_INTERVAL can update via the UI after migration.
-_MONITOR_INTERVAL_SECONDS = 60.0 * 60.0
+# Default monitor interval: 60 minutes = 3600 seconds.
+# monitor_interval was removed from settings; hardcode the default here.
+_MONITOR_INTERVAL_SECONDS = 3600.0
 
 _DEFAULT_TASKS = [
     {

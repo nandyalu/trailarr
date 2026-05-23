@@ -1,0 +1,120 @@
+import asyncio
+import hashlib
+from io import BytesIO
+from pathlib import Path
+import threading
+
+import aiohttp
+import aiofiles.os
+from PIL import Image
+from async_lru import alru_cache
+
+from app_logger import logger
+from config.settings import app_settings
+from db.models.helpers import MediaImage
+import db.repos.media as media_repo
+
+POSTER = (300, 450)
+FANART = (1280, 720)
+IMAGES_PATH = Path(app_settings.app_data_dir, "web", "images")
+STATIC_PATH_MOVIES = IMAGES_PATH / "movies"
+STATIC_PATH_SHOWS = IMAGES_PATH / "shows"
+
+_IMAGES_URL_PREFIX = "/images"
+
+
+def _url_to_fs_path(url_path: str) -> Path:
+    rel = url_path.removeprefix(_IMAGES_URL_PREFIX + "/")
+    return IMAGES_PATH / rel
+
+
+@alru_cache
+async def get_base_path(is_movie: bool, is_poster: bool) -> Path:
+    base_path = STATIC_PATH_MOVIES if is_movie else STATIC_PATH_SHOWS
+    base_path = base_path / "posters" if is_poster else base_path / "fanart"
+    try:
+        await aiofiles.os.makedirs(base_path, exist_ok=True)
+    except Exception:
+        logger.error(f"Unable to create images folder: '{base_path}'")
+    return base_path
+
+
+def get_md5_filename(url: str) -> str:
+    return hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
+
+
+async def delete_image(image_path: str):
+    try:
+        if await aiofiles.os.path.exists(image_path):
+            await aiofiles.os.remove(image_path)
+        else:
+            logger.debug(f"Image not found: '{image_path}'")
+    except Exception:
+        logger.error(f"Unable to delete image: '{image_path}'")
+
+
+async def download_needed(is_movie: bool, media: MediaImage) -> bool:
+    if not media.image_url:
+        return False
+    base_path = await get_base_path(is_movie, media.is_poster)
+    filename = get_md5_filename(media.image_url)
+    file_path = base_path / f"{filename}.jpg"
+    url_path = _IMAGES_URL_PREFIX + "/" + file_path.relative_to(IMAGES_PATH).as_posix()
+    if media.image_path:
+        if media.image_path != url_path:
+            logger.debug(f"Image updated for media id: [{media.id}], deleting old image! Path: '{media.image_path}'")
+            await delete_image(str(_url_to_fs_path(media.image_path)))
+    media.image_path = url_path
+    if await aiofiles.os.path.exists(file_path):
+        return False
+    return True
+
+
+async def download_image(url: str, headers: dict | None = None) -> Image.Image:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            response.raise_for_status()
+            image_data = await response.read()
+            image_file = BytesIO(image_data)
+            image = Image.open(image_file)
+            return image.convert("RGB")
+
+
+async def process_image(is_movie: bool, media: MediaImage, retries: int = 3) -> bool:
+    _image_path = media.image_path
+    if not await download_needed(is_movie, media):
+        return _image_path != media.image_path
+    if media.image_url is None or media.image_path is None:
+        return _image_path != media.image_path
+    image_dimensions = POSTER if media.is_poster else FANART
+    try:
+        image = await download_image(media.image_url, headers=media.headers)
+        image.thumbnail(image_dimensions)
+        image.save(_url_to_fs_path(media.image_path), format="JPEG", optimize=True, progressive=True)
+        logger.debug(f"Image downloaded for media id: [{media.id}], URL: '{media.image_url}', path: '{media.image_path}'")
+    except Exception:
+        if retries > 0:
+            return await process_image(is_movie, media, retries - 1)
+        else:
+            logger.debug(f"Failed to download image for media id: [{media.id}], URL: '{media.image_url}'")
+            return False
+    return True
+
+
+async def refresh_media_images(
+    is_movie: bool,
+    media_list: list[MediaImage],
+    _stop_event: threading.Event | None = None,
+) -> None:
+    sem = asyncio.Semaphore(5)
+
+    async def download(media_image: MediaImage):
+        if _stop_event and _stop_event.is_set():
+            logger.info("Image refresh stopped due to stop event.")
+            return
+        async with sem:
+            updated = await process_image(is_movie, media_image)
+            if updated:
+                media_repo.update_media_image(media_image)
+
+    await asyncio.gather(*(download(media) for media in media_list))

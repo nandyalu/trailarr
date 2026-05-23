@@ -46,10 +46,26 @@
       <app-options-setting
         name="Video Type"
         description="Type of video to search for and download."
-        [options]="videoTypeOptions"
+        [options]="videoTypeOptions()"
         [selectedOption]="profile()?.video_type"
         (optionChange)="profileService.updateSetting('video_type', $event)"
       />
+      @if (hasTmdbKey() && profile()?.video_type !== 'other') {
+        <app-text-setting
+          name="TMDB Language"
+          description="ISO 639-1 language code for TMDB video lookups (e.g. 'de', 'fr', 'ja'). Leave empty for the TMDB default (en-US)."
+          descriptionExtra="For 'trailer' type: non-empty puts TMDB first in the search priority. For other TMDB types: controls the language of the TMDB lookup."
+          [isNumberType]="false"
+          [isLongInput]="false"
+          [placeholder]="'e.g. de, fr, ja (optional)'"
+          [autocomplete]="'off'"
+          [minLength]="0"
+          [maxLength]="10"
+          [value]="profile()?.tmdb_language ?? ''"
+          [disabled]="false"
+          (onSubmit)="profileService.updateSetting('tmdb_language', $event)"
+        />
+      }
       <app-options-setting
         name="Scope"
         description="Apply this profile to Movies or Series only."

@@ -1,6 +1,6 @@
 # Issues
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 The **Issues** page lists all actionable problems that Trailarr has detected. Unlike events (which are informational), issues require user attention or action. Issues auto-resolve when the underlying condition clears — you do not need to dismiss them unless you want to hide them temporarily.
 

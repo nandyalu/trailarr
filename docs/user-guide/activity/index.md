@@ -1,6 +1,6 @@
 # Activity
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 The **Activity** section consolidates three pages — **Issues**, **Events**, and **Logs** — into a single tab-based view. Navigate to each tab using the tab bar at the top of the page.
 

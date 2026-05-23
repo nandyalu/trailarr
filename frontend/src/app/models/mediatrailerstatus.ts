@@ -1,4 +1,4 @@
-export type VideoType = 'trailer' | 'teaser' | 'clip' | 'behind the scenes' | 'bloopers' | 'featurette' | 'opening credits';
+export type VideoType = 'trailer' | 'teaser' | 'clip' | 'behind the scenes' | 'bloopers' | 'featurette' | 'opening credits' | 'other';
 
 export type TrailerStatusEnum =
   | 'pending'
@@ -37,17 +37,10 @@ export function buildTrailerStatusMap(rows: MediaTrailerStatus[]): Map<number, M
   return map;
 }
 
-/** Returns true if any row has status=downloaded AND video_type=trailer (or null, for unattributed). */
-export function computeTrailerExists(statuses: MediaTrailerStatus[]): boolean {
-  return statuses.some(
-    (s) => s.status === 'downloaded' && (s.video_type === 'trailer' || s.video_type === null),
-  );
-}
-
-/** Derives the legacy MonitorStatus string from per-profile rows + monitor flag. */
-export function computeMonitorStatus(statuses: MediaTrailerStatus[], monitor: boolean): string {
-  if (statuses.some((s) => s.status === 'downloading')) return 'Downloading';
-  if (statuses.some((s) => s.status === 'downloaded')) return 'Downloaded';
-  if (monitor && statuses.some((s) => s.status === 'pending')) return 'Monitored';
-  return 'Missing';
+/** Derives the MonitorStatus string from real-time statuses, pre-computed trailerExists, and monitor flag. */
+export function computeMonitorStatus(statuses: MediaTrailerStatus[], trailerExists: boolean, monitor: boolean): string {
+  if (statuses.some((s) => s.status === 'downloading')) return 'downloading';
+  if (trailerExists) return 'downloaded';
+  if (monitor) return 'monitored';
+  return 'missing';
 }
