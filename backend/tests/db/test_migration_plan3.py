@@ -149,20 +149,26 @@ def _count_rows(media_id: int, profile_id: int | None, status: TrailerStatusEnum
 
 
 def _run_upgrade():
-    """Run the migration upgrade() with the test engine connection."""
+    """Run the orphaned-row-fix SQL from the merged migration.
+
+    The merged migration also adds columns (video_type, tmdb_language, youtube_id) that
+    already exist in the test DB schema. We mock batch_alter_table so only the raw SQL
+    DELETE/INSERT statements execute.
+    """
     import importlib.util, os
     spec = importlib.util.spec_from_file_location(
-        "migration_plan3",
+        "migration_d4e5f6a7b8c9",
         os.path.join(
             os.path.dirname(__file__),
-            "../../alembic/versions/20260515_0000-b2c3d4e5f6a7_fix_orphaned_pending_rows.py",
+            "../../alembic/versions/20260523_0000-d4e5f6a7b8c9_add_tmdb_language_and_youtube_id.py",
         ),
     )
     mod = importlib.util.module_from_spec(spec)  # type: ignore[attr-defined]
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
 
     with engine.connect() as conn:
-        with patch("alembic.op.get_bind", return_value=conn):
+        with patch("alembic.op.get_bind", return_value=conn), \
+             patch("alembic.op.batch_alter_table"):
             mod.upgrade()
         conn.commit()
 
