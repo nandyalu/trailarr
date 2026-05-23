@@ -24,7 +24,7 @@ logger = ModuleLogger("TMDBService")
 
 _TMDB_BASE = "https://api.themoviedb.org/3"
 _REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
-_SLEEP_BETWEEN_REQUESTS = 0.5
+_SLEEP_BETWEEN_REQUESTS = 1.0  # to avoid hitting rate limits
 
 
 async def _fetch_tmdb_videos(

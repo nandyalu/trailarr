@@ -137,11 +137,14 @@ nav:
     - Library: 
       - user-guide/library/index.md
       - Media Details: user-guide/library/media-details/index.md
-    - Events: user-guide/events/index.md
+    - Activity: 
+      - user-guide/activity/index.md
+      - Events: user-guide/activity/events/index.md
+      - Logs: user-guide/activity/logs/index.md
+      - Issues: user-guide/activity/issues/index.md
     - Tasks:
       - user-guide/tasks/index.md
       - Download Pipeline: user-guide/tasks/download-pipeline.md
-    - Logs: user-guide/logs/index.md
     - Settings: 
       - user-guide/settings/index.md
       - General Settings: user-guide/settings/general-settings/index.md
