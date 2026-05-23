@@ -24,47 +24,25 @@ on:
       - '**/mkdocs.yml'
 
 jobs:
-
   build:
     name: Docker Build
     runs-on: ubuntu-latest
-    env:
-      VER: ${{ github.sha }}-test
-    # Explicitly specify permissions
     permissions:
       contents: read
-      actions: write
-
-    # steps:
-      # Checkout the repository
-      # - name: Checkout repository
-        # uses: actions/checkout@v4
-      
-      # # Build the Docker image
-      # - name: Build the Docker image
-      #   run: docker build . --file Dockerfile --tag trailarr:${{env.VER}} --build-arg APP_VERSION=${{ env.VER }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Setup Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Ensure cache directory exists
-        run: mkdir -p /tmp/.buildx-cache
-
-      - name: Cache Docker layers
-        uses: actions/cache@v5
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ hashFiles('backend/pyproject.toml', 'frontend/package-lock.json', 'Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v7
         with:
+          context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=${{ github.sha }}-test
