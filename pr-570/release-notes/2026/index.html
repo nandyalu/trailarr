@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0100-beta-may-30-2026" class="md-skip">
+        <a href="#v0100-beta-june-30-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -1389,9 +1389,36 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../user-guide/tasks/" class="md-nav__link">
+    
+    
+      
         
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/tasks/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -1404,7 +1431,57 @@
   
   
 
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Tasks
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/tasks/download-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Download Pipeline
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2356,10 +2433,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0100-beta-may-30-2026" class="md-nav__link">
+  <a href="#v0100-beta-june-30-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.10.0-beta</strong> - <em>May 30, 2026</em>
+        <strong>v0.10.0-beta</strong> - <em>June 30, 2026</em>
       </span>
     </span>
   </a>
@@ -2797,10 +2874,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0100-beta-may-30-2026" class="md-nav__link">
+  <a href="#v0100-beta-june-30-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.10.0-beta</strong> - <em>May 30, 2026</em>
+        <strong>v0.10.0-beta</strong> - <em>June 30, 2026</em>
       </span>
     </span>
   </a>
@@ -3064,17 +3141,19 @@
 
   <h1 id="__skip">2026</h1>
 
-<h2 id="v0100-beta-may-30-2026"><strong>v0.10.0-beta</strong> - <em>May 30, 2026</em></h2>
+<h2 id="v0100-beta-june-30-2026"><strong>v0.10.0-beta</strong> - <em>June 30, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
-<li><strong>Per-Profile Trailer Tracking</strong> — Trailarr now tracks trailer downloads independently for each Trailer Profile applied to a media item. Previously, a single <code>trailer_exists</code> flag covered all profiles; now every <code>(media, profile)</code> pair has its own status (<code>Pending</code>, <code>Downloading</code>, <code>Downloaded</code>, <code>Failed</code>, <code>Skipped</code>, <code>Unmonitored</code>). The media page shows the individual status of each profile for a media item.</li>
+<li><strong>Per-Profile Trailer Tracking</strong> — Trailarr now tracks trailer downloads independently for each Trailer Profile applied to a media item. Previously, a single <code>trailer_exists</code> flag covered all profiles; now every <code>(media, profile)</code> pair has its own status (<code>Pending</code>, <code>Downloading</code>, <code>Downloaded</code>, <code>Not Available</code>, <code>Failed</code>, <code>Skipped</code>, <code>Unmonitored</code>). The media page shows the individual status of each profile for a media item. <code>Not Available</code> is set when TMDB is queried and has no matching video yet — it is automatically reset to <code>Pending</code> on the next weekly TMDB refresh once the video appears.</li>
 <li><strong><code>for_movies</code> scope on Trailer Profiles</strong> — Each profile now has an explicit scope: <strong>Movies only</strong> or <strong>Series only</strong>. This replaces the previous implicit behaviour where one profile could match both. A profile scoped to Movies is only applied to movies; a Series profile only to series. The scope is set when creating a profile and is auto-detected for existing profiles during the upgrade (see Migration Notes below).</li>
 <li><strong>Season Trailers</strong> — Series profiles have a new opt-in setting <strong>Download Season Videos</strong>. When enabled, Trailarr creates one tracking entry per season (plus one for the series overall), and searches for and downloads a trailer for each season separately. Disabled by default; existing series behaviour is unchanged until you opt in.</li>
-<li><strong>Video Type selection on Trailer Profiles</strong> — Each profile now has a <strong>Video Type</strong> setting that controls what kind of video is searched for and downloaded: Trailer, Teaser, Clip, Behind the Scenes, Bloopers, Featurette, or Opening Credits. Defaults to Trailer; existing profiles are unchanged.</li>
+<li><strong>Video Type selection on Trailer Profiles</strong> — Each profile now has a <strong>Video Type</strong> setting that controls what kind of video is searched for and downloaded: <code>Trailer</code>, <code>Teaser</code>, <code>Clip</code>, <code>Behind the Scenes</code>, <code>Bloopers</code>, <code>Featurette</code>, <code>Opening Credits</code>, or <code>Other</code>. Defaults to <code>Trailer</code>; existing profiles are unchanged. <code>Trailer</code> and <code>Other</code> always use YouTube search. All other types use the TMDB API and require a TMDB API Key — without one they are hidden in the profile editor.</li>
 <li><strong>Max Count on Trailer Profiles</strong> — Each profile has a new <strong>Max Count</strong> setting (default: 1) that controls how many videos to download per media item. Setting it to 3, for example, will download up to 3 trailers for each matched media item. Each download is tracked as a separate status row with its own sequence number.</li>
 <li><strong>Skip a Profile for Specific Media</strong> — Individual <code>(media, profile)</code> tracking entries can be set to <strong>Unmonitored</strong> by the user. Trailarr will never attempt to download for that entry and will never overwrite this choice — useful for skipping a profile on one specific title without disabling the profile globally.</li>
 <li><strong>Issues Tracking</strong> — Trailarr now records actionable problems as <em>Issues</em>: missing trailer files, connection failures, invalid API tokens, and missing media folders. Issues are auto-resolved when the underlying condition clears (e.g. a missing file reappears, a connection recovers). Open issues are visible in the new Issues section and via the API.</li>
-<li><strong>TMDB API Key setting</strong> — A new <strong>TMDB API Key</strong> field is available in General Settings (and as the <code>TMDB_API_KEY</code> environment variable). When set, Trailarr can fetch trailer metadata directly from TMDB as an additional source.</li>
+<li><strong>TMDB API Key setting</strong> — A new <strong>TMDB API Key</strong> field is available in General Settings (and as the <code>TMDB_API_KEY</code> environment variable). Required for all non-trailer, non-other Video Types (Teaser, Featurette, etc.) and for the <strong>TMDB Language</strong> profile setting. Without it, only <code>Trailer</code> and <code>Other</code> video types are available in the profile editor.</li>
+<li><strong>TMDB Language on Trailer Profiles</strong> — Each profile has a new optional <strong>TMDB Language</strong> field (ISO 639-1 code, e.g. <code>de</code>, <code>fr</code>). When set, Trailarr queries TMDB in that language first before falling back to the Radarr-provided ID and YouTube search. For TMDB video types (Featurette, Teaser, etc.) it controls the language of every TMDB lookup. Leave empty to use the TMDB default (en-US). Requires a TMDB API Key.</li>
+<li><strong>TMDB video key caching</strong> — The <strong>Refresh TMDB Videos</strong> weekly task now caches the YouTube key returned by TMDB directly on each status row. The download task reads this cache first, skipping a redundant live TMDB call on every download run. TMDB-sourced keys are stored only on the status row and never overwrite the Radarr-provided YouTube ID on the media item.</li>
 <li><strong>Activity tab</strong> — Issues, Events, and Logs are now grouped under a single <strong>Activity</strong> section in the navigation sidebar. The tab shows a badge with the count of open issues and highlights in red when any urgent issue is present.</li>
 </ul>
 <blockquote>
@@ -3083,7 +3162,7 @@
 <li><strong>Check your Trailer Profiles after updating.</strong> During the upgrade, Trailarr automatically assigns each existing profile a <code>for_movies</code> scope based on its filters and name. Profiles where the scope cannot be determined are <strong>automatically disabled</strong> and must be reviewed manually — open the profile, set the correct scope (Movies or Series), and re-enable it.</li>
 <li><strong>One profile per scope.</strong> If you previously used a single profile to download trailers for both movies and series, you will need to create a second profile for the other type after updating.</li>
 <li><strong>Status display has changed.</strong> The single per-media status indicator is replaced by per-profile status rows. You may notice media items that previously showed as "Downloaded" now showing individual profile statuses — this is expected and reflects the new granular tracking.</li>
-<li><strong><code>Stop Monitoring</code> behaviour change.</strong> When a profile with <em>Stop Monitoring</em> enabled successfully downloads a trailer, it now marks other pending profile rows as Skipped rather than turning off the media's Monitor flag. The Monitor flag stays on; individual profile rows show as Skipped. This is more precise but looks different from the previous behaviour.</li>
+<li><strong><code>Stop Monitoring</code> behaviour change.</strong> When a profile with <em>Stop Monitoring</em> enabled successfully downloads a trailer, it now <strong>also</strong> marks all other Pending profile rows for that media item as Skipped (across every profile), so other profiles do not attempt a redundant download for the same item. The media's Monitor flag is still turned off as before. If you have TMDB-type profiles (Featurette, Teaser, etc.) alongside a trailer profile, set <code>Stop Monitoring = false</code> on the trailer profile so TMDB rows are not skipped before TMDB has had a chance to find the video.</li>
 <li><strong>First startup after update may be slower</strong> on large libraries while the migration creates tracking rows for every monitored media × matched profile combination. Do not interrupt the app during this time.</li>
 </ul>
 </blockquote>
@@ -3092,6 +3171,7 @@
 <li><strong>Profile priority not honoured in download order</strong> — The trailer download loop was ordering PENDING rows by the profile's database ID instead of its <code>Priority</code> setting, and in ascending order. Profiles with a higher Priority value are now processed first, matching the documented behaviour.</li>
 <li><strong>Trailer re-download loop on large files</strong> — The file scanner was not recognising downloaded trailers larger than 100 MB, which caused a repeated re-download loop: the scanner missed the file, silently reset <code>trailer_exists</code> to false, the connection refresh re-enabled monitoring, and the download task picked it up again. Fixed by: (1) files placed inside a recognised trailer folder (e.g. <code>Trailers/</code>) are now always detected as trailers regardless of size; (2) inline files with "trailer" in the name up to 200 MB pass without extra checks; (3) inline files over 200 MB are verified via ffprobe — if their duration is ≤ 10 minutes they are treated as trailers.</li>
 <li><strong>Profile settings radio buttons lagging behind selection</strong> — Clicking a radio button on the Edit Profile page (e.g. Video Format, File Format) previously waited for the backend to respond before visually updating, causing a noticeable lag. The UI now updates immediately on click and reverts if the backend call fails.</li>
+<li><strong>Monitor flag re-enabled on every connection refresh</strong> — Media items manually set to unmonitored were silently having their monitor flag reset to <code>true</code> on every Arr or Plex refresh when the connection's monitoring mode was set to <em>Monitor Missing</em>. The monitor flag is now preserved for existing items: once set to <code>false</code>, only <em>Sync</em> mode (which explicitly mirrors the Arr monitored flag) can re-enable it.</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚡</p>
 <ul>

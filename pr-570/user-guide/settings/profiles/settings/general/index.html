@@ -1395,9 +1395,39 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../../tasks/" class="md-nav__link">
+    
+    
+      
         
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../tasks/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -1410,7 +1440,57 @@
   
   
 
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Tasks
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/download-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Download Pipeline
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3015,7 +3095,7 @@
   <h1 id="__skip">General</h1>
 
 <h2 id="video-type">Video Type</h2>
-<p><span class="twemoji golden" title="Added in v0.9.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/">v0.9.5</a></p>
+<p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v100-beta-june-30-2026">v0.10.0</a></p>
 <table>
 <thead>
 <tr>
@@ -3030,21 +3110,49 @@
 <td style="text-align: center;">String</td>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">trailer</td>
-<td style="text-align: center;">trailer, teaser, clip, behind the scenes, bloopers, featurette, opening credits</td>
+<td style="text-align: center;">trailer, teaser, clip, behind the scenes, bloopers, featurette, opening credits, other</td>
 </tr>
 </tbody>
 </table>
 <p>Select the type of video to search for and download. Defaults to <code>trailer</code>.</p>
+<p>How the app searches based on the selected type:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Video Type</th>
+<th style="text-align: left;">How the app finds the video</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>trailer</code></td>
+<td style="text-align: left;">YouTube search using the <strong>Search Query</strong> template</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>other</code></td>
+<td style="text-align: left;">YouTube search using the <strong>Search Query</strong> template (custom content via yt-dlp)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>teaser</code>, <code>clip</code>, <code>behind the scenes</code>, <code>bloopers</code>, <code>featurette</code>, <code>opening credits</code></td>
+<td style="text-align: left;">TMDB API lookup — requires a TMDB API Key</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
-<p class="admonition-title">TMDB API Key required for non-trailer types</p>
-<p>Searching for video types other than <code>trailer</code> requires a TMDB API Key to be set in <strong>Settings &gt; General &gt; Integrations</strong>. Without it, the profile will fall back to searching YouTube directly, which may yield less accurate results.</p>
+<p class="admonition-title">TMDB API Key required for specific video types</p>
+<p>Searching for <code>teaser</code>, <code>clip</code>, <code>behind the scenes</code>, <code>bloopers</code>, <code>featurette</code>, and <code>opening credits</code> requires a TMDB API Key to be set in <strong>Settings &gt; General &gt; Integrations</strong>. Without it, those profiles will mark items as <code>Not Available</code> instead of downloading.</p>
+<p><code>trailer</code> and <code>other</code> always use YouTube search and do <strong>not</strong> require a TMDB API Key.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Use <code>other</code> for fully custom downloads</p>
+<p>Set <strong>Video Type</strong> to <code>other</code> and customise the <strong>Search Query</strong> template to download any content via yt-dlp — music videos, interviews, behind-the-scenes reels that aren't in TMDB, etc. The <code>{video_type}</code> placeholder resolves to <code>other</code> in this mode, so you can use it in your file name template to keep files organised.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Use separate profiles with different video types to download, for example, both a trailer and a featurette for the same media item.</p>
 </div>
 <h2 id="for-movies">For Movies</h2>
-<p><span class="twemoji golden" title="Added in v0.9.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/">v0.9.5</a></p>
+<p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v100-beta-june-30-2026">v0.10.0</a></p>
 <table>
 <thead>
 <tr>
@@ -3073,7 +3181,7 @@
 <p>When upgrading from a version before 0.9.5, this value is automatically detected for existing profiles based on their filters and name. Profiles where the scope cannot be determined are <strong>disabled</strong> and must be reviewed manually.</p>
 </div>
 <h2 id="download-season-videos">Download Season Videos</h2>
-<p><span class="twemoji golden" title="Added in v0.9.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/">v0.9.5</a></p>
+<p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v100-beta-june-30-2026">v0.10.0</a></p>
 <div class="admonition note">
 <p>Only available on <strong>Series</strong> profiles (<code>For Movies = false</code>).</p>
 </div>
@@ -3097,7 +3205,7 @@
 </table>
 <p>When enabled, Trailarr creates one download tracking entry per season (plus one for the series overall) and searches for a trailer for each season separately. Disabled by default — existing series behaviour (one trailer per series) is unchanged until you opt in.</p>
 <h2 id="max-count">Max Count</h2>
-<p><span class="twemoji golden" title="Added in v0.9.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/">v0.9.5</a></p>
+<p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v100-beta-june-30-2026">v0.10.0</a></p>
 <table>
 <thead>
 <tr>
@@ -3229,20 +3337,44 @@
 </tr>
 </tbody>
 </table>
-<p>This setting indicates whether Trailarr should stop monitoring the media item after a successful download using this profile. Useful for trailer profiles where you want to download multiple trailers or extras for the same media item.</p>
-<p>This setting will save the downloaded video id as the trailer id for the media after a successful download. So, if you are creating a profile to download additional videos (like extras or optional other language trailers), set this to <code>false</code>.</p>
+<p>When enabled, Trailarr will unmonitor the media item <strong>and cancel all other pending downloads</strong> across every profile once this profile successfully downloads a video.</p>
+<p><strong>How the download loop works:</strong> Trailarr only processes rows in <code>Pending</code> status. Once a profile's row transitions to <code>Downloaded</code>, <code>Skipped</code>, or <code>Not Available</code>, it is never re-processed. This means the loop naturally stops working on a media item once every profile row is resolved — <code>Stop Monitoring</code> is an explicit override on top of that, not a requirement for the loop to stop.</p>
+<div class="admonition warning">
+<p class="admonition-title">Stop Monitoring cancels all other profiles for that media</p>
+<p>When a download succeeds and <code>Stop Monitoring</code> is <code>true</code>, Trailarr marks every other <code>Pending</code> row for that media item — across <strong>all</strong> profiles — as <code>Skipped</code>. This includes rows for TMDB-based video types (featurette, teaser, etc.) that may not have found a video yet.</p>
+<p><strong>If you have any TMDB-type profiles alongside a trailer profile, set <code>Stop Monitoring</code> to <code>false</code> on the trailer profile</strong>, otherwise the featurette / teaser rows will be skipped as soon as the trailer lands, before TMDB has a chance to find those videos.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Use Stop Monitoring only when you want to fully stop after this profile</p>
+<p>Leave <code>Stop Monitoring</code> as <code>false</code> (the default) if you want all your profiles to independently run to completion. Set it to <code>true</code> only on the <em>last</em> profile you want to run — the one where a successful download means you're done with that media item entirely.</p>
+</div>
 <div class="admonition example">
-<p class="admonition-title">Example</p>
-<p>If you want to download 2 trailers (English and Spanish) for every media item, you would create trailer profiles like this:</p>
+<p class="admonition-title">Multiple language trailers</p>
+<p>Download a Spanish trailer first, then an English trailer, and stop after the English one:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>    Profile Name: Spanish Trailer
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Stop Monitoring: false
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    Priority: 100
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    -------------------------------
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    Profile Name: English Trailer
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    Stop Monitoring: true
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    Priority: 0 (or any lower number than the Spanish Trailer profile)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    Priority: 0
 </span></code></pre></div>
-<p>This way, Trailarr will first use the <code>Spanish Trailer</code> profile to download the Spanish trailer. Since <code>Stop Monitoring</code> is set to <code>false</code>, Trailarr will continue to monitor the media item after the download. Next, it will use the <code>English Trailer</code> profile to download the English trailer. After this download, since <code>Stop Monitoring</code> is set to <code>true</code>, Trailarr will stop monitoring the media item.</p>
+<p>Trailarr processes the higher-priority Spanish profile first. Because <code>Stop Monitoring</code> is <code>false</code>, the English profile's row remains <code>Pending</code> and is picked up next. After the English trailer downloads, <code>Stop Monitoring</code> is <code>true</code> so the media is unmonitored and any remaining pending rows are skipped.</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Trailer + featurette (TMDB)</p>
+<p>Download a trailer via YouTube search and a featurette via TMDB, without either cancelling the other:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>    Profile Name: Movie Trailer
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    Video Type: trailer
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    Stop Monitoring: false   ← must be false, or featurette row gets skipped
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    Priority: 10
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    -------------------------------
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    Profile Name: Movie Featurette
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    Video Type: featurette   ← uses TMDB; video may appear days after release
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    Stop Monitoring: false
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    Priority: 0
+</span></code></pre></div>
+<p>Both profiles run independently. If TMDB has no featurette yet, that row stays <code>Not Available</code> and will not block or affect the trailer download.</p>
 </div>
 
 
