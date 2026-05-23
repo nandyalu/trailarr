@@ -1395,9 +1395,39 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../../tasks/" class="md-nav__link">
+    
+    
+      
         
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../tasks/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -1410,7 +1440,57 @@
   
   
 
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Tasks
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/download-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Download Pipeline
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3061,6 +3141,18 @@
 <tr>
 <td style="text-align: right;">year</td>
 <td style="text-align: left;">Year of the media. Eg: '1999'</td>
+</tr>
+<tr>
+<td style="text-align: right;">season</td>
+<td style="text-align: left;">Season number for series downloads; <code>0</code> for the series overall. Eg: '1'</td>
+</tr>
+<tr>
+<td style="text-align: right;">sequence</td>
+<td style="text-align: left;">Download sequence number when <strong>Max Count</strong> &gt; 1. Eg: '1' for the first, '2' for the second.</td>
+</tr>
+<tr>
+<td style="text-align: right;">video_type</td>
+<td style="text-align: left;">Video type from the profile. Eg: 'trailer', 'featurette', 'other'</td>
 </tr>
 </tbody>
 </table>
