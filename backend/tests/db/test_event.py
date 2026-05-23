@@ -46,7 +46,7 @@ class TestEventRepo:
             txdb_id="tt1234567",
         )
         result = media_repo.create_or_update_bulk([media_data])
-        self.media, _, _, _ = result[0]
+        self.media, _, _, _, _ = result[0]
 
     def test_create_event(self):
         event_data = EventCreate(
@@ -197,7 +197,7 @@ class TestEventServiceHelpers:
             txdb_id="tt7654321",
         )
         result = media_repo.create_or_update_bulk([media_data])
-        self.media, _, _, _ = result[0]
+        self.media, _, _, _, _ = result[0]
 
     def test_track_media_added(self):
         from services import event_service
@@ -212,7 +212,7 @@ class TestEventServiceHelpers:
             monitor=True,
         )
         result = media_repo.create_or_update_bulk([media_data])
-        test_media, _, _, _ = result[0]
+        test_media, _, _, _, _ = result[0]
 
         event_service.track_media_added(
             media=test_media,

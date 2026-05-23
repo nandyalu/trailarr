@@ -24,11 +24,13 @@ class TmdbPendingRow:
     season: int
     video_type: str
     status: TrailerStatusEnum
+    tmdb_language: str
+    youtube_id: str | None
 
 
 @read_session
 def get_pending_for_tmdb_refresh(*, _session: Session = None) -> list[TmdbPendingRow]:  # type: ignore
-    """Return PENDING/NOT_AVAILABLE rows for monitored media, with joined video_type."""
+    """Return PENDING/NOT_AVAILABLE rows for monitored media, with joined video_type and tmdb_language."""
     stmt = (
         select(
             MediaTrailerStatus.id,
@@ -36,7 +38,9 @@ def get_pending_for_tmdb_refresh(*, _session: Session = None) -> list[TmdbPendin
             MediaTrailerStatus.profile_id,
             MediaTrailerStatus.season,
             MediaTrailerStatus.status,
+            MediaTrailerStatus.youtube_id,
             TrailerProfile.video_type,
+            TrailerProfile.tmdb_language,
         )
         .join(TrailerProfile, TrailerProfile.id == MediaTrailerStatus.profile_id)
         .join(Media, Media.id == MediaTrailerStatus.media_id)
@@ -57,6 +61,8 @@ def get_pending_for_tmdb_refresh(*, _session: Session = None) -> list[TmdbPendin
             season=r.season,
             video_type=str(r.video_type),
             status=r.status,
+            tmdb_language=str(r.tmdb_language) if r.tmdb_language else "",
+            youtube_id=r.youtube_id,
         )
         for r in rows
     ]
@@ -205,6 +211,24 @@ def get_pending_rows(limit: int = 100, *, _session: Session = None) -> list[Medi
     return list(_session.exec(stmt).all())
 
 
+@write_session
+def update_row_youtube_id(
+    row_id: int,
+    youtube_id: str | None,
+    *,
+    _session: Session = None,  # type: ignore
+) -> bool:
+    """Cache a TMDB-sourced YouTube key on a status row (never writes to media.youtube_trailer_id)."""
+    row = _session.get(MediaTrailerStatus, row_id)
+    if row is None:
+        return False
+    row.youtube_id = youtube_id
+    row.updated_at = datetime.now(timezone.utc)
+    _session.add(row)
+    _session.commit()
+    return True
+
+
 @read_session
 def get_all_rows(*, _session: Session = None) -> list[dict]:  # type: ignore
     """Return all rows as raw dicts with joined profile_name and video_type."""
@@ -212,7 +236,7 @@ def get_all_rows(*, _session: Session = None) -> list[dict]:  # type: ignore
         """
         SELECT
             mts.id, mts.media_id, mts.profile_id, mts.season, mts.sequence,
-            mts.status, mts.source, mts.linked_download_id,
+            mts.status, mts.source, mts.linked_download_id, mts.youtube_id,
             mts.created_at, mts.updated_at,
             tp.video_type,
             cf.filter_name AS profile_name
@@ -312,6 +336,28 @@ def on_file_deleted(download_id: int, *, _session: Session = None) -> int:  # ty
     return count
 
 
+@read_session
+def get_first_pending_row_for_profile(
+    media_id: int,
+    profile_id: int,
+    season: int = 0,
+    *,
+    _session: Session = None,  # type: ignore
+) -> MediaTrailerStatus | None:
+    """Return the lowest-sequence PENDING row for (media_id, profile_id, season)."""
+    return _session.exec(
+        select(MediaTrailerStatus)
+        .where(
+            MediaTrailerStatus.media_id == media_id,
+            MediaTrailerStatus.profile_id == profile_id,
+            col(MediaTrailerStatus.season) == season,
+            MediaTrailerStatus.status == TrailerStatusEnum.PENDING,
+        )
+        .order_by(col(MediaTrailerStatus.sequence))
+        .limit(1)
+    ).first()
+
+
 @write_session
 def delete_undownloaded_rows_for_profile(
     profile_id: int,
@@ -325,6 +371,7 @@ def delete_undownloaded_rows_for_profile(
             MediaTrailerStatus.profile_id == profile_id,
             col(MediaTrailerStatus.media_id).in_(media_ids),
             MediaTrailerStatus.linked_download_id == None,  # noqa: E711
+            MediaTrailerStatus.status != TrailerStatusEnum.UNMONITORED,
         )
     ).all()
     count = len(rows)

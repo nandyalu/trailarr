@@ -112,9 +112,13 @@ class BaseConnectionManager(ABC):
         return False
 
     def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
+        from services.trailer_profile_service import (
+            append_season_rows_for_media,
+            create_rows_for_new_media,
+        )
         results = media_repo.create_or_update_bulk(media_data)
         media_read_dc_list = []
-        for media_read, created, updated, arr_linked in results:
+        for media_read, created, updated, arr_linked, old_season_count in results:
             self.media_ids.append(media_read.id)
             if created:
                 self.created_count += 1
@@ -124,6 +128,7 @@ class BaseConnectionManager(ABC):
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",
                 )
+                create_rows_for_new_media(media_read)
             if arr_linked:
                 event_service.track_arr_linked(
                     media_id=media_read.id,
@@ -133,6 +138,8 @@ class BaseConnectionManager(ABC):
                 )
             if updated:
                 self.updated_count += 1
+                if not media_read.is_movie and (media_read.season_count or 0) > old_season_count:
+                    append_season_rows_for_media(media_read.id)
             media_read_dc_list.append(MediaReadDC(**media_read.model_dump(), created=created))
         return media_read_dc_list
 
@@ -188,8 +195,14 @@ class BaseConnectionManager(ABC):
         for media_read in media_res:
             if media_read.monitor:
                 monitor_media = True
-            else:
+            elif media_read.created or self.monitor == MonitorType.MONITOR_SYNC:
+                # New items: apply the connection's monitoring rule.
+                # SYNC: always mirror Arr's monitored flag, even on existing items.
                 monitor_media = self._check_monitoring(media_read.created, media_read.arr_monitored)
+            else:
+                # Existing item already unmonitored: preserve False.
+                # MONITOR_MISSING would otherwise re-enable it on every refresh.
+                monitor_media = False
             if monitor_media != media_read.monitor:
                 event_service.track_monitor_changed(
                     media_id=media_read.id,

@@ -64,6 +64,7 @@ class VideoType(str, Enum):
     BLOOPERS = "bloopers"
     FEATURETTE = "featurette"
     OPENING_CREDITS = "opening credits"
+    OTHER = "other"
 
 
 class _TrailerProfileBase(AppSQLModel):
@@ -148,6 +149,7 @@ class _TrailerProfileBase(AppSQLModel):
         default=1080,
         sa_column=Column(Integer, server_default="1080", nullable=False),
     )
+    tmdb_language: str = Field(default="")
 
 
 class TrailerProfile(_TrailerProfileBase, table=True):

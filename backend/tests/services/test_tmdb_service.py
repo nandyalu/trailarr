@@ -20,6 +20,8 @@ def _make_pending_row(
     season: int = 0,
     video_type: str = VideoType.TRAILER,
     status: TrailerStatusEnum = TrailerStatusEnum.PENDING,
+    tmdb_language: str = "",
+    youtube_id: str | None = None,
 ):
     from db.repos.trailer_status import TmdbPendingRow
     return TmdbPendingRow(
@@ -29,6 +31,8 @@ def _make_pending_row(
         season=season,
         video_type=video_type,
         status=status,
+        tmdb_language=tmdb_language,
+        youtube_id=youtube_id,
     )
 
 
@@ -212,6 +216,8 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.app_settings") as mock_settings,
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row]),
             patch("services.tmdb_service.media_repo.read") as mock_read,
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
+            patch("services.tmdb_service.trailer_status_repo.update_row_status"),
         ):
             mock_settings.tmdb_api_key = "key"
             await refresh_tmdb_videos(stop_event)
@@ -227,6 +233,8 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row]),
             patch("services.tmdb_service.media_repo.read", return_value=None),
             patch("services.tmdb_service._fetch_tmdb_videos") as mock_fetch,
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
+            patch("services.tmdb_service.trailer_status_repo.update_row_status"),
         ):
             mock_settings.tmdb_api_key = "key"
             await refresh_tmdb_videos()
@@ -243,6 +251,8 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row]),
             patch("services.tmdb_service.media_repo.read", return_value=media),
             patch("services.tmdb_service._fetch_tmdb_videos") as mock_fetch,
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
+            patch("services.tmdb_service.trailer_status_repo.update_row_status"),
         ):
             mock_settings.tmdb_api_key = "key"
             await refresh_tmdb_videos()
@@ -250,7 +260,7 @@ class TestRefreshTmdbVideos:
         mock_fetch.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_trailer_type_with_yt_key_updates_ytid(self):
+    async def test_trailer_type_with_yt_key_caches_row_youtube_id(self):
         row = _make_pending_row(video_type=VideoType.TRAILER, status=TrailerStatusEnum.PENDING)
         media = _make_media()
 
@@ -260,13 +270,13 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.media_repo.read", return_value=media),
             patch("services.tmdb_service._fetch_tmdb_videos", new_callable=AsyncMock,
                   return_value=[{"site": "YouTube", "type": "Trailer", "key": "yt_key_abc"}]),
-            patch("services.tmdb_service.media_repo.update_ytid") as mock_ytid,
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id") as mock_cache,
             patch("services.tmdb_service.trailer_status_repo.update_row_status") as mock_status,
         ):
             mock_settings.tmdb_api_key = "key"
             await refresh_tmdb_videos()
 
-        mock_ytid.assert_called_once_with(1, "yt_key_abc")
+        mock_cache.assert_called_once_with(row.row_id, "yt_key_abc")
         mock_status.assert_not_called()
 
     @pytest.mark.asyncio
@@ -283,6 +293,7 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.media_repo.read", return_value=media),
             patch("services.tmdb_service._fetch_tmdb_videos", new_callable=AsyncMock,
                   return_value=[{"site": "YouTube", "type": "Teaser", "key": "ts_key"}]),
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
             patch("services.tmdb_service.trailer_status_repo.update_row_status") as mock_status,
         ):
             mock_settings.tmdb_api_key = "key"
@@ -303,6 +314,7 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row]),
             patch("services.tmdb_service.media_repo.read", return_value=media),
             patch("services.tmdb_service._fetch_tmdb_videos", new_callable=AsyncMock, return_value=[]),
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
             patch("services.tmdb_service.trailer_status_repo.update_row_status") as mock_status,
         ):
             mock_settings.tmdb_api_key = "key"
@@ -322,7 +334,7 @@ class TestRefreshTmdbVideos:
 
         fetch_call_count = 0
 
-        async def fake_fetch(session, tmdb_id, is_movie, season, api_key):
+        async def fake_fetch(session, tmdb_id, is_movie, season, api_key, language=""):
             nonlocal fetch_call_count
             fetch_call_count += 1
             if tmdb_id == "12345" and fetch_call_count == 1:
@@ -334,6 +346,7 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row1, row2]),
             patch("services.tmdb_service.media_repo.read", side_effect=fake_read),
             patch("services.tmdb_service._fetch_tmdb_videos", side_effect=fake_fetch),
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
             patch("services.tmdb_service.trailer_status_repo.update_row_status"),
         ):
             mock_settings.tmdb_api_key = "key"
@@ -349,7 +362,7 @@ class TestRefreshTmdbVideos:
         media = _make_media()
         fetch_calls = []
 
-        async def fake_fetch(session, tmdb_id, is_movie, season, api_key):
+        async def fake_fetch(session, tmdb_id, is_movie, season, api_key, language=""):
             fetch_calls.append((tmdb_id, season))
             return []
 
@@ -358,10 +371,11 @@ class TestRefreshTmdbVideos:
             patch("services.tmdb_service.trailer_status_repo.get_pending_for_tmdb_refresh", return_value=[row1, row2]),
             patch("services.tmdb_service.media_repo.read", return_value=media),
             patch("services.tmdb_service._fetch_tmdb_videos", side_effect=fake_fetch),
+            patch("services.tmdb_service.trailer_status_repo.update_row_youtube_id"),
             patch("services.tmdb_service.trailer_status_repo.update_row_status"),
         ):
             mock_settings.tmdb_api_key = "key"
             await refresh_tmdb_videos()
 
-        # Only one fetch for media_id=1, season=0 (both rows share the same group)
+        # Only one fetch for media_id=1, season=0, tmdb_language="" (both rows share the same group)
         assert len(fetch_calls) == 1

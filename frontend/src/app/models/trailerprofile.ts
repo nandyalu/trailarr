@@ -38,6 +38,7 @@ export interface TrailerProfileRead {
   notify_plex?: boolean;
   skip_if_plex_trailer?: boolean;
   skip_if_plex_trailer_resolution?: number;
+  tmdb_language?: string;
 }
 
 export interface TrailerProfileCreate {
@@ -77,4 +78,5 @@ export interface TrailerProfileCreate {
   notify_plex?: boolean;
   skip_if_plex_trailer?: boolean;
   skip_if_plex_trailer_resolution?: number;
+  tmdb_language?: string;
 }

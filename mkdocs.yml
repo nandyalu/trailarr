@@ -138,7 +138,9 @@ nav:
       - user-guide/library/index.md
       - Media Details: user-guide/library/media-details/index.md
     - Events: user-guide/events/index.md
-    - Tasks: user-guide/tasks/index.md
+    - Tasks:
+      - user-guide/tasks/index.md
+      - Download Pipeline: user-guide/tasks/download-pipeline.md
     - Logs: user-guide/logs/index.md
     - Settings: 
       - user-guide/settings/index.md

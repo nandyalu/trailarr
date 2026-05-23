@@ -140,7 +140,9 @@ class PlexConnectionManager:
             monitor_changed = False
             if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
                 new_monitor = self._check_monitoring()
-                if new_monitor != existing.monitor:
+                # Only allow turning monitoring off (MONITOR_NONE); never re-enable
+                # monitoring on an existing item that was already unmonitored.
+                if existing.monitor and not new_monitor:
                     event_service.track_monitor_changed(
                         media_id=existing.id,
                         old_monitor=existing.monitor,
@@ -181,6 +183,8 @@ class PlexConnectionManager:
                     source_detail="PlexRefresh",
                 )
                 media_repo.update_monitor_only(media_read.id, monitor)
+            from services.trailer_profile_service import create_rows_for_new_media
+            create_rows_for_new_media(media_read)
             self._stats_added += 1
 
     async def _process_movie_section(self, section: PlexLibrarySection) -> None:

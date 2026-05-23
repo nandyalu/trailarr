@@ -53,8 +53,8 @@ class TestReadByFolderPath:
             _make_media(cid, f"tt000{cid}1", self.movie_path),
             _make_media(cid, f"tt000{cid}2", self.show_path),
         ])
-        self.movie, _, _, _ = result[0]
-        self.show, _, _, _ = result[1]
+        self.movie, _, _, _, _ = result[0]
+        self.show, _, _, _, _ = result[1]
 
     def test_exact_match_returns_media(self):
         found = media_repo.read_by_folder_path(self.movie_path)
@@ -98,7 +98,7 @@ class TestReadArrLinkedToPlexConnection:
         result = media_repo.create_or_update_bulk([
             _make_media(self.radarr_conn.id, "tt1111111", "/media/movies/Linked"),
         ])
-        self.arr_media, _, _, _ = result[0]
+        self.arr_media, _, _, _, _ = result[0]
         media_repo.update_plex_fields(
             media_id=self.arr_media.id,
             plex_rating_key="rk1",
@@ -109,7 +109,7 @@ class TestReadArrLinkedToPlexConnection:
         result2 = media_repo.create_or_update_bulk([
             _make_media(self.plex_conn.id, "tt2222222", "/media/movies/PlexOnly"),
         ])
-        self.plex_only, _, _, _ = result2[0]
+        self.plex_only, _, _, _, _ = result2[0]
         media_repo.update_plex_fields(
             media_id=self.plex_only.id,
             plex_rating_key="rk2",

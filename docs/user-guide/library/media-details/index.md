@@ -90,7 +90,7 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 ## Trailer Profiles Section
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 This section shows the per-profile trailer tracking status for the media item. Every [Trailer Profile](../../settings/profiles/index.md) that applies to this media has one or more rows here, each with its own independent status.
 

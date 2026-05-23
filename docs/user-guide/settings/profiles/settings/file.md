@@ -63,6 +63,9 @@ You can use the following placeholders in the file name:
 | resolution           | Resolution of the media. Eg: '1080p'                                                                          |
 | vcodec               | Video codec of the media. Eg: 'h264'                                                                          |
 | youtube_id           | YouTube ID of the trailer. Eg: 'KbWtUJjMj3Y'                                                                  |
+| season               | Season number for series downloads; `0` for the series overall. Eg: '1'                                       |
+| sequence             | Download sequence number when **Max Count** > 1. Eg: '1' for the first, '2' for the second.                  |
+| video_type           | Video type from the profile. Eg: 'trailer', 'featurette', 'other'                                             |
 
 !!! info
     Filename will be cleaned to remove restricted characters `<>:"/\\|?*\x00-\x1F` to ensure compatibility with filesystems.
@@ -118,6 +121,9 @@ You can use the following placeholders in the custom save folder path:
 | resolution           | Resolution of the media. Eg: '1080p'                                                                          |
 | vcodec               | Video codec of the media. Eg: 'h264'                                                                          |
 | youtube_id           | YouTube ID of the trailer. Eg: 'KbWtUJjMj3Y'                                                                  |
+| season               | Season number for series downloads; `0` for the series overall. Eg: '1'                                       |
+| sequence             | Download sequence number when **Max Count** > 1. Eg: '1' for the first, '2' for the second.                  |
+| video_type           | Video type from the profile. Eg: 'trailer', 'featurette', 'other'                                             |
 
 !!! info
     Filename will be cleaned to remove restricted characters `<>:"/\\|?*\x00-\x1F` to ensure compatibility with filesystems.

@@ -24,6 +24,9 @@ You can use the following placeholders in the file name:
 | title_slug           | TMDB ID for Movies and a hash seperated title for Series. Eg: '603' (movie) or 'the-big-bang-theory' (series) |
 | txdb_id              | TMDB ID for Movies, TVDB ID for Series. Eg: '603'                                                             |
 | year                 | Year of the media. Eg: '1999'                                                                                 |
+| season               | Season number for series downloads; `0` for the series overall. Eg: '1'                                       |
+| sequence             | Download sequence number when **Max Count** > 1. Eg: '1' for the first, '2' for the second.                  |
+| video_type           | Video type from the profile. Eg: 'trailer', 'featurette', 'other'                                             |
 
 ## Minimum Duration
 

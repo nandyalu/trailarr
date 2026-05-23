@@ -2,6 +2,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Generator
 
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, desc, or_, select, text
 from sqlmodel.sql.expression import SelectOfScalar
 
@@ -27,7 +28,7 @@ def _to_read(db: Media) -> MediaRead:
 
 
 def _to_read_list(items) -> list[MediaRead]:
-    return [MediaRead.model_validate(m) for m in items]
+    return [MediaRead.model_validate(m, from_attributes=True) for m in items]
 
 
 def has_updated(
@@ -102,7 +103,7 @@ def read_all(
     *,
     _session: Session = None,  # type: ignore
 ) -> list[MediaRead]:
-    stmt = select(Media)
+    stmt = select(Media).options(selectinload(Media.downloads))  # type: ignore[arg-type]
     if movies_only is not None:
         stmt = stmt.where(col(Media.is_movie).is_(movies_only))
     if filter_by:
@@ -119,7 +120,9 @@ def read_all_raw(*, _session: Session = None) -> list[dict]:  # type: ignore
 
 @read_session
 def read_all_by_connection(connection_id: int, *, _session: Session = None) -> list[MediaRead]:  # type: ignore
-    items = _session.exec(select(Media).where(Media.connection_id == connection_id)).all()
+    items = _session.exec(
+        select(Media).options(selectinload(Media.downloads)).where(Media.connection_id == connection_id)  # type: ignore[arg-type]
+    ).all()
     return _to_read_list(items)
 
 
@@ -270,25 +273,25 @@ def create_or_update_bulk(
     media_create_list: list[MediaCreate],
     *,
     _session: Session = None,  # type: ignore
-) -> list[tuple[MediaRead, bool, bool, bool]]:
-    """Create or update multiple media items. Returns list of (MediaRead, created, updated, arr_linked)."""
+) -> list[tuple[MediaRead, bool, bool, bool, int]]:
+    """Create or update multiple media items. Returns list of (MediaRead, created, updated, arr_linked, old_season_count)."""
     from db.repos import connection as connection_repo
     connection_ids = {m.connection_id for m in media_create_list}
     for cid in connection_ids:
         if not connection_repo.exists(cid, _session=_session):
             raise ItemNotFoundError("Connection", cid)
 
-    results: list[tuple[Media, bool, bool, bool]] = []
+    results: list[tuple[Media, bool, bool, bool, int]] = []
     for media_create in media_create_list:
-        db, created, updated, arr_linked = _create_or_update(media_create, _session)
-        results.append((db, created, updated, arr_linked))
+        db, created, updated, arr_linked, old_season_count = _create_or_update(media_create, _session)
+        results.append((db, created, updated, arr_linked, old_season_count))
     _session.commit()
-    return [(_to_read(db), created, updated, arr_linked) for db, created, updated, arr_linked in results]
+    return [(_to_read(db), created, updated, arr_linked, old_season_count) for db, created, updated, arr_linked, old_season_count in results]
 
 
 def _create_or_update(
     media_create: MediaCreate, session: Session
-) -> tuple[Media, bool, bool, bool]:
+) -> tuple[Media, bool, bool, bool, int]:
     """Internal: create or update a single media row without committing."""
     from db.models.event import EventSource
     db = _read_if_exists(media_create.connection_id, media_create.txdb_id, session)
@@ -299,6 +302,7 @@ def _create_or_update(
             db = plex_row
             arr_linked = True
     if db:
+        old_season_count = db.season_count or 0
         update_data = media_create.model_dump(
             exclude_unset=True,
             exclude_none=True,
@@ -317,11 +321,11 @@ def _create_or_update(
             db.updated_at = datetime.now(timezone.utc)
             updated = True
         session.add(db)
-        return db, False, updated, arr_linked
+        return db, False, updated, arr_linked, old_season_count
     else:
         db = Media.model_validate(media_create)
         session.add(db)
-        return db, True, False, False
+        return db, True, False, False, 0
 
 
 def _read_if_exists(connection_id: int, txdb_id: str, session: Session) -> Media | None:

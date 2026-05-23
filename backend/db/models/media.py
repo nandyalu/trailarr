@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from pydantic import field_validator
+from pydantic import computed_field, field_validator
 from sqlalchemy import Boolean, Column, String, text
 from sqlmodel import Field, Integer, Relationship
 
@@ -130,6 +130,22 @@ class MediaRead(MediaBase):
     downloads: list[DownloadRead] = []
     # files_info: list[FileFolderInfoRead] = Field(default=[])
     # files_tree: FileFolderInfoRead | None = None
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def trailer_exists(self) -> bool:
+        """True if any download with file_exists=True and video_type='trailer' exists."""
+        return any(d.file_exists and d.video_type == "trailer" for d in self.downloads)
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def status(self) -> str:
+        """Computed MonitorStatus: downloaded / monitored / missing."""
+        if self.trailer_exists:
+            return "downloaded"
+        if self.monitor:
+            return "monitored"
+        return "missing"
 
     @field_validator("added_at", "updated_at", "downloaded_at", mode="after")
     @classmethod

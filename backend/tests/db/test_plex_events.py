@@ -51,7 +51,7 @@ class TestTrackPlexLinked:
                 txdb_id="tt8881001",
             )
         ])
-        self.media, _, _, _ = result[0]
+        self.media, _, _, _, _ = result[0]
 
     def test_creates_plex_linked_event(self):
         track_plex_linked(
@@ -93,7 +93,7 @@ class TestTrackPlexUnlinked:
                 txdb_id="tt8882001",
             )
         ])
-        self.media, _, _, _ = result[0]
+        self.media, _, _, _, _ = result[0]
 
     def test_creates_plex_unlinked_event(self):
         track_plex_unlinked(
@@ -129,7 +129,7 @@ class TestTrackPlexScanTriggered:
                 txdb_id="tt8883001",
             )
         ])
-        self.media, _, _, _ = result[0]
+        self.media, _, _, _, _ = result[0]
 
     def test_creates_plex_scan_triggered_event(self):
         track_plex_scan_triggered(

@@ -105,7 +105,7 @@ To change the password, go to `Settings > About > Password` in web interface.
 
 ### `TMDB_API_KEY`
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 - Default: `(empty)`
 

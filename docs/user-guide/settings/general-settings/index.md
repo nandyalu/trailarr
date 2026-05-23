@@ -138,7 +138,7 @@ Enable this setting to allow the `Trailer Cleanup` task to automatically delete 
 
 ### TMDB API Key
 
-{{ version_badge("add", "0.9.5") }}
+{{ version_badge("add", "0.10.0") }}
 
 - Default is `(empty)`
 - Environment variable: `TMDB_API_KEY`

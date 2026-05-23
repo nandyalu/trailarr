@@ -16,7 +16,13 @@ from download.utils import extract_youtube_id
 logger = ModuleLogger("TrailersDownloader")
 
 
-def __replace_media_options(query: str, media: MediaRead) -> str:
+def __replace_media_options(
+    query: str,
+    media: MediaRead,
+    season: int = 0,
+    sequence: int = 1,
+    video_type: str = "trailer",
+) -> str:
     if not query or not media:
         return query
     format_opts = media.model_dump()
@@ -25,6 +31,9 @@ def __replace_media_options(query: str, media: MediaRead) -> str:
     _filename_wo_ext, _ = os.path.splitext(media.media_filename)
     format_opts["media_filename"] = _filename_wo_ext
     format_opts["language"] = language_names.get(media.language, media.language)
+    format_opts["season"] = season
+    format_opts["sequence"] = sequence
+    format_opts["video_type"] = video_type
     _query = query.format(**format_opts)
     _query = re.sub(r"\s+", " ", _query).strip()
     return _query
@@ -95,6 +104,9 @@ def _yt_search_filter(
     media: MediaRead,
     profile: TrailerProfileRead,
     exclude: list[str] | None,
+    season: int = 0,
+    sequence: int = 1,
+    video_type: str = "trailer",
 ):
     id = info.get("id")
     if not id:
@@ -123,18 +135,25 @@ def _yt_search_filter(
     if "review" in title.lower():
         logger.debug(f"Skipping review video: {id}")
         return "The video is a review"
-    _include_words = __replace_media_options(profile.include_words, media)
+    _include_words = __replace_media_options(profile.include_words, media, season, sequence, video_type)
     if not __has_included_words(_include_words, title):
         logger.debug(f"Skipping video missing included words: {id}")
         return "The video does not contain all of the included words"
-    _exclude_words = __replace_media_options(profile.exclude_words, media)
+    _exclude_words = __replace_media_options(profile.exclude_words, media, season, sequence, video_type)
     if __has_excluded_words(_exclude_words, title):
         logger.debug(f"Skipping video containing excluded words: {id}")
         return "The video contains an excluded word"
 
 
-def get_search_query(media: MediaRead, profile: TrailerProfileRead, search_length: int = 10) -> str:
-    search_query = __replace_media_options(profile.search_query, media)
+def get_search_query(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    search_length: int = 10,
+    season: int = 0,
+    sequence: int = 1,
+    video_type: str = "trailer",
+) -> str:
+    search_query = __replace_media_options(profile.search_query, media, season, sequence, video_type)
     if search_length < 10:
         search_length = 10
     return f"ytsearch{search_length}: {search_query}"
@@ -156,9 +175,20 @@ def search_yt_for_trailer(
     profile: TrailerProfileRead,
     exclude: list[str] | None = None,
     search_length: int = 10,
+    season: int = 0,
+    sequence: int = 1,
+    video_type: str = "trailer",
 ) -> str | None:
     logger.debug(f"Searching youtube for trailer for '{media.title}'...")
-    filter_func = partial(_yt_search_filter, media=media, profile=profile, exclude=exclude)
+    filter_func = partial(
+        _yt_search_filter,
+        media=media,
+        profile=profile,
+        exclude=exclude,
+        season=season,
+        sequence=sequence,
+        video_type=video_type,
+    )
     options = {
         "format": "bv*+ba/b",
         "match_filter": filter_func,
@@ -176,7 +206,7 @@ def search_yt_for_trailer(
     if profile.ytdlp_extra_options:
         logger.debug(f"Using extra options: {profile.ytdlp_extra_options}")
         add_extra_options(options, profile.ytdlp_extra_options)
-    search_query = get_search_query(media, profile, search_length)
+    search_query = get_search_query(media, profile, search_length, season, sequence, video_type)
     logger.debug(f"Using Search query: {search_query}")
     with YoutubeDL(options) as ydl:  # type: ignore
         search_results = ydl.extract_info(search_query, download=False, process=True)
@@ -202,6 +232,9 @@ def get_video_id(
     profile: TrailerProfileRead,
     exclude: list[str] | None = None,
     search_length: int = 10,
+    season: int = 0,
+    sequence: int = 1,
+    video_type: str = "trailer",
 ) -> str | None:
     video_id = ""
     if media.youtube_trailer_id:
@@ -212,7 +245,10 @@ def get_video_id(
     if video_id:
         media.youtube_trailer_id = video_id
         return video_id
-    video_id = search_yt_for_trailer(media, profile, exclude, search_length=search_length)
+    video_id = search_yt_for_trailer(
+        media, profile, exclude, search_length=search_length,
+        season=season, sequence=sequence, video_type=video_type,
+    )
     if not video_id:
         if search_length >= 30:
             logger.warning(
@@ -224,7 +260,10 @@ def get_video_id(
             f"No trailer found for '{media.title}' with profile"
             f" '{profile.customfilter.filter_name}'. Retrying with longer search length."
         )
-        video_id = get_video_id(media, profile, exclude, search_length=search_length + 10)
+        video_id = get_video_id(
+            media, profile, exclude, search_length=search_length + 10,
+            season=season, sequence=sequence, video_type=video_type,
+        )
     if video_id:
         media.youtube_trailer_id = video_id
     return video_id

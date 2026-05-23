@@ -35,6 +35,7 @@ class DownloadBase(AppSQLModel):
     youtube_id: str = "unknown0000"
     youtube_channel: str = "unknownchannel"
     file_exists: bool = True
+    video_type: str = "trailer"
     profile_id: int = 0  # ID of the TrailerProfile used
     added_at: datetime  # When trailer was downloaded (from file)
     updated_at: datetime  # When file was last modified (from file)

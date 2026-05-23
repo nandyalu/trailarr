@@ -171,13 +171,10 @@ def upgrade() -> None:
 
     logger.info("Backfilled 'for_movies' for existing trailer profiles")
 
-    # --- Drop trailer_exists and status from media ---
-    with op.batch_alter_table("media", schema=None) as batch_op:
-        batch_op.drop_column("trailer_exists")
-        batch_op.drop_column("status")
-    logger.info("Dropped 'trailer_exists' and 'status' columns from media table")
-
     # --- Backfill MediaTrailerStatus ---
+    # NOTE: trailer_exists and status columns are dropped AFTER this backfill
+    # so that Steps 2.5 and 3 can read trailer_exists to avoid creating duplicate
+    # PENDING rows for media that already has a trailer on disk.
     conn = op.get_bind()
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc).isoformat()
@@ -226,8 +223,31 @@ def upgrade() -> None:
     )
     logger.info("Backfilled manual downloaded MediaTrailerStatus rows")
 
-    # Step 3: All remaining media (no confirmed download) → pending.
+    # Step 2.5: Media with trailer_exists=True but no downloaded_at and no existing row.
+    # These items have a trailer on disk that was never formally recorded via the
+    # download pipeline (e.g. manually placed files, or pre-pipeline era records).
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO mediatrailerstatus
+                (media_id, profile_id, season, sequence, status, source,
+                 linked_download_id, created_at, updated_at)
+            SELECT m.id, NULL, 0, 1, 'downloaded', 'manual', NULL, :now, :now
+            FROM media m
+            WHERE m.trailer_exists = 1
+              AND m.downloaded_at IS NULL
+              AND m.id NOT IN (
+                  SELECT mts.media_id FROM mediatrailerstatus mts
+              )
+            """
+        ),
+        {"now": now},
+    )
+    logger.info("Backfilled manual downloaded rows for trailer_exists=1 media without downloaded_at")
+
+    # Step 3: All remaining media with no trailer and no existing row → pending.
     # Includes both monitored and unmonitored; the download task skips unmonitored.
+    # Excludes media covered by Steps 1, 2, and 2.5 via the NOT IN subquery.
     conn.execute(
         sa.text(
             """
@@ -237,11 +257,31 @@ def upgrade() -> None:
             SELECT m.id, NULL, 0, 1, 'pending', 'app', NULL, :now, :now
             FROM media m
             WHERE m.downloaded_at IS NULL
+              AND (m.trailer_exists = 0 OR m.trailer_exists IS NULL)
+              AND m.id NOT IN (
+                  SELECT mts.media_id FROM mediatrailerstatus mts
+              )
             """
         ),
         {"now": now},
     )
     logger.info("Backfilled pending MediaTrailerStatus rows for all remaining media")
+
+    # --- Delete stale filter rows referencing dropped columns ---
+    # trailer_exists and status are no longer on Media; any filter using them
+    # would silently evaluate to False and break create_rows_for_new_media /
+    # _sync_status_rows for ALL existing profiles (including the two default ones).
+    conn.execute(
+        sa.text("DELETE FROM \"filter\" WHERE filter_by IN ('trailer_exists', 'status')")
+    )
+    logger.info("Deleted stale 'trailer_exists' and 'status' filter rows")
+
+    # --- Drop trailer_exists and status from media ---
+    # Dropped AFTER backfill so Steps 2.5 and 3 could use trailer_exists above.
+    with op.batch_alter_table("media", schema=None) as batch_op:
+        batch_op.drop_column("trailer_exists")
+        batch_op.drop_column("status")
+    logger.info("Dropped 'trailer_exists' and 'status' columns from media table")
 
 
 def downgrade() -> None:

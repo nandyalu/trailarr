@@ -4,22 +4,113 @@ Tasks call scan_media_folder() per media item; scan_all_media_folders() in
 tasks/files_scan.py is the orchestration loop that drives it.
 """
 import os
+import re
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 
 from app_logger import ModuleLogger
 import db.repos.download as download_repo
 import db.repos.file_info as file_info_repo
 import db.repos.issue as issue_repo
 import db.repos.media as media_repo
+import db.repos.trailer_profile as trailer_profile_repo
+import db.repos.trailer_status as trailer_status_repo
 from db.models.event import EventSource
 from db.models.issue import EntityType, IssueType
 from db.models.media import MediaRead
 from download.pipeline import record_new_trailer_download
 from services import event_service
 from utils.media_scanner import MediaScanner
+from ws.manager import broadcast as ws_broadcast
 
 logger = ModuleLogger("ScanService")
+
+
+# ─── Tier 1 — Template reverse-match ──────────────────────────────────────────
+
+def _build_filename_pattern(template: str) -> re.Pattern:
+    """Convert a file_name template into a regex for reverse-matching filenames."""
+    parts = re.split(r"\{(\w+)\}", template)
+    seen: set[str] = set()
+    result = ["^"]
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            result.append(re.escape(part))
+        else:
+            var = part
+            if var == "ii":
+                result.append(r"(?:\d+)?")
+                continue
+            named = var not in seen
+            seen.add(var)
+            if var in ("season", "sequence", "year"):
+                result.append(f"(?P<{var}>\\d+)" if named else r"(?:\d+)")
+            elif var == "ext":
+                result.append(f"(?P<{var}>[a-zA-Z0-9]+)" if named else r"(?:[a-zA-Z0-9]+)")
+            else:
+                result.append(f"(?P<{var}>.+?)" if named else r"(?:.+?)")
+    result.append("$")
+    return re.compile("".join(result), re.IGNORECASE)
+
+
+def _attribute_tier1(
+    filename: str,
+    profiles: list,
+    media: MediaRead,
+) -> list[tuple[int, int, int]]:
+    """Return list of (profile_id, season, sequence) via template reverse-match."""
+    matches = []
+    for profile in profiles:
+        if not profile.enabled:
+            continue
+        if media.is_movie != profile.for_movies:
+            continue
+        try:
+            pattern = _build_filename_pattern(profile.file_name)
+        except re.error:
+            logger.debug(f"Could not build pattern for profile {profile.id}: {profile.file_name!r}")
+            continue
+        m = pattern.match(filename)
+        if m:
+            groups = m.groupdict()
+            season = int(groups["season"]) if groups.get("season") is not None else 0
+            sequence = int(groups["sequence"]) if groups.get("sequence") is not None else 1
+            matches.append((profile.id, season, sequence))
+    return matches
+
+
+# ─── Tier 2 — Metadata match ──────────────────────────────────────────────────
+
+def _attribute_tier2(
+    file_path: str,
+    profiles: list,
+    media: MediaRead,
+) -> list[int]:
+    """Return profile_ids whose resolution/duration requirements the file satisfies."""
+    from download.analysis import get_media_info
+    from download.pipeline import get_resolution_label
+
+    info = get_media_info(file_path)
+    if not info:
+        return []
+    video_stream = next((s for s in info.streams if s.codec_type == "video"), None)
+    height = video_stream.coded_height if video_stream else 0
+    file_resolution = get_resolution_label(height)
+    duration = info.duration_seconds
+
+    satisfied = []
+    for profile in profiles:
+        if not profile.enabled:
+            continue
+        if media.is_movie != profile.for_movies:
+            continue
+        if file_resolution < profile.video_resolution:
+            continue
+        if not (profile.min_duration <= duration <= profile.max_duration):
+            continue
+        satisfied.append(profile.id)
+    return satisfied
 
 
 def _ctime_matches_stored(ctime: float, stored: datetime) -> bool:
@@ -69,14 +160,37 @@ async def _process_trailer_changes(
                     f"Trailer file restored: '{t_path}' for '{media.title}' [{media.id}]"
                     " — FILE_DELETED issue resolved."
                 )
+                ws_broadcast("", reload="issues")
 
+    profiles = trailer_profile_repo.read_all()
     new_count = 0
     for t_path in trailer_paths:
         if t_path in existing_paths:
             continue
         new_count += 1
         logger.info(f"Found new trailer file: '{t_path}' for '{media.title}' [{media.id}]")
-        await record_new_trailer_download(media, 0, t_path)
+
+        filename = Path(t_path).name
+        tier1_matches = _attribute_tier1(filename, profiles, media)
+        if tier1_matches:
+            profile_id, season, sequence = tier1_matches[0]
+            matched_profile = next((p for p in profiles if p.id == profile_id), None)
+            vt = (matched_profile.video_type.value if matched_profile and hasattr(matched_profile.video_type, "value") else str(matched_profile.video_type)) if matched_profile else "trailer"
+            row = trailer_status_repo.get_first_pending_row_for_profile(media.id, profile_id, season)
+            status_row_id = row.id if row else None
+            await record_new_trailer_download(media, profile_id, t_path, status_row_id=status_row_id, video_type=vt)
+        else:
+            tier2_matches = _attribute_tier2(t_path, profiles, media)
+            if tier2_matches:
+                profile_id = tier2_matches[0]
+                matched_profile = next((p for p in profiles if p.id == profile_id), None)
+                vt = (matched_profile.video_type.value if matched_profile and hasattr(matched_profile.video_type, "value") else str(matched_profile.video_type)) if matched_profile else "trailer"
+                row = trailer_status_repo.get_first_pending_row_for_profile(media.id, profile_id)
+                status_row_id = row.id if row else None
+                await record_new_trailer_download(media, profile_id, t_path, status_row_id=status_row_id, video_type=vt)
+            else:
+                await record_new_trailer_download(media, 0, t_path, video_type="other")
+
         event_service.track_trailer_detected(
             media_id=media.id,
             source=source,
@@ -110,6 +224,7 @@ async def _process_trailer_changes(
                 ),
                 details=download.path,
             )
+            ws_broadcast("", reload="issues")
 
     return new_count, missing_count
 

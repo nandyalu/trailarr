@@ -53,6 +53,7 @@ class MediaTrailerStatusBase(AppSQLModel):
         sa_column=Column(String, nullable=False),
     )
     linked_download_id: int | None = None
+    youtube_id: str | None = None
 
 
 class MediaTrailerStatus(MediaTrailerStatusBase, table=True):

@@ -1,5 +1,5 @@
 import {FileFolderInfo} from './filefolderinfo';
-import {buildTrailerStatusMap, computeMonitorStatus, computeTrailerExists, MediaTrailerStatus} from './mediatrailerstatus';
+import {buildTrailerStatusMap, computeMonitorStatus, MediaTrailerStatus} from './mediatrailerstatus';
 
 export interface Download {
   id: number;
@@ -18,6 +18,7 @@ export interface Download {
   youtube_id: string;
   youtube_channel: string;
   file_exists: boolean;
+  video_type: string; // e.g., "trailer", "teaser", "featurette", "other"
   profile_id: number; // ID of the TrailerProfile used
   media_id: number;
   added_at: Date; // When trailer was downloaded
@@ -44,6 +45,11 @@ export function mapDownload(download: any): Download {
 }
 
 export {buildTrailerStatusMap} from './mediatrailerstatus';
+
+/** Returns true if any download has file_exists=true AND video_type='trailer'. */
+export function computeTrailerExists(downloads: Download[]): boolean {
+  return downloads.some((d) => d.file_exists && d.video_type === 'trailer');
+}
 
 export function buildDownloadMap(downloads: Download[]): Map<number, Download[]> {
   const downloadMap = new Map<number, Download[]>();
@@ -104,6 +110,8 @@ export interface Media {
 }
 
 export function mapMedia(media: any): Media {
+  const downloads: Download[] = (media.downloads || []).map(mapDownload);
+  const trailerExists = computeTrailerExists(downloads);
   return {
     ...media,
     is_movie: Boolean(media.is_movie),
@@ -113,21 +121,22 @@ export function mapMedia(media: any): Media {
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),
+    downloads,
     trailer_statuses: [],
-    // Computed after trailer_statuses are merged in by the service
-    trailer_exists: Boolean(media.downloaded_at),
-    status: media.monitor ? 'Monitored' : 'Missing',
+    trailer_exists: trailerExists,
+    status: trailerExists ? 'downloaded' : (media.monitor ? 'monitored' : 'missing'),
     isImageLoaded: false,
   };
 }
 
-/** Re-compute the derived trailer_exists and status fields from trailer_statuses. */
+/** Re-compute the derived trailer_exists and status fields when trailer_statuses arrive. */
 export function applyTrailerStatuses(media: Media, statuses: MediaTrailerStatus[]): Media {
+  const trailerExists = computeTrailerExists(media.downloads);
   return {
     ...media,
     trailer_statuses: statuses,
-    trailer_exists: computeTrailerExists(statuses),
-    status: computeMonitorStatus(statuses, media.monitor),
+    trailer_exists: trailerExists,
+    status: computeMonitorStatus(statuses, trailerExists, media.monitor),
   };
 }
 

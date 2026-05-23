@@ -332,6 +332,9 @@ class TestScanMediaFolder:
         with (
             patch("services.scan_service.file_info_repo.upsert"),
             patch("services.scan_service.media_repo.update_media_exists"),
+            patch("services.scan_service.trailer_profile_repo.read_all", return_value=[]),
+            patch("services.scan_service._attribute_tier1", return_value=[]),
+            patch("services.scan_service._attribute_tier2", return_value=[]),
             patch("services.scan_service.record_new_trailer_download") as mock_record,
             patch("services.scan_service.event_service.track_trailer_detected"),
         ):

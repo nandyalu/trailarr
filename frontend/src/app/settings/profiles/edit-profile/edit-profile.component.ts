@@ -78,7 +78,6 @@ export class EditProfileComponent {
   });
 
   trueFalseOptions = ['true', 'false'];
-  videoTypeOptions = ['trailer', 'teaser', 'clip', 'behind the scenes', 'bloopers', 'featurette', 'opening credits'];
   fileFormatOptions = ['mkv', 'mp4', 'webm'];
   audioFormatOptions = ['aac', 'ac3', 'eac3', 'flac', 'opus', 'copy'];
   videoFormatOptions = ['h264', 'h265', 'vp8', 'vp9', 'av1', 'copy'];
@@ -90,9 +89,17 @@ export class EditProfileComponent {
     this.connectionService.connectionsResource.value().some((c) => c.arr_type === ArrType.Plex)
   );
 
+  protected readonly hasTmdbKey = computed(() => !!this.settingsService.settings()?.tmdb_api_key);
+
+  protected readonly videoTypeOptions = computed(() =>
+    this.hasTmdbKey()
+      ? ['trailer', 'teaser', 'clip', 'behind the scenes', 'bloopers', 'featurette', 'opening credits', 'other']
+      : ['trailer', 'other']
+  );
+
   protected readonly tmdbKeyMissing = computed(() => {
-    const _profile = this.profile();
-    return _profile?.video_type !== 'trailer' && !this.settingsService.settings()?.tmdb_api_key;
+    const vt = this.profile()?.video_type;
+    return vt !== 'trailer' && vt !== 'other' && !this.hasTmdbKey();
   });
 
   helpLinks = {

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, select, text
 
 from db.models.issue import EntityType, Issue, IssueRead, IssueType
 from db.engine import read_session, write_session
@@ -95,10 +95,35 @@ def get_all(
     *,
     _session: Session = None,  # type: ignore
 ) -> list[IssueRead]:
-    stmt = select(Issue)
+    where = ""
+    params: dict = {}
     if entity_type is not None:
-        stmt = stmt.where(Issue.entity_type == entity_type)
-    return [IssueRead.model_validate(r) for r in _session.exec(stmt).all()]
+        where = "WHERE i.entity_type = :entity_type"
+        params["entity_type"] = entity_type.value
+
+    query = text(f"""
+        SELECT
+            i.id, i.issue_type, i.entity_type, i.entity_id,
+            i.description, i.details, i.created_at, i.updated_at,
+            CASE
+                WHEN i.entity_type = 'connection' THEN c.name
+                WHEN i.entity_type = 'download'   THEN m2.title
+                WHEN i.entity_type = 'media_trailer_status' THEN m3.title
+                ELSE NULL
+            END AS entity_name
+        FROM issue i
+        LEFT JOIN connection c
+            ON i.entity_type = 'connection' AND i.entity_id = c.id
+        LEFT JOIN download d
+            ON i.entity_type = 'download' AND i.entity_id = d.id
+        LEFT JOIN media m2 ON d.media_id = m2.id
+        LEFT JOIN mediatrailerstatus mts
+            ON i.entity_type = 'media_trailer_status' AND i.entity_id = mts.id
+        LEFT JOIN media m3 ON mts.media_id = m3.id
+        {where}
+    """)
+    rows = _session.execute(query, params).mappings().all()
+    return [IssueRead.model_validate(dict(row)) for row in rows]
 
 
 @read_session

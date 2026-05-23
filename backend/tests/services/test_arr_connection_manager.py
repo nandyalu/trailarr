@@ -208,8 +208,9 @@ class TestCreateOrUpdateBulk:
         mock_media = _mock_media_read(1)
         with (
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
-                  return_value=[(mock_media, True, False, False)]),
+                  return_value=[(mock_media, True, False, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added") as mock_event,
+            patch("services.trailer_profile_service.create_rows_for_new_media"),
         ):
             manager.create_or_update_bulk([MagicMock()])
         mock_event.assert_called_once()
@@ -220,7 +221,7 @@ class TestCreateOrUpdateBulk:
         mock_media = _mock_media_read(5)
         with (
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
-                  return_value=[(mock_media, False, False, True)]),
+                  return_value=[(mock_media, False, False, True, 0)]),
             patch("services.arr_connection_manager.event_service.track_arr_linked") as mock_event,
         ):
             manager.create_or_update_bulk([MagicMock()])
@@ -231,7 +232,7 @@ class TestCreateOrUpdateBulk:
         mock_media = _mock_media_read(2)
         with (
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
-                  return_value=[(mock_media, False, True, False)]),
+                  return_value=[(mock_media, False, True, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added") as mock_added,
             patch("services.arr_connection_manager.event_service.track_arr_linked") as mock_linked,
         ):
@@ -245,8 +246,9 @@ class TestCreateOrUpdateBulk:
         m1, m2 = _mock_media_read(10), _mock_media_read(20)
         with (
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
-                  return_value=[(m1, True, False, False), (m2, False, True, False)]),
+                  return_value=[(m1, True, False, False, 0), (m2, False, True, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added"),
+            patch("services.trailer_profile_service.create_rows_for_new_media"),
         ):
             manager.create_or_update_bulk([MagicMock(), MagicMock()])
         assert manager.media_ids == [10, 20]

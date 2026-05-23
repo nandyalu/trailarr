@@ -58,6 +58,8 @@ def get_trailer_filename(
     ext: str,
     increment_index: int,
     video_info: VideoInfo | None = None,
+    season: int = 0,
+    sequence: int = 1,
 ) -> str:
     if increment_index == 1:
         logger.debug(f"Getting trailer filename for '{media.title}'...")
@@ -78,6 +80,9 @@ def get_trailer_filename(
         title_opts["resolution"] = f"{profile.video_resolution}p"
         title_opts["vcodec"] = profile.video_format
         title_opts["acodec"] = profile.audio_format
+    title_opts["season"] = season
+    title_opts["sequence"] = sequence
+    title_opts["video_type"] = profile.video_type.value if hasattr(profile.video_type, "value") else str(profile.video_type)
     title_opts["ext"] = ext
     title_opts["ii"] = increment_index
     if increment_index == 1:
@@ -101,17 +106,21 @@ def get_trailer_path(
     profile: TrailerProfileRead,
     increment_index: int = 1,
     video_info: VideoInfo | None = None,
+    season: int = 0,
+    sequence: int = 1,
 ) -> str:
     if increment_index == 1:
         logger.debug(f"Getting trailer path for '{media.title}'...")
     src_path = Path(src_path)
     dst_folder_path = Path(dst_folder_path)
     _ext = src_path.suffix.lstrip(".")
-    filename = get_trailer_filename(media, profile, _ext, increment_index, video_info)
+    filename = get_trailer_filename(media, profile, _ext, increment_index, video_info, season, sequence)
     dst_file_path = dst_folder_path / filename
     if dst_file_path.exists():
         logger.debug(f"File already exists at: {dst_file_path}, incrementing index...")
-        return get_trailer_path(src_path, dst_folder_path, media, profile, increment_index + 1, video_info)
+        return get_trailer_path(
+            src_path, dst_folder_path, media, profile, increment_index + 1, video_info, season, sequence
+        )
     logger.debug(f"Trailer path: {dst_file_path}")
     return str(dst_file_path)
 
@@ -121,6 +130,8 @@ def move_trailer_to_folder(
     media: MediaRead,
     profile: TrailerProfileRead,
     video_info: VideoInfo | None = None,
+    season: int = 0,
+    sequence: int = 1,
 ) -> str:
     src_path = Path(src_path)
     logger.debug(f"Moving trailer to media folder: '{media.folder_path}'")
@@ -156,6 +167,9 @@ def move_trailer_to_folder(
             title_opts["resolution"] = f"{profile.video_resolution}p"
             title_opts["vcodec"] = profile.video_format
             title_opts["acodec"] = profile.audio_format
+        title_opts["season"] = season
+        title_opts["sequence"] = sequence
+        title_opts["video_type"] = profile.video_type.value if hasattr(profile.video_type, "value") else str(profile.video_type)
         title_opts["ext"] = profile.file_format
         dst_folder_path = Path(profile.custom_folder.format(**title_opts))
 
@@ -168,7 +182,9 @@ def move_trailer_to_folder(
         else:
             dst_folder_path.mkdir(parents=True)
 
-    dst_file_path = Path(get_trailer_path(src_path, dst_folder_path, media, profile, video_info=video_info))
+    dst_file_path = Path(
+        get_trailer_path(src_path, dst_folder_path, media, profile, video_info=video_info, season=season, sequence=sequence)
+    )
     logger.debug(f"Moving trailer from '{src_path}' to '{dst_file_path}'")
     try:
         shutil.move(src_path, dst_file_path)

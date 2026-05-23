@@ -17,12 +17,13 @@ import db.repos.issue as issue_repo
 from services.event_service import track_plex_unlinked
 from db.models.event import EventSource
 from exceptions import ItemNotFoundError
+from ws.manager import broadcast as ws_broadcast
 
 logger = ModuleLogger("ConnectionService")
 
 _CONNECTION_FAILURE_THRESHOLD = 3
 _consecutive_failures: dict[int, int] = {}
-_AUTH_ERROR_KEYWORDS = ("unauthorized", "access restricted", "api key")
+_AUTH_ERROR_KEYWORDS = ("unauthorized", "access restricted", "api key", "authentication failed", "invalid token")
 
 
 def _is_auth_error(exc: Exception) -> bool:
@@ -116,6 +117,10 @@ def delete(connection_id: int) -> bool:
                 source=EventSource.SYSTEM,
                 source_detail="ConnectionDeleted",
             )
+    _consecutive_failures.pop(connection_id, None)
+    resolved = issue_repo.resolve_all_for_entity(EntityType.CONNECTION, connection_id)
+    if resolved:
+        ws_broadcast("", reload="issues")
     return connection_repo.delete(connection_id)
 
 
@@ -155,6 +160,7 @@ async def refresh_connection(connection: ConnectionRead) -> None:
                 ),
                 details=str(exc),
             )
+            ws_broadcast("", reload="issues")
         elif failures >= _CONNECTION_FAILURE_THRESHOLD:
             issue_repo.upsert(
                 issue_type=IssueType.CONNECTION_FAILED,
@@ -166,10 +172,13 @@ async def refresh_connection(connection: ConnectionRead) -> None:
                 ),
                 details=str(exc),
             )
+            ws_broadcast("", reload="issues")
         return
 
     if connection.id in _consecutive_failures:
         del _consecutive_failures[connection.id]
-    issue_repo.resolve(IssueType.CONNECTION_FAILED, EntityType.CONNECTION, connection.id)
-    issue_repo.resolve(IssueType.TOKEN_INVALID, EntityType.CONNECTION, connection.id)
+    resolved1 = issue_repo.resolve(IssueType.CONNECTION_FAILED, EntityType.CONNECTION, connection.id)
+    resolved2 = issue_repo.resolve(IssueType.TOKEN_INVALID, EntityType.CONNECTION, connection.id)
+    if resolved1 or resolved2:
+        ws_broadcast("", reload="issues")
     logger.info(f"Data refreshed for connection: {connection.name}")

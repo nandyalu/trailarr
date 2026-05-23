@@ -53,6 +53,9 @@ def mock_profile():
     profile.always_search = False
     profile.remove_silence = False
     profile.skip_if_plex_trailer = False
+    profile.tmdb_language = ""
+    from db.models.trailerprofile import VideoType
+    profile.video_type = VideoType.TRAILER
     return profile
 
 
@@ -102,6 +105,7 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
+        mock_media.youtube_trailer_id = None  # force YouTube search path
         mock_get_video_id.return_value = "dQw4w9WgXcQ"
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (True, mock_video_info)
@@ -121,6 +125,7 @@ class TestDownloadTrailer:
     @pytest.mark.asyncio
     @patch("download.pipeline.trailer_search.get_video_id")
     async def test_raises_error_when_no_video_id(self, mock_get_video_id, mock_media, mock_profile):
+        mock_media.youtube_trailer_id = None  # no cached ID — must search
         mock_get_video_id.return_value = None
 
         from download.pipeline import download_trailer
@@ -142,6 +147,7 @@ class TestDownloadTrailer:
         mock_media,
         mock_profile,
     ):
+        mock_media.youtube_trailer_id = None  # force YouTube search on all attempts
         mock_get_video_id.side_effect = ["vid1", "vid2", "vid3"]
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (False, None)
@@ -154,7 +160,6 @@ class TestDownloadTrailer:
         assert mock_get_video_id.call_count == 3
 
     @pytest.mark.asyncio
-    @patch("download.pipeline.trailer_search.get_video_id")
     @patch("download.pipeline.download_video")
     @patch("download.pipeline.trailer_file.verify_download")
     @patch("download.pipeline.trailer_file.move_trailer_to_folder")
@@ -162,7 +167,7 @@ class TestDownloadTrailer:
     @patch("download.pipeline.event_service.track_trailer_downloaded")
     @patch("download.pipeline.media_repo.update_media_status")
     @patch("download.pipeline.ws_manager.broadcast", new_callable=AsyncMock)
-    async def test_excludes_existing_trailer_id(
+    async def test_uses_existing_trailer_id_directly(
         self,
         mock_broadcast,
         mock_update_status,
@@ -171,24 +176,25 @@ class TestDownloadTrailer:
         mock_move,
         mock_verify,
         mock_download,
-        mock_get_video_id,
         mock_media,
         mock_profile,
         mock_video_info,
     ):
+        # When youtube_trailer_id is set and always_search=False, the pipeline uses
+        # it directly as the video ID without calling YouTube search.
         mock_media.trailer_exists = True
         mock_media.youtube_trailer_id = "existing_id"
-        mock_get_video_id.return_value = "new_video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
         from download.pipeline import download_trailer
 
-        await download_trailer(mock_media, mock_profile)
+        result = await download_trailer(mock_media, mock_profile)
 
-        call_args = mock_get_video_id.call_args
-        assert "existing_id" in call_args[0][2]
+        assert result is True
+        # The video ID passed to the download should be the existing ID.
+        assert "existing_id" in mock_download.call_args[0][0]
 
     @pytest.mark.asyncio
     @patch("download.pipeline.trailer_search.get_video_id")
@@ -331,6 +337,7 @@ class TestDownloadTrailer:
     async def test_proceeds_when_plex_has_no_trailer(
         self, mock_get_video_id, mock_check_plex, mock_media, mock_profile
     ):
+        mock_media.youtube_trailer_id = None  # force YouTube search path
         mock_check_plex.return_value = False
         mock_get_video_id.return_value = None
 
@@ -356,6 +363,7 @@ class TestDownloadTrailerRetryBehavior:
         mock_media,
         mock_profile,
     ):
+        mock_media.youtube_trailer_id = None  # force YouTube search on all attempts
         mock_get_video_id.side_effect = ["first_id", "second_id", "third_id"]
         mock_download.side_effect = DownloadFailedError("Download failed")
 
@@ -388,6 +396,7 @@ class TestDownloadTrailerRetryBehavior:
         mock_media,
         mock_profile,
     ):
+        mock_media.youtube_trailer_id = None  # force YouTube search path
         mock_get_video_id.return_value = "video_id"
         mock_download.return_value = "/tmp/test.mp4"
         mock_verify.return_value = (False, None)

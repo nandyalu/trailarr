@@ -9,6 +9,7 @@ from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
 import db.repos.connection as connection_repo
 import db.repos.download as download_repo
+import db.repos.issue as issue_repo
 import db.repos.media as media_repo
 import db.repos.trailer_profile as trailer_profile_repo
 import db.repos.trailer_status as trailer_status_repo
@@ -16,9 +17,11 @@ from db.models.connection import ArrType
 from db.models.download import DownloadCreate
 from db.models.event import EventSource
 from db.models.helpers import MediaUpdateDC
+from db.models.issue import EntityType, IssueType
 from db.models.media import MediaRead
 from db.models.mediatrailerstatus import TrailerStatusEnum
-from db.models.trailerprofile import TrailerProfileRead
+from db.models.trailerprofile import TrailerProfileRead, VideoType
+from services.tmdb_service import get_tmdb_youtube_key
 from config.settings import app_settings
 from download import analysis as video_analysis
 from download import filename as trailer_file
@@ -29,7 +32,7 @@ from download.video import download_video
 from exceptions import DownloadFailedError, FolderNotFoundError, FolderPathEmptyError, ItemNotFoundError, StopEventSetError
 from services import event_service
 from services.files_service import FilesHandler
-from ws.manager import ws_manager
+from ws.manager import broadcast as ws_broadcast, ws_manager
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -84,6 +87,7 @@ async def record_new_trailer_download(
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
     status_row_id: int | None = None,
+    video_type: str = "trailer",
 ) -> None:
     logger.debug(f"Recording new trailer download for media {media.title} [{media.id}]")
     try:
@@ -127,6 +131,7 @@ async def record_new_trailer_download(
             youtube_id=yt_id,
             youtube_channel=media_info.youtube_channel,
             file_exists=True,
+            video_type=video_type,
             profile_id=profile_id,
             media_id=media.id,
             added_at=file_created_at,
@@ -207,17 +212,12 @@ _MISSING = "missing"
 def _update_media_status(media: MediaRead, type: str, profile: TrailerProfileRead) -> None:
     if type == _DOWNLOADING:
         update = MediaUpdateDC(id=media.id, monitor=True)
-        if profile.stop_monitoring:
-            update.yt_id = media.youtube_trailer_id
     elif type == _DOWNLOADED:
-        _monitor = not profile.stop_monitoring
         update = MediaUpdateDC(
             id=media.id,
-            monitor=_monitor,
+            monitor=not profile.stop_monitoring,
             downloaded_at=datetime.now(timezone.utc),
         )
-        if profile.stop_monitoring:
-            update.yt_id = media.youtube_trailer_id
     elif type == _MISSING:
         update = MediaUpdateDC(id=media.id, monitor=True)
     else:
@@ -228,14 +228,6 @@ def _update_media_status(media: MediaRead, type: str, profile: TrailerProfileRea
             media_id=media.id,
             old_monitor=media.monitor,
             new_monitor=update.monitor,
-            source=EventSource.SYSTEM,
-            source_detail="TrailerDownload",
-        )
-    if update.yt_id is not None and update.yt_id != media.youtube_trailer_id:
-        event_service.track_youtube_id_changed(
-            media_id=media.id,
-            old_yt_id=media.youtube_trailer_id,
-            new_yt_id=update.yt_id,
             source=EventSource.SYSTEM,
             source_detail="TrailerDownload",
         )
@@ -278,14 +270,29 @@ async def download_trailer(
     exclude: list[str] | None = None,
     _stop_event: threading.Event | None = None,
     status_row_id: int | None = None,
+    season: int = 0,
+    sequence: int = 1,
+    row_youtube_id: str | None = None,
 ) -> bool:
+    """Download a trailer according to the profile's video_type and tmdb_language settings.
+
+    Priority logic for TRAILER type:
+      - tmdb_language empty:  media.youtube_trailer_id → row_youtube_id (TMDB cache) → YouTube search
+      - tmdb_language set:    row_youtube_id (TMDB cache) → live TMDB → media.youtube_trailer_id → YouTube search
+
+    For TMDB types (teaser/clip/featurette/etc.): row_youtube_id (TMDB cache) → live TMDB → NOT_AVAILABLE
+    For OTHER type: YouTube search only (no TMDB involvement).
+
+    TMDB-sourced keys are never written back to media.youtube_trailer_id in the database.
+    """
     logger.info(f"Downloading trailer for {media.title} [{media.id}]")
     if not exclude:
         exclude = []
-    if media.youtube_trailer_id:
-        exclude.append(media.youtube_trailer_id)
+
+    # always_search bypasses all cached IDs and forces a fresh YouTube search.
     if profile.always_search:
         media.youtube_trailer_id = None
+        row_youtube_id = None
 
     if await _check_plex_trailer(media, profile):
         logger.info(
@@ -294,11 +301,72 @@ async def download_trailer(
         )
         return False
 
-    video_id = trailer_search.get_video_id(media, profile, exclude)
-    media.youtube_trailer_id = video_id
+    _vtype = profile.video_type.value if hasattr(profile.video_type, "value") else str(profile.video_type)
+    video_id: str | None = None
 
-    if not video_id:
-        raise DownloadFailedError(f"No trailer found for {media.title}")
+    if profile.video_type == VideoType.OTHER:
+        # Custom YouTube search only — no TMDB involvement for 'other' type.
+        video_id = trailer_search.get_video_id(
+            media, profile, exclude,
+            season=season, sequence=sequence, video_type=_vtype,
+        )
+        if not video_id:
+            raise DownloadFailedError(f"No trailer found for {media.title}")
+
+    elif profile.video_type != VideoType.TRAILER:
+        # Named TMDB types (teaser, clip, featurette, etc.): TMDB only, no YouTube fallback.
+        if not app_settings.tmdb_api_key:
+            logger.warning(
+                f"Profile '{profile.customfilter.filter_name}' has video_type={_vtype}"
+                " but no TMDB API key is configured — marking row NOT_AVAILABLE."
+            )
+            if status_row_id is not None:
+                trailer_status_repo.update_row_status(status_row_id, TrailerStatusEnum.NOT_AVAILABLE)
+            return False
+        # Use cached key if available; otherwise do a live TMDB call.
+        if row_youtube_id:
+            video_id = row_youtube_id
+        else:
+            _lang = profile.tmdb_language or ""
+            video_id = await get_tmdb_youtube_key(media, _vtype, season, language=_lang)
+        if not video_id:
+            logger.info(
+                f"TMDB has no {_vtype} for '{media.title}' [{media.id}]"
+                " — marking NOT_AVAILABLE."
+            )
+            if status_row_id is not None:
+                trailer_status_repo.update_row_status(status_row_id, TrailerStatusEnum.NOT_AVAILABLE)
+            return False
+
+    else:
+        # TRAILER type: two-path depending on whether tmdb_language is set.
+        _tmdb_lang = profile.tmdb_language
+        if _tmdb_lang:
+            # Language-specific TMDB first, then fall back to Radarr ID, then YouTube search.
+            if row_youtube_id:
+                video_id = row_youtube_id
+            else:
+                video_id = await get_tmdb_youtube_key(media, "trailer", season, language=_tmdb_lang)
+            if not video_id and media.youtube_trailer_id:
+                video_id = media.youtube_trailer_id
+            if not video_id:
+                video_id = trailer_search.get_video_id(
+                    media, profile, exclude,
+                    season=season, sequence=sequence, video_type=_vtype,
+                )
+        else:
+            # Radarr/user ID first, then TMDB cache, then YouTube search.
+            if media.youtube_trailer_id:
+                video_id = media.youtube_trailer_id
+            elif row_youtube_id:
+                video_id = row_youtube_id
+            else:
+                video_id = trailer_search.get_video_id(
+                    media, profile, exclude,
+                    season=season, sequence=sequence, video_type=_vtype,
+                )
+        if not video_id:
+            raise DownloadFailedError(f"No trailer found for {media.title}")
 
     if _stop_event and _stop_event.is_set():
         logger.info(f"Download stopped for {media.title} [{media.id}]")
@@ -307,9 +375,9 @@ async def download_trailer(
     try:
         _update_media_status(media, _DOWNLOADING, profile)
         output_file, video_info = _download_and_verify_trailer(media, video_id, profile, _stop_event=_stop_event)
-        final_path = trailer_file.move_trailer_to_folder(output_file, media, profile, video_info)
+        final_path = trailer_file.move_trailer_to_folder(output_file, media, profile, video_info, season=season, sequence=sequence)
         _update_media_status(media, _DOWNLOADED, profile)
-        await record_new_trailer_download(media, profile.id, final_path, video_id, video_info, status_row_id)
+        await record_new_trailer_download(media, profile.id, final_path, video_id, video_info, status_row_id, video_type=_vtype)
 
         # Push status row update (Tier 2b: per-item during batch downloads)
         if status_row_id is not None:
@@ -331,7 +399,7 @@ async def download_trailer(
 
         msg = f"Trailer downloaded successfully for {media.title} [{media.id}] from ({video_id})"
         logger.info(msg)
-        await ws_manager.broadcast(msg, "Success", reload="media")
+        await ws_manager.broadcast(msg, "Success", reload="media,trailer_statuses")
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
@@ -341,10 +409,18 @@ async def download_trailer(
             return False
         if retry_count > 0:
             logger.info(f"Retrying download for {media.title}... ({3 - retry_count}/3)")
+            # Clear cached ID so retry sources a fresh result; add failed ID to exclude
+            # so YouTube search won't suggest it again.
             media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
-            return await download_trailer(media, profile, retry_count - 1, exclude)
+            return await download_trailer(
+                media, profile, retry_count - 1, exclude,
+                _stop_event=_stop_event,
+                status_row_id=status_row_id,
+                season=season, sequence=sequence,
+                # row_youtube_id not forwarded — cached key failed, force fresh lookup
+            )
         raise DownloadFailedError(f"Failed to download trailer for {media.title}")
 
 
@@ -383,7 +459,7 @@ async def batch_download_task(
 
 # ─── Missing trailers task ─────────────────────────────────────────────────────
 
-def _is_valid_media(db_media: MediaRead, check_folder: bool = True) -> bool:
+def _is_valid_media(db_media: MediaRead, check_folder: bool = True, row_id: int | None = None) -> bool:
     if check_folder:
         if db_media.folder_path is None:
             logger.info(f"Media '{db_media.title}' [{db_media.id}] skipped: missing folder path.")
@@ -400,9 +476,25 @@ def _is_valid_media(db_media: MediaRead, check_folder: bool = True) -> bool:
                 skip_reason="Folder does not exist",
                 source_detail="DownloadMissingTrailers",
             )
+            if row_id is not None:
+                issue_repo.upsert(
+                    issue_type=IssueType.FOLDER_MISSING,
+                    entity_type=EntityType.MEDIA_TRAILER_STATUS,
+                    entity_id=row_id,
+                    description=(
+                        f"Folder for '{db_media.title}' [{db_media.id}] is not accessible:"
+                        f" {db_media.folder_path}"
+                    ),
+                    details=db_media.folder_path,
+                )
+                ws_broadcast("", reload="issues")
             return False
 
     if not app_settings.wait_for_media:
+        if row_id is not None:
+            resolved = issue_repo.resolve(IssueType.FOLDER_MISSING, EntityType.MEDIA_TRAILER_STATUS, row_id)
+            if resolved:
+                ws_broadcast("", reload="issues")
         return True
 
     if not db_media.folder_path:
@@ -423,6 +515,10 @@ def _is_valid_media(db_media: MediaRead, check_folder: bool = True) -> bool:
         )
         return False
 
+    if row_id is not None:
+        resolved = issue_repo.resolve(IssueType.FOLDER_MISSING, EntityType.MEDIA_TRAILER_STATUS, row_id)
+        if resolved:
+            ws_broadcast("", reload="issues")
     return True
 
 
@@ -472,7 +568,7 @@ async def download_missing_trailers(_stop_event: threading.Event | None = None) 
             continue
 
         check_folder = profile.custom_folder == "{media_folder}"
-        if not _is_valid_media(db_media, check_folder):
+        if not _is_valid_media(db_media, check_folder, row_id=row.id):
             skipped_media_ids.add(row.media_id)
             continue
 
@@ -493,6 +589,9 @@ async def download_missing_trailers(_stop_event: threading.Event | None = None) 
                 profile.retry_count,
                 _stop_event=_stop_event,
                 status_row_id=row.id,
+                season=row.season,
+                sequence=row.sequence,
+                row_youtube_id=row.youtube_id,
             )
             total_attempted += 1
 
