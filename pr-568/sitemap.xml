@@ -67,16 +67,22 @@
         <loc>https://nandyalu.github.io/trailarr/user-guide/library/media-details/</loc>
       </url>
       <url>
-        <loc>https://nandyalu.github.io/trailarr/user-guide/events/</loc>
+        <loc>https://nandyalu.github.io/trailarr/user-guide/activity/</loc>
+      </url>
+      <url>
+        <loc>https://nandyalu.github.io/trailarr/user-guide/activity/events/</loc>
+      </url>
+      <url>
+        <loc>https://nandyalu.github.io/trailarr/user-guide/activity/logs/</loc>
+      </url>
+      <url>
+        <loc>https://nandyalu.github.io/trailarr/user-guide/activity/issues/</loc>
       </url>
       <url>
         <loc>https://nandyalu.github.io/trailarr/user-guide/tasks/</loc>
       </url>
       <url>
         <loc>https://nandyalu.github.io/trailarr/user-guide/tasks/download-pipeline/</loc>
-      </url>
-      <url>
-        <loc>https://nandyalu.github.io/trailarr/user-guide/logs/</loc>
       </url>
       <url>
         <loc>https://nandyalu.github.io/trailarr/user-guide/settings/</loc>
