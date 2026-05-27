@@ -1599,15 +1599,15 @@ wheels = [
 
 [[package]]
 name = "quiv"
-version = "0.3.4"
+version = "0.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sqlmodel" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/b1/5b095fe3c030588b45e0c09d025f704daf2a15d6cec48118861f4fcbeaa9/quiv-0.3.4.tar.gz", hash = "sha256:5d3a1d17994a582f525278ae01b1dd4fea04923bcb051ff905c3b83b6001fd52", size = 18245, upload-time = "2026-04-10T05:05:07.71Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/d1/2dc75fd1112bf15a095403d3f7a7aef4fd7ce31c2020139da514cc662bf7/quiv-0.3.5.tar.gz", hash = "sha256:9561886f0519a83050ebd2543ea7403745f8af043e7115fb819fff3e1ef9722e", size = 18234, upload-time = "2026-05-27T02:49:33.975Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/78/13bad36e1596b9f1f8834c3a2d7e7367587dcc3e5531a8366ebbef7be126/quiv-0.3.4-py3-none-any.whl", hash = "sha256:0913922d359ca30ee3e26cd38e9fb858ffa44c00ca8eb0890a395ab4a1e8b851", size = 22633, upload-time = "2026-04-10T05:05:06.642Z" },
+    { url = "https://files.pythonhosted.org/packages/70/de/24ffcd952dcfff9f9ec5de51e509f0aecd26f3596eb6b2e9685f69586c72/quiv-0.3.5-py3-none-any.whl", hash = "sha256:dede7685e033f35e455b4c6a31787d233ddfa69cd02af46ff9fc80f9d21f096b", size = 22608, upload-time = "2026-05-27T02:49:33.109Z" },
 ]
 
 [[package]]
@@ -1867,7 +1867,7 @@ requires-dist = [
     { name = "bcrypt", specifier = "==5.0.0" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.136.3" },
     { name = "pillow", specifier = "==12.2.0" },
-    { name = "quiv", specifier = ">=0.3.1" },
+    { name = "quiv", specifier = ">=0.3.5" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "sqlmodel", specifier = "==0.0.38" },
     { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = "==2026.3.17" },
