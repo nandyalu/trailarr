@@ -21,7 +21,7 @@
                   @if (seasonLabel(row.season)) {
                     <span class="season-label">{{ seasonLabel(row.season) }}</span>
                   }
-                  @if (row.sequence > 1) {
+                  @if (isMovie() || row.sequence > 1) {
                     <span class="sequence-label">#{{ row.sequence }}</span>
                   }
                 </div>

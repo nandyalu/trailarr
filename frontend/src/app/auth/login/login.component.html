@@ -1,5 +1,5 @@
 <div class="login-overlay">
-  <div class="login-card">
+  <div class="login-card" [class.navigating]="isNavigating()">
     <div class="login-logo">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2260 512" alt="Trailarr Logo" height="40" class="sm-none trailarr">
         <!-- Logo -->
@@ -62,6 +62,15 @@
         </g>
       </svg>
     </div>
+    @if (loginSuccess()) {
+      <div class="success-state">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M7 13l3 3 7-7"/>
+        </svg>
+        <p>Login successful!</p>
+      </div>
+    } @else {
     <form (submit)="onSubmit($event)" autocomplete="on">
       <div class="field-group">
         <label for="username">Username</label>
@@ -100,5 +109,6 @@
         }
       </button>
     </form>
+    }
   </div>
 </div>

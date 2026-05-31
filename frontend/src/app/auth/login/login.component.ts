@@ -16,6 +16,8 @@ export class LoginComponent implements OnInit {
   protected password = signal('');
   protected errorMessage = signal('');
   protected isLoading = signal(false);
+  protected loginSuccess = signal(false);
+  protected isNavigating = signal(false);
   protected isSubmitDisabled = computed(() => this.isLoading() || !this.username().trim() || !this.password().trim());
 
   ngOnInit(): void {
@@ -39,9 +41,16 @@ export class LoginComponent implements OnInit {
     this.errorMessage.set('');
     this.authService.login(u, p).subscribe({
       next: () => {
-        const params = new URLSearchParams(window.location.search);
-        const returnUrl = params.get('returnUrl') || '/home';
-        window.location.href = returnUrl;
+        this.isLoading.set(false);
+        this.loginSuccess.set(true);
+        setTimeout(() => {
+          this.isNavigating.set(true);
+          setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            const returnUrl = params.get('returnUrl') || '/home';
+            window.location.href = returnUrl;
+          }, 350);
+        }, 450);
       },
       error: () => {
         this.isLoading.set(false);
