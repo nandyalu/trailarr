@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from quiv import Task, Job
 import db.repos.task_config as task_config_repo
 from db.models.task_config import ScheduledTaskConfigRead, ScheduledTaskConfigUpdate
-from tasks import scheduler
+from tasks.scheduler import scheduler
 from tasks import schedules
 
 tasks_router = APIRouter(tags=["Tasks", "Jobs"])
