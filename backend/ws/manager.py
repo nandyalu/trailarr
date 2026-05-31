@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any
 from fastapi import WebSocket
 from pydantic import BaseModel
@@ -68,11 +67,5 @@ ws_manager = WSConnectionManager()
 
 def broadcast(message: str, type: str = "Success", reload: str = "none") -> None:
     """Non-async broadcast for contexts that cannot await (e.g. sync callbacks)."""
-
-    def _send() -> None:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(ws_manager.broadcast(message, type, reload))
-        loop.close()
-
-    _send()
+    from quiv import run_on_main
+    run_on_main(ws_manager.broadcast, message, type, reload)
