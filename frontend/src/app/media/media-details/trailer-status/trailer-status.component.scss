@@ -1,13 +1,45 @@
+:host {
+  display: contents;
+}
+
+.trailer-status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+
+  h3 {
+    margin: 0;
+    margin-block: 0;
+  }
+}
+
 .no-statuses {
   color: var(--color-on-surface-variant);
   font-size: 0.875rem;
-  margin: 0.5rem 0;
+  margin: 0;
+}
+
+.profiles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .profile-group {
-  margin-bottom: 0.75rem;
+  flex: 1 1 260px;
+  min-width: 220px;
   border: 1px solid var(--color-outline-variant);
   border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
   overflow: hidden;
 }
 
@@ -15,7 +47,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 0.875rem;
+  padding: 0.875rem 1rem;
   background-color: var(--color-surface-container-high);
   border-bottom: 1px solid var(--color-outline-variant);
 }
@@ -23,6 +55,7 @@
 .profile-name {
   font-weight: 600;
   font-size: 0.875rem;
+  color: var(--color-on-surface);
 }
 
 .video-type-chip {
@@ -43,7 +76,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--color-outline-variant);
   &:last-child { border-bottom: none; }
 }
@@ -52,7 +85,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  min-width: 6rem;
+  min-width: 5rem;
 }
 
 .season-label {

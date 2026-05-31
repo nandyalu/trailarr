@@ -17,6 +17,7 @@ interface ProfileGroup {
 })
 export class TrailerStatusComponent {
   readonly statuses = input.required<MediaTrailerStatus[]>();
+  readonly isMovie = input<boolean>(false);
 
   private readonly mediaService = inject(MediaService);
 
@@ -39,6 +40,7 @@ export class TrailerStatusComponent {
   });
 
   seasonLabel(season: number): string {
+    if (this.isMovie()) return '';
     return season === 0 ? 'Series' : `Season ${season}`;
   }
 

@@ -275,8 +275,7 @@
 @if (selectedMedia_) {
   <!-- Show Trailer Profile Statuses -->
   <div class="media-details-container">
-    <h3 class="section-title">Trailer Profiles</h3>
-    <app-trailer-status [statuses]="selectedMedia_.trailer_statuses"></app-trailer-status>
+    <app-trailer-status [statuses]="selectedMedia_.trailer_statuses" [isMovie]="selectedMedia_.is_movie"></app-trailer-status>
   </div>
   <!-- Show Media Downloads -->
   <div class="media-details-container">

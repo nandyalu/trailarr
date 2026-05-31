@@ -1,36 +1,47 @@
-@if (statuses().length === 0) {
-  <p class="no-statuses">No trailer profile rows yet.</p>
-} @else {
-  @for (group of groups(); track group.profileId) {
-    <div class="profile-group">
-      <div class="profile-header">
-        <span class="profile-name">{{ group.profileName }}</span>
-        <span class="video-type-chip">{{ group.videoType }}</span>
-      </div>
-      <div class="status-rows">
-        @for (row of group.rows; track row.id) {
-          <div class="status-row">
-            <div class="row-left">
-              <span class="season-label">{{ seasonLabel(row.season) }}</span>
-              @if (row.sequence > 1) {
-                <span class="sequence-label">#{{ row.sequence }}</span>
-              }
-            </div>
-            <span class="status-badge" [class]="statusClass(row.status)">{{ statusLabel(row.status) }}</span>
-            @if (row.status === 'downloaded') {
-              <span class="source-chip">{{ row.source }}</span>
-            }
-            <div class="row-actions">
-              @if (row.status === 'pending' || row.status === 'failed' || row.status === 'skipped') {
-                <button class="action-btn" (click)="setUnmonitored(row)" title="Skip this profile for this media item">Skip</button>
-              }
-              @if (row.status === 'unmonitored') {
-                <button class="action-btn primary" (click)="resetPending(row)" title="Re-enable this profile for this media item">Re-enable</button>
-              }
-            </div>
+<div class="trailer-status-section">
+  <div class="title-block">
+    <h3>Trailer Profiles</h3>
+  </div>
+  <hr />
+
+  @if (statuses().length === 0) {
+    <p class="no-statuses">No trailer profile rows yet.</p>
+  } @else {
+    <div class="profiles-grid">
+      @for (group of groups(); track group.profileId) {
+        <div class="profile-group">
+          <div class="profile-header">
+            <span class="profile-name">{{ group.profileName }}</span>
+            <span class="video-type-chip">{{ group.videoType }}</span>
           </div>
-        }
-      </div>
+          <div class="status-rows">
+            @for (row of group.rows; track row.id) {
+              <div class="status-row">
+                <div class="row-left">
+                  @if (seasonLabel(row.season)) {
+                    <span class="season-label">{{ seasonLabel(row.season) }}</span>
+                  }
+                  @if (row.sequence > 1) {
+                    <span class="sequence-label">#{{ row.sequence }}</span>
+                  }
+                </div>
+                <span class="status-badge" [class]="statusClass(row.status)">{{ statusLabel(row.status) }}</span>
+                @if (row.status === 'downloaded') {
+                  <span class="source-chip">{{ row.source }}</span>
+                }
+                <div class="row-actions">
+                  @if (row.status === 'pending' || row.status === 'failed' || row.status === 'skipped') {
+                    <button class="action-btn" (click)="setUnmonitored(row)" title="Skip this profile for this media item">Skip</button>
+                  }
+                  @if (row.status === 'unmonitored') {
+                    <button class="action-btn primary" (click)="resetPending(row)" title="Re-enable this profile for this media item">Re-enable</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   }
-}
+</div>

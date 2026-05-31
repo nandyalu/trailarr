@@ -364,6 +364,7 @@ PYTHONPATH=$(pwd) APP_DATA_DIR=/tmp/trailarr-config uvicorn main:trailarr_api --
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `db/models/event.py` and add a `track_*` helper in `services/event_service.py`
 - **TrailerStatusEnum / TrailerSourceEnum / IssueType / EntityType**: also stored as VARCHAR — same rule, no migration needed for new values
+- **Comments**: Never delete existing comments. Only add new comments when the WHY is non-obvious.
 - **Do not add `trailer_exists` or `status` (MonitorStatus) back to `Media`** — intentionally absent; the frontend derives them from `MediaTrailerStatus` rows
 
 ## After Every Fix / Feature / Update
