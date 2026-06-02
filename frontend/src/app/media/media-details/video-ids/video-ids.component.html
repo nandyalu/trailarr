@@ -1,0 +1,89 @@
+<div class="video-ids-section">
+  <div class="title-block">
+    <h3>Video IDs</h3>
+    <button class="add-btn" title="Add Video ID" (click)="openDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+      </svg>
+    </button>
+  </div>
+  <hr />
+
+  @if (videoIdsResource.isLoading()) {
+    <p class="empty-state">Loading…</p>
+  } @else if (videoIdsResource.value().length === 0) {
+    <p class="empty-state">No video IDs yet. Arr sync and TMDB refresh will populate them automatically.</p>
+  } @else {
+    <div class="cards">
+      @for (vid of videoIdsResource.value()!; track vid.id) {
+        <div class="vid-card">
+          <span class="youtube-id">{{ vid.youtube_id }}</span>
+          <div class="pills">
+            <span class="pill type-pill">{{ vid.video_type }}</span>
+            @if (vid.language) {
+              <span class="pill lang-pill">{{ vid.language }}</span>
+            }
+            <span class="pill" [class]="'source-' + vid.source">{{ sourceLabel(vid.source) }}</span>
+          </div>
+          <div class="card-actions">
+            <a [href]="youtubeUrl(vid.youtube_id)" target="_blank" rel="noopener" class="yt-btn" title="Open on YouTube">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z"
+                />
+              </svg>
+            </a>
+            @if (vid.source === 'user') {
+              <button class="del-btn" title="Delete" (click)="deleteVideoId(vid.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"
+                  />
+                </svg>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Add Video ID dialog -->
+<dialog #addDialog>
+  <div class="dialog-header">
+    <h3>Add Video ID</h3>
+    <button class="close-btn" (click)="closeDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+      </svg>
+    </button>
+  </div>
+  <div class="dialog-body">
+    <div class="field">
+      <label>Video Type</label>
+      <select [ngModel]="newVideoType()" (ngModelChange)="newVideoType.set($event)">
+        @for (opt of videoTypeOptions; track opt) {
+          <option [value]="opt">{{ opt }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Language <span class="hint">(ISO 2-letter, e.g. en)</span></label>
+      <input type="text" maxlength="2" placeholder="en" [ngModel]="newLanguage()" (ngModelChange)="newLanguage.set($event)" />
+    </div>
+    <div class="field">
+      <label>YouTube ID or URL</label>
+      <input type="text" placeholder="dQw4w9WgXcQ or full URL" [ngModel]="newYoutubeId()" (ngModelChange)="newYoutubeId.set($event)" />
+    </div>
+    @if (formError()) {
+      <p class="form-error">{{ formError() }}</p>
+    }
+  </div>
+  <div class="dialog-footer">
+    <button class="cancel-btn" (click)="closeDialog()">Cancel</button>
+    <button class="save-btn" [disabled]="isSaving()" (click)="addVideoId()">
+      {{ isSaving() ? 'Saving…' : 'Add' }}
+    </button>
+  </div>
+</dialog>

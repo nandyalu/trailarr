@@ -112,10 +112,7 @@ class BaseConnectionManager(ABC):
         return False
 
     def create_or_update_bulk(self, media_data: list[MediaCreate]) -> list[MediaReadDC]:
-        from services.trailer_profile_service import (
-            append_season_rows_for_media,
-            create_rows_for_new_media,
-        )
+        import db.repos.video_id as video_id_repo
         results = media_repo.create_or_update_bulk(media_data)
         media_read_dc_list = []
         for media_read, created, updated, arr_linked, old_season_count in results:
@@ -128,7 +125,6 @@ class BaseConnectionManager(ABC):
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",
                 )
-                create_rows_for_new_media(media_read)
             if arr_linked:
                 event_service.track_arr_linked(
                     media_id=media_read.id,
@@ -138,8 +134,9 @@ class BaseConnectionManager(ABC):
                 )
             if updated:
                 self.updated_count += 1
-                if not media_read.is_movie and (media_read.season_count or 0) > old_season_count:
-                    append_season_rows_for_media(media_read.id)
+            # Upsert Arr-provided YouTube trailer ID into VideoId table
+            if media_read.youtube_trailer_id:
+                video_id_repo.upsert_arr(media_read.id, media_read.youtube_trailer_id)
             media_read_dc_list.append(MediaReadDC(**media_read.model_dump(), created=created))
         return media_read_dc_list
 

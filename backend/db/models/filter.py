@@ -59,7 +59,8 @@ STR_COLS = [
     "studio",
     "title",
     "title_slug",
-    "txdb_id",
+    "tmdb_id",
+    "tvdb_id",
     "youtube_trailer_id",
 ]
 DATE_COLS = ["added_at", "downloaded_at", "updated_at"]

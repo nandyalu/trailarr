@@ -2,6 +2,7 @@
 
 Ported from backend/core/plex/connection_manager.py with import paths updated.
 """
+
 import os
 import re
 from difflib import SequenceMatcher
@@ -16,7 +17,11 @@ from integrations.plex.client import PlexAPI
 from integrations.plex.models import PlexLibrarySection, PlexMediaItem
 from integrations.plex.parser import parse_plex_item
 from services import event_service
-from utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
+from utils.path_utils import (
+    apply_path_mappings,
+    is_subpath,
+    reverse_path_mappings,
+)
 
 logger = ModuleLogger("PlexConnectionManager")
 
@@ -44,7 +49,10 @@ def _resolve_show_root(folder: str, show_title: str) -> str:
         return str(path.parent)
     norm_last = _normalize_title(last)
     norm_title = _normalize_title(show_title)
-    if norm_title and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6:
+    if (
+        norm_title
+        and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6
+    ):
         return folder
     return folder
 
@@ -54,7 +62,9 @@ class PlexConnectionManager:
         self.connection_id = connection.id
         self.connection_name = connection.name
         self.all_path_mappings = connection.path_mappings
-        self.path_mappings = [pm for pm in connection.path_mappings if pm.path_from != pm.path_to]
+        self.path_mappings = [
+            pm for pm in connection.path_mappings if pm.path_from != pm.path_to
+        ]
         self.monitor = connection.monitor
         self._stats_added = 0
         self._stats_updated = 0
@@ -92,9 +102,13 @@ class PlexConnectionManager:
         for pm in self.all_path_mappings:
             if pm.plex_section_key is not None:
                 continue
+            if pm.id is None:
+                continue
             for folder in section.folders:
                 if is_subpath(pm.path_from, folder):
-                    connection_repo.update_path_mapping_section_key(pm.id, section.key)
+                    connection_repo.update_path_mapping_section_key(
+                        pm.id, section.key
+                    )
                     pm.plex_section_key = section.key
                     break
 
@@ -111,16 +125,27 @@ class PlexConnectionManager:
         if not self.all_path_mappings:
             return
         if plex_folder and not self._is_in_configured_library(plex_folder):
-            logger.debug(f"Skipping '{item.title}': folder '{plex_folder}' not under any configured library")
+            logger.debug(
+                f"Skipping '{item.title}': folder '{plex_folder}' not under"
+                " any configured library"
+            )
             return
 
-        folder_path = self._apply_path_mapping(plex_folder) if plex_folder else ""
-        existing = media_repo.read_by_folder_path(folder_path) if folder_path else None
+        folder_path = (
+            self._apply_path_mapping(plex_folder) if plex_folder else ""
+        )
+        existing = (
+            media_repo.read_by_folder_path(folder_path)
+            if folder_path
+            else None
+        )
 
         if existing:
             newly_linked = existing.plex_connection_id != self.connection_id
             plex_media_filename = (
-                item.media_filename if not existing.arr_id and item.media_filename else None
+                item.media_filename
+                if not existing.arr_id and item.media_filename
+                else None
             )
             plex_fields_changed = media_repo.update_plex_fields(
                 media_id=existing.id,
@@ -183,15 +208,17 @@ class PlexConnectionManager:
                     source_detail="PlexRefresh",
                 )
                 media_repo.update_monitor_only(media_read.id, monitor)
-            from services.trailer_profile_service import create_rows_for_new_media
-            create_rows_for_new_media(media_read)
             self._stats_added += 1
 
-    async def _process_movie_section(self, section: PlexLibrarySection) -> None:
+    async def _process_movie_section(
+        self, section: PlexLibrarySection
+    ) -> None:
         count = 0
         async for item in self.api.get_library_media(section.key):
             count += 1
-            await self._process_item(item, section, is_movie=True, plex_folder=item.media_folder)
+            await self._process_item(
+                item, section, is_movie=True, plex_folder=item.media_folder
+            )
         logger.debug(f"Section '{section.title}': {count} movies")
 
     async def _process_show_section(self, section: PlexLibrarySection) -> None:
@@ -201,14 +228,19 @@ class PlexConnectionManager:
             leaf_count += 1
             if leaf.grandparentRatingKey and leaf.media_folder:
                 folder_paths.setdefault(leaf.grandparentRatingKey, [])
-                folder_paths[leaf.grandparentRatingKey].append(leaf.media_folder)
+                folder_paths[leaf.grandparentRatingKey].append(
+                    leaf.media_folder
+                )
         folder_map: dict[str, str] = {}
         for rating_key, paths in folder_paths.items():
             try:
                 folder_map[rating_key] = os.path.commonpath(paths)
             except ValueError:
                 folder_map[rating_key] = paths[0]
-        logger.debug(f"Section '{section.title}': {len(folder_map)} unique shows from {leaf_count} episodes")
+        logger.debug(
+            f"Section '{section.title}': {len(folder_map)} unique shows from"
+            f" {leaf_count} episodes"
+        )
 
         item_count = 0
         async for item in self.api.get_library_media(section.key):
@@ -216,12 +248,19 @@ class PlexConnectionManager:
             plex_folder = _resolve_show_root(
                 folder_map.get(item.ratingKey, item.media_folder), item.title
             )
-            await self._process_item(item, section, is_movie=False, plex_folder=plex_folder)
-        logger.debug(f"Section '{section.title}': {item_count} show-level items")
+            await self._process_item(
+                item, section, is_movie=False, plex_folder=plex_folder
+            )
+        logger.debug(
+            f"Section '{section.title}': {item_count} show-level items"
+        )
 
     async def _process_section(self, section: PlexLibrarySection) -> None:
         if not self._section_is_tracked(section):
-            logger.info(f"Plex section '{section.title}' [{section.key}] has no configured path mappings — skipping.")
+            logger.info(
+                f"Plex section '{section.title}' [{section.key}] has no"
+                " configured path mappings — skipping."
+            )
             return
         self._persist_section_keys(section)
         self._stats_sections_scanned += 1
@@ -230,7 +269,10 @@ class PlexConnectionManager:
         elif section.type in _SHOW_SECTION_TYPES:
             await self._process_show_section(section)
         else:
-            logger.debug(f"Skipping unsupported section type '{section.type}' (section: {section.title})")
+            logger.debug(
+                f"Skipping unsupported section type '{section.type}' (section:"
+                f" {section.title})"
+            )
 
     async def trigger_item_scan(
         self,
@@ -256,22 +298,30 @@ class PlexConnectionManager:
         self._stats_updated = 0
         self._stats_linked = 0
         self._stats_sections_scanned = 0
-        logger.info(f"Starting Plex refresh for connection '{self.connection_name}'")
+        logger.info(
+            f"Starting Plex refresh for connection '{self.connection_name}'"
+        )
         if not self.all_path_mappings:
             logger.warning(
-                f"Plex connection '{self.connection_name}' has no library folders configured — skipping refresh."
+                f"Plex connection '{self.connection_name}' has no library"
+                " folders configured — skipping refresh."
             )
             return
         sections = await self.api.get_libraries()
-        logger.info(f"Found {len(sections)} library sections in '{self.connection_name}'")
+        logger.info(
+            f"Found {len(sections)} library sections in"
+            f" '{self.connection_name}'"
+        )
         for section in sections:
             try:
                 await self._process_section(section)
             except Exception as e:
-                logger.error(f"Error processing section '{section.title}': {e}")
+                logger.error(
+                    f"Error processing section '{section.title}': {e}"
+                )
         logger.info(
             f"Plex refresh complete for '{self.connection_name}':"
-            f" {self._stats_sections_scanned}/{len(sections)} sections scanned,"
-            f" {self._stats_added} added, {self._stats_updated} updated,"
-            f" {self._stats_linked} newly linked."
+            f" {self._stats_sections_scanned}/{len(sections)} sections"
+            f" scanned, {self._stats_added} added, {self._stats_updated}"
+            f" updated, {self._stats_linked} newly linked."
         )

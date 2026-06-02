@@ -1,0 +1,325 @@
+:host {
+  display: contents;
+}
+
+.video-ids-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem;
+}
+
+.title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  h3 {
+    margin: 0;
+    margin-block: 0;
+  }
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-on-surface);
+  transition: background-color 0.15s;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+  }
+}
+
+.empty-state {
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.vid-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  min-width: 0;
+}
+
+.youtube-id {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 8rem;
+}
+
+.pills {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.type-pill {
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.lang-pill {
+  background-color: color-mix(in srgb, var(--color-outline) 15%, transparent);
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.source-arr {
+  background-color: color-mix(in srgb, var(--color-info) 15%, transparent);
+  color: var(--color-info);
+}
+
+.source-tmdb {
+  background-color: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.source-user {
+  background-color: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: var(--color-warning);
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.yt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #ff0000;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: white;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.del-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+  }
+}
+
+// ── Add dialog ──────────────────────────────────────────────────────────────
+
+dialog {
+  border: none;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  padding: 0;
+  box-shadow: var(--shadow-level3);
+  min-width: 320px;
+  max-width: 420px;
+  width: 100%;
+
+  &::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  background-color: var(--color-surface-container-high);
+  border-radius: 0.75rem 0.75rem 0 0;
+
+  h3 {
+    margin: 0;
+    margin-block: 0;
+    font-size: 1rem;
+  }
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-on-surface) 10%, transparent);
+  }
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-on-surface-variant);
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--color-outline);
+  }
+
+  input, select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.5rem;
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    font-size: 0.875rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    }
+  }
+}
+
+.form-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.cancel-btn {
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.625rem;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--color-surface-container-highest);
+  }
+}
+
+.save-btn {
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.625rem;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

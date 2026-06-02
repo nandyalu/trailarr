@@ -51,8 +51,11 @@
             @if (hasField('imdb_id') && media.imdb_id) {
               <span class="expanded-tag">IMDB: {{ media.imdb_id }}</span>
             }
-            @if (hasField('txdb_id') && media.txdb_id) {
-              <span class="expanded-tag">TVDB/TMDB: {{ media.txdb_id }}</span>
+            @if (hasField('tmdb_id') && media.tmdb_id) {
+              <span class="expanded-tag">TMDB: {{ media.tmdb_id }}</span>
+            }
+            @if (hasField('tvdb_id') && media.tvdb_id) {
+              <span class="expanded-tag">TVDB: {{ media.tvdb_id }}</span>
             }
             @if (hasField('folder_path') && media.folder_path) {
               <span class="expanded-tag expanded-tag-path" [title]="media.folder_path">{{ media.folder_path }}</span>

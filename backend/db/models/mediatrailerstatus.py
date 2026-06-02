@@ -54,6 +54,9 @@ class MediaTrailerStatusBase(AppSQLModel):
     )
     linked_download_id: int | None = None
     youtube_id: str | None = None
+    attempt_count: int = Field(
+        default=0, sa_column=Column(Integer, server_default="0", nullable=False)
+    )
 
 
 class MediaTrailerStatus(MediaTrailerStatusBase, table=True):

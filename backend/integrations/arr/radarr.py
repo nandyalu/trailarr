@@ -52,15 +52,16 @@ class RadarrDataParser(BaseModel):
     season_count: int = Field(default=0)
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
-    txdb_id: str = Field(validation_alias="tmdbId")
+    tmdb_id: str = Field(validation_alias="tmdbId")
+    tvdb_id: str = Field(default="")
     title_slug: str = Field(validation_alias="titleSlug", default="")
     poster_url: str | None = None
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
 
-    @field_validator("txdb_id", mode="before")
+    @field_validator("tmdb_id", mode="before")
     @classmethod
-    def parse_txdb_id(cls, v):
+    def parse_tmdb_id(cls, v):
         return str(v)
 
     @field_validator("media_exists", mode="before")

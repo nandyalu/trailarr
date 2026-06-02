@@ -48,7 +48,7 @@ class TestTrackPlexLinked:
                 arr_id=1,
                 is_movie=True,
                 title="Linked Movie",
-                txdb_id="tt8881001",
+                tmdb_id="tt8881001",
             )
         ])
         self.media, _, _, _, _ = result[0]
@@ -90,7 +90,7 @@ class TestTrackPlexUnlinked:
                 arr_id=2,
                 is_movie=True,
                 title="Unlinked Movie",
-                txdb_id="tt8882001",
+                tmdb_id="tt8882001",
             )
         ])
         self.media, _, _, _, _ = result[0]
@@ -126,7 +126,7 @@ class TestTrackPlexScanTriggered:
                 arr_id=3,
                 is_movie=True,
                 title="Scanned Movie",
-                txdb_id="tt8883001",
+                tmdb_id="tt8883001",
             )
         ])
         self.media, _, _, _, _ = result[0]

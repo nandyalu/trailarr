@@ -43,7 +43,7 @@ class TestEventRepo:
             arr_id=1,
             is_movie=True,
             title="Test Movie",
-            txdb_id="tt1234567",
+            tmdb_id="tt1234567",
         )
         result = media_repo.create_or_update_bulk([media_data])
         self.media, _, _, _, _ = result[0]
@@ -194,7 +194,7 @@ class TestEventServiceHelpers:
             arr_id=2,
             is_movie=True,
             title="Test Movie 2",
-            txdb_id="tt7654321",
+            tmdb_id="tt7654321",
         )
         result = media_repo.create_or_update_bulk([media_data])
         self.media, _, _, _, _ = result[0]
@@ -207,7 +207,7 @@ class TestEventServiceHelpers:
             arr_id=99,
             is_movie=True,
             title="Test Movie For Events",
-            txdb_id="tt9999999",
+            tmdb_id="tt9999999",
             youtube_trailer_id="test_yt_id",
             monitor=True,
         )

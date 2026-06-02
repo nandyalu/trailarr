@@ -38,7 +38,7 @@ class TestUpdatePlexTrailer:
             arr_id=1,
             is_movie=True,
             title="Test Movie",
-            txdb_id="tt9999999",
+            tmdb_id="tt9999999",
         )
         result = media_repo.create_or_update_bulk([media_data])
         self.media, _, _, _, _ = result[0]

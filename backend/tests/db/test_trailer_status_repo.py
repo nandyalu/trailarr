@@ -41,7 +41,7 @@ def _make_media(connection_id: int, title: str = "Test Movie", *, _session: Sess
         year=2024,
         language="en",
         studio="Studio",
-        txdb_id="55501",
+        tmdb_id="55501",
         title_slug=title.lower().replace(" ", "-"),
         monitor=True,
         arr_monitored=True,
@@ -127,61 +127,3 @@ def _get_row(row_id: int, *, _session: Session = None):  # type: ignore
     return _session.get(MediaTrailerStatus, row_id)
 
 
-class TestDeleteUndownloadedRowsForProfile:
-    """1a — UNMONITORED rows must survive delete_undownloaded_rows_for_profile."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        self.conn_id = _make_connection()
-        self.media_id = _make_media(self.conn_id)
-        self.profile_id = _make_profile()
-
-    def test_preserves_unmonitored_rows(self):
-        row_id = _make_status_row(
-            self.media_id, self.profile_id, TrailerStatusEnum.UNMONITORED
-        )
-
-        trailer_status_repo.delete_undownloaded_rows_for_profile(
-            profile_id=self.profile_id,
-            media_ids=[self.media_id],
-        )
-
-        assert _get_row(row_id) is not None, "UNMONITORED row must not be deleted"
-
-    def test_deletes_pending_rows(self):
-        row_id = _make_status_row(
-            self.media_id, self.profile_id, TrailerStatusEnum.PENDING
-        )
-
-        trailer_status_repo.delete_undownloaded_rows_for_profile(
-            profile_id=self.profile_id,
-            media_ids=[self.media_id],
-        )
-
-        assert _get_row(row_id) is None, "PENDING row with no download must be deleted"
-
-    def test_preserves_rows_with_linked_download(self):
-        download_id = _make_download(self.media_id)
-        row_id = _make_status_row(
-            self.media_id, self.profile_id, TrailerStatusEnum.PENDING,
-            linked_download_id=download_id,
-        )
-
-        trailer_status_repo.delete_undownloaded_rows_for_profile(
-            profile_id=self.profile_id,
-            media_ids=[self.media_id],
-        )
-
-        assert _get_row(row_id) is not None, "Row with a linked download must be preserved"
-
-    def test_deletes_failed_rows(self):
-        row_id = _make_status_row(
-            self.media_id, self.profile_id, TrailerStatusEnum.FAILED
-        )
-
-        trailer_status_repo.delete_undownloaded_rows_for_profile(
-            profile_id=self.profile_id,
-            media_ids=[self.media_id],
-        )
-
-        assert _get_row(row_id) is None, "FAILED row with no download must be deleted"

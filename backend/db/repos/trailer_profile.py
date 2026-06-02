@@ -1,10 +1,19 @@
-from sqlmodel import Session, select
+from dataclasses import dataclass
+
+from sqlmodel import Session, col, select
 
 from db.engine import read_session, write_session
 from db.models.customfilter import CustomFilter, CustomFilterCreate
 from db.models.filter import Filter
 from db.models.trailerprofile import TrailerProfile, TrailerProfileCreate, TrailerProfileRead
 from exceptions import ItemNotFoundError
+
+
+@dataclass
+class TmdbRefreshConfig:
+    movie_languages: list[str]
+    series_languages: list[str]
+    has_season_profile: bool
 
 
 def _to_read(db: TrailerProfile) -> TrailerProfileRead:
@@ -62,6 +71,33 @@ def read(profile_id: int, *, _session: Session = None) -> TrailerProfileRead:  #
 @read_session
 def read_all(*, _session: Session = None) -> list[TrailerProfileRead]:  # type: ignore
     return [_to_read(p) for p in _session.exec(select(TrailerProfile)).all()]
+
+
+@read_session
+def get_tmdb_refresh_config(*, _session: Session = None) -> TmdbRefreshConfig:  # type: ignore
+    """Return language lists and season-profile flag for the TMDB refresh task."""
+    rows = _session.exec(
+        select(TrailerProfile.tmdb_language, TrailerProfile.for_movies)
+    ).all()
+    movie_langs: set[str] = {""}
+    series_langs: set[str] = {""}
+    for lang, for_movies in rows:
+        (movie_langs if for_movies else series_langs).add(lang or "")
+
+    has_season = _session.exec(
+        select(TrailerProfile.id)
+        .where(
+            col(TrailerProfile.enabled).is_(True),
+            col(TrailerProfile.download_season_videos).is_(True),
+        )
+        .limit(1)
+    ).first() is not None
+
+    return TmdbRefreshConfig(
+        movie_languages=sorted(movie_langs),
+        series_languages=sorted(series_langs),
+        has_season_profile=has_season,
+    )
 
 
 @read_session

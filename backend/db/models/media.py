@@ -61,7 +61,8 @@ class MediaBase(AppSQLModel):
     youtube_trailer_id: str | None = None
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
-    txdb_id: str = Field(index=True)
+    tmdb_id: str = Field(default="", index=True)
+    tvdb_id: str = Field(default="", index=True)
     title_slug: str = Field(
         default="",
         sa_column=Column(
@@ -205,7 +206,8 @@ class MediaUpdate(MediaBase):
     year: int | None = None  # type: ignore
     language: str | None = None  # type: ignore
     runtime: int | None = None  # type: ignore
-    txdb_id: str | None = None  # type: ignore
+    tmdb_id: str | None = None  # type: ignore
+    tvdb_id: str | None = None  # type: ignore
     media_exists: bool | None = None  # type: ignore
     media_filename: str | None = None  # type: ignore
     folder_path: str | None = None  # type: ignore
