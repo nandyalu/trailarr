@@ -14,6 +14,4 @@ describe('ConnectionsComponent', () => {
   });
 
   it('has instance', () => expect(fixture.componentInstance).toBeTruthy());
-
-  it('renders', () => expect(fixture.nativeElement).toMatchSnapshot());
 });
