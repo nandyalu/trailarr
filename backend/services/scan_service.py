@@ -176,18 +176,18 @@ async def _process_trailer_changes(
             profile_id, season, sequence = tier1_matches[0]
             matched_profile = next((p for p in profiles if p.id == profile_id), None)
             vt = (matched_profile.video_type.value if matched_profile and hasattr(matched_profile.video_type, "value") else str(matched_profile.video_type)) if matched_profile else "trailer"
-            row = trailer_status_repo.get_first_pending_row_for_profile(media.id, profile_id, season)
-            status_row_id = row.id if row else None
-            await record_new_trailer_download(media, profile_id, t_path, status_row_id=status_row_id, video_type=vt)
+            row = trailer_status_repo.get_first_row_for_profile(media.id, profile_id, season)
+            seq = row.sequence if row else 1
+            await record_new_trailer_download(media, profile_id, t_path, season=season, sequence=seq, video_type=vt)
         else:
             tier2_matches = _attribute_tier2(t_path, profiles, media)
             if tier2_matches:
                 profile_id = tier2_matches[0]
                 matched_profile = next((p for p in profiles if p.id == profile_id), None)
                 vt = (matched_profile.video_type.value if matched_profile and hasattr(matched_profile.video_type, "value") else str(matched_profile.video_type)) if matched_profile else "trailer"
-                row = trailer_status_repo.get_first_pending_row_for_profile(media.id, profile_id)
-                status_row_id = row.id if row else None
-                await record_new_trailer_download(media, profile_id, t_path, status_row_id=status_row_id, video_type=vt)
+                row = trailer_status_repo.get_first_row_for_profile(media.id, profile_id)
+                seq = row.sequence if row else 1
+                await record_new_trailer_download(media, profile_id, t_path, season=0, sequence=seq, video_type=vt)
             else:
                 await record_new_trailer_download(media, 0, t_path, video_type="other")
 

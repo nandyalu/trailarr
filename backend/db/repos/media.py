@@ -221,9 +221,11 @@ def _get_search_statement(query: str, limit: int = 50, offset: int = 0) -> Selec
     imdb_id = _extract_imdb_id(query)
     if imdb_id:
         return select(Media).where(Media.imdb_id == imdb_id)
-    txdb_id = _extract_txdb_id(query)
-    if txdb_id:
-        return select(Media).where(Media.txdb_id == txdb_id)
+    media_id = _extract_media_id(query)
+    if media_id:
+        return select(Media).where(
+            or_(Media.tmdb_id == media_id, Media.tvdb_id == media_id)
+        )
     stmt = select(Media)
     year = _extract_four_digit_number(query)
     if year and 1900 < int(year) < 2100:
@@ -247,8 +249,8 @@ def _extract_imdb_id(query: str) -> str | None:
     return matches[-1] if matches else None
 
 
-def _extract_txdb_id(query: str) -> str | None:
-    matches = re.findall(r"\b\d{5,6}\b", query)
+def _extract_media_id(query: str) -> str | None:
+    matches = re.findall(r"\b\d{5,9}\b", query)
     return matches[-1] if matches else None
 
 
@@ -294,7 +296,7 @@ def _create_or_update(
 ) -> tuple[Media, bool, bool, bool, int]:
     """Internal: create or update a single media row without committing."""
     from db.models.event import EventSource
-    db = _read_if_exists(media_create.connection_id, media_create.txdb_id, session)
+    db = _read_if_exists(media_create.connection_id, media_create, session)
     arr_linked = False
     if db is None:
         plex_row = _read_plex_only_by_folder_path(media_create.folder_path, session)
@@ -328,10 +330,29 @@ def _create_or_update(
         return db, True, False, False, 0
 
 
-def _read_if_exists(connection_id: int, txdb_id: str, session: Session) -> Media | None:
-    return session.exec(
-        select(Media).where(Media.connection_id == connection_id, Media.txdb_id == txdb_id)
-    ).first()
+def _read_if_exists(connection_id: int, media_create: MediaCreate, session: Session) -> Media | None:
+    if media_create.tmdb_id:
+        return session.exec(
+            select(Media).where(
+                Media.connection_id == connection_id,
+                Media.tmdb_id == media_create.tmdb_id,
+            )
+        ).first()
+    if media_create.tvdb_id:
+        return session.exec(
+            select(Media).where(
+                Media.connection_id == connection_id,
+                Media.tvdb_id == media_create.tvdb_id,
+            )
+        ).first()
+    if media_create.folder_path:
+        return session.exec(
+            select(Media).where(
+                Media.connection_id == connection_id,
+                Media.folder_path == media_create.folder_path,
+            )
+        ).first()
+    return None
 
 
 def _read_plex_only_by_folder_path(folder_path: str | None, session: Session) -> Media | None:

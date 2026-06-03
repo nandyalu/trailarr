@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 
 from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
 from app_logger import ModuleLogger
@@ -7,11 +7,13 @@ import db.repos.file_info as file_info_repo
 import db.repos.media as media_repo
 import db.repos.trailer_profile as trailer_profile_repo
 import db.repos.trailer_status as trailer_status_repo
+import db.repos.video_id as video_id_repo
 from db.models.download import DownloadRead
 from db.models.event import EventSource
 from db.models.filefolderinfo import FileFolderInfoRead
 from db.models.media import MediaRead
 from db.models.mediatrailerstatus import MediaTrailerStatusRead, TrailerStatusEnum
+from db.models.videoid import VideoIdCreate, VideoIdRead
 from download import search as trailer_search
 from download.pipeline import download_trailer_by_id, batch_download_trailers
 from download.utils import extract_youtube_id
@@ -322,4 +324,41 @@ async def update_trailer_status(row_id: int, new_status: TrailerStatusEnum):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"MediaTrailerStatus row {row_id} not found",
+        )
+
+
+# ─── Video IDs ────────────────────────────────────────────────────────────────
+
+@media_router.get("/{media_id}/video-ids", tags=["VideoIds"])
+async def get_video_ids(media_id: int) -> list[VideoIdRead]:
+    """Return all VideoId records for a media item."""
+    return video_id_repo.get_for_media(media_id)
+
+
+@media_router.post("/{media_id}/video-ids", status_code=status.HTTP_201_CREATED, tags=["VideoIds"])
+async def create_video_id(
+    media_id: int,
+    video_type: str = Body(...),
+    language: str = Body(default=""),
+    youtube_id: str = Body(...),
+) -> VideoIdRead:
+    """Create a user-provided VideoId record for a media item."""
+    from download.utils import extract_youtube_id
+    clean_id = extract_youtube_id(youtube_id) or youtube_id
+    return video_id_repo.create_user(
+        media_id=media_id,
+        video_type=video_type,
+        language=language,
+        youtube_id=clean_id,
+    )
+
+
+@media_router.delete("/{media_id}/video-ids/{video_id_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["VideoIds"])
+async def delete_video_id(media_id: int, video_id_id: int):
+    """Delete a user-provided VideoId record."""
+    deleted = video_id_repo.delete(video_id_id=video_id_id, media_id=media_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"VideoId {video_id_id} not found or not user-created",
         )

@@ -14,13 +14,8 @@ def parse_plex_item(
     arr_id=0 indicates a Plex-only row (no Arr backing).
     Both connection_id and plex_connection_id point to the Plex connection.
     """
-    txdb_id = ""
-    if is_movie and item.tmdb_id:
-        txdb_id = str(item.tmdb_id)
-    elif not is_movie and item.tvdb_id:
-        txdb_id = str(item.tvdb_id)
-    if not txdb_id:
-        txdb_id = f"plex-{item.ratingKey}"
+    tmdb_id = str(item.tmdb_id) if item.tmdb_id else ""
+    tvdb_id = str(item.tvdb_id) if item.tvdb_id else ""
 
     poster_url = f"{server_url}{item.thumb}" if server_url and item.thumb else None
     fanart_url = f"{server_url}{item.art}" if server_url and item.art else None
@@ -35,7 +30,8 @@ def parse_plex_item(
         runtime=item.duration,
         studio=item.studio,
         imdb_id=item.imdb_id,
-        txdb_id=txdb_id,
+        tmdb_id=tmdb_id,
+        tvdb_id=tvdb_id,
         folder_path=item.media_folder if item.media_folder else None,
         media_filename=item.media_filename,
         media_exists=bool(item.media_filename),

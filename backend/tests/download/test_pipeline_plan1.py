@@ -22,7 +22,7 @@ def _make_media(**kwargs) -> MediaRead:
         year=2024,
         language="en",
         studio="Studio",
-        txdb_id="12345",
+        tmdb_id="12345",
         title_slug="test-movie",
         monitor=True,
         arr_monitored=True,

@@ -29,13 +29,13 @@ def _make_connection(
     return conn
 
 
-def _make_media(connection_id: int, txdb_id: str, folder_path: str | None = None) -> MediaCreate:
+def _make_media(connection_id: int, tmdb_id: str, folder_path: str | None = None) -> MediaCreate:
     return MediaCreate(
         connection_id=connection_id,
         arr_id=1,
         is_movie=True,
-        title=f"Media {txdb_id}",
-        txdb_id=txdb_id,
+        title=f"Media {tmdb_id}",
+        tmdb_id=tmdb_id,
         folder_path=folder_path,
     )
 

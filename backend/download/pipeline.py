@@ -1,6 +1,6 @@
 """Download pipeline — combines trailer.py, service.py, batch.py, missing.py."""
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import tempfile
 import threading
@@ -13,6 +13,7 @@ import db.repos.issue as issue_repo
 import db.repos.media as media_repo
 import db.repos.trailer_profile as trailer_profile_repo
 import db.repos.trailer_status as trailer_status_repo
+import db.repos.video_id as video_id_repo
 from db.models.connection import ArrType
 from db.models.download import DownloadCreate
 from db.models.event import EventSource
@@ -23,6 +24,7 @@ from db.models.mediatrailerstatus import TrailerStatusEnum
 from db.models.trailerprofile import TrailerProfileRead, VideoType
 from services.tmdb_service import get_tmdb_youtube_key
 from config.settings import app_settings
+from utils.filters import matches_filters
 from download import analysis as video_analysis
 from download import filename as trailer_file
 from download import search as trailer_search
@@ -35,6 +37,46 @@ from services.files_service import FilesHandler
 from ws.manager import broadcast as ws_broadcast, ws_manager
 
 logger = ModuleLogger("TrailersDownloader")
+
+_NOT_AVAILABLE_TTL = timedelta(days=7)
+
+
+def _should_skip_slot(
+    row: "MediaTrailerStatus | None",
+    profile: TrailerProfileRead,
+    now: datetime,
+) -> bool:
+    """Return True if a (media, profile, season, sequence) slot should be skipped."""
+    if row is None:
+        return False
+    if row.status in (
+        TrailerStatusEnum.DOWNLOADED,
+        TrailerStatusEnum.DOWNLOADING,
+        TrailerStatusEnum.SKIPPED,
+        TrailerStatusEnum.UNMONITORED,
+    ):
+        return True
+    if row.status == TrailerStatusEnum.FAILED and (row.attempt_count or 0) >= profile.retry_count:
+        return True
+    if row.status == TrailerStatusEnum.NOT_AVAILABLE:
+        updated = (
+            row.updated_at.replace(tzinfo=timezone.utc)
+            if row.updated_at and row.updated_at.tzinfo is None
+            else row.updated_at
+        )
+        if updated and (now - updated) < _NOT_AVAILABLE_TTL:
+            return True
+    return False
+
+
+def _get_seasons_for_media(media: MediaRead, profile: TrailerProfileRead) -> list[int]:
+    """Return the list of season numbers to attempt for this (media, profile) pair."""
+    if profile.for_movies:
+        return [0]
+    if profile.download_season_videos:
+        return list(range(0, (media.season_count or 0) + 1))
+    return [0]
+
 
 # ─── Resolution helpers ────────────────────────────────────────────────────────
 
@@ -86,9 +128,10 @@ async def record_new_trailer_download(
     file_path: str,
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
-    status_row_id: int | None = None,
+    season: int = 0,
+    sequence: int = 1,
     video_type: str = "trailer",
-) -> None:
+) -> int | None:
     logger.debug(f"Recording new trailer download for media {media.title} [{media.id}]")
     try:
         media_info = video_info
@@ -138,11 +181,17 @@ async def record_new_trailer_download(
             updated_at=file_updated_at,
         )
         created = download_repo.create(download)
-        if status_row_id is not None:
-            trailer_status_repo.update_row_status(status_row_id, TrailerStatusEnum.DOWNLOADED, created.id)
+        status_row = None
+        if profile_id:
+            status_row = trailer_status_repo.upsert_slot_status(
+                media.id, profile_id, season, sequence,
+                TrailerStatusEnum.DOWNLOADED, created.id,
+            )
         logger.debug(f"Successfully recorded new trailer download for media {media.title} [{media.id}]")
+        return status_row.id if status_row else None
     except Exception as e:
         logger.error(f"Failed to record new trailer download for media {media.title} [{media.id}]: {e}")
+    return None
 
 
 # ─── Plex helpers ──────────────────────────────────────────────────────────────
@@ -269,30 +318,41 @@ async def download_trailer(
     retry_count: int = 2,
     exclude: list[str] | None = None,
     _stop_event: threading.Event | None = None,
-    status_row_id: int | None = None,
     season: int = 0,
     sequence: int = 1,
-    row_youtube_id: str | None = None,
 ) -> bool:
     """Download a trailer according to the profile's video_type and tmdb_language settings.
 
-    Priority logic for TRAILER type:
-      - tmdb_language empty:  media.youtube_trailer_id → row_youtube_id (TMDB cache) → YouTube search
-      - tmdb_language set:    row_youtube_id (TMDB cache) → live TMDB → media.youtube_trailer_id → YouTube search
+    Priority for video ID lookup: user-provided VideoId → arr-provided VideoId → TMDB cache →
+    live TMDB → media.youtube_trailer_id → YouTube search.
 
-    For TMDB types (teaser/clip/featurette/etc.): row_youtube_id (TMDB cache) → live TMDB → NOT_AVAILABLE
+    User-provided IDs always take precedence, even when always_search=True.
+    For TMDB types (teaser/clip/featurette/etc.): VideoId cache → live TMDB → NOT_AVAILABLE.
     For OTHER type: YouTube search only (no TMDB involvement).
-
-    TMDB-sourced keys are never written back to media.youtube_trailer_id in the database.
     """
     logger.info(f"Downloading trailer for {media.title} [{media.id}]")
     if not exclude:
         exclude = []
 
-    # always_search bypasses all cached IDs and forces a fresh YouTube search.
-    if profile.always_search:
+    _vtype = profile.video_type.value if hasattr(profile.video_type, "value") else str(profile.video_type)
+    _tmdb_lang = profile.tmdb_language or ""
+
+    # Look up best available YouTube ID from the VideoId table.
+    best_video_id = video_id_repo.get_best_for_download(
+        media_id=media.id,
+        video_type=_vtype,
+        language=_tmdb_lang,
+        season=season,
+    )
+    has_user_id = best_video_id is not None and video_id_repo.get_for_media(media.id) and any(
+        r.source == "user" and r.video_type == _vtype
+        for r in video_id_repo.get_for_media(media.id)
+    )
+
+    # always_search bypasses cached IDs UNLESS a user-provided ID exists.
+    if profile.always_search and not has_user_id:
         media.youtube_trailer_id = None
-        row_youtube_id = None
+        best_video_id = None
 
     if await _check_plex_trailer(media, profile):
         logger.info(
@@ -301,7 +361,6 @@ async def download_trailer(
         )
         return False
 
-    _vtype = profile.video_type.value if hasattr(profile.video_type, "value") else str(profile.video_type)
     video_id: str | None = None
 
     if profile.video_type == VideoType.OTHER:
@@ -320,12 +379,13 @@ async def download_trailer(
                 f"Profile '{profile.customfilter.filter_name}' has video_type={_vtype}"
                 " but no TMDB API key is configured — marking row NOT_AVAILABLE."
             )
-            if status_row_id is not None:
-                trailer_status_repo.update_row_status(status_row_id, TrailerStatusEnum.NOT_AVAILABLE)
+            trailer_status_repo.upsert_slot_status(
+                media.id, profile.id, season, sequence, TrailerStatusEnum.NOT_AVAILABLE
+            )
             return False
         # Use cached key if available; otherwise do a live TMDB call.
-        if row_youtube_id:
-            video_id = row_youtube_id
+        if best_video_id:
+            video_id = best_video_id
         else:
             _lang = profile.tmdb_language or ""
             video_id = await get_tmdb_youtube_key(media, _vtype, season, language=_lang)
@@ -334,8 +394,9 @@ async def download_trailer(
                 f"TMDB has no {_vtype} for '{media.title}' [{media.id}]"
                 " — marking NOT_AVAILABLE."
             )
-            if status_row_id is not None:
-                trailer_status_repo.update_row_status(status_row_id, TrailerStatusEnum.NOT_AVAILABLE)
+            trailer_status_repo.upsert_slot_status(
+                media.id, profile.id, season, sequence, TrailerStatusEnum.NOT_AVAILABLE
+            )
             return False
 
     else:
@@ -343,8 +404,8 @@ async def download_trailer(
         _tmdb_lang = profile.tmdb_language
         if _tmdb_lang:
             # Language-specific TMDB first, then fall back to Radarr ID, then YouTube search.
-            if row_youtube_id:
-                video_id = row_youtube_id
+            if best_video_id:
+                video_id = best_video_id
             else:
                 video_id = await get_tmdb_youtube_key(media, "trailer", season, language=_tmdb_lang)
             if not video_id and media.youtube_trailer_id:
@@ -358,8 +419,8 @@ async def download_trailer(
             # Radarr/user ID first, then TMDB cache, then YouTube search.
             if media.youtube_trailer_id:
                 video_id = media.youtube_trailer_id
-            elif row_youtube_id:
-                video_id = row_youtube_id
+            elif best_video_id:
+                video_id = best_video_id
             else:
                 video_id = trailer_search.get_video_id(
                     media, profile, exclude,
@@ -377,16 +438,19 @@ async def download_trailer(
         output_file, video_info = _download_and_verify_trailer(media, video_id, profile, _stop_event=_stop_event)
         final_path = trailer_file.move_trailer_to_folder(output_file, media, profile, video_info, season=season, sequence=sequence)
         _update_media_status(media, _DOWNLOADED, profile)
-        await record_new_trailer_download(media, profile.id, final_path, video_id, video_info, status_row_id, video_type=_vtype)
+        new_row_id = await record_new_trailer_download(
+            media, profile.id, final_path, video_id, video_info,
+            season=season, sequence=sequence, video_type=_vtype,
+        )
 
-        # Push status row update (Tier 2b: per-item during batch downloads)
-        if status_row_id is not None:
+        # Push status row update so the UI reflects the new DOWNLOADED state immediately.
+        if new_row_id is not None:
             try:
-                status_read = trailer_status_repo.read(status_row_id)
+                status_read = trailer_status_repo.read(new_row_id)
                 if status_read:
                     await ws_manager.push("trailer_status:updated", status_read)
             except Exception as e:
-                logger.debug(f"Failed to push trailer_status:updated for row {status_row_id}: {e}")
+                logger.debug(f"Failed to push trailer_status:updated for row {new_row_id}: {e}")
 
         event_service.track_trailer_downloaded(
             media_id=media.id,
@@ -417,9 +481,7 @@ async def download_trailer(
             return await download_trailer(
                 media, profile, retry_count - 1, exclude,
                 _stop_event=_stop_event,
-                status_row_id=status_row_id,
                 season=season, sequence=sequence,
-                # row_youtube_id not forwarded — cached key failed, force fresh lookup
             )
         raise DownloadFailedError(f"Failed to download trailer for {media.title}")
 
@@ -523,105 +585,122 @@ def _is_valid_media(db_media: MediaRead, check_folder: bool = True, row_id: int 
 
 
 async def download_missing_trailers(_stop_event: threading.Event | None = None) -> None:
-    """Work through PENDING MediaTrailerStatus rows in priority order."""
+    """Iterate monitored media and download trailers for all matching profiles."""
     if not app_settings.monitor_enabled:
         logger.warning("Monitoring is disabled, skipping trailers download")
+        return
+
+    all_profiles = trailer_profile_repo.read_all()
+    enabled_profiles = [p for p in all_profiles if p.enabled]
+    if not enabled_profiles:
+        logger.info("No enabled trailer profiles — skipping.")
         return
 
     total_attempted = 0
     successful_downloads = 0
     failed_downloads = 0
-    skipped_media_ids: set[int] = set()
+    seen_media_ids: set[int] = set()
+    skipped_media_ids: set[int] = set()       # folder-validation failures
+    stop_monitoring_ids: set[int] = set()     # media IDs that fired stop_monitoring
+    now = datetime.now(timezone.utc)
 
-    while True:
+    for media in media_repo.read_all_generator(monitored_only=True):
         if _stop_event and _stop_event.is_set():
             logger.info("Stop event set, terminating download of missing trailers.")
             return
 
-        batch = trailer_status_repo.get_pending_rows(limit=50)
-        eligible = [r for r in batch if r.media_id not in skipped_media_ids]
-
-        if not eligible:
-            logger.info("No more PENDING trailer status rows to process.")
-            break
-
-        row = eligible[0]
-
-        try:
-            db_media = media_repo.read(row.media_id)
-        except (ItemNotFoundError, Exception) as e:
-            logger.warning(f"Media {row.media_id} not found for status row {row.id} — marking FAILED. Error: {e}")
-            trailer_status_repo.update_row_status(row.id, TrailerStatusEnum.FAILED)
-            failed_downloads += 1
+        if media.id in seen_media_ids or media.id in skipped_media_ids:
             continue
+        seen_media_ids.add(media.id)
 
-        try:
-            profile = trailer_profile_repo.read(row.profile_id)
-        except (ItemNotFoundError, Exception) as e:
-            logger.warning(f"Profile {row.profile_id} not found for status row {row.id} — marking SKIPPED. Error: {e}")
-            trailer_status_repo.update_row_status(row.id, TrailerStatusEnum.SKIPPED)
-            continue
-
-        if not profile.enabled:
-            logger.info(f"Profile '{profile.customfilter.filter_name}' is disabled — marking row {row.id} SKIPPED.")
-            trailer_status_repo.update_row_status(row.id, TrailerStatusEnum.SKIPPED)
-            continue
-
-        check_folder = profile.custom_folder == "{media_folder}"
-        if not _is_valid_media(db_media, check_folder, row_id=row.id):
-            skipped_media_ids.add(row.media_id)
-            continue
-
-        _profile_name = profile.customfilter.filter_name
-        logger.info(
-            f"Downloading trailer for '{db_media.title}' [{db_media.id}]"
-            f" using profile '{_profile_name}' (row {row.id}, sequence {row.sequence})"
+        matching = sorted(
+            [
+                p for p in enabled_profiles
+                if p.for_movies == media.is_movie
+                and matches_filters(media, p.customfilter.filters)
+            ],
+            key=lambda p: -(p.priority or 0),
         )
+        if not matching:
+            continue
 
-        try:
-            if _stop_event and _stop_event.is_set():
-                logger.info("Stop event set, terminating download of missing trailers.")
-                return
+        # Validate the media folder once before processing any profile.
+        first_profile = matching[0]
+        check_folder = first_profile.custom_folder == "{media_folder}"
+        if not _is_valid_media(media, check_folder):
+            skipped_media_ids.add(media.id)
+            continue
 
-            download_successful = await download_trailer(
-                db_media,
-                profile,
-                profile.retry_count,
-                _stop_event=_stop_event,
-                status_row_id=row.id,
-                season=row.season,
-                sequence=row.sequence,
-                row_youtube_id=row.youtube_id,
-            )
-            total_attempted += 1
+        # Batch-load existing status rows for all matching profiles at once.
+        profile_ids = [p.id for p in matching]
+        existing_rows = trailer_status_repo.get_rows_for_media_and_profiles(media.id, profile_ids)
 
-            if download_successful:
-                successful_downloads += 1
-                if profile.stop_monitoring:
-                    skipped = trailer_status_repo.set_pending_rows_skipped_for_media(
-                        db_media.id, exclude_row_id=row.id
+        for profile in matching:
+            if media.id in stop_monitoring_ids:
+                break
+
+            _profile_name = profile.customfilter.filter_name
+            seasons = _get_seasons_for_media(media, profile)
+
+            for season in seasons:
+                for seq in range(1, profile.max_count + 1):
+                    row = existing_rows.get((profile.id, season, seq))
+                    if _should_skip_slot(row, profile, now):
+                        continue
+
+                    if _stop_event and _stop_event.is_set():
+                        logger.info("Stop event set, terminating download of missing trailers.")
+                        return
+
+                    logger.info(
+                        f"Downloading trailer for '{media.title}' [{media.id}]"
+                        f" using profile '{_profile_name}' (season={season}, seq={seq})"
                     )
-                    if skipped:
-                        logger.info(
-                            f"stop_monitoring=True — marked {skipped} sibling PENDING row(s)"
-                            f" for media {db_media.id} as SKIPPED."
+                    try:
+                        success = await download_trailer(
+                            media,
+                            profile,
+                            profile.retry_count,
+                            _stop_event=_stop_event,
+                            season=season,
+                            sequence=seq,
+                        )
+                        total_attempted += 1
+                        if success:
+                            successful_downloads += 1
+                            if profile.stop_monitoring:
+                                stop_monitoring_ids.add(media.id)
+                                logger.info(
+                                    f"stop_monitoring=True — skipping remaining profiles"
+                                    f" for media '{media.title}' [{media.id}]."
+                                )
+                            break  # success: no more sequences for this (profile, season)
+                    except DownloadFailedError:
+                        total_attempted += 1
+                        failed_downloads += 1
+                        logger.warning(
+                            f"Download failed for '{media.title}' with profile"
+                            f" '{_profile_name}' (season={season}, seq={seq}) after all retries."
+                        )
+                        trailer_status_repo.upsert_slot_status(
+                            media.id, profile.id, season, seq,
+                            TrailerStatusEnum.FAILED,
+                            increment_attempt=True,
+                        )
+                    except Exception as e:
+                        total_attempted += 1
+                        failed_downloads += 1
+                        logger.exception(
+                            f"Unexpected error for '{media.title}' [{media.id}]"
+                            f" profile '{_profile_name}' (season={season}, seq={seq}): {e}"
+                        )
+                        trailer_status_repo.upsert_slot_status(
+                            media.id, profile.id, season, seq,
+                            TrailerStatusEnum.FAILED,
+                            increment_attempt=True,
                         )
 
-        except DownloadFailedError:
-            total_attempted += 1
-            failed_downloads += 1
-            logger.warning(
-                f"Download failed for '{db_media.title}' with profile '{_profile_name}'"
-                f" after all retries — marking row {row.id} FAILED."
-            )
-            trailer_status_repo.update_row_status(row.id, TrailerStatusEnum.FAILED)
-        except Exception as e:
-            total_attempted += 1
-            failed_downloads += 1
-            logger.exception(f"Unexpected error processing row {row.id} for '{db_media.title}' [{db_media.id}]: {e}")
-            trailer_status_repo.update_row_status(row.id, TrailerStatusEnum.FAILED)
-
-        await utils.sleep_between_downloads(total_attempted, logger)
+                    await utils.sleep_between_downloads(total_attempted, logger)
 
     logger.info(
         f"Finished downloading missing trailers."

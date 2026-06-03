@@ -25,7 +25,7 @@ def _make_media(**kwargs) -> MediaRead:
     defaults = dict(
         id=1, connection_id=1, arr_id=1, is_movie=True,
         title="The Batman", clean_title="the batman", year=2022,
-        language="en", studio="DC", txdb_id="414906", title_slug="the-batman",
+        language="en", studio="DC", tmdb_id="414906", title_slug="the-batman",
         monitor=True, arr_monitored=True, media_exists=False, media_filename="",
         season_count=0, runtime=176,
         added_at=datetime.datetime(2022, 3, 4, tzinfo=datetime.timezone.utc),
@@ -288,7 +288,7 @@ class TestProcessTrailerChangesAttribution:
             patch("services.scan_service.trailer_profile_repo.read_all", return_value=[profile]),
             patch("services.scan_service._attribute_tier1", return_value=[(5, 0, 1)]),
             patch("services.scan_service._attribute_tier2", return_value=[]),
-            patch("services.scan_service.trailer_status_repo.get_first_pending_row_for_profile", return_value=mock_row),
+            patch("services.scan_service.trailer_status_repo.get_first_row_for_profile", return_value=mock_row),
             patch("services.scan_service.record_new_trailer_download", new_callable=AsyncMock) as mock_record,
             patch("services.scan_service.event_service.track_trailer_detected"),
             patch("services.scan_service.issue_repo.resolve", return_value=False),
@@ -304,7 +304,8 @@ class TestProcessTrailerChangesAttribution:
         assert new_count == 1
         mock_record.assert_called_once()
         call_kwargs = mock_record.call_args
-        assert call_kwargs.kwargs.get("status_row_id") == 77
+        assert call_kwargs.kwargs.get("season") == 0
+        assert call_kwargs.kwargs.get("sequence") == mock_row.sequence
         assert call_kwargs.args[1] == 5
 
     @pytest.mark.asyncio
@@ -321,7 +322,7 @@ class TestProcessTrailerChangesAttribution:
             patch("services.scan_service.trailer_profile_repo.read_all", return_value=[]),
             patch("services.scan_service._attribute_tier1", return_value=[]),
             patch("services.scan_service._attribute_tier2", return_value=[3]),
-            patch("services.scan_service.trailer_status_repo.get_first_pending_row_for_profile", return_value=mock_row),
+            patch("services.scan_service.trailer_status_repo.get_first_row_for_profile", return_value=mock_row),
             patch("services.scan_service.record_new_trailer_download", new_callable=AsyncMock) as mock_record,
             patch("services.scan_service.event_service.track_trailer_detected"),
             patch("services.scan_service.issue_repo.resolve", return_value=False),
@@ -337,7 +338,8 @@ class TestProcessTrailerChangesAttribution:
         assert new_count == 1
         mock_record.assert_called_once()
         call_kwargs = mock_record.call_args
-        assert call_kwargs.kwargs.get("status_row_id") == 88
+        assert call_kwargs.kwargs.get("season") == 0
+        assert call_kwargs.kwargs.get("sequence") == mock_row.sequence
         assert call_kwargs.args[1] == 3
 
     @pytest.mark.asyncio
@@ -379,7 +381,7 @@ class TestProcessTrailerChangesAttribution:
         with (
             patch("services.scan_service.trailer_profile_repo.read_all", return_value=[]),
             patch("services.scan_service._attribute_tier1", return_value=[(5, 0, 1)]),
-            patch("services.scan_service.trailer_status_repo.get_first_pending_row_for_profile", return_value=None),
+            patch("services.scan_service.trailer_status_repo.get_first_row_for_profile", return_value=None),
             patch("services.scan_service.record_new_trailer_download", new_callable=AsyncMock) as mock_record,
             patch("services.scan_service.event_service.track_trailer_detected"),
             patch("services.scan_service.issue_repo.resolve", return_value=False),

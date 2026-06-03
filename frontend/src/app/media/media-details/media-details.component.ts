@@ -16,6 +16,7 @@ import {DownloadsComponent} from './downloads/downloads.component';
 import {FilesComponent} from './files/files.component';
 import {MediaEventsComponent} from './media-events/media-events.component';
 import {TrailerStatusComponent} from './trailer-status/trailer-status.component';
+import {VideoIdsComponent} from './video-ids/video-ids.component';
 
 @Component({
   selector: 'app-media-details',
@@ -29,6 +30,7 @@ import {TrailerStatusComponent} from './trailer-status/trailer-status.component'
     MediaEventsComponent,
     RemoveStartingSlashPipe,
     TrailerStatusComponent,
+    VideoIdsComponent,
     RouterLink,
     TitleCasePipe,
   ],
@@ -55,7 +57,6 @@ export class MediaDetailsComponent {
   isLoading = computed(() => this.mediaService.mediaResource.isLoading());
   isLoadingMonitor = signal<boolean>(false);
   isLoadingDownload = signal<boolean>(false);
-  trailer_url: string = '';
   arr_url = computed(() => {
     let media = this.selectedMedia();
     if (!media) return '';
@@ -68,7 +69,7 @@ export class MediaDetailsComponent {
     }
     const arrType = connection.arr_type.toLowerCase();
     if (arrType == 'radarr') {
-      return baseUrl + '/movie/' + media.txdb_id;
+      return baseUrl + '/movie/' + media.tmdb_id;
     } else if (arrType == 'sonarr') {
       return baseUrl + '/series/' + media.title_slug;
     }
@@ -93,7 +94,6 @@ export class MediaDetailsComponent {
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
     if (media) {
-      this.trailer_url = media.youtube_trailer_id || '';
       this.isLoadingDownload.set(media.status === 'downloading');
       // if (media.status !== 'downloading') {
       //   this.isLoadingDownload.set(false);
@@ -174,8 +174,7 @@ export class MediaDetailsComponent {
     //   return;
     // }
     this.isLoadingDownload.set(true);
-    // console.log('Downloading trailer');
-    this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {
+    this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, '').subscribe((res: string) => {
       console.log(res);
     });
   }
@@ -218,35 +217,4 @@ export class MediaDetailsComponent {
       });
   }
 
-  saveYtId() {
-    // console.log('Saving youtube id');
-    this.webSocketService.showToast('Saving youtube id...');
-    this.isLoadingDownload.set(true);
-    this.mediaService
-      .saveMediaTrailer(this.mediaId(), this.trailer_url)
-      .pipe(
-        catchError((error) => {
-          console.error('Error searching trailer:', error.error.detail);
-          this.webSocketService.showToast(error.error.detail, 'Error');
-          this.isLoadingDownload.set(false);
-          return of('');
-        }),
-      )
-      .subscribe(() => {
-        this.isLoadingDownload.set(false);
-      });
-  }
-
-  /**
-   * Opens a new browser tab to play the YouTube trailer of the current media.
-   * If the media does not have a YouTube trailer ID, the function returns without doing anything.
-   *
-   * @returns {void}
-   */
-  openTrailer(): void {
-    if (!this.selectedMedia()?.youtube_trailer_id) {
-      return;
-    }
-    window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
-  }
 }

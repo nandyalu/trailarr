@@ -43,7 +43,8 @@ export class TableComponent {
     {key: 'media_exists', label: 'Media Exists'},
     {key: 'trailer_exists', label: 'Trailer Exists'},
     {key: 'imdb_id', label: 'IMDB ID'},
-    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
+    {key: 'tmdb_id', label: 'TMDB ID'},
+    {key: 'tvdb_id', label: 'TVDB ID'},
     {key: 'folder_path', label: 'Folder Path'},
     {key: 'media_filename', label: 'Filename'},
     {key: 'added_at', label: 'Date Added'},
@@ -92,7 +93,8 @@ export class TableComponent {
       case 'media_exists':  return media.media_exists ? 'Yes' : 'No';
       case 'trailer_exists': return media.trailer_exists ? 'Yes' : 'No';
       case 'imdb_id':       return media.imdb_id || '—';
-      case 'txdb_id':       return media.txdb_id || '—';
+      case 'tmdb_id':       return media.tmdb_id || '—';
+      case 'tvdb_id':       return media.tvdb_id || '—';
       case 'folder_path':   return media.folder_path || '—';
       case 'media_filename': return media.media_filename || '—';
       case 'plex_rating_key': return media.plex_rating_key || '—';

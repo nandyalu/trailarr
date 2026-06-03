@@ -42,7 +42,7 @@ class TestMediaCreate:
             arr_id=1,
             is_movie=True,
             title="New Movie",
-            txdb_id="tt9991001",
+            tmdb_id="tt9991001",
         )
         created = media_repo.create(media_data)
         assert created.id is not None
@@ -56,7 +56,7 @@ class TestMediaCreate:
             arr_id=1,
             is_movie=True,
             title="Ghost Movie",
-            txdb_id="tt9991002",
+            tmdb_id="tt9991002",
         )
         with pytest.raises(ItemNotFoundError):
             media_repo.create(media_data)
@@ -68,7 +68,7 @@ class TestMediaCreate:
             arr_id=2,
             is_movie=False,
             title="New Show",
-            txdb_id="tt9991003",
+            tmdb_id="tt9991003",
         )
         created = media_repo.create(media_data)
         fetched = media_repo.read(created.id)
@@ -83,7 +83,7 @@ class TestMediaCreate:
             arr_id=3,
             is_movie=True,
             title="Another Movie",
-            txdb_id="tt9991004",
+            tmdb_id="tt9991004",
         )
         created = media_repo.create(media_data)
         assert created.plex_trailer is None

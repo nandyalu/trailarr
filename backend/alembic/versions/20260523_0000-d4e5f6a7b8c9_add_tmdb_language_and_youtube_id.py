@@ -4,23 +4,20 @@ Revision ID: d4e5f6a7b8c9
 Revises: a1b2c3d4e5f6
 Create Date: 2026-05-23 00:00:00.000000
 
-Combines three originally-separate migrations:
+Combines two additions:
 
-1. Fix orphaned NULL-profile PENDING rows (was b2c3d4e5f6a7)
-   The previous migration (a1b2c3d4e5f6) created PENDING rows with
-   profile_id=NULL for all undownloaded media. Those rows are permanently
-   orphaned because get_pending_rows() requires profile_id IS NOT NULL.
-   Replaces them with proper profile-linked rows.
-
-2. Add video_type to Download (was c3d4e5f6a7b8)
+1. Add video_type to Download (was c3d4e5f6a7b8)
    Backfills 'trailer' for rows whose file_name/path indicates a trailer;
    everything else defaults to 'other'.
 
-3. Add tmdb_language to TrailerProfile and youtube_id to MediaTrailerStatus
+2. Add tmdb_language to TrailerProfile and youtube_id to MediaTrailerStatus
    (was d4e5f6a7b8c9)
    tmdb_language: ISO 639-1 code for TMDB video lookups; empty = en-US default.
-   youtube_id: TMDB-sourced YouTube key cached per status row so the download
-   task can skip redundant live TMDB calls.
+   youtube_id: TMDB-sourced YouTube key cached per status row (kept for
+   transition; VideoId table is the authoritative store going forward).
+
+Also cleans up any stale NULL-profile PENDING rows that may exist from older
+migration runs.
 """
 
 from datetime import datetime, timezone
@@ -40,75 +37,20 @@ logger = ModuleLogger("AlembicMigrations")
 
 def upgrade() -> None:
     conn = op.get_bind()
-    now = datetime.now(timezone.utc).isoformat()
 
-    # ── 1. Fix orphaned NULL-profile PENDING rows ──────────────────────────────
+    # ── Cleanup: keep only DOWNLOADED rows ───────────────────────────────────────
+    # No production users have the new MediaTrailerStatus code yet, so any
+    # non-DOWNLOADED rows are stale artefacts from earlier dev iterations.
+    # The dynamic get_work_items() will recreate PENDING rows at runtime.
 
     result = conn.execute(sa.text("""
         DELETE FROM mediatrailerstatus
-        WHERE profile_id IS NULL AND status = 'pending'
+        WHERE status != 'downloaded'
     """))
-    logger.info(f"Deleted {result.rowcount} orphaned NULL-profile PENDING rows")
+    if result.rowcount:
+        logger.info(f"Deleted {result.rowcount} non-DOWNLOADED MediaTrailerStatus row(s)")
 
-    result = conn.execute(sa.text("""
-        INSERT INTO mediatrailerstatus
-            (media_id, profile_id, season, sequence, status, source, created_at, updated_at)
-        SELECT
-            m.id,
-            tp.id,
-            0, 1, 'pending', 'app', :now, :now
-        FROM media m
-        CROSS JOIN trailerprofile tp
-        WHERE tp.enabled = 1
-          AND m.is_movie = tp.for_movies
-          AND m.downloaded_at IS NULL
-          AND NOT EXISTS (
-              SELECT 1 FROM mediatrailerstatus mts2
-              WHERE mts2.media_id = m.id AND mts2.profile_id = tp.id
-          )
-          AND NOT EXISTS (
-              SELECT 1 FROM mediatrailerstatus mts3
-              WHERE mts3.media_id = m.id AND mts3.status = 'downloaded'
-          )
-    """), {"now": now})
-    logger.info(f"Created {result.rowcount} profile-linked PENDING rows for undownloaded media")
-
-    result = conn.execute(sa.text("""
-        INSERT INTO mediatrailerstatus
-            (media_id, profile_id, season, sequence, status, source, created_at, updated_at)
-        WITH RECURSIVE seasons(n) AS (
-            SELECT 1
-            UNION ALL
-            SELECT n + 1 FROM seasons WHERE n < 50
-        )
-        SELECT
-            m.id,
-            tp.id,
-            s.n,
-            1, 'pending', 'app', :now, :now
-        FROM media m
-        CROSS JOIN trailerprofile tp
-        JOIN seasons s ON s.n <= m.season_count
-        WHERE tp.enabled = 1
-          AND tp.for_movies = 0
-          AND tp.download_season_videos = 1
-          AND m.is_movie = 0
-          AND m.season_count > 0
-          AND m.downloaded_at IS NULL
-          AND NOT EXISTS (
-              SELECT 1 FROM mediatrailerstatus mts2
-              WHERE mts2.media_id = m.id
-                AND mts2.profile_id = tp.id
-                AND mts2.season = s.n
-          )
-          AND NOT EXISTS (
-              SELECT 1 FROM mediatrailerstatus mts3
-              WHERE mts3.media_id = m.id AND mts3.status = 'downloaded'
-          )
-    """), {"now": now})
-    logger.info(f"Created {result.rowcount} per-season PENDING rows for series media")
-
-    # ── 2. Add video_type to download ──────────────────────────────────────────
+    # ── 1. Add video_type to download ─────────────────────────────────────────────
 
     with op.batch_alter_table("download", schema=None) as batch_op:
         batch_op.add_column(
@@ -124,7 +66,7 @@ def upgrade() -> None:
     """))
     logger.info(f"Backfilled 'trailer' video_type for {result.rowcount} existing download rows")
 
-    # ── 3. Add tmdb_language to trailerprofile, youtube_id to mediatrailerstatus
+    # ── 2. Add tmdb_language to trailerprofile, youtube_id to mediatrailerstatus ──
 
     with op.batch_alter_table("trailerprofile", schema=None) as batch_op:
         batch_op.add_column(
@@ -153,9 +95,3 @@ def downgrade() -> None:
     with op.batch_alter_table("download", schema=None) as batch_op:
         batch_op.drop_column("video_type")
     logger.info("Dropped 'video_type' column from download table")
-
-    conn.execute(sa.text("""
-        DELETE FROM mediatrailerstatus
-        WHERE profile_id IS NOT NULL AND status = 'pending' AND source = 'app'
-    """))
-    logger.info("Downgrade: removed profile-linked pending rows created by this migration")

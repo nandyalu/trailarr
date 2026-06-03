@@ -100,7 +100,8 @@ export const stringFilterKeys = [
   'studio',
   'title',
   'title_slug',
-  'txdb_id',
+  'tmdb_id',
+  'tvdb_id',
   'youtube_trailer_id',
 ];
 

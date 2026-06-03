@@ -22,7 +22,7 @@ def _make_media(**kwargs) -> MediaRead:
     defaults = dict(
         id=1, connection_id=1, arr_id=1, is_movie=True,
         title="Test Movie", clean_title="test movie", year=2024,
-        language="en", studio="Studio", txdb_id="12345", title_slug="test-movie",
+        language="en", studio="Studio", tmdb_id="12345", title_slug="test-movie",
         monitor=True, arr_monitored=True, media_exists=False, media_filename="",
         season_count=0, runtime=120,
         added_at=datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc),
@@ -109,13 +109,15 @@ class TestVideoTypeBranching:
         with (
             patch("download.pipeline._check_plex_trailer", new_callable=AsyncMock, return_value=False),
             patch("download.pipeline.app_settings") as mock_settings,
-            patch("download.pipeline.trailer_status_repo.update_row_status") as mock_upd,
+            patch("download.pipeline.trailer_status_repo.upsert_slot_status") as mock_upd,
         ):
             mock_settings.tmdb_api_key = ""
-            result = await download_trailer(media, profile, retry_count=0, status_row_id=42)
+            result = await download_trailer(media, profile, retry_count=0)
 
         assert result is False
-        mock_upd.assert_called_once_with(42, TrailerStatusEnum.NOT_AVAILABLE)
+        mock_upd.assert_called_once()
+        _, _, _, _, status = mock_upd.call_args[0]
+        assert status == TrailerStatusEnum.NOT_AVAILABLE
 
     @pytest.mark.asyncio
     async def test_non_trailer_no_tmdb_result_sets_not_available(self):
@@ -126,16 +128,19 @@ class TestVideoTypeBranching:
             patch("download.pipeline._check_plex_trailer", new_callable=AsyncMock, return_value=False),
             patch("download.pipeline.app_settings") as mock_settings,
             patch("download.pipeline.get_tmdb_youtube_key", new_callable=AsyncMock, return_value=None),
-            patch("download.pipeline.trailer_status_repo.update_row_status") as mock_upd,
+            patch("download.pipeline.trailer_status_repo.upsert_slot_status") as mock_upd,
         ):
             mock_settings.tmdb_api_key = "key123"
-            result = await download_trailer(media, profile, retry_count=0, status_row_id=77)
+            result = await download_trailer(media, profile, retry_count=0)
 
         assert result is False
-        mock_upd.assert_called_once_with(77, TrailerStatusEnum.NOT_AVAILABLE)
+        mock_upd.assert_called_once()
+        _, _, _, _, status = mock_upd.call_args[0]
+        assert status == TrailerStatusEnum.NOT_AVAILABLE
 
     @pytest.mark.asyncio
-    async def test_non_trailer_no_status_row_no_update(self):
+    async def test_non_trailer_no_tmdb_result_always_upserts(self):
+        """NOT_AVAILABLE is always upserted regardless of whether a row existed before."""
         media = _make_media()
         profile = _make_profile(VideoType.FEATURETTE)
 
@@ -143,13 +148,13 @@ class TestVideoTypeBranching:
             patch("download.pipeline._check_plex_trailer", new_callable=AsyncMock, return_value=False),
             patch("download.pipeline.app_settings") as mock_settings,
             patch("download.pipeline.get_tmdb_youtube_key", new_callable=AsyncMock, return_value=None),
-            patch("download.pipeline.trailer_status_repo.update_row_status") as mock_upd,
+            patch("download.pipeline.trailer_status_repo.upsert_slot_status") as mock_upd,
         ):
             mock_settings.tmdb_api_key = "key123"
-            result = await download_trailer(media, profile, retry_count=0, status_row_id=None)
+            result = await download_trailer(media, profile, retry_count=0)
 
         assert result is False
-        mock_upd.assert_not_called()
+        mock_upd.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_non_trailer_season_passed_to_tmdb(self):
@@ -183,7 +188,7 @@ class TestGetTmdbYoutubeKey:
     @pytest.mark.asyncio
     async def test_returns_key_for_matching_type(self):
         from services.tmdb_service import get_tmdb_youtube_key
-        media = _make_media(txdb_id="12345", is_movie=True)
+        media = _make_media(tmdb_id="12345", is_movie=True)
         results = [{"site": "YouTube", "type": "Featurette", "key": "abc123"}]
 
         with (
@@ -198,7 +203,7 @@ class TestGetTmdbYoutubeKey:
     @pytest.mark.asyncio
     async def test_returns_none_when_no_match(self):
         from services.tmdb_service import get_tmdb_youtube_key
-        media = _make_media(txdb_id="12345", is_movie=True)
+        media = _make_media(tmdb_id="12345", is_movie=True)
 
         with (
             patch("services.tmdb_service.app_settings") as mock_settings,
@@ -212,7 +217,7 @@ class TestGetTmdbYoutubeKey:
     @pytest.mark.asyncio
     async def test_returns_none_without_api_key(self):
         from services.tmdb_service import get_tmdb_youtube_key
-        media = _make_media(txdb_id="12345")
+        media = _make_media(tmdb_id="12345")
 
         with patch("services.tmdb_service.app_settings") as mock_settings:
             mock_settings.tmdb_api_key = ""
@@ -221,9 +226,9 @@ class TestGetTmdbYoutubeKey:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_returns_none_without_txdb_id(self):
+    async def test_returns_none_without_tmdb_id(self):
         from services.tmdb_service import get_tmdb_youtube_key
-        media = _make_media(txdb_id="")
+        media = _make_media(tmdb_id="")
 
         with patch("services.tmdb_service.app_settings") as mock_settings:
             mock_settings.tmdb_api_key = "key"
@@ -234,7 +239,7 @@ class TestGetTmdbYoutubeKey:
     @pytest.mark.asyncio
     async def test_passes_season_to_fetch(self):
         from services.tmdb_service import get_tmdb_youtube_key
-        media = _make_media(txdb_id="999", is_movie=False)
+        media = _make_media(tmdb_id="999", is_movie=False)
 
         with (
             patch("services.tmdb_service.app_settings") as mock_settings,

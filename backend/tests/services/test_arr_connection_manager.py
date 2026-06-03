@@ -210,7 +210,7 @@ class TestCreateOrUpdateBulk:
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
                   return_value=[(mock_media, True, False, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added") as mock_event,
-            patch("services.trailer_profile_service.create_rows_for_new_media"),
+            patch("db.repos.video_id.upsert_arr"),
         ):
             manager.create_or_update_bulk([MagicMock()])
         mock_event.assert_called_once()
@@ -223,6 +223,7 @@ class TestCreateOrUpdateBulk:
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
                   return_value=[(mock_media, False, False, True, 0)]),
             patch("services.arr_connection_manager.event_service.track_arr_linked") as mock_event,
+            patch("db.repos.video_id.upsert_arr"),
         ):
             manager.create_or_update_bulk([MagicMock()])
         mock_event.assert_called_once()
@@ -235,6 +236,7 @@ class TestCreateOrUpdateBulk:
                   return_value=[(mock_media, False, True, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added") as mock_added,
             patch("services.arr_connection_manager.event_service.track_arr_linked") as mock_linked,
+            patch("db.repos.video_id.upsert_arr"),
         ):
             manager.create_or_update_bulk([MagicMock()])
         mock_added.assert_not_called()
@@ -248,7 +250,7 @@ class TestCreateOrUpdateBulk:
             patch("services.arr_connection_manager.media_repo.create_or_update_bulk",
                   return_value=[(m1, True, False, False, 0), (m2, False, True, False, 0)]),
             patch("services.arr_connection_manager.event_service.track_media_added"),
-            patch("services.trailer_profile_service.create_rows_for_new_media"),
+            patch("db.repos.video_id.upsert_arr"),
         ):
             manager.create_or_update_bulk([MagicMock(), MagicMock()])
         assert manager.media_ids == [10, 20]

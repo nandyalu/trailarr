@@ -1,7 +1,8 @@
-"""Tests for Plan 3 migration — fix_orphaned_pending_rows.
+"""Tests for migration d4e5f6a7b8c9 — cleanup of stale NULL-profile PENDING rows.
 
-Tests call upgrade() directly with the in-memory test engine, bypassing Alembic
-so the logic can be verified without running a full migration stack.
+With the dynamic work-queue approach (get_work_items), PENDING rows are never
+pre-created. This migration only cleans up any stale NULL-profile PENDING rows
+that may have been created by older code, then adds schema columns.
 """
 
 import datetime
@@ -53,7 +54,7 @@ def _make_media(
         year=2024,
         language="en",
         studio="Studio",
-        txdb_id=str(uid),
+        tmdb_id=str(uid),
         title_slug=f"mig-movie-{uid}",
         monitor=True,
         arr_monitored=True,
@@ -72,37 +73,8 @@ def _make_media(
 
 
 @write_session
-def _make_profile(
-    for_movies: bool = True,
-    enabled: bool = True,
-    download_season_videos: bool = False,
-    *,
-    _session: Session = None,  # type: ignore
-) -> int:
-    from db.models.customfilter import CustomFilter, FilterType
-    cf = CustomFilter(
-        filter_name=f"Mig Profile {'Movie' if for_movies else 'Series'}",
-        filter_type=FilterType.TRAILER,
-    )
-    _session.add(cf)
-    _session.commit()
-    _session.refresh(cf)
-    tp = TrailerProfile(
-        customfilter_id=cf.id,
-        enabled=enabled,
-        for_movies=for_movies,
-        download_season_videos=download_season_videos,
-        max_count=1,
-    )
-    _session.add(tp)
-    _session.commit()
-    _session.refresh(tp)
-    return tp.id  # type: ignore
-
-
-@write_session
 def _insert_null_profile_pending(media_id: int, *, _session: Session = None) -> int:  # type: ignore
-    """Simulates the orphaned row the previous migration created."""
+    """Simulates a stale NULL-profile PENDING row from older migration code."""
     row = MediaTrailerStatus(
         media_id=media_id,
         profile_id=None,
@@ -135,26 +107,17 @@ def _insert_null_profile_downloaded(media_id: int, *, _session: Session = None) 
 
 
 @write_session
-def _count_rows(media_id: int, profile_id: int | None, status: TrailerStatusEnum, *, _session: Session = None) -> int:  # type: ignore
+def _count_rows(media_id: int, status: TrailerStatusEnum, *, _session: Session = None) -> int:  # type: ignore
     from sqlmodel import select
     stmt = select(MediaTrailerStatus).where(
         MediaTrailerStatus.media_id == media_id,
         MediaTrailerStatus.status == status,
     )
-    if profile_id is None:
-        stmt = stmt.where(MediaTrailerStatus.profile_id.is_(None))  # type: ignore[union-attr]
-    else:
-        stmt = stmt.where(MediaTrailerStatus.profile_id == profile_id)
     return len(_session.exec(stmt).all())
 
 
 def _run_upgrade():
-    """Run the orphaned-row-fix SQL from the merged migration.
-
-    The merged migration also adds columns (video_type, tmdb_language, youtube_id) that
-    already exist in the test DB schema. We mock batch_alter_table so only the raw SQL
-    DELETE/INSERT statements execute.
-    """
+    """Run the migration SQL. Mocks batch_alter_table since columns already exist in test DB."""
     import importlib.util, os
     spec = importlib.util.spec_from_file_location(
         "migration_d4e5f6a7b8c9",
@@ -174,117 +137,47 @@ def _run_upgrade():
 
 
 class TestOrphanedRowMigration:
-    """Plan 3 — migration must fix NULL-profile PENDING rows."""
+    """Migration must clean up stale NULL-profile PENDING rows without creating new ones."""
 
-    def test_null_profile_pending_rows_deleted(self):
+    def test_non_downloaded_rows_deleted(self):
         conn_id = _make_connection()
         media_id = _make_media(conn_id)
-        row_id = _insert_null_profile_pending(media_id)
-
-        _run_upgrade()
-
-        assert _count_rows(media_id, None, TrailerStatusEnum.PENDING) == 0, \
-            "NULL-profile PENDING rows must be deleted"
-
-    def test_manual_downloaded_row_preserved(self):
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, downloaded_at=datetime.datetime(2024, 6, 1, tzinfo=datetime.timezone.utc))
-        row_id = _insert_null_profile_downloaded(media_id)
-
-        _run_upgrade()
-
-        assert _count_rows(media_id, None, TrailerStatusEnum.DOWNLOADED) == 1, \
-            "NULL-profile DOWNLOADED rows must be preserved"
-
-    def test_profile_linked_rows_created_for_undownloaded_media(self):
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, is_movie=True)
-        profile_id = _make_profile(for_movies=True, enabled=True)
         _insert_null_profile_pending(media_id)
 
         _run_upgrade()
 
-        assert _count_rows(media_id, profile_id, TrailerStatusEnum.PENDING) == 1, \
-            "Profile-linked PENDING row must be created for undownloaded media"
+        assert _count_rows(media_id, TrailerStatusEnum.PENDING) == 0, \
+            "All non-DOWNLOADED rows must be deleted"
 
-    def test_already_downloaded_media_gets_no_pending_row(self):
+    def test_manual_downloaded_row_preserved(self):
         conn_id = _make_connection()
         media_id = _make_media(
             conn_id, downloaded_at=datetime.datetime(2024, 6, 1, tzinfo=datetime.timezone.utc)
         )
-        profile_id = _make_profile(for_movies=True, enabled=True)
-
-        _run_upgrade()
-
-        assert _count_rows(media_id, profile_id, TrailerStatusEnum.PENDING) == 0, \
-            "Downloaded media must not get PENDING rows"
-
-    def test_disabled_profile_gets_no_rows(self):
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, is_movie=True)
-        profile_id = _make_profile(for_movies=True, enabled=False)
-
-        _run_upgrade()
-
-        assert _count_rows(media_id, profile_id, TrailerStatusEnum.PENDING) == 0, \
-            "Disabled profile must not get rows created"
-
-    def test_season_rows_created_for_series(self):
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, is_movie=False, season_count=3)
-        profile_id = _make_profile(for_movies=False, enabled=True, download_season_videos=True)
-        _insert_null_profile_pending(media_id)
-
-        _run_upgrade()
-
-        with engine.connect() as conn:
-            rows = conn.execute(sa.text("""
-                SELECT season FROM mediatrailerstatus
-                WHERE media_id = :mid AND profile_id = :pid AND status = 'pending'
-                ORDER BY season
-            """), {"mid": media_id, "pid": profile_id}).fetchall()
-        seasons = [r[0] for r in rows]
-        # season 0 (series-level) + seasons 1, 2, 3
-        assert 1 in seasons and 2 in seasons and 3 in seasons, \
-            "Per-season rows must be created for seasons 1..N"
-
-    def test_season_rows_not_created_without_flag(self):
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, is_movie=False, season_count=2)
-        profile_id = _make_profile(for_movies=False, enabled=True, download_season_videos=False)
-
-        _run_upgrade()
-
-        with engine.connect() as conn:
-            rows = conn.execute(sa.text("""
-                SELECT season FROM mediatrailerstatus
-                WHERE media_id = :mid AND profile_id = :pid AND season > 0
-            """), {"mid": media_id, "pid": profile_id}).fetchall()
-        assert len(rows) == 0, "No per-season rows when download_season_videos=False"
-
-    def test_media_with_downloaded_row_gets_no_pending_row(self):
-        """Belt-and-suspenders: even with downloaded_at=None, if a DOWNLOADED row
-        already exists (e.g. from Step 2.5 in a1b2c3d4e5f6), no PENDING row is created."""
-        conn_id = _make_connection()
-        media_id = _make_media(conn_id, is_movie=True)
-        profile_id = _make_profile(for_movies=True, enabled=True)
-        # Simulate a DOWNLOADED row already existing (e.g. from trailer_exists backfill)
         _insert_null_profile_downloaded(media_id)
 
         _run_upgrade()
 
-        assert _count_rows(media_id, profile_id, TrailerStatusEnum.PENDING) == 0, \
-            "Media with an existing DOWNLOADED row must not get PENDING rows"
+        assert _count_rows(media_id, TrailerStatusEnum.DOWNLOADED) == 1, \
+            "NULL-profile DOWNLOADED rows must be preserved"
 
-    def test_existing_profile_rows_not_duplicated(self):
+    def test_no_pending_rows_created_for_undownloaded_media(self):
+        """Migration no longer pre-creates PENDING rows — get_work_items() handles that."""
         conn_id = _make_connection()
         media_id = _make_media(conn_id, is_movie=True)
-        profile_id = _make_profile(for_movies=True, enabled=True)
-        # Pre-existing row — migration must not duplicate it
+
+        _run_upgrade()
+
+        assert _count_rows(media_id, TrailerStatusEnum.PENDING) == 0, \
+            "Migration must not create PENDING rows — dynamic queue handles this"
+
+    def test_migration_is_idempotent(self):
+        conn_id = _make_connection()
+        media_id = _make_media(conn_id)
         _insert_null_profile_pending(media_id)
 
         _run_upgrade()
-        _run_upgrade()  # run twice — idempotent
+        _run_upgrade()  # second run should be a no-op
 
-        assert _count_rows(media_id, profile_id, TrailerStatusEnum.PENDING) == 1, \
-            "Migration must be idempotent — no duplicate rows"
+        assert _count_rows(media_id, TrailerStatusEnum.PENDING) == 0, \
+            "Migration must be idempotent"

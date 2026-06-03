@@ -7,6 +7,7 @@ import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filte
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
 import {applyTrailerStatuses, buildDownloadMap, buildTrailerStatusMap, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
 import {MediaTrailerStatus, TrailerStatusEnum} from '../models/mediatrailerstatus';
+import {VideoId, VideoIdCreate} from '../models/videoid';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
 
@@ -233,6 +234,18 @@ export class MediaService {
     return this.httpClient.patch(url, null, {params: {new_status: status}});
   }
 
+  getVideoIds(mediaId: number): Observable<VideoId[]> {
+    return this.httpClient.get<VideoId[]>(`${this.mediaUrl}${mediaId}/video-ids`);
+  }
+
+  createVideoId(mediaId: number, payload: VideoIdCreate): Observable<VideoId> {
+    return this.httpClient.post<VideoId>(`${this.mediaUrl}${mediaId}/video-ids`, payload);
+  }
+
+  deleteVideoId(mediaId: number, videoIdId: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.mediaUrl}${mediaId}/video-ids/${videoIdId}`);
+  }
+
   /**
    * Handles the event when a media item is selected, either by checking or unchecking a checkbox.
    * Adds or removes the media item from the selectedMedia array based on the checkbox state.
@@ -287,12 +300,13 @@ export class MediaService {
             // Exactly 4 digits → year (exact)
             if (m.year !== parseInt(f, 10)) return false;
           } else {
-            // Everything else → language, imdb_id, txdb_id, studio, youtube_trailer_id
+            // Everything else → language, imdb_id, tmdb_id, tvdb_id, studio, youtube_trailer_id
             const fl = f.toLowerCase();
             if (
               !m.language.toLowerCase().includes(fl) &&
               !(m.imdb_id ?? '').toLowerCase().includes(fl) &&
-              !(m.txdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.tmdb_id ?? '').toLowerCase().includes(fl) &&
+              !(m.tvdb_id ?? '').toLowerCase().includes(fl) &&
               !(m.studio ?? '').toLowerCase().includes(fl) &&
               !(m.youtube_trailer_id ?? '').toLowerCase().includes(fl)
             )

@@ -52,16 +52,23 @@ class SonarrDataParser(BaseModel):
     season_count: int = Field(default=0, validation_alias=AliasPath("statistics", "seasonCount"))
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
-    txdb_id: str = Field(validation_alias="tvdbId")
+    tvdb_id: str = Field(validation_alias="tvdbId")
+    tmdb_id: str = Field(default="", validation_alias="tmdbId")
     title_slug: str = Field(validation_alias="titleSlug", default="")
     poster_url: str | None = None
     fanart_url: str | None = None
     arr_monitored: bool = Field(default=False, validation_alias="monitored")
 
-    @field_validator("txdb_id", mode="before")
+    @field_validator("tvdb_id", mode="before")
     @classmethod
-    def parse_txdb_id(cls, v):
-        return str(v)
+    def parse_tvdb_id(cls, v):
+        return str(v) if v else ""
+
+    @field_validator("tmdb_id", mode="before")
+    @classmethod
+    def parse_tmdb_id(cls, v):
+        s = str(v) if v else ""
+        return "" if s == "0" else s
 
     @field_validator("media_exists", mode="before")
     @classmethod

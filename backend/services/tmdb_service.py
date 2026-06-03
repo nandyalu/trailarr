@@ -1,30 +1,30 @@
-"""TMDB service — check video availability and update trailer-status rows.
+"""TMDB service — pre-cache TMDB video IDs for all monitored media.
 
-Fetches TMDB video metadata for PENDING/NOT_AVAILABLE rows and either
-updates the YouTube ID on the Media record (for Trailer type) or flips
-the row status between PENDING and NOT_AVAILABLE (for other video types).
+Iterates all monitored media that have a tmdb_id, fetches every available
+TMDB video across the configured languages and seasons, and upserts the
+results into the VideoId table. The download pipeline then reads from the
+cache instead of making live TMDB calls for most requests.
 """
 
 import asyncio
 import threading
-from collections import defaultdict
 
 import aiohttp
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from db.models.media import MediaRead
-from db.models.mediatrailerstatus import TrailerStatusEnum
-from db.models.trailerprofile import VideoType
 import db.repos.media as media_repo
-import db.repos.trailer_status as trailer_status_repo
-from db.repos.trailer_status import TmdbPendingRow
+import db.repos.trailer_profile as trailer_profile_repo
+import db.repos.video_id as video_id_repo
 
 logger = ModuleLogger("TMDBService")
 
 _TMDB_BASE = "https://api.themoviedb.org/3"
 _REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
-_SLEEP_BETWEEN_REQUESTS = 1.0  # to avoid hitting rate limits
+_SLEEP_BETWEEN_REQUESTS = 0.25  # normal pacing between media items
+_RATE_LIMIT_BASE = 60.0         # seconds to wait on first 429
+_RATE_LIMIT_MAX = 600.0         # cap at 10 minutes
 
 
 async def _fetch_tmdb_videos(
@@ -34,7 +34,8 @@ async def _fetch_tmdb_videos(
     season: int,
     api_key: str,
     language: str = "",
-) -> list[dict]:
+) -> list[dict] | None:
+    """Fetch TMDB video results. Returns None on 429, [] on 404/error, list on success."""
     if is_movie:
         url = f"{_TMDB_BASE}/movie/{tmdb_id}/videos"
     elif season > 0:
@@ -46,6 +47,8 @@ async def _fetch_tmdb_videos(
         async with session.get(
             url, params=params, timeout=_REQUEST_TIMEOUT
         ) as resp:
+            if resp.status == 429:
+                return None
             if resp.status == 404:
                 return []
             if resp.status != 200:
@@ -79,37 +82,108 @@ def _find_youtube_key(results: list[dict], video_type: str) -> str | None:
     return None
 
 
+def _get_seasons_to_fetch(media: MediaRead, has_season_profile: bool) -> list[int]:
+    if media.is_movie:
+        return [0]
+    if not has_season_profile or not media.season_count:
+        return [0]
+    return [0] + list(range(1, media.season_count + 1))
+
+
+async def _cache_media_tmdb_videos(
+    http_session: aiohttp.ClientSession,
+    media: MediaRead,
+    api_key: str,
+    languages: list[str],
+    has_season_profile: bool,
+    rate_limit_sleep: float,
+) -> tuple[int, float]:
+    """Fetch all TMDB videos for one media item and upsert to VideoId table.
+
+    Returns (videos_cached, updated_rate_limit_sleep).
+    """
+    seasons = _get_seasons_to_fetch(media, has_season_profile)
+    cached = 0
+
+    for language in languages:
+        for season in seasons:
+            results = await _fetch_tmdb_videos(
+                http_session, media.tmdb_id, media.is_movie, season, api_key, language
+            )
+            if results is None:
+                # 429 — wait, double the backoff, retry once
+                logger.warning(
+                    f"TMDB rate-limited for media {media.id}"
+                    f" (lang='{language}', season={season})."
+                    f" Waiting {rate_limit_sleep:.0f}s before retry."
+                )
+                await asyncio.sleep(rate_limit_sleep)
+                rate_limit_sleep = min(rate_limit_sleep * 2, _RATE_LIMIT_MAX)
+                results = await _fetch_tmdb_videos(
+                    http_session, media.tmdb_id, media.is_movie, season, api_key, language
+                )
+                if results is None:
+                    logger.warning(
+                        f"TMDB still rate-limited for media {media.id}"
+                        f" (lang='{language}', season={season}) — skipping combo."
+                    )
+                    continue
+
+            for item in results:
+                if item.get("site", "").lower() != "youtube":
+                    continue
+                youtube_id = item.get("key")
+                video_type = (item.get("type") or "").lower()
+                if not youtube_id or not video_type:
+                    continue
+                video_id_repo.upsert_tmdb(
+                    media_id=media.id,  # type: ignore[arg-type]
+                    video_type=video_type,
+                    language=language,
+                    season=season,
+                    youtube_id=youtube_id,
+                )
+                cached += 1
+
+    return cached, rate_limit_sleep
+
+
 async def get_tmdb_youtube_key(
     media: MediaRead,
     video_type: str,
     season: int = 0,
     language: str = "",
 ) -> str | None:
-    """Fetch the first matching YouTube key from TMDB for the given video_type and season."""
+    """Fetch the first matching YouTube key from TMDB for the given video_type and season.
+
+    Used on-demand by the download pipeline when no cached VideoId is available.
+    """
     api_key = app_settings.tmdb_api_key
-    if not api_key or not media.txdb_id:
+    if not api_key or not media.tmdb_id:
         return None
     async with aiohttp.ClientSession() as session:
         results = await _fetch_tmdb_videos(
             session,
-            media.txdb_id,
+            media.tmdb_id,
             media.is_movie,
             season,
             api_key,
             language=language,
         )
+    if results is None:
+        return None
     return _find_youtube_key(results, str(video_type))
 
 
 async def refresh_tmdb_videos(
     _stop_event: threading.Event | None = None,
 ) -> None:
-    """Check TMDB for video availability and update trailer-status rows accordingly.
+    """Pre-cache TMDB video IDs for all monitored media with a tmdb_id.
 
-    Groups rows by (media_id, season, tmdb_language) so each unique language gets its
-    own TMDB API call. Found YouTube keys are cached on the row (youtube_id field) so
-    the download task can skip redundant live TMDB calls. TMDB-sourced keys are NEVER
-    written back to media.youtube_trailer_id.
+    Iterates the full monitored media set, fetches all available videos from
+    TMDB for each configured language and season, and upserts them into the
+    VideoId table. Rate-limit responses (429) trigger exponential backoff
+    starting at _RATE_LIMIT_BASE seconds, capped at _RATE_LIMIT_MAX.
     """
     api_key = app_settings.tmdb_api_key
     if not api_key:
@@ -119,111 +193,60 @@ async def refresh_tmdb_videos(
         )
         return
 
-    rows = trailer_status_repo.get_pending_for_tmdb_refresh()
-    if not rows:
-        logger.info(
-            "No PENDING/NOT_AVAILABLE rows found — TMDB refresh skipped."
-        )
-        return
-
-    logger.info(f"TMDB refresh starting: {len(rows)} row(s) to check.")
-
-    # Group by (media_id, season, tmdb_language) — each combination needs its own TMDB call
-    groups: dict[tuple[int, int, str], list[TmdbPendingRow]] = defaultdict(
-        list
-    )
-    for row in rows:
-        groups[(row.media_id, row.season, row.tmdb_language)].append(row)
-
-    updated_pending = 0
-    updated_not_available = 0
-    cached_youtube_ids = 0
+    cfg = trailer_profile_repo.get_tmdb_refresh_config()
+    rate_limit_sleep = _RATE_LIMIT_BASE
+    seen_ids: set[int] = set()
+    processed = 0
+    skipped = 0
+    total_cached = 0
     errors = 0
 
+    logger.info(
+        f"TMDB refresh starting."
+        f" Movie languages: {cfg.movie_languages},"
+        f" Series languages: {cfg.series_languages},"
+        f" Season profiles enabled: {cfg.has_season_profile}."
+    )
+
     async with aiohttp.ClientSession() as http_session:
-        for (media_id, season, tmdb_language), group_rows in groups.items():
+        for media in media_repo.read_all_generator(monitored_only=True):
             if _stop_event and _stop_event.is_set():
                 logger.info("Stop event set — terminating TMDB refresh.")
                 break
 
-            media = media_repo.read(media_id)
-            if media is None:
-                logger.warning(f"Media {media_id} not found — skipping.")
-                errors += 1
+            if media.id in seen_ids:
                 continue
-            if not media.txdb_id:
-                logger.debug(
-                    f"Media {media_id} has no txdb_id — skipping TMDB check."
-                )
+            seen_ids.add(media.id)  # type: ignore[arg-type]
+
+            if not media.tmdb_id:
+                skipped += 1
                 continue
 
+            languages = cfg.movie_languages if media.is_movie else cfg.series_languages
             try:
-                results = await _fetch_tmdb_videos(
+                cached, rate_limit_sleep = await _cache_media_tmdb_videos(
                     http_session,
-                    media.txdb_id,
-                    media.is_movie,
-                    season,
+                    media,
                     api_key,
-                    language=tmdb_language,
+                    languages,
+                    cfg.has_season_profile,
+                    rate_limit_sleep,
                 )
+                total_cached += cached
+                processed += 1
             except Exception as exc:
                 logger.error(
-                    "Unexpected error fetching TMDB videos for media"
-                    f" {media_id}: {exc}"
+                    f"Unexpected error fetching TMDB videos for media"
+                    f" {media.id} ('{media.title}'): {exc}"
                 )
                 errors += 1
-                continue
-
-            for row in group_rows:
-                yt_key = _find_youtube_key(results, row.video_type)
-                has_result = yt_key is not None
-
-                # Cache the YouTube key on the row (applies to all video types).
-                # This lets the download task skip a redundant live TMDB call.
-                if yt_key and yt_key != row.youtube_id:
-                    trailer_status_repo.update_row_youtube_id(
-                        row.row_id, yt_key
-                    )
-                    cached_youtube_ids += 1
-
-                if row.video_type == VideoType.TRAILER:
-                    # Trailer rows: only cache the key, no status flip — the download
-                    # pipeline handles trailer → youtube_trailer_id → YouTube search.
-                    continue
-
-                # Non-trailer TMDB types: flip status based on availability.
-                if (
-                    has_result
-                    and row.status == TrailerStatusEnum.NOT_AVAILABLE
-                ):
-                    trailer_status_repo.update_row_status(
-                        row.row_id, TrailerStatusEnum.PENDING
-                    )
-                    logger.debug(
-                        f"Row {row.row_id} ({row.video_type}) reset to PENDING"
-                        f" (TMDB has results for media {media_id},"
-                        f" lang='{tmdb_language}')."
-                    )
-                    updated_pending += 1
-                elif (
-                    not has_result and row.status == TrailerStatusEnum.PENDING
-                ):
-                    trailer_status_repo.update_row_status(
-                        row.row_id, TrailerStatusEnum.NOT_AVAILABLE
-                    )
-                    logger.debug(
-                        f"Row {row.row_id} ({row.video_type}) set to"
-                        " NOT_AVAILABLE (no TMDB results for media"
-                        f" {media_id}, lang='{tmdb_language}')."
-                    )
-                    updated_not_available += 1
 
             await asyncio.sleep(_SLEEP_BETWEEN_REQUESTS)
 
     logger.info(
         "TMDB refresh complete."
-        f" Cached YouTube IDs: {cached_youtube_ids},"
-        f" Reset to PENDING: {updated_pending},"
-        f" Set NOT_AVAILABLE: {updated_not_available},"
+        f" Processed: {processed},"
+        f" Skipped (no tmdb_id): {skipped},"
+        f" Videos cached: {total_cached},"
         f" Errors: {errors}."
     )
