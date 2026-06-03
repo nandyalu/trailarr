@@ -6,18 +6,27 @@ import unicodedata
 import zoneinfo
 import aiofiles.os
 
+from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 from core.base.database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
 )
+from core.download import video_analysis
+
+logger = ModuleLogger("MediaScanner")
 
 
 class MediaScanner:
     """Handles scanning of folders and files of media."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    # A video file >= this size is treated as a real media file, not a trailer.
+    MEDIA_FILE_MIN_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    # Files with 'trailer' in name below this size are trailers without needing ffprobe.
+    TRAILER_QUICK_MAX_SIZE_BYTES = 200 * 1024 * 1024  # 200 MB
+    # Matches the default max_duration in TrailerProfile — anything longer is not a trailer.
+    TRAILER_MAX_DURATION_SECONDS = 600  # 10 minutes
 
     def __init__(self) -> None:
 
@@ -45,46 +54,77 @@ class MediaScanner:
         }
         return trailer_folders
 
-    def is_trailer_file(
-        self, file_name: str, file_size_bytes: int | None = None
-    ) -> bool:
-        """Check if a file is a trailer file based on its name,\
-            OR if it's in a trailer folder.\n
+    async def _check_large_name_trailer(self, file_path: str) -> bool:
+        """Use ffprobe to verify a large inline file with 'trailer' in its name.
+
+        Checks duration: anything over TRAILER_MAX_DURATION_SECONDS is a movie
+        or TV episode, not a trailer.
         Args:
-            file_name (str): Name of the file to check.\n
-            file_size_bytes (int | None): Size of the file in bytes. \
-                When provided, files >= 100 MB are not treated as trailers \
-                even if the name matches, to avoid false positives for media \
-                whose title contains the word 'trailer'.\n
+            file_path (str): The path of the file to check.
         Returns:
-            bool: True if the file is a trailer, False otherwise."""
-        if not file_name:
+            bool: True if the file is a trailer, False if not.
+        """
+        media_info = video_analysis.get_media_info(file_path)
+        if media_info is None:
             return False
-        # Ensure file is a video file
-        if not file_name.lower().endswith(self.VIDEO_EXTENSIONS):
+        if media_info.duration_seconds <= 0:
             return False
-        # Ensure file is not an episode file
+        is_trailer = (
+            media_info.duration_seconds <= self.TRAILER_MAX_DURATION_SECONDS
+        )
+        if not is_trailer:
+            logger.debug(
+                f"'{Path(file_path).name}' duration"
+                f" {media_info.duration_seconds}s exceeds"
+                f" {self.TRAILER_MAX_DURATION_SECONDS}s limit — not treated as"
+                " trailer"
+            )
+        return is_trailer
+
+    async def is_trailer_file(
+        self, file_path: str, file_size_bytes: int | None = None
+    ) -> bool:
+        """Check if a file is a trailer based on its path and size. \n
+        If the file is large but has `trailer` in its name,
+        does a quick check with `ffprobe` to confirm.
+        Args:
+            file_path (str): The path of the file to check.
+            file_size_bytes (int, Optional=None): The size of the file in bytes, if known.
+                If None, size-based heuristics will be skipped.
+        Returns:
+            - `True` confirmed trailer (folder-based or small inline file).
+            - `False` confirmed not a trailer.
+        """
+        if not file_path:
+            return False
+        # Ensure file is a video file before applying trailer heuristics.
+        if not file_path.lower().endswith(self.VIDEO_EXTENSIONS):
+            return False
+        file_name = Path(file_path).name
+        # Exclude files that look like TV episodes (e.g. "S01E01") to avoid false positives.
         if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
             return False
-        # Check if the file name contains 'trailer'
-        if "trailer" in file_name.lower():
-            if (
-                file_size_bytes is not None
-                and file_size_bytes >= self.TRAILER_MAX_SIZE_BYTES
-            ):
-                return False
-            return True
-        # Check if file is in a trailer folder
-        folder_name = Path(file_name).parent.name.lower().strip()
+        # Folder placement is authoritative — no size limit applies.
+        folder_name = Path(file_path).parent.name.lower().strip()
         if folder_name and folder_name in self.trailer_folders:
             return True
-        return False
+        # If 'trailer' is in the file name, it could be a trailer — but
+        # if it's large, we can't be sure without ffprobe.
+        if "trailer" not in file_name.lower():
+            return False
+        if (
+            file_size_bytes is not None
+            and file_size_bytes >= self.TRAILER_QUICK_MAX_SIZE_BYTES
+        ):
+            # Too large for a quick answer — caller must run ffprobe.
+            return await self._check_large_name_trailer(file_path)
+        return True
 
     async def _get_file_info(
         self, entry: os.DirEntry[str], media_id: int
     ) -> FileFolderInfoCreate:
         info = await aiofiles.os.stat(entry.path)
-        is_trailer = self.is_trailer_file(entry.name, info.st_size)
+        is_trailer = await self.is_trailer_file(entry.path, info.st_size)
         return FileFolderInfoCreate(
             type=FileFolderType.FILE,
             name=unicodedata.normalize("NFKD", entry.name),
@@ -144,7 +184,7 @@ class MediaScanner:
         for child in folder_info.children:
             if child.type == FileFolderType.FILE:
                 if (
-                    child.size >= self.TRAILER_MAX_SIZE_BYTES
+                    child.size >= self.MEDIA_FILE_MIN_SIZE_BYTES
                     and child.name.lower().endswith(self.VIDEO_EXTENSIONS)
                 ):
                     return True
