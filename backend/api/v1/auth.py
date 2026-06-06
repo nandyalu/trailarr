@@ -1,14 +1,13 @@
 from typing import Annotated
-from fastapi import APIRouter, Cookie, HTTPException, Response
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from pydantic import BaseModel
 
 from api.v1.authentication import (
-    _is_valid_session,
     create_session,
     delete_session,
-    get_session,
-    verify_password,
-    verify_username,
+    validate_api_key_header,
+    verify_login,
+    verify_session,
 )
 from config.settings import app_settings
 
@@ -20,11 +19,11 @@ class LoginRequest(BaseModel):
     password: str
 
 
-def _response_with_session_cookie(token: str, response: Response) -> None:
-    """Helper function to create a session and set the session cookie \
-        in the response. \n
+def _set_session_cookie(token: str, response: Response) -> None:
+    """Helper function to set the session cookie in the response. \n
     > **_Modifies the response in-place_**
     Args:
+        token (str): The session token to set in the cookie
         response (Response): The FastAPI Response object to set the cookie on
     Returns:
         None
@@ -55,21 +54,20 @@ def _response_with_session_cookie(token: str, response: Response) -> None:
         },
     },
 )
-async def login(request: LoginRequest, response: Response) -> dict:
-    """Authenticate with username/password and create a session. \n
+async def login(
+    request: LoginRequest,
+    response: Response,
+    header_api_key: str | None = Depends(validate_api_key_header),
+) -> dict:
+    """Authenticate with username/password and/or API key and    create a session. \n
     Sets a `trailarr_session` cookie on success. \n
     Args:
         request (LoginRequest): The username and password \n
     Returns:
         dict: Status message"""
-    if not app_settings.webui_disable_auth:
-        if not (
-            verify_username(request.username)
-            and verify_password(request.password)
-        ):
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+    verify_login(request.username, request.password, header_api_key)
     token = create_session()
-    _response_with_session_cookie(token, response)
+    _set_session_cookie(token, response)
     return {"status": "ok"}
 
 
@@ -128,19 +126,22 @@ async def logout(
 )
 async def auth_status(
     response: Response,
+    header_api_key: str | None = Depends(validate_api_key_header),
     trailarr_session: Annotated[str | None, Cookie()] = None,
 ) -> dict:
     """Check whether the current session is valid. \n
     Args:
+        response (Response): The FastAPI Response object to set the cookie on \n
+        header_api_key (str | None): API key from header \n
         trailarr_session (str | None): Session token from cookie \n
     Returns:
         dict: Authentication status \n
     Raises:
         HTTPException: 401 if not authenticated"""
-    if _is_valid_session(trailarr_session):
+    if verify_session(trailarr_session):
         return {"authenticated": True}
-    if app_settings.webui_disable_auth:
-        token = get_session()
-        _response_with_session_cookie(token, response)
+    if header_api_key:
+        token = create_session()
+        _set_session_cookie(token, response)
         return {"authenticated": True}
     raise HTTPException(status_code=401, detail="Not authenticated")
