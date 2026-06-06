@@ -167,7 +167,7 @@
 			"label": "Generate OpenAPI Files",
 			"detail": "Run export_openapi.py to generate openapi.json for API docs",
 			"type": "shell",
-			"command": "python3 ./export_openapi.py",
+			"command": "uv run ./export_openapi.py",
 			"icon": {
 				"id": "export",
 				"color": "terminal.ansiMagenta"
@@ -179,8 +179,7 @@
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
 					"LOG_LEVEL": "ERROR",
-					"APP_VERSION": "0.9.4",
-					"APP_DATA_DIR": "../temp-config"
+					"APP_VERSION": "0.9.6",
 				}
 			},
 			"group": {
