@@ -19,6 +19,7 @@ def create_session() -> str:
     return token
 
 
+# DELETE
 def get_session() -> str:
     """Returns the current session token if valid,
     otherwise creates a new one.
@@ -27,7 +28,7 @@ def get_session() -> str:
         str: A valid session token
     """
     for token in _sessions:
-        if _is_valid_session(token):
+        if verify_session(token):
             return token
     return create_session()
 
@@ -36,7 +37,12 @@ def delete_session(token: str) -> None:
     _sessions.discard(token)
 
 
-def _is_valid_session(token: str | None) -> bool:
+def verify_session(token: str | None) -> bool:
+    """Checks if the provided session token is valid \n
+    Args:
+        token (str | None): The session token to verify \n
+    Returns:
+        bool: True if the session token is valid, False otherwise"""
     return bool(token and token in _sessions)
 
 
@@ -101,11 +107,6 @@ def verify_password(plain_password: str) -> bool:
     )
 
 
-# Dependency to validate the API key provided in the query or header
-header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
-query_schema = APIKeyQuery(name="api_key", auto_error=False)
-
-
 def verify_api_key(api_key: str) -> bool:
     """Verifies the API key provided by the user \n
     Args:
@@ -113,6 +114,42 @@ def verify_api_key(api_key: str) -> bool:
     Returns:
         bool: True if the API key is valid, False otherwise"""
     return api_key == app_settings.api_key
+
+
+def verify_login(
+    username: str, password: str, valid_api_key: str | None
+) -> None:
+    """Verifies the login credentials or API key \n
+    Args:
+        username (str): The username to verify \n
+        password (str): The password to verify \n
+        valid_api_key (str | None): The valid API key, if provided \n
+    Raises:
+        HTTPException: If the credentials are invalid"""
+    if not valid_api_key:
+        if not (verify_username(username) and verify_password(password)):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+# Dependency to validate the API key provided in the query or header
+header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
+query_schema = APIKeyQuery(name="api_key", auto_error=False)
+
+
+# Dependency to validate the API key provided in the header or query.
+# Used for API endpoints that can be accessed with an API key,
+# but also allow session-based auth (frontend).
+def validate_api_key_header(
+    header_api_key: str | None = Depends(header_scheme),
+) -> str | None:
+    """Validates the API key provided in the header \n
+    Args:
+        header_api_key (str | None): The API key provided in the header \n
+    Returns:
+        str | None: The valid API key if provided, otherwise None"""
+    if header_api_key and verify_api_key(header_api_key):
+        return header_api_key
+    return None
 
 
 # Dependency to validate the API key provided in the cookie, or a valid session token.
@@ -127,7 +164,7 @@ def validate_api_key_cookie(
         trailarr_session (str | None): Session token cookie \n
     Raises:
         HTTPException: If neither a valid session nor API key is present"""
-    if _is_valid_session(trailarr_session):
+    if verify_session(trailarr_session):
         return True
     if trailarr_api_key and verify_api_key(trailarr_api_key):
         return True
@@ -151,7 +188,7 @@ def validate_api_key(
         trailarr_session (str | None): Session token cookie \n
     Raises:
         HTTPException: If authentication fails"""
-    if _is_valid_session(trailarr_session):
+    if verify_session(trailarr_session):
         return True
     _api_key = query_api_key or header_api_key or trailarr_api_key or ""
     if _api_key and verify_api_key(_api_key):

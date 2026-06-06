@@ -204,3 +204,40 @@ When `URL Base` is set and Trailarr restarts, it does the following:
 - Reads the `X-Forwarded-Prefix` header (sent by the reverse proxy) to decide which `index.html` to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.
 
 Both access methods work simultaneously after a single restart — no trade-off between local and proxied access.
+
+
+## Bypassing Authentication via Reverse Proxy
+
+If your reverse proxy already handles authentication (e.g. SSO, OAuth, basic auth at the proxy level) and you want Trailarr to skip its own login screen, configure the proxy to inject the `X-API-KEY` header with your Trailarr API key on every forwarded request. Trailarr will accept the key, issue a session automatically, and the login page will not be shown.
+
+!!! info "Finding your API key"
+    Your API key is shown in **Settings → General → API Key**.
+
+!!! warning "Security note"
+    Anyone who can send an `X-API-KEY` header directly to Trailarr will bypass authentication. Make sure Trailarr's port is **not** accessible from outside your network — only the reverse proxy should be able to reach it.
+
+Add the following to your existing reverse proxy configuration (in addition to any other headers already set):
+
+=== "Nginx"
+    ```nginx
+    proxy_set_header X-API-KEY "your-api-key-here";
+    ```
+
+=== "Apache"
+    ```apache
+    RequestHeader set X-API-KEY "your-api-key-here"
+    ```
+
+=== "Caddy"
+    ```caddy
+    header_up X-API-KEY "your-api-key-here"
+    ```
+
+=== "Traefik"
+    ```yaml
+    middlewares:
+      trailarr-headers:
+        headers:
+          customRequestHeaders:
+            X-API-KEY: "your-api-key-here"
+    ```
