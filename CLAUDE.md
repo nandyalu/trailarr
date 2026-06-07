@@ -292,3 +292,13 @@ After completing any bug fix, feature, or notable change, always ask the user:
 
 1. **Release notes** — "Should this be added to the release notes? If so, which version?" Release notes live in `docs/release-notes/2026.md`. Add entries under the appropriate version heading using the existing format (Bug Fixes / What's New / Other Changes sections with emoji).
 2. **Docs update** — "Do any documentation pages need to be updated for this change?" Docs live under `docs/`.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

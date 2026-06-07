@@ -1,0 +1,4 @@
+  warning: could not transcribe /home/kr/projects/trailarr/docs/user-guide/general/general-theme-switch.mp4: Video transcription requires faster-whisper. Run: pip install 'graphifyy[video]'
+  warning: could not transcribe /home/kr/projects/trailarr/docs/user-guide/library/media-details/media-status-additional-details.mp4: Video transcription requires faster-whisper. Run: pip install 'graphifyy[video]'
+  warning: could not transcribe /home/kr/projects/trailarr/docs/user-guide/library/media-details/monitor-toggle.mp4: Video transcription requires faster-whisper. Run: pip install 'graphifyy[video]'
+[]

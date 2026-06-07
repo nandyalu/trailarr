@@ -1,0 +1,3117 @@
+{
+  "/home/kr/projects/trailarr/.claude/settings.json": {
+    "mtime": 1780865805.3523602,
+    "ast_hash": "bfee062c3962c14264fd704e975a6b38",
+    "semantic_hash": "bfee062c3962c14264fd704e975a6b38"
+  },
+  "/home/kr/projects/trailarr/.claude/settings.local.json": {
+    "mtime": 1780442577.7002864,
+    "ast_hash": "931540522531d0d0de7dd1f35ad62809",
+    "semantic_hash": "931540522531d0d0de7dd1f35ad62809"
+  },
+  "/home/kr/projects/trailarr/.devcontainer/dev-start.sh": {
+    "mtime": 1777177425.0276196,
+    "ast_hash": "ea25b820a307d6d94b463827a9e7c8ba",
+    "semantic_hash": "ea25b820a307d6d94b463827a9e7c8ba"
+  },
+  "/home/kr/projects/trailarr/.devcontainer/devcontainer-prebuild.json": {
+    "mtime": 1777177425.0276196,
+    "ast_hash": "79df78ea50fe1a91232889a052cc67cd",
+    "semantic_hash": "79df78ea50fe1a91232889a052cc67cd"
+  },
+  "/home/kr/projects/trailarr/.devcontainer/devcontainer.json": {
+    "mtime": 1777177425.0276196,
+    "ast_hash": "79a97a6b3d90fe0de7e8f381dc21de9b",
+    "semantic_hash": "79a97a6b3d90fe0de7e8f381dc21de9b"
+  },
+  "/home/kr/projects/trailarr/.vscode/extensions.json": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "d3b118b41884c371c18cbd55e392eb07",
+    "semantic_hash": "d3b118b41884c371c18cbd55e392eb07"
+  },
+  "/home/kr/projects/trailarr/.vscode/launch.json": {
+    "mtime": 1778351226.2357557,
+    "ast_hash": "f7d60f5ac74c0309f6b8e86059c6068f",
+    "semantic_hash": "f7d60f5ac74c0309f6b8e86059c6068f"
+  },
+  "/home/kr/projects/trailarr/.vscode/settings.json": {
+    "mtime": 1780445169.6547015,
+    "ast_hash": "14bd9e26a0436ab4705babc21ef8f2d0",
+    "semantic_hash": "14bd9e26a0436ab4705babc21ef8f2d0"
+  },
+  "/home/kr/projects/trailarr/.vscode/tasks.json": {
+    "mtime": 1780809112.951616,
+    "ast_hash": "41ea2f8bc41890e68de6b67a896d5f84",
+    "semantic_hash": "41ea2f8bc41890e68de6b67a896d5f84"
+  },
+  "/home/kr/projects/trailarr/assets/openapi/redoc.standalone.js": {
+    "mtime": 1777177425.0366197,
+    "ast_hash": "ddc15884f37303aea033bedd37731b69",
+    "semantic_hash": "ddc15884f37303aea033bedd37731b69"
+  },
+  "/home/kr/projects/trailarr/assets/openapi/swagger-ui-bundle.js": {
+    "mtime": 1777177425.0416198,
+    "ast_hash": "dcac7646def070ba156dd21eb51702dd",
+    "semantic_hash": "dcac7646def070ba156dd21eb51702dd"
+  },
+  "/home/kr/projects/trailarr/backend/__init__.py": {
+    "mtime": 1778900076.2720501,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/env.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "477dc2ecfef4d875dc606dab8fca51c4",
+    "semantic_hash": "477dc2ecfef4d875dc606dab8fca51c4"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20240515_2108-325a4fb01c20_initialdev.py": {
+    "mtime": 1778900076.2730503,
+    "ast_hash": "296cbc458f5790ba339a52bd1bcfa935",
+    "semantic_hash": "296cbc458f5790ba339a52bd1bcfa935"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20240813_1709-34f937f1d7b9_movie_and_series_to_media.py": {
+    "mtime": 1778900076.2730503,
+    "ast_hash": "dd5751c011f15d98b4f8da313dd705bb",
+    "semantic_hash": "dd5751c011f15d98b4f8da313dd705bb"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20240917_1327-1cc1dd5dbe9f_add_media_status.py": {
+    "mtime": 1778900076.2730503,
+    "ast_hash": "8ecebe5a9d5d0369d48ac201a096d9e2",
+    "semantic_hash": "8ecebe5a9d5d0369d48ac201a096d9e2"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250209_0142-4b942197af6a_extra_options_in_media.py": {
+    "mtime": 1778900076.2730503,
+    "ast_hash": "1dd941f82b86e5cdbd6c36fdc3498463",
+    "semantic_hash": "1dd941f82b86e5cdbd6c36fdc3498463"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250217_1144-1c5ac69def9a_add_customfilter.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "d5774287d8cbb7d33eb241bd02bdd453",
+    "semantic_hash": "d5774287d8cbb7d33eb241bd02bdd453"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250502_0642-656a0b9cbe50_trailerprofile_implementation.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "61dd8c486546784565d1ea5247c04072",
+    "semantic_hash": "61dd8c486546784565d1ea5247c04072"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250616_0129-8c9a39658afa_add_priority_to_trailerprofile.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "1e0d703b254c1a1d243ba8b68361f75a",
+    "semantic_hash": "1e0d703b254c1a1d243ba8b68361f75a"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250616_1908-6265228864f0_add_yt_dlp_extra_options.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "232e62e7a7fbb43f72b77188cbdd0611",
+    "semantic_hash": "232e62e7a7fbb43f72b77188cbdd0611"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250625_0205-f030a0fdc9d8_add_season_count_to_media.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "173aecf436218653021e27a5434fd2e3",
+    "semantic_hash": "173aecf436218653021e27a5434fd2e3"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20250711_0304-9606084facbe_delete_orphan_relations.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "91dd1e10d563801a3922ae81bc0f07bf",
+    "semantic_hash": "91dd1e10d563801a3922ae81bc0f07bf"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20251017_0603-f59986f4b718_add_new_fields_to_trailerprofile.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "99041b4986d8b35d71eaa3c898d49453",
+    "semantic_hash": "99041b4986d8b35d71eaa3c898d49453"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20251031_1515-b213e0443c1b_remove_is_trailer_from_profiles.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "1fa95e7a0f812a326b1f58a1169b9de4",
+    "semantic_hash": "1fa95e7a0f812a326b1f58a1169b9de4"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20251109_1928-a9320c7ab1a3_add_download_model.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "97351881b4dac1d3e56e6257530cbc4c",
+    "semantic_hash": "97351881b4dac1d3e56e6257530cbc4c"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20251212_1826-ba9a193d6e0e_add_external_url_to_connection.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "5520c7e7efc07d85dfa6c64da1d44442",
+    "semantic_hash": "5520c7e7efc07d85dfa6c64da1d44442"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20251228_2336-219bdc0e3cc9_add_files_tracking.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "9533c1c9c328806823982cd58ce2870d",
+    "semantic_hash": "9533c1c9c328806823982cd58ce2870d"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260207_1552-4cfe424ef7b3_add_retry_count_to_profile.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "be3955f54fb4e27beb05e798e5effd8a",
+    "semantic_hash": "be3955f54fb4e27beb05e798e5effd8a"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260207_1715-ae0d134607f9_add_event_table_for_tracking_app_events.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "b934ad3b0f4fd3dc865f25606dee37f0",
+    "semantic_hash": "b934ad3b0f4fd3dc865f25606dee37f0"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260407_0000-b3d2f1a4c8e9_add_scheduled_task_config.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "6613cb34d1309027af0f12bf2c515c14",
+    "semantic_hash": "6613cb34d1309027af0f12bf2c515c14"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260419_1607-443c82079368_add_skip_if_plex_trailer_resolution_to_.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "6519c6e9ab9077f3425cd83ee4fd9c65",
+    "semantic_hash": "6519c6e9ab9077f3425cd83ee4fd9c65"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260507_0356-e3a59c94c6dc_add_plex_section_key_to_pathmapping.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "d983565da9c789c26081b3b358d878ea",
+    "semantic_hash": "d983565da9c789c26081b3b358d878ea"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/versions/20260511_0000-f1a2b3c4d5e6_add_uploader_ids_to_trailerprofile.py": {
+    "mtime": 1778900076.2740502,
+    "ast_hash": "167cc6cbcd5adc645d558257faeaf67b",
+    "semantic_hash": "167cc6cbcd5adc645d558257faeaf67b"
+  },
+  "/home/kr/projects/trailarr/backend/api/__init__.py": {
+    "mtime": 1778900080.6401181,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/api/utils.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "7d6ac49a5e9bf87d0f8f3d48886e5e3b",
+    "semantic_hash": "7d6ac49a5e9bf87d0f8f3d48886e5e3b"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/__init__.py": {
+    "mtime": 1778900080.6401181,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/auth.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "2287047fa644523110ec097fd7c60718",
+    "semantic_hash": "2287047fa644523110ec097fd7c60718"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/authentication.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "a373c0c64108a9084bfbb7260035a198",
+    "semantic_hash": "a373c0c64108a9084bfbb7260035a198"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/connections.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "10b111de8222cd2e0adfa4683860f9e5",
+    "semantic_hash": "10b111de8222cd2e0adfa4683860f9e5"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/customfilters.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "eef47e98e9c8d0759d52154b4f1be51f",
+    "semantic_hash": "eef47e98e9c8d0759d52154b4f1be51f"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/events.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "cf4b5a8c7846f0959f8bbea72dd1bb6a",
+    "semantic_hash": "cf4b5a8c7846f0959f8bbea72dd1bb6a"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/files.py": {
+    "mtime": 1780445169.6557014,
+    "ast_hash": "dfed38a361607d026ca23416b07963b2",
+    "semantic_hash": "dfed38a361607d026ca23416b07963b2"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/logs.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "aed8b2eb6368f5499ccfed7cd649bb93",
+    "semantic_hash": "aed8b2eb6368f5499ccfed7cd649bb93"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/media.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "cd60ae8b3a2da7ab27bb2b6ce9ede625",
+    "semantic_hash": "cd60ae8b3a2da7ab27bb2b6ce9ede625"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/models.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "de14dcbe6df951bff35b8203363bdb93",
+    "semantic_hash": "de14dcbe6df951bff35b8203363bdb93"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/routes.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "627a9d0fa6229d41d7a3ea992e1b4673",
+    "semantic_hash": "627a9d0fa6229d41d7a3ea992e1b4673"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/settings.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "51b553eed85243c64a01765f888449dd",
+    "semantic_hash": "51b553eed85243c64a01765f888449dd"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/tasks.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "8d8d569d2376a832738887a9bcdb7c42",
+    "semantic_hash": "8d8d569d2376a832738887a9bcdb7c42"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/trailerprofiles.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "a2cc158f643d6efc4da7dd5775e3e8da",
+    "semantic_hash": "a2cc158f643d6efc4da7dd5775e3e8da"
+  },
+  "/home/kr/projects/trailarr/backend/api/v1/websockets.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "37650d9629cbdeef4f9b3a954747aa54",
+    "semantic_hash": "37650d9629cbdeef4f9b3a954747aa54"
+  },
+  "/home/kr/projects/trailarr/backend/app_logger.py": {
+    "mtime": 1778900076.2720501,
+    "ast_hash": "2c968d618398dcd3bc8702fdd6da6e9e",
+    "semantic_hash": "2c968d618398dcd3bc8702fdd6da6e9e"
+  },
+  "/home/kr/projects/trailarr/backend/config/__init__.py": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/config/app_logger_opts.py": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "e34ce9698f11f2c78cef0249821fcb72",
+    "semantic_hash": "e34ce9698f11f2c78cef0249821fcb72"
+  },
+  "/home/kr/projects/trailarr/backend/config/logger_config.json": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "41e3e16543e1d9adb51d4d5f36a1e8bf",
+    "semantic_hash": "41e3e16543e1d9adb51d4d5f36a1e8bf"
+  },
+  "/home/kr/projects/trailarr/backend/config/logging_context.py": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "a2fb5b78c66d68b38e58d1a5880366d3",
+    "semantic_hash": "a2fb5b78c66d68b38e58d1a5880366d3"
+  },
+  "/home/kr/projects/trailarr/backend/config/logs/__init__.py": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/config/logs/db_handler.py": {
+    "mtime": 1778900076.2770503,
+    "ast_hash": "2f9251cd4384691221d85639ed3cc2ab",
+    "semantic_hash": "2f9251cd4384691221d85639ed3cc2ab"
+  },
+  "/home/kr/projects/trailarr/backend/config/logs/db_utils.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "1d1092804bb1e36108c5b42b1c2ebbbe",
+    "semantic_hash": "1d1092804bb1e36108c5b42b1c2ebbbe"
+  },
+  "/home/kr/projects/trailarr/backend/config/logs/manager.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "1f7f3f5b1e91fd49f831cec16e2fef88",
+    "semantic_hash": "1f7f3f5b1e91fd49f831cec16e2fef88"
+  },
+  "/home/kr/projects/trailarr/backend/config/logs/model.py": {
+    "mtime": 1778900076.2780504,
+    "ast_hash": "381638e38813be6bb3554c6f8a247814",
+    "semantic_hash": "381638e38813be6bb3554c6f8a247814"
+  },
+  "/home/kr/projects/trailarr/backend/config/settings.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "1ebc76a79bdf751b7724f5a15699ba98",
+    "semantic_hash": "1ebc76a79bdf751b7724f5a15699ba98"
+  },
+  "/home/kr/projects/trailarr/backend/config/timing_middleware.py": {
+    "mtime": 1778900076.2780504,
+    "ast_hash": "9a5997dcd2b00d25e532335b1a8100b8",
+    "semantic_hash": "9a5997dcd2b00d25e532335b1a8100b8"
+  },
+  "/home/kr/projects/trailarr/backend/core/__init__.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/__init__.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/arr_manager/__init__.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/arr_manager/base.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "1271cc67b6256c83f31c0a45e1f2b46d",
+    "semantic_hash": "1271cc67b6256c83f31c0a45e1f2b46d"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/arr_manager/request_manager.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "e851429f48cd0d4281ffc56b1ca59940",
+    "semantic_hash": "e851429f48cd0d4281ffc56b1ca59940"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/connection_manager.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "ce26ced3a54a579e5bdae6ddf174eacc",
+    "semantic_hash": "ce26ced3a54a579e5bdae6ddf174eacc"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/__init__.py": {
+    "mtime": 1780445169.6567013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/__init__.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/__init__.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "f7f97a8e3d6fba4672bbd1c8b5726550",
+    "semantic_hash": "f7f97a8e3d6fba4672bbd1c8b5726550"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/base.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "dd6af5191536d538c46de50fb9d5ea72",
+    "semantic_hash": "dd6af5191536d538c46de50fb9d5ea72"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/create.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "9655a5dd2b5a25195d8a82161707f1a8",
+    "semantic_hash": "9655a5dd2b5a25195d8a82161707f1a8"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/delete.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "282ed6a22a8f04f10ccaa1b93dbd2a70",
+    "semantic_hash": "282ed6a22a8f04f10ccaa1b93dbd2a70"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/read.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "e79062120f80c3f39d815b060ef1b479",
+    "semantic_hash": "e79062120f80c3f39d815b060ef1b479"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/connection/update.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "ba82ac8fadcf89b87d8b0512a01d630c",
+    "semantic_hash": "ba82ac8fadcf89b87d8b0512a01d630c"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/__init__.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "2493d4faf9d9ab387ed4ca5645039c16",
+    "semantic_hash": "2493d4faf9d9ab387ed4ca5645039c16"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/base.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "9a17a7e2ca26e4f2d2f04efbd268fdb5",
+    "semantic_hash": "9a17a7e2ca26e4f2d2f04efbd268fdb5"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/create.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "0d1a9a59223fb512cace8cb07d9548cb",
+    "semantic_hash": "0d1a9a59223fb512cace8cb07d9548cb"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/delete.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "551f16c457b8dc371634449961d21340",
+    "semantic_hash": "551f16c457b8dc371634449961d21340"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/read.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "7187b234a42872a2b0903f40be33e64d",
+    "semantic_hash": "7187b234a42872a2b0903f40be33e64d"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/customfilter/update.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "750e01abafebecfd961dc99bf0724fbb",
+    "semantic_hash": "750e01abafebecfd961dc99bf0724fbb"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/__init__.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "ccaa9a8f9beb4751064e05e77a38aa07",
+    "semantic_hash": "ccaa9a8f9beb4751064e05e77a38aa07"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/base.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "d96d0271267ded8e003c73cad389a1be",
+    "semantic_hash": "d96d0271267ded8e003c73cad389a1be"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/create.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "f163f0454b85877ef9ffdc7c6b86703c",
+    "semantic_hash": "f163f0454b85877ef9ffdc7c6b86703c"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/delete.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "03e7b25b04013b636a0703b0d9e5a8d7",
+    "semantic_hash": "03e7b25b04013b636a0703b0d9e5a8d7"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/read.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "c51a814511c0d280b2ead00138ca97b3",
+    "semantic_hash": "c51a814511c0d280b2ead00138ca97b3"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/download/update.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "49e2df58d1749b0fd27e897024deab90",
+    "semantic_hash": "49e2df58d1749b0fd27e897024deab90"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/__init__.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "03fe3f15d4a2b87e358acd6230aa4d21",
+    "semantic_hash": "03fe3f15d4a2b87e358acd6230aa4d21"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/base.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "16a5a2a925bfe7f3efb3184dce8f01e3",
+    "semantic_hash": "16a5a2a925bfe7f3efb3184dce8f01e3"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/create.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "579c41061eda26e1ee704f0f7688624c",
+    "semantic_hash": "579c41061eda26e1ee704f0f7688624c"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/delete.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "8048b85297c06a66e07f0b1d3f5f37e9",
+    "semantic_hash": "8048b85297c06a66e07f0b1d3f5f37e9"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/helpers.py": {
+    "mtime": 1780445169.6577015,
+    "ast_hash": "e4c3c3b7857519b6f896230e138074a9",
+    "semantic_hash": "e4c3c3b7857519b6f896230e138074a9"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/event/read.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "b687d75daf145f68c2c3532f32f73fc0",
+    "semantic_hash": "b687d75daf145f68c2c3532f32f73fc0"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/__init__.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "7a28a4cc85e3e75c4f86a7c91416605e",
+    "semantic_hash": "7a28a4cc85e3e75c4f86a7c91416605e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/base.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "c46f6bbc1b89d9aaa4d0fa5f2133fc31",
+    "semantic_hash": "c46f6bbc1b89d9aaa4d0fa5f2133fc31"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/create.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "2e47922ab67290a9826953a1b152a285",
+    "semantic_hash": "2e47922ab67290a9826953a1b152a285"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/delete.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "6cac6e940eccb01b655abebb04e4ddc9",
+    "semantic_hash": "6cac6e940eccb01b655abebb04e4ddc9"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/read.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "2b260da489bc8077d45d7199aca813f3",
+    "semantic_hash": "2b260da489bc8077d45d7199aca813f3"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/filefolderinfo/update.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "e78018a25f72314f9603ee4b7347cc3a",
+    "semantic_hash": "e78018a25f72314f9603ee4b7347cc3a"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/general.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "a092486f716dce608dc51c6e4d894ff0",
+    "semantic_hash": "a092486f716dce608dc51c6e4d894ff0"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/__init__.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "577fae92952a09a3199e26b4d0349b51",
+    "semantic_hash": "577fae92952a09a3199e26b4d0349b51"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/base.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "e152bff3138e3c6a9aee2a96b6d4c5ab",
+    "semantic_hash": "e152bff3138e3c6a9aee2a96b6d4c5ab"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/create.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "0df23a775e491ee03f19ec7e1e6cbec4",
+    "semantic_hash": "0df23a775e491ee03f19ec7e1e6cbec4"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/delete.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "95231a89b1e4e0f04787d12332187900",
+    "semantic_hash": "95231a89b1e4e0f04787d12332187900"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/read.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "57531204b11a76b2c6574dec96027f33",
+    "semantic_hash": "57531204b11a76b2c6574dec96027f33"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/search.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "96429a3aae6fb1c276b07bf0a0d48032",
+    "semantic_hash": "96429a3aae6fb1c276b07bf0a0d48032"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/media/update.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "01f3e5840793acbb20599dd0c16976ef",
+    "semantic_hash": "01f3e5840793acbb20599dd0c16976ef"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/task_config.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "db9fa548b759256630a78718f5d73817",
+    "semantic_hash": "db9fa548b759256630a78718f5d73817"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/__init__.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "6e1bf5d769bc1238c502d8418a8b4ba1",
+    "semantic_hash": "6e1bf5d769bc1238c502d8418a8b4ba1"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/base.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "2c2cca785615554b9381a2af4fb5d15e",
+    "semantic_hash": "2c2cca785615554b9381a2af4fb5d15e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/create.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "f00c30a9ac40b1d2f2d4ec7fed23e584",
+    "semantic_hash": "f00c30a9ac40b1d2f2d4ec7fed23e584"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/delete.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "ce423ac636a95b7b1257666d0c11f33c",
+    "semantic_hash": "ce423ac636a95b7b1257666d0c11f33c"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/read.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "c020a4b24b13659d1b5edf2bd4f5e808",
+    "semantic_hash": "c020a4b24b13659d1b5edf2bd4f5e808"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/manager/trailerprofile/update.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "b66597dffd3d0029b5db77b669b9f167",
+    "semantic_hash": "b66597dffd3d0029b5db77b669b9f167"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/__init__.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/base.py": {
+    "mtime": 1780445169.6587014,
+    "ast_hash": "bb96e30b4ab7b66d33b4c62595b01128",
+    "semantic_hash": "bb96e30b4ab7b66d33b4c62595b01128"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/connection.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "01e68fbfadc579cce9f61372af2fb602",
+    "semantic_hash": "01e68fbfadc579cce9f61372af2fb602"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/customfilter.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "5c2581ef0428013377aeabe4b1155588",
+    "semantic_hash": "5c2581ef0428013377aeabe4b1155588"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/download.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "8b32d9f5bbafa3ac41f89bb44fdbd309",
+    "semantic_hash": "8b32d9f5bbafa3ac41f89bb44fdbd309"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/event.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "7e83a3687547a6061101ee04f6a02626",
+    "semantic_hash": "7e83a3687547a6061101ee04f6a02626"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/filefolderinfo.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "06bb89b0f425022a27dd762b038b2efc",
+    "semantic_hash": "06bb89b0f425022a27dd762b038b2efc"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/filter.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "b226e700530294898cfb3223852348ec",
+    "semantic_hash": "b226e700530294898cfb3223852348ec"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/helpers.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "5eba0a7dc5c98b653e4caf1f7f2541ea",
+    "semantic_hash": "5eba0a7dc5c98b653e4caf1f7f2541ea"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/media.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "a4b3b3bae9bf431c8f9b2c667f4ee5e5",
+    "semantic_hash": "a4b3b3bae9bf431c8f9b2c667f4ee5e5"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/task_config.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "afd65e6d54bb622c241629612517659c",
+    "semantic_hash": "afd65e6d54bb622c241629612517659c"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/models/trailerprofile.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "cd2aef8d0bbdb55571bcf4fcc4acfa8d",
+    "semantic_hash": "cd2aef8d0bbdb55571bcf4fcc4acfa8d"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/utils/__init__.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/utils/engine.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "c55002618c4124aa4c3d6325e5dfb0f9",
+    "semantic_hash": "c55002618c4124aa4c3d6325e5dfb0f9"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/database/utils/init_db.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "211c20cba91ddf9598b1b7df4eae0ebc",
+    "semantic_hash": "211c20cba91ddf9598b1b7df4eae0ebc"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/utils/__init__.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/utils/filters.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "4c3a49096a1d4ff3ab5294de5183c08b",
+    "semantic_hash": "4c3a49096a1d4ff3ab5294de5183c08b"
+  },
+  "/home/kr/projects/trailarr/backend/core/base/utils/path_utils.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "55f6d0d7fb401bddd662c79b21ffad5b",
+    "semantic_hash": "55f6d0d7fb401bddd662c79b21ffad5b"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/__init__.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/cli.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "df58e5ce03242ebc6e5b17a10adffab8",
+    "semantic_hash": "df58e5ce03242ebc6e5b17a10adffab8"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/image.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "2621f27022c71f69ad6e1d9c5e6c48e8",
+    "semantic_hash": "2621f27022c71f69ad6e1d9c5e6c48e8"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailer.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "6cb0b38a56384ee4e8b59434af34352f",
+    "semantic_hash": "6cb0b38a56384ee4e8b59434af34352f"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailer_file.py": {
+    "mtime": 1780445169.6597013,
+    "ast_hash": "51a372eb8b70b8841a61269e34c3bda4",
+    "semantic_hash": "51a372eb8b70b8841a61269e34c3bda4"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailer_search.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "cbacfca9b3e8204371916bc9ca6884ca",
+    "semantic_hash": "cbacfca9b3e8204371916bc9ca6884ca"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailers/__init__.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailers/batch.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "a2d07de09c50a2b64ebe1682e7d2ef59",
+    "semantic_hash": "a2d07de09c50a2b64ebe1682e7d2ef59"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailers/missing.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "df70d9f6784c896b7924917d753baa30",
+    "semantic_hash": "df70d9f6784c896b7924917d753baa30"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailers/service.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "c43cfa19505f58eb02b2abffc9a36f9d",
+    "semantic_hash": "c43cfa19505f58eb02b2abffc9a36f9d"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/trailers/utils.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "aba1431a33d6414fe8074210fd437bd3",
+    "semantic_hash": "aba1431a33d6414fe8074210fd437bd3"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/video_analysis.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "3af8e0ae92e4a87cd1cea8d1cea9fcee",
+    "semantic_hash": "3af8e0ae92e4a87cd1cea8d1cea9fcee"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/video_conversion.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "648ff413b095f8fdf74861221c8228b6",
+    "semantic_hash": "648ff413b095f8fdf74861221c8228b6"
+  },
+  "/home/kr/projects/trailarr/backend/core/download/video_v2.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "57c85331b95c403210e874fd0f0d6fa9",
+    "semantic_hash": "57c85331b95c403210e874fd0f0d6fa9"
+  },
+  "/home/kr/projects/trailarr/backend/core/files/__init__.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/files/media_scanner.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "e3049cff428ce4026653e4b5e2d78ca9",
+    "semantic_hash": "e3049cff428ce4026653e4b5e2d78ca9"
+  },
+  "/home/kr/projects/trailarr/backend/core/files_handler.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "e55652d7cf99996641cd25a128585772",
+    "semantic_hash": "e55652d7cf99996641cd25a128585772"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/__init__.py": {
+    "mtime": 1780445169.6607015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/api_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "df82a55a92b26db84943589f4999fd31",
+    "semantic_hash": "df82a55a92b26db84943589f4999fd31"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/connection_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "b29906abc9f2076963424a0c06175884",
+    "semantic_hash": "b29906abc9f2076963424a0c06175884"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/data_parser.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "bfc1f2a28c4bff3adc56caf72b456d76",
+    "semantic_hash": "bfc1f2a28c4bff3adc56caf72b456d76"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/models.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "1f9de963cce91140e279837f21f742ce",
+    "semantic_hash": "1f9de963cce91140e279837f21f742ce"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/__init__.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/api_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "9986ad2ba6b38041c892eee45844c188",
+    "semantic_hash": "9986ad2ba6b38041c892eee45844c188"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/connection_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "e4da1de83f1af1b8abc134fa44012972",
+    "semantic_hash": "e4da1de83f1af1b8abc134fa44012972"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/data_parser.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "f8486159194a6536337735736d24dfe4",
+    "semantic_hash": "f8486159194a6536337735736d24dfe4"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/database_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "7d51cd3ea9cb205a928cc3d115369fcb",
+    "semantic_hash": "7d51cd3ea9cb205a928cc3d115369fcb"
+  },
+  "/home/kr/projects/trailarr/backend/core/radarr/models.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "ad601db32f168260e693b34c811353d9",
+    "semantic_hash": "ad601db32f168260e693b34c811353d9"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/__init__.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/api_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "ae7f6f5e74adf9e8a1d4e30b06fac80f",
+    "semantic_hash": "ae7f6f5e74adf9e8a1d4e30b06fac80f"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/connection_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "36fd3dc8e1243ed4cf17bb287357d3e5",
+    "semantic_hash": "36fd3dc8e1243ed4cf17bb287357d3e5"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/data_parser.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "966d633b2ce72728598c727fbc389a0c",
+    "semantic_hash": "966d633b2ce72728598c727fbc389a0c"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/database_manager.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "ea972740dee8a19e43aac693a7d261b3",
+    "semantic_hash": "ea972740dee8a19e43aac693a7d261b3"
+  },
+  "/home/kr/projects/trailarr/backend/core/sonarr/models.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "8fe60f3d1998e7ec36090276ec63384f",
+    "semantic_hash": "8fe60f3d1998e7ec36090276ec63384f"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/__init__.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "c061abd2bb7a2c03c6483b81448cf5b5",
+    "semantic_hash": "c061abd2bb7a2c03c6483b81448cf5b5"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/api_refresh.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "add97bf36ed5d10187148a552e7c5b0d",
+    "semantic_hash": "add97bf36ed5d10187148a552e7c5b0d"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/cleanup.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "dc0c3af319592dbc94befef960ff9f31",
+    "semantic_hash": "dc0c3af319592dbc94befef960ff9f31"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/download_trailers.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "627d8586b9cd99fbe763f620c3ea7522",
+    "semantic_hash": "627d8586b9cd99fbe763f620c3ea7522"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/files_scan.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "c5bdd40ae20edc2ff8fdc3be2b0c3e13",
+    "semantic_hash": "c5bdd40ae20edc2ff8fdc3be2b0c3e13"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/image_refresh.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "b64d2d09b193455730809ff3368f1ffb",
+    "semantic_hash": "b64d2d09b193455730809ff3368f1ffb"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/plex_trailer_refresh.py": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "fa635ca2002f67d85df9998af08ec06d",
+    "semantic_hash": "fa635ca2002f67d85df9998af08ec06d"
+  },
+  "/home/kr/projects/trailarr/backend/core/tasks/schedules.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "cf1e24c40df79e7aa640ce03d8c30caf",
+    "semantic_hash": "cf1e24c40df79e7aa640ce03d8c30caf"
+  },
+  "/home/kr/projects/trailarr/backend/core/updates/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/core/updates/docker_check.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "dc2ee22e6b0fcd8dfac4b4e4f800df8b",
+    "semantic_hash": "dc2ee22e6b0fcd8dfac4b4e4f800df8b"
+  },
+  "/home/kr/projects/trailarr/backend/exceptions.py": {
+    "mtime": 1778900076.2720501,
+    "ast_hash": "b849de5fc84c471b21f23a8a0ad370ba",
+    "semantic_hash": "b849de5fc84c471b21f23a8a0ad370ba"
+  },
+  "/home/kr/projects/trailarr/backend/export_openapi.py": {
+    "mtime": 1778900076.2720501,
+    "ast_hash": "1ab3b341113aa6851c207569ba775247",
+    "semantic_hash": "1ab3b341113aa6851c207569ba775247"
+  },
+  "/home/kr/projects/trailarr/backend/frontend/__init__.py": {
+    "mtime": 1778973596.3417068,
+    "ast_hash": "fc9402b72d5c02a8ab7f74c60af5d01e",
+    "semantic_hash": "fc9402b72d5c02a8ab7f74c60af5d01e"
+  },
+  "/home/kr/projects/trailarr/backend/frontend/middleware.py": {
+    "mtime": 1778973604.0078285,
+    "ast_hash": "ac3c44a7258bac923568fc5a3282dbe1",
+    "semantic_hash": "ac3c44a7258bac923568fc5a3282dbe1"
+  },
+  "/home/kr/projects/trailarr/backend/frontend/router.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "3be07ed933abfdfb400197946a84c755",
+    "semantic_hash": "3be07ed933abfdfb400197946a84c755"
+  },
+  "/home/kr/projects/trailarr/backend/frontend/utils.py": {
+    "mtime": 1778973610.848937,
+    "ast_hash": "a41c2e63ebbb1673d6312dc595dab727",
+    "semantic_hash": "a41c2e63ebbb1673d6312dc595dab727"
+  },
+  "/home/kr/projects/trailarr/backend/main.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "453b305c059c329eb6ace6dafd52a6cd",
+    "semantic_hash": "453b305c059c329eb6ace6dafd52a6cd"
+  },
+  "/home/kr/projects/trailarr/backend/tests/__init__.py": {
+    "mtime": 1778906102.836887,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/api/__init__.py": {
+    "mtime": 1778974755.1450174,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/api/test_auth.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "e244da6dad9cec2c44d3350c13d5cdbd",
+    "semantic_hash": "e244da6dad9cec2c44d3350c13d5cdbd"
+  },
+  "/home/kr/projects/trailarr/backend/tests/api/test_authentication.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "af62cea4a1946d6624e85a50c0b92e4d",
+    "semantic_hash": "af62cea4a1946d6624e85a50c0b92e4d"
+  },
+  "/home/kr/projects/trailarr/backend/tests/api/test_files_delete.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d1f964cb30b6f8618f4ece87456d0bd8",
+    "semantic_hash": "d1f964cb30b6f8618f4ece87456d0bd8"
+  },
+  "/home/kr/projects/trailarr/backend/tests/config/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/config/test_config.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "ad3b6db0f8e520c6c6493b6ebe86a946",
+    "semantic_hash": "ad3b6db0f8e520c6c6493b6ebe86a946"
+  },
+  "/home/kr/projects/trailarr/backend/tests/conftest.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d94367e81f76aa7c41bbbf1a7643e3af",
+    "semantic_hash": "d94367e81f76aa7c41bbbf1a7643e3af"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "8738c2c3683056aed6fbfd96efb59b91",
+    "semantic_hash": "8738c2c3683056aed6fbfd96efb59b91"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "8738c2c3683056aed6fbfd96efb59b91",
+    "semantic_hash": "8738c2c3683056aed6fbfd96efb59b91"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/__init__.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_connection.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "e304a1f8d2163a49a6059e55ad2b0393",
+    "semantic_hash": "e304a1f8d2163a49a6059e55ad2b0393"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_event.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "ee990501a942dcd9b3dd21b27ff81339",
+    "semantic_hash": "ee990501a942dcd9b3dd21b27ff81339"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_media_create.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "8bb2e7eaac0a85f03c7f0c9c0d6f8a44",
+    "semantic_hash": "8bb2e7eaac0a85f03c7f0c9c0d6f8a44"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_media_read.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "5be6c22f6c8223f0151a27dc3bcfcc80",
+    "semantic_hash": "5be6c22f6c8223f0151a27dc3bcfcc80"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_media_update.py": {
+    "mtime": 1780445169.6627016,
+    "ast_hash": "3b70e4433c74fabee236f51b44c0f1b5",
+    "semantic_hash": "3b70e4433c74fabee236f51b44c0f1b5"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/manager/test_plex_events.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "e82ef967ad8f19bdc97315db1b22d43d",
+    "semantic_hash": "e82ef967ad8f19bdc97315db1b22d43d"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/utils/__init__.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/database/utils/test_init_db.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "d1b2f20d61120528a9c85ba09bee865d",
+    "semantic_hash": "d1b2f20d61120528a9c85ba09bee865d"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/utils/__init__.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/base/utils/test_path_utils.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "dee7812883c394fa561b7edeb7b0d83c",
+    "semantic_hash": "dee7812883c394fa561b7edeb7b0d83c"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/__init__.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "b5bbc00fd47d9dc56ac1cb4a511cc149",
+    "semantic_hash": "b5bbc00fd47d9dc56ac1cb4a511cc149"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_missing_trailers.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "d5b69a0af8e5d19a04194c0ee84eb0fd",
+    "semantic_hash": "d5b69a0af8e5d19a04194c0ee84eb0fd"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_trailer.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "ebae9b12a106c5a4c263bfdb2293d879",
+    "semantic_hash": "ebae9b12a106c5a4c263bfdb2293d879"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_trailer_file.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "715ba78a24709991c09e412b38c34540",
+    "semantic_hash": "715ba78a24709991c09e412b38c34540"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_trailer_search.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "bf57b1f6fa4b97ccb69cff33177a6b18",
+    "semantic_hash": "bf57b1f6fa4b97ccb69cff33177a6b18"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_video_analysis.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "5004aa1093ee7280d7e5bceddd08b5a5",
+    "semantic_hash": "5004aa1093ee7280d7e5bceddd08b5a5"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/download/test_video_conversion.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "27d1b93ad0b398daeb8c8ab2e5044d84",
+    "semantic_hash": "27d1b93ad0b398daeb8c8ab2e5044d84"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/files/__init__.py": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/files/test_media_scanner.py": {
+    "mtime": 1780809112.9536161,
+    "ast_hash": "9214be137bd727e332de8272d53760d2",
+    "semantic_hash": "9214be137bd727e332de8272d53760d2"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/plex/__init__.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/plex/test_api_manager.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "97150126e909c727cebabf70acec13cd",
+    "semantic_hash": "97150126e909c727cebabf70acec13cd"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/plex/test_path_mapping.py": {
+    "mtime": 1780445169.6637015,
+    "ast_hash": "643367251d933b82fe9098a77d2f41d1",
+    "semantic_hash": "643367251d933b82fe9098a77d2f41d1"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/plex/test_show_root_resolution.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "4175ee0c058160ea35ae036442f612e8",
+    "semantic_hash": "4175ee0c058160ea35ae036442f612e8"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/tasks/__init__.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "777c3850034df317138681f5fa21be33",
+    "semantic_hash": "777c3850034df317138681f5fa21be33"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/tasks/test_cleanup.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "8b8a78adda4232e5e934ab90ac58daf4",
+    "semantic_hash": "8b8a78adda4232e5e934ab90ac58daf4"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/tasks/test_files_scan.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "2bd6760a04e7442dede3e3f9a3c99484",
+    "semantic_hash": "2bd6760a04e7442dede3e3f9a3c99484"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/tasks/test_plex_trailer_refresh.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "5684f9a3ab1fc1986848b67448a25e88",
+    "semantic_hash": "5684f9a3ab1fc1986848b67448a25e88"
+  },
+  "/home/kr/projects/trailarr/backend/tests/core/test_files_handler.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "6f91c2ee8ef0e1b8d6a472470fef54c2",
+    "semantic_hash": "6f91c2ee8ef0e1b8d6a472470fef54c2"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/__init__.py": {
+    "mtime": 1778974458.1933324,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/arr_manager/__init__.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/arr_manager/test_async_request_manager.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "4754d78ab439c2ee7f29020b7faa3c32",
+    "semantic_hash": "4754d78ab439c2ee7f29020b7faa3c32"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/arr_manager/test_base.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "2f73f9e1b08cf2690595553e4227405d",
+    "semantic_hash": "2f73f9e1b08cf2690595553e4227405d"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/arr_manager/test_radarr.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "19a3ea4fa7d9fce4c972775231d2b6bd",
+    "semantic_hash": "19a3ea4fa7d9fce4c972775231d2b6bd"
+  },
+  "/home/kr/projects/trailarr/backend/tests/services/arr_manager/test_sonarr.py": {
+    "mtime": 1780445169.6647015,
+    "ast_hash": "246d7d3c4ba32598e0a86e8e82bf10af",
+    "semantic_hash": "246d7d3c4ba32598e0a86e8e82bf10af"
+  },
+  "/home/kr/projects/trailarr/backend/tests/test_main.py": {
+    "mtime": 1778974790.7314847,
+    "ast_hash": "ef657f9e2d7c73fe73a375aa88657e80",
+    "semantic_hash": "ef657f9e2d7c73fe73a375aa88657e80"
+  },
+  "/home/kr/projects/trailarr/docs/hooks.py": {
+    "mtime": 1780445169.6667016,
+    "ast_hash": "eb9a85f675dd4b2bbfa71387643cce65",
+    "semantic_hash": "eb9a85f675dd4b2bbfa71387643cce65"
+  },
+  "/home/kr/projects/trailarr/docs/references/api-docs/openapi.json": {
+    "mtime": 1780809112.9556162,
+    "ast_hash": "b1aa1c5fc6993b0a0362aeb9cbb231f5",
+    "semantic_hash": "b1aa1c5fc6993b0a0362aeb9cbb231f5"
+  },
+  "/home/kr/projects/trailarr/frontend/.vscode/launch.json": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "489983c723241b78a2868fa90df71cfb",
+    "semantic_hash": "489983c723241b78a2868fa90df71cfb"
+  },
+  "/home/kr/projects/trailarr/frontend/.vscode/settings.json": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "d85ba5838ad28c378b5b58911e0108c3",
+    "semantic_hash": "d85ba5838ad28c378b5b58911e0108c3"
+  },
+  "/home/kr/projects/trailarr/frontend/angular.json": {
+    "mtime": 1778465691.4130259,
+    "ast_hash": "5ef51482ba44d3fd5f973429e8845bee",
+    "semantic_hash": "5ef51482ba44d3fd5f973429e8845bee"
+  },
+  "/home/kr/projects/trailarr/frontend/package.json": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "42bde826a7e2f2b3328502ee3c64a8b1",
+    "semantic_hash": "42bde826a7e2f2b3328502ee3c64a8b1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/app.component.ts": {
+    "mtime": 1778375417.1362739,
+    "ast_hash": "5011a85ab48c58e9222da0ad6efe61eb",
+    "semantic_hash": "5011a85ab48c58e9222da0ad6efe61eb"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/app.config.ts": {
+    "mtime": 1777607495.7168288,
+    "ast_hash": "18ed2902c454257e8ad92c167bac6e90",
+    "semantic_hash": "18ed2902c454257e8ad92c167bac6e90"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/app.routes.ts": {
+    "mtime": 1780445169.6687016,
+    "ast_hash": "26b2d5afad29c44f0bf17acb26b127da",
+    "semantic_hash": "26b2d5afad29c44f0bf17acb26b127da"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/auth/auth.guard.ts": {
+    "mtime": 1777607495.7168288,
+    "ast_hash": "c85bd6213e1cb3918d86e86746bd2bd9",
+    "semantic_hash": "c85bd6213e1cb3918d86e86746bd2bd9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/auth/login/login.component.ts": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "0c21ad94e9223a023a19fb518df975ea",
+    "semantic_hash": "0c21ad94e9223a023a19fb518df975ea"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/error-handler.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "f4707809c1621e57616068282e4081c6",
+    "semantic_hash": "f4707809c1621e57616068282e4081c6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/events/events.component.ts": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "992afad5b277c891f17ac8d80a6ef2bc",
+    "semantic_hash": "992afad5b277c891f17ac8d80a6ef2bc"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/events/routes.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "08d262f03a0d15479daf12764c60f966",
+    "semantic_hash": "08d262f03a0d15479daf12764c60f966"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/copy-to-clipboard.directive.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "763f186af3b1285d86e16576443831e6",
+    "semantic_hash": "763f186af3b1285d86e16576443831e6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/copy-to-clipboard.directive.ts": {
+    "mtime": 1778375417.1362739,
+    "ast_hash": "112a7f3e4501eaeff31cbc404b2500b2",
+    "semantic_hash": "112a7f3e4501eaeff31cbc404b2500b2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/display-title.pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "226b322d6d555e2471ef726a39f51595",
+    "semantic_hash": "226b322d6d555e2471ef726a39f51595"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/display-title.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "c952bdae35e37e429a9506dc197da064",
+    "semantic_hash": "c952bdae35e37e429a9506dc197da064"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/duration-pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "023b9f4720a8ffdaa94ddbf37b43e10a",
+    "semantic_hash": "023b9f4720a8ffdaa94ddbf37b43e10a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/duration-pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "c43635ab37e42b64ebe619d1ba77a079",
+    "semantic_hash": "c43635ab37e42b64ebe619d1ba77a079"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/duration-seconds-pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "a374a311726af700cece8e6a4a258aa9",
+    "semantic_hash": "a374a311726af700cece8e6a4a258aa9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/duration.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "d57eac290f0c7b992dd4938a730c2549",
+    "semantic_hash": "d57eac290f0c7b992dd4938a730c2549"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/file-size.pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "21436f0c7ba889c8c8ae22a17b43c276",
+    "semantic_hash": "21436f0c7ba889c8c8ae22a17b43c276"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/file-size.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "0c902bdb211dc074a3217a8a3428f9f2",
+    "semantic_hash": "0c902bdb211dc074a3217a8a3428f9f2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/interval.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "161acecf2b3218d094d413de45b0d03c",
+    "semantic_hash": "161acecf2b3218d094d413de45b0d03c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/remove-starting-slash.pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "bbed9cc931b77e91a5fb5852da6f8480",
+    "semantic_hash": "bbed9cc931b77e91a5fb5852da6f8480"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/remove-starting-slash.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "e394324ede0e2d6bccb5bde367fd1c74",
+    "semantic_hash": "e394324ede0e2d6bccb5bde367fd1c74"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/scroll-near-end-directive.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "fd0ec509fb44363949bf9ea47c5a4fc8",
+    "semantic_hash": "fd0ec509fb44363949bf9ea47c5a4fc8"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/time-remaining.pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "6fb161024f48a0b2b25af0d32f1270cc",
+    "semantic_hash": "6fb161024f48a0b2b25af0d32f1270cc"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/time-remaining.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "7e3939a04263ad27fb76c80135376485",
+    "semantic_hash": "7e3939a04263ad27fb76c80135376485"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/timediff.pipe.spec.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "c3969abbf3cd639f1bd36bc079366c3f",
+    "semantic_hash": "c3969abbf3cd639f1bd36bc079366c3f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/helpers/timediff.pipe.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "98f0f27cae21ac742865d3ba1bc1b8d6",
+    "semantic_hash": "98f0f27cae21ac742865d3ba1bc1b8d6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/logs/logs.component.ts": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "1a6eaca439c099845339307703a42d8a",
+    "semantic_hash": "1a6eaca439c099845339307703a42d8a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/logs/routes.ts": {
+    "mtime": 1777177425.0716202,
+    "ast_hash": "f02326b9ef53ba206738439d665e910f",
+    "semantic_hash": "f02326b9ef53ba206738439d665e910f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component.ts": {
+    "mtime": 1778293227.4084034,
+    "ast_hash": "2a6373569f0687353a97891641073da5",
+    "semantic_hash": "2a6373569f0687353a97891641073da5"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/dialogs/edit-filter-dialog/form-schema.ts": {
+    "mtime": 1777177425.0726202,
+    "ast_hash": "61ee5ac190108f4f0608dbee176dcaad",
+    "semantic_hash": "61ee5ac190108f4f0608dbee176dcaad"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/dialogs/profile-select-dialog/profile-select-dialog.component.ts": {
+    "mtime": 1777177425.0726202,
+    "ast_hash": "4ba451c8e079d618a0ce95aef7fdc0e2",
+    "semantic_hash": "4ba451c8e079d618a0ce95aef7fdc0e2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/edit-header/edit-header.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "4df12b10fbfb19553e7ab4593dd4d60c",
+    "semantic_hash": "4df12b10fbfb19553e7ab4593dd4d60c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/dialogs/field-config-dialog/field-config-dialog.component.ts": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "8fc514cdfe37bd65dfdc3e8cc4638f4c",
+    "semantic_hash": "8fc514cdfe37bd65dfdc3e8cc4638f4c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/dialogs/show-filters-dialog/show-filters-dialog.component.ts": {
+    "mtime": 1777177425.0726202,
+    "ast_hash": "eb7f91de4e4a96e7908bbfbb7d13510b",
+    "semantic_hash": "eb7f91de4e4a96e7908bbfbb7d13510b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/normal-header.component.ts": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "6d6781498163d2f5626ce2880fa531be",
+    "semantic_hash": "6d6781498163d2f5626ce2880fa531be"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/expanded/expanded.component.ts": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "9ef40522e56a3138e7a51de8018d5d4a",
+    "semantic_hash": "9ef40522e56a3138e7a51de8018d5d4a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/media-card-shell/media-card-shell.component.ts": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "02345d5a31f3b0c01673936ac060aac2",
+    "semantic_hash": "02345d5a31f3b0c01673936ac060aac2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/poster/poster.component.ts": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "fd91418b21a902bf5021a16c90f5b696",
+    "semantic_hash": "fd91418b21a902bf5021a16c90f5b696"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/status-icon/status-icon.component.ts": {
+    "mtime": 1777177425.0726202,
+    "ast_hash": "0db9564d38cafd6fa5ede90dd493e7c9",
+    "semantic_hash": "0db9564d38cafd6fa5ede90dd493e7c9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/table/table.component.ts": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "1cdcbf8c35939f16b964d473e402e385",
+    "semantic_hash": "1cdcbf8c35939f16b964d473e402e385"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/downloads/downloads.component.ts": {
+    "mtime": 1777177425.07362,
+    "ast_hash": "0780da07ff6a3b58c093ea04dc2e1aea",
+    "semantic_hash": "0780da07ff6a3b58c093ea04dc2e1aea"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/delete-dialog/delete-dialog.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "b17da9f1fffb6e07747c15dc18b3f1e7",
+    "semantic_hash": "b17da9f1fffb6e07747c15dc18b3f1e7"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/options-dialog/options-dialog.component.ts": {
+    "mtime": 1777177425.07362,
+    "ast_hash": "da19a554b412a97b36161730a5b07251",
+    "semantic_hash": "da19a554b412a97b36161730a5b07251"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/play-video-dialog/play-video-dialog.component.ts": {
+    "mtime": 1777177425.07362,
+    "ast_hash": "ea9e29147e4c0df4a15865dae70b688d",
+    "semantic_hash": "ea9e29147e4c0df4a15865dae70b688d"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/rename-dialog/rename-dialog.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "9748503ec86fd1d50b7fda5d57ffdd11",
+    "semantic_hash": "9748503ec86fd1d50b7fda5d57ffdd11"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/text-dialog/text-dialog.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "18db341133cc04f2a76525facd56278f",
+    "semantic_hash": "18db341133cc04f2a76525facd56278f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/video-edit-dialog/video-edit-dialog.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "1660371ec7420c1872ea1d4d58e54b87",
+    "semantic_hash": "1660371ec7420c1872ea1d4d58e54b87"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/video-info-dialog/video-info-dialog.component.ts": {
+    "mtime": 1777607495.7178288,
+    "ast_hash": "b45676c10314694f2cd37da0ed45540d",
+    "semantic_hash": "b45676c10314694f2cd37da0ed45540d"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/files.component.ts": {
+    "mtime": 1777177425.07362,
+    "ast_hash": "006794baac5d130f0913c0ba47746a06",
+    "semantic_hash": "006794baac5d130f0913c0ba47746a06"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/media-details.component.ts": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "4dbdccc3d6f3cfc7be0b92cf6d3660d2",
+    "semantic_hash": "4dbdccc3d6f3cfc7be0b92cf6d3660d2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/media-events/media-events.component.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "0d2db27757ddb4d70c340861d6eb66e8",
+    "semantic_hash": "0d2db27757ddb4d70c340861d6eb66e8"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/routes.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "eb461444c2cb1746063252d454191cfe",
+    "semantic_hash": "eb461444c2cb1746063252d454191cfe"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media.component.ts": {
+    "mtime": 1778465691.4190261,
+    "ast_hash": "bc75cc01a2e215585515fba8ad970fa1",
+    "semantic_hash": "bc75cc01a2e215585515fba8ad970fa1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/pipes/display-title.pipe.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "617055ff33435a6dfb759f28bd1a22e3",
+    "semantic_hash": "617055ff33435a6dfb759f28bd1a22e3"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/routes.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "e2a3df92be8e777bc61291b410f27e94",
+    "semantic_hash": "e2a3df92be8e777bc61291b410f27e94"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/utils/apply-filters.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "b63ef3fefcf8e706492a090cc8a584ee",
+    "semantic_hash": "b63ef3fefcf8e706492a090cc8a584ee"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/connection.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "62d40ad5a3379c802af61b83f2796c04",
+    "semantic_hash": "62d40ad5a3379c802af61b83f2796c04"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/customfilter.ts": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "b8a43169061b50f7f930dc64df06f9c8",
+    "semantic_hash": "b8a43169061b50f7f930dc64df06f9c8"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/event.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "80767ee31d3cf3264bd6bcb0c7482e6b",
+    "semantic_hash": "80767ee31d3cf3264bd6bcb0c7482e6b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/filefolderinfo.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "3e20dd693ac703f426bd5aa170cd8c50",
+    "semantic_hash": "3e20dd693ac703f426bd5aa170cd8c50"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/logs.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "90a86c2bfa9de70314393c4046703e21",
+    "semantic_hash": "90a86c2bfa9de70314393c4046703e21"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/media.ts": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "ff239c5168c038739763e3037bcd493c",
+    "semantic_hash": "ff239c5168c038739763e3037bcd493c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/serverstats.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "927354f0fa5cc468eb8374aa41867bcf",
+    "semantic_hash": "927354f0fa5cc468eb8374aa41867bcf"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/settings.ts": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "0a104319122879264e61cc1eddbbff2f",
+    "semantic_hash": "0a104319122879264e61cc1eddbbff2f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/tasks.ts": {
+    "mtime": 1777177425.0746202,
+    "ast_hash": "834b5e689ad56e1920b34b53faaf45da",
+    "semantic_hash": "834b5e689ad56e1920b34b53faaf45da"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/trailerprofile.ts": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "ecd1ffe5d719fa8906a4afabf9223fcd",
+    "semantic_hash": "ecd1ffe5d719fa8906a4afabf9223fcd"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/models/video.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "866798c0099fe78e352ebe1df0107381",
+    "semantic_hash": "866798c0099fe78e352ebe1df0107381"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/nav/sidenav/sidenav.component.spec.ts": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "3ae4f384916f926491f03da8467c632b",
+    "semantic_hash": "3ae4f384916f926491f03da8467c632b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/nav/sidenav/sidenav.component.ts": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "50524abf5c2af470cbb5425168e8a544",
+    "semantic_hash": "50524abf5c2af470cbb5425168e8a544"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/nav/topnav/topnav.component.ts": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "d865dda6a8b801a5b69e25861ac659db",
+    "semantic_hash": "d865dda6a8b801a5b69e25861ac659db"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/notifications/notifications.component.ts": {
+    "mtime": 1778465691.420026,
+    "ast_hash": "36ba19ff73e94bd72afdf5580b56d43a",
+    "semantic_hash": "36ba19ff73e94bd72afdf5580b56d43a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/auth.service.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "329070d6da53a2190c7a91e82ffbadca",
+    "semantic_hash": "329070d6da53a2190c7a91e82ffbadca"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/connection.service.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "793f53e60fe82a3b64e2f14718ebaa2e",
+    "semantic_hash": "793f53e60fe82a3b64e2f14718ebaa2e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/customfilter.service.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "211911583802d97306fb983005fd957f",
+    "semantic_hash": "211911583802d97306fb983005fd957f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/events.service.ts": {
+    "mtime": 1777177425.0756202,
+    "ast_hash": "90d55a38cacd1d28a13e1183707c8692",
+    "semantic_hash": "90d55a38cacd1d28a13e1183707c8692"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/files.service.ts": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "5d86d1b0b9260cc709cdac605dc72b98",
+    "semantic_hash": "5d86d1b0b9260cc709cdac605dc72b98"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/logs.service.spec.ts": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "7ecec5f4f8070d30e270a2223667d50e",
+    "semantic_hash": "7ecec5f4f8070d30e270a2223667d50e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/logs.service.ts": {
+    "mtime": 1777607495.7198288,
+    "ast_hash": "25d06ca3d69efb46192b0e5906472fb9",
+    "semantic_hash": "25d06ca3d69efb46192b0e5906472fb9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/media.service.ts": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "a2c44000c7a43d53e5f6af100f73bef9",
+    "semantic_hash": "a2c44000c7a43d53e5f6af100f73bef9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/plex-oauth.service.ts": {
+    "mtime": 1777607495.7198288,
+    "ast_hash": "0dac632c260d9903ce8835f771e9b73e",
+    "semantic_hash": "0dac632c260d9903ce8835f771e9b73e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/profile.service.ts": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "e2271a0041201ee96bbb5f74c0efaee0",
+    "semantic_hash": "e2271a0041201ee96bbb5f74c0efaee0"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/settings.service.ts": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "974fccaaab4c91d9722a180da18b6730",
+    "semantic_hash": "974fccaaab4c91d9722a180da18b6730"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/tasks.service.ts": {
+    "mtime": 1778045724.7102294,
+    "ast_hash": "96f8dda6a3eee51046c30ef2b174b40b",
+    "semantic_hash": "96f8dda6a3eee51046c30ef2b174b40b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/utils.ts": {
+    "mtime": 1777177425.0756202,
+    "ast_hash": "eb29f2475ed03abf14ae4d61dfb79e98",
+    "semantic_hash": "eb29f2475ed03abf14ae4d61dfb79e98"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/services/websocket.service.ts": {
+    "mtime": 1778375417.137274,
+    "ast_hash": "613177484bc6f55f5e4b3402cd929979",
+    "semantic_hash": "613177484bc6f55f5e4b3402cd929979"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/about/about.component.ts": {
+    "mtime": 1777177425.0756202,
+    "ast_hash": "20f30df9b3e668962ae64728fa9b115d",
+    "semantic_hash": "20f30df9b3e668962ae64728fa9b115d"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/connections.component.spec.ts": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "a1660eaa30680fe17c60270b97336f14",
+    "semantic_hash": "a1660eaa30680fe17c60270b97336f14"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/connections.component.ts": {
+    "mtime": 1777177425.0756202,
+    "ast_hash": "170b5c03dfaa5e1af8147a1685801604",
+    "semantic_hash": "170b5c03dfaa5e1af8147a1685801604"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/edit-connection/edit-connection.component.ts": {
+    "mtime": 1777607495.7198288,
+    "ast_hash": "b7e4e29b0368795d0c259e8a487f7dfe",
+    "semantic_hash": "b7e4e29b0368795d0c259e8a487f7dfe"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/edit-plex-connection/edit-plex-connection.component.ts": {
+    "mtime": 1777607495.7198288,
+    "ast_hash": "501695bc4caaffdd98ae57b5fc4e68ea",
+    "semantic_hash": "501695bc4caaffdd98ae57b5fc4e68ea"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/show-connections/show-connections.component.ts": {
+    "mtime": 1777607495.7198288,
+    "ast_hash": "363ae5ebd7a7546257bac62ebea0f68e",
+    "semantic_hash": "363ae5ebd7a7546257bac62ebea0f68e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/general/general.component.ts": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "0fc6211a8d9796990017694f5b299f14",
+    "semantic_hash": "0fc6211a8d9796990017694f5b299f14"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/edit-profile/edit-profile.component.ts": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "47faef3beb12899adbed07304b2f5a8e",
+    "semantic_hash": "47faef3beb12899adbed07304b2f5a8e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/options-setting/options-setting.component.ts": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "42dbeeb26fb548cf5719bb7c8dba90aa",
+    "semantic_hash": "42dbeeb26fb548cf5719bb7c8dba90aa"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/range-setting/range-setting.component.ts": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "ebbf1a3f078b56138913c840e96f08e0",
+    "semantic_hash": "ebbf1a3f078b56138913c840e96f08e0"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/text-setting/text-setting.component.ts": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "bc16155ebd6e965949fc573e36d60846",
+    "semantic_hash": "bc16155ebd6e965949fc573e36d60846"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/show-profiles/show-profiles.component.ts": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "65e46c9d2ef4aaa5caf3278a83a3bf5f",
+    "semantic_hash": "65e46c9d2ef4aaa5caf3278a83a3bf5f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/routes.ts": {
+    "mtime": 1777607495.7208288,
+    "ast_hash": "361a4394e00e535c81f2ed2b786fe214",
+    "semantic_hash": "361a4394e00e535c81f2ed2b786fe214"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/settings.component.spec.ts": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "df2963eaafffc832899a03fa20606e92",
+    "semantic_hash": "df2963eaafffc832899a03fa20606e92"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/settings.component.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "ffa9336102441b006a08b24dd117564b",
+    "semantic_hash": "ffa9336102441b006a08b24dd117564b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/help-link-icon/help-link-icon.component.spec.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "768d79edfe2d954cb7e2c895662ba31c",
+    "semantic_hash": "768d79edfe2d954cb7e2c895662ba31c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/help-link-icon/help-link-icon.component.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "73118914e0148371cc9851ce85e20ec2",
+    "semantic_hash": "73118914e0148371cc9851ce85e20ec2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/load-indicator/index.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "72eb6e1ac8bcbedce8d580994ff03d0e",
+    "semantic_hash": "72eb6e1ac8bcbedce8d580994ff03d0e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/load-indicator/load-indicator.component.spec.ts": {
+    "mtime": 1780809112.957616,
+    "ast_hash": "2067f261bacf390fa6ae1e1b4b4be3d1",
+    "semantic_hash": "2067f261bacf390fa6ae1e1b4b4be3d1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/load-indicator/load-indicator.component.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "01d957d9cb0e363f5e9e39d0532e1621",
+    "semantic_hash": "01d957d9cb0e363f5e9e39d0532e1621"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/path-select-dialog/path-select-dialog.component.ts": {
+    "mtime": 1777607495.7208288,
+    "ast_hash": "f21e9a36181f092f4e72d8f0b7e439f6",
+    "semantic_hash": "f21e9a36181f092f4e72d8f0b7e439f6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/tasks/routes.ts": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "57a1d1964e85d7e5b5e8750b7bdcbdfa",
+    "semantic_hash": "57a1d1964e85d7e5b5e8750b7bdcbdfa"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/tasks/tasks.component.ts": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "7174ae2e50a8c8f3f255e6e2e270b6c6",
+    "semantic_hash": "7174ae2e50a8c8f3f255e6e2e270b6c6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/manifest.json": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "53209003af8d45f8bd4cfe46f0227ba6",
+    "semantic_hash": "53209003af8d45f8bd4cfe46f0227ba6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/environment.ts": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "3e1c61b4b8dd7f394a112c3d07bef4e7",
+    "semantic_hash": "3e1c61b4b8dd7f394a112c3d07bef4e7"
+  },
+  "/home/kr/projects/trailarr/frontend/src/main.ts": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "6b9ac717535b7153c18a2a3522dbabd8",
+    "semantic_hash": "6b9ac717535b7153c18a2a3522dbabd8"
+  },
+  "/home/kr/projects/trailarr/frontend/src/proxy.conf.json": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "5d4fb5bdcc89135c2090529e1ca679af",
+    "semantic_hash": "5d4fb5bdcc89135c2090529e1ca679af"
+  },
+  "/home/kr/projects/trailarr/frontend/src/routing.ts": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "c05821b933461532bdc6132f1c96f6e9",
+    "semantic_hash": "c05821b933461532bdc6132f1c96f6e9"
+  },
+  "/home/kr/projects/trailarr/frontend/src/util.spec.ts": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "c40406ceb8ad76c95bbbe57927f59bfd",
+    "semantic_hash": "c40406ceb8ad76c95bbbe57927f59bfd"
+  },
+  "/home/kr/projects/trailarr/frontend/src/util.ts": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "92bfdfae67b5b7c9a2944de4a53fc659",
+    "semantic_hash": "92bfdfae67b5b7c9a2944de4a53fc659"
+  },
+  "/home/kr/projects/trailarr/frontend/tsconfig.app.json": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "1c38e33371ccdab5e550c1cf0cc6068c",
+    "semantic_hash": "1c38e33371ccdab5e550c1cf0cc6068c"
+  },
+  "/home/kr/projects/trailarr/frontend/tsconfig.json": {
+    "mtime": 1778465691.4220262,
+    "ast_hash": "58dfe143b79143d6e309de413a8ca68b",
+    "semantic_hash": "58dfe143b79143d6e309de413a8ca68b"
+  },
+  "/home/kr/projects/trailarr/frontend/tsconfig.spec.json": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "90454bbb25f4f1b29c8d7db74df1d04d",
+    "semantic_hash": "90454bbb25f4f1b29c8d7db74df1d04d"
+  },
+  "/home/kr/projects/trailarr/install.ps1": {
+    "mtime": 1777875080.6200802,
+    "ast_hash": "fce87a546a3aa33bf3dce4c0d5e846f2",
+    "semantic_hash": "fce87a546a3aa33bf3dce4c0d5e846f2"
+  },
+  "/home/kr/projects/trailarr/install.sh": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "7be539e4f58937f17210271699f170c3",
+    "semantic_hash": "7be539e4f58937f17210271699f170c3"
+  },
+  "/home/kr/projects/trailarr/scripts/box_echo.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "ad79614b39887af5c7342e26525ec379",
+    "semantic_hash": "ad79614b39887af5c7342e26525ec379"
+  },
+  "/home/kr/projects/trailarr/scripts/cli/__init__.py": {
+    "mtime": 1777607495.7208288,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/scripts/cli/trailarr_cli.py": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "cfc3c186b1f1152cb1320dcf1e246861",
+    "semantic_hash": "cfc3c186b1f1152cb1320dcf1e246861"
+  },
+  "/home/kr/projects/trailarr/scripts/create_migration.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "1ceea78b1927a773444b380a8022227c",
+    "semantic_hash": "1ceea78b1927a773444b380a8022227c"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "071ceb15f246d80be6f7db0abdea433b",
+    "semantic_hash": "071ceb15f246d80be6f7db0abdea433b"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/banner.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "48aa3687726f61659e785f85918a05c8",
+    "semantic_hash": "48aa3687726f61659e785f85918a05c8"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/directories.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "54664c250c43a58c753a5bd5c001a072",
+    "semantic_hash": "54664c250c43a58c753a5bd5c001a072"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/env_file.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "38d8b321d5a34e836e27fe0ed6fc1247",
+    "semantic_hash": "38d8b321d5a34e836e27fe0ed6fc1247"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/gpu_detection.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "14fa8caccad2289be6556be9c0de4d15",
+    "semantic_hash": "14fa8caccad2289be6556be9c0de4d15"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/startup.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "e23dfc936158d3274ea1960c92be8253",
+    "semantic_hash": "e23dfc936158d3274ea1960c92be8253"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/timezone.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "68d25796308adb077b9ecda86b2867e9",
+    "semantic_hash": "68d25796308adb077b9ecda86b2867e9"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/update_ytdlp.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "b241449755ce0fabaf659e615c92db8e",
+    "semantic_hash": "b241449755ce0fabaf659e615c92db8e"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/user_groups.sh": {
+    "mtime": 1778465691.4220262,
+    "ast_hash": "10e97dd611493e387776bff64f88a8af",
+    "semantic_hash": "10e97dd611493e387776bff64f88a8af"
+  },
+  "/home/kr/projects/trailarr/scripts/healthcheck.py": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "7e0da8d24e5e905bf1255f9154adf596",
+    "semantic_hash": "7e0da8d24e5e905bf1255f9154adf596"
+  },
+  "/home/kr/projects/trailarr/scripts/install/__init__.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/__init__.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/config.py": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "ba391b18113214d9878152a71fbd843e",
+    "semantic_hash": "ba391b18113214d9878152a71fbd843e"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/display.py": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "fd354609f0cbc401b84897ba5b38292d",
+    "semantic_hash": "fd354609f0cbc401b84897ba5b38292d"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/env_file.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "15b1d8e6382867f2c2f950bfc6121a81",
+    "semantic_hash": "15b1d8e6382867f2c2f950bfc6121a81"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/ffmpeg.py": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "3f6525ba18aeca0c27baca7626346d8e",
+    "semantic_hash": "3f6525ba18aeca0c27baca7626346d8e"
+  },
+  "/home/kr/projects/trailarr/scripts/install/common/gpu.py": {
+    "mtime": 1777875080.6200802,
+    "ast_hash": "655883e448e13a07f033079b723b8a88",
+    "semantic_hash": "655883e448e13a07f033079b723b8a88"
+  },
+  "/home/kr/projects/trailarr/scripts/install/install.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "e6f43c233fac1f399ac7e0a39889a9c3",
+    "semantic_hash": "e6f43c233fac1f399ac7e0a39889a9c3"
+  },
+  "/home/kr/projects/trailarr/scripts/install/platforms/__init__.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/scripts/install/platforms/base.py": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "2fc6e685ac2d4d3476d0d123c1f738a0",
+    "semantic_hash": "2fc6e685ac2d4d3476d0d123c1f738a0"
+  },
+  "/home/kr/projects/trailarr/scripts/install/platforms/linux.py": {
+    "mtime": 1778725279.9079492,
+    "ast_hash": "4dcd1e0ec45ae268de2e8fbdf6121aba",
+    "semantic_hash": "4dcd1e0ec45ae268de2e8fbdf6121aba"
+  },
+  "/home/kr/projects/trailarr/scripts/install/platforms/macos.py": {
+    "mtime": 1778465691.4220262,
+    "ast_hash": "97729905dd68e6a8e60723fed4723d85",
+    "semantic_hash": "97729905dd68e6a8e60723fed4723d85"
+  },
+  "/home/kr/projects/trailarr/scripts/install/platforms/windows.py": {
+    "mtime": 1778725279.9089491,
+    "ast_hash": "666367a155fa133f2de227f0ee5a387a",
+    "semantic_hash": "666367a155fa133f2de227f0ee5a387a"
+  },
+  "/home/kr/projects/trailarr/scripts/install_drivers.sh": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "a19e9c114b645b95aaf616ff73ac9770",
+    "semantic_hash": "a19e9c114b645b95aaf616ff73ac9770"
+  },
+  "/home/kr/projects/trailarr/scripts/launch.py": {
+    "mtime": 1778465691.4220262,
+    "ast_hash": "e7a1fc64dbda631e34ca9fc5b097e950",
+    "semantic_hash": "e7a1fc64dbda631e34ca9fc5b097e950"
+  },
+  "/home/kr/projects/trailarr/scripts/start.sh": {
+    "mtime": 1777177425.0866203,
+    "ast_hash": "5df4dca70a8fc55cd393a6fbe716de4d",
+    "semantic_hash": "5df4dca70a8fc55cd393a6fbe716de4d"
+  },
+  "/home/kr/projects/trailarr/scripts/start/__init__.py": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/kr/projects/trailarr/scripts/start/start.py": {
+    "mtime": 1777875080.6200802,
+    "ast_hash": "9563cf45b0428de4147dad85b45ae886",
+    "semantic_hash": "9563cf45b0428de4147dad85b45ae886"
+  },
+  "/home/kr/projects/trailarr/scripts/windows/remove-startup.ps1": {
+    "mtime": 1777607495.721829,
+    "ast_hash": "64015d612649d39e73e86315a32fc227",
+    "semantic_hash": "64015d612649d39e73e86315a32fc227"
+  },
+  "/home/kr/projects/trailarr/scripts/windows/setup-startup.ps1": {
+    "mtime": 1777875080.6200802,
+    "ast_hash": "5cf2ce6adbe97660ca94203c21d123e6",
+    "semantic_hash": "5cf2ce6adbe97660ca94203c21d123e6"
+  },
+  "/home/kr/projects/trailarr/.claude/CLAUDE.md": {
+    "mtime": 1780865805.3513603,
+    "ast_hash": "db73b0edd7ffbc61ceac177130730865",
+    "semantic_hash": "db73b0edd7ffbc61ceac177130730865"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/SKILL.md": {
+    "mtime": 1780865805.3513603,
+    "ast_hash": "b57bd11db36a7c0e58f7078aa0d54614",
+    "semantic_hash": "b57bd11db36a7c0e58f7078aa0d54614"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1780865697.8928883,
+    "ast_hash": "0df0589623217ca38a12bdcabfb42f4c",
+    "semantic_hash": "0df0589623217ca38a12bdcabfb42f4c"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/exports.md": {
+    "mtime": 1780865697.8928883,
+    "ast_hash": "7fb1a81aca17a462db70684a324fcfb0",
+    "semantic_hash": "7fb1a81aca17a462db70684a324fcfb0"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1780865697.8928883,
+    "ast_hash": "24808b03abfeaf5f6435bb69c0125b2c",
+    "semantic_hash": "24808b03abfeaf5f6435bb69c0125b2c"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1780865697.8928883,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/hooks.md": {
+    "mtime": 1780865697.8928883,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/query.md": {
+    "mtime": 1780865697.9498892,
+    "ast_hash": "8b40ed8c9e9060fc215219a8fc964091",
+    "semantic_hash": "8b40ed8c9e9060fc215219a8fc964091"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1780865697.950889,
+    "ast_hash": "70f6aa30d6211f3a2c7e9fc45479f50c",
+    "semantic_hash": "70f6aa30d6211f3a2c7e9fc45479f50c"
+  },
+  "/home/kr/projects/trailarr/.claude/skills/graphify/references/update.md": {
+    "mtime": 1780865697.950889,
+    "ast_hash": "0dad167a95bdb389f02fecffb60b1bc8",
+    "semantic_hash": "0dad167a95bdb389f02fecffb60b1bc8"
+  },
+  "/home/kr/projects/trailarr/.devcontainer/README.md": {
+    "mtime": 1777177425.0276196,
+    "ast_hash": "b3915e3f3688f4d92517fc1c19bbd821",
+    "semantic_hash": "b3915e3f3688f4d92517fc1c19bbd821"
+  },
+  "/home/kr/projects/trailarr/.github/CODE_OF_CONDUCT.md": {
+    "mtime": 1777177425.0276196,
+    "ast_hash": "401bc2c463bb1e058e5d3cd036027852",
+    "semantic_hash": "401bc2c463bb1e058e5d3cd036027852"
+  },
+  "/home/kr/projects/trailarr/.github/CONTRIBUTING.md": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "1b55f02bc4ed84665c21cd5735d32264",
+    "semantic_hash": "1b55f02bc4ed84665c21cd5735d32264"
+  },
+  "/home/kr/projects/trailarr/.github/ISSUE_TEMPLATE/bug_report.md": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "e6b45afea105f63301848d555ce1d162",
+    "semantic_hash": "e6b45afea105f63301848d555ce1d162"
+  },
+  "/home/kr/projects/trailarr/.github/ISSUE_TEMPLATE/config.yml": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "b5dda0ce62c9af42859820f7ceab21b2",
+    "semantic_hash": "b5dda0ce62c9af42859820f7ceab21b2"
+  },
+  "/home/kr/projects/trailarr/.github/ISSUE_TEMPLATE/feature_request.md": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "550aa69886e97c3ffc004f9ac93000fe",
+    "semantic_hash": "550aa69886e97c3ffc004f9ac93000fe"
+  },
+  "/home/kr/projects/trailarr/.github/ISSUE_TEMPLATE/question-help-wanted.md": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "4e0bcf959dbbc05c19e584c52d6c1a96",
+    "semantic_hash": "4e0bcf959dbbc05c19e584c52d6c1a96"
+  },
+  "/home/kr/projects/trailarr/.github/copilot-instructions.md": {
+    "mtime": 1778465691.3990257,
+    "ast_hash": "19aa0dd9f03882754b202459387a0f40",
+    "semantic_hash": "19aa0dd9f03882754b202459387a0f40"
+  },
+  "/home/kr/projects/trailarr/.github/dependabot.yml": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "add6e9e0aa25d923ef338270b7c4135c",
+    "semantic_hash": "add6e9e0aa25d923ef338270b7c4135c"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/angular.instructions.md": {
+    "mtime": 1777177425.0296195,
+    "ast_hash": "5f810cf70e95fc8ae5eeb6074807917d",
+    "semantic_hash": "5f810cf70e95fc8ae5eeb6074807917d"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/backend.instructions.md": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "7024ff1c9f57240e1dddffba39716608",
+    "semantic_hash": "7024ff1c9f57240e1dddffba39716608"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/markdown.instructions.md": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "a7a10d9642f1e32533568ba6aebbf181",
+    "semantic_hash": "a7a10d9642f1e32533568ba6aebbf181"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/python.instructions.md": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "68463e02ab200c2cb6ab5b2e3f9a97e7",
+    "semantic_hash": "68463e02ab200c2cb6ab5b2e3f9a97e7"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/self-explanatory-code-commenting.instructions.md": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "44519996b2e5b2294b9b4b07fa02d3b1",
+    "semantic_hash": "44519996b2e5b2294b9b4b07fa02d3b1"
+  },
+  "/home/kr/projects/trailarr/.github/instructions/shell.instructions.md": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "f5efbc05c7801de3d1d642a5b5fff1e2",
+    "semantic_hash": "f5efbc05c7801de3d1d642a5b5fff1e2"
+  },
+  "/home/kr/projects/trailarr/.github/planned_tasks.md": {
+    "mtime": 1777607495.7078285,
+    "ast_hash": "98903bcb98554c8abdcf30c2ac0bbe52",
+    "semantic_hash": "98903bcb98554c8abdcf30c2ac0bbe52"
+  },
+  "/home/kr/projects/trailarr/.github/release.yml": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "a6a952686c34e622696c101abf431460",
+    "semantic_hash": "a6a952686c34e622696c101abf431460"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/bump-version.yml": {
+    "mtime": 1778725793.4558783,
+    "ast_hash": "f6d9155d51c9a85acb3bdd364ccc40b6",
+    "semantic_hash": "f6d9155d51c9a85acb3bdd364ccc40b6"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/devcontainer-prebuild.yml": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "c2b58cd7a4e62ee0adb2a04a59a0a95d",
+    "semantic_hash": "c2b58cd7a4e62ee0adb2a04a59a0a95d"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/discord-release.yml": {
+    "mtime": 1779045248.3668358,
+    "ast_hash": "9932b06c78fa5dbcf38d1cf06f1f2864",
+    "semantic_hash": "9932b06c78fa5dbcf38d1cf06f1f2864"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docker-build.yml": {
+    "mtime": 1780445169.6547015,
+    "ast_hash": "8c83fcbdd8d55e7548ece90f3019cc84",
+    "semantic_hash": "8c83fcbdd8d55e7548ece90f3019cc84"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docker-publish-nightly.yml": {
+    "mtime": 1780445169.6547015,
+    "ast_hash": "9843744c7c76aa32dbe179fe852ceddd",
+    "semantic_hash": "9843744c7c76aa32dbe179fe852ceddd"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docker-publish.yml": {
+    "mtime": 1780445169.6547015,
+    "ast_hash": "bc5e1330d9390f00e500f2e96eef5b33",
+    "semantic_hash": "bc5e1330d9390f00e500f2e96eef5b33"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docs-build.yml": {
+    "mtime": 1778465691.4000258,
+    "ast_hash": "4414f8c3834834b6131633c7f67f2c84",
+    "semantic_hash": "4414f8c3834834b6131633c7f67f2c84"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docs-preview-cleanup.yml": {
+    "mtime": 1778465691.4000258,
+    "ast_hash": "63da9a96ca37869e078bd73707471c79",
+    "semantic_hash": "63da9a96ca37869e078bd73707471c79"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/docs-preview.yml": {
+    "mtime": 1778375417.1282737,
+    "ast_hash": "641bfb70ca6ac235a5111d97d012aa16",
+    "semantic_hash": "641bfb70ca6ac235a5111d97d012aa16"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/python-testing.yml": {
+    "mtime": 1778375417.1282737,
+    "ast_hash": "6bc5acb5e6fd9bb5351e085dc109214c",
+    "semantic_hash": "6bc5acb5e6fd9bb5351e085dc109214c"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/release.yml": {
+    "mtime": 1778045724.7052295,
+    "ast_hash": "5c32939defb66aca6c9e328a9d86cd24",
+    "semantic_hash": "5c32939defb66aca6c9e328a9d86cd24"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/update-dockerhub-description.yml": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "edf6c6cd49efe058a430b1e0925d3af4",
+    "semantic_hash": "edf6c6cd49efe058a430b1e0925d3af4"
+  },
+  "/home/kr/projects/trailarr/.github/workflows/update-readme.yml": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "0cd58e7c36166b356f1e873d5f857d75",
+    "semantic_hash": "0cd58e7c36166b356f1e873d5f857d75"
+  },
+  "/home/kr/projects/trailarr/AGENTS.md": {
+    "mtime": 1778465691.3990257,
+    "ast_hash": "19aa0dd9f03882754b202459387a0f40",
+    "semantic_hash": "19aa0dd9f03882754b202459387a0f40"
+  },
+  "/home/kr/projects/trailarr/CLAUDE.md": {
+    "mtime": 1780865941.4342659,
+    "ast_hash": "729b2a3b2250fd29e25b711908524c52",
+    "semantic_hash": "729b2a3b2250fd29e25b711908524c52"
+  },
+  "/home/kr/projects/trailarr/README.md": {
+    "mtime": 1780809112.952616,
+    "ast_hash": "2576887d8d90d0c6ba976e1c4129801b",
+    "semantic_hash": "2576887d8d90d0c6ba976e1c4129801b"
+  },
+  "/home/kr/projects/trailarr/backend/alembic/README.md": {
+    "mtime": 1778900076.2730503,
+    "ast_hash": "7ce69701430c1d89591224232f556cb8",
+    "semantic_hash": "7ce69701430c1d89591224232f556cb8"
+  },
+  "/home/kr/projects/trailarr/backend/core/plex/plex_api.md": {
+    "mtime": 1780445169.6617014,
+    "ast_hash": "ef21528372c88030321a7e0119234820",
+    "semantic_hash": "ef21528372c88030321a7e0119234820"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/01-first-things/environment-variables.md": {
+    "mtime": 1780445169.6657016,
+    "ast_hash": "4b83ead69dbd4d91df670ddf0afc6d19",
+    "semantic_hash": "4b83ead69dbd4d91df670ddf0afc6d19"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/01-first-things/index.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "03016a980d883a71a8abe8c513eea990",
+    "semantic_hash": "03016a980d883a71a8abe8c513eea990"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/01-first-things/network-drives.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "f8ecdcce855478c5df7146f26d943ae7",
+    "semantic_hash": "f8ecdcce855478c5df7146f26d943ae7"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/01-first-things/radarr-sonarr-volumes.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "dffe8d5a4e0457f3676d9304cef10e7d",
+    "semantic_hash": "dffe8d5a4e0457f3676d9304cef10e7d"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/baremetal.md": {
+    "mtime": 1778725279.906949,
+    "ast_hash": "554b98b26de1c078c77dab757de251df",
+    "semantic_hash": "554b98b26de1c078c77dab757de251df"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/docker-compose.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "a6743e2a72a7777883bbe3dcb0a782ed",
+    "semantic_hash": "a6743e2a72a7777883bbe3dcb0a782ed"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/docker-run.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "aa01ff065fc95fab0c84d01b25a6a679",
+    "semantic_hash": "aa01ff065fc95fab0c84d01b25a6a679"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/hardware-acceleration.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "eb7a8c01c96b560fc46a2cbc13d54117",
+    "semantic_hash": "eb7a8c01c96b560fc46a2cbc13d54117"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/index.md": {
+    "mtime": 1778375417.1332738,
+    "ast_hash": "98ca43286f58c21400ff7292bfa24af2",
+    "semantic_hash": "98ca43286f58c21400ff7292bfa24af2"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/self-install.md": {
+    "mtime": 1780445169.6667016,
+    "ast_hash": "4b1147bf1a0f6a8cac5b2b1a2b103db8",
+    "semantic_hash": "4b1147bf1a0f6a8cac5b2b1a2b103db8"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/02-installation/unraid.md": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "8218aad49b740dc2c7064c6ee7a864e8",
+    "semantic_hash": "8218aad49b740dc2c7064c6ee7a864e8"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connections.md": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "85ac302da6c4df0cb301f598cc33f808",
+    "semantic_hash": "85ac302da6c4df0cb301f598cc33f808"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/index.md": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "bc113007a55b6eafaa9eb0cc1ad4fef6",
+    "semantic_hash": "bc113007a55b6eafaa9eb0cc1ad4fef6"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/plex-connection.md": {
+    "mtime": 1778465691.4100258,
+    "ast_hash": "9da3bb2c673344c7290a224f45f915b5",
+    "semantic_hash": "9da3bb2c673344c7290a224f45f915b5"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/profiles.md": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "1438ea02736af5ff63e61790750aa6c4",
+    "semantic_hash": "1438ea02736af5ff63e61790750aa6c4"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/04-next-steps.md": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "6e1b30abfc334ea97ae40ee7ec905144",
+    "semantic_hash": "6e1b30abfc334ea97ae40ee7ec905144"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/index.md": {
+    "mtime": 1777177425.0536199,
+    "ast_hash": "145b328782ea462bf701330686cbc2cb",
+    "semantic_hash": "145b328782ea462bf701330686cbc2cb"
+  },
+  "/home/kr/projects/trailarr/docs/index.md": {
+    "mtime": 1780809112.9556162,
+    "ast_hash": "a242792e6d7da36704c314af982f1b00",
+    "semantic_hash": "a242792e6d7da36704c314af982f1b00"
+  },
+  "/home/kr/projects/trailarr/docs/references/api-docs/api-docs.html": {
+    "mtime": 1777177425.0536199,
+    "ast_hash": "379a4f1f9c82d9503e34bb8deb52a25b",
+    "semantic_hash": "379a4f1f9c82d9503e34bb8deb52a25b"
+  },
+  "/home/kr/projects/trailarr/docs/references/contributing.md": {
+    "mtime": 1777607495.7138288,
+    "ast_hash": "044734ccfa68dd44cb0dc168cb23fe6f",
+    "semantic_hash": "044734ccfa68dd44cb0dc168cb23fe6f"
+  },
+  "/home/kr/projects/trailarr/docs/references/legal-disclaimer.md": {
+    "mtime": 1778375417.1332738,
+    "ast_hash": "9b4adf0b4e4cd676694ddf4326018b13",
+    "semantic_hash": "9b4adf0b4e4cd676694ddf4326018b13"
+  },
+  "/home/kr/projects/trailarr/docs/release-notes/2024.md": {
+    "mtime": 1778375417.1332738,
+    "ast_hash": "3a5199b31d0431b1bb0ca9bc58c761af",
+    "semantic_hash": "3a5199b31d0431b1bb0ca9bc58c761af"
+  },
+  "/home/kr/projects/trailarr/docs/release-notes/2025.md": {
+    "mtime": 1778375417.134274,
+    "ast_hash": "9bf5e043920039aa4a43b26233782e85",
+    "semantic_hash": "9bf5e043920039aa4a43b26233782e85"
+  },
+  "/home/kr/projects/trailarr/docs/release-notes/2026.md": {
+    "mtime": 1780809112.9556162,
+    "ast_hash": "23201bcd12923f8efe69803d3d98ce8c",
+    "semantic_hash": "23201bcd12923f8efe69803d3d98ce8c"
+  },
+  "/home/kr/projects/trailarr/docs/troubleshooting/common-issues.md": {
+    "mtime": 1778375417.134274,
+    "ast_hash": "d27a3c6e19c2de8553e5a7da6df5968d",
+    "semantic_hash": "d27a3c6e19c2de8553e5a7da6df5968d"
+  },
+  "/home/kr/projects/trailarr/docs/troubleshooting/faq.md": {
+    "mtime": 1778375417.134274,
+    "ast_hash": "b443db80592a92bde06f04ea44c30714",
+    "semantic_hash": "b443db80592a92bde06f04ea44c30714"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/events/index.md": {
+    "mtime": 1780445169.6667016,
+    "ast_hash": "16ca309205b0cb33d12bbd1629452b49",
+    "semantic_hash": "16ca309205b0cb33d12bbd1629452b49"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/general/index.md": {
+    "mtime": 1778045724.7072294,
+    "ast_hash": "a5cae0d58e7fe52849a70608e1826be9",
+    "semantic_hash": "a5cae0d58e7fe52849a70608e1826be9"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/index.md": {
+    "mtime": 1780445169.6667016,
+    "ast_hash": "5cbdff2385f65a24266f158f57044816",
+    "semantic_hash": "5cbdff2385f65a24266f158f57044816"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/index.md": {
+    "mtime": 1777607495.7148287,
+    "ast_hash": "14a79184787cdf3adc82faebfe69579b",
+    "semantic_hash": "14a79184787cdf3adc82faebfe69579b"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/index.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "e88058d3b1c7f0468e9b96e4f14f56e1",
+    "semantic_hash": "e88058d3b1c7f0468e9b96e4f14f56e1"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/logs/index.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "58769d499993785ab70215d9ede71a5b",
+    "semantic_hash": "58769d499993785ab70215d9ede71a5b"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/reverse-proxy.md": {
+    "mtime": 1780809112.9556162,
+    "ast_hash": "e5bfe835fe2d5e4e3457e5e81fe511ac",
+    "semantic_hash": "e5bfe835fe2d5e4e3457e5e81fe511ac"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/about/index.md": {
+    "mtime": 1777177425.06762,
+    "ast_hash": "024d3a9073c2765c5dbd86667bc876a1",
+    "semantic_hash": "024d3a9073c2765c5dbd86667bc876a1"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/connections/index.md": {
+    "mtime": 1778375417.134274,
+    "ast_hash": "d1bc2af31192883295f229467af64e4c",
+    "semantic_hash": "d1bc2af31192883295f229467af64e4c"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/connections/plex.md": {
+    "mtime": 1778375417.135274,
+    "ast_hash": "c4e3bc55065a036f7310490ca6b23a9b",
+    "semantic_hash": "c4e3bc55065a036f7310490ca6b23a9b"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/general-settings/index.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "0174d4bbe83a7666e3ad427141535b05",
+    "semantic_hash": "0174d4bbe83a7666e3ad427141535b05"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/index.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "a12cb3b44cfd4356beedb513eedb0fab",
+    "semantic_hash": "a12cb3b44cfd4356beedb513eedb0fab"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/examples.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "6af7551e2e3065daa11a6f6af07d480a",
+    "semantic_hash": "6af7551e2e3065daa11a6f6af07d480a"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/filters.md": {
+    "mtime": 1778375417.135274,
+    "ast_hash": "84cb7f19dcb12df0b7ccd805f3091ce7",
+    "semantic_hash": "84cb7f19dcb12df0b7ccd805f3091ce7"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/index.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "e52ae1e3b51433ae4527c3ad874e45c8",
+    "semantic_hash": "e52ae1e3b51433ae4527c3ad874e45c8"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/audio.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "880154d0b948d2b5bd70328bd0d43002",
+    "semantic_hash": "880154d0b948d2b5bd70328bd0d43002"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/file.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "ad6a38d7ff6a7f47eb18ced314370101",
+    "semantic_hash": "ad6a38d7ff6a7f47eb18ced314370101"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/general.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "dae3e6c8074f300da24fcb06f9feac52",
+    "semantic_hash": "dae3e6c8074f300da24fcb06f9feac52"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/plex.md": {
+    "mtime": 1778375417.135274,
+    "ast_hash": "994b9c8e79b0e2197ea9547018eb84d3",
+    "semantic_hash": "994b9c8e79b0e2197ea9547018eb84d3"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/search.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "ede53e2b109995659c9486c4641412b7",
+    "semantic_hash": "ede53e2b109995659c9486c4641412b7"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/subtitle.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "c0694072c470223ab52df6586878476b",
+    "semantic_hash": "c0694072c470223ab52df6586878476b"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/settings/profiles/settings/video.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "ec11c7421361527b14958ae031de6921",
+    "semantic_hash": "ec11c7421361527b14958ae031de6921"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/tasks/index.md": {
+    "mtime": 1780445169.6677015,
+    "ast_hash": "2eb261277c2232beb77d59823c68b034",
+    "semantic_hash": "2eb261277c2232beb77d59823c68b034"
+  },
+  "/home/kr/projects/trailarr/docs/win_mounts.txt": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "bc5a699d2a180c236335fafa779c84d6",
+    "semantic_hash": "bc5a699d2a180c236335fafa779c84d6"
+  },
+  "/home/kr/projects/trailarr/frontend/README.md": {
+    "mtime": 1777177425.0686202,
+    "ast_hash": "453526b785f416b14600f5f14c72489b",
+    "semantic_hash": "453526b785f416b14600f5f14c72489b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/app.component.html": {
+    "mtime": 1778045724.7092295,
+    "ast_hash": "8cb8f98c923ffb39f484527cd126e146",
+    "semantic_hash": "8cb8f98c923ffb39f484527cd126e146"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/auth/login/login.component.html": {
+    "mtime": 1780445169.6687016,
+    "ast_hash": "2883010e44660c3519a621271ca107a2",
+    "semantic_hash": "2883010e44660c3519a621271ca107a2"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/events/events.component.html": {
+    "mtime": 1778465691.415026,
+    "ast_hash": "8b6d44967106d5a6c7eccd58a03354ff",
+    "semantic_hash": "8b6d44967106d5a6c7eccd58a03354ff"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/logs/logs.component.html": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "09504188e9308b6d238b3cdc5ca60112",
+    "semantic_hash": "09504188e9308b6d238b3cdc5ca60112"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component.html": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "d03e6fe8e0d27d44f028813f2ad1737e",
+    "semantic_hash": "d03e6fe8e0d27d44f028813f2ad1737e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/dialogs/profile-select-dialog/profile-select-dialog.component.html": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "e9342932c8c60f665f3ce7610c73c442",
+    "semantic_hash": "e9342932c8c60f665f3ce7610c73c442"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/edit-header/edit-header.component.html": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "5ecb6334debf5b1ad2c7ae59dd387281",
+    "semantic_hash": "5ecb6334debf5b1ad2c7ae59dd387281"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/dialogs/field-config-dialog/field-config-dialog.component.html": {
+    "mtime": 1778465691.4160259,
+    "ast_hash": "93e6a789db78b3169e528f19b1804467",
+    "semantic_hash": "93e6a789db78b3169e528f19b1804467"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/dialogs/show-filters-dialog/show-filters-dialog.component.html": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "ff19b81866bca2c0cf3a79aaefae2f43",
+    "semantic_hash": "ff19b81866bca2c0cf3a79aaefae2f43"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/headers/normal-header/normal-header.component.html": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "cd80098e9f80445f8ffcad896dcce4ec",
+    "semantic_hash": "cd80098e9f80445f8ffcad896dcce4ec"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/expanded/expanded.component.html": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "aa01ff1b11cf2febac3bed1fc2cc9fb1",
+    "semantic_hash": "aa01ff1b11cf2febac3bed1fc2cc9fb1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/media-card-shell/media-card-shell.component.html": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "9a3b41fe53bbea1db9747257b750a5ae",
+    "semantic_hash": "9a3b41fe53bbea1db9747257b750a5ae"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/poster/poster.component.html": {
+    "mtime": 1778465691.417026,
+    "ast_hash": "b61d72702eb0f0f289ab10a733cf2cf4",
+    "semantic_hash": "b61d72702eb0f0f289ab10a733cf2cf4"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/status-icon/status-icon.component.html": {
+    "mtime": 1777177425.0726202,
+    "ast_hash": "efb8a10224337414e7b955926c9f0c8b",
+    "semantic_hash": "efb8a10224337414e7b955926c9f0c8b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-cards/table/table.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "7f7c588c2c873587fd91890adbd96db5",
+    "semantic_hash": "7f7c588c2c873587fd91890adbd96db5"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/downloads/downloads.component.html": {
+    "mtime": 1777177425.07362,
+    "ast_hash": "c93f5b5d473dbf89965f1b978afc42e0",
+    "semantic_hash": "c93f5b5d473dbf89965f1b978afc42e0"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/delete-dialog/delete-dialog.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "cd67e2a1e7f0e25821715a4409b24adb",
+    "semantic_hash": "cd67e2a1e7f0e25821715a4409b24adb"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/options-dialog/options-dialog.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "621bc0f592218659e31be1f8a2c97f7f",
+    "semantic_hash": "621bc0f592218659e31be1f8a2c97f7f"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/play-video-dialog/play-video-dialog.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "53af6f0b5c7f78e64293cd32678c93c6",
+    "semantic_hash": "53af6f0b5c7f78e64293cd32678c93c6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/rename-dialog/rename-dialog.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "c89c35cc54fc68a1c5dac7c5793a0c86",
+    "semantic_hash": "c89c35cc54fc68a1c5dac7c5793a0c86"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/text-dialog/text-dialog.component.html": {
+    "mtime": 1778465691.418026,
+    "ast_hash": "5a5a21a4c38b6c2f4a460e4f84084d5b",
+    "semantic_hash": "5a5a21a4c38b6c2f4a460e4f84084d5b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/video-edit-dialog/video-edit-dialog.component.html": {
+    "mtime": 1778465691.4190261,
+    "ast_hash": "9b5d3cffaa2ddd4262c06d254e905a3b",
+    "semantic_hash": "9b5d3cffaa2ddd4262c06d254e905a3b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/dialogs/video-info-dialog/video-info-dialog.component.html": {
+    "mtime": 1778465691.4190261,
+    "ast_hash": "075689b29f13759235a48239cb2936a5",
+    "semantic_hash": "075689b29f13759235a48239cb2936a5"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/files/files.component.html": {
+    "mtime": 1777875080.6190803,
+    "ast_hash": "8f7bdd1031d3291bb92e674dafc8f835",
+    "semantic_hash": "8f7bdd1031d3291bb92e674dafc8f835"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/media-details.component.html": {
+    "mtime": 1780445169.6697016,
+    "ast_hash": "ca1734a3b3d22b0eca4a07513be38096",
+    "semantic_hash": "ca1734a3b3d22b0eca4a07513be38096"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media-details/media-events/media-events.component.html": {
+    "mtime": 1777607495.718829,
+    "ast_hash": "775cd5d06538b8b21679f586b031f386",
+    "semantic_hash": "775cd5d06538b8b21679f586b031f386"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/media/media.component.html": {
+    "mtime": 1778465691.4190261,
+    "ast_hash": "0b8d709dc5fbb2e2527a809822d8272a",
+    "semantic_hash": "0b8d709dc5fbb2e2527a809822d8272a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/nav/sidenav/sidenav.component.html": {
+    "mtime": 1780445169.6707017,
+    "ast_hash": "693ff961c127e00afba7f736c5c8098e",
+    "semantic_hash": "693ff961c127e00afba7f736c5c8098e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/nav/topnav/topnav.component.html": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "93eac9ccb4dbd6206537e1a21d15bc1d",
+    "semantic_hash": "93eac9ccb4dbd6206537e1a21d15bc1d"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/notifications/notifications.component.html": {
+    "mtime": 1778465691.420026,
+    "ast_hash": "7142e98e1feefe7e3bd90befd71c4da0",
+    "semantic_hash": "7142e98e1feefe7e3bd90befd71c4da0"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/about/about.component.html": {
+    "mtime": 1778465691.420026,
+    "ast_hash": "bfcaf5d0215bdc38d2fc84dcd9906802",
+    "semantic_hash": "bfcaf5d0215bdc38d2fc84dcd9906802"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/connections.component.html": {
+    "mtime": 1777177425.0756202,
+    "ast_hash": "eb2ce819db0e019d9b8afee11e3b5828",
+    "semantic_hash": "eb2ce819db0e019d9b8afee11e3b5828"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/edit-connection/edit-connection.component.html": {
+    "mtime": 1778465691.420026,
+    "ast_hash": "f172989340b3e6cfc6814f6b5b7f0373",
+    "semantic_hash": "f172989340b3e6cfc6814f6b5b7f0373"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/edit-plex-connection/edit-plex-connection.component.html": {
+    "mtime": 1778465691.420026,
+    "ast_hash": "ddafc0b6a701ca278243249ef6f87caf",
+    "semantic_hash": "ddafc0b6a701ca278243249ef6f87caf"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/connections/show-connections/show-connections.component.html": {
+    "mtime": 1778465691.421026,
+    "ast_hash": "0bac95a30f0b34f518ed65c1a0823169",
+    "semantic_hash": "0bac95a30f0b34f518ed65c1a0823169"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/general/general.component.html": {
+    "mtime": 1780445169.6717017,
+    "ast_hash": "d9c371ae5e54f0159c535e63d5ede4ab",
+    "semantic_hash": "d9c371ae5e54f0159c535e63d5ede4ab"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/edit-profile/edit-profile.component.html": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "6c4e29394875d8ce488e3a4e61dd42eb",
+    "semantic_hash": "6c4e29394875d8ce488e3a4e61dd42eb"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/options-setting/options-setting.component.html": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "895ec1bf1aa2da92216509308cc23e2c",
+    "semantic_hash": "895ec1bf1aa2da92216509308cc23e2c"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/range-setting/range-setting.component.html": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "4d0dc9cd66cd872e045259c5ce2fd731",
+    "semantic_hash": "4d0dc9cd66cd872e045259c5ce2fd731"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/settings/text-setting/text-setting.component.html": {
+    "mtime": 1777177425.07662,
+    "ast_hash": "b9e337a3d9dbd7ba789499c7c86e4e71",
+    "semantic_hash": "b9e337a3d9dbd7ba789499c7c86e4e71"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/profiles/show-profiles/show-profiles.component.html": {
+    "mtime": 1778465691.421026,
+    "ast_hash": "8f9e1dbe4e8ae6b38f81b59ef75bc5d1",
+    "semantic_hash": "8f9e1dbe4e8ae6b38f81b59ef75bc5d1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/settings/settings.component.html": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "e11214cba2674e5e6a4f9b5d82097f84",
+    "semantic_hash": "e11214cba2674e5e6a4f9b5d82097f84"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/help-link-icon/help-link-icon.component.html": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "986f47f3c1acce0d6c9e04358f640c0e",
+    "semantic_hash": "986f47f3c1acce0d6c9e04358f640c0e"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/shared/path-select-dialog/path-select-dialog.component.html": {
+    "mtime": 1778465691.4220262,
+    "ast_hash": "80340bff343003f8bfffa79285f1f1ef",
+    "semantic_hash": "80340bff343003f8bfffa79285f1f1ef"
+  },
+  "/home/kr/projects/trailarr/frontend/src/app/tasks/tasks.component.html": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "59ff4fe32606df68b5c1ff50476e95c1",
+    "semantic_hash": "59ff4fe32606df68b5c1ff50476e95c1"
+  },
+  "/home/kr/projects/trailarr/frontend/src/index.html": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "987aa935f14c2d28705278547d123d05",
+    "semantic_hash": "987aa935f14c2d28705278547d123d05"
+  },
+  "/home/kr/projects/trailarr/mkdocs.yml": {
+    "mtime": 1780445169.6727016,
+    "ast_hash": "10c4df67037aa8844552ecaf56250b36",
+    "semantic_hash": "10c4df67037aa8844552ecaf56250b36"
+  },
+  "/home/kr/projects/trailarr/scripts/entrypoint/README.md": {
+    "mtime": 1777177425.0856204,
+    "ast_hash": "916419e86317d626d1bbbe09dfd6a7d9",
+    "semantic_hash": "916419e86317d626d1bbbe09dfd6a7d9"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-128.png": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "8afd26c5018bc4441ff77d9d8d2aeb14",
+    "semantic_hash": "8afd26c5018bc4441ff77d9d8d2aeb14"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-192.png": {
+    "mtime": 1777177425.0306196,
+    "ast_hash": "1ffc7c46173356eedfd052de0d0d5d69",
+    "semantic_hash": "1ffc7c46173356eedfd052de0d0d5d69"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-256.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "9c78fa26b12e0031e70efcf7fcde947b",
+    "semantic_hash": "9c78fa26b12e0031e70efcf7fcde947b"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-48.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "a7cd17a079d4d29ae5f72881828643bb",
+    "semantic_hash": "a7cd17a079d4d29ae5f72881828643bb"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-512.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "625c9403227efdc307dddd4e080a1355",
+    "semantic_hash": "625c9403227efdc307dddd4e080a1355"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-64.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "5369edaeb8fcc0c3d56e39861f117f52",
+    "semantic_hash": "5369edaeb8fcc0c3d56e39861f117f52"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-96.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "77d9764ded1d3de40400840b0c6088cc",
+    "semantic_hash": "77d9764ded1d3de40400840b0c6088cc"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-512-lg.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "9019c21c4279b00f20ba78cdf179aad0",
+    "semantic_hash": "9019c21c4279b00f20ba78cdf179aad0"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-512.png": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "aaa2ea65dda4337c503cbb83937382f4",
+    "semantic_hash": "aaa2ea65dda4337c503cbb83937382f4"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-dark.svg": {
+    "mtime": 1777177425.0316195,
+    "ast_hash": "d0510c6d6abd0a42e3b3e45701b6a328",
+    "semantic_hash": "d0510c6d6abd0a42e3b3e45701b6a328"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-light-512-lg.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "490611b5180416cda02a920635eebbeb",
+    "semantic_hash": "490611b5180416cda02a920635eebbeb"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-light-512.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "b61d0c7b17be7b1b32c8e0117d81d62d",
+    "semantic_hash": "b61d0c7b17be7b1b32c8e0117d81d62d"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-light.svg": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "95a96454e2486920a54c1a89e5777a56",
+    "semantic_hash": "95a96454e2486920a54c1a89e5777a56"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-primary-512-lg.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "37e71978bc5367478903f2c9f48c7248",
+    "semantic_hash": "37e71978bc5367478903f2c9f48c7248"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full-primary-512.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "8a3538f35cd63943f96f4794e9869ad1",
+    "semantic_hash": "8a3538f35cd63943f96f4794e9869ad1"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-full.svg": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "91d3187d03e28b37d2da8f6597b6d79d",
+    "semantic_hash": "91d3187d03e28b37d2da8f6597b6d79d"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-maskable-192.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "ab9e733c1496bf02f6fff89886bcbf06",
+    "semantic_hash": "ab9e733c1496bf02f6fff89886bcbf06"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-maskable-512.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "311eaac8d695f0234d1dfe7ccefe2c83",
+    "semantic_hash": "311eaac8d695f0234d1dfe7ccefe2c83"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-maskable-lg.png": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "f308801b3686c95484e91087c4f2b81c",
+    "semantic_hash": "f308801b3686c95484e91087c4f2b81c"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr-text.svg": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "301ec421498ff33de1f703ecfb43b517",
+    "semantic_hash": "301ec421498ff33de1f703ecfb43b517"
+  },
+  "/home/kr/projects/trailarr/assets/images/trailarr.svg": {
+    "mtime": 1777177425.0326197,
+    "ast_hash": "1b44283906bdb4e5430b423d27f96580",
+    "semantic_hash": "1b44283906bdb4e5430b423d27f96580"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connection-add-path-final.png": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "1b216a13a4498adc563b2c45046a6489",
+    "semantic_hash": "1b216a13a4498adc563b2c45046a6489"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connection-add-path-mappings.png": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "c200b13b0764365c82b538489635f274",
+    "semantic_hash": "c200b13b0764365c82b538489635f274"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connection-add-path-submit.png": {
+    "mtime": 1777177425.0516198,
+    "ast_hash": "b554953e8b8499c2356b6b48a9b99b64",
+    "semantic_hash": "b554953e8b8499c2356b6b48a9b99b64"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connection-add.png": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "670f63dfb321d10bd915acf7f46066d1",
+    "semantic_hash": "670f63dfb321d10bd915acf7f46066d1"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/connections-list.png": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "befa3009075fde67dd21366a6b5dbf1b",
+    "semantic_hash": "befa3009075fde67dd21366a6b5dbf1b"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/profiles-list.png": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "53050e8758362e689349952d9ae73a8e",
+    "semantic_hash": "53050e8758362e689349952d9ae73a8e"
+  },
+  "/home/kr/projects/trailarr/docs/getting-started/03-setup/update-login.png": {
+    "mtime": 1777177425.05262,
+    "ast_hash": "39d8336a9ecdb641bdcd7506862e59b9",
+    "semantic_hash": "39d8336a9ecdb641bdcd7506862e59b9"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/add-connection.png": {
+    "mtime": 1777177425.05462,
+    "ast_hash": "2b93cbd394fff192ceeebe2345449f19",
+    "semantic_hash": "2b93cbd394fff192ceeebe2345449f19"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/add-new.png": {
+    "mtime": 1777177425.05462,
+    "ast_hash": "07edab2113910ec609a1e5d7a480832e",
+    "semantic_hash": "07edab2113910ec609a1e5d7a480832e"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/add-path-mapping.png": {
+    "mtime": 1777177425.05462,
+    "ast_hash": "87a6629e7ff282798849f86a6437c17b",
+    "semantic_hash": "87a6629e7ff282798849f86a6437c17b"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/general/general-search.png": {
+    "mtime": 1777177425.05562,
+    "ast_hash": "10ce17c56e2831c56e2a4c6a5c199667",
+    "semantic_hash": "10ce17c56e2831c56e2a4c6a5c199667"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/general/general-theme.gif": {
+    "mtime": 1777177425.06062,
+    "ast_hash": "88323910ad080da4bcd6c3cb926fcd3c",
+    "semantic_hash": "88323910ad080da4bcd6c3cb926fcd3c"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-edit-button.png": {
+    "mtime": 1777177425.06062,
+    "ast_hash": "84f07638f519c291e2b713174a7896f9",
+    "semantic_hash": "84f07638f519c291e2b713174a7896f9"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-edit-view.png": {
+    "mtime": 1777177425.06162,
+    "ast_hash": "5294d953b59dd9b2f31dde4637473456",
+    "semantic_hash": "5294d953b59dd9b2f31dde4637473456"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-filtering-home.png": {
+    "mtime": 1777177425.06262,
+    "ast_hash": "9419dee78293b8da464b3964c488c2b6",
+    "semantic_hash": "9419dee78293b8da464b3964c488c2b6"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-filtering.png": {
+    "mtime": 1777177425.06262,
+    "ast_hash": "d6a5cc371a8332d8ae6e8a9d7247e759",
+    "semantic_hash": "d6a5cc371a8332d8ae6e8a9d7247e759"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-home.png": {
+    "mtime": 1777177425.06362,
+    "ast_hash": "a8ff4aa398bf0be6d57e56c4a1a064a2",
+    "semantic_hash": "a8ff4aa398bf0be6d57e56c4a1a064a2"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-profile-dialog.png": {
+    "mtime": 1777177425.06362,
+    "ast_hash": "994e776ed662285cacd571507cd30fa3",
+    "semantic_hash": "994e776ed662285cacd571507cd30fa3"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/library-sorting.png": {
+    "mtime": 1777177425.06362,
+    "ast_hash": "26e47dbb11bdd25da49995e551890fd5",
+    "semantic_hash": "26e47dbb11bdd25da49995e551890fd5"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/library-media-details.png": {
+    "mtime": 1777177425.06462,
+    "ast_hash": "bfb54d517043088a7671d9cb2b6fc224",
+    "semantic_hash": "bfb54d517043088a7671d9cb2b6fc224"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/library-media-details1.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "2fb844bce526757b5d5eb8dc8792f5b4",
+    "semantic_hash": "2fb844bce526757b5d5eb8dc8792f5b4"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-downloads.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "f2c13ce3e6410d33f0893159f80b2ba9",
+    "semantic_hash": "f2c13ce3e6410d33f0893159f80b2ba9"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-files-click-to-open.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "50481c227bc053617209dd2ba8dcabb1",
+    "semantic_hash": "50481c227bc053617209dd2ba8dcabb1"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-files-open.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "382f6f37858cc15e3dfe397dc9cd9e13",
+    "semantic_hash": "382f6f37858cc15e3dfe397dc9cd9e13"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-files-options.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "35b9a8f5038302bc339e3dcb259d4caa",
+    "semantic_hash": "35b9a8f5038302bc339e3dcb259d4caa"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-save-youtube-trailer-id.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "02dc2883b6141a843dd121d772ec18f6",
+    "semantic_hash": "02dc2883b6141a843dd121d772ec18f6"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-search-youtube-trailer-id.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "77d452c80f834ef41f7080d0419d2cd5",
+    "semantic_hash": "77d452c80f834ef41f7080d0419d2cd5"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-youtube-trailer-id.png": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "c3189c5bdffc3c56a0e51b6767364e55",
+    "semantic_hash": "c3189c5bdffc3c56a0e51b6767364e55"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/path-mapping.png": {
+    "mtime": 1777177425.06762,
+    "ast_hash": "636c0e019340cb4a0f01e3d451578aa0",
+    "semantic_hash": "636c0e019340cb4a0f01e3d451578aa0"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/IMDBlogo.png": {
+    "mtime": 1777177425.0776203,
+    "ast_hash": "65f805f8c734c47e764f1dfc7964b922",
+    "semantic_hash": "65f805f8c734c47e764f1dfc7964b922"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/TMDBlogo.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "ff9287bf8a34a8089d5f5c700921ede8",
+    "semantic_hash": "ff9287bf8a34a8089d5f5c700921ede8"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/TVDBlogo.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "48688199353f86d7e3ea1f01fff80255",
+    "semantic_hash": "48688199353f86d7e3ea1f01fff80255"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/icons/home.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "07c1a2018dbccc5c6ee7594bab6e6677",
+    "semantic_hash": "07c1a2018dbccc5c6ee7594bab6e6677"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/icons/movies.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "175e0cc2f80c2fdad2eeff46f619db91",
+    "semantic_hash": "175e0cc2f80c2fdad2eeff46f619db91"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/icons/series.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "395cc8c212b484ffaf4c8c4e9f7f9c02",
+    "semantic_hash": "395cc8c212b484ffaf4c8c4e9f7f9c02"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/icons/settings.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "9fdafc5a95a8313de550345b619b1399",
+    "semantic_hash": "9fdafc5a95a8313de550345b619b1399"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-192.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "1ffc7c46173356eedfd052de0d0d5d69",
+    "semantic_hash": "1ffc7c46173356eedfd052de0d0d5d69"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-48.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "a7cd17a079d4d29ae5f72881828643bb",
+    "semantic_hash": "a7cd17a079d4d29ae5f72881828643bb"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-512.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "625c9403227efdc307dddd4e080a1355",
+    "semantic_hash": "625c9403227efdc307dddd4e080a1355"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-96.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "77d9764ded1d3de40400840b0c6088cc",
+    "semantic_hash": "77d9764ded1d3de40400840b0c6088cc"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-full-512.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "aaa2ea65dda4337c503cbb83937382f4",
+    "semantic_hash": "aaa2ea65dda4337c503cbb83937382f4"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-full-dark.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "d0510c6d6abd0a42e3b3e45701b6a328",
+    "semantic_hash": "d0510c6d6abd0a42e3b3e45701b6a328"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-full-light-512.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "b61d0c7b17be7b1b32c8e0117d81d62d",
+    "semantic_hash": "b61d0c7b17be7b1b32c8e0117d81d62d"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-full-light.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "95a96454e2486920a54c1a89e5777a56",
+    "semantic_hash": "95a96454e2486920a54c1a89e5777a56"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-full.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "0d1a553149c2436dbd77a07543f88723",
+    "semantic_hash": "0d1a553149c2436dbd77a07543f88723"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-maskable-192.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "ab9e733c1496bf02f6fff89886bcbf06",
+    "semantic_hash": "ab9e733c1496bf02f6fff89886bcbf06"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr-maskable-512.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "311eaac8d695f0234d1dfe7ccefe2c83",
+    "semantic_hash": "311eaac8d695f0234d1dfe7ccefe2c83"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/logos/trailarr.svg": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "9e4495daf5a167bf199cc32768bdcede",
+    "semantic_hash": "9e4495daf5a167bf199cc32768bdcede"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/plex_logo.svg": {
+    "mtime": 1777607495.7208288,
+    "ast_hash": "0339b79711d5784fb31618e9f8228914",
+    "semantic_hash": "0339b79711d5784fb31618e9f8228914"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/poster-lg.png": {
+    "mtime": 1777177425.0786202,
+    "ast_hash": "47233562b2a84e6b20e9a90cf32113b6",
+    "semantic_hash": "47233562b2a84e6b20e9a90cf32113b6"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/poster-sm.png": {
+    "mtime": 1777177425.0796204,
+    "ast_hash": "6b3b0a0b1d14ea750b8da3d4fab05335",
+    "semantic_hash": "6b3b0a0b1d14ea750b8da3d4fab05335"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/radarr_128.png": {
+    "mtime": 1777177425.0796204,
+    "ast_hash": "a02686ffb7d6fb91d22c830eb8b7b14b",
+    "semantic_hash": "a02686ffb7d6fb91d22c830eb8b7b14b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/radarr_48.png": {
+    "mtime": 1777177425.0796204,
+    "ast_hash": "359782c44416f024422e2627591199e7",
+    "semantic_hash": "359782c44416f024422e2627591199e7"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/home.png": {
+    "mtime": 1777177425.0796204,
+    "ast_hash": "32213be8c77fbd24eb96fc78f4340c86",
+    "semantic_hash": "32213be8c77fbd24eb96fc78f4340c86"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/light.png": {
+    "mtime": 1777177425.0796204,
+    "ast_hash": "f26ebc619ea64c3f148783a5a2b74c6b",
+    "semantic_hash": "f26ebc619ea64c3f148783a5a2b74c6b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/mobile/home.png": {
+    "mtime": 1777177425.0816202,
+    "ast_hash": "27d16d0f99bbcd3644198967f88a917b",
+    "semantic_hash": "27d16d0f99bbcd3644198967f88a917b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/mobile/light.png": {
+    "mtime": 1777177425.0826204,
+    "ast_hash": "d54d4279effb42c4cea7fc8b7f9a3c4b",
+    "semantic_hash": "d54d4279effb42c4cea7fc8b7f9a3c4b"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/mobile/series.png": {
+    "mtime": 1777177425.0836203,
+    "ast_hash": "f80751d703ae63f4a34061a37464f79a",
+    "semantic_hash": "f80751d703ae63f4a34061a37464f79a"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/mobile/settings.png": {
+    "mtime": 1777177425.0836203,
+    "ast_hash": "bad3efc32b6f886e794fcfd83b130302",
+    "semantic_hash": "bad3efc32b6f886e794fcfd83b130302"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/series.png": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "57e3f7c5f14244ca35cb4875155228dd",
+    "semantic_hash": "57e3f7c5f14244ca35cb4875155228dd"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/screenshots/settings.png": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "5f9a7111f9317ab3965a8078e755c2ef",
+    "semantic_hash": "5f9a7111f9317ab3965a8078e755c2ef"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/sonarr_128.png": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "bdee5b2d9685c5795fe9f93962a384ab",
+    "semantic_hash": "bdee5b2d9685c5795fe9f93962a384ab"
+  },
+  "/home/kr/projects/trailarr/frontend/src/assets/sonarr_48.png": {
+    "mtime": 1777177425.0846202,
+    "ast_hash": "bf5eb4b6f2b023e4bb1a1a0ead92c49c",
+    "semantic_hash": "bf5eb4b6f2b023e4bb1a1a0ead92c49c"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/general/general-theme-switch.mp4": {
+    "mtime": 1777177425.05762,
+    "ast_hash": "bfadd144877252417a564ff551e21047",
+    "semantic_hash": "bfadd144877252417a564ff551e21047"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/media-status-additional-details.mp4": {
+    "mtime": 1777177425.06662,
+    "ast_hash": "fbcbbf42bf2f977eb609383185d491a3",
+    "semantic_hash": "fbcbbf42bf2f977eb609383185d491a3"
+  },
+  "/home/kr/projects/trailarr/docs/user-guide/library/media-details/monitor-toggle.mp4": {
+    "mtime": 1777177425.06762,
+    "ast_hash": "e4270de5cad314bc709528d3c982ffe7",
+    "semantic_hash": "e4270de5cad314bc709528d3c982ffe7"
+  }
+}
