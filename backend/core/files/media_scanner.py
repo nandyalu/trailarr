@@ -22,7 +22,8 @@ class MediaScanner:
     """Handles scanning of folders and files of media."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    # A video file >= this size is treated as a real media file, not a trailer.
+    # Used to detect whether a folder contains a main media file (video >= 100 MB).
+    # This is independent of trailer detection (trailers may be larger when stored in trailer folders).
     MEDIA_FILE_MIN_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
     # Files with 'trailer' in name below this size are trailers without needing ffprobe.
     TRAILER_QUICK_MAX_SIZE_BYTES = 200 * 1024 * 1024  # 200 MB
@@ -65,7 +66,9 @@ class MediaScanner:
         Returns:
             bool: True if the file is a trailer, False if not.
         """
-        media_info = await asyncio.to_thread(video_analysis.get_media_info, file_path)
+        media_info = await asyncio.to_thread(
+            video_analysis.get_media_info, file_path
+        )
         if media_info is None:
             return False
         if media_info.duration_seconds <= 0:
