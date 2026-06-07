@@ -135,9 +135,9 @@ header_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
 query_schema = APIKeyQuery(name="api_key", auto_error=False)
 
 
-# Dependency to validate the API key provided in the header or query.
-# Used for API endpoints that can be accessed with an API key,
-# but also allow session-based auth (frontend).
+# Dependency to validate the API key provided in the header.
+# Used for endpoints that want to optionally accept an API key (e.g., reverse
+# proxy auth), without raising if the header is missing/invalid.
 def validate_api_key_header(
     header_api_key: str | None = Depends(header_scheme),
 ) -> str | None:
