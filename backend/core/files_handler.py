@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime as dt
 import hashlib
 import os
@@ -263,7 +264,7 @@ class FilesHandler:
         return True
 
     @staticmethod
-    def _check_large_name_trailer(file_path: str) -> bool:
+    async def _check_large_name_trailer(file_path: str) -> bool:
         """Use ffprobe to verify a large inline file with 'trailer' in its name.
 
         Checks duration: anything over TRAILER_MAX_DURATION_SECONDS is a movie
@@ -272,7 +273,7 @@ class FilesHandler:
             file_path (str): The full path of the file to check.
         Returns:
             bool: True if the file is a trailer, False if not."""
-        media_info = video_analysis.get_media_info(file_path)
+        media_info = await asyncio.to_thread(video_analysis.get_media_info, file_path)
         if media_info is None:
             return False
         if media_info.duration_seconds <= 0:
@@ -280,7 +281,7 @@ class FilesHandler:
         return media_info.duration_seconds <= FilesHandler.TRAILER_MAX_DURATION_SECONDS
 
     @staticmethod
-    def is_trailer_file(
+    async def is_trailer_file(
         file_name: str,
         file_size_bytes: int | None = None,
         file_path: str | None = None,
@@ -310,7 +311,7 @@ class FilesHandler:
         ):
             # Too large for a quick answer — use ffprobe if path is available.
             if file_path is not None:
-                return FilesHandler._check_large_name_trailer(file_path)
+                return await FilesHandler._check_large_name_trailer(file_path)
             return False
         return True
 
@@ -375,7 +376,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
+            if await FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
                 return True
         return False
 
@@ -442,7 +443,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
+            if not await FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
                 continue
             return entry.path
         return None
@@ -470,7 +471,7 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size, sub_entry.path):
+                if await FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size, sub_entry.path):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):

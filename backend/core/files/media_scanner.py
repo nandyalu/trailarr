@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime as dt
 import os
 from pathlib import Path
@@ -64,7 +65,7 @@ class MediaScanner:
         Returns:
             bool: True if the file is a trailer, False if not.
         """
-        media_info = video_analysis.get_media_info(file_path)
+        media_info = await asyncio.to_thread(video_analysis.get_media_info, file_path)
         if media_info is None:
             return False
         if media_info.duration_seconds <= 0:
