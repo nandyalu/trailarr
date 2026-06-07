@@ -231,7 +231,7 @@
 				"env": {
 					"PYTHONDONTWRITEBYTECODE": "1",
 					"PYTHONUNBUFFERED": "1",
-					"APP_VERSION": "0.9.4"
+					"APP_VERSION": "0.9.6"
 				}
 			},
 			"isBackground": true,
@@ -261,7 +261,7 @@
 					"PYTHONUNBUFFERED": "1",
 					// "WEBUI_DISABLE_AUTH": "true"
 					"APP_DATA_DIR": "${workspaceFolder}/config",
-					"APP_VERSION": "0.9.4"
+					"APP_VERSION": "0.9.6"
 				}
 			},
 			"group": {
