@@ -19,7 +19,6 @@ def create_session() -> str:
     return token
 
 
-# DELETE
 def get_session() -> str:
     """Returns the current session token if valid,
     otherwise creates a new one.
