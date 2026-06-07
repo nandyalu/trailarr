@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.41">
+      <meta name="generator" content="zensical-0.0.43">
     
     
       
@@ -2274,6 +2274,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bypassing-authentication-via-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bypassing Authentication via Reverse Proxy
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2867,6 +2878,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bypassing-authentication-via-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bypassing Authentication via Reverse Proxy
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3177,6 +3199,41 @@
 <li>Reads the <code>X-Forwarded-Prefix</code> header (sent by the reverse proxy) to decide which <code>index.html</code> to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.</li>
 </ul>
 <p>Both access methods work simultaneously after a single restart — no trade-off between local and proxied access.</p>
+<h2 id="bypassing-authentication-via-reverse-proxy">Bypassing Authentication via Reverse Proxy</h2>
+<p>If your reverse proxy already handles authentication (e.g. SSO, OAuth, basic auth at the proxy level) and you want Trailarr to skip its own login screen, configure the proxy to inject the <code>X-API-KEY</code> header with your Trailarr API key on every forwarded request. Trailarr will accept the key, issue a session automatically, and the login page will not be shown.</p>
+<div class="admonition info">
+<p class="admonition-title">Finding your API key</p>
+<p>Your API key is shown in <strong>Settings → General → API Key</strong>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Security note</p>
+<p>Anyone who can send an <code>X-API-KEY</code> header directly to Trailarr will bypass authentication. Make sure Trailarr's port is <strong>not</strong> accessible from outside your network — only the reverse proxy should be able to reach it.</p>
+</div>
+<p>Add the following to your existing reverse proxy configuration (in addition to any other headers already set):</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:4"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><input id="__tabbed_5_3" name="__tabbed_5" type="radio" /><input id="__tabbed_5_4" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Nginx</label><label for="__tabbed_5_2">Apache</label><label for="__tabbed_5_3">Caddy</label><label for="__tabbed_5_4">Traefik</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-nginx highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-API-KEY</span><span class="w"> </span><span class="s">&quot;your-api-key-here&quot;</span><span class="p">;</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-apache highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">RequestHeader</span><span class="w"> </span>set<span class="w"> </span>X-API-KEY<span class="w"> </span><span class="s2">&quot;your-api-key-here&quot;</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>header_up X-API-KEY &quot;your-api-key-here&quot;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">middlewares</span><span class="p">:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">trailarr-headers</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">headers</span><span class="p">:</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">      </span><span class="nt">customRequestHeaders</span><span class="p">:</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">        </span><span class="nt">X-API-KEY</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your-api-key-here&quot;</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 
 
 
@@ -3334,7 +3391,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.dbc0afdc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
     
   </body>

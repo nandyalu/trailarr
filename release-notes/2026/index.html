@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.41">
+      <meta name="generator" content="zensical-0.0.43">
     
     
       
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v095-beta-may-13-2026" class="md-skip">
+        <a href="#v096-beta-june-07-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2356,6 +2356,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v096-beta-june-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.6-beta</strong> - <em>June 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v095-beta-may-13-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2786,6 +2797,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v096-beta-june-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.6-beta</strong> - <em>June 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v095-beta-may-13-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3042,6 +3064,25 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v096-beta-june-07-2026"><strong>v0.9.6-beta</strong> - <em>June 07, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Reverse proxies can inject <code>X-API-KEY</code> to auto-authenticate the WebUI (skips the login screen).</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Trailer re-download loop on large files</strong> — Fixes <a href="https://github.com/nandyalu/trailarr/issues/562">#562</a>. The file scanner was not recognising downloaded trailers larger than 100 MB, which caused a repeated re-download loop: the scanner missed the file, silently reset <code>trailer_exists</code> to false, the connection refresh re-enabled monitoring, and the download task picked it up again. Fixed by: <ol>
+<li>files placed inside a recognised trailer folder (e.g. <code>Trailers/</code>) are now always detected as trailers regardless of size</li>
+<li>inline files with "trailer" in the name up to 200 MB pass without extra checks</li>
+<li>inline files over 200 MB are verified via ffprobe — if their duration is ≤ 10 minutes they are treated as trailers. </li>
+</ol>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python and npm packages to latest versions. </li>
+<li>Removed some older tests from frontend.</li>
+</ul>
 <h2 id="v095-beta-may-13-2026"><strong>v0.9.5-beta</strong> - <em>May 13, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3543,7 +3584,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.dbc0afdc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
     
   </body>
