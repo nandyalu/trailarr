@@ -144,4 +144,8 @@ async def auth_status(
         token = create_session()
         _set_session_cookie(token, response)
         return {"authenticated": True}
+    if app_settings.webui_disable_auth:
+        token = create_session()
+        _set_session_cookie(token, response)
+        return {"authenticated": True}
     raise HTTPException(status_code=401, detail="Not authenticated")
