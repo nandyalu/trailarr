@@ -12,6 +12,7 @@ import unicodedata
 
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
+from core.download import video_analysis
 
 logger = ModuleLogger("FilesHandler")
 
@@ -72,7 +73,8 @@ class FilesHandler:
     """Utility class to handle files and folders."""
 
     VIDEO_EXTENSIONS = tuple([".avi", ".mkv", ".mp4", ".webm"])
-    TRAILER_MAX_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
+    TRAILER_QUICK_MAX_SIZE_BYTES = 200 * 1024 * 1024  # 200 MB
+    TRAILER_MAX_DURATION_SECONDS = 600  # 10 minutes
 
     @staticmethod
     def _convert_file_size(size_in_bytes: int | float) -> str:
@@ -261,16 +263,37 @@ class FilesHandler:
         return True
 
     @staticmethod
+    def _check_large_name_trailer(file_path: str) -> bool:
+        """Use ffprobe to verify a large inline file with 'trailer' in its name.
+
+        Checks duration: anything over TRAILER_MAX_DURATION_SECONDS is a movie
+        or TV episode, not a trailer.
+        Args:
+            file_path (str): The full path of the file to check.
+        Returns:
+            bool: True if the file is a trailer, False if not."""
+        media_info = video_analysis.get_media_info(file_path)
+        if media_info is None:
+            return False
+        if media_info.duration_seconds <= 0:
+            return False
+        return media_info.duration_seconds <= FilesHandler.TRAILER_MAX_DURATION_SECONDS
+
+    @staticmethod
     def is_trailer_file(
-        file_name: str, file_size_bytes: int | None = None
+        file_name: str,
+        file_size_bytes: int | None = None,
+        file_path: str | None = None,
     ) -> bool:
         """Check if a file is a trailer file based on its name.\n
         Args:
             file_name (str): Name of the file to check.\n
             file_size_bytes (int | None): Size of the file in bytes. \
-                When provided, files >= 100 MB are not treated as trailers \
-                even if the name matches, to avoid false positives for media \
-                whose title contains the word 'trailer'.\n
+                Files >= 200 MB with 'trailer' in the name are verified \
+                via ffprobe (requires file_path). Without a path they are \
+                rejected to avoid false positives.\n
+            file_path (str | None): Full path to the file. Required for \
+                ffprobe verification of large files.\n
         Returns:
             bool: True if the file is a trailer, False otherwise."""
         if not FilesHandler.is_video_file(file_name):
@@ -279,14 +302,17 @@ class FilesHandler:
         if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
             return False
         # Check if the file name contains 'trailer'
-        if "trailer" in file_name.lower():
-            if (
-                file_size_bytes is not None
-                and file_size_bytes >= FilesHandler.TRAILER_MAX_SIZE_BYTES
-            ):
-                return False
-            return True
-        return False
+        if "trailer" not in file_name.lower():
+            return False
+        if (
+            file_size_bytes is not None
+            and file_size_bytes >= FilesHandler.TRAILER_QUICK_MAX_SIZE_BYTES
+        ):
+            # Too large for a quick answer — use ffprobe if path is available.
+            if file_path is not None:
+                return FilesHandler._check_large_name_trailer(file_path)
+            return False
+        return True
 
     @staticmethod
     def get_trailer_folders() -> set[str]:
@@ -330,9 +356,10 @@ class FilesHandler:
                 continue
             if not FilesHandler.is_trailer_folder(entry.name):
                 continue
-            # Check if 'trailer' exists in the 'trailers' directory
-            if await FilesHandler._check_trailer_as_file(entry.path):
-                return True
+            # Folder placement is authoritative — any video file counts, no size limit.
+            for sub_entry in await aiofiles.os.scandir(entry.path):
+                if sub_entry.is_file() and FilesHandler.is_video_file(sub_entry.name):
+                    return True
         # No trailer folder or no trailer file found
         return False
 
@@ -348,7 +375,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(path):
             if not entry.is_file():
                 continue
-            if FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
+            if FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
                 return True
         return False
 
@@ -415,7 +442,7 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size):
+            if not FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
                 continue
             return entry.path
         return None
@@ -443,7 +470,7 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size):
+                if FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size, sub_entry.path):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):
