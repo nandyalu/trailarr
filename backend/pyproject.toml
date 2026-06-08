@@ -28,12 +28,12 @@ dev = [
     "pytest==9.0.3",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "zensical==0.0.43",
+    "zensical==0.0.44",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.5.3",
     "mkdocs-glightbox==0.5.2",
-    "zensical==0.0.43",
+    "zensical==0.0.44",
 ]
 testing = [
     "aioresponses==0.7.8",
