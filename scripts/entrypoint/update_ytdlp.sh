@@ -57,14 +57,14 @@ check_and_update_ytdlp() {
             # for stable (2026.03.17). --upgrade alone won't downgrade a nightly,
             # so force-reinstall when switching back to stable.
             version_dots=$(echo "$YTDLP_VERSION" | tr -cd '.' | wc -c)
+            force_flags=()
             if [ "$version_dots" -gt 2 ]; then
                 box_echo "Nightly build detected — force-reinstalling stable version of yt-dlp..."
-                force_flag="--force-reinstall"
+                force_flags=("--force-reinstall")
             else
                 box_echo "UPDATE_YTDLP is set to True. Installing the latest stable version of yt-dlp..."
-                force_flag=""
             fi
-            uv pip install --no-cache --native-tls --system --upgrade $force_flag yt-dlp[default,curl-cffi] 2>/dev/null
+            uv pip install --no-cache --native-tls --system --upgrade "${force_flags[@]}" "yt-dlp[default,curl-cffi]" 2>/dev/null
         fi
 
         # Check the version of yt-dlp and store it in a global environment variable
