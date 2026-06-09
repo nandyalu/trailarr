@@ -625,11 +625,11 @@ standard-no-fastapi-cloud-cli = [
 
 [[package]]
 name = "fastcore"
-version = "1.13.2"
+version = "1.13.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/70/65/99f599a285033febf95f9c608d91d629ac5d9995f57e5b3ac3397097f440/fastcore-1.13.2.tar.gz", hash = "sha256:f660b3448de48ba31973b2866c994ea3cd5e0a654847f57d6911a1a4bffda777", size = 100337, upload-time = "2026-05-17T06:02:24.383Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/71/f19a2d6c8108342e0f68d81981f435d2e750f9fe319dbf5f5eb35fd084ed/fastcore-1.13.3.tar.gz", hash = "sha256:5639fd05ba7e6f0f2fbaad2e31a6277f0e5aa6a1f3fee99203b325b167e67826", size = 100556, upload-time = "2026-06-09T03:39:07.468Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c7/41/2c368f804bb9bd918da3b61324207fc4b410d0f32352c372c0680fc1f670/fastcore-1.13.2-py3-none-any.whl", hash = "sha256:2103c9e9e613311c0b36eab17299a221e778fd214ec526e8df1d32908928277c", size = 105060, upload-time = "2026-05-17T06:02:22.28Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/5d/0ce80c2e5d4f49095321e75af691144cd480e6e70cb1d53b1f99fabc8c7b/fastcore-1.13.3-py3-none-any.whl", hash = "sha256:f5e17cae486f8432720b2e71d5ed9ad99867e68c17973347d1bb3bc8415e760a", size = 105559, upload-time = "2026-06-09T03:39:05.592Z" },
 ]
 
 [[package]]
