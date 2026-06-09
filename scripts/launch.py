@@ -8,7 +8,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 BACKEND_DIR = PROJECT_ROOT / "backend"
-CONFIG_DIR = PROJECT_ROOT / "config-dev"
+CONFIG_DIR = PROJECT_ROOT / "config"
 LOGS_DIR = CONFIG_DIR / "logs"
 BACKUPS_DIR = CONFIG_DIR / "backups"
 
