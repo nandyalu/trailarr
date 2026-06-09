@@ -50,11 +50,21 @@ check_and_update_ytdlp() {
 
         if [ "$ytdlp_nightly_lower" == "true" ] || [ "$ytdlp_nightly_lower" == "1" ]; then
             box_echo "YTDLP_NIGHTLY is set to True. Installing the latest nightly build of yt-dlp..."
-            uv pip install --no-cache --native-tls --system \
+            uv pip install --no-cache --native-tls --system --upgrade --force-reinstall \
                 "yt-dlp[default,curl-cffi] @ https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.tar.gz" 2>/dev/null
         else
-            box_echo "UPDATE_YTDLP is set to True. Installing the latest stable version of yt-dlp..."
-            uv pip install --no-cache --native-tls --system --upgrade yt-dlp[default,curl-cffi] 2>/dev/null
+            # Nightly versions have 4 date segments (e.g. 2026.06.09.185432) vs 3
+            # for stable (2026.03.17). --upgrade alone won't downgrade a nightly,
+            # so force-reinstall when switching back to stable.
+            version_dots=$(echo "$YTDLP_VERSION" | tr -cd '.' | wc -c)
+            if [ "$version_dots" -gt 2 ]; then
+                box_echo "Nightly build detected — force-reinstalling stable version of yt-dlp..."
+                force_flag="--force-reinstall"
+            else
+                box_echo "UPDATE_YTDLP is set to True. Installing the latest stable version of yt-dlp..."
+                force_flag=""
+            fi
+            uv pip install --no-cache --native-tls --system --upgrade $force_flag yt-dlp[default,curl-cffi] 2>/dev/null
         fi
 
         # Check the version of yt-dlp and store it in a global environment variable
