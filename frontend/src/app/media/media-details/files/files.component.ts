@@ -42,6 +42,31 @@ export class FilesComponent {
     return folder;
   }
 
+  protected expandAll(): void {
+    const files = this.media()?.files;
+    if (files) this.setExpanded(files, true);
+  }
+
+  protected collapseAll(): void {
+    const files = this.media()?.files;
+    if (files) this.setExpanded(files, false);
+  }
+
+  private setExpanded(node: FileFolderInfo, expanded: boolean): void {
+    if (node.type === 'FOLDER') {
+      node.isExpanded = expanded;
+      node.children.forEach((child) => this.setExpanded(child, expanded));
+    }
+  }
+
+  protected getIconClass(file: FileFolderInfo): string {
+    if (file.type === 'FOLDER') return 'icon-folder';
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (['mp4', 'mkv', 'avi', 'webm', 'mov'].includes(ext)) return 'icon-video';
+    if (['srt', 'txt', 'log', 'json', 'vtt', 'ass'].includes(ext)) return 'icon-text';
+    return 'icon-other';
+  }
+
   openFolderOrOptions(folder: FileFolderInfo): void {
     if (folder.type === 'FOLDER') {
       folder.isExpanded = !folder.isExpanded;

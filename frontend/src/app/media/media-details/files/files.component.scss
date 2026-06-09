@@ -29,12 +29,6 @@
   font-style: italic;
 }
 
-.files-open {
-  flex: 1;
-  cursor: pointer;
-  padding: 0.75rem;
-}
-
 .icononly-button {
   height: 1.5rem;
   width: 1.5rem;
@@ -58,14 +52,45 @@
   margin: 1rem;
 }
 
+.card {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  overflow: hidden;
+  box-shadow: var(--shadow-level2);
+}
+
+.expand-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.expand-btn {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.625rem;
+  border: none;
+  border-radius: 0.625rem;
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  }
+
+  &:active {
+    background-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  }
+}
+
 .media-files-container .media-files {
   width: 100%;
   display: block;
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-level2);
-  background-color: var(--color-surface-container-high);
-  color: var(--color-on-surface-variant);
   overflow-y: auto;
+  color: var(--color-on-surface-variant);
 }
 
 .files-header {
@@ -75,17 +100,38 @@
   gap: 0.5rem;
   align-items: center;
   text-align: center;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border: none;
   outline: none;
-  transition: 0.4s;
-  border-top: 1px solid var(--color-outline);
+  transition: background-color 0.2s;
+  border-top: 1px solid var(--color-outline-variant);
   position: relative;
   font-size: 0.75rem;
 
   @media (max-width: 765px) {
     grid-template-columns: auto auto auto;
     grid-template-rows: 1fr auto;
+  }
+}
+
+.files-col-header {
+  border-top: none;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  cursor: default;
+
+  &::before {
+    display: none;
+  }
+}
+
+.files-header:not(.files-col-header) {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-surface-container-high);
   }
 }
 
@@ -97,31 +143,26 @@
   left: -1rem;
   width: 1rem;
   height: 1px;
-  background-color: var(--color-outline);
+  background-color: var(--color-outline-variant);
 }
 
 .files-accordion {
   width: 100%;
   display: grid;
   grid-template-rows: 1fr auto;
-  border-left: 1px solid var(--color-outline);
+  border-left: 2px solid var(--color-outline-variant);
   position: relative;
-}
-
-.files-accordion .parent {
-  cursor: pointer;
 }
 
 .files-accordion .child {
   grid-row: 2;
   padding: 0 0 0 1rem;
   position: relative;
-  cursor: pointer;
 }
 
 .child .files-accordion:last-child {
-  border-bottom: 1px solid var(--color-outline);
-  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  margin-bottom: 0.5rem;
 }
 
 .files-header .files-icon {
@@ -136,24 +177,39 @@
   }
 }
 
+.files-header svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.files-icon.icon-folder svg {
+  fill: var(--color-primary);
+}
+
+.files-icon.icon-video svg {
+  fill: var(--color-success);
+}
+
+.files-icon.icon-text svg {
+  fill: var(--color-info);
+}
+
+.files-icon.icon-other svg {
+  fill: var(--color-on-surface-variant);
+}
+
 .files-header .files-name {
   font-size: 1rem;
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.4rem;
 
   @media (max-width: 765px) {
     grid-row: 1;
     grid-column: 2 / span 2;
     justify-self: start;
   }
-}
-
-.files-header svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  fill: var(--color-on-surface);
 }
 
 @media (max-width: 765px) {
