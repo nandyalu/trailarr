@@ -190,6 +190,20 @@ Enable this setting to use hardware acceleration for the conversion process by u
 
 Enable this setting to update `yt-dlp` to the latest version on every app start. This will ensure that the app uses the latest features and bug fixes.
 
+### Yt-dlp Nightly Builds
+
+{{ version_badge("add", "0.9.7") }}
+
+- Default is `false`
+
+Enable this setting to update `yt-dlp` to the latest **nightly build** instead of the latest stable release on every app start. Nightly builds contain the most recent commits and fixes but may be less stable than official releases.
+
+!!! note
+    This setting is only available and has effect when **Update Yt-dlp** is also enabled.
+
+!!! warning
+    Changing this setting requires a restart of the app (container) to take effect.
+
 ### URL Base
 
 {{ version_badge("upd", "0.6.7") }}

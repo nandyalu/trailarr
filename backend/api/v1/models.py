@@ -62,6 +62,7 @@ class Settings(BaseModel):
     update_available: bool
     update_available_ytdlp: bool
     update_ytdlp: bool
+    ytdlp_nightly: bool
     url_base: str
     version: str
     wait_for_media: bool

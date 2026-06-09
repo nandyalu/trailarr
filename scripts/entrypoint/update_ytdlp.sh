@@ -45,13 +45,22 @@ check_and_update_ytdlp() {
     update_ytdlp_lower=$(echo "$UPDATE_YTDLP" | tr '[:upper:]' '[:lower:]')
 
     if [ "$update_ytdlp_lower" == "true" ] || [ "$update_ytdlp_lower" == "1" ]; then
-        box_echo "UPDATE_YTDLP is set to True. Installing the latest version of yt-dlp..."
-        uv pip install --no-cache --native-tls --system --upgrade yt-dlp[default,curl-cffi] 2>/dev/null
+        # Convert YTDLP_NIGHTLY to lowercase for case-insensitive comparison
+        ytdlp_nightly_lower=$(echo "$YTDLP_NIGHTLY" | tr '[:upper:]' '[:lower:]')
+
+        if [ "$ytdlp_nightly_lower" == "true" ] || [ "$ytdlp_nightly_lower" == "1" ]; then
+            box_echo "YTDLP_NIGHTLY is set to True. Installing the latest nightly build of yt-dlp..."
+            uv pip install --no-cache --native-tls --system \
+                "yt-dlp[default,curl-cffi] @ https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.tar.gz" 2>/dev/null
+        else
+            box_echo "UPDATE_YTDLP is set to True. Installing the latest stable version of yt-dlp..."
+            uv pip install --no-cache --native-tls --system --upgrade yt-dlp[default,curl-cffi] 2>/dev/null
+        fi
 
         # Check the version of yt-dlp and store it in a global environment variable
         YTDLP_VERSION=$(yt-dlp --version)
         export YTDLP_VERSION
-        box_echo "yt-dlp has been updated to the latest version: $YTDLP_VERSION"
+        box_echo "yt-dlp has been updated to version: $YTDLP_VERSION"
     else
         box_echo "UPDATE_YTDLP is not set to True. No action taken."
     fi

@@ -240,6 +240,18 @@
         [colorTypeOption]="'true'"
         (optionChange)="updateSetting('update_ytdlp', $event)"
       />
+      @if (settings()?.update_ytdlp) {
+        <app-options-setting
+          name="Yt-dlp Nightly Builds"
+          description="Update yt-dlp to the latest nightly build instead of the stable release."
+          descriptionExtra="Only applies when 'Update Yt-dlp' is enabled. Restart required to apply."
+          [options]="trueFalseOptions"
+          [selectedOption]="settings()?.ytdlp_nightly"
+          [colorType]="'warning'"
+          [colorTypeOption]="'true'"
+          (optionChange)="updateSetting('ytdlp_nightly', $event)"
+        />
+      }
       <app-text-setting
         name="URL Base"
         description="URL Base for use with reverse proxy configuration"

@@ -42,7 +42,14 @@ async def check_for_update(check_app: bool = True) -> None:
     Returns:
         None
     """
-    image_name = "nandyalu/trailarr" if check_app else "yt-dlp/yt-dlp"
+    if check_app:
+        image_name = "nandyalu/trailarr"
+    else:
+        image_name = (
+            "yt-dlp/yt-dlp-nightly-builds"
+            if app_settings.ytdlp_nightly
+            else "yt-dlp/yt-dlp"
+        )
     _app = "Trailarr" if check_app else "yt-dlp"
     current_version = get_current_image_version(check_app)
     logger.info(f"Current version of {_app}: {current_version}")

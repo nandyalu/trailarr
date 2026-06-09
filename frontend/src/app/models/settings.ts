@@ -26,6 +26,7 @@ export interface Settings {
   update_available: boolean;
   update_available_ytdlp: boolean;
   update_ytdlp: boolean;
+  ytdlp_nightly: boolean;
   url_base: string;
   version: string;
   wait_for_media: boolean;
