@@ -9,24 +9,30 @@
       </svg>
     </i>
     <span class="help-text">Click on a File for Options Menu</span>
+    <div class="expand-actions">
+      <button class="expand-btn" (click)="expandAll()" title="Expand All Folders">Expand All</button>
+      <button class="expand-btn" (click)="collapseAll()" title="Collapse All Folders">Collapse All</button>
+    </div>
   </div>
   <hr />
-  <div class="media-files">
-    @let mediaFiles = media()?.files;
-    @if (mediaFiles === null || mediaFiles === undefined) {
-      <p class="text-sm text-center">Error: Unable to load files.</p>
-    } @else {
-      <!-- Header -->
-      <div class="files-header sm-none text-sm">
-        <div></div>
-        <!-- Empty Col for Icons -->
-        <div>Name</div>
-        <div>Size</div>
-        <div>Modified</div>
-      </div>
-      <!-- Content -->
-      <ng-container *ngTemplateOutlet="folFileTemplate; context: {folderUntyped: mediaFiles}"></ng-container>
-    }
+  <div class="card">
+    <div class="media-files">
+      @let mediaFiles = media()?.files;
+      @if (mediaFiles === null || mediaFiles === undefined) {
+        <p class="text-sm text-center">Error: Unable to load files.</p>
+      } @else {
+        <!-- Column header -->
+        <div class="files-header files-col-header sm-none text-sm">
+          <div></div>
+          <!-- Empty Col for Icons -->
+          <div>Name</div>
+          <div>Size</div>
+          <div>Modified</div>
+        </div>
+        <!-- Content -->
+        <ng-container *ngTemplateOutlet="folFileTemplate; context: {folderUntyped: mediaFiles}"></ng-container>
+      }
+    </div>
   </div>
 </div>
 
@@ -34,7 +40,7 @@
   @let folder = asFolderInfo(folderUntyped);
   <div class="files-accordion">
     <div class="files-header" (click)="openFolderOrOptions(folder)" [class.parent]="folder.type == 'FOLDER'">
-      <div class="files-icon">
+      <div [class]="'files-icon ' + getIconClass(folder)">
         @if (folder.type === 'FOLDER') {
           <!-- Show Folder Icon -->
           @if (folder.isExpanded) {
