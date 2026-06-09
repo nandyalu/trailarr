@@ -205,10 +205,10 @@ def _update_ytdlp(env: dict[str, str], console) -> None:
         # If a nightly build is currently installed its version has 4 date
         # segments (e.g. 2026.06.09.185432) vs 3 for stable (2026.03.17).
         # --upgrade alone won't downgrade it, so force-reinstall in that case.
-        ytdlp_bin = shutil.which("yt-dlp") or str(_BIN_DIR / "yt-dlp")
+        venv_ytdlp = _VENV_BIN / ("yt-dlp.exe" if _IS_WINDOWS else "yt-dlp")
         try:
             current_ver = subprocess.run(
-                [ytdlp_bin, "--version"], capture_output=True, text=True
+                [str(venv_ytdlp), "--version"], capture_output=True, text=True
             ).stdout.strip()
             currently_nightly = len(current_ver.split(".")) > 3
         except Exception:
