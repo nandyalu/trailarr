@@ -22,6 +22,7 @@ from core.tasks.cleanup import delete_old_logs, trailer_cleanup
 from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
+from core.tasks.startup_fixes import fix_trailer_exists_flags
 from core.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")
@@ -80,6 +81,12 @@ async def _refresh_plex_trailer_flags(
 ):
     """Refresh the plex_trailer flag for all Plex-linked media items."""
     await refresh_plex_trailer_flags(_stop_event=_stop_event)
+
+
+@with_logging_context
+async def _fix_trailer_exists_flags(*, _job_id: str | None = None):
+    """One-time startup fix for incorrect trailer_exists flags."""
+    await fix_trailer_exists_flags()
 
 
 # Maps each stable task_key to its handler function.
@@ -191,6 +198,15 @@ def schedule_all_tasks() -> None:
             run_once=False,
         )
         logger.info("Scheduled 'Refresh Plex Trailer Flags' task.")
+
+    # One-time startup fix: correct trailer_exists flags skewed by the old file size limit.
+    scheduler.add_task(
+        task_name="Fix Trailer Exists Flags",
+        func=_fix_trailer_exists_flags,
+        interval=86400.0,
+        delay=15.0,
+        run_once=True,
+    )
 
     logger.info("All tasks scheduled!")
 
