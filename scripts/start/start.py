@@ -199,11 +199,27 @@ def _update_ytdlp(env: dict[str, str], console) -> None:
     if nightly:
         _log("  UPDATE_YTDLP=true, YTDLP_NIGHTLY=true — installing nightly yt-dlp...", console)
         cmd = [uv, "pip", "install", "--python", str(venv_python),
+               "--upgrade", "--force-reinstall",
                "yt-dlp[curl-cffi,default] @ https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.tar.gz"]
     else:
-        _log("  UPDATE_YTDLP=true — updating yt-dlp to latest stable...", console)
+        # If a nightly build is currently installed its version has 4 date
+        # segments (e.g. 2026.06.09.185432) vs 3 for stable (2026.03.17).
+        # --upgrade alone won't downgrade it, so force-reinstall in that case.
+        ytdlp_bin = shutil.which("yt-dlp") or str(_BIN_DIR / "yt-dlp")
+        try:
+            current_ver = subprocess.run(
+                [ytdlp_bin, "--version"], capture_output=True, text=True
+            ).stdout.strip()
+            currently_nightly = len(current_ver.split(".")) > 3
+        except Exception:
+            currently_nightly = False
+        extra = ["--force-reinstall"] if currently_nightly else []
+        if currently_nightly:
+            _log("  Nightly build detected — force-reinstalling stable yt-dlp...", console)
+        else:
+            _log("  UPDATE_YTDLP=true — updating yt-dlp to latest stable...", console)
         cmd = [uv, "pip", "install", "--python", str(venv_python),
-               "--upgrade", "yt-dlp[curl-cffi,default]"]
+               "--upgrade", *extra, "yt-dlp[curl-cffi,default]"]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode == 0:
