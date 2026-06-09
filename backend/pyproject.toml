@@ -6,7 +6,7 @@ readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==25.1.0",
-    "aiohttp==3.13.5",
+    "aiohttp==3.14.1",
     "aiosqlite==0.22.1",
     "alembic==1.18.4",
     "async-lru==2.3.0",
@@ -28,12 +28,12 @@ dev = [
     "pytest==9.0.3",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "zensical==0.0.43",
+    "zensical==0.0.44",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.5.3",
     "mkdocs-glightbox==0.5.2",
-    "zensical==0.0.43",
+    "zensical==0.0.44",
 ]
 testing = [
     "aioresponses==0.7.8",
