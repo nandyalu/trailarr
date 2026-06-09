@@ -192,15 +192,20 @@ def _update_ytdlp(env: dict[str, str], console) -> None:
     if val not in ("true", "1", "yes"):
         return
 
-    _log("  UPDATE_YTDLP=true — updating yt-dlp...", console)
     uv = shutil.which("uv") or str(_INSTALL_DIR / ".local" / "bin" / "uv")
     venv_python = _VENV_BIN / ("python.exe" if _IS_WINDOWS else "python")
-    result = subprocess.run(
-        [uv, "pip", "install", "--python", str(venv_python),
-         "--upgrade", "yt-dlp[curl-cffi,default]"],
-        capture_output=True,
-        text=True,
-    )
+
+    nightly = env.get("YTDLP_NIGHTLY", "false").lower() in ("true", "1", "yes")
+    if nightly:
+        _log("  UPDATE_YTDLP=true, YTDLP_NIGHTLY=true — installing nightly yt-dlp...", console)
+        cmd = [uv, "pip", "install", "--python", str(venv_python),
+               "yt-dlp[curl-cffi,default] @ https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.tar.gz"]
+    else:
+        _log("  UPDATE_YTDLP=true — updating yt-dlp to latest stable...", console)
+        cmd = [uv, "pip", "install", "--python", str(venv_python),
+               "--upgrade", "yt-dlp[curl-cffi,default]"]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode == 0:
         _log("  yt-dlp updated", console)
     else:

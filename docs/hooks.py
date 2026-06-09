@@ -1,18 +1,48 @@
 """Zensical macros for custom version badges."""
 
-# Version links mapping - UPDATE THESE WHEN VERSIONS ARE RELEASED
-VERSION_LINKS: dict[str, str] = {
-    "0.6.4": "2025.md/#v064-beta-december-28-2025",
-    "0.6.5": "2026/#v065-beta-january-04-2026",
-    "0.6.6": "2026/#v066-beta-january-09-2026",
-    "0.6.7": "2026/#v067-beta-january-13-2026",
-    "0.6.10": "2026/#v0610-beta-february-07-2026",
-    "0.7.0": "2026/#v070-beta-february-11-2026",
-    "0.8.0": "2026/#v080-beta-april-10-2026",
-    "0.9.0": "2026/#v090-beta-april-30-2026",
-    "0.9.1": "2026/#v091-beta-may-04-2026",
-    # Add more versions as needed
-}
+import re
+from pathlib import Path
+
+
+def _slugify(text: str) -> str:
+    """Replicate MkDocs' default anchor slugify."""
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s-]', '', text)
+    text = re.sub(r'\s+', '-', text)
+    text = re.sub(r'-+', '-', text)
+    return text.strip('-')
+
+
+def _build_version_links() -> dict[str, str]:
+    """Build VERSION_LINKS automatically from release-notes headings.
+
+    Scans every *.md file under docs/release-notes/, extracts headings of the
+    form '## **vX.Y.Z[-suffix]** - _Month DD, YYYY_', and maps the numeric
+    version to a fragment URL.  No manual updates needed when new versions are
+    added to the release notes.
+    """
+    links: dict[str, str] = {}
+    notes_dir = Path(__file__).parent / "release-notes"
+    heading_re = re.compile(
+        r'^##\s+\*\*(v[\d.]+[^*]*)\*\*\s+-\s+_([^_]+)_',
+        re.MULTILINE,
+    )
+    for md_file in sorted(notes_dir.glob("*.md")):
+        year = md_file.stem  # "2025", "2026", …
+        for match in heading_re.finditer(md_file.read_text(encoding="utf-8")):
+            version_tag = match.group(1)   # e.g. "v0.9.7-beta"
+            date_str = match.group(2)      # e.g. "June 09, 2026"
+            # Strip leading 'v' and any pre-release suffix to get "0.9.7"
+            version = re.sub(r'^v', '', version_tag)
+            version = re.sub(r'[-+].*$', '', version)
+            anchor = _slugify(f"{version_tag} - {date_str}")
+            links[version] = f"{year}/#{anchor}"
+    return links
+
+
+# Built automatically from release-notes headings — no manual updates needed.
+VERSION_LINKS: dict[str, str] = _build_version_links()
+
 
 # Action type mappings for version badges
 ACTIONS: dict[str, dict[str, str]] = {

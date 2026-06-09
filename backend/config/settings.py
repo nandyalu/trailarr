@@ -285,6 +285,7 @@ class _Config:
             "update_available": self.update_available,
             "update_available_ytdlp": self.update_available_ytdlp,
             "update_ytdlp": self.update_ytdlp,
+            "ytdlp_nightly": self.ytdlp_nightly,
             "url_base": self.url_base,
             "version": self.version,
             "wait_for_media": self.wait_for_media,
@@ -492,6 +493,12 @@ class _Config:
 
     update_ytdlp = bool_property("UPDATE_YTDLP", default=False)
     """Update yt-dlp binary on startup.
+        - Default is False.
+        - Valid values are True/False."""
+
+    ytdlp_nightly = bool_property("YTDLP_NIGHTLY", default=False)
+    """Update yt-dlp to the latest nightly build instead of stable.
+        - Only applies when update_ytdlp is True.
         - Default is False.
         - Valid values are True/False."""
 
