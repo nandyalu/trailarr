@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.43">
+      <meta name="generator" content="zensical-0.0.45">
     
     
       
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v096-beta-june-07-2026" class="md-skip">
+        <a href="#v097-beta-june-09-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2356,6 +2356,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v097-beta-june-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.7-beta</strong> - <em>June 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v096-beta-june-07-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2797,6 +2808,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v097-beta-june-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.7-beta</strong> - <em>June 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v096-beta-june-07-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3064,6 +3086,20 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v097-beta-june-09-2026"><strong>v0.9.7-beta</strong> - <em>June 09, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <strong>Yt-dlp Nightly Builds</strong> setting — when <em>Update Yt-dlp</em> is enabled, you can now opt into nightly builds instead of the latest stable release. The setting is available under <strong>Settings &gt; General &gt; Experimental Options</strong> and works for both Docker and direct installations.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Incorrect <code>trailer_exists</code> flag after file size limit change</strong> — Media items that had a trailer downloaded under a profile with <em>Stop Monitoring</em> enabled could be left with <code>trailer_exists=False</code> and <code>status=Missing</code> due to a previous file size limit rejecting the file. A one-time startup fix now detects these items (unmonitored, no trailer flag, but a valid download record with <code>file_exists=True</code>) and corrects both <code>trailer_exists</code> and the media status to <code>Downloaded</code>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python packages to latest versions.</li>
+</ul>
+<hr />
 <h2 id="v096-beta-june-07-2026"><strong>v0.9.6-beta</strong> - <em>June 07, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
