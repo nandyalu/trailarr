@@ -108,17 +108,21 @@ class TestVideoConversionHardwareAcceleration:
         assert options == expected_options
 
     @patch.dict(os.environ, {}, clear=True)
-    def test_vaapi_video_options_default_device(self, temp_input_file):
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
+    def test_vaapi_video_options_default_device(
+        self, _mock_platform, temp_input_file
+    ):
         """Test VAAPI video options generation with default device."""
         options = _get_video_options_vaapi("h264", temp_input_file)
 
         expected_options = [
-            "-hwaccel",
-            "vaapi",
-            "-hwaccel_device",
-            "/dev/dri/renderD128",
-            "-vaapi_device",
-            "/dev/dri/renderD128",
+            "-init_hw_device",
+            "vaapi=va:/dev/dri/renderD128",
+            "-filter_hw_device",
+            "va",
             "-i",
             temp_input_file,
             "-vf",
@@ -129,8 +133,6 @@ class TestVideoConversionHardwareAcceleration:
             "22",
             "-b:v",
             "0",
-            "-pix_fmt",
-            "yuv420p",
         ]
         assert options == expected_options
 
@@ -141,9 +143,13 @@ class TestVideoConversionHardwareAcceleration:
         },
         clear=True,
     )
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
     @patch("core.download.video_conversion.app_settings")
     def test_vaapi_video_options_intel_device(
-        self, mock_settings, temp_input_file
+        self, mock_settings, _mock_platform, temp_input_file
     ):
         """Test VAAPI video options generation with Intel GPU device."""
         mock_settings.gpu_available_intel = True
@@ -154,12 +160,10 @@ class TestVideoConversionHardwareAcceleration:
         options = _get_video_options_vaapi("h264", temp_input_file)
 
         expected_options = [
-            "-hwaccel",
-            "vaapi",
-            "-hwaccel_device",
-            "/dev/dri/renderD129",
-            "-vaapi_device",
-            "/dev/dri/renderD129",
+            "-init_hw_device",
+            "vaapi=va:/dev/dri/renderD129",
+            "-filter_hw_device",
+            "va",
             "-i",
             temp_input_file,
             "-vf",
@@ -170,8 +174,6 @@ class TestVideoConversionHardwareAcceleration:
             "22",
             "-b:v",
             "0",
-            "-pix_fmt",
-            "yuv420p",
         ]
         assert options == expected_options
 
@@ -180,9 +182,13 @@ class TestVideoConversionHardwareAcceleration:
             "GPU_DEVICE_AMD": "/dev/dri/renderD130"
         }, clear=True
     )
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
     @patch("core.download.video_conversion.app_settings")
     def test_vaapi_video_options_amd_device(
-        self, mock_settings, temp_input_file
+        self, mock_settings, _mock_platform, temp_input_file
     ):
         """Test VAAPI video options generation with AMD GPU device."""
         mock_settings.gpu_available_intel = False
@@ -193,12 +199,10 @@ class TestVideoConversionHardwareAcceleration:
         options = _get_video_options_vaapi("h264", temp_input_file)
 
         expected_options = [
-            "-hwaccel",
-            "vaapi",
-            "-hwaccel_device",
-            "/dev/dri/renderD130",
-            "-vaapi_device",
-            "/dev/dri/renderD130",
+            "-init_hw_device",
+            "vaapi=va:/dev/dri/renderD130",
+            "-filter_hw_device",
+            "va",
             "-i",
             temp_input_file,
             "-vf",
@@ -209,8 +213,6 @@ class TestVideoConversionHardwareAcceleration:
             "22",
             "-b:v",
             "0",
-            "-pix_fmt",
-            "yuv420p",
         ]
         assert options == expected_options
 
@@ -239,7 +241,13 @@ class TestVideoConversionHardwareAcceleration:
         assert "h264_nvenc" in options
         assert "h264_vaapi" not in options
 
-    def test_video_options_priority_vaapi(self, temp_input_file):
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
+    def test_video_options_priority_vaapi(
+        self, _mock_platform, temp_input_file
+    ):
         """Test VAAPI priority when NVIDIA is disabled."""
         options = _get_video_options("h264", temp_input_file, False, True)
 
@@ -254,12 +262,17 @@ class TestVideoConversionHardwareAcceleration:
         assert "h264_nvenc" not in options
         assert "h264_vaapi" not in options
 
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
     @patch("core.download.video_conversion.get_media_info")
     @patch("core.download.video_conversion.app_settings")
     def test_ffmpeg_cmd_intel_gpu(
         self,
         mock_settings,
         mock_media_info,
+        _mock_platform,
         trailer_profile,
         temp_input_file,
         temp_output_file,
@@ -283,18 +296,24 @@ class TestVideoConversionHardwareAcceleration:
         )
 
         # Verify VAAPI-specific options
-        assert "vaapi" in cmd
+        assert "-init_hw_device" in cmd
+        assert any(opt.startswith("vaapi=va:") for opt in cmd)
         assert "format=nv12,hwupload" in cmd
         assert "h264_vaapi" in cmd
         assert "-qp" in cmd
         assert "22" in cmd
 
+    @patch(
+        "core.download.video_conversion.platform.system",
+        return_value="Linux",
+    )
     @patch("core.download.video_conversion.get_media_info")
     @patch("core.download.video_conversion.app_settings")
     def test_ffmpeg_cmd_amd_gpu(
         self,
         mock_settings,
         mock_media_info,
+        _mock_platform,
         trailer_profile,
         temp_input_file,
         temp_output_file,
@@ -318,7 +337,8 @@ class TestVideoConversionHardwareAcceleration:
         )
 
         # Verify VAAPI-specific options (same as Intel since we use VAAPI for both)
-        assert "vaapi" in cmd
+        assert "-init_hw_device" in cmd
+        assert any(opt.startswith("vaapi=va:") for opt in cmd)
         assert "format=nv12,hwupload" in cmd
         assert "h264_vaapi" in cmd
         assert "-qp" in cmd
