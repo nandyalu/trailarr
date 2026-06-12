@@ -340,7 +340,7 @@ When multiple GPUs are available, Trailarr uses the following priority order:
 
     ```bash
     ffmpeg \
-        -init_hw_device vaapi=va:[dynamic_device_path] \  # e.g., /dev/dri/renderD128
+        -init_hw_device vaapi=va:[dynamic_device_path] \
         -filter_hw_device va \
         -i input.mkv \
         -vf format=nv12,hwupload \
@@ -353,6 +353,9 @@ When multiple GPUs are available, Trailarr uses the following priority order:
     ```
 
     !!! note
+        Replace `[dynamic_device_path]` with your GPU's render node, e.g.
+        `/dev/dri/renderD128`.
+
         The video is decoded in software and only encoded on the GPU. This works
         for any input codec, even ones the GPU cannot decode (e.g. AV1 on older
         Intel GPUs).
