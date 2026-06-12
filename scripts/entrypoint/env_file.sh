@@ -14,8 +14,13 @@ generate_env_file() {
     # $ENV_FILE for append below: the mv replaces the file with a new inode, so
     # anything already redirected to the old inode would be silently lost.
     # The header comment is stripped too, otherwise it accumulates on every boot.
+    # The mv must NOT be gated on grep's exit status: grep returns 1 when it
+    # selects no lines (e.g. a .env that only contains GPU_* entries), and a
+    # `grep ... && mv` would then skip the replacement and leave the stale block
+    # in place, reintroducing duplicates on the append below.
     if [ -f "$ENV_FILE" ]; then
-        grep -v "^# GPU Detection Results\|^GPU_AVAILABLE_\|^GPU_DEVICE_" "$ENV_FILE" > "${ENV_FILE}.tmp" && mv "${ENV_FILE}.tmp" "$ENV_FILE"
+        grep -v -E "^# GPU Detection Results|^GPU_AVAILABLE_|^GPU_DEVICE_" "$ENV_FILE" > "${ENV_FILE}.tmp"
+        mv "${ENV_FILE}.tmp" "$ENV_FILE"
     fi
 
     # Create or update the .env file with GPU variables
