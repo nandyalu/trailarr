@@ -21,7 +21,7 @@
 </p>
 
 
-Trailarr is a Docker application to download and manage trailers for your media libraries.
+Trailarr is a self hosted app to download and manage trailers for your Media libraries.
 
 GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/)
 
