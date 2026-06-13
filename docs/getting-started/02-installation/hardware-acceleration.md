@@ -340,19 +340,25 @@ When multiple GPUs are available, Trailarr uses the following priority order:
 
     ```bash
     ffmpeg \
-        -hwaccel vaapi \
-        -hwaccel_device [dynamic_device_path] \  # e.g., /dev/dri/renderD128
-        -vaapi_device [dynamic_device_path] \  # e.g., /dev/dri/renderD128
+        -init_hw_device vaapi=va:[dynamic_device_path] \
+        -filter_hw_device va \
         -i input.mkv \
         -vf format=nv12,hwupload \
         -c:v h264_vaapi \
         -qp 22 \
         -b:v 0 \
-        -pix_fmt yuv420p \
         -c:a aac \
         -b:a 128k \
         output.mkv
     ```
+
+    !!! note
+        Replace `[dynamic_device_path]` with your GPU's render node, e.g.
+        `/dev/dri/renderD128`.
+
+        The video is decoded in software and only encoded on the GPU. This works
+        for any input codec, even ones the GPU cannot decode (e.g. AV1 on older
+        Intel GPUs).
 
 ## Helpful Links
 

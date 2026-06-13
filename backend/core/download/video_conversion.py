@@ -17,7 +17,8 @@ logger = ModuleLogger("VideoConversion")
 # ffmpeg -hwaccel cuda -hwaccel_output_format cuda -i test.webm -c:v h264_nvenc -preset fast -cq 22 -af volume=1.5 -c:a aac -b:a 128k -c:s srt -movflags +faststart -tune zerolatency test-264-af-aac-srt-fs-nvenc.mkv  # noqa: E501
 
 # VAAPI (Intel/AMD) - Unified approach using VAAPI for both Intel and AMD GPUs
-# ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -i output1.mkv -vf format=nv12,hwupload -c:v h264_vaapi -crf 22 -b:v 0 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-vaapi.mkv  # noqa: E501
+# Software decode + GPU encode (works for any input codec):
+# ffmpeg -init_hw_device vaapi=va:/dev/dri/renderD128 -filter_hw_device va -i output1.mkv -vf format=nv12,hwupload -c:v h264_vaapi -qp 22 -b:v 0 -c:a aac -b:a 128k -c:s srt output1-converted3-264-aac-srt-vaapi.mkv  # noqa: E501
 
 
 # -movflags +faststart - only applicable to mp4 containers
@@ -359,13 +360,16 @@ def _get_video_options_vaapi(
         device_path = "/dev/dri/renderD128"
 
     vencoder = _VIDEO_CODECS_VAAPI[vcodec]
+    # Decode on CPU and only encode on the GPU: a single VAAPI device shared
+    # by the filter graph ('hwupload') and the encoder. Forcing HW decode
+    # ('-hwaccel vaapi') breaks on GPUs that cannot decode the source codec
+    # (e.g. AV1 on pre-Tiger Lake Intel), and a second device created by
+    # '-vaapi_device' leaves the encoder without a frames context.
     video_options: list[str] = [
-        "-hwaccel",
-        "vaapi",
-        "-hwaccel_device",
-        device_path,
-        "-vaapi_device",
-        device_path,
+        "-init_hw_device",
+        f"vaapi=va:{device_path}",
+        "-filter_hw_device",
+        "va",
         "-i",
         input_file,
         "-vf",
@@ -376,7 +380,7 @@ def _get_video_options_vaapi(
     if video_stream is None:
         logger.debug(f"Converting video to '{vcodec}' codec using VAAPI")
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
+        video_options.extend(["-qp", "22", "-b:v", "0"])
         return video_options
 
     if video_stream.codec_name == vcodec:
@@ -391,7 +395,7 @@ def _get_video_options_vaapi(
             f" '{vcodec}' codec using VAAPI"
         )
         video_options.append(vencoder)
-        video_options.extend(["-qp", "22", "-b:v", "0", "-pix_fmt", "yuv420p"])
+        video_options.extend(["-qp", "22", "-b:v", "0"])
 
     return video_options
 
