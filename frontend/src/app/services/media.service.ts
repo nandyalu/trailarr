@@ -264,11 +264,13 @@ export class MediaService {
             // Exactly 4 digits → year (exact)
             if (m.year !== parseInt(f, 10)) return false;
           } else {
-            // Everything else → language, imdb_id, txdb_id, studio, youtube_trailer_id
+            // Everything else → language, imdb_id, tmdb_id, tvdb_id, txdb_id, studio, youtube_trailer_id
             const fl = f.toLowerCase();
             if (
               !m.language.toLowerCase().includes(fl) &&
               !(m.imdb_id ?? '').toLowerCase().includes(fl) &&
+              !String(m.tmdb_id ?? '').includes(fl) &&
+              !String(m.tvdb_id ?? '').includes(fl) &&
               !(m.txdb_id ?? '').toLowerCase().includes(fl) &&
               !(m.studio ?? '').toLowerCase().includes(fl) &&
               !(m.youtube_trailer_id ?? '').toLowerCase().includes(fl)

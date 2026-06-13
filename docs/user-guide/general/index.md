@@ -32,7 +32,7 @@ Trailarr detects what to search based on the shape of the bracket value:
 |---|---|---|
 | `[id=<number>]` (e.g. `[id=2]`) | Trailarr ID | Exact |
 | Exactly 4 digits (e.g. `[2026]`) | Year | Exact |
-| Anything else (e.g. `[english]`) | Language, IMDb ID, TXDB ID, Studio, YouTube ID | Contains |
+| Anything else (e.g. `[english]`) | Language, IMDb ID, TMDB ID, TVDB ID, Studio, YouTube ID | Contains |
 
 #### Examples
 

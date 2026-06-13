@@ -43,6 +43,8 @@ Here are the available integer filters:
 | `Year`           | Year the media item was released.                                                 |
 | `Runtime`        | Runtime of the media item in minutes.                                             |
 | `Season Count`   | Number of seasons for the series. If the media item is a movie, this will be `0`. |
+| `TMDB ID`        | The Movie Database (TMDB) ID of the media item. Populated for movies from Radarr and for any media item where Plex or Sonarr provides a TMDB ID. `null` for Plex-only items without a TMDB entry. Eg: `603` |
+| `TVDB ID`        | The TV Database (TVDB) ID of the media item. Populated for series from Sonarr and for any media item where Plex or Radarr provides a TVDB ID. `null` for Plex-only items without a TVDB entry. Eg: `71663` |
 
 ### String Filters
 
@@ -58,7 +60,7 @@ Here are the available string filters:
 | `YouTube Trailer ID` | YouTube trailer ID of the media. Eg: 'dQw4w9WgXcQ'                         |
 | `Folder Path`    | Folder path of the media. Eg: '/movies/the.matrix'                             |
 | `IMDB ID`        | IMDB ID of the media. Eg: 'tt0133093'                                          |
-| `TXDB ID`       | TMDB ID for Movies, TVDB ID for Series. Eg: '603' (movie) 'i-am-groot' (series) |
+| `TXDB ID`        | Legacy combined ID field — TMDB ID for movies, TVDB ID for series, stored as a string. Eg: `'603'` (movie), `'71663'` (series). Prefer `TMDB ID` or `TVDB ID` integer filters instead — they are type-safe, support proper numeric comparisons, and correctly handle Plex-only items with no external ID. |
 | `Title Slug`     | Title slug of the media. Eg: 'the-matrix'                                      |
 | `Status`         | Status of the media. One of [[downloaded, downloading, missing, monitored]]      |
 
