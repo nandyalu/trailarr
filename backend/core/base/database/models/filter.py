@@ -47,7 +47,7 @@ BOOL_COLS = [
     "monitor",
     "trailer_exists",
 ]
-INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "year"]
+INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "tmdb_id", "tvdb_id", "year"]
 STR_COLS = [
     "clean_title",
     "folder_path",
