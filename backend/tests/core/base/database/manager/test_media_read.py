@@ -93,6 +93,45 @@ class TestReadByFolderPath:
         found = media_manager.read_by_folder_path("")
         assert found is None
 
+    def test_stage2_skips_empty_stored_path(self):
+        """Stage 2 skips rows with empty folder_path (line 225 continue).
+
+        A media row with folder_path='' exists in the DB; a lookup for a real
+        path must not falsely match it.
+        """
+        # Create a row with empty folder_path so it lands in all_id_paths
+        cid = self.conn.id
+        empty_mc = _make_media(cid, f"tt_empty_{cid}", folder_path="")
+        media_manager.create_or_update_bulk([empty_mc])
+
+        # Look up a real path — should not match the empty-path row
+        found = media_manager.read_by_folder_path(f"/media/movies/Movie{cid}X (2021)")
+        assert found is None
+
+    def test_stage2_backslash_separator(self):
+        """Stage 2 matches when the stored path uses Windows backslash separators."""
+        cid = self.conn.id
+        win_path = f"C:\\Media\\Show{cid}"
+        win_mc = _make_media(cid, f"tt_win_{cid}", folder_path=win_path)
+        media_manager.create_or_update_bulk([win_mc])
+
+        # Child path with backslash separator
+        found = media_manager.read_by_folder_path(f"{win_path}\\Season 1")
+        assert found is not None
+        assert found.txdb_id == f"tt_win_{cid}"
+
+    def test_stage2_trailing_slash_on_stored_path(self):
+        """Stage 2 normalises trailing slashes before comparing (rstrip)."""
+        cid = self.conn.id
+        # Store path WITH trailing slash
+        trailing_mc = _make_media(cid, f"tt_trail_{cid}", folder_path=f"/media/tv/Trail{cid}/")
+        media_manager.create_or_update_bulk([trailing_mc])
+
+        # Child path with forward slash should still match
+        found = media_manager.read_by_folder_path(f"/media/tv/Trail{cid}/Season 2")
+        assert found is not None
+        assert found.txdb_id == f"tt_trail_{cid}"
+
 
 class TestReadArrLinkedToPlexConnection:
     """Tests for media_manager.read_arr_linked_to_plex_connection."""

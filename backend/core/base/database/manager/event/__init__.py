@@ -1,5 +1,6 @@
 from .create import (
     create,
+    create_bulk,
     create_if_not_exists,
     create_skip_event_if_not_exists,
 )
@@ -30,6 +31,7 @@ from .helpers import (
 
 __all__ = [
     "create",
+    "create_bulk",
     "create_if_not_exists",
     "create_skip_event_if_not_exists",
     "delete_by_media_id",
