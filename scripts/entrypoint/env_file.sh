@@ -18,9 +18,19 @@ generate_env_file() {
     # selects no lines (e.g. a .env that only contains GPU_* entries), and a
     # `grep ... && mv` would then skip the replacement and leave the stale block
     # in place, reintroducing duplicates on the append below.
+    # We DO distinguish grep's exit codes, though: 0 (matches) and 1 (no match)
+    # are both success here, but >=2 means a real error (e.g. unreadable file)
+    # and tmp may be empty/partial, so we must abort instead of mv-ing it over
+    # $ENV_FILE and wiping unrelated settings.
     if [ -f "$ENV_FILE" ]; then
         grep -v -E "^# GPU Detection Results|^GPU_AVAILABLE_|^GPU_DEVICE_" "$ENV_FILE" > "${ENV_FILE}.tmp"
-        mv "${ENV_FILE}.tmp" "$ENV_FILE"
+        grep_status=$?
+        if [ "$grep_status" -le 1 ]; then
+            mv "${ENV_FILE}.tmp" "$ENV_FILE"
+        else
+            box_echo "WARNING: failed to read '$ENV_FILE' (grep exit $grep_status); leaving it unchanged"
+            rm -f "${ENV_FILE}.tmp"
+        fi
     fi
 
     # Create or update the .env file with GPU variables
