@@ -1,4 +1,4 @@
-from .create import create, create_or_update_bulk
+from .create import create, create_or_update_bulk, plex_create_or_update_bulk
 from .delete import delete_except
 from .read import (
     read,
@@ -32,6 +32,7 @@ from .update import (
 __all__ = [
     "create",
     "create_or_update_bulk",
+    "plex_create_or_update_bulk",
     "delete_except",
     "demote_arr_items_with_plex_to_plex_only",
     "read",

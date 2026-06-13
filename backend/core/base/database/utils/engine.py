@@ -33,8 +33,8 @@ else:
             "timeout": 30,  # High timeout at the driver level
         },  # Allow multi-threaded access
         echo=False,
-        pool_size=30,
-        max_overflow=20,
+        pool_size=5,
+        max_overflow=10,
     )  # pragma: no cover
 # * Not needed, Alembic will create the database tables
 # SQLModel.metadata.create_all(engine)

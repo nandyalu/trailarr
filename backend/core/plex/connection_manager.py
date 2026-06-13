@@ -1,6 +1,8 @@
+import asyncio
 import os
 import re
 from difflib import SequenceMatcher
+from itertools import batched
 from pathlib import Path
 
 from app_logger import ModuleLogger
@@ -8,7 +10,8 @@ import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
-from core.base.database.models.event import EventSource
+from core.base.database.models.event import EventCreate, EventSource, EventType
+from core.base.database.models.media import MediaCreate
 from core.base.utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
 from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
@@ -171,85 +174,29 @@ class PlexConnectionManager:
         """
         return reverse_path_mappings(path, self.path_mappings)
 
-    async def _process_item(
+    async def _process_item_chunk(
         self,
-        item: PlexMediaItem,
-        section: PlexLibrarySection,
-        is_movie: bool,
-        plex_folder: str,
+        chunk: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]],
     ) -> None:
-        """Merge or create a single media item from a Plex library section."""
-        if not self.all_path_mappings:
+        """Process a chunk of up to 100 Plex items using bulk DB operations.
+
+        Args:
+            chunk: List of (item, section, is_movie, plex_folder) tuples.
+                   plex_folder is the raw Plex-side path (before mapping).
+        """
+        if not chunk:
             return
-        if plex_folder and not self._is_in_configured_library(plex_folder):
-            logger.debug(
-                f"Skipping '{item.title}': folder '{plex_folder}'"
-                " not under any configured library"
-            )
-            return
 
-        folder_path = (
-            self._apply_path_mapping(plex_folder) if plex_folder else ""
-        )
-
-        existing = None
-        if folder_path:
-            existing = media_manager.read_by_folder_path(folder_path)
-
-        if existing:
-            # Only fire PLEX_LINKED when this row wasn't already linked to this
-            # connection — avoids a noisy event on every routine refresh.
-            newly_linked = existing.plex_connection_id != self.connection_id
-            # For Plex-only items (arr_id=0), keep media_filename in sync with
-            # what Plex reports. Arr-linked rows leave this to the Arr refresh.
-            # Only pass when non-empty so a show-level item (no Media Part) never
-            # blanks out a previously correct value.
-            plex_media_filename = (
-                item.media_filename
-                if not existing.arr_id and item.media_filename
-                else None
-            )
-            plex_fields_changed = media_manager.update_plex_fields(
-                media_id=existing.id,
-                plex_rating_key=item.ratingKey or None,
-                plex_section_key=section.key,
-                plex_connection_id=self.connection_id,
-                media_filename=plex_media_filename,
-            )
-            if newly_linked:
-                event_manager.track_plex_linked(
-                    media_id=existing.id,
-                    connection_name=self.connection_name,
-                    plex_rating_key=item.ratingKey or "",
-                    source=EventSource.SYSTEM,
-                    source_detail="PlexRefresh",
+        # 1. Filter out items not in configured libraries and build MediaCreate list
+        parsed: list[tuple[MediaCreate, PlexMediaItem]] = []
+        for item, section, is_movie, plex_folder in chunk:
+            if plex_folder and not self._is_in_configured_library(plex_folder):
+                logger.debug(
+                    f"Skipping '{item.title}': folder '{plex_folder}'"
+                    " not under any configured library"
                 )
-            # Re-evaluate monitor only for Plex-only items — Arr-linked items
-            # have their monitor state owned by the Arr connection.
-            # MONITOR_NEW only affects newly-created items — preserve existing state.
-            monitor_changed = False
-            if not existing.arr_id and self.monitor != MonitorType.MONITOR_NEW:
-                new_monitor = self._check_monitoring(existing.trailer_exists)
-                if new_monitor != existing.monitor:
-                    event_manager.track_monitor_changed(
-                        media_id=existing.id,
-                        old_monitor=existing.monitor,
-                        new_monitor=new_monitor,
-                        source=EventSource.SYSTEM,
-                        source_detail="PlexRefresh",
-                    )
-                    media_manager.update_monitor_and_trailer_exists_bulk(
-                        [(existing.id, new_monitor, existing.trailer_exists)]
-                    )
-                    monitor_changed = True
-            if plex_fields_changed or monitor_changed:
-                self._stats_updated += 1
-            if newly_linked:
-                self._stats_linked += 1
-            logger.debug(
-                f"Merged Plex data for '{existing.title}' (id={existing.id})"
-            )
-        else:
+                continue
+            folder_path = self._apply_path_mapping(plex_folder) if plex_folder else ""
             media_create = parse_plex_item(
                 item=item,
                 connection_id=self.connection_id,
@@ -259,55 +206,164 @@ class PlexConnectionManager:
             )
             if folder_path:
                 media_create.folder_path = folder_path
-            media_read = media_manager.create(media_create)
-            event_manager.track_media_added(
-                media=media_read,
-                connection_name=self.connection_name,
-                source=EventSource.SYSTEM,
-                source_detail="PlexRefresh",
+            parsed.append((media_create, item))
+
+        if not parsed:
+            return
+
+        # 2. Bulk create/update — 1 DB session for the whole chunk
+        bulk_results = media_manager.plex_create_or_update_bulk(
+            [mc for mc, _ in parsed]
+        )
+
+        # 3. Collect pending events and identify new items needing file checks
+        pending_events: list[EventCreate] = []
+        # (media_read, folder_path) for new items — need async file check
+        new_items: list[tuple[int, str, bool]] = []  # (id, folder_path, default_monitor)
+        # (media_read, plex_fields_changed) for existing items
+        existing_items: list[tuple, bool, bool] = []
+
+        for (mc, item), (media_read, created, newly_linked, plex_fields_changed) in zip(
+            parsed, bulk_results
+        ):
+            if newly_linked:
+                pending_events.append(
+                    EventCreate(
+                        media_id=media_read.id,
+                        event_type=EventType.PLEX_LINKED,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                        new_value=self.connection_name,
+                        old_value=item.ratingKey or "",
+                    )
+                )
+                self._stats_linked += 1
+
+            if created:
+                # MEDIA_ADDED
+                pending_events.append(
+                    EventCreate(
+                        media_id=media_read.id,
+                        event_type=EventType.MEDIA_ADDED,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                        new_value=self.connection_name,
+                    )
+                )
+                # YOUTUBE_ID_CHANGED (initial, if present)
+                if media_read.youtube_trailer_id:
+                    pending_events.append(
+                        EventCreate(
+                            media_id=media_read.id,
+                            event_type=EventType.YOUTUBE_ID_CHANGED,
+                            source=EventSource.SYSTEM,
+                            source_detail="PlexRefresh",
+                            old_value="",
+                            new_value=media_read.youtube_trailer_id,
+                        )
+                    )
+                # Initial MONITOR_CHANGED (from False default)
+                pending_events.append(
+                    EventCreate(
+                        media_id=media_read.id,
+                        event_type=EventType.MONITOR_CHANGED,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                        old_value="",
+                        new_value=str(media_read.monitor).lower(),
+                    )
+                )
+                new_items.append(
+                    (media_read.id, media_read.folder_path or "", media_read.monitor)
+                )
+                self._stats_added += 1
+            else:
+                existing_items.append((media_read, plex_fields_changed))
+
+        # 4. Concurrent async file checks for new items
+        update_list: list[tuple[int, bool, bool]] = []
+
+        async def _check_trailer(folder_path: str) -> bool:
+            if not folder_path:
+                return False
+            return await FilesHandler.check_trailer_exists(
+                path=folder_path, check_inline_file=True
             )
-            # Check trailer and apply monitoring logic for Plex-only items
-            trailer_exists = False
-            if media_read.folder_path:
-                trailer_exists = await FilesHandler.check_trailer_exists(
-                    path=media_read.folder_path,
-                    check_inline_file=True,
-                )
-            monitor = self._check_monitoring(trailer_exists)
-            if monitor != media_read.monitor:
-                event_manager.track_monitor_changed(
-                    media_id=media_read.id,
-                    old_monitor=media_read.monitor,
-                    new_monitor=monitor,
-                    source=EventSource.SYSTEM,
-                    source_detail="PlexRefresh",
-                )
-            if trailer_exists and not media_read.trailer_exists:
-                event_manager.track_trailer_detected(
-                    media_id=media_read.id,
-                    source=EventSource.SYSTEM,
-                    source_detail="PlexRefresh",
-                )
-            media_manager.update_monitor_and_trailer_exists_bulk(
-                [(media_read.id, monitor, trailer_exists)]
+
+        if new_items:
+            trailer_results = await asyncio.gather(
+                *[_check_trailer(fp) for _, fp, _ in new_items]
             )
-            self._stats_added += 1
-            logger.debug(f"Created new Plex-only media row for '{item.title}'")
+            for (media_id, folder_path, default_monitor), trailer_exists in zip(
+                new_items, trailer_results
+            ):
+                monitor = self._check_monitoring(trailer_exists)
+                if monitor != default_monitor:
+                    pending_events.append(
+                        EventCreate(
+                            media_id=media_id,
+                            event_type=EventType.MONITOR_CHANGED,
+                            source=EventSource.SYSTEM,
+                            source_detail="PlexRefresh",
+                            old_value=str(default_monitor).lower(),
+                            new_value=str(monitor).lower(),
+                        )
+                    )
+                if trailer_exists:
+                    pending_events.append(
+                        EventCreate(
+                            media_id=media_id,
+                            event_type=EventType.TRAILER_DETECTED,
+                            source=EventSource.SYSTEM,
+                            source_detail="PlexRefresh",
+                        )
+                    )
+                update_list.append((media_id, monitor, trailer_exists))
+
+        # 5. Monitor check for existing Plex-only items
+        for media_read, plex_fields_changed in existing_items:
+            monitor_changed = False
+            if not media_read.arr_id and self.monitor != MonitorType.MONITOR_NEW:
+                new_monitor = self._check_monitoring(media_read.trailer_exists)
+                if new_monitor != media_read.monitor:
+                    pending_events.append(
+                        EventCreate(
+                            media_id=media_read.id,
+                            event_type=EventType.MONITOR_CHANGED,
+                            source=EventSource.SYSTEM,
+                            source_detail="PlexRefresh",
+                            old_value=str(media_read.monitor).lower(),
+                            new_value=str(new_monitor).lower(),
+                        )
+                    )
+                    update_list.append(
+                        (media_read.id, new_monitor, media_read.trailer_exists)
+                    )
+                    monitor_changed = True
+            if plex_fields_changed or monitor_changed:
+                self._stats_updated += 1
+
+        # 6. Bulk update monitor and trailer_exists — 1 DB session
+        if update_list:
+            media_manager.update_monitor_and_trailer_exists_bulk(update_list)
+
+        # 7. Bulk event insert — 1 DB session
+        if pending_events:
+            event_manager.create_bulk(pending_events)
 
     async def _process_movie_section(
         self, section: PlexLibrarySection
     ) -> None:
-        """Fetch all movies in a section and merge into the DB."""
-        count = 0
+        """Fetch all movies in a section and merge into the DB in chunks of 100."""
+        items: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
         async for item in self.api.get_library_media(section.key):
-            count += 1
-            await self._process_item(
-                item, section, is_movie=True, plex_folder=item.media_folder
-            )
-        logger.debug(f"Section '{section.title}': {count} movies")
+            items.append((item, section, True, item.media_folder))
+        for chunk in batched(items, 100):
+            await self._process_item_chunk(list(chunk))
+        logger.debug(f"Section '{section.title}': {len(items)} movies")
 
     async def _process_show_section(self, section: PlexLibrarySection) -> None:
-        """Fetch all shows in a section and merge into the DB.
+        """Fetch all shows in a section and merge into the DB in chunks of 100.
 
         Uses two endpoints:
         - ``/allLeaves`` → episode file paths → builds a ratingKey→folder map
@@ -337,21 +393,18 @@ class PlexConnectionManager:
             f" from {leaf_count} episodes"
         )
 
-        # Step 2: process show-level items (contain TVDB/TMDB Guid IDs)
-        item_count = 0
+        # Step 2: collect all show items, then process in chunks of 100
+        items: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
         async for item in self.api.get_library_media(section.key):
-            item_count += 1
-            # Prefer folder derived from episode files; fall back to Location path.
-            # Then resolve the true show root (strips trailing season dirs).
             plex_folder = _resolve_show_root(
                 folder_map.get(item.ratingKey, item.media_folder),
                 item.title,
             )
-            await self._process_item(
-                item, section, is_movie=False, plex_folder=plex_folder
-            )
+            items.append((item, section, False, plex_folder))
+        for chunk in batched(items, 100):
+            await self._process_item_chunk(list(chunk))
         logger.debug(
-            f"Section '{section.title}': {item_count} show-level items"
+            f"Section '{section.title}': {len(items)} show-level items"
         )
 
     async def _process_section(self, section: PlexLibrarySection) -> None:

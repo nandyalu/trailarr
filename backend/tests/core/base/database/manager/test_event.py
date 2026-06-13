@@ -341,3 +341,94 @@ class TestEventHelpers:
             skip_reason="different_reason",
         )
         assert created3 is True
+
+
+class TestCreateIfNotExists:
+    """Tests for event_manager.create_if_not_exists (lines 51-63 in event/create.py)."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        conn = _create_test_connection("TestCreateIfNotExists")
+        media_data = MediaCreate(
+            connection_id=conn.id,  # type: ignore
+            arr_id=50,
+            is_movie=True,
+            title="IfNotExists Movie",
+            txdb_id="tt7770001",
+        )
+        result = media_manager.create_or_update_bulk([media_data])
+        self.media, _, _, _ = result[0]
+
+    def test_creates_event_when_none_exists(self):
+        """Returns (EventRead, True) when no matching event exists."""
+        ec = EventCreate(
+            media_id=self.media.id,
+            event_type=EventType.MONITOR_CHANGED,
+            source=EventSource.SYSTEM,
+        )
+        event, created = event_manager.create_if_not_exists(ec)
+        assert created is True
+        assert event.id is not None
+        assert event.media_id == self.media.id
+        assert event.event_type == EventType.MONITOR_CHANGED
+
+    def test_returns_existing_event_without_creating(self):
+        """Returns (existing EventRead, False) when a matching event already exists."""
+        ec = EventCreate(
+            media_id=self.media.id,
+            event_type=EventType.TRAILER_DETECTED,
+            source=EventSource.SYSTEM,
+        )
+        event_first, created_first = event_manager.create_if_not_exists(ec)
+        assert created_first is True
+
+        # Second call with same media_id + event_type → already exists
+        event_second, created_second = event_manager.create_if_not_exists(ec)
+        assert created_second is False
+        assert event_second.id == event_first.id
+
+
+class TestCreateBulk:
+    """Tests for event_manager.create_bulk."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        conn = _create_test_connection("TestCreateBulk")
+        media_data = MediaCreate(
+            connection_id=conn.id,  # type: ignore
+            arr_id=51,
+            is_movie=True,
+            title="Bulk Event Movie",
+            txdb_id="tt7770002",
+        )
+        result = media_manager.create_or_update_bulk([media_data])
+        self.media, _, _, _ = result[0]
+
+    def test_bulk_inserts_all_events(self):
+        """All events in the list are persisted in a single call."""
+        events = [
+            EventCreate(
+                media_id=self.media.id,
+                event_type=EventType.MEDIA_ADDED,
+                source=EventSource.SYSTEM,
+            ),
+            EventCreate(
+                media_id=self.media.id,
+                event_type=EventType.MONITOR_CHANGED,
+                source=EventSource.SYSTEM,
+                old_value="false",
+                new_value="true",
+            ),
+        ]
+        event_manager.create_bulk(events)
+        stored = event_manager.read_by_media_id(self.media.id)
+        types = {e.event_type for e in stored}
+        assert EventType.MEDIA_ADDED in types
+        assert EventType.MONITOR_CHANGED in types
+
+    def test_bulk_empty_list_is_noop(self):
+        """create_bulk with an empty list doesn't raise and creates nothing."""
+        before = len(event_manager.read_by_media_id(self.media.id))
+        event_manager.create_bulk([])
+        after = len(event_manager.read_by_media_id(self.media.id))
+        assert after == before

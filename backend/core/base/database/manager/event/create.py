@@ -64,6 +64,24 @@ def create_if_not_exists(
 
 
 @write_session
+def create_bulk(
+    events: list[EventCreate],
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Insert a list of events in a single write session / transaction.
+    Args:
+        events (list[EventCreate]): The events to create.
+        _session (Session, Optional): A session to use for the database connection.
+            Default is None, in which case a new session will be created.
+    """
+    for event_create in events:
+        db_event = Event.model_validate(event_create)
+        _session.add(db_event)
+    _session.commit()
+
+
+@write_session
 def create_skip_event_if_not_exists(
     media_id: int,
     skip_reason: str,
