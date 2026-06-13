@@ -158,6 +158,7 @@ function applyFilter(filter: Filter, media: Media): boolean {
   }
 
   if (numberFilterKeys.includes(filter_by)) {
+    if (value === null || value === undefined) return false;
     const numVal = ParserCache.parseNumber(filter_value);
     return FilterFunctions.applyNumberFilter(value as number, numVal, filter_condition as NumberFilterCondition);
   }

@@ -88,7 +88,7 @@ export const booleanFilterKeys = ['arr_monitored', 'is_movie', 'media_exists', '
 
 export const dateFilterKeys = ['added_at', 'downloaded_at', 'updated_at'];
 
-export const numberFilterKeys = ['arr_id', 'connection_id', 'id', 'runtime', 'season_count', 'year'];
+export const numberFilterKeys = ['arr_id', 'connection_id', 'id', 'runtime', 'season_count', 'tmdb_id', 'tvdb_id', 'year'];
 export const stringFilterKeys = [
   'clean_title',
   'folder_path',

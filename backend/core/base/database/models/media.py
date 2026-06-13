@@ -72,6 +72,8 @@ class MediaBase(AppSQLModel):
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
     txdb_id: str = Field(index=True)
+    tmdb_id: int | None = Field(default=None, index=True)
+    tvdb_id: int | None = Field(default=None, index=True)
     title_slug: str = Field(
         default="",
         sa_column=Column(
@@ -210,6 +212,8 @@ class MediaUpdate(MediaBase):
     language: str | None = None  # type: ignore
     runtime: int | None = None  # type: ignore
     txdb_id: str | None = None  # type: ignore
+    tmdb_id: int | None = None
+    tvdb_id: int | None = None
     media_exists: bool | None = None  # type: ignore
     media_filename: str | None = None  # type: ignore
     folder_path: str | None = None  # type: ignore

@@ -74,6 +74,8 @@ export interface Media {
   folder_path: string;
   imdb_id: string;
   txdb_id: string;
+  tmdb_id: number | null;
+  tvdb_id: number | null;
   title_slug: string;
   poster_url: string;
   fanart_url: string;
@@ -120,6 +122,8 @@ export interface SearchMedia {
   youtube_trailer_id: string;
   imdb_id: string;
   txdb_id: string;
+  tmdb_id: number | null;
+  tvdb_id: number | null;
   is_movie: boolean;
   poster_path: string | null;
 }
