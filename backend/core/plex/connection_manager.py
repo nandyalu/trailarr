@@ -2,7 +2,6 @@ import asyncio
 import os
 import re
 from difflib import SequenceMatcher
-from itertools import batched
 from pathlib import Path
 
 from app_logger import ModuleLogger
@@ -11,8 +10,12 @@ import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ConnectionRead, MonitorType
 from core.base.database.models.event import EventCreate, EventSource, EventType
-from core.base.database.models.media import MediaCreate
-from core.base.utils.path_utils import apply_path_mappings, is_subpath, reverse_path_mappings
+from core.base.database.models.media import MediaCreate, MediaRead
+from core.base.utils.path_utils import (
+    apply_path_mappings,
+    is_subpath,
+    reverse_path_mappings,
+)
 from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
@@ -60,7 +63,10 @@ def _resolve_show_root(folder: str, show_title: str) -> str:
         return str(path.parent)
     norm_last = _normalize_title(last)
     norm_title = _normalize_title(show_title)
-    if norm_title and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6:
+    if (
+        norm_title
+        and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6
+    ):
         return folder
     return folder
 
@@ -155,7 +161,7 @@ class PlexConnectionManager:
         operation per mapping so subsequent refreshes skip the write entirely.
         """
         for pm in self.all_path_mappings:
-            if pm.plex_section_key is not None:
+            if pm.plex_section_key is not None or pm.id is None:
                 continue
             for folder in section.folders:
                 if is_subpath(pm.path_from, folder):
@@ -196,7 +202,9 @@ class PlexConnectionManager:
                     " not under any configured library"
                 )
                 continue
-            folder_path = self._apply_path_mapping(plex_folder) if plex_folder else ""
+            folder_path = (
+                self._apply_path_mapping(plex_folder) if plex_folder else ""
+            )
             media_create = parse_plex_item(
                 item=item,
                 connection_id=self.connection_id,
@@ -219,13 +227,18 @@ class PlexConnectionManager:
         # 3. Collect pending events and identify new items needing file checks
         pending_events: list[EventCreate] = []
         # (media_read, folder_path) for new items — need async file check
-        new_items: list[tuple[int, str, bool]] = []  # (id, folder_path, default_monitor)
+        new_items: list[tuple[int, str, bool]] = (
+            []
+        )  # (id, folder_path, default_monitor)
         # (media_read, plex_fields_changed) for existing items
-        existing_items: list[tuple, bool, bool] = []
+        existing_items: list[tuple[MediaRead, bool]] = []
 
-        for (mc, item), (media_read, created, newly_linked, plex_fields_changed) in zip(
-            parsed, bulk_results
-        ):
+        for (mc, item), (
+            media_read,
+            created,
+            newly_linked,
+            plex_fields_changed,
+        ) in zip(parsed, bulk_results):
             if newly_linked:
                 pending_events.append(
                     EventCreate(
@@ -274,7 +287,11 @@ class PlexConnectionManager:
                     )
                 )
                 new_items.append(
-                    (media_read.id, media_read.folder_path or "", media_read.monitor)
+                    (
+                        media_read.id,
+                        media_read.folder_path or "",
+                        media_read.monitor,
+                    )
                 )
                 self._stats_added += 1
             else:
@@ -294,9 +311,11 @@ class PlexConnectionManager:
             trailer_results = await asyncio.gather(
                 *[_check_trailer(fp) for _, fp, _ in new_items]
             )
-            for (media_id, folder_path, default_monitor), trailer_exists in zip(
-                new_items, trailer_results
-            ):
+            for (
+                media_id,
+                folder_path,
+                default_monitor,
+            ), trailer_exists in zip(new_items, trailer_results):
                 monitor = self._check_monitoring(trailer_exists)
                 if monitor != default_monitor:
                     pending_events.append(
@@ -323,7 +342,10 @@ class PlexConnectionManager:
         # 5. Monitor check for existing Plex-only items
         for media_read, plex_fields_changed in existing_items:
             monitor_changed = False
-            if not media_read.arr_id and self.monitor != MonitorType.MONITOR_NEW:
+            if (
+                not media_read.arr_id
+                and self.monitor != MonitorType.MONITOR_NEW
+            ):
                 new_monitor = self._check_monitoring(media_read.trailer_exists)
                 if new_monitor != media_read.monitor:
                     pending_events.append(
@@ -355,12 +377,17 @@ class PlexConnectionManager:
         self, section: PlexLibrarySection
     ) -> None:
         """Fetch all movies in a section and merge into the DB in chunks of 100."""
-        items: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
+        buffer: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
+        count = 0
         async for item in self.api.get_library_media(section.key):
-            items.append((item, section, True, item.media_folder))
-        for chunk in batched(items, 100):
-            await self._process_item_chunk(list(chunk))
-        logger.debug(f"Section '{section.title}': {len(items)} movies")
+            buffer.append((item, section, True, item.media_folder))
+            count += 1
+            if len(buffer) >= 100:
+                await self._process_item_chunk(buffer)
+                buffer = []
+        if buffer:
+            await self._process_item_chunk(buffer)
+        logger.debug(f"Section '{section.title}': {count} movies")
 
     async def _process_show_section(self, section: PlexLibrarySection) -> None:
         """Fetch all shows in a section and merge into the DB in chunks of 100.
@@ -381,7 +408,9 @@ class PlexConnectionManager:
             leaf_count += 1
             if leaf.grandparentRatingKey and leaf.media_folder:
                 folder_paths.setdefault(leaf.grandparentRatingKey, [])
-                folder_paths[leaf.grandparentRatingKey].append(leaf.media_folder)
+                folder_paths[leaf.grandparentRatingKey].append(
+                    leaf.media_folder
+                )
         folder_map: dict[str, str] = {}
         for rating_key, paths in folder_paths.items():
             try:
@@ -393,19 +422,22 @@ class PlexConnectionManager:
             f" from {leaf_count} episodes"
         )
 
-        # Step 2: collect all show items, then process in chunks of 100
-        items: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
+        # Step 2: process show items in chunks of 100 incrementally
+        buffer: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
+        total = 0
         async for item in self.api.get_library_media(section.key):
             plex_folder = _resolve_show_root(
                 folder_map.get(item.ratingKey, item.media_folder),
                 item.title,
             )
-            items.append((item, section, False, plex_folder))
-        for chunk in batched(items, 100):
-            await self._process_item_chunk(list(chunk))
-        logger.debug(
-            f"Section '{section.title}': {len(items)} show-level items"
-        )
+            buffer.append((item, section, False, plex_folder))
+            total += 1
+            if len(buffer) >= 100:
+                await self._process_item_chunk(buffer)
+                buffer = []
+        if buffer:
+            await self._process_item_chunk(buffer)
+        logger.debug(f"Section '{section.title}': {total} show-level items")
 
     async def _process_section(self, section: PlexLibrarySection) -> None:
         """Dispatch to the correct section processor based on library type."""
@@ -492,8 +524,7 @@ class PlexConnectionManager:
                 )
         logger.info(
             f"Plex refresh complete for '{self.connection_name}':"
-            f" {self._stats_sections_scanned}/{len(sections)} sections scanned,"
-            f" {self._stats_added} added,"
-            f" {self._stats_updated} updated,"
-            f" {self._stats_linked} newly linked."
+            f" {self._stats_sections_scanned}/{len(sections)} sections"
+            f" scanned, {self._stats_added} added, {self._stats_updated}"
+            f" updated, {self._stats_linked} newly linked."
         )
