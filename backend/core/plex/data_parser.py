@@ -25,11 +25,14 @@ def parse_plex_item(
             poster_url and fanart_url are set to ``{server_url}{relative_path}``
             so that the image refresh task can download them (with token injection).
     """
+    plex_tmdb_id: int | None = item.tmdb_id if item.tmdb_id else None
+    plex_tvdb_id: int | None = item.tvdb_id if item.tvdb_id else None
+
     txdb_id = ""
-    if is_movie and item.tmdb_id:
-        txdb_id = str(item.tmdb_id)
-    elif not is_movie and item.tvdb_id:
-        txdb_id = str(item.tvdb_id)
+    if is_movie and plex_tmdb_id:
+        txdb_id = str(plex_tmdb_id)
+    elif not is_movie and plex_tvdb_id:
+        txdb_id = str(plex_tvdb_id)
     # Fallback: use the ratingKey prefixed so it stays unique in the DB
     if not txdb_id:
         txdb_id = f"plex-{item.ratingKey}"
@@ -48,6 +51,8 @@ def parse_plex_item(
         studio=item.studio,
         imdb_id=item.imdb_id,
         txdb_id=txdb_id,
+        tmdb_id=plex_tmdb_id,
+        tvdb_id=plex_tvdb_id,
         folder_path=item.media_folder if item.media_folder else None,
         media_filename=item.media_filename,
         media_exists=bool(item.media_filename),

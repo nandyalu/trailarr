@@ -77,6 +77,105 @@ def create_or_update_bulk(
     ]
 
 
+@write_session
+def plex_create_or_update_bulk(
+    items: list[MediaCreate],
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[tuple[MediaRead, bool, bool, bool]]:
+    """Create or update media rows for a Plex sync chunk.
+
+    Matches each item to an existing DB row by folder_path (exact then prefix).
+    All folder paths are loaded once per call to avoid per-item table scans.
+
+    Args:
+        items: Parsed Plex media items with arr_id=0, plex_* fields set, and
+               folder_path already path-mapped.
+        _session: Session; created automatically if not provided.
+
+    Returns:
+        list of (MediaRead, created, newly_linked, plex_fields_changed) per item.
+        - created: True for new rows.
+        - newly_linked: True when plex_connection_id changed on an existing row.
+        - plex_fields_changed: True when any plex field was written to the DB.
+    """
+    if not items:
+        return []
+
+    _check_connection_exists_bulk(items, session=_session)
+
+    # Load all (id, folder_path) pairs once — avoids a full-table scan per item
+    id_path_stmt = select(Media.id, Media.folder_path).where(
+        col(Media.folder_path).is_not(None)
+    )
+    all_id_paths: list[tuple[int, str]] = _session.exec(id_path_stmt).all()
+    exact_map: dict[str, int] = {
+        path: mid for mid, path in all_id_paths if path and mid
+    }
+
+    db_results: list[tuple[Media, bool, bool, bool]] = []
+
+    for media_create in items:
+        folder_path = media_create.folder_path or ""
+
+        # Stage 1: exact match
+        existing_id: int | None = exact_map.get(folder_path) if folder_path else None
+
+        # Stage 2: prefix match — stored path is a parent directory
+        if existing_id is None and folder_path:
+            best_id: int | None = None
+            best_len = 0
+            for mid, path in all_id_paths:
+                if not path or not mid:
+                    continue
+                norm = path.rstrip("/\\")
+                if (
+                    folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+                ) and len(norm) > best_len:
+                    best_id = mid
+                    best_len = len(norm)
+            existing_id = best_id
+
+        if existing_id is not None:
+            db_media = base._get_db_item(existing_id, _session)
+            newly_linked = db_media.plex_connection_id != media_create.plex_connection_id
+            # Only sync media_filename for Plex-only rows (arr_id == 0)
+            plex_media_filename = (
+                media_create.media_filename
+                if not db_media.arr_id and media_create.media_filename
+                else None
+            )
+            changed = (
+                db_media.plex_rating_key != media_create.plex_rating_key
+                or db_media.plex_section_key != media_create.plex_section_key
+                or db_media.plex_connection_id != media_create.plex_connection_id
+                or (
+                    plex_media_filename is not None
+                    and db_media.media_filename != plex_media_filename
+                )
+            )
+            if changed:
+                db_media.plex_rating_key = media_create.plex_rating_key
+                db_media.plex_section_key = media_create.plex_section_key
+                db_media.plex_connection_id = media_create.plex_connection_id
+                if plex_media_filename is not None:
+                    db_media.media_filename = plex_media_filename
+                db_media.updated_at = datetime.now(timezone.utc)
+                _session.add(db_media)
+            db_results.append((db_media, False, newly_linked, changed))
+        else:
+            db_media = Media.model_validate(media_create)
+            _session.add(db_media)
+            db_results.append((db_media, True, False, False))
+
+    _session.commit()
+
+    return [
+        (MediaRead.model_validate(db_media), created, newly_linked, changed)
+        for db_media, created, newly_linked, changed in db_results
+    ]
+
+
 def _check_connection_exists_bulk(
     media_items: list[MediaCreate], session: Session
 ) -> None:
@@ -209,9 +308,12 @@ def _read_plex_only_by_folder_path(
     for row_id, row_path in rows:
         if not row_path or not row_id:
             continue
-        if folder_path.startswith(row_path) and len(row_path) > best_path_len:
+        norm = row_path.rstrip("/\\")
+        if (
+            folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+        ) and len(norm) > best_path_len:
             best_id = row_id
-            best_path_len = len(row_path)
+            best_path_len = len(norm)
     if best_id is None:
         return None
     return base._get_db_item(best_id, session)

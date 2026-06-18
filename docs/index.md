@@ -21,7 +21,7 @@
 </p>
 
 
-Trailarr is a Docker application to download and manage trailers for your media libraries.
+Trailarr is a self-hosted app to download and manage trailers for your media libraries.
 
 GitHub: [https://github.com/nandyalu/trailarr/](https://github.com/nandyalu/trailarr/){:target="_blank"}
 
@@ -35,21 +35,26 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ){:target=
 
 ## Features
 
-- Manages multiple Radarr, Sonarr, or Plex instances to find media.
-- Detects existing trailers for media items. Can skip downloading if a PlexPass trailer exists (with a minimum resolution check).
-- Downloads trailer and organizes it in the media folder.
-- Customizable file names for downloaded trailer files, defaults to Plex naming conventions. Works with [Plex](https://www.plex.tv/){:target="_blank"}, [Emby](https://emby.media/){:target="_blank"}, [Jellyfin](https://jellyfin.org/){:target="_blank"}, etc.
-- Customizable profiles to manage trailer downloads and processing.
-- Responsive UI to view media items and manage trailers.
-- Built with Angular and FastAPI.
+- Connect multiple Radarr, Sonarr, and Plex instances
+- Auto-downloads trailers and saves them next to your media
+- Detects existing trailers — skips duplicates automatically
+- Skips PlexPass trailers if they meet a minimum resolution threshold
+- Plex naming conventions out of the box — also works with Emby and Jellyfin
+- Custom profiles to control quality, format, and processing options
+- Web UI to browse your library and manage trailers
 
 > Let us know that you appreciate the project by giving us a ⭐ on [GitHub](https://github.com/nandyalu/trailarr){:target="_blank"}.
 
 ## Installation & Setup
 
-Trailarr can be installed using Docker (recommended) or directly on Debian based systems. See the [Documentation](https://nandyalu.github.io/trailarr/) for detailed instructions on [Getting Started](https://nandyalu.github.io/trailarr/getting-started/) and [User Guide](https://nandyalu.github.io/trailarr/user-guide/).
+See the [Installation Guide](https://nandyalu.github.io/trailarr/getting-started/installation/) for full instructions. Available methods:
 
-We don't have an official video yet, but there is a video by [AlienTech42](https://www.youtube.com/@AlienTech42) on [YouTube](https://www.youtube.com/watch?v=Hz31zWEtY5k&t=8s&pp=ygUOdHJhaWxhcnIgc2V0dXA%3D){:target="_blank"} that explains Trailarr installation and setup on Unraid.
+- **Docker Compose** ⭐ — recommended for most users, easiest to set up and update
+- **Direct Install** — native installer script for Linux, macOS, and Windows
+- **Build and Install** — fully manual setup for custom environments or contributors
+- **Unraid** — community template available
+
+Community video by [AlienTech42](https://www.youtube.com/@AlienTech42){:target="_blank"} covering installation and setup on Unraid:
 
 [![Setting up Trailarr - AlienTech42](http://img.youtube.com/vi/Hz31zWEtY5k/maxresdefault.jpg)](https://www.youtube.com/watch?v=Hz31zWEtY5k "Setting up Trailarr - AlienTech42"){:target="_blank"}
 
@@ -70,14 +75,14 @@ Trailarr is built using the following libraries and tools:
 
 ## Support
 
-If you have any questions or need help, please read the [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/) first. 
+We tried to cover most topics in the [Docs](https://nandyalu.github.io/trailarr/) and also have a [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/) section, try those first. 
 
 If you still need help, please use the below:
 
 - [Discord](https://discord.gg/KKPr5kQEzQ){:target="_blank"}
 - [Reddit](https://www.reddit.com/r/trailarr){:target="_blank"}
 
-> **Note:** Please do not use the GitHub issues for support requests!
+> **Note:** We suggest **not** using GitHub issues for support requests, but won't stop you if you do!
 
 
 ## Issues

@@ -37,6 +37,8 @@ class SonarrDataParser(BaseModel):
     folder_path: str | None = Field(validation_alias="path", default="")
     imdb_id: str | None = Field(validation_alias="imdbId", default="")
     txdb_id: str = Field(validation_alias="tvdbId")
+    tmdb_id: int | None = Field(validation_alias="tmdbId", default=None)
+    tvdb_id: int | None = Field(validation_alias="tvdbId", default=None)
     title_slug: str = Field(validation_alias="titleSlug", default="")
     poster_url: str | None = None
     fanart_url: str | None = None
@@ -46,6 +48,14 @@ class SonarrDataParser(BaseModel):
     @classmethod
     def parse_txdb_id(cls, v):
         return str(v)
+
+    @field_validator("tmdb_id", "tvdb_id", mode="before")
+    @classmethod
+    def parse_int_id(cls, v):
+        try:
+            return int(v)
+        except (TypeError, ValueError):
+            return None
 
     @field_validator("media_exists", mode="before")
     @classmethod

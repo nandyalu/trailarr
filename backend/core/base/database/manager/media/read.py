@@ -204,6 +204,8 @@ def read_by_folder_path(
     Returns:
         MediaRead | None: The MediaRead object if found, otherwise None.
     """
+    if not folder_path:
+        return None
     # Stage 1: exact match
     statement = select(Media).where(Media.folder_path == folder_path)
     db_media = _session.exec(statement).first()
@@ -223,9 +225,12 @@ def read_by_folder_path(
     for row_id, row_path in rows:
         if not row_path or not row_id:
             continue
-        if folder_path.startswith(row_path) and len(row_path) > best_path_len:
+        norm = row_path.rstrip("/\\")
+        if (
+            folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+        ) and len(norm) > best_path_len:
             best_id = row_id
-            best_path_len = len(row_path)
+            best_path_len = len(norm)
     if best_id is None:
         return None
     return MediaRead.model_validate(base._get_db_item(best_id, _session))
