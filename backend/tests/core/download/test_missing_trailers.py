@@ -193,5 +193,5 @@ async def test_download_missing_trailers_no_profiles():
         # Run the function
         await download_missing_trailers()
 
-        # Function should exit early, so read_all should be called only once
+        # Generator is created once before the early return on empty profiles
         assert mock_db_manager_read_all.call_count == 1

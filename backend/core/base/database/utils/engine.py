@@ -5,7 +5,7 @@ import threading
 from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import Engine, event, StaticPool, text as sa_text
+from sqlalchemy import Engine, event, QueuePool, StaticPool, text as sa_text
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
@@ -33,6 +33,7 @@ else:
             "timeout": 30,  # High timeout at the driver level
         },  # Allow multi-threaded access
         echo=False,
+        poolclass=QueuePool,
         pool_size=5,
         max_overflow=10,
     )  # pragma: no cover
