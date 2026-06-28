@@ -129,9 +129,15 @@ def read_all_generator(
             col(Media.plex_rating_key).is_not(None),
         )
     stream = _session.exec(statement)
-    for db_media in stream:
-        yield MediaRead.model_validate(db_media)
-    return
+    try:
+        for db_media in stream:
+            yield MediaRead.model_validate(db_media)
+    finally:
+        # @read_session closes the session before the generator body runs;
+        # when iterated, the generator re-acquires a connection. Explicitly
+        # close here so that connection is returned to the pool whether the
+        # generator is exhausted naturally, closed early, or receives an exception.
+        _session.close()
 
 
 @read_session

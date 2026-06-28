@@ -1,6 +1,7 @@
 """Tests for media read manager functions."""
 
 import pytest
+from unittest.mock import patch
 from sqlmodel import Session
 
 from core.base.database.models.connection import ArrType, Connection, MonitorType
@@ -181,3 +182,69 @@ class TestReadArrLinkedToPlexConnection:
         """Returns empty list for a connection id with no linked media."""
         rows = media_manager.read_arr_linked_to_plex_connection(99999)
         assert rows == []
+
+
+class TestReadAllGeneratorSessionLifecycle:
+    """Verify that the finally: _session.close() in read_all_generator works.
+
+    @read_session on a generator function closes the session *before* the body
+    runs (it just gets the generator object back, then exits). When the body
+    eventually runs it re-acquires a connection. The finally block is the only
+    thing that returns that connection to the pool.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.conn = _make_connection("GenLifecycleConn")
+
+    def test_session_closed_when_generator_exhausted(self):
+        """finally block fires when the generator is fully consumed via iteration."""
+        close_calls = 0
+        real_close = Session.close
+
+        def spy(self_s):
+            nonlocal close_calls
+            close_calls += 1
+            real_close(self_s)
+
+        with patch.object(Session, "close", spy):
+            before = close_calls
+            list(media_manager.read_all_generator())  # exhaust the generator
+            after = close_calls
+
+        # At minimum 2 closes:
+        #   1. decorator's get_session() exits before body runs
+        #   2. finally: _session.close() after body exits
+        assert after - before >= 2
+
+    def test_session_closed_when_generator_closed_early(self):
+        """finally block fires when .close() is called mid-iteration.
+
+        This is the pattern used by download_missing_trailers: find the first
+        matching item, call db_media_list.close(), then process it. Without the
+        finally block the re-acquired connection would leak.
+        """
+        # Seed a real row so the generator has something to yield and pause at.
+        # (close() on a never-started generator skips the body; next() must be
+        # called first to enter the try block and reach the yield.)
+        media_manager.create_or_update_bulk([
+            _make_media(self.conn.id, "tt_gen_early_close_lifecycle")
+        ])
+
+        close_calls = 0
+        real_close = Session.close
+
+        def spy(self_s):
+            nonlocal close_calls
+            close_calls += 1
+            real_close(self_s)
+
+        with patch.object(Session, "close", spy):
+            gen = media_manager.read_all_generator()
+            next(gen)               # enters the body, pauses at the yield
+            before_close = close_calls
+            gen.close()             # GeneratorExit → finally: _session.close()
+            after_close = close_calls
+
+        # The finally block must have added exactly one more close call
+        assert after_close == before_close + 1
