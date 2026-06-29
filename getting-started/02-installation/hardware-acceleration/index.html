@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.45">
+      <meta name="generator" content="zensical-0.0.46">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.fba56155.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.19d3147f.min.css">
       
         
           
@@ -3444,19 +3444,25 @@
 </div>
 <div class="tabbed-block">
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ffmpeg<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span>-hwaccel<span class="w"> </span>vaapi<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>-hwaccel_device<span class="w"> </span><span class="o">[</span>dynamic_device_path<span class="o">]</span><span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># e.g., /dev/dri/renderD128</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>-vaapi_device<span class="w"> </span><span class="o">[</span>dynamic_device_path<span class="o">]</span><span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># e.g., /dev/dri/renderD128</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span>-i<span class="w"> </span>input.mkv<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span>-vf<span class="w"> </span><span class="nv">format</span><span class="o">=</span>nv12,hwupload<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>-c:v<span class="w"> </span>h264_vaapi<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>-qp<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>-b:v<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span>-pix_fmt<span class="w"> </span>yuv420p<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">    </span>-c:a<span class="w"> </span>aac<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">    </span>-b:a<span class="w"> </span>128k<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">    </span>output.mkv
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span>-init_hw_device<span class="w"> </span><span class="nv">vaapi</span><span class="o">=</span>va:<span class="o">[</span>dynamic_device_path<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>-filter_hw_device<span class="w"> </span>va<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>-i<span class="w"> </span>input.mkv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span>-vf<span class="w"> </span><span class="nv">format</span><span class="o">=</span>nv12,hwupload<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span>-c:v<span class="w"> </span>h264_vaapi<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>-qp<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>-b:v<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>-c:a<span class="w"> </span>aac<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span>-b:a<span class="w"> </span>128k<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">    </span>output.mkv
 </span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Replace <code>[dynamic_device_path]</code> with your GPU's render node, e.g.
+<code>/dev/dri/renderD128</code>.</p>
+<p>The video is decoded in software and only encoded on the GPU. This works
+for any input codec, even ones the GPU cannot decode (e.g. AV1 on older
+Intel GPUs).</p>
+</div>
 </div>
 </div>
 </div>
@@ -3627,10 +3633,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.ee611ef6.min.js"></script>
       
     
   </body>

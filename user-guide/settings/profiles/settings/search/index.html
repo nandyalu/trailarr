@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.45">
+      <meta name="generator" content="zensical-0.0.46">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.fba56155.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.19d3147f.min.css">
       
         
           
@@ -3055,8 +3055,16 @@
 <td style="text-align: left;">TMDB ID for Movies and a hash seperated title for Series. Eg: '603' (movie) or 'the-big-bang-theory' (series)</td>
 </tr>
 <tr>
+<td style="text-align: right;">tmdb_id</td>
+<td style="text-align: left;">TMDB (The Movie Database) ID of the media item. Eg: <code>603</code>. <code>None</code> for Plex-only items without a TMDB entry.</td>
+</tr>
+<tr>
+<td style="text-align: right;">tvdb_id</td>
+<td style="text-align: left;">TVDB (The TV Database) ID of the media item. Eg: <code>71663</code>. <code>None</code> for Plex-only items without a TVDB entry.</td>
+</tr>
+<tr>
 <td style="text-align: right;">txdb_id</td>
-<td style="text-align: left;">TMDB ID for Movies, TVDB ID for Series. Eg: '603'</td>
+<td style="text-align: left;">Legacy combined ID — TMDB ID for movies, TVDB ID for series, as a string. Eg: <code>'603'</code>. Prefer <code>tmdb_id</code> or <code>tvdb_id</code>.</td>
 </tr>
 <tr>
 <td style="text-align: right;">year</td>
@@ -3476,10 +3484,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.ee611ef6.min.js"></script>
       
     
   </body>

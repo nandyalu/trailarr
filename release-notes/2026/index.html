@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.45">
+      <meta name="generator" content="zensical-0.0.46">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.fba56155.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.19d3147f.min.css">
       
         
           
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v097-beta-june-09-2026" class="md-skip">
+        <a href="#v098-june-13-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2356,6 +2356,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v098-june-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v097-beta-june-09-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2808,6 +2819,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v098-june-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v097-beta-june-09-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3086,6 +3108,31 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v098-june-13-2026"><strong>v0.9.8</strong> - <em>June 13, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Dedicated <code>tmdb_id</code> and <code>tvdb_id</code> fields on media items</strong> — All media items now store TMDB and TVDB IDs as separate, typed integer fields populated from Radarr, Sonarr, and Plex. These IDs are the foundation for upcoming TMDB extras integration. Custom filters now accept <code>tmdb_id</code> and <code>tvdb_id</code> as numeric filter targets (equals, greater than, etc.).</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>If you have custom filters using <code>txdb_id</code></strong>, consider switching them to <code>tmdb_id</code> (for movies) or <code>tvdb_id</code> (for series) — these are the same values but stored as proper integers, with correct null handling for Plex-only items that have no external ID. The <code>txdb_id</code> field remains available and unchanged.</p>
+</blockquote>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>SQLAlchemy connection pool exhaustion on large Plex libraries</strong> — Plex connections with 1500+ movies or 160+ series could trigger <code>QueuePool limit reached</code> errors and cause an unresponsive web UI. Fixed by processing Plex items in chunks of 100 (matching the Radarr/Sonarr pattern), using bulk DB operations to reduce write sessions from ~10,500 down to ~45 for a 1500-movie sync, and correcting a folder-path prefix-matching bug that would falsely link sibling directories (e.g. <code>The Dark Knight</code> matching <code>The Dark Knight Rises</code>).</p>
+</li>
+<li>
+<p><strong>SQLAlchemy connection pool exhaustion during trailer downloads on large libraries</strong> — Libraries with many items whose media folders don't exist could exhaust the connection pool during the <em>Download Missing Trailers</em> task, causing an unresponsive web UI. The <code>read_all_generator</code> database helper was leaking a pool connection on every iteration of the download loop because the session decorator closed the session before the generator body ran, and the re-acquired connection had no cleanup path when the generator was closed early. Fixed by adding an explicit <code>finally: session.close()</code> inside the generator, ensuring connections are always returned to the pool.</p>
+</li>
+<li>
+<p><strong>VAAPI hardware encoding always failed and GPU detection never reached the app</strong> — Intel/AMD VAAPI HW encoding silently exited with error -22 (exit 69) on every attempt, causing all conversions to fall back to CPU and making hardware acceleration slower than leaving it off. Independently, GPU detection results written by the entrypoint never propagated to the app process, so <code>gpu_available_intel</code> / <code>gpu_available_amd</code> stayed <code>False</code> and VAAPI was never even attempted without manually forcing environment variables. Both issues are now fixed. Thanks <a href="https://github.com/rafapirotto">@rafapirotto</a>! Fixes <a href="https://github.com/nandyalu/trailarr/issues/589">#589</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python packages to latest versions.</li>
+</ul>
+<hr />
 <h2 id="v097-beta-june-09-2026"><strong>v0.9.7-beta</strong> - <em>June 09, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3119,6 +3166,7 @@
 <li>Updated Python and npm packages to latest versions. </li>
 <li>Removed some older tests from frontend.</li>
 </ul>
+<hr />
 <h2 id="v095-beta-may-13-2026"><strong>v0.9.5-beta</strong> - <em>May 13, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3149,6 +3197,7 @@
 <li>Updated Python and npm packages to latest versions.</li>
 <li><strong>Improved <code>URL_BASE</code> / reverse-proxy support</strong> — Trailarr now serves the frontend correctly at both the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>) simultaneously. Previously, setting <code>URL_BASE</code> broke direct local access. If you use a reverse proxy with a sub-directory setup, please review your configuration to ensure the recommended headers (<code>X-Forwarded-For</code>, <code>X-Forwarded-Proto</code>, <code>X-Forwarded-Host</code>, <code>X-Forwarded-Prefix</code>) are forwarded correctly — see the <a href="../../user-guide/reverse-proxy/">Reverse Proxy Configuration</a> docs for updated examples.</li>
 </ul>
+<hr />
 <h2 id="v093-beta-may-08-2026"><strong>v0.9.3-beta</strong> - <em>May 08, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3278,6 +3327,7 @@
 <li>Updated various Python and npm packages to latest versions.</li>
 <li>Some layout changes in Events and Logs pages to make them consistent with page style.</li>
 </ul>
+<hr />
 <h2 id="v072-beta-april-05-2026"><strong>v0.7.2-beta</strong> - <em>April 05, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3292,6 +3342,7 @@
 <li>Refactored the trailer download and related code to use Python <code>tempfile.gettempdir()</code> and <code>pathlib.Path</code> to ensure it works on any platform - for future direct installations.</li>
 <li>Added tests for trailer download flow (verification, media analysis, renaming, etc.,).</li>
 </ul>
+<hr />
 <h2 id="v071-beta-april-04-2026"><strong>v0.7.1-beta</strong> - <em>April 04, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3305,6 +3356,7 @@
 <ul>
 <li>Updated various Python and npm packages to latest versions.</li>
 </ul>
+<hr />
 <h2 id="v070-beta-february-11-2026"><strong>v0.7.0-beta</strong> - <em>February 11, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3345,6 +3397,7 @@
 <li>Updated logs page styling to be consistent with events page for a unified look and feel.</li>
 <li>Various backend improvements for event tracking and database operations.</li>
 </ul>
+<hr />
 <h2 id="v0610-beta-february-07-2026"><strong>v0.6.10-beta</strong> - <em>February 07, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3361,6 +3414,7 @@
 <li>Updated multiple python packages to latest versions.</li>
 <li>Updated relevant documentation pages to reflect new changes and features.</li>
 </ul>
+<hr />
 <h2 id="v069-beta-january-14-2026"><strong>v0.6.9-beta</strong> - <em>January 14, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3374,6 +3428,7 @@
 <ul>
 <li>Updated Reverse Proxy documentation to improve clarity.</li>
 </ul>
+<hr />
 <h2 id="v068-beta-january-14-2026"><strong>v0.6.8-beta</strong> - <em>January 14, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3388,6 +3443,7 @@
 <li>Updated Angular to <code>21.0.8</code> and various npm packages.</li>
 <li>Dockerfile updated to use <code>nandyalu/python-ffmpeg</code> as the base image to leverage pre-installed <code>ffmpeg</code> binaries.</li>
 </ul>
+<hr />
 <h2 id="v067-beta-january-13-2026"><strong>v0.6.7-beta</strong> - <em>January 13, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3409,6 +3465,7 @@
 <li>Updated the image downloader to use <code>Path</code> from <code>pathlib</code> for better path manipulations.</li>
 <li>Updated project documentation and developer instructions.</li>
 </ul>
+<hr />
 <h2 id="v066-beta-january-09-2026"><strong>v0.6.6-beta</strong> - <em>January 09, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3429,6 +3486,7 @@
 <li>Updated relevant documentation pages to reflect new changes and features.</li>
 <li>Fixed docstring formatting in Swagger UI for better readability, and marked some endpoints as deprecated that are not being used/maintained anymore.</li>
 </ul>
+<hr />
 <h2 id="v065-beta-january-04-2026"><strong>v0.6.5-beta</strong> - <em>January 04, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3617,10 +3675,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ee611ef6.min.js"></script>
       
     
   </body>
