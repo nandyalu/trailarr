@@ -52,7 +52,7 @@
                 <span class="meta-dot">·</span>
                 <span class="meta-item">
                   <span class="meta-label">Last run</span>
-                  {{ task.last_run?.started_at | timediff: 'Never' | async }}
+                  {{ $safeNavigationMigration(task.last_run?.started_at) | timediff: 'Never' | async }}
                   @if (task.last_run && task.last_run.status !== 'scheduled') {
                     <span class="meta-duration">({{ task.last_run.duration_seconds | duration: '...' }})</span>
                   }
@@ -204,7 +204,12 @@
 </div>
 
 <!-- ── Edit Task Dialog ── -->
-<dialog #editDialog class="edit-dialog" (click)="$event.target === $event.currentTarget && closeEditDialog()" (cancel)="$event.preventDefault(); closeEditDialog()">
+<dialog
+  #editDialog
+  class="edit-dialog"
+  (click)="$event.target === $event.currentTarget && closeEditDialog()"
+  (cancel)="$event.preventDefault(); closeEditDialog()"
+>
   @if (editingTask(); as task) {
     <div class="dialog-content">
       <h2 class="dialog-title">Edit Task</h2>

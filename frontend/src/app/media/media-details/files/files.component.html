@@ -17,7 +17,7 @@
   <hr />
   <div class="card">
     <div class="media-files">
-      @let mediaFiles = media()?.files;
+      @let mediaFiles = $safeNavigationMigration(media()?.files);
       @if (mediaFiles === null || mediaFiles === undefined) {
         <p class="text-sm text-center">Error: Unable to load files.</p>
       } @else {

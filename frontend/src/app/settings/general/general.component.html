@@ -28,7 +28,7 @@
         name="Monitor Enabled"
         description="Monitor media from Radarr/Sonarr to download trailers."
         [options]="trueFalseOptions"
-        [selectedOption]="settings()?.monitor_enabled"
+        [selectedOption]="$safeNavigationMigration(settings()?.monitor_enabled)"
         (optionChange)="updateSetting('monitor_enabled', $event)"
       />
       <app-text-setting
@@ -51,7 +51,7 @@
         name="Theme"
         description="Select application theme."
         [options]="themeOptions"
-        [selectedOption]="settings()?.app_theme | titlecase"
+        [selectedOption]="$safeNavigationMigration(settings()?.app_theme) | titlecase"
         (optionChange)="updateSetting('app_theme', $event)"
       />
       <app-options-setting
@@ -59,7 +59,7 @@
         description="Enable or disable authentication for the WebUI."
         descriptionExtra="True - Auth disabled, False - Auth Enabled"
         [options]="trueFalseOptions"
-        [selectedOption]="settings()?.webui_disable_auth"
+        [selectedOption]="$safeNavigationMigration(settings()?.webui_disable_auth)"
         [colorType]="'warning'"
         [colorTypeOption]="'true'"
         (optionChange)="updateSetting('webui_disable_auth', $event)"
@@ -80,7 +80,7 @@
         name="Wait for Media"
         description="Wait for media to be imported into Radarr/Sonarr before downloading trailers."
         [options]="trueFalseOptions"
-        [selectedOption]="settings()?.wait_for_media"
+        [selectedOption]="$safeNavigationMigration(settings()?.wait_for_media)"
         (optionChange)="updateSetting('wait_for_media', $event)"
       />
       <app-options-setting
@@ -88,7 +88,7 @@
         description="Force the next 'Scan Media Folders' run to scan all folders, ignoring the folder-change check."
         descriptionExtra="Useful if trailer_exists or media_exists flags are stale. Automatically resets to False once the full scan completes."
         [options]="trueFalseOptions"
-        [selectedOption]="settings()?.files_full_scan"
+        [selectedOption]="$safeNavigationMigration(settings()?.files_full_scan)"
         [colorType]="'warning'"
         [colorTypeOption]="'true'"
         (optionChange)="updateSetting('files_full_scan', $event)"
@@ -161,7 +161,7 @@
         [options]="trueFalseOptions"
         [colorType]="'danger'"
         [colorTypeOption]="'true'"
-        [selectedOption]="settings()?.delete_trailer_connection"
+        [selectedOption]="$safeNavigationMigration(settings()?.delete_trailer_connection)"
         (optionChange)="updateSetting('delete_trailer_connection', $event)"
       />
       @if (settings()?.delete_trailer_connection) {
@@ -171,7 +171,7 @@
           [options]="trueFalseOptions"
           [colorType]="'danger'"
           [colorTypeOption]="'true'"
-          [selectedOption]="settings()?.delete_trailer_media"
+          [selectedOption]="$safeNavigationMigration(settings()?.delete_trailer_media)"
           (optionChange)="updateSetting('delete_trailer_media', $event)"
         />
       }
@@ -181,7 +181,7 @@
         [options]="trueFalseOptions"
         [colorType]="'danger'"
         [colorTypeOption]="'true'"
-        [selectedOption]="settings()?.delete_corrupted_trailers"
+        [selectedOption]="$safeNavigationMigration(settings()?.delete_corrupted_trailers)"
         (optionChange)="updateSetting('delete_corrupted_trailers', $event)"
       />
     </div>
@@ -202,7 +202,7 @@
           name="NVIDIA GPU Acceleration"
           description="Use NVIDIA GPU for hardware acceleration."
           [options]="trueFalseOptions"
-          [selectedOption]="settings()?.gpu_enabled_nvidia"
+          [selectedOption]="$safeNavigationMigration(settings()?.gpu_enabled_nvidia)"
           [colorType]="'warning'"
           [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_nvidia', $event)"
@@ -213,7 +213,7 @@
           name="Intel GPU Acceleration"
           description="Use Intel GPU for hardware acceleration (VAAPI)."
           [options]="trueFalseOptions"
-          [selectedOption]="settings()?.gpu_enabled_intel"
+          [selectedOption]="$safeNavigationMigration(settings()?.gpu_enabled_intel)"
           [colorType]="'warning'"
           [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_intel', $event)"
@@ -224,7 +224,7 @@
           name="AMD GPU Acceleration"
           description="Use AMD GPU for hardware acceleration (AMF)."
           [options]="trueFalseOptions"
-          [selectedOption]="settings()?.gpu_enabled_amd"
+          [selectedOption]="$safeNavigationMigration(settings()?.gpu_enabled_amd)"
           [colorType]="'warning'"
           [colorTypeOption]="'true'"
           (optionChange)="updateSetting('gpu_enabled_amd', $event)"
@@ -235,7 +235,7 @@
         description="Update yt-dlp to latest version during container startup."
         descriptionExtra="You need to restart the container to apply updates."
         [options]="trueFalseOptions"
-        [selectedOption]="settings()?.update_ytdlp"
+        [selectedOption]="$safeNavigationMigration(settings()?.update_ytdlp)"
         [colorType]="'warning'"
         [colorTypeOption]="'true'"
         (optionChange)="updateSetting('update_ytdlp', $event)"
@@ -246,7 +246,7 @@
           description="Update yt-dlp to the latest nightly build instead of the stable release."
           descriptionExtra="Only applies when 'Update Yt-dlp' is enabled. Restart required to apply."
           [options]="trueFalseOptions"
-          [selectedOption]="settings()?.ytdlp_nightly"
+          [selectedOption]="$safeNavigationMigration(settings()?.ytdlp_nightly)"
           [colorType]="'warning'"
           [colorTypeOption]="'true'"
           (optionChange)="updateSetting('ytdlp_nightly', $event)"
