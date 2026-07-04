@@ -4,9 +4,6 @@
         "secure": false,
         "changeOrigin": true,
         "cookieDomainRewrite": "localhost",
-        "headers": {
-            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
-        },
         "logLevel": "debug"
     },
     "/config": {
@@ -14,9 +11,6 @@
         "secure": false,
         "changeOrigin": true,
         "cookieDomainRewrite": "localhost",
-        "headers": {
-            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
-        },
         "logLevel": "debug"
     },
     "/ws": {
@@ -24,9 +18,6 @@
         "secure": false,
         "changeOrigin": true,
         "cookieDomainRewrite": "localhost",
-        "headers": {
-            "Cookie": "trailarr_api_key=67d56c747bea5441edf7c168c2367876"
-        },
         "logLevel": "debug"
     }
 }

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Trailarr** is a Docker-based application that automates downloading and managing trailers for Radarr and Sonarr media libraries. Plex is a first-class connection type that works alongside Arr connections. Emby and Jellyfin are also supported.
 
 - **Backend**: Python 3.13 + FastAPI + SQLModel + Alembic + SQLite
-- **Frontend**: Angular 21 (standalone components, Signals) + TypeScript strict mode
+- **Frontend**: Angular 22 (standalone components, Signals) + TypeScript strict mode
 - **Task Scheduler**: Quiv (async task scheduler, replaced APScheduler)
 - **Dependency manager**: `uv` for Python, `npm` for frontend
 
@@ -41,6 +41,24 @@ mkdir -p /tmp/trailarr-config/logs /tmp/trailarr-config/web
 cd backend
 APP_DATA_DIR=/tmp/trailarr-config uv run alembic upgrade head
 ```
+
+### Verifying Frontend Changes End-to-End
+
+Don't rely on `npm run build` / `npm run test` alone to confirm a frontend change actually works — drive the real app:
+
+```bash
+# 1. Build the frontend (outputs to ../frontend-build/)
+cd frontend && npm run build
+
+# 2. From repo root, launch the real app (backs up DB, runs migrations, serves API + built
+#    frontend together on port 7890 — this is the same path a production install uses,
+#    see backend/frontend/router.py)
+python3 scripts/launch.py
+
+# 3. Drive http://localhost:7890 with headless Chromium (Playwright) and check console errors
+```
+
+`scripts/launch.py` uses the persistent dev config at `config/.env` / `config/trailarr.db` (gitignored). If `WEBUI_DISABLE_AUTH=true` there, no login is needed. Stop it with `pkill -f "scripts/launch.py"` and `pkill -f "uvicorn main:trailarr_api"` (it execs into `uv run uvicorn`, so both process names can exist). Prefer this over `ng serve` + `src/proxy.conf.json` for verification — the dev proxy is a different code path (Angular dev server proxying to the backend) than the production static-file serving in `router.py`.
 
 ### Testing
 
