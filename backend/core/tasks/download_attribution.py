@@ -6,6 +6,7 @@ import core.base.database.manager.media as media_manager
 import core.base.database.manager.trailerprofile as trailerprofile_manager
 from core.base.database.models.download import DownloadRead
 from core.base.utils.profiles import find_matching_profiles
+from core.tasks.startup_fixes import fix_trailer_exists_flags
 
 logger = ModuleLogger("DownloadAttribution")
 
@@ -57,18 +58,32 @@ async def attribute_unattributed_downloads() -> None:
             for d in media.downloads
             if d.file_exists and d.profile_id
         }
+        matching_profiles = find_matching_profiles(
+            media, profiles, ignore_state_filters=True
+        )
         available_profiles = [
-            p
-            for p in find_matching_profiles(
-                media, profiles, ignore_state_filters=True
-            )
-            if p.id not in used_profile_ids
+            p for p in matching_profiles if p.id not in used_profile_ids
         ]
         # Downloads are ordered oldest first; assign matching profiles in
         # priority order so the oldest download gets the highest priority.
         for download in downloads:
             if not available_profiles:
                 unclaimed_count += 1
+                # The two causes need different fixes, so name them apart:
+                # no matching profile → adjust profile filters; all matching
+                # profiles taken → extra/duplicate trailer file for media.
+                if matching_profiles:
+                    reason = (
+                        "all matching profiles already have a download"
+                        " (extra trailer file?)"
+                    )
+                else:
+                    reason = "no profile filters match this media"
+                logger.info(
+                    f"Download '{download.file_name}' of '{media.title}'"
+                    f" [{media_id}] left unattributed: {reason}. Assign a"
+                    " profile manually from Media Details if needed."
+                )
                 continue
             profile = available_profiles.pop(0)
             download_manager.update_profile_id(download.id, profile.id)
@@ -81,8 +96,8 @@ async def attribute_unattributed_downloads() -> None:
 
     logger.info(
         f"Download attribution complete: {claimed_count} download(s)"
-        f" attributed, {unclaimed_count} left unattributed (no matching"
-        " profile available)."
+        f" attributed, {unclaimed_count} left unattributed (see log lines"
+        " above for per-download reasons)."
     )
 
 
@@ -119,6 +134,14 @@ async def report_attribution_health() -> None:
 
 
 async def run_attribution_pass() -> None:
-    """Run the download attribution pass, then report attribution health."""
+    """Run the download attribution pass, then fix stale trailer_exists
+    flags, then report attribution health.
+
+    The flag fix must run *after* attribution: it only corrects media whose
+    downloads are linked to a profile, so pre-Trailarr trailers recorded
+    with profile_id=0 were invisible to it until the attribution pass
+    assigns them a profile. Chaining guarantees one startup fixes both.
+    """
     await attribute_unattributed_downloads()
+    await fix_trailer_exists_flags()
     await report_attribution_health()
