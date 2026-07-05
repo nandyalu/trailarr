@@ -168,6 +168,7 @@ nav:
     - '2025': release-notes/2025.md
     - '2024': release-notes/2024.md
   - References:
+    - Roadmap to v1.0.0: references/roadmap.md
     - Contributing: references/contributing.md
     - Legal Disclaimer: references/legal-disclaimer.md
     - API Docs: references/api-docs/api-docs.html
