@@ -68,7 +68,29 @@
           <div class="download-profile">
             <span class="profile-label">Profile:</span>
             @if (download.profile_id === 0) {
-              <span class="profile-name">Unknown</span>
+              <button
+                class="assign-profile-button"
+                #assignButton
+                [attr.popovertarget]="'assignProfilePopover' + download.id"
+                (click)="setDropdownDirection(assignButton, assignPopover)"
+                title="Assign a profile to this download"
+              >
+                <span>Unknown</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="assign-icon">
+                  <path d="M480-360 280-560h400L480-360Z" />
+                </svg>
+              </button>
+              <div [attr.id]="'assignProfilePopover' + download.id" popover="auto" class="popover" #assignPopover>
+                <div class="assign-dropdown" role="listbox" aria-label="Assign Profile">
+                  @for (profile of allProfiles(); track profile.id) {
+                    <button class="assign-dropdown-option" role="option" (click)="assignProfile(download, profile.id, assignPopover)">
+                      {{ profile.customfilter.filter_name }}
+                    </button>
+                  } @empty {
+                    <span class="no-profiles">No profiles available</span>
+                  }
+                </div>
+              </div>
             } @else {
               @let profileAvailable = profilesMap().has(download.profile_id);
               @if (profileAvailable) {

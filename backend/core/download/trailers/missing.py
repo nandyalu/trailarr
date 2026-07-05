@@ -7,27 +7,13 @@ import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
-from core.base.utils.filters import matches_filters
+from core.base.utils.profiles import find_matching_profiles
 from core.download import trailer as trailer_downloader
 from core.download.trailers import utils
 from core.files_handler import FilesHandler
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailerDownloadTasks")
-
-
-def _find_matching_profiles(
-    db_media: MediaRead, trailer_profiles: list[TrailerProfileRead]
-) -> list[TrailerProfileRead]:
-    """Find all matching profiles for a media item and return them."""
-    matching_profiles = []
-    for profile in trailer_profiles:
-        if matches_filters(db_media, profile.customfilter.filters):
-            matching_profiles.append(profile)
-
-    # Sort profiles by priority, lower number = higher priority
-    matching_profiles.sort(key=lambda p: p.priority)
-    return matching_profiles
 
 
 def _is_valid_media(
@@ -146,7 +132,7 @@ async def download_missing_trailers(
             # Skip media that was already processed in this run
             if db_media.id in processed_media_ids:
                 continue
-            matching_profiles = _find_matching_profiles(
+            matching_profiles = find_matching_profiles(
                 db_media, enabled_profiles
             )
             if matching_profiles:

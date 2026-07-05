@@ -507,3 +507,36 @@ def track_download_skipped(
             f"Failed to track download_skipped event for [{media_id}]: {e}"
         )
         return False
+
+
+def track_download_attributed(
+    media_id: int,
+    download_name: str,
+    profile_name: str,
+    source: EventSource = EventSource.USER,
+    source_detail: str = "",
+) -> None:
+    """Track when a download is attributed to a trailer profile. \n
+    Used when a download recorded without a profile (profile_id=0) is
+    linked to a profile, either manually by the user or by the app. \n
+    Args:
+        media_id (int): The ID of the media item.
+        download_name (str): File name of the download being attributed.
+        profile_name (str): Name of the profile it was attributed to.
+        source (EventSource): The source of the event (USER or SYSTEM).
+        source_detail (str): Additional details about the source.
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.DOWNLOAD_ATTRIBUTED,
+            source=source,
+            source_detail=source_detail,
+            old_value=download_name,
+            new_value=profile_name,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track download_attributed event for [{media_id}]: {e}"
+        )

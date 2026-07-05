@@ -6,8 +6,9 @@ from .read import (
     read_all_raw,
     read_by_media_id,
     read_by_profile_id,
+    read_unattributed,
 )
-from .update import update, mark_as_deleted
+from .update import update, mark_as_deleted, update_profile_id
 
 __all__ = [
     "create",
@@ -18,6 +19,8 @@ __all__ = [
     "read_all_raw",
     "read_by_media_id",
     "read_by_profile_id",
+    "read_unattributed",
     "update",
     "mark_as_deleted",
+    "update_profile_id",
 ]

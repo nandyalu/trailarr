@@ -224,6 +224,69 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         )
 
 
+@media_router.put(
+    "/{media_id}/downloads/{download_id}/profile",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media, Download or Profile Not Found",
+        }
+    },
+)
+async def update_download_profile(
+    media_id: int, download_id: int, profile_id: int
+) -> str:
+    """Set the trailer profile that owns a download. \n
+    Used to manually attribute downloads recorded without a profile
+    (profile_id=0), e.g. trailers found on disk that couldn't be linked
+    to a profile automatically. \n
+    Args:
+        media_id (int): The ID of the media item the download belongs to.
+        download_id (int): The ID of the download to update.
+        profile_id (int): The ID of the trailer profile to attribute it to. \n
+    Returns:
+        str: Message indicating the result.
+    """
+    logger.info(
+        f"Setting profile [{profile_id}] on download [{download_id}] for"
+        f" media [{media_id}]"
+    )
+    try:
+        download = download_manager.read(download_id)
+        if download.media_id != media_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"Download with id {download_id} does not belong to"
+                    f" media {media_id}"
+                ),
+            )
+        profile = trailerprofile.get_trailerprofile(profile_id)
+        download_manager.update_profile_id(download_id, profile_id)
+        event_manager.track_download_attributed(
+            media_id=media_id,
+            download_name=download.file_name,
+            profile_name=profile.customfilter.filter_name,
+            source=EventSource.USER,
+            source_detail="MediaDetails",
+        )
+        msg = (
+            f"Download '{download.file_name}' assigned to profile"
+            f" '{profile.customfilter.filter_name}'"
+        )
+        await websockets.ws_manager.broadcast(
+            msg, "Success", reload="downloads"
+        )
+        return msg
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
 @media_router.get(
     "/{media_id}/files",
     status_code=status.HTTP_200_OK,

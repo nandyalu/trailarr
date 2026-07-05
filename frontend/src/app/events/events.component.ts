@@ -207,6 +207,8 @@ export class EventsComponent implements OnInit {
         return 'Trailer file content changed outside the app — metadata refreshed';
       case EventType.DOWNLOAD_SKIPPED:
         return `Skipped: ${event.new_value}`;
+      case EventType.DOWNLOAD_ATTRIBUTED:
+        return `'${event.old_value}' assigned to profile: ${event.new_value}`;
       case EventType.PLEX_LINKED:
         return `Linked to Plex connection: ${event.new_value}`;
       case EventType.PLEX_UNLINKED:

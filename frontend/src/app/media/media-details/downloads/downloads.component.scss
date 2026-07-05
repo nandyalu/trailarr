@@ -170,3 +170,79 @@
     right: 1rem;
   }
 }
+
+.assign-profile-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.625rem;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  font-size: 0.875rem;
+  font-style: italic;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-surface-container-highest);
+  }
+
+  .assign-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: var(--color-on-surface-variant);
+  }
+}
+
+.popover {
+  // Reset the UA popover inset:0 so only the anchored sides position the box
+  inset: auto;
+  left: anchor(left);
+  top: anchor(bottom);
+  margin: 0.25rem 0 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  padding: 0.35rem;
+  background-color: var(--color-surface-container-high);
+  box-shadow: var(--shadow-level3);
+  overflow: hidden;
+
+  // Opens above the button when there's no room below it (download cards
+  // can sit at the bottom of the viewport) — set from the click handler,
+  // since position-try-fallbacks doesn't fire for in-flow anchors
+  &.open-up {
+    top: auto;
+    bottom: anchor(top);
+    margin: 0 0 0.25rem;
+  }
+}
+
+.assign-dropdown {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+}
+
+.assign-dropdown-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--color-on-surface);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+}
+
+.no-profiles {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+}

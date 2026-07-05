@@ -1,4 +1,4 @@
-from sqlmodel import Session, desc, select, text
+from sqlmodel import Session, col, desc, select, text
 from . import base
 from core.base.database.models.download import (
     Download,
@@ -105,5 +105,32 @@ def read_by_profile_id(
     """
     statement = select(Download).where(Download.profile_id == profile_id)
     statement = statement.order_by(desc(Download.added_at))
+    db_downloads = _session.exec(statement).all()
+    return base.convert_to_read_list(db_downloads)
+
+
+@read_session
+def read_unattributed(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadRead]:
+    """
+    Get all active downloads not attributed to any profile.
+    Active means the file still exists on disk (file_exists=True);
+    unattributed means profile_id=0 (e.g. trailers found on disk by the
+    files scan that could not be linked to a profile at the time).
+    Args:
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[DownloadRead]: List of downloads (read-only), ordered by
+            media_id, then oldest first.
+    """
+    statement = (
+        select(Download)
+        .where(Download.profile_id == 0)
+        .where(col(Download.file_exists).is_(True))
+        .order_by(col(Download.media_id), col(Download.added_at))
+    )
     db_downloads = _session.exec(statement).all()
     return base.convert_to_read_list(db_downloads)

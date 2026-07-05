@@ -8,8 +8,10 @@ import core.base.database.manager.event as event_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
+from core.base.database.manager import trailerprofile
 from core.base.database.models.event import EventSource
 from core.base.database.models.media import MediaRead
+from core.base.utils.profiles import pick_profile_for_download
 from core.download.trailers.service import (
     compute_file_hash,
     reanalyze_trailer_download,
@@ -176,15 +178,37 @@ async def _process_trailer_changes(
                 continue
         still_new_paths.append(t_path)
 
-    # New trailer files found on disk that are not yet recorded as downloads
+    # New trailer files found on disk that are not yet recorded as downloads.
+    # Attribute each to the highest-priority matching profile that doesn't
+    # already own an active download for this media (0 if none available).
     new_count = 0
+    if still_new_paths:
+        _profiles = trailerprofile.get_trailerprofiles()
+        # Downloads whose file is gone get marked deleted below (same
+        # condition as that loop) — their profiles are free to be claimed
+        # by the new files, keeping ownership when a trailer is replaced.
+        _stale_ids = {
+            d.id
+            for d in missing_downloads
+            if d.id not in claimed_ids and not os.path.exists(d.path)
+        }
+        _used_profile_ids = {
+            d.profile_id
+            for d in existing_downloads
+            if d.profile_id and d.id not in _stale_ids
+        }
     for t_path in still_new_paths:
         new_count += 1
+        _profile_id = pick_profile_for_download(
+            media, _profiles, _used_profile_ids
+        )
+        if _profile_id:
+            _used_profile_ids.add(_profile_id)
         logger.info(
             f"Found new trailer file: '{t_path}' for '{media.title}'"
             f" [{media.id}]"
         )
-        await record_new_trailer_download(media, 0, t_path)
+        await record_new_trailer_download(media, _profile_id, t_path)
         event_manager.track_trailer_detected(
             media_id=media.id,
             source=source,
