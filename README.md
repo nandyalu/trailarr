@@ -91,7 +91,7 @@ If you encounter any bugs/issues, please create an issue on the [GitHub reposito
 
 ## Roadmap
 
-There are some changes that are planned for the future. These changes are not guaranteed to be implemented, but they are on the roadmap.
+There are some changes that are planned for the future. These changes are not guaranteed to be implemented, but they are on the roadmap. See the [Roadmap to v1.0.0](https://nandyalu.github.io/trailarr/references/roadmap/) page in the docs under References for more details.
 
 - [x] Add Profiles for Trailers Quality with custom filters (include wait time between downloads)
 - [x] Add custom filters to Media pages in frontend
@@ -105,8 +105,8 @@ There are some changes that are planned for the future. These changes are not gu
 - [x] Improve task logging
 - [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 - [x] Add Event tracking similar to History in Radarr/Sonarr
-- [ ] Add Discord notifications for important events
-- [ ] Use TMDB API for finding trailers as an option
+- [ ] Add Discord notifications for important events - planned for v0.10.0 (Aug 2026)
+- [ ] Use TMDB API for finding trailers as an option - planned for v0.12.0 (Oct-Nov 2026)
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ). We are always looking for ways to improve the project.
