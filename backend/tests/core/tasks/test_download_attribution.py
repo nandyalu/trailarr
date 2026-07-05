@@ -430,3 +430,108 @@ class TestAttributionAgainstRealDatabase:
             for d in download_manager.read_all_raw()
         }
         assert before == after
+
+
+class TestRunAttributionPass:
+
+    @pytest.mark.asyncio
+    async def test_fix_flags_runs_after_attribution(self):
+        """fix_trailer_exists_flags only sees profile-linked downloads, so it
+        must run after the attribution pass — one startup fixes both."""
+        order = []
+
+        async def fake_fix():
+            order.append("fix")
+
+        dl = make_download(1)
+        media = make_media(downloads=[dl])
+        profile = make_profile(7)
+
+        def record_update(download_id, profile_id):
+            order.append("attribute")
+
+        def gen():
+            yield from []
+
+        from core.tasks.download_attribution import run_attribution_pass
+
+        with (
+            patch(
+                f"{PKG}.download_manager.read_unattributed", return_value=[dl]
+            ),
+            patch(
+                f"{PKG}.trailerprofile_manager.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            patch(f"{PKG}.media_manager.read", return_value=media),
+            patch(
+                f"{PKG}.download_manager.update_profile_id",
+                side_effect=record_update,
+            ),
+            patch(f"{PKG}.fix_trailer_exists_flags", side_effect=fake_fix),
+            patch(
+                f"{PKG}.media_manager.read_all_generator", return_value=gen()
+            ),
+        ):
+            await run_attribution_pass()
+
+        assert order == ["attribute", "fix"]
+
+
+class TestUnclaimedReasons:
+
+    @pytest.mark.asyncio
+    async def test_logs_extra_file_reason_when_profiles_taken(self, caplog):
+        owned = make_download(1, profile_id=7)
+        unattributed = make_download(2)
+        media = make_media(downloads=[owned, unattributed])
+        profile = make_profile(7)
+        with (
+            patch(
+                f"{PKG}.download_manager.read_unattributed",
+                return_value=[unattributed],
+            ),
+            patch(
+                f"{PKG}.trailerprofile_manager.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            patch(f"{PKG}.media_manager.read", return_value=media),
+            patch(f"{PKG}.download_manager.update_profile_id"),
+        ):
+            with caplog.at_level("INFO"):
+                await attribute_unattributed_downloads()
+
+        assert "extra trailer file" in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_logs_no_match_reason_when_nothing_matches(self, caplog):
+        from core.base.database.models.filter import (
+            FilterCondition,
+            FilterRead,
+        )
+
+        movie_filter = FilterRead(
+            id=1,
+            customfilter_id=1,
+            filter_by="is_movie",
+            filter_condition=FilterCondition.EQUALS,
+            filter_value="true",
+        )
+        dl = make_download(1)
+        media = make_media(downloads=[dl], is_movie=False)
+        profile = make_profile(7, filters=[movie_filter])
+        with (
+            patch(
+                f"{PKG}.download_manager.read_unattributed", return_value=[dl]
+            ),
+            patch(
+                f"{PKG}.trailerprofile_manager.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            patch(f"{PKG}.media_manager.read", return_value=media),
+            patch(f"{PKG}.download_manager.update_profile_id"),
+        ):
+            with caplog.at_level("INFO"):
+                await attribute_unattributed_downloads()
+
+        assert "no profile filters match this media" in caplog.text

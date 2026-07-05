@@ -27,9 +27,16 @@ export class MediaComponent implements OnInit {
   protected readonly filteredSortedMedia = this.mediaService.filteredSortedMedia;
   protected readonly inEditMode = this.mediaService.inEditMode;
   protected readonly selectedView = this.mediaService.selectedView;
+  protected readonly unknownProfileCount = this.mediaService.unknownProfileCount;
+  protected readonly selectedFilter = this.mediaService.selectedFilter;
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);
+
+  /** Applies the 'Unknown Profile' quick filter from the review banner */
+  protected reviewUnknownProfiles() {
+    this.mediaService.selectedFilter.set('unknown_profile');
+  }
 
   ngOnInit() {
     this.isLoading.set(true);

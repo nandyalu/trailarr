@@ -204,6 +204,9 @@ export function applySelectedFilter(allMedia: Media[], selectedFilter: string, c
         return media.monitor;
       case 'unmonitored':
         return !media.monitor && !media.trailer_exists;
+      case 'unknown_profile':
+        // Media with an active download that has no profile assigned
+        return media.downloads.some((d) => d.file_exists && d.profile_id === 0);
       case 'movies':
         return media.is_movie && media.trailer_exists;
       case 'series':

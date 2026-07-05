@@ -41,7 +41,13 @@ export class NormalHeaderComponent {
 
   // Signals in this Component
   protected readonly allFilters = computed(() => {
-    return this.filterOptions().concat(this.customFilters().map((f) => f.filter_name));
+    let options = this.filterOptions();
+    // Only offer the 'Unknown Profile' quick filter while there is
+    // something to fix — most libraries have zero after auto-attribution
+    if (this.mediaService.unknownProfileCount() > 0) {
+      options = options.concat('unknown_profile');
+    }
+    return options.concat(this.customFilters().map((f) => f.filter_name));
   });
   protected readonly showFiltersDialogOpen = signal(false);
   protected readonly fieldConfigDialogOpen = signal(false);

@@ -127,6 +127,13 @@ export class MediaService {
   /** Media list to display based on the current display count */
   readonly displayMedia = computed(() => this.filteredSortedMedia().slice(0, this.displayCount()));
 
+  /** Count of media items that have an active download with no profile
+   * assigned (profile_id=0) — drives the 'Unknown Profile' quick filter
+   * and the review banner. */
+  readonly unknownProfileCount = computed(() => {
+    return this.combinedMedia().filter((media) => media.downloads.some((d) => d.file_exists && d.profile_id === 0)).length;
+  });
+
   /** Currently selected media item based on the selectedMediaID */
   readonly selectedMedia = computed(() => {
     const mediaID = this.selectedMediaID();

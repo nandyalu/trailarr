@@ -23,7 +23,6 @@ from core.tasks.download_attribution import run_attribution_pass
 from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.image_refresh import refresh_images
 from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
-from core.tasks.startup_fixes import fix_trailer_exists_flags
 from core.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")
@@ -85,14 +84,9 @@ async def _refresh_plex_trailer_flags(
 
 
 @with_logging_context
-async def _fix_trailer_exists_flags(*, _job_id: str | None = None):
-    """One-time startup fix for incorrect trailer_exists flags."""
-    await fix_trailer_exists_flags()
-
-
-@with_logging_context
 async def _attribute_trailer_downloads(*, _job_id: str | None = None):
-    """One-time startup pass to attribute unattributed trailer downloads."""
+    """One-time startup pass: attribute unattributed trailer downloads,
+    then fix stale trailer_exists flags."""
     await run_attribution_pass()
 
 
@@ -206,19 +200,12 @@ def schedule_all_tasks() -> None:
         )
         logger.info("Scheduled 'Refresh Plex Trailer Flags' task.")
 
-    # One-time startup fix: correct trailer_exists flags skewed by the old file size limit.
-    scheduler.add_task(
-        task_name="Fix Trailer Exists Flags",
-        func=_fix_trailer_exists_flags,
-        interval=86400.0,
-        delay=15.0,
-        run_once=True,
-    )
-
     # One-time startup pass: attribute downloads recorded without a profile
-    # (profile_id=0) to the user's matching profiles, and report media whose
-    # trailer_exists flag has no backing download record. Runs before the
-    # first disk scan and download task so their results build on it.
+    # (profile_id=0) to the user's matching profiles, then fix stale
+    # trailer_exists flags (must run after attribution — the fix only sees
+    # profile-linked downloads), and report media whose trailer_exists flag
+    # has no backing download record. Runs before the first disk scan and
+    # download task so their results build on it.
     scheduler.add_task(
         task_name="Attribute Trailer Downloads",
         func=_attribute_trailer_downloads,
