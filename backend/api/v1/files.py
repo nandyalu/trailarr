@@ -6,6 +6,7 @@ import core.base.database.manager.download as download_manager
 import core.base.database.manager.filefolderinfo as files_manager
 import core.base.database.manager.media as media_manager
 from core.download import video_analysis
+from core.download.trailers.service import rename_trailer_download
 from core.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFilesAPI")
@@ -232,11 +233,15 @@ def trim_video(
     status_code=status.HTTP_200_OK,
     description="Rename a file or folder.",
 )
-async def rename_file_fol(old_path: str, new_path: str) -> bool:
+async def rename_file_fol(
+    old_path: str, new_path: str, media_id: int = -1
+) -> bool:
     """Rename a file or folder.\n
     Args:
         old_path (str): Path of the file/folder to rename.
-        new_path (str): New path of the file/folder. \n
+        new_path (str): New path of the file/folder.
+        media_id (int, optional=-1): Media ID owning the file, so a matching
+            trailer download record can be updated in place. \n
     Raises:
         HTTPException (400): If the file path is invalid. \n
     Returns:
@@ -248,7 +253,15 @@ async def rename_file_fol(old_path: str, new_path: str) -> bool:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
         )
-    return await FilesHandler.rename_file_fol(old_path, new_path)
+    renamed_status = await FilesHandler.rename_file_fol(old_path, new_path)
+    if media_id != -1 and renamed_status:
+        all_downloads = download_manager.read_by_media_id(media_id)
+        matching_download = next(
+            (d for d in all_downloads if d.path == old_path), None
+        )
+        if matching_download:
+            await rename_trailer_download(matching_download, new_path)
+    return renamed_status
 
 
 @files_router.delete(

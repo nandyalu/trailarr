@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app_logger import ModuleLogger
 import core.base.database.manager.download as download_manager
-from core.base.database.models.download import DownloadCreate
+from core.base.database.models.download import DownloadCreate, DownloadRead
 from core.base.database.models.media import MediaRead
 from core.download.video_analysis import VideoInfo, get_media_info
 from core.files_handler import FilesHandler
@@ -91,6 +91,56 @@ def find_youtube_id(media_info: VideoInfo, media: MediaRead) -> str:
     return youtube_id
 
 
+def _extract_metadata_fields(media_info: VideoInfo, file_path: str) -> dict:
+    """Extract the physical-file-derived metadata fields shared by new-download
+    recording and re-analysis after an in-place content change.
+    Args:
+        media_info (VideoInfo): The ffprobe-derived video info for the file.
+        file_path (str): Path to the file (used to compute the content hash).
+    Returns:
+        dict: Fields suitable for merging into a DownloadCreate payload —
+            file_hash, size, resolution, file_format, video_format,
+            audio_format, audio_language, subtitle_format, subtitle_language,
+            duration.
+    """
+    video_stream = next(
+        (s for s in media_info.streams if s.codec_type == "video"), None
+    )
+    audio_stream = next(
+        (s for s in media_info.streams if s.codec_type == "audio"), None
+    )
+    subtitle_stream = next(
+        (s for s in media_info.streams if s.codec_type == "subtitle"), None
+    )
+
+    resolution = DEFAULT_RESOLUTION
+    if video_stream:
+        resolution = get_resolution_label(video_stream.coded_height)
+
+    return {
+        "file_hash": compute_file_hash(file_path),
+        "size": media_info.size,
+        "resolution": resolution,
+        "file_format": media_info.format_name,
+        "video_format": video_stream.codec_name if video_stream else "N/A",
+        "audio_format": audio_stream.codec_name if audio_stream else "N/A",
+        "audio_language": (
+            audio_stream.language
+            if audio_stream and audio_stream.language
+            else None
+        ),
+        "subtitle_format": (
+            subtitle_stream.codec_name if subtitle_stream else None
+        ),
+        "subtitle_language": (
+            subtitle_stream.language
+            if subtitle_stream and subtitle_stream.language
+            else None
+        ),
+        "duration": media_info.duration_seconds,
+    }
+
+
 async def record_new_trailer_download(
     media: MediaRead,
     profile_id: int,
@@ -129,28 +179,7 @@ async def record_new_trailer_download(
             file_stat.st_ctime, tz=timezone.utc
         )
 
-        # Compute File Hash
-        file_hash = compute_file_hash(file_path)
-
-        # Extract video stream info
-        video_stream = next(
-            (s for s in media_info.streams if s.codec_type == "video"), None
-        )
-
-        # Extract audio stream info (prefer first audio stream)
-        audio_stream = next(
-            (s for s in media_info.streams if s.codec_type == "audio"), None
-        )
-
-        # Extract subtitle stream info (if any)
-        subtitle_stream = next(
-            (s for s in media_info.streams if s.codec_type == "subtitle"), None
-        )
-
-        # Determine resolution label
-        resolution = DEFAULT_RESOLUTION
-        if video_stream:
-            resolution = get_resolution_label(video_stream.coded_height)
+        metadata = _extract_metadata_fields(media_info, file_path)
 
         # Get youtube video id
         yt_id = find_youtube_id(media_info, media)
@@ -161,26 +190,7 @@ async def record_new_trailer_download(
         download = DownloadCreate(
             path=file_path,
             file_name=os.path.basename(file_path),
-            file_hash=file_hash,
-            size=media_info.size,
-            resolution=resolution,
-            file_format=media_info.format_name,
-            video_format=video_stream.codec_name if video_stream else "N/A",
-            audio_format=audio_stream.codec_name if audio_stream else "N/A",
-            audio_language=(
-                audio_stream.language
-                if audio_stream and audio_stream.language
-                else None
-            ),
-            subtitle_format=(
-                subtitle_stream.codec_name if subtitle_stream else None
-            ),
-            subtitle_language=(
-                subtitle_stream.language
-                if subtitle_stream and subtitle_stream.language
-                else None
-            ),
-            duration=media_info.duration_seconds,
+            **metadata,
             youtube_id=yt_id,
             youtube_channel=media_info.youtube_channel,
             file_exists=True,
@@ -202,3 +212,67 @@ async def record_new_trailer_download(
             "Failed to record new trailer download for media"
             f" {media.title} [{media.id}]: {e}"
         )
+
+
+async def rename_trailer_download(download: DownloadRead, new_path: str) -> bool:
+    """Update path/file_name for a download whose file was renamed or moved on
+    disk. Used when a disk file is matched to an existing download by content
+    hash at a different path — keeps history/metadata on the same row instead
+    of deleting the old record and creating a new one.
+    Args:
+        download (DownloadRead): The existing download record.
+        new_path (str): The file's new path on disk.
+    Returns:
+        bool: True if the update succeeded, False otherwise.
+    """
+    try:
+        updated = download.model_dump()
+        updated["path"] = new_path
+        updated["file_name"] = os.path.basename(new_path)
+        download_manager.update(download.id, DownloadCreate(**updated))
+        return True
+    except Exception as e:
+        logger.error(
+            f"Failed to update renamed download {download.id} to"
+            f" '{new_path}': {e}"
+        )
+        return False
+
+
+async def reanalyze_trailer_download(
+    download: DownloadRead, file_path: str
+) -> bool:
+    """Recompute physical-file metadata for a download whose file content
+    changed in place on disk (same path, different hash — e.g. the user
+    re-encoded or trimmed it outside the app). Refreshes hash, size, codecs,
+    and duration, while deliberately preserving provenance fields
+    (youtube_id, youtube_channel, profile_id, added_at, path, media_id) since
+    an external edit doesn't change how/when we originally got this trailer.
+    Args:
+        download (DownloadRead): The existing download record.
+        file_path (str): The file's (unchanged) path on disk.
+    Returns:
+        bool: True if the re-analysis succeeded, False otherwise.
+    """
+    try:
+        media_info = get_media_info(file_path)
+        if not media_info:
+            logger.error(f"Failed to get media info for {file_path}")
+            return False
+
+        file_stat = os.stat(file_path)
+        metadata = _extract_metadata_fields(media_info, file_path)
+
+        updated = download.model_dump()
+        updated.update(metadata)
+        updated["updated_at"] = datetime.fromtimestamp(
+            file_stat.st_ctime, tz=timezone.utc
+        )
+        download_manager.update(download.id, DownloadCreate(**updated))
+        return True
+    except Exception as e:
+        logger.error(
+            f"Failed to re-analyze download {download.id} at"
+            f" '{file_path}': {e}"
+        )
+        return False

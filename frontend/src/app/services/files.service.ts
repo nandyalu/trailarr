@@ -28,8 +28,10 @@ export class FilesService {
     });
   }
 
-  renameFileFol(old_path: string, new_path: string): Observable<boolean> {
-    return this.http.post<boolean>(this.filesUrl + 'rename', null, {params: {old_path, new_path}});
+  renameFileFol(old_path: string, new_path: string, media_id?: number): Observable<boolean> {
+    const params: Record<string, string | number> = {old_path, new_path};
+    if (media_id !== undefined) params['media_id'] = media_id;
+    return this.http.post<boolean>(this.filesUrl + 'rename', null, {params});
   }
 
   deleteFileFol(path: string, media_id?: number): Observable<boolean> {
