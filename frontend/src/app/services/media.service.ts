@@ -338,6 +338,22 @@ export class MediaService {
   }
 
   /**
+   * Assigns a trailer profile to a download of a Media item.
+   * Used to manually attribute downloads recorded without a profile.
+   *
+   * @param mediaID - The ID of the Media item the download belongs to.
+   * @param downloadID - The ID of the download to update.
+   * @param profileID - The ID of the trailer profile to assign.
+   * @returns An Observable that emits the response from the server.
+   * If an error occurs during the request, the Observable will emit an error.
+   */
+  updateDownloadProfile(mediaID: number, downloadID: number, profileID: number): Observable<any> {
+    const params = new HttpParams().set('profile_id', profileID);
+    const url = `${this.mediaUrl}${mediaID}/downloads/${downloadID}/profile`;
+    return this.httpClient.put(url, {}, {params: params});
+  }
+
+  /**
    * Deletes the trailer for a Media item.
    *
    * @param mediaID - The ID of the Media item to delete the trailer for.

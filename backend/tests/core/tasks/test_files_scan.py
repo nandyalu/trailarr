@@ -577,6 +577,7 @@ class TestRenameAndHashDetection:
             path=old_path,
             file_exists=True,
             file_hash="abc123",
+            profile_id=1,
             updated_at=datetime.now(tz=timezone.utc),
         )
         media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
@@ -845,3 +846,133 @@ class TestDiskUnavailable:
         assert result == (0, 0, 0, 0, 0)
         mock_available.assert_not_called()
         mock_trailer_update.assert_called_once_with(media.id, False)
+
+
+class TestNewTrailerAttribution:
+    """New trailer files found on disk are attributed to the highest-priority
+    matching profile that doesn't already own an active download."""
+
+    @staticmethod
+    def _make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
+        return SimpleNamespace(
+            id=profile_id,
+            priority=priority,
+            customfilter=SimpleNamespace(
+                filter_name=f"Profile {profile_id}", filters=[]
+            ),
+        )
+
+    @pytest.mark.asyncio
+    async def test_new_trailer_claimed_by_matching_profile(self):
+        trailer_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
+        media = make_mock_media(downloads=[], monitor=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=False)
+        mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
+
+        profile = self._make_profile(5)
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
+            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch(
+                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            patch(
+                "core.tasks.files_scan.record_new_trailer_download"
+            ) as mock_record,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_record.assert_called_once_with(media, 5, trailer_path)
+
+    @pytest.mark.asyncio
+    async def test_profile_owning_active_download_not_claimed_again(self):
+        """When the only matching profile already owns an active download,
+        a second new file is recorded unattributed (profile_id=0)."""
+        existing_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
+        new_path = "/media/Test Movie (2025)/Trailers/Extra-trailer.mkv"
+        existing_dl = SimpleNamespace(
+            id=3,
+            path=existing_path,
+            file_exists=True,
+            file_hash="abc",
+            profile_id=5,
+            updated_at=datetime.now(tz=timezone.utc),
+        )
+        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=False)
+        mock_scanner.get_trailer_paths = MagicMock(
+            return_value={existing_path, new_path}
+        )
+
+        profile = self._make_profile(5)
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
+            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch(
+                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            # existing file "exists" so its download is not treated as stale
+            patch("core.tasks.files_scan.os.path.exists", return_value=True),
+            patch(
+                "core.tasks.files_scan.record_new_trailer_download"
+            ) as mock_record,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_record.assert_called_once_with(media, 0, new_path)
+
+    @pytest.mark.asyncio
+    async def test_replaced_trailer_frees_profile_for_new_file(self):
+        """A stale download (file gone, about to be marked deleted) does not
+        block its profile — the replacement file claims the same profile."""
+        old_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
+        new_path = "/media/Test Movie (2025)/Test Movie [new]-trailer.mkv"
+        stale_dl = SimpleNamespace(
+            id=3,
+            path=old_path,
+            file_exists=True,
+            file_hash="abc",
+            profile_id=5,
+            updated_at=datetime.now(tz=timezone.utc),
+        )
+        media = make_mock_media(downloads=[stale_dl], trailer_exists=True)
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=False)
+        mock_scanner.get_trailer_paths = MagicMock(return_value={new_path})
+
+        profile = self._make_profile(5)
+        with (
+            patch("core.tasks.files_scan.files_manager.update"),
+            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
+            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("core.tasks.files_scan.event_manager.track_trailer_deleted"),
+            patch(
+                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                return_value=[profile],
+            ),
+            # hashes differ → not a rename; old file is gone → stale
+            patch(
+                "core.tasks.files_scan.compute_file_hash",
+                return_value="different",
+            ),
+            patch("core.tasks.files_scan.os.path.exists", return_value=False),
+            patch("core.tasks.files_scan.download_manager.mark_as_deleted"),
+            patch(
+                "core.tasks.files_scan.record_new_trailer_download"
+            ) as mock_record,
+        ):
+            await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_record.assert_called_once_with(media, 5, new_path)

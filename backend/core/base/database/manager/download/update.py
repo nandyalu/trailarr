@@ -68,3 +68,27 @@ def mark_as_deleted(
     # Commit the changes to the database
     _session.add(download_db)
     _session.commit()
+
+
+@write_session
+def update_profile_id(
+    download_id: int,
+    profile_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """
+    Set the owning trailer profile for a download.
+    Used to attribute downloads recorded without a profile (profile_id=0)
+    to the profile that should own them.
+    Args:
+        download_id (int): The ID of the download to update.
+        profile_id (int): The ID of the TrailerProfile to attribute it to.
+        _session (Session, optional): A session to use for the database connection. Defaults to None.
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+    """
+    download_db = base._get_db_item(download_id, _session)
+    download_db.profile_id = profile_id
+    _session.add(download_db)
+    _session.commit()
