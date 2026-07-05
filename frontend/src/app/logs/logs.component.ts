@@ -1,11 +1,9 @@
 import {AsyncPipe, TitleCasePipe} from '@angular/common';
 import {httpResource} from '@angular/common/http';
-import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {ChangeDetectionStrategy, Component, computed, debounced, effect, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {AppLogRecord, LogLevel} from '../models/logs';
-import {debounceTime, distinctUntilChanged, take} from 'rxjs';
+import {take} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {TimediffPipe} from '../helpers/timediff.pipe';
 import {LogsService} from '../services/logs.service';
@@ -13,21 +11,12 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-logs',
-  imports: [
-    AsyncPipe,
-    LoadIndicatorComponent,
-    ReactiveFormsModule,
-    RouterLink,
-    ScrollNearEndDirective,
-    TimediffPipe,
-    TitleCasePipe,
-  ],
+  imports: [AsyncPipe, LoadIndicatorComponent, RouterLink, ScrollNearEndDirective, TimediffPipe, TitleCasePipe],
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogsComponent implements OnInit {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly logsService = inject(LogsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -36,7 +25,8 @@ export class LogsComponent implements OnInit {
   readonly logLevels = LogLevel;
   readonly allLogLevels = Object.values(LogLevel);
 
-  searchForm = new FormControl();
+  rawSearchInput = signal('');
+  private readonly debouncedSearchInput = debounced(this.rawSearchInput, 400);
   displayCount = signal(100);
 
   tracebackLog = signal<AppLogRecord | null>(null);
@@ -86,9 +76,20 @@ export class LogsComponent implements OnInit {
     this.displayCount.set(100);
   });
 
+  // Commits the debounced raw input into the effective search query used everywhere below.
+  private readonly syncSearchQuery = effect(() => {
+    this.searchQuery.set(this.debouncedSearchInput.value());
+  });
+
+  // Reactively persists level/search to the URL and localStorage whenever either changes.
+  private readonly persistOnChange = effect(() => {
+    this.selectedLogLevel();
+    this.searchQuery();
+    this.persistState();
+  });
+
   setLogLevel(level: LogLevel): void {
     this.selectedLogLevel.set(level);
-    this.persistState();
   }
 
   private persistState(): void {
@@ -119,7 +120,7 @@ export class LogsComponent implements OnInit {
     }
     const savedSearch = localStorage.getItem('TrailarrLogsSearch');
     if (savedSearch) {
-      this.searchForm.setValue(savedSearch);
+      this.rawSearchInput.set(savedSearch);
       this.searchQuery.set(savedSearch);
     }
 
@@ -131,14 +132,9 @@ export class LogsComponent implements OnInit {
       }
       const filter = params['filter'];
       if (filter) {
-        this.searchForm.setValue(filter);
+        this.rawSearchInput.set(filter);
         this.searchQuery.set(filter);
       }
-    });
-
-    this.searchForm.valueChanges.pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      this.searchQuery.set(value);
-      this.persistState();
     });
   }
 

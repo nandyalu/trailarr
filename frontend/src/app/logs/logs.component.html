@@ -30,7 +30,8 @@
       <input
         type="search"
         autocomplete="off"
-        [formControl]="searchForm"
+        [value]="rawSearchInput()"
+        (input)="rawSearchInput.set($any($event.target).value)"
         name="query"
         placeholder="Search... (min 3 chars)"
         aria-label="filter logs"

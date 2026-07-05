@@ -1,10 +1,8 @@
 import {AsyncPipe, TitleCasePipe} from '@angular/common';
 import {httpResource} from '@angular/common/http';
-import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {ChangeDetectionStrategy, Component, computed, debounced, effect, inject, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {debounceTime, distinctUntilChanged, take} from 'rxjs';
+import {take} from 'rxjs';
 import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
 import {TimediffPipe} from '../helpers/timediff.pipe';
 import {EVENT_SOURCE_LABELS, EVENT_TYPE_LABELS, EventRead, EventSource, EventType} from '../models/event';
@@ -14,21 +12,12 @@ import {LoadIndicatorComponent} from '../shared/load-indicator';
 
 @Component({
   selector: 'app-events',
-  imports: [
-    AsyncPipe,
-    LoadIndicatorComponent,
-    ReactiveFormsModule,
-    RouterLink,
-    ScrollNearEndDirective,
-    TimediffPipe,
-    TitleCasePipe,
-  ],
+  imports: [AsyncPipe, LoadIndicatorComponent, RouterLink, ScrollNearEndDirective, TimediffPipe, TitleCasePipe],
   templateUrl: './events.component.html',
   styleUrl: './events.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsComponent implements OnInit {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly eventsService = inject(EventsService);
   private readonly mediaService = inject(MediaService);
   private readonly route = inject(ActivatedRoute);
@@ -42,7 +31,8 @@ export class EventsComponent implements OnInit {
   readonly eventTypeLabels = EVENT_TYPE_LABELS;
   readonly eventSourceLabels = EVENT_SOURCE_LABELS;
 
-  searchForm = new FormControl();
+  rawSearchInput = signal('');
+  private readonly debouncedSearchInput = debounced(this.rawSearchInput, 300);
   displayCount = signal(50);
   searchQuery = signal<string>('');
   selectedEventType = signal<EventType | 'all'>('all');
@@ -109,14 +99,25 @@ export class EventsComponent implements OnInit {
     this.displayCount.set(50);
   });
 
+  // Commits the debounced raw input into the effective search query used everywhere below.
+  private readonly syncSearchQuery = effect(() => {
+    this.searchQuery.set(this.debouncedSearchInput.value());
+  });
+
+  // Reactively persists type/source/search to the URL and localStorage whenever any change.
+  private readonly persistOnChange = effect(() => {
+    this.selectedEventType();
+    this.selectedEventSource();
+    this.searchQuery();
+    this.persistState();
+  });
+
   setEventType(type: EventType | 'all'): void {
     this.selectedEventType.set(type);
-    this.persistState();
   }
 
   setEventSource(source: EventSource | 'all'): void {
     this.selectedEventSource.set(source);
-    this.persistState();
   }
 
   private persistState(): void {
@@ -156,7 +157,7 @@ export class EventsComponent implements OnInit {
     }
     const savedSearch = localStorage.getItem('TrailarrEventsSearch');
     if (savedSearch) {
-      this.searchForm.setValue(savedSearch);
+      this.rawSearchInput.set(savedSearch);
       this.searchQuery.set(savedSearch);
     }
 
@@ -172,20 +173,15 @@ export class EventsComponent implements OnInit {
       }
       const q = params['q'];
       if (q) {
-        this.searchForm.setValue(q);
+        this.rawSearchInput.set(q);
         this.searchQuery.set(q);
       }
       // media_id is a one-shot deep link from the media detail page
       const mediaId = params['media_id'];
       if (mediaId) {
-        this.searchForm.setValue(mediaId);
+        this.rawSearchInput.set(mediaId);
         this.searchQuery.set(mediaId);
       }
-    });
-
-    this.searchForm.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      this.searchQuery.set(value || '');
-      this.persistState();
     });
   }
 
