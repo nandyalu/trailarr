@@ -16,6 +16,7 @@ export class RenameDialogComponent implements AfterViewInit {
 
   readonly filePath = input.required<string>();
   readonly fileName = input.required<string>();
+  readonly mediaId = input.required<number>();
 
   readonly closed = output<void>();
   readonly renamed = output<void>();
@@ -36,7 +37,7 @@ export class RenameDialogComponent implements AfterViewInit {
   renameFile(): void {
     let selectedFileBasePath = this.filePath().split('/').slice(0, -1).join('/');
     let newPath = selectedFileBasePath + '/' + this.renamedFileName();
-    this.filesService.renameFileFol(this.filePath(), newPath).subscribe((result) => {
+    this.filesService.renameFileFol(this.filePath(), newPath, this.mediaId()).subscribe((result) => {
       const msg = result ? 'File renamed successfully!' : 'Failed to rename file!';
       this.webSocketService.showToast(msg, result ? 'success' : 'error');
       this.closeDialog();

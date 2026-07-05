@@ -21,6 +21,8 @@ class EventType(str, Enum):
     TRAILER_DETECTED = "trailer_detected"
     TRAILER_DOWNLOADED = "trailer_downloaded"
     TRAILER_DELETED = "trailer_deleted"
+    TRAILER_RENAMED = "trailer_renamed"
+    TRAILER_MODIFIED = "trailer_modified"
     DOWNLOAD_SKIPPED = "download_skipped"
     PLEX_LINKED = "plex_linked"
     PLEX_UNLINKED = "plex_unlinked"

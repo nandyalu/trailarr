@@ -63,12 +63,12 @@ python3 scripts/launch.py
 ### Testing
 
 ```bash
-# Backend tests (from /app/backend) - ~333 tests, ~6s
+# Backend tests (from /app/backend) - ~680 tests, ~35s
 # Note: use `uv run python` — plain `python` is not in PATH
 PYTHONPATH=$(pwd) uv run python -m pytest tests/ -v
 PYTHONPATH=$(pwd) uv run python -m pytest tests/path/to/test_file.py -v   # single file
 
-# Frontend tests (from /app/frontend) - ~13s
+# Frontend tests (from /app/frontend) - Vitest, ~2s
 npm run test
 npm run test:coverage
 ```
@@ -81,6 +81,16 @@ npm run build
 
 # Docker image (~15-30 min; may fail in CI due to SSL/PyPI issues)
 docker build --tag trailarr:latest .
+```
+
+### Docs
+
+```bash
+# Build the documentation site (from repo root, outputs to site/)
+# NOT `mkdocs build` — mkdocs.yml references mkdocs-material extensions, but the
+# `material` package isn't installed in the backend venv. This project actually
+# builds with zensical instead.
+uv run --project backend zensical build
 ```
 
 ### Database Migrations

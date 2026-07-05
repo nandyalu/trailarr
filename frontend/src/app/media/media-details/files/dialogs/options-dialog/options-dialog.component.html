@@ -78,7 +78,7 @@
     <video-info-dialog [filePath]="filePath()" (closed)="closeChildDialog()" />
   }
   @case ('rename') {
-    <rename-dialog [filePath]="filePath()" [fileName]="fileName()" (closed)="closeChildDialog()" (renamed)="onRenameComplete()" />
+    <rename-dialog [filePath]="filePath()" [fileName]="fileName()" [mediaId]="mediaId()" (closed)="closeChildDialog()" (renamed)="onRenameComplete()" />
   }
   @case ('delete') {
     <delete-dialog

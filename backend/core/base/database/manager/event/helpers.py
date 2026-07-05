@@ -247,6 +247,74 @@ def track_trailer_detected(
         )
 
 
+def track_trailer_renamed(
+    media_id: int,
+    old_path: str,
+    new_path: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a trailer file is detected as renamed/moved on disk. \n
+    This fires when the files-scan task (or the rename UI action) matches a
+    disk file to an existing download record by content hash, at a different
+    path than previously recorded. \n
+    Args:
+        media_id (int): The ID of the media item.
+        old_path (str): The previously recorded file path.
+        new_path (str): The new file path on disk.
+        source (EventSource): The source of the event (USER or SYSTEM).
+        source_detail (str): Additional details about the source.
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.TRAILER_RENAMED,
+            source=source,
+            source_detail=source_detail,
+            old_value=old_path,
+            new_value=new_path,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track trailer_renamed event for [{media_id}]: {e}"
+        )
+
+
+def track_trailer_modified(
+    media_id: int,
+    old_hash: str,
+    new_hash: str,
+    source: EventSource = EventSource.SYSTEM,
+    source_detail: str = "",
+) -> None:
+    """Track when a trailer file's content changed in place on disk. \n
+    This fires when the files-scan task finds a file at a previously-recorded
+    path whose content hash no longer matches the stored hash (e.g. the user
+    edited/re-encoded the file outside the app). \n
+    Args:
+        media_id (int): The ID of the media item.
+        old_hash (str): The previously recorded file hash.
+        new_hash (str): The newly computed file hash.
+        source (EventSource): The source of the event (USER or SYSTEM).
+        source_detail (str): Additional details about the source.
+    """
+    try:
+        event_create = EventCreate(
+            media_id=media_id,
+            event_type=EventType.TRAILER_MODIFIED,
+            source=source,
+            source_detail=source_detail,
+            old_value=old_hash,
+            new_value=new_hash,
+        )
+        create_event(event_create)
+    except Exception as e:
+        logger.warning(
+            f"Failed to track trailer_modified event for [{media_id}]: {e}"
+        )
+
+
 def track_plex_linked(
     media_id: int,
     connection_name: str,

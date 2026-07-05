@@ -201,6 +201,10 @@ export class EventsComponent implements OnInit {
         return `Downloaded trailer: ${event.new_value}`;
       case EventType.TRAILER_DELETED:
         return `Trailer deleted: ${event.new_value || 'unknown reason'}`;
+      case EventType.TRAILER_RENAMED:
+        return `Renamed: ${event.old_value} → ${event.new_value}`;
+      case EventType.TRAILER_MODIFIED:
+        return 'Trailer file content changed outside the app — metadata refreshed';
       case EventType.DOWNLOAD_SKIPPED:
         return `Skipped: ${event.new_value}`;
       case EventType.PLEX_LINKED:

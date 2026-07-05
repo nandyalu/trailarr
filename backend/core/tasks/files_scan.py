@@ -1,3 +1,4 @@
+import asyncio
 import os
 import threading
 from datetime import datetime, timezone
@@ -9,7 +10,12 @@ import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.event import EventSource
 from core.base.database.models.media import MediaRead
-from core.download.trailers.service import record_new_trailer_download
+from core.download.trailers.service import (
+    compute_file_hash,
+    reanalyze_trailer_download,
+    record_new_trailer_download,
+    rename_trailer_download,
+)
 from core.files.media_scanner import MediaScanner
 
 logger = ModuleLogger("TrailersFilesScan")
@@ -63,24 +69,116 @@ def _handle_folder_gone(media: MediaRead) -> None:
         media_manager.update_media_exists(media.id, False)
 
 
+def _is_disk_available(folder_path: str) -> bool:
+    """Best-effort check for whether the drive/network share backing a media
+    folder is currently reachable — used to distinguish "this media's
+    trailers were genuinely deleted" from "the network drive is temporarily
+    disconnected", which can otherwise look identical: the folder appears
+    empty or inaccessible either way, and some network filesystems (soft-
+    mounted SMB/NFS shares, autofs) don't raise an error when disconnected —
+    they just silently present the mount point as an empty local directory.
+
+    Walks up from folder_path's parent to the nearest existing ancestor and
+    confirms it can actually be listed. Catches stale-handle/I-O errors that
+    a plain os.path.isdir() check (used by MediaScanner) would silently
+    swallow as "not a directory". If even that ancestor is unreachable, the
+    whole drive/share is likely unavailable, not just this one folder.
+    Args:
+        folder_path (str): The media's configured folder path.
+    Returns:
+        bool: True if a reachable, listable ancestor was found (storage
+            looks available — any "missing" trailers are probably genuine).
+            False if nothing above folder_path could be reached (storage
+            looks unavailable — treat "missing" trailers as suspect).
+    """
+    path = os.path.dirname(os.path.abspath(folder_path.rstrip(os.sep)))
+    while True:
+        if os.path.isdir(path):
+            try:
+                os.listdir(path)
+                return True
+            except OSError as e:
+                logger.error(f"Disk unavailable: cannot list '{path}': {e}")
+                return False
+        parent = os.path.dirname(path)
+        if parent == path:
+            return False  # walked all the way to filesystem root
+        path = parent
+
+
 async def _process_trailer_changes(
     media: MediaRead,
     trailer_paths: set[str],
     existing_downloads: list,
     source: EventSource,
-) -> tuple[int, int]:
-    """Detect new trailers and mark deleted downloads, then reconcile trailer_exists.
+) -> tuple[int, int, int, int]:
+    """Detect new/renamed/modified trailers and mark deleted downloads, then
+    reconcile trailer_exists.
+
+    Matching is exact-path first; a disk path with no exact match is checked
+    against still-unmatched "missing" downloads by content hash to recognize
+    a rename/move (same file, keeps its history) before falling back to
+    treating it as a genuinely new trailer. A path that matches exactly is
+    additionally checked (cheap ctime pre-check, then hash) for in-place
+    content edits made outside the app.
+
+    Known limitation: a file that is both renamed *and* edited in the same
+    scan window won't hash-match any missing download, so it falls through
+    to "new" + "missing" rather than being recognized as one change — only
+    pure renames and pure in-place edits are detected.
 
     Returns:
-        tuple[int, int]: (new_trailer_count, missing_trailer_count)
+        tuple[int, int, int, int]: (new_trailer_count, missing_trailer_count,
+            renamed_trailer_count, modified_trailer_count)
     """
     existing_paths = {d.path for d in existing_downloads}
+    downloads_by_path = {d.path: d for d in existing_downloads}
+    new_paths = [p for p in trailer_paths if p not in existing_paths]
+    missing_downloads = [
+        d for d in existing_downloads if d.path not in trailer_paths
+    ]
+
+    # --- Pass 1: rename/move detection — match new disk paths to unmatched
+    # missing downloads by content hash, so the same row is updated in place
+    # instead of deleting the old record and creating a brand-new one.
+    renamed_count = 0
+    claimed_ids: set[int] = set()
+    still_new_paths = []
+    for t_path in new_paths:
+        match = None
+        if missing_downloads:  # only hash if there's something to compare against
+            t_hash = await asyncio.to_thread(compute_file_hash, t_path)
+            match = next(
+                (
+                    d
+                    for d in missing_downloads
+                    if d.id not in claimed_ids
+                    and d.file_hash
+                    and d.file_hash == t_hash
+                ),
+                None,
+            )
+        if match:
+            if await rename_trailer_download(match, t_path):
+                renamed_count += 1
+                claimed_ids.add(match.id)
+                logger.info(
+                    f"Trailer file renamed: '{match.path}' -> '{t_path}' for"
+                    f" '{media.title}' [{media.id}]"
+                )
+                event_manager.track_trailer_renamed(
+                    media_id=media.id,
+                    old_path=match.path,
+                    new_path=t_path,
+                    source=source,
+                    source_detail="FilesScan",
+                )
+                continue
+        still_new_paths.append(t_path)
 
     # New trailer files found on disk that are not yet recorded as downloads
     new_count = 0
-    for t_path in trailer_paths:
-        if t_path in existing_paths:
-            continue
+    for t_path in still_new_paths:
         new_count += 1
         logger.info(
             f"Found new trailer file: '{t_path}' for '{media.title}'"
@@ -101,10 +199,10 @@ async def _process_trailer_changes(
             media.trailer_exists = True
             media_manager.update_trailer_exists(media.id, True)
 
-    # Downloads whose file no longer exists on disk
+    # Downloads whose file no longer exists on disk (renamed matches excluded)
     missing_count = 0
-    for download in existing_downloads:
-        if download.path in trailer_paths:
+    for download in missing_downloads:
+        if download.id in claimed_ids:
             continue
         if not os.path.exists(download.path):
             missing_count += 1
@@ -119,6 +217,36 @@ async def _process_trailer_changes(
                 source=source,
                 source_detail="FilesScan",
             )
+
+    # --- Pass 4: in-place content-change detection for exact-path matches.
+    # Cheap ctime pre-check (reusing the folder-change helper) gates the
+    # expensive hash — zero extra cost in the common "nothing changed" case.
+    modified_count = 0
+    for t_path in trailer_paths:
+        download = downloads_by_path.get(t_path)
+        if download is None:
+            continue
+        try:
+            ctime = os.stat(t_path).st_ctime
+        except OSError:
+            continue
+        if _ctime_matches_stored(ctime, download.updated_at):
+            continue  # unchanged — skip expensive hash
+        new_hash = await asyncio.to_thread(compute_file_hash, t_path)
+        if new_hash and new_hash != download.file_hash:
+            if await reanalyze_trailer_download(download, t_path):
+                modified_count += 1
+                logger.info(
+                    f"Trailer file content changed: '{t_path}' for"
+                    f" '{media.title}' [{media.id}]"
+                )
+                event_manager.track_trailer_modified(
+                    media_id=media.id,
+                    old_hash=download.file_hash,
+                    new_hash=new_hash,
+                    source=source,
+                    source_detail="FilesScan",
+                )
 
     # Reconcile trailer_exists in both directions
     if not trailer_paths and media.trailer_exists:
@@ -135,14 +263,14 @@ async def _process_trailer_changes(
         media.trailer_exists = True
         media_manager.update_trailer_exists(media.id, True)
 
-    return new_count, missing_count
+    return new_count, missing_count, renamed_count, modified_count
 
 
 async def scan_media_folder(
     media: MediaRead,
     scanner: MediaScanner | None = None,
     user_initiated: bool = True,
-) -> tuple[int, int]:
+) -> tuple[int, int, int, int, int]:
     """Scan the media folder to find media files and trailers \
         and update the database with download records.
     Args:
@@ -150,24 +278,49 @@ async def scan_media_folder(
         scanner (MediaScanner | None): Optional scanner instance to use.
         user_initiated (bool): When False, skips scan if folder is unchanged.
     Returns:
-        tuple[int, int]: Number of new trailer files found and missing trailers.
+        tuple[int, int, int, int, int]: Number of new, missing, renamed,
+            content-modified, and disk-unavailable-skipped trailer files.
     """
     if not media.folder_path:
-        return 0, 0
+        return 0, 0, 0, 0, 0
     if scanner is None:
         scanner = MediaScanner()
     if not user_initiated and not _has_folder_changed(
         media.folder_path, media.id, scanner.tz
     ):
-        return 0, 0
+        return 0, 0, 0, 0, 0
     logger.debug(
         f"Scanning files for '{media.title}' [{media.id}] — folder changed"
     )
 
+    all_downloads = [d for d in media.downloads if d.file_exists]
     files_info = await scanner.get_folder_files(media.folder_path, media.id)
+    trailer_paths = (
+        scanner.get_trailer_paths(files_info) if files_info else set()
+    )
+
+    # Guard: only pay for the reachability check at the moment a scan is
+    # about to conclude "no trailers found" for a media that previously had
+    # recorded downloads — the exact moment a disconnected network drive
+    # would otherwise look identical to a genuine mass-deletion. Zero extra
+    # cost in the common case (trailers still found, or nothing to lose).
+    if not trailer_paths and all_downloads and not _is_disk_available(
+        media.folder_path
+    ):
+        # TODO: once the planned "Issues" section exists, raise an issue
+        # here to surface this to the user instead of only logging it.
+        logger.error(
+            f"Disk unavailable — cannot reach storage for '{media.title}' "
+            f"[{media.id}] at '{media.folder_path}'. Skipping this scan to "
+            "avoid marking existing trailers as missing; will retry on the "
+            "next scheduled run. If this is a network drive, check the "
+            "connection."
+        )
+        return 0, 0, 0, 0, 1
+
     if not files_info:
         _handle_folder_gone(media)
-        return 0, 0
+        return 0, 0, 0, 0, 0
 
     files_manager.update(media, files_info)
 
@@ -175,12 +328,11 @@ async def scan_media_folder(
     if disk_media_exists != media.media_exists:
         media_manager.update_media_exists(media.id, disk_media_exists)
 
-    trailer_paths = scanner.get_trailer_paths(files_info)
-    all_downloads = [d for d in media.downloads if d.file_exists]
     source = EventSource.USER if user_initiated else EventSource.SYSTEM
-    return await _process_trailer_changes(
+    new, missing, renamed, modified = await _process_trailer_changes(
         media, trailer_paths, all_downloads, source
     )
+    return new, missing, renamed, modified, 0
 
 
 async def scan_all_media_folders(
@@ -207,6 +359,9 @@ async def scan_all_media_folders(
     media_count = 0
     new_trailers = 0
     missing_trailers = 0
+    renamed_trailers = 0
+    modified_trailers = 0
+    unavailable_count = 0
     for media in all_media():
         if _stop_event and _stop_event.is_set():
             logger.info("Stop event set, terminating scan of media folders.")
@@ -214,11 +369,14 @@ async def scan_all_media_folders(
 
         try:
             media_count += 1
-            new, missing = await scan_media_folder(
+            new, missing, renamed, modified, unavailable = await scan_media_folder(
                 media, scanner, user_initiated=force_full_scan
             )
             new_trailers += new
             missing_trailers += missing
+            renamed_trailers += renamed
+            modified_trailers += modified
+            unavailable_count += unavailable
         except Exception as e:
             logger.error(
                 f"Error scanning media folder for '{media.title}'"
@@ -234,5 +392,17 @@ async def scan_all_media_folders(
         "Completed scanning disk for files and trailers. "
         f"Total media scanned: {media_count}. "
         f"New trailers found: {new_trailers}. "
-        f"Missing trailers: {missing_trailers}."
+        f"Missing trailers: {missing_trailers}. "
+        f"Renamed trailers: {renamed_trailers}. "
+        f"Modified trailers: {modified_trailers}. "
+        f"Skipped due to unavailable disk: {unavailable_count}."
     )
+    if unavailable_count:
+        # TODO: once the planned "Issues" section exists, raise an issue
+        # here to surface this to the user instead of only logging it.
+        logger.warning(
+            f"{unavailable_count} media item(s) were skipped this run "
+            "because their storage looked unreachable (e.g. a disconnected "
+            "network drive) — see earlier errors for which ones. No "
+            "existing trailers were marked missing for them."
+        )

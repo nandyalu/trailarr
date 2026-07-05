@@ -51,15 +51,32 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Scan All Media Folders**
 
-{{ version_badge("upd", "0.9.0") }}
+{{ version_badge("upd", "0.9.9") }}
 
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 8 minutes after app launch).
-- Scans your media folders for all files and folders, detects trailers, and updates the database with found trailers and marks download records as deleted if files are missing.
+- Scans your media folders for all files and folders, detects trailers, and reconciles what it finds on disk with what Trailarr has recorded in its database.
 - This task refreshes the files and folders for all media items in Trailarr.
-- Useful if you add/delete trailers manually or outside of Trailarr.
+- Useful if you add, rename, or delete trailers manually or outside of Trailarr.
+
+For each media item, the scan compares the trailer file(s) it finds on disk to what's already recorded, and handles four kinds of changes:
+
+| What changed on disk | What Trailarr does |
+|---|---|
+| A new trailer file appears | Recorded as a new download. |
+| An existing trailer is renamed or moved | Recognized by comparing file content, not just the name/path — the existing download record is updated in place, keeping its history. Logged as a [**Trailer Renamed**](../events/index.md#trailer-renamed) event. |
+| An existing trailer's content changes but keeps the same name (e.g. re-encoded outside the app) | Detected via a content-hash mismatch — the file's metadata (size, resolution, codecs, duration) is refreshed automatically. Logged as a [**Trailer Modified**](../events/index.md#trailer-modified) event. |
+| An existing trailer is deleted | The download record is marked as missing. Logged as a [**Trailer Deleted**](../events/index.md#trailer-deleted) event. |
 
 !!! note "Minimal Files Scan from `v0.9.0`"
     The task now checks folder modification times before doing a full recursive scan. If neither the media folder nor any of its immediate subdirectories (e.g., `Trailers/`) have changed since the last scan, the folder is skipped entirely. User-initiated scans always run in full. This significantly reduces scan time for large libraries where most folders are unchanged between runs.
+
+!!! note "Rename & content-change detection from `v0.9.9`"
+    {{ version_badge("add", "0.9.9") }}
+    Renaming or editing a trailer file used to look identical to "the old one was deleted and a new one appeared", which lost the file's history. The scan now recognizes these cases (see table above) and updates the existing record in place instead.
+
+!!! note "Network drive protection from `v0.9.9`"
+    {{ version_badge("add", "0.9.9") }}
+    If your media is stored on a network drive (SMB/NFS) that temporarily disconnects, the scan can no longer tell "the drive is offline" apart from "someone deleted all the trailers" — until now. Before marking any trailers as missing, the scan checks that the underlying storage is actually reachable. If it looks unreachable, that media item is skipped for this run (with an error logged) and retried on the next scheduled run, instead of incorrectly marking its trailers as missing.
 
 ### **Download Missing Trailers**
 

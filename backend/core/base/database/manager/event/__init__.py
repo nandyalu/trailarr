@@ -26,6 +26,8 @@ from .helpers import (
     track_trailer_deleted,
     track_trailer_detected,
     track_trailer_downloaded,
+    track_trailer_modified,
+    track_trailer_renamed,
     track_youtube_id_changed,
 )
 
@@ -51,5 +53,7 @@ __all__ = [
     "track_trailer_deleted",
     "track_trailer_detected",
     "track_trailer_downloaded",
+    "track_trailer_modified",
+    "track_trailer_renamed",
     "track_youtube_id_changed",
 ]

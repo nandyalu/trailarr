@@ -138,6 +138,40 @@ Logged when a trailer file is deleted or removed.
 
 ---
 
+### Trailer Renamed
+
+{{ version_badge("add", "0.9.9") }}
+
+Logged when a trailer file is renamed or moved, whether through the Rename action in Media Details → Files or externally on disk.
+
+| Field | Value |
+|-------|-------|
+| Source | User or System |
+| Source Detail | `API` or `FilesScan` |
+| Old Value | Previous file path |
+| New Value | New file path |
+
+Trailarr recognizes the file by comparing its content (not just its name), so the existing download record is updated in place instead of being deleted and re-created as a new one — its history and metadata are preserved.
+
+---
+
+### Trailer Modified
+
+{{ version_badge("add", "0.9.9") }}
+
+Logged when a trailer file's content changes while keeping the same path — for example, if it was re-encoded, trimmed, or had metadata embedded outside of Trailarr.
+
+| Field | Value |
+|-------|-------|
+| Source | System |
+| Source Detail | `FilesScan` |
+| Old Value | Previous file hash |
+| New Value | New file hash |
+
+Detected during a files scan by comparing the file's content hash to what was previously recorded. When a change is found, Trailarr automatically refreshes the file's metadata (size, resolution, codecs, duration).
+
+---
+
 ### Download Skipped
 
 Logged when Trailarr skips downloading a trailer for a media item.
