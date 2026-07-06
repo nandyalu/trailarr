@@ -36,7 +36,7 @@
     </div>
     <div class="about-content">
       <span>Server Started</span>
-      <code>{{ $safeNavigationMigration(settings?.server_start_time) | timediff: 'Unknown' | async }}</code>
+      <code>{{ settings?.server_start_time | timediff: 'Unknown' | async }}</code>
     </div>
     <div class="about-content">
       <span>Timezone</span>
@@ -115,7 +115,7 @@
             id="trailarr_current_username"
             name="Current Username"
             type="text"
-            [value]="$safeNavigationMigration(settings?.webui_username)"
+            [value]="settings?.webui_username ?? ''"
             autocomplete="current-username"
             disabled="true"
             #currentUsernameInput

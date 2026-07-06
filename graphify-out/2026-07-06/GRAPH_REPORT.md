@@ -1,11 +1,11 @@
 # Graph Report - trailarr  (2026-07-06)
 
 ## Corpus Check
-- 484 files · ~763,516 words
+- 484 files · ~763,475 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 8589 nodes · 17239 edges · 640 communities (367 shown, 273 thin omitted)
+- 8589 nodes · 17239 edges · 640 communities (368 shown, 272 thin omitted)
 - Extraction: 84% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 2626 edges (avg confidence: 0.64)
 - Token cost: 0 input · 0 output
 
@@ -650,31 +650,31 @@
 - **Scheduled Tasks Trailer Lifecycle** — tasks_index_arr_data_refresh_task, tasks_index_download_missing_trailers_task, tasks_index_scan_media_folders_task, tasks_index_trailer_cleanup_task [EXTRACTED 1.00]
 - **Planned Feature Roadmap** — github_planned_tasks_discord_notifications, github_planned_tasks_nfo_files, github_planned_tasks_plex_integration_plan, github_planned_tasks_tmdb_filesystem_connector [EXTRACTED 1.00]
 
-## Communities (640 total, 273 thin omitted)
+## Communities (640 total, 272 thin omitted)
 
 ### Community 0 - "Swagger UI Bundle"
 Cohesion: 0.01
-Nodes (180): tu(), __(), actions_show(), addToSet(), Ae(), afterWrite(), append(), _arity_arity() (+172 more)
+Nodes (173): tu(), __(), actions_show(), addToSet(), Ae(), afterWrite(), append(), _arity_arity() (+165 more)
 
 ### Community 1 - "Redoc Rendering Engine"
 Cohesion: 0.01
-Nodes (100): ao(), AllLineNumbers(), App, _arrayLikeToArray(), ArrayModel, assembleLineNumberStyles(), auth_item_Auths, AuthError (+92 more)
+Nodes (113): ao(), AllLineNumbers(), App, _arrayLikeToArray(), ArrayModel, assembleLineNumberStyles(), _assertThisInitialized(), auth_item_Auths (+105 more)
 
 ### Community 2 - "Swagger UI Utilities"
 Cohesion: 0.02
-Nodes (56): afterTransform(), asciiWrite(), blitBuffer(), collectType(), ComponentsCallbacks, ComponentsExamples, ComponentsHeaders, ComponentsLinks (+48 more)
+Nodes (57): afterTransform(), asciiWrite(), blitBuffer(), collectType(), ComponentsCallbacks, ComponentsExamples, ComponentsHeaders, ComponentsLinks (+49 more)
 
 ### Community 3 - "Redoc Component Library"
 Cohesion: 0.02
-Nodes (179): pn(), Qr(), rn(), Vn(), $a(), ab(), ac(), Ag() (+171 more)
+Nodes (178): pn(), Qr(), rn(), Vn(), $a(), ab(), ac(), Ag() (+170 more)
 
 ### Community 4 - "Redoc Standalone Core"
 Cohesion: 0.02
-Nodes (92): _, add(), Am, authStatus(), aw(), break(), By, cd() (+84 more)
+Nodes (96): _, add(), Am, authStatus(), aw(), break(), By, cd() (+88 more)
 
 ### Community 5 - "Swagger Operations & Reducers"
 Cohesion: 0.04
-Nodes (20): ArraySlice, coerceElementMatchingCallback(), combinePlugins(), ContextTree, createLinkifier(), createNode(), createStore(), createStoreWithMiddleware() (+12 more)
+Nodes (24): ArraySlice, coerceElementMatchingCallback(), combinePlugins(), ContextTree, createLinkifier(), createNode(), createStore(), createStoreWithMiddleware() (+16 more)
 
 ### Community 6 - "Trailer Download Pipeline"
 Cohesion: 0.08
@@ -682,7 +682,7 @@ Nodes (43): MediaRead, Path, TrailerProfileRead, VideoInfo, Event, MediaRead, Tr
 
 ### Community 7 - "Redoc Schema Resolver"
 Cohesion: 0.04
-Nodes (66): A, an(), assign(), block(), _blockNode(), c, code(), const() (+58 more)
+Nodes (68): A, an(), assign(), block(), _blockNode(), c, code(), const() (+60 more)
 
 ### Community 8 - "Swagger Schema Validation"
 Cohesion: 0.04
@@ -698,27 +698,27 @@ Nodes (29): _create_test_connection(), Tests for the Event manager., Test readin
 
 ### Community 11 - "Swagger UI Runtime Core"
 Cohesion: 0.03
-Nodes (103): addNumericSeparator(), ApiDOMError, _assertThisInitialized(), cacheResultThrough(), call(), callAfterLoad(), captureSegment(), charFromCodepoint() (+95 more)
+Nodes (93): addNumericSeparator(), ApiDOMError, cacheResultThrough(), call(), callAfterLoad(), captureSegment(), charFromCodepoint(), _checkForMethod_checkForMethod() (+85 more)
 
 ### Community 12 - "Redoc Schema Builder"
-Cohesion: 0.04
-Nodes (96): ar(), au, be(), bh(), Bn(), bt(), ce(), Cr() (+88 more)
+Cohesion: 0.05
+Nodes (93): ar(), au, be(), bh(), Bn(), bt(), ce(), Cr() (+85 more)
 
 ### Community 13 - "Redoc React Components"
 Cohesion: 0.07
-Nodes (40): aa(), Ai(), ba(), bi(), bo(), ca(), ci(), co() (+32 more)
+Nodes (38): aa(), ba(), bi(), bo(), ca(), co(), di(), Ea() (+30 more)
 
 ### Community 14 - "Swagger Auth & Utilities"
-Cohesion: 0.03
-Nodes (113): _addListener(), assertNotInfinite(), auths_Auths, checkListener(), cleanArray(), clear(), concatFactory(), create() (+105 more)
+Cohesion: 0.05
+Nodes (80): assertNotInfinite(), cleanArray(), concatFactory(), deepEqual(), deepMerger(), deepMergerWith(), emptyOrderedSet(), emptySequence() (+72 more)
 
 ### Community 15 - "Redoc Markdown Parser"
 Cohesion: 0.03
-Nodes (56): Al(), bl(), bs(), cl(), de(), dl(), ec(), El() (+48 more)
+Nodes (52): Al(), bl(), bs(), cl(), de(), dl(), El(), fl() (+44 more)
 
 ### Community 16 - "Swagger IO Buffer Utilities"
-Cohesion: 0.05
-Nodes (13): Ah(), as(), ch(), es(), ey, Gb, Il(), Ja() (+5 more)
+Cohesion: 0.06
+Nodes (17): Ah(), ch(), Dh(), em(), ey, Fh(), Gb, im() (+9 more)
 
 ### Community 17 - "Redoc Config & Auth"
 Cohesion: 0.17
@@ -738,11 +738,11 @@ Nodes (35): EditFilterDialogComponent, boolFilterConditions, customFilterSchema,
 
 ### Community 21 - "Connection Manager & Validation"
 Cohesion: 0.03
-Nodes (114): ConnectionCreate, ConnectionRead, ConnectionUpdate, Connection, ConnectionBase, ConnectionCreate, ConnectionUpdate, Session (+106 more)
+Nodes (119): ConnectionCreate, ConnectionRead, ConnectionUpdate, Connection, ConnectionBase, ConnectionCreate, ConnectionUpdate, Session (+111 more)
 
 ### Community 22 - "File Handler & Cleanup"
-Cohesion: 0.03
-Nodes (84): absolutifyPointer(), Autolinker(), b64toB64UrlEncoded(), base64End(), base64Text(), blockHeader(), chooseScalarStyle(), clone() (+76 more)
+Cohesion: 0.04
+Nodes (79): absolutifyPointer(), Autolinker(), b64toB64UrlEncoded(), base64End(), base64Text(), blockHeader(), cachedHashString(), chooseScalarStyle() (+71 more)
 
 ### Community 23 - "Video Conversion Tests"
 Cohesion: 0.05
@@ -750,7 +750,7 @@ Nodes (41): Test VAAPI video options generation with default device., Test VAAPI
 
 ### Community 24 - "Trailer Profiles API & Logging"
 Cohesion: 0.06
-Nodes (46): applyOperation(), applyPatch(), applyReducer(), _areEquals(), arrObjKeys(), cloneSpecificValue(), cloneUnlessOtherwiseSpecified(), compileIllegal() (+38 more)
+Nodes (43): applyOperation(), applyPatch(), applyReducer(), _areEquals(), arrObjKeys(), cloneSpecificValue(), cloneUnlessOtherwiseSpecified(), compileIllegal() (+35 more)
 
 ### Community 25 - "Plex Connection & Profile UI"
 Cohesion: 0.05
@@ -771,10 +771,6 @@ Nodes (22): EventSource, Event helper functions for creating events at appropria
 ### Community 29 - "File Dialogs & Connection Edit"
 Cohesion: 0.08
 Nodes (8): DeleteDialogComponent, StreamInfo, VideoInfo, DialogOptions, PlayVideoDialogComponent, RenameDialogComponent, FilesService, VideoInfoDialogComponent
-
-### Community 30 - "Redoc JSON Schema"
-Cohesion: 0.09
-Nodes (3): b, ft(), optimize()
 
 ### Community 31 - "Swagger IO Buffer Utilities"
 Cohesion: 0.06
@@ -801,8 +797,8 @@ Cohesion: 0.08
 Nodes (30): SimpleNamespace, delete_old_logs(), delete_trailer(), Delete old log files from the '/config/logs' directory.     This function is int, Delete the trailer file and mark file as deleted in Download. \n     Args:, Cleanup failed trailers (without audio), delete them and set monitor status to T, trailer_cleanup(), create_mock_download() (+22 more)
 
 ### Community 37 - "Connections API Handlers"
-Cohesion: 0.06
-Nodes (22): _make_media(), Tests for media read manager functions., Stage 2 matches when the stored path uses Windows backslash separators., Stage 2 normalises trailing slashes before comparing (rstrip)., Tests for media_manager.read_arr_linked_to_plex_connection., Returns Arr-sourced rows that are linked to the Plex connection., Does not return rows where connection_id == plex_connection_id., Returns empty list for a connection id with no linked media. (+14 more)
+Cohesion: 0.08
+Nodes (17): _make_media(), Tests for media read manager functions., Stage 2 matches when the stored path uses Windows backslash separators., Stage 2 normalises trailing slashes before comparing (rstrip)., Verify that the finally: _session.close() in read_all_generator works.      @rea, finally block fires when the generator is fully consumed via iteration., finally block fires when .close() is called mid-iteration.          This is the, Tests for media_manager.read_by_folder_path. (+9 more)
 
 ### Community 38 - "Download Database Manager"
 Cohesion: 0.02
@@ -817,8 +813,8 @@ Cohesion: 0.05
 Nodes (46): mock_media(), mock_profile(), mock_video_info(), Tests for trailer.py functions in the download_trailer flow., Tests for download_trailer async function., Create a mock MediaRead object., Tests for download_trailer retry behavior., Create a mock TrailerProfileRead object. (+38 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.08
-Nodes (6): cs(), df, ig, tf, us(), yf
+Cohesion: 0.07
+Nodes (12): Ai(), as(), ci(), cs(), df, es(), Il(), Ja() (+4 more)
 
 ### Community 42 - "Community 42"
 Cohesion: 0.06
@@ -853,8 +849,8 @@ Cohesion: 0.12
 Nodes (12): Any, SimpleNamespace, apply_path_mappings(), Find the first matching mapping and remap *path* through it.      Each item in *, _pm(), Minimal PathMapping-like object for testing., path_from stored with backslash; incoming path uses forward slashes., path_from stored with forward slash; incoming path uses backslashes. (+4 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.04
-Nodes (40): Ac(), Bd, Cc, dc(), Dh(), ds(), em(), fc (+32 more)
+Cohesion: 0.05
+Nodes (31): Ac(), Bd, Cc, dc(), ds(), ec(), fc, gs() (+23 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.11
@@ -885,12 +881,12 @@ Cohesion: 0.04
 Nodes (33): Successfully downloads trailer and returns True., Raises DownloadFailedError when no trailer found., Retries download on failure with different video ID., Excludes existing trailer ID when trailer_exists., Ignores existing YouTube ID when always_search is enabled., Removes silence from trailer when remove_silence is enabled., Passes video_info to move_trailer_to_folder and record_new_trailer_download., Adds failed video ID to exclude list on retry. (+25 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.11
-Nodes (7): Ae(), Ed, fd(), ha(), hr(), su, xf
+Cohesion: 0.07
+Nodes (8): Ae(), Ed, fd(), ha(), hr(), su, xf, yf
 
 ### Community 59 - "Community 59"
 Cohesion: 0.06
-Nodes (23): Gc(), kp(), example_Example(), execute_execute(), extension(), format(), has(), idFromPathMethodLegacy() (+15 more)
+Nodes (24): Gc(), kp(), auths_Auths, example_Example(), execute_execute(), extension(), format(), has() (+16 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.12
@@ -962,7 +958,7 @@ Nodes (26): Mobile Bottom Navigation Bar, Mobile Dark Theme UI, Mobile Home Scre
 
 ### Community 80 - "Community 80"
 Cohesion: 0.02
-Nodes (119): bp(), Xd, absoluteify(), add(), af(), ArrayElement, autoDetection(), build_request_buildRequest() (+111 more)
+Nodes (120): bp(), Xd, absoluteify(), add(), af(), ArrayElement, autoDetection(), build_request_buildRequest() (+112 more)
 
 ### Community 81 - "Community 81"
 Cohesion: 0.14
@@ -1173,8 +1169,8 @@ Cohesion: 0.13
 Nodes (14): clear_trace_id(), generate_trace_id(), get_new_trace_id(), get_trace_id(), Returns the current Trace ID., Generates and returns a new Trace ID without setting it in the context., Generates a new Trace ID and sets it in the context., Clears the Trace ID from the context. (+6 more)
 
 ### Community 140 - "Community 140"
-Cohesion: 0.14
-Nodes (14): batch_update_media(), delete_media_trailer(), get_all_downloads_raw(), get_media_downloads(), get_media_files(), get_recent_media(), monitor_media(), Get all downloads for a specific media item.     Args:         media_id (int): T (+6 more)
+Cohesion: 0.12
+Nodes (16): download_media_trailer(), get_media_by_id(), get_media_downloads(), get_media_files(), get_updated_after(), monitor_media(), Get media updated after a certain datetime.     ## Warning:         🚨Deprecated,, Get media by ID. \n     Args:         media_id (int): ID of the media item. \n (+8 more)
 
 ### Community 141 - "Community 141"
 Cohesion: 0.12
@@ -1250,7 +1246,7 @@ Nodes (10): _check_table_exists(), _copy_from_media_table(), _copy_to_media_tabl
 
 ### Community 164 - "Community 164"
 Cohesion: 0.18
-Nodes (11): args, path, terminal.integrated.profiles.linux, fish, tmux, zsh, args, icon (+3 more)
+Nodes (11): args, path, args, icon, path, terminal.integrated.profiles.linux, fish, pwsh (+3 more)
 
 ### Community 165 - "Community 165"
 Cohesion: 0.15
@@ -1649,12 +1645,16 @@ Cohesion: 0.15
 Nodes (12): Cancel, Clear Selections, Delete, Download, Edit View, Filtering, Library, Media Details (+4 more)
 
 ### Community 560 - "Community 560"
-Cohesion: 0.50
-Nodes (4): args, icon, path, pwsh
+Cohesion: 0.07
+Nodes (39): _addListener(), checkListener(), clone(), _cloneRegExp(), contentTypeValues(), create(), createClass(), createErrorType() (+31 more)
 
 ### Community 561 - "Community 561"
 Cohesion: 0.33
 Nodes (4): Track when a targeted Plex library scan is triggered for a media item.      Args, track_plex_scan_triggered(), Creates a PLEX_SCAN_TRIGGERED event with scan_path stored., Gracefully swallows exceptions when media_id is invalid.
+
+### Community 562 - "Community 562"
+Cohesion: 0.33
+Nodes (6): batch_download_trailers(), Download trailers for a list of media IDs. \n     Schedules a background job to, batch_update_media(), delete_media_trailer(), Delete all trailers for media by ID. \n     ## Warning:         🚨Deprecated, use, Batch update media by their IDs. \n     Available update types are: \n     - mon
 
 ### Community 563 - "Community 563"
 Cohesion: 0.17
@@ -1719,6 +1719,10 @@ Nodes (8): Connections, Edit Connection Fields, `Missing`, Monitor Types, `New`,
 ### Community 582 - "Community 582"
 Cohesion: 0.22
 Nodes (8): Devcontainer Pre-build, How it Works, In GitHub Codespaces, In Local Development, Manual Trigger, Pre-build Configuration, Using the Pre-build, What is a Pre-build?
+
+### Community 583 - "Community 583"
+Cohesion: 0.50
+Nodes (4): tmux, args, icon, path
 
 ### Community 584 - "Community 584"
 Cohesion: 0.22
@@ -1847,12 +1851,12 @@ Nodes (3): Subtitles Enabled, Subtitles Format, Subtitles Language
 ## Knowledge Gaps
 - **1155 isolated node(s):** `PreToolUse`, `allow`, `dev-start.sh script`, `PATH`, `APPUSER` (+1150 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **273 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **272 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `__()` connect `Swagger UI Bundle` to `Community 256`, `Redoc Rendering Engine`, `Swagger UI Utilities`, `Redoc Component Library`, `Community 257`, `Swagger Operations & Reducers`, `Redoc Standalone Core`, `Redoc Schema Resolver`, `Swagger Schema Validation`, `Swagger UI Runtime Core`, `Redoc Schema Builder`, `Community 267`, `Swagger Auth & Utilities`, `Redoc Markdown Parser`, `File Handler & Cleanup`, `Community 152`, `Trailer Profiles API & Logging`, `Community 283`, `Community 284`, `Community 157`, `Community 286`, `Swagger IO Buffer Utilities`, `Community 160`, `Community 287`, `Community 285`, `Community 549`, `Community 554`, `Community 171`, `Community 44`, `Community 50`, `Community 53`, `Community 186`, `Community 59`, `Community 187`, `Community 573`, `Community 574`, `Community 63`, `Community 188`, `Community 196`, `Community 206`, `Community 207`, `Community 80`, `Community 208`, `Community 209`, `Community 210`, `Community 88`, `Community 219`, `Community 220`, `Community 222`, `Community 98`, `Community 227`, `Community 104`, `Community 236`, `Community 238`, `Community 127`?**
+- **Why does `__()` connect `Swagger UI Bundle` to `Community 256`, `Redoc Rendering Engine`, `Swagger UI Utilities`, `Redoc Component Library`, `Community 257`, `Swagger Operations & Reducers`, `Redoc Standalone Core`, `Redoc Schema Resolver`, `Swagger Schema Validation`, `Swagger UI Runtime Core`, `Redoc Schema Builder`, `Community 267`, `Swagger Auth & Utilities`, `Redoc Markdown Parser`, `File Handler & Cleanup`, `Community 152`, `Trailer Profiles API & Logging`, `Community 283`, `Community 284`, `Community 157`, `Community 286`, `Swagger IO Buffer Utilities`, `Community 160`, `Community 287`, `Community 285`, `Community 549`, `Community 554`, `Community 171`, `Community 44`, `Community 560`, `Community 50`, `Community 53`, `Community 186`, `Community 59`, `Community 187`, `Community 573`, `Community 574`, `Community 63`, `Community 188`, `Community 196`, `Community 206`, `Community 207`, `Community 80`, `Community 208`, `Community 209`, `Community 210`, `Community 88`, `Community 219`, `Community 220`, `Community 222`, `Community 98`, `Community 227`, `Community 104`, `Community 236`, `Community 238`, `Community 127`?**
   _High betweenness centrality (0.145) - this node is a cross-community bridge._
 - **Why does `throwError()` connect `Swagger UI Runtime Core` to `Swagger UI Bundle`, `Frontend App Root & Helpers`?**
   _High betweenness centrality (0.061) - this node is a cross-community bridge._
@@ -1863,6 +1867,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `PreToolUse`, `allow`, `dev-start.sh script` to the rest of the system?**
   _2112 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Swagger UI Bundle` be split into smaller, more focused modules?**
-  _Cohesion score 0.006077434319104331 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0060989669802619445 - nodes in this community are weakly interconnected._
 - **Should `Redoc Rendering Engine` be split into smaller, more focused modules?**
-  _Cohesion score 0.01288183755623964 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.012232415902140673 - nodes in this community are weakly interconnected._

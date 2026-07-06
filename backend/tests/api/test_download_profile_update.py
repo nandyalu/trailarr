@@ -121,3 +121,23 @@ class TestUpdateDownloadProfile:
 
         assert exc_info.value.status_code == 404
         mock_update.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_unexpected_error_returns_500_without_leaking_details(self):
+        with (
+            patch(
+                "api.v1.media.download_manager.read",
+                side_effect=RuntimeError("db connection lost"),
+            ),
+            patch(
+                "api.v1.media.download_manager.update_profile_id"
+            ) as mock_update,
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await update_download_profile(
+                    MEDIA_ID, DOWNLOAD_ID, PROFILE_ID
+                )
+
+        assert exc_info.value.status_code == 500
+        assert "db connection lost" not in exc_info.value.detail
+        mock_update.assert_not_called()

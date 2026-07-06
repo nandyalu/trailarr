@@ -1655,9 +1655,9 @@
     "semantic_hash": "47faef3beb12899adbed07304b2f5a8e"
   },
   "frontend/src/app/settings/profiles/settings/options-setting/options-setting.component.ts": {
-    "mtime": 1783307041.7329981,
-    "ast_hash": "d737700fdefbe60f5264f15845486be9",
-    "semantic_hash": ""
+    "mtime": 1777177425.07662,
+    "ast_hash": "42dbeeb26fb548cf5719bb7c8dba90aa",
+    "semantic_hash": "42dbeeb26fb548cf5719bb7c8dba90aa"
   },
   "frontend/src/app/settings/profiles/settings/range-setting/range-setting.component.ts": {
     "mtime": 1777177425.07662,
@@ -2555,8 +2555,8 @@
     "semantic_hash": "075689b29f13759235a48239cb2936a5"
   },
   "frontend/src/app/media/media-details/files/files.component.html": {
-    "mtime": 1783306994.7964754,
-    "ast_hash": "cf6ecff81578c8bd8c79e94e2304529f",
+    "mtime": 1783204470.3283381,
+    "ast_hash": "dd50bdaf915fe5f6f7ff1d207b3f9321",
     "semantic_hash": ""
   },
   "frontend/src/app/media/media-details/media-details.component.html": {
@@ -2590,8 +2590,8 @@
     "semantic_hash": "7142e98e1feefe7e3bd90befd71c4da0"
   },
   "frontend/src/app/settings/about/about.component.html": {
-    "mtime": 1783306994.7964754,
-    "ast_hash": "525a60b8d44492bc44fa4647c0d4f1d2",
+    "mtime": 1783204470.3283381,
+    "ast_hash": "a078d35c0a45f434e9896cf06c0a43b2",
     "semantic_hash": ""
   },
   "frontend/src/app/settings/connections/connections.component.html": {
@@ -2615,13 +2615,13 @@
     "semantic_hash": "0bac95a30f0b34f518ed65c1a0823169"
   },
   "frontend/src/app/settings/general/general.component.html": {
-    "mtime": 1783306994.7964754,
-    "ast_hash": "e423e3d1ed0cbada868e3612af8255d5",
+    "mtime": 1783204470.3283381,
+    "ast_hash": "40d1fab2b25cab7e7bf05650ab7b2b1e",
     "semantic_hash": ""
   },
   "frontend/src/app/settings/profiles/edit-profile/edit-profile.component.html": {
-    "mtime": 1783307027.0938349,
-    "ast_hash": "c378a6f91701473c67c22200e87589a7",
+    "mtime": 1783206682.871697,
+    "ast_hash": "d873ac8edec2d46abe28b94869d2a462",
     "semantic_hash": ""
   },
   "frontend/src/app/settings/profiles/settings/options-setting/options-setting.component.html": {
@@ -2660,8 +2660,8 @@
     "semantic_hash": "80340bff343003f8bfffa79285f1f1ef"
   },
   "frontend/src/app/tasks/tasks.component.html": {
-    "mtime": 1783306994.7964754,
-    "ast_hash": "7bce48568246ec5f680fb05d1cbba810",
+    "mtime": 1783204470.6523433,
+    "ast_hash": "1cdd8e9f73e549e03113524a0d29d446",
     "semantic_hash": ""
   },
   "frontend/src/index.html": {
