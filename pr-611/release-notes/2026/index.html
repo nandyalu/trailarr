@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v099-july-11-2026" class="md-skip">
+        <a href="#v099-july-05-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2358,10 +2358,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v099-july-11-2026" class="md-nav__link">
+  <a href="#v099-july-05-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.9.9</strong> - <em>July 11, 2026</em>
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
       </span>
     </span>
   </a>
@@ -2861,10 +2861,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v099-july-11-2026" class="md-nav__link">
+  <a href="#v099-july-05-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.9.9</strong> - <em>July 11, 2026</em>
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
       </span>
     </span>
   </a>
@@ -3161,7 +3161,7 @@
 
   <h1 id="__skip">2026</h1>
 
-<h2 id="v099-july-11-2026"><strong>v0.9.9</strong> - <em>July 11, 2026</em></h2>
+<h2 id="v099-july-05-2026"><strong>v0.9.9</strong> - <em>July 05, 2026</em></h2>
 <p><strong>What's New / Bug Fixes:</strong> ✨</p>
 <ul>
 <li>
@@ -3180,7 +3180,7 @@
 <p><strong>Find downloads that need a profile</strong> — When any downloads are left without a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a <strong>Review</strong> button, and a new <strong>Unknown Profile</strong> quick filter appears in the filter dropdown. Both disappear automatically once everything is assigned. The attribution log also states <em>why</em> each download couldn't be linked: either no profile's filters match that media (adjust your filters), or all matching profiles already own a download for it (likely an extra/duplicate trailer file — assign it to another profile or delete the file).</p>
 </li>
 <li>
-<p><strong>Stale "missing" statuses from pre-Trailarr trailers now heal on one restart</strong> — Libraries that had trailers on disk before Trailarr was installed could show those items as <em>Missing</em> forever: their download records had no profile, which made them invisible to the trailer-flag repair job. The repair now runs immediately <strong>after</strong> profile attribution in the same startup pass, so one upgrade/restart corrects both the profile links and the stale <code>trailer_exists</code>/status flags.</p>
+<p><strong>Stale "missing" statuses from pre-Trailarr trailers now heal on one restart</strong> — Libraries that had trailers on disk before Trailarr was installed could show those items as <em>Missing</em> forever: their download records had no profile, which made them invisible to the trailer-flag repair job. The repair now runs immediately <strong>after</strong> profile attribution in the same startup pass, so one upgrade/restart corrects both the profile links and the stale <code>trailer_exists</code>/status flags. The repair also now covers media that is still monitored — together with the network-drive scan fix above, this breaks the endless trailer re-download loop reported for Arr-monitored media on network storage (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a>): stuck items are corrected at startup instead of being re-downloaded yet again.</p>
 </li>
 </ul>
 <blockquote>
