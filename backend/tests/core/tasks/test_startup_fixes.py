@@ -61,21 +61,23 @@ class TestFixTrailerExistsFlags:
             mock_update.assert_called_once_with(10, True)
 
     @pytest.mark.asyncio
-    async def test_monitored_media_is_skipped(self):
-        """media.monitor=True → not touched regardless of downloads."""
-        profile = make_profile(stop_monitoring=True)
+    async def test_monitored_media_with_tracked_download_is_fixed(self):
+        """media.monitor=True with a qualifying download IS fixed — at
+        startup no download chain can be in progress, and this is the
+        stuck state behind the network-storage re-download loop (#591)."""
+        profile = make_profile(profile_id=1, stop_monitoring=True)
         media = make_media(media_id=2, monitor=True, trailer_exists=False)
+        download = make_download(profile_id=1, file_exists=True)
 
         with (
             patch("core.tasks.startup_fixes.trailerprofile_manager.get_trailerprofiles", return_value=[profile]),
             patch("core.tasks.startup_fixes.media_manager.read_all_generator", return_value=iter([media])),
-            patch("core.tasks.startup_fixes.download_manager.read_by_media_id") as mock_downloads,
+            patch("core.tasks.startup_fixes.download_manager.read_by_media_id", return_value=[download]),
             patch("core.tasks.startup_fixes.media_manager.update_trailer_exists") as mock_update,
         ):
             await fix_trailer_exists_flags()
 
-            mock_downloads.assert_not_called()
-            mock_update.assert_not_called()
+            mock_update.assert_called_once_with(2, True)
 
     @pytest.mark.asyncio
     async def test_media_with_trailer_exists_is_skipped(self):
@@ -130,20 +132,21 @@ class TestFixTrailerExistsFlags:
 
     @pytest.mark.asyncio
     async def test_no_qualifying_media_makes_no_writes(self):
-        """All media already monitored or has trailer → no update calls."""
+        """No tracked downloads / trailer already flagged → no update calls.
+        Media with trailer_exists=True is skipped without reading downloads."""
         profile = make_profile(stop_monitoring=True)
-        media1 = make_media(media_id=1, monitor=True)
-        media2 = make_media(media_id=2, trailer_exists=True)
+        media1 = make_media(media_id=1, monitor=True)  # checked, no downloads
+        media2 = make_media(media_id=2, trailer_exists=True)  # skipped
 
         with (
             patch("core.tasks.startup_fixes.trailerprofile_manager.get_trailerprofiles", return_value=[profile]),
             patch("core.tasks.startup_fixes.media_manager.read_all_generator", return_value=iter([media1, media2])),
-            patch("core.tasks.startup_fixes.download_manager.read_by_media_id") as mock_downloads,
+            patch("core.tasks.startup_fixes.download_manager.read_by_media_id", return_value=[]) as mock_downloads,
             patch("core.tasks.startup_fixes.media_manager.update_trailer_exists") as mock_update,
         ):
             await fix_trailer_exists_flags()
 
-            mock_downloads.assert_not_called()
+            mock_downloads.assert_called_once_with(1)
             mock_update.assert_not_called()
 
     @pytest.mark.asyncio
