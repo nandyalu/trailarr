@@ -8,13 +8,20 @@ logger = ModuleLogger("StartupFixes")
 
 async def fix_trailer_exists_flags():
     """
-    One-time startup fix: find unmonitored media (monitor=False, trailer_exists=False)
-    that has a download with file_exists=True linked to a profile with stop_monitoring=True,
+    One-time startup fix: find media with trailer_exists=False that has a
+    download with file_exists=True linked to a profile with stop_monitoring=True,
     and set trailer_exists=True on those items.
 
-    This corrects a data inconsistency introduced when a file size limit caused valid
-    downloaded trailers to not be tracked, leaving trailer_exists=False even though the
-    file was downloaded and monitoring was stopped.
+    This corrects data inconsistencies where a trailer was downloaded and
+    tracked but the flag was left False — e.g. the old file size limit, or
+    the monitored re-download loop for media on flaky network storage (#591).
+
+    Monitored media is included on purpose: this runs at startup, before the
+    download task, so monitor=True cannot mean "a multi-profile download
+    chain is in progress" (chains don't survive restarts) — the reason the
+    files-scan reconciliation skips monitored media does not apply here.
+    Setting trailer_exists=True also flips monitor off, which is the same
+    stable state a completed download would have produced.
     """
     logger.info("Running startup fix: checking for incorrect trailer_exists flags...")
 
@@ -31,7 +38,7 @@ async def fix_trailer_exists_flags():
     fix_ids: list[int] = []
 
     for media in media_manager.read_all_generator():
-        if media.monitor or media.trailer_exists:
+        if media.trailer_exists:
             continue
         downloads = download_manager.read_by_media_id(media.id)
         for download in downloads:
