@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v098-june-13-2026" class="md-skip">
+        <a href="#v099-july-05-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -370,12 +370,14 @@
       
         
       
+        
+      
     
     
     
     
       <li class="md-tabs__item">
-        <a href="../../references/contributing/" class="md-tabs__link">
+        <a href="../../references/roadmap/" class="md-tabs__link">
           
   
   References
@@ -2356,10 +2358,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v098-june-13-2026" class="md-nav__link">
+  <a href="#v099-july-05-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.9.8</strong> - <em>June 13, 2026</em>
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v098-june-28-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 28, 2026</em>
       </span>
     </span>
   </a>
@@ -2649,6 +2662,8 @@
       
         
       
+        
+      
     
     
     
@@ -2693,6 +2708,33 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Roadmap to v1.0.0
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2819,10 +2861,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v098-june-13-2026" class="md-nav__link">
+  <a href="#v099-july-05-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.9.8</strong> - <em>June 13, 2026</em>
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v098-june-28-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 28, 2026</em>
       </span>
     </span>
   </a>
@@ -3108,7 +3161,40 @@
 
   <h1 id="__skip">2026</h1>
 
-<h2 id="v098-june-13-2026"><strong>v0.9.8</strong> - <em>June 13, 2026</em></h2>
+<h2 id="v099-july-05-2026"><strong>v0.9.9</strong> - <em>July 05, 2026</em></h2>
+<p><strong>What's New / Bug Fixes:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Robust trailer file matching in the files-scan task</strong> — Renaming or moving a trailer file (on disk, or via the Rename action in Media Details → Files) is now detected by content hash and updates the existing download record in place, instead of being treated as "deleted + new" and losing its history. Similarly, if a trailer's content changes in place (e.g. re-encoded or edited outside the app) while keeping the same filename, the hash mismatch is detected and the file's metadata (size, resolution, codecs, duration) is automatically refreshed. Two new event types, <strong>Trailer Renamed</strong> and <strong>Trailer Modified</strong>, show up in the Events log for these changes.</p>
+</li>
+<li>
+<p><strong>Files-scan no longer mislabels trailers as missing when a network drive disconnects</strong> — Media stored on a network share (SMB/NFS) that temporarily drops offline could previously have all of its trailers incorrectly marked as missing, since a disconnected drive can look identical to genuinely deleted files. The scan now checks whether the underlying storage is actually reachable before concluding trailers are missing, and skips the scan for that media (logging a clear error) instead of destructively updating it — it will simply retry on the next scheduled run.</p>
+</li>
+<li>
+<p><strong>Downloads are now linked to the Trailer Profile that owns them</strong> — Trailers found on disk (downloaded outside Trailarr, or downloaded before profile tracking existed) were previously recorded without a profile. A new one-time <strong>Attribute Trailer Downloads</strong> task runs shortly after startup and links each such download to the matching profile: it checks which of your profiles apply to that media item (by the profile's filters, ignoring state conditions like <code>trailer_exists</code>) and assigns them in priority order. The files-scan task does the same for any new trailer files it finds going forward. This is groundwork for upcoming releases where downloads — not the <code>trailer_exists</code> flag — will determine which profiles still need a trailer for each media item.</p>
+</li>
+<li>
+<p><strong>Manually assign a profile to a download</strong> — Downloads that couldn't be linked to a profile automatically show their profile as <strong>Unknown</strong> in Media Details → Downloads. That label is now a dropdown: click it and pick the profile that should own the download. The assignment is recorded as a new <strong>Download Attributed</strong> event in the Events log.</p>
+</li>
+<li>
+<p><strong>Find downloads that need a profile</strong> — When any downloads are left without a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a <strong>Review</strong> button, and a new <strong>Unknown Profile</strong> quick filter appears in the filter dropdown. Both disappear automatically once everything is assigned. The attribution log also states <em>why</em> each download couldn't be linked: either no profile's filters match that media (adjust your filters), or all matching profiles already own a download for it (likely an extra/duplicate trailer file — assign it to another profile or delete the file).</p>
+</li>
+<li>
+<p><strong>Stale "missing" statuses from pre-Trailarr trailers now heal on one restart</strong> — Libraries that had trailers on disk before Trailarr was installed could show those items as <em>Missing</em> forever: their download records had no profile, which made them invisible to the trailer-flag repair job. The repair now runs immediately <strong>after</strong> profile attribution in the same startup pass, so one upgrade/restart corrects both the profile links and the stale <code>trailer_exists</code>/status flags. The repair also now covers media that is still monitored — together with the network-drive scan fix above, this breaks the endless trailer re-download loop reported for Arr-monitored media on network storage (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a>): stuck items are corrected at startup instead of being re-downloaded yet again.</p>
+</li>
+</ul>
+<blockquote>
+<p>ℹ️ <strong>No action needed</strong> — the attribution task runs automatically, changes no files on disk, and doesn't trigger any downloads. You may see a log line per linked download the first time it runs. If a download can't be matched to any profile, it's left as <strong>Unknown</strong> — use the banner/quick filter to find it and assign a profile from Media Details, or it will be linked automatically later if a matching profile is added.</p>
+<p>⚠️ <strong>Check your logs after upgrading</strong> if you manage a large or older library: the task also reports a warning like <code>N media item(s) with trailer_exists=True have no tracked download record</code>. This means those trailers haven't been picked up by the files scan yet — the count should drop to zero after the next <strong>Scan All Media Folders</strong> run completes. If the warning persists across scans, those media folders may be unreachable (e.g. a disconnected network drive), which is worth resolving before future updates that rely on download records.</p>
+</blockquote>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated frontend to <strong>Angular v22</strong>.</li>
+<li>Updated relevant docs pages to reflect new changes and features.</li>
+<li>Included a new <a href="https://nandyalu.github.io/trailarr/references/roadmap/"><strong>Roadmap to v1.0.0</strong></a> page in the docs under References, summarizing the 9-phase plan to reach v1.0.0 and what each phase entails.</li>
+</ul>
+<hr />
+<h2 id="v098-june-28-2026"><strong>v0.9.8</strong> - <em>June 28, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li><strong>Dedicated <code>tmdb_id</code> and <code>tvdb_id</code> fields on media items</strong> — All media items now store TMDB and TVDB IDs as separate, typed integer fields populated from Radarr, Sonarr, and Plex. These IDs are the foundation for upcoming TMDB extras integration. Custom filters now accept <code>tmdb_id</code> and <code>tvdb_id</code> as numeric filter targets (equals, greater than, etc.).</li>
