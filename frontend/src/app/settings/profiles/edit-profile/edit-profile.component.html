@@ -43,7 +43,7 @@
         name="Profile Enabled"
         description="Enable or disable this profile"
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.enabled)"
+        [selectedOption]="profile()?.enabled"
         (optionChange)="profileService.updateSetting('enabled', $event)"
       />
       <app-text-setting
@@ -67,7 +67,7 @@
         description="Stop monitoring media that use this profile after successful download and save YouTube ID."
         descriptionExtra="Set this to 'false' for non-trailer Profiles and 'true' for trailer Profiles."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.stop_monitoring)"
+        [selectedOption]="profile()?.stop_monitoring"
         (optionChange)="profileService.updateSetting('stop_monitoring', $event)"
       />
       <app-text-setting
@@ -103,14 +103,14 @@
           name="Notify Plex"
           description="Trigger a Plex library scan after a trailer is downloaded so it appears immediately."
           [options]="trueFalseOptions"
-          [selectedOption]="$safeNavigationMigration(profile()?.notify_plex)"
+          [selectedOption]="profile()?.notify_plex"
           (optionChange)="profileService.updateSetting('notify_plex', $event)"
         />
         <app-options-setting
           name="Skip If Plex Has Trailer"
           description="Skip downloading a trailer if Plex already has one for this item."
           [options]="trueFalseOptions"
-          [selectedOption]="$safeNavigationMigration(profile()?.skip_if_plex_trailer)"
+          [selectedOption]="profile()?.skip_if_plex_trailer"
           (optionChange)="profileService.updateSetting('skip_if_plex_trailer', $event)"
         />
         @if (profile()?.skip_if_plex_trailer) {
@@ -118,7 +118,7 @@
             name="Skip If Plex Trailer Resolution"
             description="Minimum resolution the Plex trailer must have before skipping the download."
             [options]="plexResolutionOptions"
-            [selectedOption]="$safeNavigationMigration(profile()?.skip_if_plex_trailer_resolution)"
+            [selectedOption]="profile()?.skip_if_plex_trailer_resolution"
             (optionChange)="profileService.updateSetting('skip_if_plex_trailer_resolution', $event)"
           />
         }
@@ -139,7 +139,7 @@
         name="File Format"
         description="Final file format(extension) of the trailer file."
         [options]="fileFormatOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.file_format)"
+        [selectedOption]="profile()?.file_format"
         [disabledOptions]="fileFormatsDisabled()"
         (optionChange)="profileService.updateSetting('file_format', $event)"
       />
@@ -160,7 +160,7 @@
         name="Folder Enabled"
         description="Save trailer file in a separate folder inside Media folder."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.folder_enabled)"
+        [selectedOption]="profile()?.folder_enabled"
         (optionChange)="profileService.updateSetting('folder_enabled', $event)"
       />
       @if (profile()?.folder_enabled) {
@@ -195,14 +195,14 @@
         name="Embed Metadata"
         description="Embed info from YouTube video in the trailer file."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.embed_metadata)"
+        [selectedOption]="profile()?.embed_metadata"
         (optionChange)="profileService.updateSetting('embed_metadata', $event)"
       />
       <app-options-setting
         name="Remove Silence"
         description="Detect and remove silence (3s+, 30dB) from the end of the trailer file."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.remove_silence)"
+        [selectedOption]="profile()?.remove_silence"
         (optionChange)="profileService.updateSetting('remove_silence', $event)"
       />
     </div>
@@ -222,7 +222,7 @@
         description="Final audio format(codec) of the trailer file."
         [options]="audioFormatOptions"
         [disabledOptions]="audioFormatsDisabled()"
-        [selectedOption]="$safeNavigationMigration(profile()?.audio_format)"
+        [selectedOption]="profile()?.audio_format"
         (optionChange)="profileService.updateSetting('audio_format', $event)"
       />
       <app-range-setting
@@ -254,14 +254,14 @@
         description="Final video format(codec) of the trailer file."
         [options]="videoFormatOptions"
         [disabledOptions]="videoFormatsDisabled()"
-        [selectedOption]="$safeNavigationMigration(profile()?.video_format)"
+        [selectedOption]="profile()?.video_format"
         (optionChange)="profileService.updateSetting('video_format', $event)"
       />
       <app-options-setting
         name="Video Resolution"
         description="Resolution of the trailer video file."
         [options]="videoResolutionOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.video_resolution)"
+        [selectedOption]="profile()?.video_resolution"
         (optionChange)="profileService.updateSetting('video_resolution', $event)"
       />
     </div>
@@ -280,14 +280,14 @@
         name="Subtitles Enabled"
         description="Enable or disable subtitle download for this profile."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.subtitles_enabled)"
+        [selectedOption]="profile()?.subtitles_enabled"
         (optionChange)="profileService.updateSetting('subtitles_enabled', $event)"
       />
       <app-options-setting
         name="Subtitles Format"
         description="Final subtitle format of the trailer file."
         [options]="subtitleFormatOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.subtitles_format)"
+        [selectedOption]="profile()?.subtitles_format"
         (optionChange)="profileService.updateSetting('subtitles_format', $event)"
       />
       <app-text-setting
@@ -352,7 +352,7 @@
         name="Always Search"
         description="Enable this to always search for trailers, ignoring the current youtube id."
         [options]="trueFalseOptions"
-        [selectedOption]="$safeNavigationMigration(profile()?.always_search)"
+        [selectedOption]="profile()?.always_search"
         (optionChange)="profileService.updateSetting('always_search', $event)"
       />
       <app-text-setting

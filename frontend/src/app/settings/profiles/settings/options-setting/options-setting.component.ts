@@ -17,7 +17,11 @@ export class OptionsSettingComponent {
   descriptionExtra = input<string>('');
   options = input.required<string[]>();
   disabledOptions = input<string[]>([]);
-  selectedOption = input('', {transform: String});
+  // Nullish-safe: bound values can be undefined while a settings/profile
+  // resource is loading — plain String() would render "undefined"/"null"
+  selectedOption = input('', {
+    transform: (value: string | number | boolean | null | undefined) => (value == null ? '' : String(value)),
+  });
   colorType = input<'default' | 'warning' | 'danger'>('default');
   colorTypeOption = input<string>('');
 

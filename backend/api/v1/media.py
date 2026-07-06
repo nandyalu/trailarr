@@ -22,6 +22,7 @@ from core.tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
 )
+from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("MediaAPI")
 
@@ -231,7 +232,11 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media, Download or Profile Not Found",
-        }
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error updating the download",
+        },
     },
 )
 async def update_download_profile(
@@ -281,9 +286,18 @@ async def update_download_profile(
         return msg
     except HTTPException:
         raise
-    except Exception as e:
+    except ItemNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+    except Exception as e:
+        logger.exception(
+            f"Failed to set profile [{profile_id}] on download"
+            f" [{download_id}]: {e}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update download profile",
         )
 
 

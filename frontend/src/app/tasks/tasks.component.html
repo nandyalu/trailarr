@@ -52,7 +52,7 @@
                 <span class="meta-dot">·</span>
                 <span class="meta-item">
                   <span class="meta-label">Last run</span>
-                  {{ $safeNavigationMigration(task.last_run?.started_at) | timediff: 'Never' | async }}
+                  {{ task.last_run?.started_at | timediff: 'Never' | async }}
                   @if (task.last_run && task.last_run.status !== 'scheduled') {
                     <span class="meta-duration">({{ task.last_run.duration_seconds | duration: '...' }})</span>
                   }
