@@ -8,7 +8,7 @@ dependencies = [
     "aiofiles==25.1.0",
     "aiohttp==3.14.1",
     "aiosqlite==0.22.1",
-    "alembic==1.18.4",
+    "alembic==1.18.5",
     "async-lru==2.3.0",
     "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.138.1",
