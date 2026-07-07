@@ -1,0 +1,28 @@
+# Hygiene Backlog
+
+Small, non-blocking cleanups. Fold each into whichever release touches the area anyway;
+none justify their own release. Check items off with the release that shipped them.
+
+- [ ] **H1 — API error-handling standardization**: all `api/v1` handlers use the
+  pattern from `update_download_profile` (ItemNotFoundError→404, unexpected→logged 500
+  with generic detail — no `str(e)` leaks, no blanket 404s). Scheduled: Phase 7 Stage B
+  (touches every handler anyway).
+- [ ] **H2 — Decorative SVG accessibility sweep**: `aria-hidden="true"
+  focusable="false"` on presentational inline SVGs app-wide (only the v0.9.9 banner
+  icon has it). Any frontend-heavy release; Phase 3's matrix UI work is a natural slot.
+- [ ] **H3 — Older API endpoints marked deprecated** (`/media/all` etc.) — actually
+  remove at v1.0.0 API freeze.
+- [ ] **H4 — `tests/conftest.py` TODO** ("Update all tests to current codebase") —
+  address during Phase 7 test-tree mirror.
+- [ ] **H5 — Duplicate `displayTitle` pipes** (helpers/ vs media/pipes/) — merge in
+  Phase 7 frontend light touch (keep the underscore-aware one).
+- [ ] **H6 — `read_all_raw`/`downloads_raw` raw-SQL endpoints**: revisit typed
+  responses when Phase 3 changes list plumbing; at minimum document why raw exists
+  (perf).
+- [ ] **H7 — Startup-fix module retirement**: after Phase 3 deletes
+  `fix_trailer_exists_flags`, remove `startup_fixes.py` and its tests entirely.
+- [ ] **H8 — Scan TODO comments** ("once the planned Issues section exists…") in
+  files-scan → wired and removed in Phase 11.
+- [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
+  owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
+  candidate).

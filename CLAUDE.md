@@ -314,6 +314,15 @@ LOG_LEVEL=Info                 # Logging level
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
 
+## Roadmap Execution Plans
+
+The path to v1.0.0 is an 11-phase roadmap (public summary: `docs/references/roadmap.md`).
+**Detailed per-phase execution plans live in `plans/`** — before working on any roadmap
+phase (download engine, dynamic status, TMDB, video types, reorg, Issues, notifications…),
+read `plans/README.md` and the relevant phase file first. Design decisions recorded there
+are settled; follow the phase's wargame scenarios, verification protocol, and exit
+criteria. Update the phase file's Status line when work starts/finishes.
+
 ## After Every Fix / Feature / Update
 
 After completing any bug fix, feature, or notable change, always ask the user:
