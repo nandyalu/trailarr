@@ -65,6 +65,33 @@ Rules of the ladder:
 - Phases 8–11 plans reference **post-reorg paths** (`services/…`, `database/…`). If the
   reorg slips, translate paths back via the move map in `phase-07-backend-reorg.md`.
 
+## Upgrade-safety rules (version skips are normal, plan for them)
+
+Users routinely jump multiple releases (e.g. v0.9.8 → v0.11.0). Schema is skip-safe by
+construction (Alembic runs the whole chain sequentially); these rules keep DATA fixes
+skip-safe too:
+
+1. **One-shot fixes are migrations; reconciliation is startup passes.** If a data fix
+   should run exactly once, write it as an Alembic data migration. App-code startup
+   passes are reserved for idempotent reconciliation that is valid to re-run forever.
+2. **A startup pass may only be deleted when** no later code depends on its effect, OR
+   its effect is converted to a data migration in the same release that deletes it.
+   Record the justification in the deleting phase's plan.
+3. **Startup-pass registry (built in Phase 2):** passes register with a name and
+   dependency order; completion is recorded in the DB (name, app version, timestamp);
+   unrecorded passes run in order at boot BEFORE scheduled tasks; dependent tasks gate
+   on their required passes. A version-skipper simply runs every missed pass on first
+   boot. The registry doubles as the upgrade audit trail (feeds the diagnostics bundle).
+4. **Release-fixture gauntlet:** keep one small fixture DB per released version in
+   `backend/tests/fixtures/dbs/` (snapshot after each release, starting with a
+   v0.9.6-era and a v0.9.9 fixture); a shared test harness runs
+   `alembic upgrade head` + all startup passes from EVERY fixture and asserts core
+   invariants. Every phase's verification includes the gauntlet; each release adds its
+   fixture.
+5. **Downgrade guard:** on boot, if the DB's Alembic revision is unknown to (ahead of)
+   the running app, refuse to start with a clear message pointing at the pre-upgrade
+   backup — never crash confusingly on a newer schema.
+
 ## Cross-phase invariants
 
 1. `PYTHONPATH=backend uv run python -m pytest tests/` green at every commit.
@@ -105,3 +132,5 @@ Rules of the ladder:
 - `phase-10-media-types-seasons.md`
 - `phase-11-issues-v1.md`
 - `hygiene-backlog.md` — small non-blocking cleanups; fold into whichever release fits.
+- `post-v1-backlog.md` — post-v1.0 ideas + deliberate deferrals with revisit triggers
+  (Arr webhooks with auto-registration is the headline item).
