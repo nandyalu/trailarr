@@ -162,6 +162,7 @@ nav:
     - Reverse Proxy: user-guide/reverse-proxy.md
   - Troubleshooting:
     - Common Issues: troubleshooting/common-issues.md
+    - Backup & Restore: troubleshooting/backup-restore.md
     - FAQ: troubleshooting/faq.md
   - Release Notes:
     - '2026': release-notes/2026.md
