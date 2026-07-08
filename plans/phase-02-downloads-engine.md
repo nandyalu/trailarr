@@ -46,13 +46,17 @@ is the pivot of the whole roadmap.
    but nothing reads them for download decisions.
 5. **`stop_monitoring` is honored this phase** (as "stop after first successful profile
    in this run") but marked deprecated in the UI tooltip. Its fate: Phase 4.
-6. **Upgrade guard:** at the start of `download_missing_trailers`, if any media has
-   `trailer_exists=True` with zero active download rows AND no full files scan has
-   completed since this app version first booted, log a warning, trigger
-   `scan_all_media_folders`, and SKIP the download run. Persist "scan completed on
-   version X" via a small `app_settings`/task-config flag. This is the only ordering
-   guard in the roadmap — without it, upgrades from pre-download-tracking versions
-   mass-re-download.
+6. **Upgrade guard, implemented as the startup-pass registry** (see README
+   "Upgrade-safety rules" — this phase builds the general mechanism, not a one-off
+   flag): a small `startup_pass` table (name, completed_at, app_version) + a runner
+   that executes unrecorded passes in dependency order at boot before scheduled tasks.
+   Registered passes at this phase: `attribute-downloads` (the existing v0.9.9 pass,
+   folded in), `full-scan-before-downloads-v0.10` (runs/verifies a full files scan
+   when any media has `trailer_exists=True` with zero active download rows). The
+   download task gates on the registry reporting its required passes complete —
+   version-skippers run every missed pass on first boot in order. Also add the
+   **downgrade guard** here (cheap): on boot, unknown/ahead Alembic revision → clear
+   refusal message pointing at the pre-upgrade backup.
 7. **Shadow logging (bake-window instrumentation):** for every (media, profile)
    decision, if the old signal (`trailer_exists`) and the new signal (satisfaction)
    disagree, log one structured line:
@@ -177,6 +181,10 @@ is the pivot of the whole roadmap.
 - Manager: DownloadAttempt CRUD + unique-key upsert + prune.
 - Task-level: two-run idempotency (S1) with mocked downloader; stop_monitoring
   full-satisfaction (S10); upgrade guard (S15/S16).
+- Startup-pass registry: pass ordering, completion recording, re-run skip, gating;
+  **release-fixture gauntlet harness** (README rule 4) built here with the first two
+  fixtures (v0.9.6-era: trailer_exists=1 + empty downloads; v0.9.9: attributed
+  downloads) — every later phase reuses it and adds its fixture.
 - Migration: upgrade+downgrade on config-dev copy.
 - Update existing: `test_missing_trailers.py`, files-scan guard tests, update.py tests
   asserting monitor flip.

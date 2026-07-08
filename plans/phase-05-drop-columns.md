@@ -43,6 +43,14 @@ referenced removed fields. After this release the old failure modes are unrepres
 5. **`MediaRead.status`/`trailer_exists` API compat ends here** — REMOVED from
    responses. Frontend regenerated same release, external consumers warned in notes.
 
+6. **VACUUM after destructive migration:** SQLite table rebuilds don't return disk
+   space — run `VACUUM` on `trailarr.db` after this release's migration completes
+   (implement as a post-migration step in the startup flow, generalized: VACUUM
+   whenever migrations actually ran, per KR's "default into alembic migrations"
+   direction). Also add VACUUM to `logs.db` after the daily `delete_old_logs` purge —
+   verified July 2026 that log rows are deleted daily but space is never reclaimed
+   (see hygiene H10; can ship in any earlier release).
+
 ## Wargame
 
 - **W1. User DB with hand-made filters on status/trailer_exists in combinations** the
