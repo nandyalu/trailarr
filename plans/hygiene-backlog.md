@@ -26,8 +26,8 @@ none justify their own release. Check items off with the release that shipped th
 - [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
   candidate).
-- [ ] **H10 — `VACUUM` for logs.db after the daily purge**: `delete_old_logs` removes
-  rows daily but SQLite never reclaims the space (verified July 2026 — no VACUUM
-  anywhere in the codebase). Add `VACUUM` after the purge in the cleanup task (and
-  consider batch DELETE instead of row-by-row while there). Any release; latest
-  Phase 5 (which adds the trailarr.db VACUUM-after-migrations).
+- [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (v0.9.9):
+  `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
+  autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at
+  50k rows: 13.3 MB → 0.14 MB in 0.32s. trailarr.db VACUUM-after-migrations still
+  lands with Phase 5.

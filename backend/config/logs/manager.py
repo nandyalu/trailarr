@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from sqlalchemy import delete
 from sqlmodel import col, desc, or_, select
-from config.logs.db_utils import get_async_logs_session
+from config.logs.db_utils import get_async_logs_session, vacuum_logs_db
 from config.logs.model import (
     AppLogRecord,
     AppLogRecordRead,
@@ -61,17 +62,17 @@ def _apply_log_filter(stmt, filter: str | None):
 
 
 async def delete_old_logs(days: int = 30) -> int:
-    """Delete logs older than the specified number of days."""
+    """Delete logs older than the specified number of days in a single
+    statement, then VACUUM to return the freed pages to the filesystem
+    (skipped when nothing was deleted — VACUUM rewrites the whole file)."""
     date_threshold = datetime.now() - timedelta(days=days)
     async with get_async_logs_session() as session:
-        stmt = select(AppLogRecord).where(
+        stmt = delete(AppLogRecord).where(
             col(AppLogRecord.created) < date_threshold
         )
-        logs_to_delete = await session.exec(stmt)
-        logs_to_delete = logs_to_delete.all()
-        count = len(logs_to_delete)
-        if logs_to_delete:
-            for log in logs_to_delete:
-                await session.delete(log)
-            await session.commit()
-        return count
+        result = await session.exec(stmt)  # type: ignore[call-overload]
+        await session.commit()
+        count = result.rowcount or 0
+    if count:
+        await vacuum_logs_db()
+    return count
