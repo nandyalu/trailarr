@@ -22,6 +22,10 @@ from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
 from config.settings import app_settings
 from core.base.database.utils.engine import flush_records_to_db
+from core.base.database.utils.version_guard import (
+    ensure_db_not_from_newer_version,
+)
+from core.notifications import dispatcher as notification_dispatcher
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 from frontend import setup_frontend
@@ -32,16 +36,21 @@ logging = ModuleLogger("Main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Before startup
+    # Refuse to run an older app version against a newer-schema database
+    ensure_db_not_from_newer_version()
     # Schedule all tasks
     logging.debug("Scheduling tasks")
     schedule_all_tasks()
     scheduler.start()
+    # Start the Apprise notification dispatcher (fire-and-forget batching)
+    notification_dispatcher.start()
 
     # Yield to let the app run
     yield
 
     # Before shutdown
     logging.debug("Shutting down the scheduler and flushing logs to DB")
+    await notification_dispatcher.stop()
     scheduler.shutdown()
     flush_records_to_db()
     flush_logs_to_db()

@@ -6,6 +6,7 @@ export const environment = {
   files: 'files/',
   logs: 'logs/',
   media: 'media/',
+  notifications: 'notifications/',
   profiles: 'trailerprofiles/',
   settings: 'settings/',
   jobs: 'jobs/',

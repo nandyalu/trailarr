@@ -7,6 +7,7 @@ export const RouteHome = 'home';
 export const RouteLogs = 'logs';
 export const RouteMedia = 'media';
 export const RouteMovies = 'movies';
+export const RouteNotifications = 'notifications';
 export const RouteProfiles = 'profiles';
 export const RouteSeries = 'series';
 export const RouteSettings = 'settings';

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-import {RouteAbout, RouteConnections, RouteGeneral, RouteProfiles} from 'src/routing';
+import {RouteAbout, RouteConnections, RouteGeneral, RouteNotifications, RouteProfiles} from 'src/routing';
 
 @Component({
   selector: 'app-settings',
@@ -14,4 +14,5 @@ export class SettingsComponent {
   protected readonly RouteConnections = RouteConnections;
   protected readonly RouteProfiles = RouteProfiles;
   protected readonly RouteGeneral = RouteGeneral;
+  protected readonly RouteNotifications = RouteNotifications;
 }

@@ -92,7 +92,9 @@ form {
   border-radius: 0.5rem;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:focus {
     border-color: var(--color-primary);
@@ -282,7 +284,9 @@ input[type='radio'] {
     border-radius: 0.5rem;
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
 
     &:focus {
       border-color: var(--color-primary);
@@ -364,8 +368,12 @@ input[type='radio'] {
 }
 
 @keyframes closeProgress {
-  0% { width: 100%; }
-  100% { width: 0%; }
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
 }
 
 // ── Action buttons ────────────────────────────────────────────────────────────
@@ -403,7 +411,9 @@ input[type='radio'] {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
 
-    svg { fill: var(--color-on-primary); }
+    svg {
+      fill: var(--color-on-primary);
+    }
 
     &:hover:not(:disabled) {
       background-color: color-mix(in srgb, var(--color-primary) 85%, black);
@@ -414,7 +424,9 @@ input[type='radio'] {
     background-color: var(--color-surface-container-high);
     color: var(--color-on-surface);
 
-    svg { fill: var(--color-on-surface-variant); }
+    svg {
+      fill: var(--color-on-surface-variant);
+    }
 
     &:hover:not(:disabled) {
       background-color: var(--color-surface-container-highest);

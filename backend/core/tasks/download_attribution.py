@@ -101,14 +101,12 @@ async def attribute_unattributed_downloads() -> None:
     )
 
 
-async def report_attribution_health() -> None:
-    """Log how many media items have trailer_exists=True without any active
-    download record backing it.
+def count_untracked_trailer_media() -> tuple[int, int]:
+    """Count media with trailer_exists=True but no active download record.
 
-    These media would be treated as having no trailers once downloads become
-    the source of truth for which profiles are satisfied — a non-zero count
-    means the files scan hasn't recorded their trailers yet and needs to run
-    before downloads can be trusted for download decisions.
+    Returns (untracked_count, trailer_exists_count). A non-zero untracked
+    count is the population at risk of mass re-download under the
+    downloads-driven engine — the full-scan startup pass gates on this.
     """
     untracked_count = 0
     trailer_exists_count = 0
@@ -118,6 +116,19 @@ async def report_attribution_health() -> None:
         trailer_exists_count += 1
         if not any(d.file_exists for d in media.downloads):
             untracked_count += 1
+    return untracked_count, trailer_exists_count
+
+
+async def report_attribution_health() -> None:
+    """Log how many media items have trailer_exists=True without any active
+    download record backing it.
+
+    These media would be treated as having no trailers once downloads become
+    the source of truth for which profiles are satisfied — a non-zero count
+    means the files scan hasn't recorded their trailers yet and needs to run
+    before downloads can be trusted for download decisions.
+    """
+    untracked_count, trailer_exists_count = count_untracked_trailer_media()
 
     if untracked_count:
         logger.warning(

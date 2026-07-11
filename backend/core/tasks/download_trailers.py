@@ -124,7 +124,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
     skipped_titles = {
         "invalid_media_id": [],
         "missing_folder_path": [],
-        "trailer_exists": [],
+        "already_downloaded_with_profile": [],
         "media_not_found": [],
     }
     for media_id in media_ids:
@@ -133,6 +133,17 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         except Exception:
             skipped_titles["invalid_media_id"].append(media_id)
             continue
+        # Phase 2: skip only when THIS profile already has an active download
+        # for the media (user picked the profile explicitly — other profiles'
+        # downloads or the trailer_exists flag are irrelevant here)
+        if any(
+            d.file_exists and d.profile_id == profile.id
+            for d in db_media.downloads
+        ):
+            skipped_titles["already_downloaded_with_profile"].append(
+                db_media.title
+            )
+            continue
         check_folder = profile.custom_folder == "{media_folder}"
         if check_folder:
             if db_media.folder_path is None:
@@ -140,9 +151,6 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
                 continue
             if not FilesHandler.check_folder_exists(db_media.folder_path):
                 skipped_titles["missing_folder_path"].append(db_media.title)
-                continue
-            if db_media.trailer_exists:
-                skipped_titles["trailer_exists"].append(db_media.title)
                 continue
         if app_settings.wait_for_media:
             if check_folder:

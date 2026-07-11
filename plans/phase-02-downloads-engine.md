@@ -1,6 +1,6 @@
 # Phase 2 — Downloads-Driven Download Engine
 
-**Status:** not started · **Release:** v0.10.0 (with `track-apprise-notifications.md`)
+**Status:** IMPLEMENTED (July 2026, on dev — pending release verification on config-dev copy + bake window) · **Release:** v0.10.0 (with `track-apprise-notifications.md`)
 **Depends on:** Phase 1 (shipped) · **Blocks:** Phases 3–5
 
 ## Objective

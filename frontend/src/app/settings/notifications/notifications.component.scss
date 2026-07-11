@@ -1,0 +1,335 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0.5rem 1rem;
+}
+
+// ── Title block (matches Profiles / Connections pages) ───────────────────────
+
+.title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+}
+
+.icononly-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: var(--color-on-surface-variant);
+  }
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    svg {
+      fill: var(--color-primary);
+    }
+  }
+
+  &.loading {
+    cursor: progress;
+    animation: spin-animation 2s linear infinite;
+  }
+}
+
+@keyframes spin-animation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem 0.5rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &.primary {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    svg {
+      fill: var(--color-on-primary);
+    }
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+    }
+  }
+}
+
+.title-block .btn.primary {
+  margin-left: auto;
+}
+
+// ── Page description ──────────────────────────────────────────────────────────
+
+.page-description {
+  margin: 0;
+  // max-width: 60rem;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: var(--color-on-surface-variant);
+
+  a {
+    color: var(--color-primary);
+  }
+}
+
+// ── Channel list ──────────────────────────────────────────────────────────────
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+}
+
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 60rem;
+}
+
+.card {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface-container-high);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.channel-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.channel-url {
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant);
+}
+
+.status-badge {
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  &.enabled {
+    color: var(--color-success);
+  }
+
+  &.disabled {
+    color: var(--color-outline);
+  }
+}
+
+.channel-body {
+  padding: 0.875rem 1rem;
+
+  .channel-events {
+    margin: 0 0 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .channel-note {
+    margin: 0 0 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+  }
+}
+
+.channel-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+// ── Buttons (card actions + dialog) ───────────────────────────────────────────
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.primary-button {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+  }
+}
+
+.secondary-button {
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-container-highest);
+  }
+}
+
+.danger-button {
+  background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
+  }
+}
+
+// ── Add/Edit dialog ───────────────────────────────────────────────────────────
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background-color: rgb(0 0 0 / 50%);
+  backdrop-filter: blur(4px);
+}
+
+.channel-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  box-shadow: var(--shadow-level3);
+
+  h3 {
+    margin: 0 0 0.25rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border: none;
+  margin: 0;
+  padding: 0;
+
+  span,
+  legend {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0;
+  }
+
+  input[type='text'],
+  input[type='password'] {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.5rem;
+    background-color: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    }
+  }
+
+  small {
+    color: var(--color-on-surface-variant);
+
+    a {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.375rem 0.75rem;
+  margin-top: 0.375rem;
+}
+
+.event-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    accent-color: var(--color-primary);
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}

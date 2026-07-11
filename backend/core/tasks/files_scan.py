@@ -214,12 +214,10 @@ async def _process_trailer_changes(
             source=source,
             source_detail="FilesScan",
         )
-        if not media.trailer_exists and not media.monitor:
-            # Guard: skip when monitor=True — the download task may still be working
-            # through remaining profiles (e.g. a stop_monitoring=False profile ran
-            # first; a higher-priority profile is still pending). Setting
-            # trailer_exists=True would also force monitor=False and prevent those
-            # profiles from running.
+        if not media.trailer_exists:
+            # Reconcile from disk truth unconditionally: since Phase 2,
+            # setting trailer_exists no longer flips monitor off, so this
+            # can't cut short a multi-profile download chain anymore.
             media.trailer_exists = True
             media_manager.update_trailer_exists(media.id, True)
 
@@ -277,13 +275,12 @@ async def _process_trailer_changes(
         # No trailers on disk but flag is True → reset
         media.trailer_exists = False
         media_manager.update_trailer_exists(media.id, False)
-    elif trailer_paths and not media.trailer_exists and not media.monitor:
-        # Trailers exist on disk but flag is stale False.
-        # Guard: skip when monitor=True — the download task may still be working
-        # through remaining profiles (e.g. a stop_monitoring=False profile ran
-        # first; a higher-priority profile is still pending). Setting
-        # trailer_exists=True would also force monitor=False and prevent those
-        # profiles from running.
+    elif trailer_paths and not media.trailer_exists:
+        # Trailers exist on disk but flag is stale False — reconcile from
+        # disk truth unconditionally: since Phase 2, setting trailer_exists
+        # no longer flips monitor off, so this can't cut short a
+        # multi-profile download chain anymore (the guard that used to sit
+        # here caused the #591 monitored-media deadlock).
         media.trailer_exists = True
         media_manager.update_trailer_exists(media.id, True)
 
