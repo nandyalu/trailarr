@@ -64,8 +64,8 @@
       />
       <app-options-setting
         name="Stop Monitoring"
-        description="Stop monitoring media that use this profile after successful download and save YouTube ID."
-        descriptionExtra="Set this to 'false' for non-trailer Profiles and 'true' for trailer Profiles."
+        description="⚠️ Deprecated — will be removed in an upcoming release. When 'true', a successful download from this profile marks the media as fully satisfied (no other profiles will download for it)."
+        descriptionExtra="Downloads are now tracked per profile, so this option is no longer needed to prevent re-downloads. Set to 'false' only for multi-trailer setups."
         [options]="trueFalseOptions"
         [selectedOption]="profile()?.stop_monitoring"
         (optionChange)="profileService.updateSetting('stop_monitoring', $event)"

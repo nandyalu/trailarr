@@ -6,10 +6,13 @@
 from core.base.database.models.base import AppSQLModel
 from core.base.database.models.connection import Connection
 from core.base.database.models.download import Download
+from core.base.database.models.downloadattempt import DownloadAttempt
 from core.base.database.models.event import Event
 from core.base.database.models.media import Media
 from core.base.database.models.filter import Filter
 from core.base.database.models.customfilter import CustomFilter
+from core.base.database.models.notificationchannel import NotificationChannel
+from core.base.database.models.startuppass import StartupPass
 from core.base.database.models.task_config import ScheduledTaskConfig
 from core.base.database.models.trailerprofile import TrailerProfile
 
@@ -22,11 +25,14 @@ from core.base.database.utils.engine import engine
 __ALL__ = [
     Connection,
     Download,
+    DownloadAttempt,
     Event,
     Media,
     Filter,
     CustomFilter,
+    NotificationChannel,
     ScheduledTaskConfig,
+    StartupPass,
     TrailerProfile,
 ]
 

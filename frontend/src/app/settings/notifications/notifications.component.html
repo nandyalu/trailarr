@@ -1,0 +1,115 @@
+<div class="title-block">
+  <h2>Notifications</h2>
+  <button class="icononly-button" [class.loading]="isLoading()" title="Refresh" (click)="reloadChannels()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+      />
+    </svg>
+  </button>
+  <button class="btn primary" (click)="openAddDialog()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+    </svg>
+    <span>Add New</span>
+  </button>
+</div>
+
+<hr />
+
+<p class="page-description">
+  Send Trailarr events to Discord, Telegram, Slack, email and
+  <a href="https://appriseit.com/services/" target="_blank" rel="noopener">100+ more services via Apprise</a> — each channel picks which
+  events it receives, and bulk operations are batched into a single message.
+</p>
+
+@if (channels().length === 0 && !isLoading()) {
+  <div class="empty-state">
+    <p>No notification channels yet. Add one to get notified when trailers are downloaded.</p>
+  </div>
+}
+
+<div class="channel-list">
+  @for (channel of channels(); track channel.id) {
+    <div class="card channel-card">
+      <div class="card-header channel-header">
+        <div class="channel-title">
+          <h4>{{ channel.name }}</h4>
+          <code class="channel-url">{{ channel.url_masked }}</code>
+        </div>
+        <span class="status-badge" [class.enabled]="channel.enabled" [class.disabled]="!channel.enabled">
+          {{ channel.enabled ? 'Enabled' : 'Disabled' }}
+        </span>
+      </div>
+      <div class="channel-body">
+        <p class="channel-events">{{ eventLabelsFor(channel) }}</p>
+        @if (channel.include_user_events) {
+          <p class="channel-note">Includes user-initiated events</p>
+        }
+        <div class="channel-actions">
+          <button class="secondary-button" (click)="testChannel(channel)" [disabled]="testingId() === channel.id">
+            {{ testingId() === channel.id ? 'Testing…' : 'Test' }}
+          </button>
+          <button class="secondary-button" (click)="openEditDialog(channel)">Edit</button>
+          <button class="danger-button" (click)="deleteChannel(channel)">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (dialogOpen()) {
+  <div class="dialog-backdrop" (click)="dialogOpen.set(false)"></div>
+  <div class="channel-dialog" role="dialog" aria-label="Notification Channel">
+    <h3>{{ editingId() === null ? 'Add' : 'Edit' }} Notification Channel</h3>
+
+    <label class="field">
+      <span>Name</span>
+      <input type="text" [(ngModel)]="formName" placeholder="e.g. Discord — downloads" />
+    </label>
+    <label class="field">
+      <span>Apprise URL</span>
+      <input
+        type="password"
+        [(ngModel)]="formUrl"
+        [placeholder]="editingId() === null ? 'e.g. discord://webhook_id/webhook_token' : 'Leave blank to keep the saved URL'"
+        autocomplete="off"
+      />
+      <small>
+        Kept secret — never shown again after saving. See the
+        <a href="https://appriseit.com/services/" target="_blank" rel="noopener">Apprise URL formats</a>.
+      </small>
+    </label>
+    <app-options-setting
+      name="Enabled"
+      description="Turn this channel's notifications on or off."
+      [options]="trueFalseOptions"
+      [selectedOption]="formEnabled()"
+      (optionChange)="setEnabled($event)"
+    />
+    <app-options-setting
+      name="Include User Events"
+      description="Also notify for user-initiated events. When 'false', only system events (tasks, syncs) notify — your own clicks in the UI won't."
+      [options]="trueFalseOptions"
+      [selectedOption]="formIncludeUserEvents()"
+      (optionChange)="setIncludeUserEvents($event)"
+    />
+    <fieldset class="field">
+      <legend>Notify for events</legend>
+      <div class="event-grid">
+        @for (option of eventTypeOptions; track option.name) {
+          <label class="event-option">
+            <input type="checkbox" [checked]="formEventTypes.has(option.name)" (change)="toggleEventType(option.name)" />
+            <span>{{ option.label }}</span>
+          </label>
+        }
+      </div>
+    </fieldset>
+    <div class="dialog-actions">
+      <button class="secondary-button" (click)="dialogOpen.set(false)">Cancel</button>
+      <button class="primary-button" (click)="saveChannel()" [disabled]="!formName.trim() || (editingId() === null && !formUrl.trim())">
+        Save
+      </button>
+    </div>
+  </div>
+}

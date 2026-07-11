@@ -3,14 +3,25 @@ import threading
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from core.base.database.manager import trailerprofile
+import core.base.database.manager.download as download_manager
+import core.base.database.manager.downloadattempt as attempt_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
+from core.base.database.models.downloadattempt import (
+    is_eligible,
+    next_eligible_at,
+)
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.profiles import find_matching_profiles
+from core.base.utils.satisfaction import (
+    SatisfactionResult,
+    evaluate_satisfaction,
+)
 from core.download import trailer as trailer_downloader
 from core.download.trailers import utils
 from core.files_handler import FilesHandler
+from core.tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailerDownloadTasks")
@@ -76,26 +87,112 @@ def _is_valid_media(
     return True
 
 
-# def _check_file_already_downloaded(
-#     media: MediaRead, profile: TrailerProfileRead
-# ) -> bool:
-#     """Check if the trailer file for the given profile already exists for media."""
-#     if not media.folder_path:
-#         return False
+def _apply_claims(
+    media: MediaRead,
+    claims: list[tuple[int, int]],
+    profiles_by_id: dict[int, TrailerProfileRead],
+) -> None:
+    """Attribute unattributed existing downloads to the matching profiles
+    that would otherwise download again (satisfaction rule claims)."""
+    for download_id, profile_id in claims:
+        download_manager.update_profile_id(download_id, profile_id)
+        profile = profiles_by_id.get(profile_id)
+        _name = (
+            profile.customfilter.filter_name if profile else str(profile_id)
+        )
+        logger.info(
+            f"Attributed existing download [{download_id}] of"
+            f" '{media.title}' [{media.id}] to profile '{_name}' instead of"
+            " downloading again."
+        )
 
-#     file_name = get_trailer_filename(media, profile, profile.file_format, 1)
 
-#     return FilesHandler.check_file_exists(media.folder_path, file_name)
+def _log_signal_disagreements(
+    media: MediaRead,
+    matching_profiles: list[TrailerProfileRead],
+    result: SatisfactionResult,
+) -> None:
+    """Bake-window instrumentation (remove in Phase 3): the legacy engine
+    downloaded for every matching profile; log each matching profile the
+    satisfaction rule deems already satisfied, so real installs audit the
+    new engine during the v0.10.x cycle."""
+    unsatisfied_ids = {p.id for p in result.unsatisfied}
+    claimed_ids = {profile_id for _, profile_id in result.claims}
+    for profile in matching_profiles:
+        if profile.id in unsatisfied_ids:
+            continue
+        if result.fully_satisfied_by_stop_monitoring:
+            via = "stop_monitoring"
+        elif profile.id in claimed_ids:
+            via = "claim"
+        else:
+            via = "own_download"
+        logger.info(
+            f"SIGNAL-DISAGREE media={media.id} profile={profile.id}"
+            f" trailer_exists={media.trailer_exists} satisfied=True"
+            f" via={via}"
+        )
+
+
+def _filter_backoff_eligible(
+    media: MediaRead, unsatisfied: list[TrailerProfileRead]
+) -> list[TrailerProfileRead]:
+    """Drop profiles whose (media, profile) key is still backing off after
+    previous failed download attempts."""
+    if not unsatisfied:
+        return []
+    attempts = {
+        a.profile_id: a for a in attempt_manager.read_for_media(media.id)
+    }
+    eligible: list[TrailerProfileRead] = []
+    for profile in unsatisfied:
+        attempt = attempts.get(profile.id)
+        if is_eligible(attempt):
+            eligible.append(profile)
+        else:
+            assert attempt is not None
+            logger.debug(
+                f"Backoff: skipping '{media.title}' [{media.id}] for profile"
+                f" [{profile.id}] — {attempt.attempt_count} failed"
+                f" attempt(s), next eligible {next_eligible_at(attempt)}"
+            )
+    return eligible
 
 
 async def download_missing_trailers(
     _stop_event: threading.Event | None = None,
 ) -> None:
-    """Download missing trailers for monitored media items."""
+    """Download missing trailers for monitored media items.
+
+    Phase 2 engine: downloads are decided per profile from download records
+    (see core/base/utils/satisfaction.py), never from the trailer_exists
+    flag. Failed downloads back off exponentially per (media, profile).
+    """
     # Exit if monitoring is disabled
     if not app_settings.monitor_enabled:
         logger.warning("Monitoring is disabled, skipping trailers download")
         return
+
+    # Upgrade guard: required startup passes (attribution, full-scan check)
+    # must have completed on this database before downloads may run —
+    # protects version-skipping upgrades from mass re-downloads.
+    if not downloads_ready():
+        logger.warning(
+            "Startup passes have not completed yet on this database —"
+            " skipping this download run. It will proceed on a later run"
+            " once the passes finish (usually within minutes of startup)."
+        )
+        return
+
+    # Prune attempt rows for profiles that no longer exist (lazy cleanup)
+    all_profiles = trailerprofile.get_trailerprofiles()
+    valid_ids = {p.id for p in all_profiles if p.id is not None}
+    pruned = attempt_manager.prune_for_missing_profiles(valid_ids)
+    if pruned:
+        logger.info(
+            f"Pruned {pruned} download attempt record(s) for deleted"
+            " profiles."
+        )
 
     successful_downloads = 0
     skipped_items = 0
@@ -125,8 +222,15 @@ async def download_missing_trailers(
             )
             return
 
+        # All profiles (incl. disabled) — download ownership is about
+        # identity, not activity: a disabled profile's downloads still
+        # satisfy it, and its stop_monitoring carve-out still applies.
+        profiles_by_id = {
+            p.id: p for p in trailer_profiles if p.id is not None
+        }
+
         media_to_process = None
-        matching_profiles_for_media = []
+        profiles_to_download: list[TrailerProfileRead] = []
 
         for db_media in db_media_list:
             # Skip media that was already processed in this run
@@ -135,11 +239,25 @@ async def download_missing_trailers(
             matching_profiles = find_matching_profiles(
                 db_media, enabled_profiles
             )
-            if matching_profiles:
-                media_to_process = db_media
-                matching_profiles_for_media = matching_profiles
-                db_media_list.close()  # Close the generator
-                break  # Found a media item to process
+            if not matching_profiles:
+                continue
+            result = evaluate_satisfaction(
+                db_media, matching_profiles, profiles_by_id
+            )
+            if result.claims:
+                _apply_claims(db_media, result.claims, profiles_by_id)
+            _log_signal_disagreements(db_media, matching_profiles, result)
+            if not result.unsatisfied:
+                processed_media_ids.add(db_media.id)
+                continue
+            eligible = _filter_backoff_eligible(db_media, result.unsatisfied)
+            if not eligible:
+                processed_media_ids.add(db_media.id)
+                continue
+            media_to_process = db_media
+            profiles_to_download = eligible
+            db_media_list.close()  # Close the generator
+            break  # Found a media item to process
 
         if not media_to_process:
             logger.info("No more media items to process.")
@@ -161,7 +279,7 @@ async def download_missing_trailers(
 
             downloads, skips = await _process_single_media_item(
                 media_to_process,
-                matching_profiles_for_media,
+                profiles_to_download,
                 successful_downloads + skipped_items,
                 _stop_event=_stop_event,
             )
@@ -188,7 +306,8 @@ async def _process_single_media_item(
     total_processed: int = 0,
     _stop_event: threading.Event | None = None,
 ) -> tuple[int, int]:
-    """Process a single media item and download all matching trailers."""
+    """Download trailers for a media item's unsatisfied, backoff-eligible
+    profiles. Successes clear the attempt record; hard failures record one."""
     logger.info(
         f"Processing media '{media.title}' [{media.id}] for trailer downloads."
     )
@@ -204,6 +323,7 @@ async def _process_single_media_item(
 
         check_folder = profile.custom_folder == "{media_folder}"
         if not _is_valid_media(media, check_folder):
+            # Validation skips are NOT failed attempts — no backoff recorded
             return successful_downloads, skipped_items + 1
 
         _profile_name = profile.customfilter.filter_name
@@ -219,17 +339,27 @@ async def _process_single_media_item(
             if download_successful:
                 download_attempted = True
                 successful_downloads += 1
+                # (attempt record cleared inside download_trailer on success)
                 if profile.stop_monitoring:
+                    # Legacy semantics preserved (deprecated — Phase 4):
+                    # remaining profiles are considered fully satisfied via
+                    # the satisfaction rule's stop_monitoring carve-out.
                     logger.info(
-                        f"Stopping monitoring for {media.title} after"
+                        f"Skipping remaining profiles for {media.title} after"
                         f" successful download with profile: {_profile_name}"
+                        " (Stop Monitoring is enabled on it)"
                     )
                     break
-        except (DownloadFailedError, Exception):
+        except (DownloadFailedError, Exception) as e:
             download_attempted = True
+            attempt = attempt_manager.record_failure(
+                media.id, profile.id, str(e) or type(e).__name__
+            )
             logger.warning(
                 f"Failed to download trailer for {media.title} with profile:"
-                f" {_profile_name}. Continuing to next profile."
+                f" {_profile_name} (attempt {attempt.attempt_count}, next"
+                f" retry after {next_eligible_at(attempt):%Y-%m-%d %H:%M})."
+                " Continuing to next profile."
             )
             skipped_items += 1
         finally:

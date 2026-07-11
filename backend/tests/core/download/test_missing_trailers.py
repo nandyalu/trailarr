@@ -81,6 +81,10 @@ async def test_download_missing_trailers_prevents_infinite_loop():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
+        "core.download.trailers.missing.downloads_ready", return_value=True
+    ), patch(
+        "core.download.trailers.missing.attempt_manager"
+    ) as mock_attempts, patch(
         "core.download.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
@@ -90,6 +94,8 @@ async def test_download_missing_trailers_prevents_infinite_loop():
 
         # Configure settings
         mock_settings.monitor_enabled = True
+        mock_attempts.prune_for_missing_profiles.return_value = 0
+        mock_attempts.read_for_media.return_value = []
 
         media = MediaRead(
             id=1,
@@ -129,7 +135,10 @@ async def test_download_missing_trailers_prevents_infinite_loop():
 
         # Configure trailer profiles
         mock_profile = MagicMock()
+        mock_profile.id = 1
+        mock_profile.priority = 100
         mock_profile.enabled = True
+        mock_profile.stop_monitoring = False
         mock_customfilter = MagicMock()
         mock_customfilter.filters = []
         mock_profile.customfilter = mock_customfilter
@@ -173,6 +182,10 @@ async def test_download_missing_trailers_no_profiles():
     with patch(
         "core.download.trailers.missing.app_settings"
     ) as mock_settings, patch(
+        "core.download.trailers.missing.downloads_ready", return_value=True
+    ), patch(
+        "core.download.trailers.missing.attempt_manager"
+    ) as mock_attempts, patch(
         "core.download.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
         "core.download.trailers.missing.trailerprofile"
@@ -180,6 +193,7 @@ async def test_download_missing_trailers_no_profiles():
 
         # Configure settings
         mock_settings.monitor_enabled = True
+        mock_attempts.prune_for_missing_profiles.return_value = 0
 
         # Configure database manager mock
         def fake_media_generator(monitored_only=False):

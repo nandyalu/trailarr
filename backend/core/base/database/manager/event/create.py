@@ -10,6 +10,22 @@ from core.base.database.models.event import (
 from core.base.database.utils.engine import write_session
 
 
+def _notify(event: EventRead | EventCreate) -> None:
+    """Queue the event for Apprise notification dispatch. Fire-and-forget:
+    lazy import (avoids manager↔dispatcher cycles) and never raises."""
+    try:
+        from core.notifications.dispatcher import enqueue
+
+        enqueue(
+            event_type=event.event_type.name,
+            source=event.source.name,
+            media_id=event.media_id,
+            detail=event.new_value or "",
+        )
+    except Exception:
+        pass
+
+
 @write_session
 def create(
     event_create: EventCreate,
@@ -28,7 +44,9 @@ def create(
     _session.add(db_event)
     _session.commit()
     _session.refresh(db_event)
-    return EventRead.model_validate(db_event)
+    event_read = EventRead.model_validate(db_event)
+    _notify(event_read)
+    return event_read
 
 
 @write_session
@@ -60,7 +78,9 @@ def create_if_not_exists(
     _session.add(db_event)
     _session.commit()
     _session.refresh(db_event)
-    return EventRead.model_validate(db_event), True
+    event_read = EventRead.model_validate(db_event)
+    _notify(event_read)
+    return event_read, True
 
 
 @write_session
@@ -79,6 +99,8 @@ def create_bulk(
         db_event = Event.model_validate(event_create)
         _session.add(db_event)
     _session.commit()
+    for event_create in events:
+        _notify(event_create)
 
 
 @write_session
@@ -128,4 +150,6 @@ def create_skip_event_if_not_exists(
     _session.add(db_event)
     _session.commit()
     _session.refresh(db_event)
-    return EventRead.model_validate(db_event), True
+    event_read = EventRead.model_validate(db_event)
+    _notify(event_read)
+    return event_read, True
