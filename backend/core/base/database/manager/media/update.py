@@ -291,9 +291,10 @@ def update_trailer_exists(
     if db_media.trailer_exists != trailer_exists:
         db_media.updated_at = datetime.now(timezone.utc)
     db_media.trailer_exists = trailer_exists
-    # If trailer exists, disable monitoring and mark downloaded
     if trailer_exists:
-        db_media.monitor = False
+        # Phase 2: downloads no longer flip monitor off — `monitor` is user
+        # intent (fully so after Phase 4). The satisfaction rule prevents
+        # re-downloads, so monitored media with trailers stays monitored.
         db_media.status = MonitorStatus.DOWNLOADED
     else:
         # Don't interrupt an active download

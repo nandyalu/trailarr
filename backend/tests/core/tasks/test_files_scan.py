@@ -406,9 +406,10 @@ class TestScanMediaFolder:
         mock_trailer_update.assert_called_once_with(media.id, True)
 
     @pytest.mark.asyncio
-    async def test_stale_trailer_exists_not_corrected_when_monitored(self):
-        """When monitor=True, trailer_exists is NOT corrected upward even if trailers
-        exist on disk — the download task may still be working through other profiles."""
+    async def test_stale_trailer_exists_corrected_even_when_monitored(self):
+        """Phase 2: reconciliation follows disk truth regardless of monitor —
+        setting trailer_exists no longer flips monitor, so the old guard
+        (which caused the #591 monitored-media deadlock) is gone."""
         existing_dl = SimpleNamespace(path="/media/Test Movie (2025)/Test Movie-trailer.mkv", file_exists=True)
         media = make_mock_media(trailer_exists=False, monitor=True, downloads=[existing_dl])
         trailer_path = existing_dl.path
@@ -427,15 +428,15 @@ class TestScanMediaFolder:
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
 
-        # Flag must NOT be corrected while monitor=True
-        mock_trailer_update.assert_not_called()
+        # Flag IS corrected from disk truth, monitored or not
+        mock_trailer_update.assert_called_once_with(media.id, True)
         assert new == 0
 
     @pytest.mark.asyncio
-    async def test_new_trailer_found_while_monitored_records_but_skips_flag(self):
-        """When a truly new trailer is found on disk (not yet a download record)
-        while monitor=True, we record the download but must NOT flip trailer_exists —
-        the download task is still working through remaining profiles."""
+    async def test_new_trailer_found_while_monitored_records_and_sets_flag(self):
+        """Phase 2: a new trailer found on disk records the download AND sets
+        trailer_exists even while monitored — the flag no longer controls
+        monitoring or download decisions (satisfaction rule does)."""
         trailer_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
         # No existing downloads — file is brand new
         media = make_mock_media(trailer_exists=False, monitor=True, downloads=[])
@@ -460,8 +461,8 @@ class TestScanMediaFolder:
         # File is new — download is recorded
         mock_record.assert_called_once()
         assert new == 1
-        # But flag must NOT be flipped while monitor=True
-        mock_trailer_update.assert_not_called()
+        # Flag reconciled from disk truth, monitored or not
+        mock_trailer_update.assert_called_with(media.id, True)
 
     @pytest.mark.asyncio
     async def test_missing_trailer_marks_deleted(self):

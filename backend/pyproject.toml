@@ -17,6 +17,7 @@ dependencies = [
     "sqlmodel==0.0.39",
     "yt-dlp[curl-cffi,default]==2026.7.4",
     "rich>=15.0.0",
+    "apprise>=1.12.0",
 ]
 
 [dependency-groups]

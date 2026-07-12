@@ -20,6 +20,13 @@
   </button>
 </div>
 
+<hr />
+
+<p class="page-description">
+  Profiles define what Trailarr downloads and for which media — each profile's filters select the media it applies to, and its settings
+  control quality, formats and file naming. Multiple profiles can match the same media to download multiple trailers.
+</p>
+
 @if (profileService.allProfiles.isLoading()) {
   <app-load-indicator />
 } @else if (profileService.allProfiles.value() && profileService.allProfiles.value().length > 0) {

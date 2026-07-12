@@ -32,6 +32,20 @@ def flush_logs_to_db():
         connection.commit()
 
 
+async def vacuum_logs_db() -> None:
+    """Reclaim disk space from the logs database.
+
+    SQLite keeps deleted pages inside the file, so purging old log rows
+    never shrinks logs.db without an explicit VACUUM. VACUUM cannot run
+    inside a transaction, so it needs an autocommit connection.
+    """
+    async with async_engine.connect() as connection:
+        connection = await connection.execution_options(
+            isolation_level="AUTOCOMMIT"
+        )
+        await connection.execute(sa_text("VACUUM"))
+
+
 @contextmanager
 def get_logs_session():
     """Create a new session for logs database operations."""

@@ -30,7 +30,9 @@
   text-align: center;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   white-space: nowrap;
 
   &:hover {
@@ -42,6 +44,10 @@
     background-color: var(--color-secondary-container);
     color: var(--color-on-secondary-container);
     font-weight: 600;
+  }
+
+  @media (width < 765px) {
+    font-size: 0.75rem;
   }
 }
 

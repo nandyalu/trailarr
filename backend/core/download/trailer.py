@@ -6,6 +6,7 @@ import threading
 from api.v1 import websockets
 from app_logger import ModuleLogger
 import core.base.database.manager.connection as connection_manager
+import core.base.database.manager.downloadattempt as attempt_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ArrType
@@ -296,6 +297,9 @@ async def download_trailer(
         await record_new_trailer_download(
             media, profile.id, final_path, video_id, video_info
         )
+        # Success clears any failure-backoff record for this (media, profile)
+        # — single choke point covering scheduled, manual, and batch paths
+        attempt_manager.clear(media.id, profile.id)
 
         # Track trailer_downloaded event
         event_manager.track_trailer_downloaded(

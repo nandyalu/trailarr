@@ -19,8 +19,8 @@ from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import delete_old_logs, trailer_cleanup
-from core.tasks.download_attribution import run_attribution_pass
 from core.tasks.files_scan import scan_all_media_folders
+from core.tasks.startup_passes import run_startup_passes
 from core.tasks.image_refresh import refresh_images
 from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
 from core.updates.docker_check import check_for_updates
@@ -84,10 +84,12 @@ async def _refresh_plex_trailer_flags(
 
 
 @with_logging_context
-async def _attribute_trailer_downloads(*, _job_id: str | None = None):
-    """One-time startup pass: attribute unattributed trailer downloads,
-    then fix stale trailer_exists flags."""
-    await run_attribution_pass()
+async def _run_startup_passes(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
+    """Run the startup-pass registry (attribution, upgrade guards) in order.
+    The download task gates on these completing at least once per database."""
+    await run_startup_passes(_stop_event=_stop_event)
 
 
 # Maps each stable task_key to its handler function.
@@ -200,15 +202,15 @@ def schedule_all_tasks() -> None:
         )
         logger.info("Scheduled 'Refresh Plex Trailer Flags' task.")
 
-    # One-time startup pass: attribute downloads recorded without a profile
-    # (profile_id=0) to the user's matching profiles, then fix stale
-    # trailer_exists flags (must run after attribution — the fix only sees
-    # profile-linked downloads), and report media whose trailer_exists flag
-    # has no backing download record. Runs before the first disk scan and
-    # download task so their results build on it.
+    # Startup passes (registry in core/tasks/startup_passes.py): attribution
+    # + flag healing, and the pre-download full-scan upgrade guard. Ordered,
+    # completion-recorded per database, and the download task refuses to run
+    # until the required passes are recorded — this is what makes
+    # version-skipping upgrades safe. Runs before the first disk scan (480s)
+    # and download task (900s).
     scheduler.add_task(
-        task_name="Attribute Trailer Downloads",
-        func=_attribute_trailer_downloads,
+        task_name="Startup Passes",
+        func=_run_startup_passes,
         interval=86400.0,
         delay=60.0,
         run_once=True,
