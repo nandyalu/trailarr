@@ -7,6 +7,7 @@
 frontend-build/
 git-filter-repo
 restart_stack.py
+graphify-out/
 
 
 ## GITHUB GENERATED
