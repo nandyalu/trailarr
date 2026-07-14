@@ -9,6 +9,14 @@
   border-radius: 0.75rem;
   background-color: var(--color-surface-container);
   box-shadow: var(--shadow-level2);
+  // Tabs scroll inside the pill instead of pushing it past the viewport
+  // when they can't fit (e.g. all 5 tabs on a narrow phone)
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   @media (width < 765px) {
     position: fixed;
@@ -22,7 +30,9 @@
 }
 
 .setnav-btn {
-  flex: 1;
+  // Grow to share the full width when there's room, but never shrink below
+  // the label — the container scrolls instead of overflowing the viewport
+  flex: 1 0 auto;
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   text-decoration: none;
@@ -47,6 +57,7 @@
   }
 
   @media (width < 765px) {
+    padding: 0.5rem 0.625rem;
     font-size: 0.75rem;
   }
 }
