@@ -18,6 +18,8 @@ def _run_setup_user_and_groups(identity_exists: bool) -> list[str]:
             r'''
 . "$1"
 IDENTITY_EXISTS="$2"
+PUID=1000
+PGID=1000
 source() { :; }
 box_echo() { :; }
 getent() {
@@ -32,7 +34,7 @@ getent() {
 }
 groupadd() { printf 'groupadd %s\n' "$*"; }
 useradd() { printf 'useradd %s\n' "$*"; }
-usermod() { printf '%s\n' "$*"; }
+usermod() { printf 'usermod %s\n' "$*"; }
 setup_user_and_groups
 ''',
             "bash",
@@ -49,7 +51,7 @@ setup_user_and_groups
 
 def test_existing_user_keeps_primary_group_in_supplementary_memberships() -> None:
     assert _run_setup_user_and_groups(identity_exists=True) == [
-        "-aG appuser appuser"
+        "usermod -aG appuser appuser"
     ]
 
 
@@ -57,5 +59,5 @@ def test_new_user_keeps_primary_group_in_supplementary_memberships() -> None:
     assert _run_setup_user_and_groups(identity_exists=False) == [
         "groupadd -g 1000 appuser",
         "useradd -u 1000 -g 1000 -m appuser",
-        "-aG appuser appuser",
+        "usermod -aG appuser appuser",
     ]
