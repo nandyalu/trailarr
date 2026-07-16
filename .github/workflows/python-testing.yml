@@ -33,6 +33,13 @@ jobs:
         run: cd backend && uv run python -m pytest tests
 
       - name: Get Coverage Report
+        # Posting the coverage comment needs a writable GITHUB_TOKEN. Fork PRs
+        # and Dependabot runs only get a read-only token, and workflow_dispatch
+        # has no PR to comment on — skip in those cases.
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
         uses: orgoro/coverage@v3.3
         with:
             coverageFile: backend/coverage.xml
