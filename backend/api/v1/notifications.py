@@ -53,7 +53,10 @@ async def create_channel(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         )
     except Exception as e:
-        logger.exception(f"Failed to create notification channel: {e}")
+        # Log only the exception type — the message/traceback of a DB error
+        # here (e.g. IntegrityError on the unique name) can include the
+        # statement's bound parameters, which would leak the Apprise URL.
+        logger.warning(f"Failed to create notification channel: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create notification channel",
@@ -84,7 +87,9 @@ async def update_channel(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
     except Exception as e:
-        logger.exception(f"Failed to update notification channel: {e}")
+        # Log only the exception type — see create_channel for why the
+        # message/traceback must not be logged here.
+        logger.warning(f"Failed to update notification channel: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update notification channel",

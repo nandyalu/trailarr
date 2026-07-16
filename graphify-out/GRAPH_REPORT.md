@@ -1,16 +1,16 @@
-# Graph Report - trailarr  (2026-07-10)
+# Graph Report - trailarr  (2026-07-16)
 
 ## Corpus Check
-- 529 files · ~789,182 words
+- 529 files · ~789,801 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 9016 nodes · 17907 edges · 661 communities (394 shown, 267 thin omitted)
-- Extraction: 84% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 2749 edges (avg confidence: 0.64)
+- 9027 nodes · 17924 edges · 668 communities (410 shown, 258 thin omitted)
+- Extraction: 84% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 2751 edges (avg confidence: 0.64)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `514252c8`
+- Built from commit: `8dfc01ac`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -605,6 +605,13 @@
 - [[_COMMUNITY_Community 656|Community 656]]
 - [[_COMMUNITY_Community 657|Community 657]]
 - [[_COMMUNITY_Community 658|Community 658]]
+- [[_COMMUNITY_Community 661|Community 661]]
+- [[_COMMUNITY_Community 662|Community 662]]
+- [[_COMMUNITY_Community 663|Community 663]]
+- [[_COMMUNITY_Community 664|Community 664]]
+- [[_COMMUNITY_Community 665|Community 665]]
+- [[_COMMUNITY_Community 667|Community 667]]
+- [[_COMMUNITY_Community 671|Community 671]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `__()` - 1397 edges
@@ -671,79 +678,79 @@
 - **Scheduled Tasks Trailer Lifecycle** — tasks_index_arr_data_refresh_task, tasks_index_download_missing_trailers_task, tasks_index_scan_media_folders_task, tasks_index_trailer_cleanup_task [EXTRACTED 1.00]
 - **Planned Feature Roadmap** — github_planned_tasks_discord_notifications, github_planned_tasks_nfo_files, github_planned_tasks_plex_integration_plan, github_planned_tasks_tmdb_filesystem_connector [EXTRACTED 1.00]
 
-## Communities (661 total, 267 thin omitted)
+## Communities (668 total, 258 thin omitted)
 
 ### Community 0 - "Swagger UI Bundle"
 Cohesion: 0.01
-Nodes (166): tu(), __(), actions_show(), addToSet(), Ae(), afterWrite(), append(), _arity_arity() (+158 more)
+Nodes (169): tu(), __(), actions_show(), addToSet(), Ae(), afterWrite(), append(), _arity_arity() (+161 more)
 
 ### Community 1 - "Redoc Rendering Engine"
 Cohesion: 0.01
-Nodes (96): ao(), gp(), AllLineNumbers(), App, _arrayLikeToArray(), ArrayModel, assembleLineNumberStyles(), _assertThisInitialized() (+88 more)
+Nodes (93): ao(), Gc(), gp(), AllLineNumbers(), App, _arrayLikeToArray(), ArrayModel, assembleLineNumberStyles() (+85 more)
 
 ### Community 2 - "Swagger UI Utilities"
 Cohesion: 0.02
-Nodes (62): afterTransform(), asciiWrite(), base64ToBytes(), base64Write(), blitBuffer(), byteLength(), captureMatchIfValid(), collectType() (+54 more)
+Nodes (112): bp(), Uu(), Xd, absoluteify(), add(), af(), afterTransform(), arrObjKeys() (+104 more)
 
 ### Community 3 - "Redoc Component Library"
 Cohesion: 0.02
-Nodes (181): pn(), Qr(), rn(), Vn(), $a(), ab(), ac(), Ag() (+173 more)
+Nodes (179): pn(), rn(), Vn(), ab(), ac(), Ag(), Ah(), ai() (+171 more)
 
 ### Community 4 - "Redoc Standalone Core"
 Cohesion: 0.02
-Nodes (112): _, add(), Ah(), Am, authStatus(), aw(), be(), break() (+104 more)
+Nodes (91): _, add(), Am, break(), By, cd(), cn(), componentDidMount() (+83 more)
 
-### Community 5 - "Swagger Operations & Reducers"
-Cohesion: 0.07
-Nodes (7): createStore(), createStoreWithMiddleware(), formatProdErrorMessage(), objMap(), SpecMap, Store, systemThunkMiddleware()
+### Community 6 - "Trailer Download Pipeline"
+Cohesion: 0.05
+Nodes (28): Ai(), as(), ci(), cs(), df, dl(), El(), fl() (+20 more)
 
 ### Community 7 - "Redoc Schema Resolver"
 Cohesion: 0.04
-Nodes (56): an(), assign(), block(), _blockNode(), c, code(), const(), d (+48 more)
+Nodes (57): A, Ae(), assign(), block(), _blockNode(), c, code(), const() (+49 more)
 
 ### Community 8 - "Swagger Schema Validation"
-Cohesion: 0.03
-Nodes (27): additionalItems(), additionalProperties(), DELETE(), deprecated(), elements_Schema_Schema, externalDocs(), getContext(), HEAD() (+19 more)
+Cohesion: 0.04
+Nodes (30): additionalItems(), additionalProperties(), DELETE(), deprecated(), Discriminator, elements_Schema_Schema, externalDocs(), get() (+22 more)
 
 ### Community 9 - "Trailer Download Logic"
-Cohesion: 0.06
-Nodes (28): ABC, Any, MediaCreate, ConnectionRead, ConnectionRead, ArrManagerProtocol, BaseConnectionManager, Get the root folders from the Arr application. \n         Returns:             - (+20 more)
+Cohesion: 0.03
+Nodes (91): ABC, EventRead, EventSource, EventType, DownloadRead, FileFolderInfoRead, MediaRead, ModuleLogger (+83 more)
 
 ### Community 10 - "Connection Database Models"
-Cohesion: 0.02
-Nodes (171): EventRead, EventSource, EventType, ConnectionRead, MediaRead, Session, EventRead, EventSource (+163 more)
+Cohesion: 0.06
+Nodes (34): PlexConnectionManager, SimpleNamespace, MonitorType, _build_manager(), _make_plex_conn(), _movie_item(), _pm(), Edge-case unit tests for PlexConnectionManager.  Covers branches not exercised b (+26 more)
 
 ### Community 11 - "Swagger UI Runtime Core"
 Cohesion: 0.03
-Nodes (90): addNumericSeparator(), ApiDOMError, cacheResultThrough(), call(), captureSegment(), charFromCodepoint(), _checkForMethod_checkForMethod(), _class() (+82 more)
+Nodes (93): addNumericSeparator(), cacheResultThrough(), call(), callAfterLoad(), captureSegment(), charFromCodepoint(), _checkForMethod_checkForMethod(), _class() (+85 more)
 
 ### Community 12 - "Redoc Schema Builder"
 Cohesion: 0.06
-Nodes (71): ar(), bh(), Bn(), bt(), Cr(), de(), dr(), En() (+63 more)
+Nodes (80): ar(), be(), bh(), Bn(), bt(), ce(), Cr(), ct() (+72 more)
 
 ### Community 13 - "Redoc React Components"
-Cohesion: 0.06
-Nodes (48): aa(), Ai(), ba(), bi(), bo(), ca(), ci(), co() (+40 more)
+Cohesion: 0.05
+Nodes (60): aa(), ba(), bi(), bl(), bo(), ca(), co(), de() (+52 more)
 
 ### Community 14 - "Swagger Auth & Utilities"
-Cohesion: 0.03
-Nodes (136): _addListener(), assertNotInfinite(), auths_Auths, checkListener(), clean(), compactMap(), compileKeywords(), compileLanguage() (+128 more)
+Cohesion: 0.04
+Nodes (90): assertNotInfinite(), auths_Auths, cleanArray(), concatFactory(), contentTypeValues(), currentProducesFor(), deepEqual(), deepMerger() (+82 more)
 
 ### Community 15 - "Redoc Markdown Parser"
 Cohesion: 0.05
-Nodes (11): Al(), gl(), Il(), Js(), ql(), tc(), ul(), ws() (+3 more)
+Nodes (15): Al(), aw(), bs(), cl(), error(), gl(), Il(), iw() (+7 more)
 
 ### Community 16 - "Swagger IO Buffer Utilities"
-Cohesion: 0.06
-Nodes (13): as(), cs(), df, es(), Ff, ig, jl(), Kb (+5 more)
+Cohesion: 0.09
+Nodes (18): es(), Ff, fi(), fs(), Gi(), Hi(), Ho(), jl() (+10 more)
 
 ### Community 17 - "Redoc Config & Auth"
-Cohesion: 0.06
-Nodes (63): A, Ae(), bl(), bs(), cl(), ct(), dl(), ds() (+55 more)
+Cohesion: 0.07
+Nodes (22): authStatus(), da(), ec(), getAllTokens(), getAuthorizationHeader(), getBaseUrl(), getFiles(), getTokens() (+14 more)
 
 ### Community 18 - "Media API & Task Core"
-Cohesion: 0.07
-Nodes (32): datetime, MediaRead, TrailerProfileRead, _make_connection(), media_id(), Tests for the DownloadAttempt manager and backoff eligibility., TestAttemptManager, TestBackoffEligibility (+24 more)
+Cohesion: 0.14
+Nodes (15): datetime, DownloadAttemptRead, TestBackoffEligibility, DownloadAttempt, DownloadAttemptBase, DownloadAttemptCreate, DownloadAttemptRead, is_eligible() (+7 more)
 
 ### Community 19 - "Plex Path Mapping Tests"
 Cohesion: 0.07
@@ -751,15 +758,15 @@ Nodes (17): _manager(), _pm(), Integration tests for PlexConnectionManager path-
 
 ### Community 20 - "Frontend Filter Dialog"
 Cohesion: 0.06
-Nodes (34): EditFilterDialogComponent, boolFilterConditions, customFilterSchema, dateFilterConditions, filterSchema, getFilterConditions(), getFilterValueType(), newCustomFilter (+26 more)
+Nodes (35): EditFilterDialogComponent, boolFilterConditions, customFilterSchema, dateFilterConditions, filterSchema, getFilterConditions(), getFilterValueType(), newCustomFilter (+27 more)
 
 ### Community 21 - "Connection Manager & Validation"
-Cohesion: 0.02
-Nodes (104): ConnectionCreate, ConnectionRead, ConnectionUpdate, Connection, ConnectionBase, ConnectionCreate, ConnectionUpdate, Session (+96 more)
+Cohesion: 0.04
+Nodes (18): Session, exists(), Check if a connection exists in the database \n     Args:         connection_id, create(), Create a new connection in the database \n     Args:         connection (Connect, delete(), Delete a connection from the database \n     Args:         connection_id (int):, get_rootfolders() (+10 more)
 
 ### Community 22 - "File Handler & Cleanup"
-Cohesion: 0.04
-Nodes (74): absolutifyPointer(), Autolinker(), b64toB64UrlEncoded(), base64End(), base64Text(), blockHeader(), canParse(), chooseScalarStyle() (+66 more)
+Cohesion: 0.03
+Nodes (95): absolutifyPointer(), applyOperation(), applyPatch(), applyReducer(), _areEquals(), Autolinker(), b64toB64UrlEncoded(), base64End() (+87 more)
 
 ### Community 23 - "Video Conversion Tests"
 Cohesion: 0.05
@@ -767,11 +774,11 @@ Nodes (41): Test VAAPI video options generation with default device., Test VAAPI
 
 ### Community 24 - "Trailer Profiles API & Logging"
 Cohesion: 0.02
-Nodes (102): applyOperation(), applyPatch(), applyReducer(), _areEquals(), build_request_buildRequest(), buildRequest(), callAfterLoad(), check() (+94 more)
+Nodes (102): ArrayElement, build_request_buildRequest(), buildRequest(), check(), cloneSpecificValue(), cloneUnlessOtherwiseSpecified(), combinePlugins(), compactMap() (+94 more)
 
 ### Community 25 - "Plex Connection & Profile UI"
 Cohesion: 0.05
-Nodes (20): pathMappingSchema, OAuthState, EditProfileComponent, GeneralComponent, HelpLinkIconComponent, LoadIndicatorComponent, FolderInfo, ServerStats (+12 more)
+Nodes (15): pathMappingSchema, OAuthState, EditProfileComponent, GeneralComponent, HelpLinkIconComponent, LoadIndicatorComponent, PathMappingCreate, PathSelectDialogComponent (+7 more)
 
 ### Community 26 - "File Scanning Tasks & Tests"
 Cohesion: 0.12
@@ -782,56 +789,56 @@ Cohesion: 0.07
 Nodes (9): AppComponent, appConfig, routes, GlobalErrorHandler, authGuard(), LoginComponent, AuthService, SidenavComponent (+1 more)
 
 ### Community 28 - "Event Database Manager"
-Cohesion: 0.06
-Nodes (56): EventRead, Session, Session, EventSource, create(), create_bulk(), create_if_not_exists(), create_skip_event_if_not_exists() (+48 more)
+Cohesion: 0.14
+Nodes (24): EventSource, create(), Create a new event in the database. \n     Args:         event_create (EventCrea, Event helper functions for creating events at appropriate places in the app.  Th, Track when monitor status changes for a media item. \n     Args:         media_i, Track when YouTube trailer ID changes for a media item. \n     Args:         med, Track when a trailer is downloaded for a media item. \n     Args:         media_, Track when a trailer is deleted for a media item. \n     Args:         media_id (+16 more)
 
 ### Community 29 - "File Dialogs & Connection Edit"
-Cohesion: 0.07
-Nodes (9): DeleteDialogComponent, StreamInfo, VideoInfo, DialogOptions, PlayVideoDialogComponent, RenameDialogComponent, FilesService, TextDialogComponent (+1 more)
+Cohesion: 0.08
+Nodes (8): DeleteDialogComponent, NotificationsComponent, DialogOptions, PlayVideoDialogComponent, RenameDialogComponent, MessageData, WebsocketService, VideoInfoDialogComponent
 
 ### Community 31 - "Swagger IO Buffer Utilities"
-Cohesion: 0.05
-Nodes (44): addChunk(), allocUnsafe(), arrayIndexOf(), assertSize(), bidirectionalIndexOf(), Buffer(), cachedHashString(), checked() (+36 more)
+Cohesion: 0.07
+Nodes (36): addChunk(), allocUnsafe(), arrayIndexOf(), assertSize(), base64ToBytes(), base64Write(), bidirectionalIndexOf(), Buffer() (+28 more)
 
 ### Community 32 - "Connection Models & Plex API"
-Cohesion: 0.21
-Nodes (15): SimpleNamespace, evaluate_satisfaction(), THE Phase-2 rule: a profile is satisfied iff an active     (file_exists=True) do, by_id(), make_download(), make_media(), make_profile(), Table-driven tests for the Phase-2 satisfaction rule (plans/phase-02-downloads-e (+7 more)
+Cohesion: 0.20
+Nodes (17): MediaRead, TrailerProfileRead, SimpleNamespace, evaluate_satisfaction(), THE Phase-2 rule: a profile is satisfied iff an active     (file_exists=True) do, by_id(), make_download(), make_media() (+9 more)
 
 ### Community 33 - "Base Connection Manager"
 Cohesion: 0.08
 Nodes (16): Delete trailer files and trailer folders for the specified media folder.\n, Check if a file is a video file based on its name.\n         Args:             f, Use ffprobe to verify a large inline file with 'trailer' in its name.          C, Check if a file is a trailer file based on its name.\n         Args:, Get a list of trailer folder names.\n         Returns:             set[str]: Set, Check if a folder is a trailer folder based on its name.\n         Args:, Check if a trailer exists in the 'trailers' folder.\n         Args:, Check if a trailer file exists in the folder.\n         Args:             path ( (+8 more)
 
 ### Community 34 - "Application Logging"
-Cohesion: 0.06
-Nodes (30): bool_property(), _Config, get_ytdlp_version(), getenv_bool(), getenv_int(), getenv_str(), int_property(), Creates a string property with getter and setter methods. \n     Args:         n (+22 more)
+Cohesion: 0.09
+Nodes (18): _Config, get_ytdlp_version(), getenv_bool(), getenv_int(), getenv_str(), Save the given key-value pair to the environment variables. \n     Args:, Get the version of yt-dlp. \n     Returns:         str: Version of yt-dlp., Class to hold configuration settings for the application. \n     Reads environme (+10 more)
 
 ### Community 35 - "Expanded Card & Display Helpers"
-Cohesion: 0.10
-Nodes (9): ExpandedComponent, DisplayTitlePipe, RemoveStartingSlashPipe, ScrollNearEndDirective, MediaCardShellComponent, Media Status Icon Component, PosterComponent, StatusIconComponent (+1 more)
+Cohesion: 0.05
+Nodes (13): ExpandedComponent, DisplayTitlePipe, DurationConvertPipe, RemoveStartingSlashPipe, ScrollNearEndDirective, MediaCardShellComponent, Media Status Icon Component, MediaDetailsComponent (+5 more)
 
 ### Community 36 - "Cleanup Task & Tests"
 Cohesion: 0.08
 Nodes (30): SimpleNamespace, delete_old_logs(), delete_trailer(), Delete old log files from the '/config/logs' directory.     This function is int, Delete the trailer file and mark file as deleted in Download. \n     Args:, Cleanup failed trailers (without audio), delete them and set monitor status to T, trailer_cleanup(), create_mock_download() (+22 more)
 
 ### Community 37 - "Connections API Handlers"
-Cohesion: 0.07
-Nodes (19): _make_media(), Tests for media read manager functions., Stage 2 matches when the stored path uses Windows backslash separators., Stage 2 normalises trailing slashes before comparing (rstrip)., Tests for media_manager.read_arr_linked_to_plex_connection., Returns Arr-sourced rows that are linked to the Plex connection., Does not return rows where connection_id == plex_connection_id., Returns empty list for a connection id with no linked media. (+11 more)
+Cohesion: 0.06
+Nodes (22): _make_media(), Tests for media read manager functions., Stage 2 matches when the stored path uses Windows backslash separators., Stage 2 normalises trailing slashes before comparing (rstrip)., Tests for media_manager.read_arr_linked_to_plex_connection., Returns Arr-sourced rows that are linked to the Plex connection., Does not return rows where connection_id == plex_connection_id., Returns empty list for a connection id with no linked media. (+14 more)
 
 ### Community 38 - "Download Database Manager"
-Cohesion: 0.04
-Nodes (77): DownloadRead, Session, DownloadCreate, DownloadRead, Session, Session, DownloadRead, Session (+69 more)
+Cohesion: 0.07
+Nodes (53): DownloadCreate, DownloadRead, Session, DownloadRead, Session, DownloadCreate, DownloadRead, Session (+45 more)
 
 ### Community 39 - "Media File Scanner"
-Cohesion: 0.16
-Nodes (27): MediaRead, Path, TrailerProfileRead, VideoInfo, FileMoveFailedError, FolderNotFoundError, FolderPathEmptyError, ItemExistsError (+19 more)
+Cohesion: 0.03
+Nodes (92): MediaRead, Path, TrailerProfileRead, VideoInfo, FileMoveFailedError, FolderNotFoundError, FolderPathEmptyError, ItemExistsError (+84 more)
 
 ### Community 40 - "Community 40"
 Cohesion: 0.07
-Nodes (31): Tests for verify_trailer_streams function., Returns True for valid trailer with audio, video, and valid duration., Returns None for empty trailer path., Returns None for None trailer path., Returns None when media info cannot be retrieved., Returns None when trailer duration is zero., Returns False when trailer duration is below minimum., Returns False when trailer duration exceeds maximum. (+23 more)
+Nodes (29): Tests for verify_trailer_streams function., Returns True for valid trailer with audio, video, and valid duration., Returns None for empty trailer path., Returns None for None trailer path., Returns None when media info cannot be retrieved., Returns None when trailer duration is zero., Returns False when trailer duration is below minimum., Returns False when trailer duration exceeds maximum. (+21 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.04
-Nodes (12): Ed, ey, fd(), Gb, ha(), hr(), kf, lw() (+4 more)
+Nodes (11): ey, Gb, hr(), kf, lw(), ms(), sortOptions(), tf (+3 more)
 
 ### Community 42 - "Community 42"
 Cohesion: 0.06
@@ -841,25 +848,21 @@ Nodes (42): App Load Indicator Component, CSS Popover API Pattern, Native HTML D
 Cohesion: 0.08
 Nodes (33): MediaRead, TrailerProfileRead, cli_to_api(), DummyMedia, test_extract_youtube_id(), test_has_all_words(), test_has_any_words(), test_replace_media_options() (+25 more)
 
-### Community 44 - "Community 44"
-Cohesion: 0.04
-Nodes (3): JSONSchema, Models, PathItem
-
 ### Community 45 - "Community 45"
-Cohesion: 0.04
-Nodes (29): DownloadsComponent, ErrorMessage, FileFolderInfo, Media, FileSizePipe, MediaComponent, buildMediaTreeMap(), mapFileFolderInfo() (+21 more)
+Cohesion: 0.07
+Nodes (18): DownloadsComponent, FileFolderInfo, Media, DurationSecondsConvertPipe, buildMediaTreeMap(), mapFileFolderInfo(), buildDownloadMap(), Download (+10 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.10
 Nodes (3): is_subpath(), Return True iff *child* is equal to or under *parent*, respecting directory boun, TestIsSubpath
 
 ### Community 47 - "Community 47"
-Cohesion: 0.21
-Nodes (10): attribute_unattributed_downloads(), Attribute active downloads recorded without a profile (profile_id=0)     to the, make_download(), make_media(), make_profile(), Tests for core/tasks/download_attribution.py — the startup pass that attributes, Unattributed downloads come oldest first; profiles are assigned in         prior, A profile that already owns an active download for the media         cannot clai (+2 more)
+Cohesion: 0.06
+Nodes (52): Any, FileFolderInfoRead, MediaRead, FilterRead, Connection, DownloadCreate, Session, SimpleNamespace (+44 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.09
-Nodes (35): Session, MediaImage, Session, delete_except(), Delete all media items from the database except the ones provided.\n     Args:, demote_arr_items_with_plex_to_plex_only(), Update the monitoring status of a media item in the database by id.\n     Args:, Update the monitoring status of a media item in the database by id.\n     Also u (+27 more)
+Cohesion: 0.11
+Nodes (32): MediaImage, Session, demote_arr_items_with_plex_to_plex_only(), Update the monitoring status of a media item in the database by id.\n     Args:, Update the monitoring status of a media item in the database by id.\n     Also u, Update the image path of a media item in the database by id.\n     Args:, Update the monitoring status of multiple media items in the database at once.\n, Update a media item in the database to set trailer_exists to False.\n     Does n (+24 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.12
@@ -867,11 +870,11 @@ Nodes (12): Any, SimpleNamespace, apply_path_mappings(), Find the first matching
 
 ### Community 50 - "Community 50"
 Cohesion: 0.06
-Nodes (25): Ac(), au, Bd, Cc, dc(), ec(), fc, gs() (+17 more)
+Nodes (30): Ac(), Ah(), Bd, Cc, ch(), dc(), ds(), fc (+22 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.13
-Nodes (10): DurationConvertPipe, DurationPipe, DurationSecondsConvertPipe, TimeRemainingPipe, CacheDecorator(), cacheMap, durationString(), durationStringSeconds() (+2 more)
+Cohesion: 0.15
+Nodes (7): DurationPipe, TimeRemainingPipe, cacheMap, durationString(), jsonEqual(), timeRemainingString(), TextDialogComponent
 
 ### Community 52 - "Community 52"
 Cohesion: 0.05
@@ -879,11 +882,11 @@ Nodes (41): allowScripts, esbuild@0.27.7, esbuild@0.28.1, lmdb@3.5.4, msgpackr-e
 
 ### Community 53 - "Community 53"
 Cohesion: 0.07
-Nodes (5): BaseLayout, InfoContainer, OpenApi3_1, OperationContainer, Server
+Nodes (6): BaseLayout, InfoContainer, OpenApi3_1, OperationContainer, opId(), Server
 
 ### Community 54 - "Community 54"
 Cohesion: 0.06
-Nodes (22): MediaCreate, _make_connection(), Tests for media create manager functions., Covers update/counter branches of create_or_update_bulk (lines 69-72)., Updating an existing row increments updated_count (lines 71-72) and         retu, Updating with identical data returns created=False, updated=False., Adding a youtube_id to an existing item triggers youtube_id change path, _check_connection_exists_bulk raises when connection_id is invalid (line 193). (+14 more)
+Nodes (27): Connection, MediaCreate, Session, _make_connection(), _make_plex_connection(), Tests for media create manager functions., Covers update/counter branches of create_or_update_bulk (lines 69-72)., Updating an existing row increments updated_count (lines 71-72) and         retu (+19 more)
 
 ### Community 55 - "Community 55"
 Cohesion: 0.17
@@ -894,16 +897,16 @@ Cohesion: 0.27
 Nodes (7): make_download(), make_profile(), Tests for the update_download_profile endpoint in api/v1/media.py., TestUpdateDownloadProfile, SimpleNamespace, Set the trailer profile that owns a download. \n     Used to manually attribute, update_download_profile()
 
 ### Community 57 - "Community 57"
-Cohesion: 0.02
-Nodes (136): MediaRead, TrailerProfileCreate, TrailerProfileRead, UpdateSetting, ModuleLogger, A custom logger adapter to add a prefix to log messages., Use this logger to add a prefix to log messages. \n         Args:             lo, Session (+128 more)
+Cohesion: 0.03
+Nodes (82): TrailerProfileRead, Event, MediaRead, MonitorStatus, TrailerProfileRead, VideoInfo, Event, MediaRead (+74 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.14
-Nodes (20): any(), DefinitionRoot(), enter(), Example(), Header(), Info(), leave(), Operation() (+12 more)
+Cohesion: 0.04
+Nodes (91): ConnectionCreate, ConnectionRead, ConnectionUpdate, Connection, ConnectionBase, ConnectionCreate, ConnectionUpdate, Session (+83 more)
 
 ### Community 59 - "Community 59"
 Cohesion: 0.04
-Nodes (18): kp(), ArrayElement, ContentType, ExamplesSelect, ExamplesSelectValueRetainer, extension(), find(), get() (+10 more)
+Nodes (24): kp(), ContentType, ExamplesSelect, ExamplesSelectValueRetainer, extension(), extract(), extractFromDoc(), find() (+16 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.12
@@ -922,8 +925,8 @@ Cohesion: 0.06
 Nodes (4): hasKey(), Header, Parameter, RequestBody
 
 ### Community 64 - "Community 64"
-Cohesion: 0.12
-Nodes (3): FieldConfigDialogComponent, FieldOption, NormalHeaderComponent
+Cohesion: 0.08
+Nodes (8): FieldConfigDialogComponent, FieldOption, Field Config Dialog, NormalHeaderComponent, Show Filters Dialog, Media View/Sort/Filter Controls, DisplayTitlePipe, ShowFiltersDialogComponent
 
 ### Community 65 - "Community 65"
 Cohesion: 0.21
@@ -938,16 +941,20 @@ Cohesion: 0.06
 Nodes (29): class, formatter, level, stream, formatter, level, datefmt, format (+21 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.29
-Nodes (17): NotificationChannelCreate, NotificationChannelRead, Session, create(), delete(), _get(), get_url(), (channel_id, url) pairs for enabled channels subscribed to the event     type — (+9 more)
+Cohesion: 0.27
+Nodes (18): NotificationChannelCreate, NotificationChannelCreate, NotificationChannelRead, Session, create(), delete(), _get(), get_url() (+10 more)
 
 ### Community 69 - "Community 69"
-Cohesion: 0.06
-Nodes (14): AboutComponent, EventsComponent, EventRead, EventSource, EventType, CopyToClipboardDirective, TestHostComponent, TimediffPipe (+6 more)
+Cohesion: 0.11
+Nodes (9): EventsComponent, EventRead, EventSource, EventType, TimediffPipe, MediaEventsComponent, EVENT_SOURCE_LABELS, EVENT_TYPE_LABELS (+1 more)
+
+### Community 70 - "Community 70"
+Cohesion: 0.09
+Nodes (10): FolderInfo, ServerStats, Settings, StreamInfo, VideoInfo, FilesService, PlexOAuthService, PlexPin (+2 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.25
-Nodes (5): FileFolderInfoCreate, _file(), _folder(), TestGetTrailerPaths, TestHasMediaFile
+Cohesion: 0.15
+Nodes (7): FileFolderInfoCreate, _file(), _folder(), Tests for core/files/media_scanner.py — trailer detection edge cases., TestCheckMediaExists, TestGetTrailerPaths, TestHasMediaFile
 
 ### Community 72 - "Community 72"
 Cohesion: 0.11
@@ -958,28 +965,28 @@ Cohesion: 0.29
 Nodes (10): Trailer Detection Logic, Docker Volume Mapping for Media Access, Environment Variables Reference, First Things (Prerequisites), Network Drives Setup, Radarr/Sonarr Volume Mappings, Getting Started, Getting Started: Next Steps & What to Expect (+2 more)
 
 ### Community 75 - "Community 75"
-Cohesion: 0.11
-Nodes (10): Tests for get_trailer_filename function., Generates filename from profile format., Uses resolution from video_info instead of profile., Uses profile resolution when video_info not provided., Adds increment index when index > 1., Doesn't add increment index when index = 1., Sets is_movie to 'movie' for movies., Sets is_movie to 'series' for TV shows. (+2 more)
+Cohesion: 0.18
+Nodes (15): EventRead, EventSource, EventType, Session, datetime, EventRead, has_skip_event(), Check if a skip event already exists for a media item. \n     Args:         medi (+7 more)
 
 ### Community 76 - "Community 76"
 Cohesion: 0.13
 Nodes (26): Media, MediaRead, SelectOfScalar, Session, _apply_filter(), Generator to get all media objects from the database one by one.\n     Args:, Get all media objects from the database for a given connection.\n     Args:, Return Arr-sourced media rows linked to a specific Plex connection.      These a (+18 more)
 
 ### Community 77 - "Community 77"
-Cohesion: 0.04
-Nodes (88): CustomFilter, CustomFilterRead, CustomFilterCreate, CustomFilterRead, Session, Session, CustomFilterRead, Session (+80 more)
+Cohesion: 0.07
+Nodes (52): CustomFilterCreate, CustomFilterRead, CustomFilter, CustomFilterRead, CustomFilterCreate, CustomFilterRead, Session, CustomFilterRead (+44 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.05
-Nodes (60): FileFolderInfo, FileFolderInfoRead, Session, FileFolderInfo, FileFolderInfoCreate, FileFolderInfoRead, MediaRead, Session (+52 more)
+Cohesion: 0.13
+Nodes (28): FileFolderInfo, FileFolderInfoRead, Session, FileFolderInfo, FileFolderInfoCreate, FileFolderInfoRead, MediaRead, Session (+20 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.10
 Nodes (26): Mobile Bottom Navigation Bar, Mobile Dark Theme UI, Mobile Home Screenshot (Dark Theme), Mobile Home Screenshot (Light Theme), Mobile Light Theme UI, Mobile Media Card (Compact with Status Badges), Mobile Media Grid Layout (3-column), Mobile Bottom Nav - Home Icon (Active) (+18 more)
 
 ### Community 80 - "Community 80"
-Cohesion: 0.03
-Nodes (79): bp(), Uu(), Xd, absoluteify(), add(), af(), arrObjKeys(), autoDetection() (+71 more)
+Cohesion: 0.06
+Nodes (11): ArraySlice, autoDetection(), coerceElementMatchingCallback(), fire(), getLanguage(), highlight(), highlightAuto(), highlightElement() (+3 more)
 
 ### Community 81 - "Community 81"
 Cohesion: 0.14
@@ -990,8 +997,8 @@ Cohesion: 0.10
 Nodes (8): PlexAPI, api(), _make_container(), Tests for PlexAPI pagination helpers and async generators., TestGetLibraryLeaves, TestGetLibraryMedia, TestGetTotalSize, TestIterPages
 
 ### Community 83 - "Community 83"
-Cohesion: 0.17
-Nodes (11): mock_media_no_trailer(), mock_media_with_trailer(), Tests for the download_missing_trailers function., Create a mock media object without a trailer., Test that function exits early when monitoring is disabled., Test that function exits when no trailer profiles exist., Create a mock media object with a trailer., Test that the same media item is not processed multiple times in one run. (+3 more)
+Cohesion: 0.10
+Nodes (29): Event, MediaRead, TrailerProfileRead, mock_media_no_trailer(), mock_media_with_trailer(), Tests for the download_missing_trailers function., Create a mock media object without a trailer., Test that function exits early when monitoring is disabled. (+21 more)
 
 ### Community 84 - "Community 84"
 Cohesion: 0.31
@@ -1006,20 +1013,24 @@ Cohesion: 0.11
 Nodes (15): make_download(), _patches(), Tests for the delete_file_fol endpoint in api/v1/files.py.  Covers the download-, A pre-existing file_exists=False record is not treated as a remaining trailer., Deleting one of many trailers marks it deleted but preserves trailer_exists., If media has no download records at all, trailer_exists is untouched., Return a dict of patch targets and their mock return values., Deleting a file with no matching download record leaves trailer_exists alone. (+7 more)
 
 ### Community 87 - "Community 87"
-Cohesion: 0.38
-Nodes (6): TrailerProfileRead, TrailerProfile, convert_to_read_item(), convert_to_read_list(), Convert a TrailerProfile database object to a TrailerProfileRead object.     Arg, Convert a list of TrailerProfile database objects to a list of \         Trailer
+Cohesion: 0.04
+Nodes (44): TrailerProfileCreate, TrailerProfileRead, UpdateSetting, TrailerProfileRead, Session, TrailerProfileCreate, TrailerProfileRead, Session (+36 more)
+
+### Community 88 - "Community 88"
+Cohesion: 0.11
+Nodes (25): an(), any(), DefinitionRoot(), DiscriminatorMapping(), dn(), enter(), Example(), Header() (+17 more)
 
 ### Community 89 - "Community 89"
 Cohesion: 0.11
 Nodes (18): /api, changeOrigin, cookieDomainRewrite, logLevel, secure, target, /config, changeOrigin (+10 more)
 
 ### Community 90 - "Community 90"
-Cohesion: 0.11
-Nodes (10): Tests for move_trailer_to_folder function., Moves trailer file to media folder., Creates Trailers subfolder when folder_enabled., Raises FileNotFoundError when source doesn't exist., Raises FolderPathEmptyError when media folder path is empty., Raises FolderNotFoundError when media folder doesn't exist., Uses 'Trailers' when folder_name is empty., Uses custom folder path with format placeholders. (+2 more)
+Cohesion: 0.12
+Nodes (14): config_logging(), handle_logs(), Setup the logging configuration using the config file.     This will setup the r, stop_logging(), bool_property(), int_property(), Creates a string property with getter and setter methods. \n     Args:         n, Ensure the value starts with a slash and not end with one. (+6 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.16
-Nodes (16): SimpleNamespace, _build_api_cache(), Create a PlexAPI instance for each Plex connection and return them keyed by conn, Call the Plex API for one item and return (has_trailer, had_error)., Refresh the plex_trailer flag for all Plex-linked media items.      Calls the Pl, _refresh_media_item(), refresh_plex_trailer_flags(), _make_connection() (+8 more)
+Cohesion: 0.15
+Nodes (17): PlexAPI, SimpleNamespace, _build_api_cache(), Create a PlexAPI instance for each Plex connection and return them keyed by conn, Call the Plex API for one item and return (has_trailer, had_error)., Refresh the plex_trailer flag for all Plex-linked media items.      Calls the Pl, _refresh_media_item(), refresh_plex_trailer_flags() (+9 more)
 
 ### Community 92 - "Community 92"
 Cohesion: 0.16
@@ -1046,32 +1057,32 @@ Cohesion: 0.16
 Nodes (20): Media, MediaRead, SelectOfScalar, Session, _extract_four_digit_number(), _extract_imdb_id(), _extract_txdb_id(), _get_imdb_statement() (+12 more)
 
 ### Community 98 - "Community 98"
-Cohesion: 0.17
-Nodes (7): DRange, _expand(), gen(), _randBool(), randInt(), _randSelect(), _toOtherCase()
+Cohesion: 0.14
+Nodes (10): DRange, _expand(), gen(), _randBool(), randexp(), randInt(), _randSelect(), _setDefaults() (+2 more)
 
 ### Community 99 - "Community 99"
 Cohesion: 0.14
 Nodes (20): Event, MediaImage, Path, delete_image(), download_image(), download_needed(), get_base_path(), get_md5_filename() (+12 more)
 
 ### Community 100 - "Community 100"
-Cohesion: 0.21
-Nodes (8): Any, InvalidResponseError, Raised when a connection returns an invalid response, Constructor for connection to Sonarr API          Args:             url (str): H, Get the system status of the Sonarr API          Returns:             str: The s, Get all series from the Sonarr API          Returns:             list[dict[str,, Get a series from the Sonarr API          Args:             sonarr_id (int): The, SonarrManager
+Cohesion: 0.11
+Nodes (12): Any, ConnectionRead, Validate the connection details and test the connection to the server \n     Arg, validate_connection(), Constructor for connection to Sonarr API          Args:             url (str): H, Get the system status of the Sonarr API          Returns:             str: The s, Get all series from the Sonarr API          Returns:             list[dict[str,, Get a series from the Sonarr API          Args:             sonarr_id (int): The (+4 more)
 
 ### Community 101 - "Community 101"
-Cohesion: 0.15
-Nodes (16): _dispatch_loop(), _dispatch_pending(), _event_label(), _format_batch(), _media_title(), Apprise notification dispatcher.  Fire-and-forget by design: event creation enqu, Drain the queue and send one batched message per subscribed channel., Start the dispatcher loop (called from the app lifespan). (+8 more)
+Cohesion: 0.16
+Nodes (16): _dispatch_loop(), _dispatch_pending(), _event_label(), _format_batch(), _media_title(), Apprise notification dispatcher.  Fire-and-forget by design: event creation enqu, Drain the queue and send one batched message per subscribed channel., Start the dispatcher loop (called from the app lifespan, which is     already ru (+8 more)
 
 ### Community 102 - "Community 102"
-Cohesion: 0.08
-Nodes (39): ScheduledTaskConfigRead, ScheduledTaskConfigRead, Session, Event, ScheduledTaskConfigRead, create_task_config(), get_all_task_configs(), get_task_config() (+31 more)
+Cohesion: 0.11
+Nodes (23): Event, _build_defaults(), _cleanup_trailers(), _download_missing_trailers(), ensure_plex_trailer_refresh_scheduled(), Return default task config dicts using current app settings., Schedule all background tasks, reading intervals from the DB.      Falls back to, Register or trigger the plex_trailer_refresh task when a Plex connection is adde (+15 more)
 
 ### Community 103 - "Community 103"
 Cohesion: 0.13
 Nodes (17): _app_mode(), ask_port(), _detect_timezone(), Interactive configuration wizard for Trailarr installation., Write the initial .env configuration file., write_initial_config(), print_section(), load_env() (+9 more)
 
 ### Community 104 - "Community 104"
-Cohesion: 0.12
-Nodes (12): mock_media(), mock_profile(), mock_video_info(), Tests for trailer_file.py functions in the download_trailer flow., Tests for get_folder_permissions function., Returns permissions of parent when folder exists., Returns parent folder permissions when folder doesn't exist., Returned permissions include standard mode bits. (+4 more)
+Cohesion: 0.03
+Nodes (57): MonitorType, EventType, Connection, Session, ArrType, Connection, Session, Enum (+49 more)
 
 ### Community 105 - "Community 105"
 Cohesion: 0.15
@@ -1082,12 +1093,12 @@ Cohesion: 0.30
 Nodes (18): _err(), _info(), main(), _ok(), Trailarr CLI — cross-platform service management tool.  Usage:   trailarr run, Re-write the CLI wrapper after an update (scripts may have changed)., _reinstall_cli(), _run() (+10 more)
 
 ### Community 107 - "Community 107"
-Cohesion: 0.12
-Nodes (9): Tests for verify_download function., Returns (None, None) for None file path., Returns (None, None) for empty file path., Returns (None, None) for nonexistent file., Returns (True, VideoInfo) for valid trailer., Deletes file when verification fails., Accepts Path object for file path., Handles exception when deleting file gracefully. (+1 more)
+Cohesion: 0.06
+Nodes (39): _addListener(), checkListener(), ContextTree, create(), createClass(), createErrorType(), createNode(), editableVNode() (+31 more)
 
 ### Community 108 - "Community 108"
-Cohesion: 0.07
-Nodes (31): AppLogRecord, AppLogRecordRead, LogLevel, datetime, marker_rows(), Tests for delete_old_logs batch purge + VACUUM in config/logs/manager.py., VACUUM must execute against the real SQLite file — it fails with         'cannot, seed_logs() (+23 more)
+Cohesion: 0.13
+Nodes (20): AppLogRecordRead, LogLevel, AppLogRecordRead, LogLevel, datetime, Log, get_all_logs(), Retrieve all logs from the database. (+12 more)
 
 ### Community 109 - "Community 109"
 Cohesion: 0.08
@@ -1106,24 +1117,28 @@ Cohesion: 0.16
 Nodes (17): content, description, content, content, description, content, description, content (+9 more)
 
 ### Community 113 - "Community 113"
-Cohesion: 0.31
-Nodes (13): Session, DownloadAttemptRead, Session, DownloadAttempt, clear(), prune_for_missing_profiles(), Get all download attempts for a media item., Record a failed download attempt for (media, profile, unit) —     creates the ro (+5 more)
+Cohesion: 0.13
+Nodes (19): Session, DownloadAttemptRead, Session, Connection, Session, DownloadAttempt, clear(), prune_for_missing_profiles() (+11 more)
 
 ### Community 114 - "Community 114"
-Cohesion: 0.10
-Nodes (32): Media, MediaCreate, MediaRead, MonitorStatus, Session, Media, MediaCreate, MediaRead (+24 more)
+Cohesion: 0.22
+Nodes (18): Media, MediaCreate, MediaRead, Session, _check_connection_exists_bulk(), create(), _create_or_update(), create_or_update_bulk() (+10 more)
 
 ### Community 115 - "Community 115"
 Cohesion: 0.18
 Nodes (5): Files at or above QUICK_MAX threshold require ffprobe confirmation., Boundary tests for ffprobe-based large-file verification., TestCheckLargeNameTrailer, TestIsTrailerFileLargeWithFfprobe, _video_info()
 
 ### Community 116 - "Community 116"
-Cohesion: 0.15
-Nodes (4): Tests for core/files/media_scanner.py — trailer detection edge cases., TV episode pattern must block trailer detection regardless of context., TestGetTrailerFolders, TestIsTrailerFileEpisodeGuard
+Cohesion: 0.17
+Nodes (14): DownloadRead, Session, Session, Download, convert_to_read_item(), convert_to_read_list(), _get_db_item(), Convert a Download database object to a DownloadRead object.     Args:         d (+6 more)
 
 ### Community 117 - "Community 117"
 Cohesion: 0.19
 Nodes (10): DummyArrManager, DummyConnectionManager, Movie-style folder:     /movies/Movie (2025)/Movie (2025)-trailer.mkv and main f, TV-style structure:     /tv/Show/Trailers/Show (2024)-trailer.mkv     /tv/Show/S, test_delete_trailers_for_media_movie_inline_only(), test_delete_trailers_for_media_tv_structure(), test_refresh_deletes_trailers_for_media_removed_from_arr(), test_refresh_deletes_trailers_for_media_removed_from_arr_media_deleted() (+2 more)
+
+### Community 118 - "Community 118"
+Cohesion: 0.15
+Nodes (6): _parse_resolution(), PlexEpisodeLeaf, PlexLibrarySection, PlexMediaExtra, PlexMediaItem, Lightweight model for episode items returned by /allLeaves on show sections.
 
 ### Community 119 - "Community 119"
 Cohesion: 0.19
@@ -1134,8 +1149,12 @@ Cohesion: 0.13
 Nodes (14): name, url, info, contact, description, license, summary, termsOfService (+6 more)
 
 ### Community 121 - "Community 121"
-Cohesion: 0.13
-Nodes (9): AsyncBaseArrManager, Constructor for connection to Arr API          Args:             url (str): Host, Get the root folders from the Arr API. \n         Returns:             list[str], Get the version of the Arr API          Args:             None          Returns:, Get the system status of the Arr API          Args:             app_name (str):, Base class for async requests to Arr API, Ping the Arr API          Args:             None          Returns:             s, AsyncRequestManager (+1 more)
+Cohesion: 0.14
+Nodes (8): AsyncBaseArrManager, Constructor for connection to Arr API          Args:             url (str): Host, Get the root folders from the Arr API. \n         Returns:             list[str], Get the version of the Arr API          Args:             None          Returns:, Get the system status of the Arr API          Args:             app_name (str):, Base class for async requests to Arr API, Ping the Arr API          Args:             None          Returns:             s, AsyncRequestManager
+
+### Community 122 - "Community 122"
+Cohesion: 0.17
+Nodes (7): enqueue(), EventNote, Queue a note for dispatch. Called from event creation (sync, any     thread). MU, W2: an event storm produces ONE Apprise send per channel., W1: a dead webhook must not break dispatch (or the caller)., The event-creation hook depends on this being un-crashable., TestDispatcher
 
 ### Community 123 - "Community 123"
 Cohesion: 0.12
@@ -1150,8 +1169,8 @@ Cohesion: 0.13
 Nodes (15): schematics, type, typeSeparator, typeSeparator, typeSeparator, typeSeparator, typeSeparator, type (+7 more)
 
 ### Community 127 - "Community 127"
-Cohesion: 0.19
-Nodes (9): Event, downloads_ready(), Startup-pass registry — see plans/README.md → "Upgrade-safety rules".  Passes ar, Whether the download engine's required startup passes have completed     on this, Run unrecorded (and always-policy) passes in registry order.      A pass failure, run_startup_passes(), A user jumping several versions has several unrecorded passes —         all run, Order is a dependency guarantee: a failed pass must not let its         dependen (+1 more)
+Cohesion: 0.09
+Nodes (18): Event, downloads_ready(), _pass_attribute_downloads(), _pass_full_scan_guard(), Startup-pass registry — see plans/README.md → "Upgrade-safety rules".  Passes ar, Whether the download engine's required startup passes have completed     on this, v0.9.9 attribution pass: claim unattributed downloads, heal stale     trailer fl, Ensure the downloads table can be trusted before the downloads-driven     engine (+10 more)
 
 ### Community 128 - "Community 128"
 Cohesion: 0.23
@@ -1178,8 +1197,8 @@ Cohesion: 0.20
 Nodes (9): Job, Task, get_all_jobs(), get_all_tasks(), get_job(), get_task(), get_task_data(), Get all tasks, jobs, and task configurations. \n     Used in Frontend to display (+1 more)
 
 ### Community 134 - "Community 134"
-Cohesion: 0.19
-Nodes (9): Tests for normalize_filename function., Normal filename remains unchanged., Invalid characters are replaced with spaces., Unicode characters are normalized., Multiple spaces collapsed to single space., Leading/trailing special characters are stripped., TestNormalizeFilename, normalize_filename() (+1 more)
+Cohesion: 0.33
+Nodes (11): EventRead, Session, create_bulk(), create_if_not_exists(), create_skip_event_if_not_exists(), _notify(), Track when a trailer download is skipped for a media item. \n     This event is, Queue the event for Apprise notification dispatch. Fire-and-forget:     lazy imp (+3 more)
 
 ### Community 135 - "Community 135"
 Cohesion: 0.15
@@ -1202,8 +1221,8 @@ Cohesion: 0.06
 Nodes (36): batch_download_trailers(), Download trailers for a list of media IDs. \n     Schedules a background job to, batch_update_media(), delete_media_trailer(), download_media_trailer(), get_all_downloads_raw(), get_all_media(), get_all_media_raw() (+28 more)
 
 ### Community 141 - "Community 141"
-Cohesion: 0.17
-Nodes (7): enqueue(), EventNote, Queue a note for dispatch. Called from event creation (sync, any     thread). MU, W2: an event storm produces ONE Apprise send per channel., W1: a dead webhook must not break dispatch (or the caller)., The event-creation hook depends on this being un-crashable., TestDispatcher
+Cohesion: 0.31
+Nodes (7): Session, delete_by_media_id(), delete_old_events(), Delete events older than specified number of days. \n     Useful for cleanup/mai, Delete all events for a specific media item. \n     Args:         media_id (int), Track when a trailer download is skipped for a media item. \n     This event is, track_download_skipped()
 
 ### Community 142 - "Community 142"
 Cohesion: 0.12
@@ -1233,6 +1252,10 @@ Nodes (11): _accel_label(), detect_gpus(), _detect_linux(), _detect_macos(), _de
 Cohesion: 0.18
 Nodes (12): API Key Field, Arr Type Field (Radarr/Sonarr), Monitor Type: Missing, Monitor Type: New, Monitor Type: None, Monitor Type: Sync, Monitor Type Field, Connection Name Field (+4 more)
 
+### Community 149 - "Community 149"
+Cohesion: 0.08
+Nodes (7): TV episode pattern must block trailer detection regardless of context., trailer' in filename, size below quick threshold — no ffprobe needed., TestGetTrailerFolders, TestIsTrailerFileEpisodeGuard, TestIsTrailerFileNameQuickPath, FileFolderType, Type of File/Folder Info. \n
+
 ### Community 150 - "Community 150"
 Cohesion: 0.36
 Nodes (9): install.sh script, banner(), check_curl(), error(), info(), check_uv(), download_release(), run_installer() (+1 more)
@@ -1254,8 +1277,8 @@ Cohesion: 0.24
 Nodes (6): TestValidateApiKeyHeader, TestVerifyApiKey, Verifies the API key provided by the user \n     Args:         api_key (str): Th, Validates the API key provided in the header \n     Args:         header_api_key, validate_api_key_header(), verify_api_key()
 
 ### Community 156 - "Community 156"
-Cohesion: 0.14
-Nodes (11): AsyncRequestManager, Constructor for connection to Arr API          Args:             host_url (str):, Send a request of HTTP method type to the Arr API          Args:             met, Process the response from the API          Args:             response (aiohttp.C, Base class for asynchronous requests to Arr API, TestAsyncRequestManager, Any, ConnectionTimeoutError (+3 more)
+Cohesion: 0.20
+Nodes (12): AsyncRequestManager, Constructor for connection to Arr API          Args:             host_url (str):, Send a request of HTTP method type to the Arr API          Args:             met, Process the response from the API          Args:             response (aiohttp.C, Base class for asynchronous requests to Arr API, Any, Any, ConnectionTimeoutError (+4 more)
 
 ### Community 158 - "Community 158"
 Cohesion: 0.22
@@ -1286,16 +1309,16 @@ Cohesion: 0.15
 Nodes (14): format_google_docstring(), custom_openapi(), health_check(), lifespan(), FastAPI, WebSocket, Health check endpoint.     Runs 'nvidia-smi' to check for NVIDIA GPU availabilit, websocket_endpoint() (+6 more)
 
 ### Community 167 - "Community 167"
-Cohesion: 0.33
-Nodes (8): CustomFilterCreate, CustomFilterRead, create_or_update_customfilter(), get_all_customfilters(), get_home_customfilters(), get_movie_customfilters(), get_series_customfilters(), update_customfilter()
+Cohesion: 0.36
+Nodes (5): SimpleNamespace, New trailer files found on disk are attributed to the highest-priority     match, When the only matching profile already owns an active download,         a second, A stale download (file gone, about to be marked deleted) does not         block, TestNewTrailerAttribution
 
 ### Community 168 - "Community 168"
 Cohesion: 0.47
 Nodes (9): download_ffmpeg(), _download_macos_ffmpeg(), _download_tarxz(), _download_with_progress(), _download_zip(), Download platform-specific ffmpeg static binaries from yt-dlp/FFmpeg-Builds., Download ffmpeg and ffprobe into bin_dir for the current platform.     Returns (, _verify() (+1 more)
 
 ### Community 169 - "Community 169"
-Cohesion: 0.09
-Nodes (34): FilterRead, MediaRead, TrailerProfileRead, FilterRead, SimpleNamespace, _matches_boolean(), _matches_datetime(), _matches_file_filter() (+26 more)
+Cohesion: 0.17
+Nodes (16): MediaRead, TrailerProfileRead, SimpleNamespace, find_matching_profiles(), pick_profile_for_download(), Find all profiles whose filters match a media item.\n     Args:         media (M, Pick the profile that should own a trailer download found on disk.\n     Args:, make_filter() (+8 more)
 
 ### Community 170 - "Community 170"
 Cohesion: 0.24
@@ -1350,16 +1373,24 @@ Cohesion: 0.17
 Nodes (11): Exit criteria (per milestone), Milestone A — Connection Doctor (v0.11.x), Milestone B — System Health page + first-class cookies (v0.11.x), Milestone C — First-run guided setup (v0.13.x, post-reorg), Milestone D — Diagnostics bundle (any release), Objective, Parallel Track — Onboarding & Diagnostics ("Setup Doctor"), Pitfalls (track-wide) (+3 more)
 
 ### Community 186 - "Community 186"
-Cohesion: 0.20
-Nodes (9): Session, completed_names(), is_completed(), mark_completed(), Whether the named startup pass has a completion record., Names of all completed startup passes., Record the named startup pass as completed (idempotent)., Completion record for one-time startup passes (see plans/README.md →     "Upgrad (+1 more)
+Cohesion: 0.10
+Nodes (19): Session, datetime, completed_names(), is_completed(), mark_completed(), Whether the named startup pass has a completion record., Names of all completed startup passes., Record the named startup pass as completed (idempotent). (+11 more)
+
+### Community 189 - "Community 189"
+Cohesion: 0.10
+Nodes (5): ErrorMessage, FilesComponent, FileSizePipe, OptionsDialogComponent, bytesToSize()
 
 ### Community 190 - "Community 190"
 Cohesion: 0.25
 Nodes (6): Run migrations in 'offline' mode.      This configures the context with just a U, Run migrations in 'online' mode.      In this scenario we need to create an Engi, run_migrations_offline(), run_migrations_online(), set_sqlite_pragmas(), Connection
 
 ### Community 191 - "Community 191"
-Cohesion: 0.25
-Nodes (4): Test that monitor_interval enforces minimum value with string input, Test that monitor_interval handles invalid string input, Test that monitor_interval can accept string input (API use case), TestConfig
+Cohesion: 0.15
+Nodes (4): AboutComponent, CopyToClipboardDirective, TestHostComponent, ServerStats
+
+### Community 192 - "Community 192"
+Cohesion: 0.29
+Nodes (3): datetime, FileFolderInfoBase, Base model for FileFolderInfo.\n     Note: \n         🚨DO NOT USE THIS CLASS DIR
 
 ### Community 193 - "Community 193"
 Cohesion: 0.43
@@ -1378,8 +1409,8 @@ Cohesion: 0.23
 Nodes (9): datetime, NotificationChannelCreate, NotificationChannelRead, NotificationChannel, NotificationChannelBase, Base model for NotificationChannel — an Apprise destination plus which     event, Database model for NotificationChannel.\n     Note: \n         🚨DO NOT USE THIS, Model for creating/updating NotificationChannel. On update, an empty     url mea (+1 more)
 
 ### Community 197 - "Community 197"
-Cohesion: 0.17
-Nodes (7): Tests for _extract_video_details function., Extracts resolution, video codec, and audio codec from streams., Returns defaults when no video stream., Returns unknown audio when no audio stream., Returns defaults for empty streams., Skips video stream with zero coded_height., TestExtractVideoDetails
+Cohesion: 0.10
+Nodes (23): _assertThisInitialized(), cachedHashString(), clear(), CopyToClipboard(), createSubscription(), _createSuper(), DebounceInput(), defaultMemoize() (+15 more)
 
 ### Community 198 - "Community 198"
 Cohesion: 0.08
@@ -1398,12 +1429,12 @@ Cohesion: 0.08
 Nodes (23): Plex Integration and Media Linking, Trailer Profiles System, **v0.3.0-beta** - _February 06, 2025_, **v0.3.1-beta** - _February 08, 2025_, **v0.3.2-beta** - _March 09, 2025_, **v0.3.3-beta** - _March 28, 2025_, **v0.4.0-beta** - _July 04 2025_, **v0.4.1-beta** - _July 06 2025_ (+15 more)
 
 ### Community 202 - "Community 202"
-Cohesion: 0.15
-Nodes (6): _parse_resolution(), PlexEpisodeLeaf, PlexLibrarySection, PlexMediaExtra, PlexMediaItem, Lightweight model for episode items returned by /allLeaves on show sections.
+Cohesion: 0.20
+Nodes (18): datetime, FilterRead, _matches_boolean(), _matches_datetime(), _matches_file_filter(), _matches_filter(), matches_filters(), _matches_generic() (+10 more)
 
 ### Community 203 - "Community 203"
-Cohesion: 0.57
-Nodes (6): Event, Job, Task, on_job_completed_event(), on_job_failed_event(), on_job_started_event()
+Cohesion: 0.13
+Nodes (13): DirEntry, FileFolderInfoCreate, MediaScanner, Get information about all files and [sub]folders in a given \             folder, Recursively check if any video file >= 100 MB exists in the tree., Check if a media file (video >= 100 MB) exists in the folder tree.          Uses, Handles scanning of folders and files of media., Get a list of trailer file paths from the given FolderInfo object.\n         Arg (+5 more)
 
 ### Community 204 - "Community 204"
 Cohesion: 0.29
@@ -1413,9 +1444,9 @@ Nodes (6): cli, analytics, newProjectRoot, projects, $schema, version
 Cohesion: 0.26
 Nodes (5): make_channel(), _names(), Tests for notification channels (manager + dispatcher) — plans/track-apprise-not, Map (channel_id, url) → (name, url) for readable asserts., TestChannelManager
 
-### Community 207 - "Community 207"
-Cohesion: 0.14
-Nodes (9): cloneSpecificValue(), copy(), deepCloneArray(), escapeHTML(), HTMLRenderer, isSpecificValue(), toS(), utf8FillLast() (+1 more)
+### Community 210 - "Community 210"
+Cohesion: 0.15
+Nodes (17): VideoInfo, delete_file_fol(), get_all_media_files_raw(), get_video_info(), _is_path_safe(), Read the contents of a file.\n     Args:         file_path (str): Path of the fi, Get information about the video file.\n     Args:         file_path (str): Path, Trim the video file at the given timestamps.\n     Args:         file_path (str) (+9 more)
 
 ### Community 211 - "Community 211"
 Cohesion: 0.29
@@ -1454,8 +1485,8 @@ Cohesion: 0.08
 Nodes (23): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+15 more)
 
 ### Community 222 - "Community 222"
-Cohesion: 0.18
-Nodes (5): Gc(), jt(), ModelExample, Parameters, values()
+Cohesion: 0.25
+Nodes (4): Test that monitor_interval enforces minimum value with string input, Test that monitor_interval handles invalid string input, Test that monitor_interval can accept string input (API use case), TestConfig
 
 ### Community 223 - "Community 223"
 Cohesion: 0.53
@@ -1472,10 +1503,6 @@ Nodes (6): [scss], editor.defaultFormatter, editor.foldingStrategy, editor.forma
 ### Community 226 - "Community 226"
 Cohesion: 0.50
 Nodes (3): TestVerifyUsername, Checks if the provided username matches the stored username \n     Args:, verify_username()
-
-### Community 227 - "Community 227"
-Cohesion: 0.10
-Nodes (9): consumesOptionsFor(), getParameterSchema(), isMap(), ParameterRow, paramToIdentifier(), paramToValue(), ParseResult, reject() (+1 more)
 
 ### Community 228 - "Community 228"
 Cohesion: 0.09
@@ -1507,7 +1534,7 @@ Nodes (20): Build Commands (Validated and Working), Build Timing and Expectation
 
 ### Community 237 - "Community 237"
 Cohesion: 0.24
-Nodes (10): count_untracked_trailer_media(), Count media with trailer_exists=True but no active download record.      Returns, Log how many media items have trailer_exists=True without any active     downloa, Run the download attribution pass, then fix stale trailer_exists     flags, then, report_attribution_health(), run_attribution_pass(), _pass_attribute_downloads(), _pass_full_scan_guard() (+2 more)
+Nodes (16): ScheduledTaskConfigRead, ScheduledTaskConfigRead, Session, ScheduledTaskConfigRead, create_task_config(), get_all_task_configs(), get_task_config(), update_task_config() (+8 more)
 
 ### Community 239 - "Community 239"
 Cohesion: 0.40
@@ -1526,8 +1553,8 @@ Cohesion: 0.83
 Nodes (4): Blue Color Palette, Orange Color Palette, Filmstrip Icon Element, Trailarr 48px App Icon
 
 ### Community 245 - "Community 245"
-Cohesion: 0.20
-Nodes (6): Tests for get_trailer_path function., Returns destination path when file doesn't exist., Increments index when destination file exists., Accepts Path objects for src and dst., Uses video_info when provided., TestGetTrailerPath
+Cohesion: 0.25
+Nodes (12): datetime, FileFolderInfoRead, Session, get_folder_modified_times(), Get FileFolderInfoRead tree for a specific media ID.     Args:         media_id, Get FileFolderInfo tree for a specific media ID.     Args:         media_id (int, Return {path: modified} for all FOLDER entries for a media item.     Args:, # NOTE: Read all function has been intentionally omitted to avoid \ (+4 more)
 
 ### Community 246 - "Community 246"
 Cohesion: 0.50
@@ -1566,16 +1593,16 @@ Cohesion: 0.83
 Nodes (4): Trailarr Brand Identity, Clapperboard Visual Element, Filmstrip Visual Element, Trailarr 128px App Icon
 
 ### Community 255 - "Community 255"
-Cohesion: 0.12
-Nodes (11): Any, Validate the connection details and test the connection to the server \n     Arg, validate_connection(), RadarrManager, Constructor for connection to Radarr API          Args:             url (str): H, Get the system status of the Radarr API          Args:             None, Get a movie from the Arr API          Args:             movie_id (int): The ID o, Get a movie from the Arr API          Args:             radarr_id (int): The ID (+3 more)
+Cohesion: 0.20
+Nodes (6): Any, RadarrManager, Constructor for connection to Radarr API          Args:             url (str): H, Get the system status of the Radarr API          Args:             None, Get a movie from the Arr API          Args:             movie_id (int): The ID o, Get a movie from the Arr API          Args:             radarr_id (int): The ID
 
 ### Community 258 - "Community 258"
 Cohesion: 0.11
 Nodes (17): Common driver commands, Comparison: Direct vs Docker, Configuration, Direct Installation, Directory Structure, GPU acceleration not working, GPU Hardware Acceleration, Permission errors (Linux) (+9 more)
 
 ### Community 259 - "Community 259"
-Cohesion: 0.29
-Nodes (4): _ctime_matches_stored(), Compare filesystem st_ctime (UTC epoch float) to a stored datetime.     SQLite r, Tests for core/tasks/files_scan.py — folder-change detection and scan_media_fold, TestCtimeMatchesStored
+Cohesion: 0.25
+Nodes (3): Copilot review (PR #619): stop() must flush pending notes even if the     stop e, The exact race Copilot flagged: stop() called before the         scheduled task, TestDispatcherLifecycle
 
 ### Community 260 - "Community 260"
 Cohesion: 0.50
@@ -1600,6 +1627,10 @@ Nodes (3): About Component Template, About Settings Page Doc, Password Update Di
 ### Community 266 - "Community 266"
 Cohesion: 1.00
 Nodes (3): IMDB Logo, TMDB Logo, TVDB Logo
+
+### Community 267 - "Community 267"
+Cohesion: 0.10
+Nodes (3): NotificationsComponent, OptionsSettingComponent, NotificationsService
 
 ### Community 269 - "Community 269"
 Cohesion: 0.50
@@ -1651,23 +1682,23 @@ Nodes (16): Annotations, Anti-Patterns to Avoid, ❌ AVOID These Comment Types, 
 
 ### Community 548 - "Community 548"
 Cohesion: 0.25
-Nodes (7): extract(), extractFromDoc(), getDoc(), jsonPointerToArray(), makeFetchJSON(), Q(), resolveGenericStrategy()
+Nodes (6): Track when a trailer file is detected as renamed/moved on disk. \n     This fire, Track when a media item is linked to a Plex connection for the first time., track_plex_linked(), track_trailer_renamed(), Creates a PLEX_LINKED event with correct type and values., Gracefully swallows exceptions when media_id is invalid.
 
 ### Community 549 - "Community 549"
-Cohesion: 0.22
-Nodes (5): clean_registry_records(), Tests for the startup-pass registry (core/tasks/startup_passes.py) — plans/READM, Each test starts with no completion records (shared test DB)., TestDownloadsReady, TestFullScanGuardPass
+Cohesion: 0.09
+Nodes (31): Event, Session, Media, MediaCreate, MediaRead, MonitorStatus, Session, Session (+23 more)
 
 ### Community 550 - "Community 550"
-Cohesion: 0.22
-Nodes (8): ArrType, Connection, ConnectionCreate, ConnectionRead, ConnectionUpdate, MonitorType, PathMapping, PathMappingCreate
+Cohesion: 0.25
+Nodes (7): ArrType, Connection, ConnectionCreate, ConnectionRead, ConnectionUpdate, MonitorType, PathMapping
 
 ### Community 551 - "Community 551"
 Cohesion: 0.20
 Nodes (9): Exit criteria, Frontend light touch (assess-only + small moves), Non-negotiable invariants, Objective, Phase 7 — Backend Reorganization, Stage B: thin the API layer, Target structure & move map (Stage A: pure moves), Verification (+1 more)
 
 ### Community 552 - "Community 552"
-Cohesion: 0.09
-Nodes (37): AppLogRecordRead, LogLevel, DownloadRead, FileFolderInfoRead, NotificationChannelCreate, NotificationChannelRead, UpdateSetting, Session (+29 more)
+Cohesion: 0.22
+Nodes (16): UpdateSetting, Session, BaseModel, get_stats(), ServerStats, ServerStats, Settings, UpdateLogin (+8 more)
 
 ### Community 553 - "Community 553"
 Cohesion: 0.13
@@ -1676,6 +1707,10 @@ Nodes (15): Arr Linked, Arr Unlinked, Download Skipped, Event Types, Media Added
 ### Community 555 - "Community 555"
 Cohesion: 0.16
 Nodes (9): make_download(), Tests for the rename_file_fol endpoint in api/v1/files.py.  Covers the download-, Renaming a file with no matching download record leaves the DB alone., Renaming a tracked trailer file updates the matching Download row in place., TestRenameFileFolNoMatchingDownload, TestRenameFileFolNoMediaId, TestRenameFileFolRenameFailure, TestRenameFileFolUpdatesMatchingDownload (+1 more)
+
+### Community 556 - "Community 556"
+Cohesion: 0.11
+Nodes (3): EditHeaderComponent, ProfileSelectDialogComponent, ProfileService
 
 ### Community 557 - "Community 557"
 Cohesion: 0.14
@@ -1690,24 +1725,24 @@ Cohesion: 0.15
 Nodes (12): Cancel, Clear Selections, Delete, Download, Edit View, Filtering, Library, Media Details (+4 more)
 
 ### Community 560 - "Community 560"
-Cohesion: 0.15
-Nodes (11): SimpleNamespace, Tests for rename-by-hash matching and in-place content-change detection., A disk file at a new path whose hash matches a 'missing' download's         stor, When hashes don't match, a new disk path and a missing download are         NOT, A file at an unchanged path whose ctime differs from stored AND         whose ha, When the on-disk ctime matches the stored updated_at, the expensive         hash, New trailer files found on disk are attributed to the highest-priority     match, When the only matching profile already owns an active download,         a second (+3 more)
+Cohesion: 0.20
+Nodes (6): Tests for rename-by-hash matching and in-place content-change detection., A disk file at a new path whose hash matches a 'missing' download's         stor, When hashes don't match, a new disk path and a missing download are         NOT, A file at an unchanged path whose ctime differs from stored AND         whose ha, When the on-disk ctime matches the stored updated_at, the expensive         hash, TestRenameAndHashDetection
 
 ### Community 561 - "Community 561"
 Cohesion: 0.25
 Nodes (3): Tests for the downgrade guard (core/base/database/utils/version_guard.py)., DB migrated by a newer app version → clear refusal, not a crash         on missi, TestVersionGuard
 
 ### Community 562 - "Community 562"
-Cohesion: 0.38
-Nodes (5): config_logging(), handle_logs(), Setup the logging configuration using the config file.     This will setup the r, stop_logging(), Queue
+Cohesion: 0.13
+Nodes (8): Tests for media update manager functions., Tests for media_manager.update_plex_trailer., Sets plex_trailer to True on a media row., Sets plex_trailer to False on a media row., Resets plex_trailer to None (unknown state)., New media rows have plex_trailer=None by default., update_plex_trailer only changes plex_trailer, not title or status., TestUpdatePlexTrailer
 
 ### Community 563 - "Community 563"
 Cohesion: 0.17
 Nodes (11): 1. Discord Notifications, 2. NFO Files for Trailers, 4. TMDB Integration + Filesystem Connector, NFO Files for Trailers Feature Plan, Overview, Planned Tasks, Plex Integration Feature Plan, Plex OAuth State Machine (+3 more)
 
 ### Community 564 - "Community 564"
-Cohesion: 0.20
-Nodes (8): _handle_folder_gone(), _is_disk_available(), # TODO: once the planned "Issues" section exists, raise an issue, # TODO: once the planned "Issues" section exists, raise an issue, Reset stale flags when the media folder is inaccessible or deleted., Best-effort check for whether the drive/network share backing a media     folder, Simulates a stale/disconnected mount: the ancestor directory         "exists" bu, TestIsDiskAvailable
+Cohesion: 0.28
+Nodes (5): _is_disk_available(), Best-effort check for whether the drive/network share backing a media     folder, Tests for core/tasks/files_scan.py — folder-change detection and scan_media_fold, Simulates a stale/disconnected mount: the ancestor directory         "exists" bu, TestIsDiskAvailable
 
 ### Community 565 - "Community 565"
 Cohesion: 0.25
@@ -1750,8 +1785,8 @@ Cohesion: 0.20
 Nodes (9): Contributing, Dependencies, Disclaimer, Features, Installation & Setup, Issues, License, Roadmap (+1 more)
 
 ### Community 577 - "Community 577"
-Cohesion: 0.05
-Nodes (48): VideoInfo, DownloadRead, MediaRead, VideoInfo, DirEntry, FolderInfo, Format a timestamp to a string in the system timezone., Get information about a file or folder.\n         Args:             entry (os.Di (+40 more)
+Cohesion: 0.09
+Nodes (26): DownloadRead, MediaRead, VideoInfo, _ctime_matches_stored(), _handle_folder_gone(), _process_trailer_changes(), Detect new/renamed/modified trailers and mark deleted downloads, then     reconc, Compare filesystem st_ctime (UTC epoch float) to a stored datetime.     SQLite r (+18 more)
 
 ### Community 578 - "Community 578"
 Cohesion: 0.20
@@ -1937,43 +1972,79 @@ Nodes (5): Backup & Restore, Notes, Restore a backup, Roll back to a previous ve
 Cohesion: 0.40
 Nodes (4): Gotchas discovered (do not rediscover), Phase 1 — Download ↔ Profile Attribution, Real-world validation, What shipped
 
+### Community 626 - "Community 626"
+Cohesion: 0.15
+Nodes (11): VACUUM must execute against the real SQLite file — it fails with         'cannot, flush_logs_to_db(), get_async_logs_session(), Flush in-memory logs to the database., Reclaim disk space from the logs database.      SQLite keeps deleted pages insid, Create a new async session for logs database operations., vacuum_logs_db(), _apply_log_filter() (+3 more)
+
 ### Community 644 - "Community 644"
 Cohesion: 0.40
 Nodes (5): CompletedProcess, Path, Release-fixture upgrade gauntlet — plans/README.md "Upgrade-safety rules" rule 4, _run(), test_upgrade_gauntlet()
 
+### Community 645 - "Community 645"
+Cohesion: 0.57
+Nodes (6): Event, Job, Task, on_job_completed_event(), on_job_failed_event(), on_job_started_event()
+
+### Community 646 - "Community 646"
+Cohesion: 0.38
+Nodes (3): consumesOptionsFor(), getParameterSchema(), ParameterRow
+
 ### Community 649 - "Community 649"
-Cohesion: 0.40
-Nodes (4): MediaCreate, PlexMediaItem, parse_plex_item(), Convert a PlexMediaItem into a MediaCreate object.      For Plex-sourced items:
+Cohesion: 0.27
+Nodes (7): AppLogRecord, marker_rows(), Tests for delete_old_logs batch purge + VACUUM in config/logs/manager.py., seed_logs(), TestDeleteOldLogs, get_logs_session(), Create a new session for logs database operations.
 
 ### Community 650 - "Community 650"
 Cohesion: 0.50
 Nodes (3): mask_apprise_url(), Mask an Apprise URL for display — these embed tokens/credentials.     Keeps the, TestMaskUrl
 
-### Community 651 - "Community 651"
-Cohesion: 0.40
-Nodes (3): Initialize the SonarrConnectionManager. \n         Args:             connection, Connection manager for working with the Sonarr application., SonarrConnectionManager
+### Community 652 - "Community 652"
+Cohesion: 0.33
+Nodes (4): ConnectionRead, RadarrConnectionManager, Initialize the RadarrConnectionManager. \n         Args:             connection, Connection manager for working with the Radarr application.
 
 ### Community 653 - "Community 653"
 Cohesion: 0.50
 Nodes (3): Adding a channel, Good to know, Notifications
 
 ### Community 654 - "Community 654"
-Cohesion: 0.50
-Nodes (3): _make_default_like_profile(), _make_download_create(), Create a profile shaped like the shipped defaults: an is_movie filter     plus t
+Cohesion: 0.33
+Nodes (4): Track when a media item loses its Plex link.      Fires when a Plex connection i, track_plex_unlinked(), Creates a PLEX_UNLINKED event with correct type and values., Gracefully swallows exceptions when media_id is invalid.
 
 ### Community 655 - "Community 655"
 Cohesion: 0.50
 Nodes (4): args, icon, path, pwsh
 
+### Community 657 - "Community 657"
+Cohesion: 0.22
+Nodes (9): NotificationChannelRead, create_channel(), get_channels(), Send a test notification to a channel immediately., Get all notification channels. Apprise URLs are write-only and     returned mask, Create a notification channel. \n     Args:         channel (NotificationChannel, Update a channel. An empty url keeps the stored one., test_channel() (+1 more)
+
+### Community 658 - "Community 658"
+Cohesion: 0.33
+Nodes (4): Track when a targeted Plex library scan is triggered for a media item.      Args, track_plex_scan_triggered(), Creates a PLEX_SCAN_TRIGGERED event with scan_path stored., Gracefully swallows exceptions when media_id is invalid.
+
+### Community 662 - "Community 662"
+Cohesion: 0.40
+Nodes (4): MediaCreate, PlexMediaItem, parse_plex_item(), Convert a PlexMediaItem into a MediaCreate object.      For Plex-sourced items:
+
+### Community 663 - "Community 663"
+Cohesion: 0.50
+Nodes (3): Session, delete_except(), Delete all media items from the database except the ones provided.\n     Args:
+
+### Community 664 - "Community 664"
+Cohesion: 0.33
+Nodes (3): Vd, ApiDOMError, zd()
+
+### Community 665 - "Community 665"
+Cohesion: 0.29
+Nodes (3): close(), open(), tag()
+
 ## Knowledge Gaps
 - **1266 isolated node(s):** `PreToolUse`, `defaultMode`, `allow`, `dev-start.sh script`, `PATH` (+1261 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **267 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **258 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `__()` connect `Swagger UI Bundle` to `Community 256`, `Redoc Rendering Engine`, `Swagger UI Utilities`, `Redoc Component Library`, `Community 257`, `Swagger Operations & Reducers`, `Community 646`, `Redoc Schema Resolver`, `Swagger Schema Validation`, `Redoc Standalone Core`, `Swagger UI Runtime Core`, `Redoc Schema Builder`, `Redoc React Components`, `Swagger Auth & Utilities`, `Community 652`, `Redoc Config & Auth`, `Community 657`, `File Handler & Cleanup`, `Community 152`, `Trailer Profiles API & Logging`, `Community 283`, `Community 284`, `Community 157`, `Community 286`, `Swagger IO Buffer Utilities`, `Community 160`, `Community 287`, `Community 285`, `Community 548`, `Community 554`, `Community 171`, `Community 44`, `Community 50`, `Community 53`, `Community 184`, `Community 59`, `Community 187`, `Community 573`, `Community 188`, `Community 63`, `Community 206`, `Community 207`, `Community 80`, `Community 208`, `Community 209`, `Community 210`, `Community 88`, `Community 219`, `Community 220`, `Community 222`, `Community 98`, `Community 227`, `Community 617`, `Community 236`, `Community 238`?**
+- **Why does `__()` connect `Swagger UI Bundle` to `Community 256`, `Redoc Rendering Engine`, `Swagger UI Utilities`, `Redoc Component Library`, `Redoc Standalone Core`, `Community 257`, `Community 646`, `Trailer Download Pipeline`, `Swagger Schema Validation`, `Redoc Schema Resolver`, `Swagger Operations & Reducers`, `Swagger UI Runtime Core`, `Redoc Schema Builder`, `Swagger Auth & Utilities`, `Community 661`, `File Handler & Cleanup`, `Community 664`, `Community 665`, `Trailer Profiles API & Logging`, `Community 283`, `Community 152`, `Community 157`, `Community 284`, `Swagger IO Buffer Utilities`, `Community 160`, `Community 286`, `Community 667`, `Community 287`, `Community 285`, `Community 554`, `Community 171`, `Community 44`, `Community 50`, `Community 53`, `Community 184`, `Community 59`, `Community 187`, `Community 573`, `Community 574`, `Community 63`, `Community 188`, `Community 197`, `Community 206`, `Community 207`, `Community 80`, `Community 208`, `Community 209`, `Community 219`, `Community 220`, `Community 98`, `Community 227`, `Community 617`, `Community 107`, `Community 236`, `Community 238`?**
   _High betweenness centrality (0.122) - this node is a cross-community bridge._
 - **Why does `throwError()` connect `Swagger UI Runtime Core` to `Swagger UI Bundle`, `Frontend App Root & Helpers`?**
   _High betweenness centrality (0.048) - this node is a cross-community bridge._
@@ -1982,8 +2053,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 110 inferred relationships involving `ModuleLogger` (e.g. with `APIRouter` and `EventRead`) actually correct?**
   _`ModuleLogger` has 110 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `PreToolUse`, `defaultMode`, `allow` to the rest of the system?**
-  _2295 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2297 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Swagger UI Bundle` be split into smaller, more focused modules?**
-  _Cohesion score 0.006250903309726839 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0061355462046592535 - nodes in this community are weakly interconnected._
 - **Should `Redoc Rendering Engine` be split into smaller, more focused modules?**
-  _Cohesion score 0.014248948590797816 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.013482762544089203 - nodes in this community are weakly interconnected._

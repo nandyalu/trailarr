@@ -178,3 +178,46 @@ class TestDispatcher:
         body = dispatcher._format_batch(notes)
         assert "Trailer Downloaded — abc123" in body
         assert "Media Added" in body
+
+
+class TestDispatcherLifecycle:
+    """Copilot review (PR #619): stop() must flush pending notes even if the
+    stop event races ahead of the loop's first iteration."""
+
+    def teardown_method(self):
+        # Belt-and-braces: never leak a running task into the next test
+        dispatcher._dispatch_task = None
+        dispatcher._stop_event = None
+
+    @pytest.mark.asyncio
+    async def test_start_uses_running_loop(self):
+        dispatcher.start()
+        assert dispatcher._dispatch_task is not None
+        await dispatcher.stop()
+        assert dispatcher._dispatch_task is None
+
+    @pytest.mark.asyncio
+    async def test_stop_before_first_iteration_still_flushes(self):
+        """The exact race Copilot flagged: stop() called before the
+        scheduled task has run its first loop iteration must not drop
+        queued notes."""
+        make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
+        dispatcher.start()
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "race-note")
+
+        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+            await dispatcher.stop()  # no `await asyncio.sleep(0)` first
+
+        assert send.call_count == 1
+        assert "race-note" in send.call_args[0][2]
+        assert list(dispatcher._queue) == []
+
+    @pytest.mark.asyncio
+    async def test_stop_is_idempotent(self):
+        dispatcher.start()
+        await dispatcher.stop()
+        await dispatcher.stop()  # must not raise
+
+    @pytest.mark.asyncio
+    async def test_stop_without_start_is_a_noop(self):
+        await dispatcher.stop()  # must not raise
