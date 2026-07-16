@@ -157,17 +157,27 @@ async def _dispatch_loop() -> None:
 
 
 def start() -> None:
-    """Start the dispatcher loop (called from the app lifespan)."""
+    """Start the dispatcher loop (called from the app lifespan, which is
+    already running inside the event loop at this point)."""
     global _dispatch_task, _stop_event
     if _dispatch_task is not None:
         return
     _stop_event = asyncio.Event()
-    _dispatch_task = asyncio.get_event_loop().create_task(_dispatch_loop())
+    _dispatch_task = asyncio.get_running_loop().create_task(_dispatch_loop())
     logger.debug("Notification dispatcher started")
 
 
 async def stop() -> None:
-    """Flush pending notes and stop the loop (app shutdown)."""
+    """Stop the loop and flush pending notes (app shutdown).
+
+    The loop itself dispatches once more before exiting in the common case
+    (woken by the stop event mid-wait), but that's a timing detail, not a
+    guarantee — e.g. if stop() races ahead of the task's very first
+    iteration, the loop's `while` condition is already false and it never
+    dispatches at all. Explicitly flushing here after the task has stopped
+    makes the "pending notes are flushed on shutdown" contract hold
+    regardless of that timing.
+    """
     global _dispatch_task, _stop_event
     if _dispatch_task is None or _stop_event is None:
         return
@@ -178,4 +188,8 @@ async def stop() -> None:
         _dispatch_task.cancel()
     _dispatch_task = None
     _stop_event = None
+    try:
+        await _dispatch_pending()
+    except Exception as e:  # best-effort — never block shutdown
+        logger.warning(f"Final notification flush failed: {type(e).__name__}")
     logger.debug("Notification dispatcher stopped")
