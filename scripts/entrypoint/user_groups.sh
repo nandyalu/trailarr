@@ -34,6 +34,11 @@ setup_user_and_groups() {
         useradd -u "$PUID" -g "$PGID" -m "$APPUSER"
     fi
 
+    # gosu builds the process supplementary group list from explicit /etc/group
+    # memberships. Keep the configured PGID in that list as well as the primary
+    # GID so NFS servers can authorize group-owned paths consistently.
+    usermod -aG "$APPGROUP" "$APPUSER"
+
     # Export these variables for use in other scripts
     export APPUSER
     export APPGROUP
