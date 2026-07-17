@@ -313,6 +313,9 @@ LOG_LEVEL=Info                 # Logging level
 - **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
+- **GitHub**: use the `gh` CLI for all GitHub operations (PRs, issues, releases, API) — it is already authenticated in this environment
+- **Raw endpoints are a deliberate design, not a cleanup target**: `/media/all_raw`, `/media/downloads_raw`, `/files/files_raw` return raw dicts from SQL on purpose. Data is validated when WRITTEN to the database, so re-validating and building typed Python objects on every read would only add memory pressure and latency on large libraries. Do not "fix" them into typed responses; new list-scale endpoints may follow the same pattern when hot.
+- **Docs prose style**: write each sentence/paragraph as ONE continuous line — never hard-wrap prose across multiple lines in `docs/` markdown. Zensical renders continuous lines correctly, but a paragraph broken into separate lines can break formatting. (Code blocks and lists are fine as usual.)
 
 ## Roadmap Execution Plans
 
