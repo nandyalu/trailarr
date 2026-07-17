@@ -28,6 +28,7 @@ export interface TrailerProfileRead {
   include_words?: string;
   uploader_ids?: string;
   ytdlp_extra_options?: string;
+  /** Deprecated (Phase 4): no longer honored or shown in the UI; column drops in Phase 5. */
   stop_monitoring?: boolean;
   custom_folder?: string;
   notify_plex?: boolean;
@@ -63,6 +64,7 @@ export interface TrailerProfileCreate {
   include_words?: string;
   uploader_ids?: string;
   ytdlp_extra_options?: string;
+  /** Deprecated (Phase 4): no longer honored or shown in the UI; column drops in Phase 5. */
   stop_monitoring?: boolean;
   custom_folder?: string;
   notify_plex?: boolean;

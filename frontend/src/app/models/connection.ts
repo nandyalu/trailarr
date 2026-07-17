@@ -18,20 +18,13 @@ export enum ArrType {
   Plex = 'plex',
 }
 
-export enum MonitorType {
-  Missing = 'missing',
-  New = 'new',
-  None = 'none',
-  Sync = 'sync',
-}
-
 export interface Connection {
   name: string;
   arr_type: ArrType;
   url: string;
   external_url: string;
   api_key: string;
-  monitor: MonitorType;
+  monitor_new_media: boolean;
   id: number;
   added_at: Date;
   machine_identifier: string | null;
@@ -44,7 +37,7 @@ export interface ConnectionCreate {
   url: string;
   external_url: string;
   api_key: string;
-  monitor: MonitorType;
+  monitor_new_media: boolean;
   path_mappings: PathMappingCreate[];
 }
 
@@ -53,7 +46,7 @@ export interface ConnectionRead {
   api_key: string;
   arr_type: ArrType;
   id: number;
-  monitor: MonitorType;
+  monitor_new_media: boolean;
   name: string;
   machine_identifier: string | null;
   path_mappings: PathMappingCreate[];
@@ -67,7 +60,7 @@ export interface ConnectionUpdate {
   url: string;
   external_url: string;
   api_key: string;
-  monitor: MonitorType;
+  monitor_new_media: boolean;
   // id: number;
   path_mappings: PathMappingCreate[];
 }

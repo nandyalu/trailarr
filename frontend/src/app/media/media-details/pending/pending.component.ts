@@ -53,8 +53,6 @@ export class PendingComponent {
             return 'Has its own download';
           case 'claim':
             return 'Will claim an existing unassigned download';
-          case 'stop_monitoring':
-            return "Covered by a stop-monitoring profile's download";
           default:
             return 'Satisfied by an existing download';
         }

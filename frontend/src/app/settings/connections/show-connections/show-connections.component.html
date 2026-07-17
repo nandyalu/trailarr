@@ -59,7 +59,7 @@
           <h3 class="card-name">{{ connection.name }}</h3>
           <p class="card-url" [title]="connection.url">{{ connection.url }}</p>
           <div class="card-meta">
-            <span class="meta-chip">{{ connection.monitor | uppercase }}</span>
+            <span class="meta-chip">{{ connection.monitor_new_media ? 'MONITOR NEW' : 'MANUAL' }}</span>
             <span class="meta-sep">·</span>
             <span>{{ connection.added_at | date: 'mediumDate' }}</span>
           </div>

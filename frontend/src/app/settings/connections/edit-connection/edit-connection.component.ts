@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import {applyEach, form, FormField, maxLength, minLength, pattern, readonly, required, schema, validate} from '@angular/forms/signals';
 import {Router} from '@angular/router';
-import {ArrType, ConnectionCreate, MonitorType, PathMappingCreate} from 'src/app/models/connection';
+import {ArrType, ConnectionCreate, PathMappingCreate} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -54,14 +54,17 @@ export class EditConnectionComponent {
 
   // #region Constants
   readonly arrOptions: ArrType[] = [ArrType.Radarr, ArrType.Sonarr];
-  readonly monitorOptions: MonitorType[] = [MonitorType.Missing, MonitorType.New, MonitorType.None, MonitorType.Sync];
+  readonly monitorNewMediaOptions = [
+    {label: 'Yes', value: true},
+    {label: 'No', value: false},
+  ] as const;
   //#endregion
 
   //#region Signals in Component
   connectionCreate = signal<ConnectionCreate>({
     api_key: '',
     arr_type: ArrType.Radarr,
-    monitor: MonitorType.None,
+    monitor_new_media: true,
     name: '',
     path_mappings: [],
     url: '',
@@ -80,18 +83,6 @@ export class EditConnectionComponent {
     minLength(schema.api_key, 32, {message: 'API Key must be at least 32 characters long.'});
     maxLength(schema.api_key, 50, {message: 'API Key cannot be longer than 50 characters.'});
     required(schema.arr_type, {message: 'ARR Type is required.'});
-    required(schema.monitor, {message: 'Monitor Type is required.'});
-    validate(schema.monitor, ({valueOf}) => {
-      if (this.isCreate() && valueOf(schema.monitor) === MonitorType.New) {
-        return {
-          kind: 'forbiddenSelection',
-          forbiddenSelection: true,
-          message:
-            'The "New" monitor option is not allowed when creating a new connection because there are no existing items to monitor as new. Please select a different monitor type.',
-        };
-      }
-      return null;
-    });
     required(schema.name, {message: 'Connection Name is required.'});
     minLength(schema.name, 3, {message: 'Connection Name must be at least 3 characters long.'});
     required(schema.url, {message: 'URL is required.'});
@@ -101,6 +92,12 @@ export class EditConnectionComponent {
     applyEach(schema.path_mappings, pathMappingSchema);
   });
   //#endregion
+
+  /** Phase 4: monitor_new_media is a plain boolean applied at media
+   * creation — set manually (the radio group is not a [formField]). */
+  setMonitorNewMedia(value: boolean): void {
+    this.connectionCreate.update((c) => ({...c, monitor_new_media: value}));
+  }
 
   //#region Signals from Service
   connection = this.connectionService.selectedConnection;

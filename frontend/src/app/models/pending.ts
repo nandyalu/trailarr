@@ -10,7 +10,7 @@ export interface MediaPendingProfile {
   matches: boolean;
   satisfied: boolean;
   satisfied_by: number | null; // download id
-  satisfied_via: 'own_download' | 'claim' | 'stop_monitoring' | null;
+  satisfied_via: 'own_download' | 'claim' | null;
   pending: boolean;
   backing_off: boolean;
   attempt_count: number;
