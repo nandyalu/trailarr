@@ -273,6 +273,10 @@
   }
 </div>
 @if (selectedMedia_) {
+  <!-- Per-profile download matrix (Phase 3 pending view) -->
+  <div class="media-details-container">
+    <media-pending></media-pending>
+  </div>
   <!-- Show Media Downloads -->
   <div class="media-details-container">
     <media-downloads [downloads]="selectedMedia_.downloads"></media-downloads>

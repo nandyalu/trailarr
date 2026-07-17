@@ -6,6 +6,7 @@ import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
 import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {mapMediaPending, MediaPendingView} from '../models/pending';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
 
@@ -67,6 +68,20 @@ export class MediaService {
       return new Map<number, FileFolderInfo>();
     },
   });
+  /** Per-profile download matrix for the selected media item — which
+   * profiles match, which are satisfied by which download, which are
+   * pending or backing off. Computed by the backend with the exact
+   * satisfaction rule the download task uses. */
+  readonly mediaPendingResource = httpResource<MediaPendingView | null>(
+    () => {
+      const mediaID = this.selectedMediaID();
+      return mediaID === null ? undefined : {url: `${this.mediaUrl}${mediaID}/pending`};
+    },
+    {
+      defaultValue: null,
+      parse: (response) => (response ? mapMediaPending(response) : null),
+    },
+  );
   /** Runtime in-flight downloads (media_id -> profile_id). Backend pushes
    * reload="downloading" whenever it changes; empty on app restart by
    * construction, so a stuck 'downloading' status is impossible. */
@@ -241,6 +256,14 @@ export class MediaService {
       }
       if (msg.reload?.includes('downloading')) {
         this.downloadingResource.reload();
+      }
+      // The profile matrix depends on downloads and attempt state — refresh
+      // it whenever either may have changed (no-op unless a media details
+      // page is open).
+      if (msg.reload?.includes('downloads') || msg.reload?.includes('downloading')) {
+        if (this.selectedMediaID() !== null) {
+          this.mediaPendingResource.reload();
+        }
       }
     });
   }
