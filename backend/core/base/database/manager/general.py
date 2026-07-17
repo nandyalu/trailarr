@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from sqlmodel import Session, col, select
 
+from core.base.database.models.download import Download
 from core.base.database.models.media import Media
 from core.base.database.utils.engine import read_session
 
@@ -23,8 +24,13 @@ def get_stats(
     statement = select(Media.id).where(col(Media.downloaded_at).is_not(None))
     _downloaded = len(_session.exec(statement).all())
 
-    # Detected trailers count
-    statement = select(Media.id).where(col(Media.trailer_exists).is_(True))
+    # Detected trailers count — distinct media with an active download row
+    # (Phase 3: disk truth lives in downloads, not the trailer_exists mirror)
+    statement = (
+        select(Download.media_id)
+        .where(col(Download.file_exists).is_(True))
+        .distinct()
+    )
     _detected = len(_session.exec(statement).all())
 
     # Movies Total
