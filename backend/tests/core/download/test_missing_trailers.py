@@ -209,3 +209,72 @@ async def test_download_missing_trailers_no_profiles():
 
         # Generator is created once before the early return on empty profiles
         assert mock_db_manager_read_all.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_download_missing_trailers_preview_mode():
+    """Phase 3: downloads_enabled=False runs the preview pass and downloads
+    nothing — the media generator is never even opened."""
+    from unittest.mock import AsyncMock
+
+    with patch(
+        "core.download.trailers.missing.app_settings"
+    ) as mock_settings, patch(
+        "core.download.trailers.missing.downloads_ready", return_value=True
+    ), patch(
+        "core.download.trailers.missing._run_preview_pass",
+        new_callable=AsyncMock,
+    ) as mock_preview, patch(
+        "core.download.trailers.missing.media_manager.read_all_generator"
+    ) as mock_read_all:
+        mock_settings.monitor_enabled = True
+        mock_settings.downloads_enabled = False
+
+        await download_missing_trailers()
+
+        mock_preview.assert_awaited_once()
+        mock_read_all.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_preview_pass_publishes_would_download_list():
+    """The preview pass logs/broadcasts the pending summary and never
+    touches the downloader."""
+    from unittest.mock import AsyncMock
+    from core.download.trailers.missing import _run_preview_pass
+    from core.download.trailers.pending import (
+        PendingSummary,
+        PendingSummaryItem,
+    )
+
+    summary = PendingSummary(
+        total_media=1,
+        pending_pairs=1,
+        backoff_pairs=0,
+        items=[
+            PendingSummaryItem(
+                media_id=2,
+                title="Preview Movie",
+                is_movie=True,
+                profile_id=1,
+                profile_name="Movie Trailers",
+                reason="pending",
+                next_eligible_at=None,
+            )
+        ],
+        limit=1000,
+        offset=0,
+    )
+    with patch(
+        "core.download.trailers.pending.compute_library_pending",
+        return_value=summary,
+    ) as mock_compute, patch(
+        "api.v1.websockets.ws_manager.broadcast", new_callable=AsyncMock
+    ) as mock_broadcast:
+        await _run_preview_pass()
+
+        mock_compute.assert_called_once()
+        assert mock_broadcast.await_count == 1
+        message = mock_broadcast.await_args[0][0]
+        assert "Preview mode" in message
+        assert "1 trailer(s)" in message

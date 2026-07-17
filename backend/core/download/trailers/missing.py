@@ -160,6 +160,40 @@ def _filter_backoff_eligible(
     return eligible
 
 
+_PREVIEW_LOG_LIMIT = 25
+
+
+async def _run_preview_pass() -> None:
+    """Downloads disabled: publish the would-download list instead.
+
+    Uses the same library-wide pending computation as GET /media/pending,
+    which itself reuses the task's exact satisfaction rule — the preview is
+    the real work list, not an estimate."""
+    from api.v1.websockets import ws_manager
+    from core.download.trailers.pending import compute_library_pending
+
+    summary = compute_library_pending(limit=1000)
+    would_download = [i for i in summary.items if i.reason == "pending"]
+    for item in would_download[:_PREVIEW_LOG_LIMIT]:
+        logger.info(
+            f"PREVIEW would download: '{item.title}' [{item.media_id}]"
+            f" with profile '{item.profile_name}'"
+        )
+    if len(would_download) > _PREVIEW_LOG_LIMIT:
+        logger.info(
+            f"PREVIEW … and {len(would_download) - _PREVIEW_LOG_LIMIT} more"
+            " (see the pending downloads view for the full list)."
+        )
+    msg = (
+        f"Preview mode: {summary.pending_pairs} trailer(s) across"
+        f" {summary.total_media} media item(s) would be downloaded"
+        f" ({summary.backoff_pairs} backing off). Enable downloads in"
+        " settings to perform them."
+    )
+    logger.info(msg)
+    await ws_manager.broadcast(msg, "Info", reload="none")
+
+
 async def download_missing_trailers(
     _stop_event: threading.Event | None = None,
 ) -> None:
@@ -183,6 +217,13 @@ async def download_missing_trailers(
             " skipping this download run. It will proceed on a later run"
             " once the passes finish (usually within minutes of startup)."
         )
+        return
+
+    # Preview mode (Phase 3): compute and publish what this run WOULD do,
+    # download nothing. Gates ONLY the scheduled downloads — scans, syncs
+    # and attribution keep running, and manual downloads still work.
+    if not app_settings.downloads_enabled:
+        await _run_preview_pass()
         return
 
     # Defensive: no in-flight entries can survive between runs (the registry

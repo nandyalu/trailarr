@@ -53,6 +53,7 @@ class Settings(BaseModel):
     delete_corrupted_trailers: bool
     delete_trailer_connection: bool
     delete_trailer_media: bool
+    downloads_enabled: bool
     ffmpeg_timeout: int
     files_full_scan: bool
     gpu_available_amd: bool

@@ -266,6 +266,7 @@ class _Config:
             "delete_trailer_connection": self.delete_trailer_connection,
             "files_full_scan": self.files_full_scan,
             "delete_trailer_media": self.delete_trailer_media,
+            "downloads_enabled": self.downloads_enabled,
             "ffmpeg_timeout": self.ffmpeg_timeout,
             "gpu_available_nvidia": self.gpu_available_nvidia,
             "gpu_available_intel": self.gpu_available_intel,
@@ -408,6 +409,15 @@ class _Config:
 
     monitor_enabled = bool_property("MONITOR_ENABLED", default=True)
     """Monitor enabled for the application.
+        - Default is True.
+        - Valid values are True/False."""
+
+    downloads_enabled = bool_property("DOWNLOADS_ENABLED", default=True)
+    """Whether the scheduled download task actually downloads (Phase 3).
+        When False the app runs in PREVIEW mode: the task computes and
+        publishes what it WOULD download but downloads nothing. Scans,
+        syncs and attribution keep running (they feed the preview), and
+        manual downloads still work (explicit user intent).
         - Default is True.
         - Valid values are True/False."""
 
