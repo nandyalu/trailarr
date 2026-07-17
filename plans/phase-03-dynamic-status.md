@@ -1,6 +1,6 @@
 # Phase 3 — Dynamic Status
 
-**Status:** in progress (July 2026, branch `feat/phase-03-dynamic-status` off dev) · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev — merge into dev after v0.10.0 ships; releases with Phase 4) · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
 
 ## Objective
 
@@ -139,3 +139,31 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
 Stored `status` no longer read anywhere (grep `\.status` in backend/frontend media
 paths); stuck-status impossible by construction; matrix visible on details; stats/
 filters/sorts equivalent on config-dev; Docs section executed.
+
+## Verification record (July 2026)
+
+- **Suites:** backend 808 passed; frontend 69 passed + production build green.
+- **Grep audit:** backend `.status` occurrences are mirror WRITES in
+  `manager/media/update.py` only; custom filters evaluate against MediaRead
+  (computed). Frontend reads computed status from `combinedMedia`; the stored
+  value survives only as the deliberate first-paint fallback (W5) and is
+  sanitized in `mapMedia` (legacy `downloading` can never surface).
+- **Synthetic 1,700-item scratch env:** W4 generator full iteration 0.53s
+  (computed DOWNLOADED count == download rows); W8 library pending 0.32s;
+  old-vs-new trailers_detected parity exact; poisoned mirror row
+  (trailer_exists=0/status=MISSING with active download) computes DOWNLOADED.
+- **config-dev (fresh copy of the maintainer's real 3,608-item library):**
+  untracked count 0 (P2 precondition holds); stats parity EXACT
+  (old 2,738 == new 2,738, zero disagreement rows either direction); library
+  pending 49ms → 56 real pending pairs; `/media/downloading` == [] on fresh
+  boot; headless-Chromium drive of home/movies/details → 0 console errors,
+  preview banner + 56-item dialog render, matrix shows the real 3-profile
+  setup (Satisfied-own-download / Not matching / Disabled).
+- **W3:** structural (in-memory registry, no DB DOWNLOADING writers — grep +
+  unit tests assert registry empty after failure paths) + fresh-boot [] on the
+  real app. A literal kill -9 during a live stubbed download was NOT run —
+  no real download path exists on the dev machine (media folders absent);
+  revisit during the v0.10.1 release soak if desired.
+- **W6:** MediaRead.status remains in all API responses, populated from the
+  computed value (model validator). `/media/all_raw` intentionally keeps raw
+  column values (frontend derives its own).
