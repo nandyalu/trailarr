@@ -1,6 +1,6 @@
 # Phase 3 — Dynamic Status
 
-**Status:** not started · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
+**Status:** in progress (July 2026, branch `feat/phase-03-dynamic-status` off dev) · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
 
 ## Objective
 
