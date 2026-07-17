@@ -14,10 +14,7 @@ from core.base.database.models.downloadattempt import (
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.profiles import find_matching_profiles
-from core.base.utils.satisfaction import (
-    SatisfactionResult,
-    evaluate_satisfaction,
-)
+from core.base.utils.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader
 from core.download.inflight import inflight_registry
 from core.download.trailers import utils
@@ -105,33 +102,6 @@ def _apply_claims(
             f"Attributed existing download [{download_id}] of"
             f" '{media.title}' [{media.id}] to profile '{_name}' instead of"
             " downloading again."
-        )
-
-
-def _log_signal_disagreements(
-    media: MediaRead,
-    matching_profiles: list[TrailerProfileRead],
-    result: SatisfactionResult,
-) -> None:
-    """Bake-window instrumentation (remove in Phase 3): the legacy engine
-    downloaded for every matching profile; log each matching profile the
-    satisfaction rule deems already satisfied, so real installs audit the
-    new engine during the v0.10.x cycle."""
-    unsatisfied_ids = {p.id for p in result.unsatisfied}
-    claimed_ids = {profile_id for _, profile_id in result.claims}
-    for profile in matching_profiles:
-        if profile.id in unsatisfied_ids:
-            continue
-        if result.fully_satisfied_by_stop_monitoring:
-            via = "stop_monitoring"
-        elif profile.id in claimed_ids:
-            via = "claim"
-        else:
-            via = "own_download"
-        logger.info(
-            f"SIGNAL-DISAGREE media={media.id} profile={profile.id}"
-            f" trailer_exists={media.trailer_exists} satisfied=True"
-            f" via={via}"
         )
 
 
@@ -293,7 +263,6 @@ async def download_missing_trailers(
             )
             if result.claims:
                 _apply_claims(db_media, result.claims, profiles_by_id)
-            _log_signal_disagreements(db_media, matching_profiles, result)
             if not result.unsatisfied:
                 processed_media_ids.add(db_media.id)
                 continue

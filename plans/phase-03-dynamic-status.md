@@ -52,6 +52,23 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
    preview until the user explicitly enables downloads. Addresses the
    mass-download-fear class (#36, #435).
 
+## Deletion record (README upgrade-safety rule 2)
+
+- **`fix_trailer_exists_flags` (core/tasks/startup_fixes.py) — DELETED.**
+  It healed `trailer_exists=False` for media whose stop_monitoring profile
+  owned an active download, purely so status/filter reads of the flag showed
+  the truth. After this phase nothing reads the flag or stored status for
+  decisions or display: `MediaRead.status` is computed from downloads,
+  built-in filters/stats/recently-downloaded use EXISTS on downloads, and
+  download decisions have been satisfaction-based since Phase 2. The files
+  scan keeps mirroring `trailer_exists` from disk truth (passive, dropped in
+  Phase 5). No later code depends on the deleted pass's effect. It was not a
+  registered startup pass itself — it chained inside `attribute-downloads-v0.9.9`,
+  which continues (attribution + health report are still needed).
+- **`SIGNAL-DISAGREE` shadow logging (missing.py) — DELETED** as planned
+  (Phase 2 bake-window instrumentation; the per-profile `details` on
+  `SatisfactionResult` now expose the same explanation on demand).
+
 ## Wargame
 
 - **W1. Sort by "date downloaded":** table/expanded views sort on `downloaded_at`
