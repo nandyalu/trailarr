@@ -1,6 +1,6 @@
 # Phase 4 — Monitor Becomes User Intent
 
-**Status:** in progress (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3) · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3 — merge into dev after v0.10.0 ships) · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
 
 > **Decision-5 note (July 2026):** v0.10.0 has not shipped yet, so the Phase 2
 > shadow logs the `exclusive` option was conditioned on DO NOT EXIST. Implementing
@@ -119,3 +119,31 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
 Grep-proof: no writer of `media.monitor` outside `update_monitoring(_bulk)` and media
 creation. Zero MONITOR_CHANGED events from a full sync. Release notes carry the SYNC
 walk-through prominently. Docs section executed (FAQ monitor-types link verified).
+
+## Verification record (July 2026)
+
+- **Suites:** backend 816 passed; frontend 69 passed + production build green.
+- **Grep-proof:** the only `db_media.monitor =` writer across managers, syncs and
+  download paths is `update_monitoring` (update.py); creation writes go through
+  `Media.model_validate(media_create)` with the connection default. MediaUpdateDC has
+  no monitor field (structural), and the media-update path excludes `monitor`.
+- **Migration on the real config-dev copy** (fresh copy of the maintainer's
+  3,608-item instance): Sonarr/Radarr `MONITOR_NEW → True`, Discovery
+  `MONITOR_NONE → False`, one mapping log line per connection; no SYNC connections
+  present so the walk-through warning correctly did not fire. Fresh-install chain +
+  lossy downgrade round-trip verified on a scratch DB.
+- **Real double-sync soak:** three full sync cycles against the maintainer's LIVE
+  Arr/Plex servers (Sonarr 255 items, Radarr 3,349 items, Plex refresh) —
+  `SELECT id, monitor FROM media` hash identical before/after all cycles
+  (56 monitored, unchanged), and **0 MONITOR_CHANGED events** (0 events of any kind)
+  produced by the Phase-4 app session. (12 pre-existing MONITOR_CHANGED events in the
+  copied DB predate the copy — they came from the live v0.9.9 instance.)
+- **Headless-Chromium drive:** connection chips show MONITOR NEW / MANUAL; the
+  Radarr editor renders the "Monitor New Media" Yes/No toggle with the migrated value
+  pre-selected and toggles correctly both ways; profile settings page no longer
+  contains "Stop Monitoring"; zero console errors.
+- **W1 note:** the `arr_monitored`-filter replacement path is covered by unit test
+  (fact keeps syncing while monitor stays user-owned) — the full
+  filter→satisfaction→no-download chain rides the existing satisfaction tests.
+- **Decision-5 checkpoint still open:** revisit v0.10.0 bake-window shadow logs for
+  overlapping-profile stop_monitoring usage before releasing v0.10.1 (see note at top).
