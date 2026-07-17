@@ -6,7 +6,6 @@ from sqlmodel import Session
 from core.base.database.models.connection import (
     ArrType,
     Connection,
-    MonitorType,
 )
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.event as event_manager
@@ -32,7 +31,7 @@ def _create_test_connection(
         arr_type=ArrType.RADARR,
         url="http://localhost:7878",
         api_key="test_api_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(connection)
     _session.commit()

@@ -1,5 +1,4 @@
 from abc import ABC
-from functools import cache
 from itertools import batched
 from typing import Any, AsyncGenerator, Callable, Protocol
 
@@ -11,7 +10,7 @@ from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaReadDC
 from core.base.utils.path_utils import apply_path_mappings
 from core.files_handler import FilesHandler
-from core.base.database.models.connection import ConnectionRead, MonitorType
+from core.base.database.models.connection import ConnectionRead
 from core.base.database.models.media import (
     MediaCreate,
     MediaRead,
@@ -51,7 +50,7 @@ class BaseConnectionManager(ABC):
     connection_id: int
     # inline_trailer: bool
     is_movie: bool
-    monitor: MonitorType
+    monitor_new_media: bool
     parse_media: Callable[[int, dict[str, Any]], MediaCreate]
 
     def __init__(
@@ -70,7 +69,7 @@ class BaseConnectionManager(ABC):
         self.path_mappings = [
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
-        self.monitor = connection.monitor
+        self.monitor_new_media = connection.monitor_new_media
         self.arr_manager = arr_manager
         self.parse_media = parse_media
         # self.inline_trailer = inline_trailer
@@ -184,34 +183,6 @@ class BaseConnectionManager(ABC):
             check_inline_file=True,
         )
         return trailer_exists
-
-    @cache
-    def _check_monitoring(
-        self, is_new: bool, trailer_exists: bool, arr_monitored: bool
-    ) -> bool:
-        """Check if the media should be monitored based on the monitor type.\n
-        Args:
-            is_new (bool): Flag indicating media is newly created in database.
-            trailer_exists (bool): Flag indicating if a trailer exists on disk.
-            arr_monitored (bool): Flag indicating if media is monitored in Arr application.\n
-        Returns:
-            bool: True if the media should be monitored, False otherwise."""
-        # If Trailer already exists, no need to monitor
-        if trailer_exists:
-            return False
-        # Disable monitoring if monitor is set to none
-        if self.monitor == MonitorType.MONITOR_NONE:
-            return False
-        # Monitor trailers if set to monitor missing
-        if self.monitor == MonitorType.MONITOR_MISSING:
-            return True
-        # Monitor trailers if set to monitor new
-        if self.monitor == MonitorType.MONITOR_NEW:
-            return is_new
-        # Sync monitor based on arr monitor status
-        if self.monitor == MonitorType.MONITOR_SYNC:
-            return arr_monitored
-        return False
 
     def create_or_update_bulk(
         self, media_data: list[MediaCreate]
@@ -332,10 +303,15 @@ class BaseConnectionManager(ABC):
         if len(parsed_media) == 0:
             logger.debug("No media to process")
             return
+        # Phase 4: monitor is user intent. The connection's monitor_new_media
+        # bool is applied ONCE at creation; the media-update path excludes
+        # `monitor`, so this can never overwrite an existing row's flag.
+        for media_create in parsed_media:
+            media_create.monitor = self.monitor_new_media
         # Create or update the media in the database
         media_res = self.create_or_update_bulk(parsed_media)
-        # Check if media has trailer and should be monitored
-        update_list: list[tuple[int, bool, bool]] = []
+        # Reconcile the trailer_exists mirror (monitor is NOT written here)
+        update_list: list[tuple[int, bool]] = []
         for media_read in media_res:
             # Check if trailer exists
             trailer_exists = None
@@ -349,25 +325,6 @@ class BaseConnectionManager(ABC):
                     )
                 else:
                     trailer_exists = media_read.trailer_exists
-            # Check if monitor is already enabled
-            if media_read.monitor:
-                monitor_media = True
-            else:
-                # Else, check if monitor needs to be enabled now
-                monitor_media = self._check_monitoring(
-                    media_read.created,
-                    trailer_exists,
-                    media_read.arr_monitored,
-                )
-            # Track monitor change event if monitor status changed
-            if monitor_media != media_read.monitor:
-                event_manager.track_monitor_changed(
-                    media_id=media_read.id,
-                    old_monitor=media_read.monitor,
-                    new_monitor=monitor_media,
-                    source=EventSource.SYSTEM,
-                    source_detail="ConnectionRefresh",
-                )
             # Track trailer detected if existing media now has a trailer
             trailer_newly_detected = (
                 not media_read.created
@@ -380,9 +337,9 @@ class BaseConnectionManager(ABC):
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",
                 )
-            update_list.append((media_read.id, monitor_media, trailer_exists))
-        # Update the database with trailer and monitoring status
-        media_manager.update_monitor_and_trailer_exists_bulk(update_list)
+            update_list.append((media_read.id, trailer_exists))
+        # Update the database with trailer status
+        media_manager.update_trailer_exists_bulk(update_list)
         return
 
     async def refresh(self):

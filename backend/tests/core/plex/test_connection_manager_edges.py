@@ -1,9 +1,10 @@
 """Edge-case unit tests for PlexConnectionManager.
 
 Covers branches not exercised by the large-library integration test:
-  - _check_monitoring with trailer=True and MONITOR_NONE
+  - creation-time monitor default (Phase 4: monitor is user intent; syncs
+    never rewrite it)
   - _process_item_chunk: empty chunk, filtered items, youtube_id, trailer detected,
-    existing-item monitor change, empty folder_path
+    empty folder_path
   - _process_show_section: leaf with no key, commonpath ValueError
   - _process_section: untracked section, unsupported type, _persist_section_keys
   - refresh: no path mappings, section exception
@@ -17,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection, MonitorType
+from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.media as media_manager
@@ -37,7 +38,7 @@ def _make_plex_conn(name: str, *, _session: Session = None) -> int:  # type: ign
         arr_type=ArrType.PLEX,
         url="http://plex:32400",
         api_key="tok",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()
@@ -75,14 +76,14 @@ def _build_manager(
     conn_id: int,
     prefix: str,
     *,
-    monitor: MonitorType = MonitorType.MONITOR_MISSING,
+    monitor_new_media: bool = True,
 ) -> PlexConnectionManager:
     connection = SimpleNamespace(
         id=conn_id,
         name=f"Edge-{prefix}",
         url="http://plex:32400",
         api_key="tok",
-        monitor=monitor,
+        monitor_new_media=monitor_new_media,
         path_mappings=[
             _pm(f"/plex/{prefix}/movies"),
             _pm(f"/plex/{prefix}/shows"),
@@ -95,28 +96,57 @@ def _build_manager(
 
 
 # ---------------------------------------------------------------------------
-# _check_monitoring
+# Creation-time monitor default (Phase 4)
 # ---------------------------------------------------------------------------
 
-class TestCheckMonitoring:
-    def _mgr(self, monitor: MonitorType) -> PlexConnectionManager:
-        conn_id = _make_plex_conn(f"ChkMon-{monitor.value}")
-        return _build_manager(conn_id, f"chkmon{monitor.value}", monitor=monitor)
+class TestCreationMonitorDefault:
+    """Phase 4: the connection's monitor_new_media bool is applied once at
+    creation; trailer presence no longer influences the monitor flag."""
 
-    def test_trailer_exists_returns_false(self):
-        """If a trailer already exists, monitoring is False regardless of mode (line 121)."""
-        mgr = self._mgr(MonitorType.MONITOR_MISSING)
-        assert mgr._check_monitoring(trailer_exists=True) is False
+    def _our_media(self, conn_id: int):
+        return [
+            m
+            for m in media_manager.read_all()
+            if m.connection_id == conn_id
+        ]
 
-    def test_monitor_none_returns_false(self):
-        """MONITOR_NONE always returns False even without a trailer (line 123)."""
-        mgr = self._mgr(MonitorType.MONITOR_NONE)
-        assert mgr._check_monitoring(trailer_exists=False) is False
+    @pytest.mark.asyncio
+    async def _sync_one(self, monitor_new_media: bool, prefix: str,
+                        trailer_return: bool = False):
+        conn_id = _make_plex_conn(f"CrDef-{prefix}")
+        mgr = _build_manager(
+            conn_id, prefix, monitor_new_media=monitor_new_media
+        )
+        section = _section("1", "movie", f"/plex/{prefix}/movies")
+        item = _movie_item(prefix, 0)
+        chunk = [(item, section, True, f"/plex/{prefix}/movies/Film0")]
+        with patch.object(FilesHandler, "check_trailer_exists",
+                          new_callable=AsyncMock,
+                          return_value=trailer_return):
+            await mgr._process_item_chunk(chunk)
+        return conn_id
 
-    def test_monitor_missing_no_trailer_returns_true(self):
-        """MONITOR_MISSING with no trailer → True (control path)."""
-        mgr = self._mgr(MonitorType.MONITOR_MISSING)
-        assert mgr._check_monitoring(trailer_exists=False) is True
+    @pytest.mark.asyncio
+    async def test_new_item_gets_monitor_true(self):
+        import uuid
+        conn_id = await self._sync_one(True, uuid.uuid4().hex[:10])
+        assert [m.monitor for m in self._our_media(conn_id)] == [True]
+
+    @pytest.mark.asyncio
+    async def test_new_item_gets_monitor_false(self):
+        import uuid
+        conn_id = await self._sync_one(False, uuid.uuid4().hex[:10])
+        assert [m.monitor for m in self._our_media(conn_id)] == [False]
+
+    @pytest.mark.asyncio
+    async def test_trailer_on_disk_does_not_flip_monitor(self):
+        """Previously a found trailer forced monitor=False at creation —
+        Phase 4: the creation default stands regardless."""
+        import uuid
+        conn_id = await self._sync_one(
+            True, uuid.uuid4().hex[:10], trailer_return=True
+        )
+        assert [m.monitor for m in self._our_media(conn_id)] == [True]
 
 
 # ---------------------------------------------------------------------------
@@ -192,8 +222,8 @@ class TestProcessItemChunkEdges:
 
     @pytest.mark.asyncio
     async def test_trailer_detected_event_fires_when_trailer_exists(self):
-        """When check_trailer_exists returns True for a new item, TRAILER_DETECTED
-        and an additional MONITOR_CHANGED event are queued (lines 301-320)."""
+        """When check_trailer_exists returns True for a new item, a
+        TRAILER_DETECTED event is queued (monitor is untouched — Phase 4)."""
         item = _movie_item(self._p, 51)
         folder = f"/plex/{self._p}/movies/Film51"
         chunk = [(item, self.section, True, folder)]
@@ -201,53 +231,31 @@ class TestProcessItemChunkEdges:
         assert self.mgr._stats_added == 1
 
     @pytest.mark.asyncio
-    async def test_existing_item_monitor_change_increments_updated(self):
-        """An existing Plex-only item whose computed monitor differs from stored
-        value triggers a MONITOR_CHANGED event and increments _stats_updated
-        (lines 324-344)."""
-        # First sync: create the item (no trailer → monitor=True)
+    async def test_user_monitor_choice_survives_resync(self):
+        """Phase 4 regression: syncs never rewrite the monitor flag — a
+        user's unmonitor choice survives any number of re-syncs."""
+        # First sync: create the item (creation default monitor=True)
         item = _movie_item(self._p, 100)
         folder = f"/plex/{self._p}/movies/Film100"
         chunk = [(item, self.section, True, folder)]
         await self._run_chunk(chunk, trailer_return=False)
         assert self.mgr._stats_added == 1
 
-        # Manually flip monitor to False so next sync detects a change
+        # User unmonitors the item
         media_list = media_manager.read_all()
         our_media = [m for m in media_list if m.connection_id == self.conn_id]
         assert our_media, "Item should be in DB after first sync"
         media_manager.update_monitoring(our_media[-1].id, monitor=False)
 
-        # Second sync: MONITOR_MISSING + no trailer → computed=True, stored=False → change
+        # Second sync: monitor stays False, nothing counts as updated
         await self._run_chunk(chunk, trailer_return=False)
-        assert self.mgr._stats_updated >= 1
-
-    @pytest.mark.asyncio
-    async def test_monitor_new_skips_existing_item_monitor_check(self):
-        """When connection monitor=MONITOR_NEW, existing Plex-only items skip the
-        monitor recalculation block (line 326->343 False branch)."""
-        import uuid
-        p = uuid.uuid4().hex[:10]
-        conn_id = _make_plex_conn(f"MonNew-{p}")
-        mgr = _build_manager(conn_id, p, monitor=MonitorType.MONITOR_NEW)
-        section = _section("1", "movie", f"/plex/{p}/movies")
-
-        item = _movie_item(p, 0)
-        folder = f"/plex/{p}/movies/Film0"
-        chunk = [(item, section, True, folder)]
-
-        # First sync: create the item
-        with patch.object(FilesHandler, "check_trailer_exists",
-                          new_callable=AsyncMock, return_value=False):
-            await mgr._process_item_chunk(chunk)
-        assert mgr._stats_added == 1
-
-        # Second sync: MONITOR_NEW → no monitor recalculation for existing items
-        with patch.object(FilesHandler, "check_trailer_exists",
-                          new_callable=AsyncMock, return_value=False):
-            await mgr._process_item_chunk(chunk)
-        # Not updated (no plex_fields_changed, no monitor_changed)
-        assert mgr._stats_updated == 0
+        refreshed = [
+            m
+            for m in media_manager.read_all()
+            if m.connection_id == self.conn_id
+        ]
+        assert [m.monitor for m in refreshed] == [False]
+        assert self.mgr._stats_updated == 0
 
 
 # ---------------------------------------------------------------------------
@@ -390,7 +398,7 @@ class TestProcessSection:
             name=f"PersistKey-{p}",
             url="http://plex:32400",
             api_key="tok",
-            monitor=MonitorType.MONITOR_MISSING,
+            monitor_new_media=True,
             path_mappings=[pm_none],
         )
         with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
@@ -424,7 +432,7 @@ class TestRefreshEdges:
             name=f"RefEdge-{self._p}",
             url="http://plex:32400",
             api_key="tok",
-            monitor=MonitorType.MONITOR_MISSING,
+            monitor_new_media=True,
             path_mappings=path_mappings,
         )
         with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
@@ -493,7 +501,7 @@ class TestTriggerItemScan:
             name=f"TrigScan-{self._p}",
             url="http://plex:32400",
             api_key="tok",
-            monitor=MonitorType.MONITOR_MISSING,
+            monitor_new_media=True,
             path_mappings=[_pm(f"/plex/{self._p}/movies")],
         )
         with patch("core.plex.connection_manager.PlexAPI") as MockAPI:

@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection, MonitorType
+from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.media as media_manager
@@ -22,7 +22,7 @@ def _make_connection(
         arr_type=arr_type,
         url="http://localhost:7878",
         api_key="test_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()

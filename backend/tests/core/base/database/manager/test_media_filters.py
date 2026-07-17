@@ -13,7 +13,6 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import (
     ArrType,
     Connection,
-    MonitorType,
 )
 from core.base.database.models.download import DownloadCreate
 from core.base.database.models.media import MediaCreate, MonitorStatus
@@ -32,7 +31,7 @@ def _make_connection(
         arr_type=ArrType.RADARR,
         url="http://localhost:7878",
         api_key="test_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()

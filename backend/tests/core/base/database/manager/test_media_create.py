@@ -3,7 +3,7 @@
 import pytest
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection, MonitorType
+from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.media as media_manager
@@ -17,7 +17,7 @@ def _make_plex_connection(name: str = "Plex", *, _session: Session = None) -> Co
         arr_type=ArrType.PLEX,
         url="http://plex:32400",
         api_key="plex_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()
@@ -35,7 +35,7 @@ def _make_connection(
         arr_type=ArrType.RADARR,
         url="http://localhost:7878",
         api_key="test_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()

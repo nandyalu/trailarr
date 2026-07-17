@@ -8,7 +8,6 @@ from core.base.database.models.connection import (
     ConnectionBase,
     ConnectionCreate,
     ConnectionUpdate,
-    MonitorType,
 )
 from exceptions import InvalidResponseError, ItemNotFoundError
 from core.radarr.api_manager import RadarrManager
@@ -29,13 +28,13 @@ connection = ConnectionCreate(
     arr_type=ArrType.RADARR,
     url="http://example.com",
     api_key="API_KEY",
-    monitor=MonitorType.MONITOR_NEW,
+    monitor_new_media=True,
     path_mappings=[],
 )
 
 # Default connection update object to use in tests
 connection_update = ConnectionUpdate(
-    monitor=MonitorType.MONITOR_SYNC, path_mappings=[]
+    monitor_new_media=True, path_mappings=[]
 )
 
 # Default Connection id for create
@@ -102,7 +101,7 @@ class TestConnectionDatabaseHandler:
         assert result.arr_type == connection.arr_type
         assert result.url == connection.url
         assert result.api_key == connection.api_key
-        assert result.monitor == connection.monitor
+        assert result.monitor_new_media == connection.monitor_new_media
 
     def test_read_connection_fail(self):
         # Call the read_connection method and assert an ItemNotFoundError is raised
@@ -141,7 +140,7 @@ class TestConnectionDatabaseHandler:
         assert update_result.arr_type == connection.arr_type
         assert update_result.url == connection.url
         assert update_result.api_key == connection.api_key
-        assert update_result.monitor == connection_update.monitor
+        assert update_result.monitor_new_media == connection_update.monitor_new_media
 
     @pytest.mark.asyncio
     async def test_update_connection_fail(self):
@@ -201,7 +200,7 @@ class TestConnectionValidation:
             arr_type=ArrType.RADARR,
             url="http://example.com",
             api_key="API_KEY",
-            monitor=MonitorType.MONITOR_NEW,
+            monitor_new_media=True,
         )
 
         # Mock the get_system_status function to return a success message
@@ -225,7 +224,7 @@ class TestConnectionValidation:
             arr_type=ArrType.RADARR,
             url="http://example.com",
             api_key="API_KEY",
-            monitor=MonitorType.MONITOR_NEW,
+            monitor_new_media=True,
         )
 
         # Mock the get_system_status function to raise an Exception
@@ -253,7 +252,7 @@ class TestConnectionValidation:
             arr_type=ArrType.SONARR,
             url="http://example.com",
             api_key="API_KEY",
-            monitor=MonitorType.MONITOR_NEW,
+            monitor_new_media=True,
         )
 
         # Mock the get_system_status function to raise an Exception

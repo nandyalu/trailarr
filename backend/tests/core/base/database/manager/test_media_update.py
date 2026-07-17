@@ -3,7 +3,7 @@
 import pytest
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection, MonitorType
+from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.media as media_manager
@@ -19,7 +19,7 @@ def _create_test_connection(
         arr_type=ArrType.PLEX,
         url="http://localhost:32400",
         api_key="test-token",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(connection)
     _session.commit()
