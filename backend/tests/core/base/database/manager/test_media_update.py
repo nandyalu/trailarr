@@ -75,3 +75,76 @@ class TestUpdatePlexTrailer:
         updated = media_manager.read(self.media.id)
         assert updated.title == original_title
         assert updated.status == original_status
+
+
+class TestUpdateMonitoringPlainWrite:
+    """Phase 4: the monitor toggle is pure user intent — a plain flag write
+    with no trailer_exists refusals and no download-path coupling."""
+
+    def _make_media(self, txdb_id: str, **overrides) -> int:
+        conn = _create_test_connection()
+        create = MediaCreate(
+            connection_id=conn.id,
+            arr_id=1,
+            is_movie=True,
+            title=f"Monitor Test {txdb_id}",
+            txdb_id=txdb_id,
+            **overrides,
+        )
+        result = media_manager.create_or_update_bulk([create])
+        return result[0][0].id
+
+    def test_monitor_true_allowed_even_with_trailer(self):
+        """The old guardrail refused monitoring media whose trailer exists;
+        user intent now always wins (satisfaction prevents re-downloads)."""
+        media_id = self._make_media("mon1", trailer_exists=True)
+        msg, updated = media_manager.update_monitoring(media_id, True)
+        assert updated is True
+        assert media_manager.read(media_id).monitor is True
+
+    def test_monitor_false_plain_write(self):
+        media_id = self._make_media("mon2", monitor=True)
+        msg, updated = media_manager.update_monitoring(media_id, False)
+        assert updated is True
+        assert media_manager.read(media_id).monitor is False
+
+    def test_noop_when_already_set(self):
+        media_id = self._make_media("mon3", monitor=True)
+        msg, updated = media_manager.update_monitoring(media_id, True)
+        assert updated is False
+        assert "already" in msg
+
+
+class TestDownloadsCannotWriteMonitor:
+    """Phase 4 invariant #6: download-path status writes never touch the
+    monitor flag (MediaUpdateDC deliberately has no monitor field)."""
+
+    def test_update_media_status_leaves_monitor_untouched(self):
+        from core.base.database.models.helpers import MediaUpdateDC
+        from core.base.database.models.media import MonitorStatus
+
+        conn = _create_test_connection()
+        create = MediaCreate(
+            connection_id=conn.id,
+            arr_id=2,
+            is_movie=True,
+            title="Monitor Untouched",
+            txdb_id="mon4",
+            monitor=True,
+        )
+        media_id = media_manager.create_or_update_bulk([create])[0][0].id
+
+        media_manager.update_media_status(
+            MediaUpdateDC(
+                id=media_id,
+                status=MonitorStatus.DOWNLOADED,
+                trailer_exists=True,
+            )
+        )
+        media = media_manager.read(media_id)
+        assert media.monitor is True  # unchanged despite trailer_exists=True
+
+    def test_media_update_dc_has_no_monitor_field(self):
+        from core.base.database.models.helpers import MediaUpdateDC
+
+        assert "monitor" not in MediaUpdateDC.__slots__

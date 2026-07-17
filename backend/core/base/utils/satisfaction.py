@@ -10,8 +10,8 @@ class ProfileSatisfaction:
 
     Built inside the SAME loop as the decision itself, so the pending
     endpoint / details matrix can never disagree with the download task.
-    `via` is one of "own_download", "claim", "stop_monitoring" when
-    satisfied; None when the profile is unsatisfied (pending).
+    `via` is one of "own_download", "claim" when satisfied; None when the
+    profile is unsatisfied (pending).
     """
 
     profile_id: int
@@ -29,56 +29,32 @@ class SatisfactionResult:
     - `claims`: (download_id, profile_id) pairs where an unattributed active
       download should be attributed to a matching profile instead of
       downloading again. The caller persists these.
-    - `fully_satisfied_by_stop_monitoring`: legacy stop_monitoring carve-out
-      hit (see below) — media needs nothing regardless of other profiles.
     - `details`: one ProfileSatisfaction per matching profile (Phase 3) —
       the explanation feed for the pending endpoint.
     """
 
     unsatisfied: list[TrailerProfileRead] = field(default_factory=list)
     claims: list[tuple[int, int]] = field(default_factory=list)
-    fully_satisfied_by_stop_monitoring: bool = False
     details: list[ProfileSatisfaction] = field(default_factory=list)
 
 
 def evaluate_satisfaction(
     media: MediaRead,
     matching_profiles: list[TrailerProfileRead],
-    profiles_by_id: dict[int, TrailerProfileRead],
 ) -> SatisfactionResult:
     """THE Phase-2 rule: a profile is satisfied iff an active
     (file_exists=True) download exists with its profile_id, or an
     unattributed active download can be claimed for it. Downloads — not the
     trailer_exists flag — decide what still needs downloading.
 
-    Legacy carve-out (preserves pre-v0.10 download volume): if ANY active
-    download belongs to a profile with stop_monitoring=True, the media is
-    fully satisfied — previously that download would have disabled
-    monitoring, so the remaining profiles never ran. Users who configured
-    stop_monitoring=False (multi-trailer setups) get one download per
-    matching profile, exactly as they configured.
+    Phase 4 removed the legacy stop_monitoring carve-out: satisfaction is
+    purely per-profile ownership now. Users with multiple profiles matching
+    the same media get one download per profile — exactly what overlapping
+    profiles configure.
 
     Pure function: no I/O, no writes. `media.downloads` must be loaded.
     """
     active = [d for d in media.downloads if d.file_exists]
-
-    for download in active:
-        owner = profiles_by_id.get(download.profile_id)
-        if owner is not None and owner.stop_monitoring:
-            return SatisfactionResult(
-                fully_satisfied_by_stop_monitoring=True,
-                details=[
-                    ProfileSatisfaction(
-                        profile_id=profile.id,
-                        satisfied=True,
-                        satisfied_by=download.id,
-                        via="stop_monitoring",
-                    )
-                    for profile in sorted(
-                        matching_profiles, key=lambda p: p.priority
-                    )
-                ],
-            )
 
     used_profile_ids = {d.profile_id for d in active if d.profile_id}
     own_download_ids = {}

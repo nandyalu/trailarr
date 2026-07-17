@@ -1,6 +1,14 @@
 # Phase 4 — Monitor Becomes User Intent
 
-**Status:** not started · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
+**Status:** in progress (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3) · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
+
+> **Decision-5 note (July 2026):** v0.10.0 has not shipped yet, so the Phase 2
+> shadow logs the `exclusive` option was conditioned on DO NOT EXIST. Implementing
+> the stated default path (remove stop_monitoring, no replacement option).
+> **Checkpoint before releasing v0.10.1:** review the v0.10.0 bake-window
+> SIGNAL-DISAGREE logs (via=stop_monitoring on media with >1 matching profile);
+> if real overlapping-profile setups show up, add the `exclusive` per-profile
+> bool then.
 
 ## Objective
 

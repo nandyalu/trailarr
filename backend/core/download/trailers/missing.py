@@ -239,9 +239,9 @@ async def download_missing_trailers(
             )
             return
 
-        # All profiles (incl. disabled) — download ownership is about
-        # identity, not activity: a disabled profile's downloads still
-        # satisfy it, and its stop_monitoring carve-out still applies.
+        # All profiles (incl. disabled) — used for claim logging; download
+        # ownership is about identity, not activity: a disabled profile's
+        # downloads still satisfy it.
         profiles_by_id = {
             p.id: p for p in trailer_profiles if p.id is not None
         }
@@ -258,9 +258,7 @@ async def download_missing_trailers(
             )
             if not matching_profiles:
                 continue
-            result = evaluate_satisfaction(
-                db_media, matching_profiles, profiles_by_id
-            )
+            result = evaluate_satisfaction(db_media, matching_profiles)
             if result.claims:
                 _apply_claims(db_media, result.claims, profiles_by_id)
             if not result.unsatisfied:
@@ -356,16 +354,8 @@ async def _process_single_media_item(
                 download_attempted = True
                 successful_downloads += 1
                 # (attempt record cleared inside download_trailer on success)
-                if profile.stop_monitoring:
-                    # Legacy semantics preserved (deprecated — Phase 4):
-                    # remaining profiles are considered fully satisfied via
-                    # the satisfaction rule's stop_monitoring carve-out.
-                    logger.info(
-                        f"Skipping remaining profiles for {media.title} after"
-                        f" successful download with profile: {_profile_name}"
-                        " (Stop Monitoring is enabled on it)"
-                    )
-                    break
+                # Phase 4: stop_monitoring is no longer honored — every
+                # unsatisfied matching profile gets its download.
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(

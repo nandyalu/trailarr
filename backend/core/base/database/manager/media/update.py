@@ -137,12 +137,8 @@ def update_media_status(
         db_media.updated_at = datetime.now(timezone.utc)
     if media_update.trailer_exists is not None:
         db_media.trailer_exists = media_update.trailer_exists
-    # If trailer exists, disable monitoring
-    if db_media.trailer_exists:
-        db_media.monitor = False
-    else:
-        db_media.monitor = media_update.monitor
-    # Update status based on monitor status and trailer existence if not downloading
+    # Phase 4: downloads never write `monitor` — it is user intent. Only
+    # the status mirror (and trailer facts below) are persisted here.
     db_media.status = base.get_status(
         db_media.monitor, db_media.trailer_exists, media_update.status
     )
@@ -179,40 +175,29 @@ def update_monitoring(
         ItemNotFoundError: If the media item with provided id doesn't exist.
     """
     db_media = base._get_db_item(media_id, _session)
-    if db_media.monitor != monitor:
-        db_media.updated_at = datetime.now(timezone.utc)
     # Check if the monitor status is already set to the same value
     if db_media.monitor == monitor:
         msg = f"Media '{db_media.title}' [{db_media.id}] is already"
         msg += " monitored!" if monitor else " not monitored!"
         return msg, False
-    # Monitor = True
-    if monitor:
-        # If trailer exists, change nothing!
-        if db_media.trailer_exists:
-            msg = (
-                f"Media '{db_media.title}' [{db_media.id}] already has a"
-                " trailer!"
-            )
-            return msg, False
-        # Trailer doesn't exist, set monitor status
-        db_media.monitor = True
-        db_media.status = MonitorStatus.MONITORED
-        _session.add(db_media)
-        if _commit:
-            _session.commit()
-        msg = f"Media '{db_media.title}' [{db_media.id}] is now monitored"
-        return msg, True
-    # Monitor = False
-    # If trailer exists, set status to downloaded, else set to missing
-    db_media.monitor = False
+    # Phase 4: monitor is pure user intent — a plain flag write with no
+    # trailer_exists refusals or status coupling. Whether a trailer already
+    # exists is the satisfaction rule's concern, not the toggle's.
+    db_media.monitor = monitor
+    db_media.updated_at = datetime.now(timezone.utc)
+    # Keep the passive status mirror roughly coherent until Phase 5
     db_media.status = base.get_status(
         db_media.monitor, db_media.trailer_exists, db_media.status
     )
-    msg = f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
     _session.add(db_media)
     if _commit:
         _session.commit()
+    if monitor:
+        msg = f"Media '{db_media.title}' [{db_media.id}] is now monitored"
+    else:
+        msg = (
+            f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
+        )
     return msg, True
 
 

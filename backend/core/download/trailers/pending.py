@@ -35,7 +35,7 @@ class MediaPendingProfile(BaseModel):
     matches: bool
     satisfied: bool
     satisfied_by: int | None  # download id
-    satisfied_via: str | None  # "own_download" | "claim" | "stop_monitoring"
+    satisfied_via: str | None  # "own_download" | "claim"
     pending: bool
     backing_off: bool
     attempt_count: int
@@ -93,7 +93,6 @@ def compute_media_pending(
             for a in attempt_manager.read_for_media(media.id)
         }
     enabled_profiles = [p for p in all_profiles if p.enabled]
-    profiles_by_id = {p.id: p for p in all_profiles if p.id is not None}
 
     # `matches` is display info for ALL profiles; the engine run below only
     # considers enabled ones (identical to the download task).
@@ -101,9 +100,7 @@ def compute_media_pending(
         p.id for p in find_matching_profiles(media, all_profiles)
     }
     result = evaluate_satisfaction(
-        media,
-        find_matching_profiles(media, enabled_profiles),
-        profiles_by_id,
+        media, find_matching_profiles(media, enabled_profiles)
     )
     details_by_id = {d.profile_id: d for d in result.details}
     unsatisfied_ids = {p.id for p in result.unsatisfied}
@@ -164,7 +161,6 @@ def compute_library_pending(
     limit = max(1, min(limit, 1000))
     all_profiles = trailerprofile.get_trailerprofiles()
     enabled_profiles = [p for p in all_profiles if p.enabled]
-    profiles_by_id = {p.id: p for p in all_profiles if p.id is not None}
 
     items: list[PendingSummaryItem] = []
     pending_media_ids: set[int] = set()
@@ -181,7 +177,7 @@ def compute_library_pending(
             matching = find_matching_profiles(media, enabled_profiles)
             if not matching:
                 continue
-            result = evaluate_satisfaction(media, matching, profiles_by_id)
+            result = evaluate_satisfaction(media, matching)
             if not result.unsatisfied:
                 continue
             pending_media_ids.add(media.id)
