@@ -42,6 +42,23 @@ export function mapDownload(download: any): Download {
   };
 }
 
+/** A media item with a trailer download currently in flight (runtime
+ * state from the backend's in-memory registry — never stored in the DB). */
+export interface InflightDownload {
+  media_id: number;
+  profile_id: number;
+}
+
+/** Phase 3: list-level status is computed from downloads + monitor, never
+ * read from the stored column. 'downloading' comes only from the runtime
+ * in-flight overlay (MediaService.downloadingResource). */
+export function computeMediaStatus(monitor: boolean, downloads: Download[], downloading = false): string {
+  if (downloading) return 'downloading';
+  if (downloads.some((download) => download.file_exists)) return 'downloaded';
+  if (monitor) return 'monitored';
+  return 'missing';
+}
+
 export function buildDownloadMap(downloads: Download[]): Map<number, Download[]> {
   const downloadMap = new Map<number, Download[]>();
 
@@ -108,6 +125,9 @@ export function mapMedia(media: any): Media {
     trailer_exists: Boolean(media.trailer_exists),
     monitor: Boolean(media.monitor),
     arr_monitored: Boolean(media.arr_monitored),
+    // The stored status is only a first-paint fallback until the downloads
+    // map arrives; a legacy stuck 'downloading' value must never surface.
+    status: media.status === 'downloading' ? (media.monitor ? 'monitored' : 'missing') : media.status,
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),
