@@ -148,3 +148,64 @@ class TestSatisfaction:
         result = evaluate_satisfaction(media, [], {})
         assert result.unsatisfied == []
         assert result.claims == []
+
+
+class TestSatisfactionDetails:
+    """Phase 3: per-profile explanations built in the SAME decision loop —
+    the pending endpoint feed can never disagree with the download task."""
+
+    def test_own_download_detail(self):
+        p1 = make_profile(1)
+        media = make_media([make_download(7, 1)])
+        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        detail = result.details[0]
+        assert (detail.profile_id, detail.satisfied) == (1, True)
+        assert detail.satisfied_by == 7
+        assert detail.via == "own_download"
+
+    def test_claim_detail(self):
+        p1 = make_profile(1)
+        media = make_media([make_download(9, 0)])
+        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        detail = result.details[0]
+        assert detail.satisfied
+        assert detail.satisfied_by == 9
+        assert detail.via == "claim"
+
+    def test_pending_detail(self):
+        p1 = make_profile(1)
+        media = make_media([])
+        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        detail = result.details[0]
+        assert not detail.satisfied
+        assert detail.satisfied_by is None
+        assert detail.via is None
+
+    def test_stop_monitoring_details_cover_all_matching(self):
+        stopper = make_profile(1, priority=10, stop_monitoring=True)
+        other = make_profile(2, priority=20)
+        media = make_media([make_download(5, 1)])
+        result = evaluate_satisfaction(
+            media, [stopper, other], by_id(stopper, other)
+        )
+        assert [d.profile_id for d in result.details] == [1, 2]
+        assert all(d.satisfied for d in result.details)
+        assert all(d.via == "stop_monitoring" for d in result.details)
+        assert all(d.satisfied_by == 5 for d in result.details)
+
+    def test_details_cover_every_matching_profile_in_priority_order(self):
+        p_own = make_profile(1, priority=10)
+        p_claim = make_profile(2, priority=20)
+        p_pending = make_profile(3, priority=30)
+        media = make_media([make_download(1, 1), make_download(2, 0)])
+        result = evaluate_satisfaction(
+            media,
+            [p_pending, p_claim, p_own],
+            by_id(p_own, p_claim, p_pending),
+        )
+        assert [d.profile_id for d in result.details] == [1, 2, 3]
+        assert [d.via for d in result.details] == [
+            "own_download",
+            "claim",
+            None,
+        ]
