@@ -143,6 +143,10 @@ def get_status(
 ) -> MonitorStatus:
     """🚨This is a private method🚨 \n
     Get the monitor status string based on monitor and trailer_exists flags.\n
+    Phase 3: the stored status is only a passive mirror (MediaRead computes
+    the real status from downloads); DOWNLOADING is runtime-only and never
+    stored, so a legacy stuck DOWNLOADING value is no longer preserved —
+    any later write heals it.\n
     Args:
         monitor (bool): Whether monitoring is enabled for the media.
         trailer_exists (bool): Whether the trailer already exists for the media.
@@ -150,10 +154,7 @@ def get_status(
     Returns:
         MonitorStatus: The monitor status.
     """
-    if status in (
-        MonitorStatus.DOWNLOADING,
-        MonitorStatus.MISSING,
-    ):
+    if status == MonitorStatus.MISSING:
         return status
     if trailer_exists:
         return MonitorStatus.DOWNLOADED

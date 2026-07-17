@@ -14,6 +14,7 @@ from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaUpdateDC
 from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
+from core.download.inflight import inflight_registry
 from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
@@ -120,17 +121,13 @@ async def _notify_plex(media: MediaRead) -> None:
 def __update_media_status(
     media: MediaRead, type: MonitorStatus, profile: TrailerProfileRead
 ):
-    """Update the media status in the database."""
-    if type == MonitorStatus.DOWNLOADING:
-        update = MediaUpdateDC(
-            id=media.id,
-            monitor=True,
-            status=MonitorStatus.DOWNLOADING,
-        )
-        if profile.stop_monitoring:
-            # Save the youtube ID for trailers only (stop_monitoring = True)
-            update.yt_id = media.youtube_trailer_id
-    elif type == MonitorStatus.DOWNLOADED:
+    """Update the media status in the database.
+
+    Phase 3: DOWNLOADING is runtime-only (see core/download/inflight.py) and
+    is never written to the database — status/trailer_exists writes here are
+    passive mirrors kept until Phase 5 drops the columns.
+    """
+    if type == MonitorStatus.DOWNLOADED:
         _monitor = True
         if profile.stop_monitoring:
             # Stop monitoring after download if set in profile and save youtube ID
@@ -282,8 +279,15 @@ async def download_trailer(
         logger.info(f"Download stopped for {media.title} [{media.id}]")
         return False
 
+    # Runtime in-flight state — replaces the old DOWNLOADING status write.
+    # The broadcast tells the frontend to refresh its downloading overlay.
+    inflight_registry.start(media.id, profile.id)
+    await websockets.ws_manager.broadcast(
+        f"Downloading trailer for '{media.title}'",
+        "Info",
+        reload="downloading",
+    )
     try:
-        __update_media_status(media, MonitorStatus.DOWNLOADING, profile)
         # Download the trailer and verify
         output_file, video_info = __download_and_verify_trailer(
             media, video_id, profile, _stop_event=_stop_event
@@ -318,7 +322,13 @@ async def download_trailer(
             f" from ({video_id})"
         )
         logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
+        # Finish BEFORE broadcasting so clients refetching the downloading
+        # overlay on this message no longer see this media in flight. The
+        # downloads reload matters too: computed status derives from it.
+        inflight_registry.finish(media.id)
+        await websockets.ws_manager.broadcast(
+            msg, "Success", reload="media,downloads,downloading"
+        )
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
@@ -342,3 +352,9 @@ async def download_trailer(
         raise DownloadFailedError(
             f"Failed to download trailer for {media.title}"
         )
+    finally:
+        # Safety net for every failure/stop path (retries re-register in
+        # their own frame; the pop is idempotent). Stale entries are also
+        # cleared by task-lifecycle broadcasts and cost at most a lingering
+        # spinner until the next 'downloading' reload.
+        inflight_registry.finish(media.id)

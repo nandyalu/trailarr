@@ -19,6 +19,7 @@ from core.base.utils.satisfaction import (
     evaluate_satisfaction,
 )
 from core.download import trailer as trailer_downloader
+from core.download.inflight import inflight_registry
 from core.download.trailers import utils
 from core.files_handler import FilesHandler
 from core.tasks.startup_passes import downloads_ready
@@ -183,6 +184,11 @@ async def download_missing_trailers(
             " once the passes finish (usually within minutes of startup)."
         )
         return
+
+    # Defensive: no in-flight entries can survive between runs (the registry
+    # is process-local and download_trailer cleans up in finally), but a
+    # fresh task run must never start with a stale overlay.
+    inflight_registry.clear()
 
     # Prune attempt rows for profiles that no longer exist (lazy cleanup)
     all_profiles = trailerprofile.get_trailerprofiles()

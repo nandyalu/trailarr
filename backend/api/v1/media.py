@@ -3,7 +3,12 @@ from warnings import deprecated
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
-from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
+from api.v1.models import (
+    BatchUpdate,
+    ErrorResponse,
+    InflightDownload,
+    SearchMedia,
+)
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 import core.base.database.manager.download as download_manager
@@ -15,6 +20,7 @@ from core.base.database.models.filefolderinfo import FileFolderInfoRead
 from core.base.database.models.download import DownloadRead
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
+from core.download.inflight import inflight_registry
 from core.download.trailers import utils as trailer_utils
 from core.files_handler import FilesHandler
 from core.tasks.files_scan import scan_media_folder
@@ -77,6 +83,20 @@ async def get_all_media_raw() -> list[dict]:
     """
     media_raw = media_manager.read_all_raw()
     return media_raw
+
+
+@media_router.get("/downloading")
+async def get_downloading() -> list[InflightDownload]:
+    """Get the media items with a trailer download currently in flight. \n
+    Runtime state from the in-memory registry — pushed over the websocket
+    with `reload="downloading"` whenever it changes. \n
+    Returns:
+        list[InflightDownload]: In-flight (media_id, profile_id) pairs. \n
+    """
+    return [
+        InflightDownload(media_id=media_id, profile_id=profile_id)
+        for media_id, profile_id in inflight_registry.snapshot().items()
+    ]
 
 
 @media_router.get("/downloads_raw")
