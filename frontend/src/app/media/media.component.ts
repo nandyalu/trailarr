@@ -1,8 +1,12 @@
-import {ChangeDetectionStrategy, Component, effect, inject, OnInit, signal} from '@angular/core';
+import {httpResource} from '@angular/common/http';
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Router, RouterState} from '@angular/router';
+import {Router, RouterLink, RouterState} from '@angular/router';
+import {environment} from '../../environment';
+import {mapPendingSummary, PendingSummary} from '../models/pending';
 import {CustomfilterService} from '../services/customfilter.service';
 import {MediaService} from '../services/media.service';
+import {SettingsService} from '../services/settings.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 import {EditHeaderComponent} from './headers/edit-header/edit-header.component';
 import {NormalHeaderComponent} from './headers/normal-header/normal-header.component';
@@ -12,7 +16,7 @@ import {TableComponent} from './media-cards/table/table.component';
 
 @Component({
   selector: 'app-media',
-  imports: [EditHeaderComponent, ExpandedComponent, FormsModule, LoadIndicatorComponent, NormalHeaderComponent, PosterComponent, TableComponent],
+  imports: [EditHeaderComponent, ExpandedComponent, FormsModule, LoadIndicatorComponent, NormalHeaderComponent, PosterComponent, RouterLink, TableComponent],
   templateUrl: './media.component.html',
   styleUrl: './media.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +24,7 @@ import {TableComponent} from './media-cards/table/table.component';
 export class MediaComponent implements OnInit {
   private readonly customfilterService = inject(CustomfilterService);
   private readonly mediaService = inject(MediaService);
+  private readonly settingsService = inject(SettingsService);
   private readonly router = inject(Router);
 
   // Signals from Media Service
@@ -32,6 +37,27 @@ export class MediaComponent implements OnInit {
 
   // Signals in this component
   protected readonly isLoading = signal<boolean>(true);
+
+  /** Preview mode (Phase 3): automatic downloads are disabled — show the
+   * banner with the would-download list. */
+  protected readonly previewMode = computed(() => this.settingsService.settingsResource.value()?.downloads_enabled === false);
+  protected readonly pendingSummaryResource = httpResource<PendingSummary | null>(
+    () => (this.previewMode() ? {url: environment.apiUrl + environment.media + 'pending', params: {limit: 500}} : undefined),
+    {
+      defaultValue: null,
+      parse: (response) => (response ? mapPendingSummary(response) : null),
+    },
+  );
+  private readonly previewDialog = viewChild<ElementRef<HTMLDialogElement>>('previewDialog');
+
+  protected openPreviewDialog() {
+    this.pendingSummaryResource.reload();
+    this.previewDialog()?.nativeElement.showModal();
+  }
+
+  protected closePreviewDialog() {
+    this.previewDialog()?.nativeElement.close();
+  }
 
   /** Applies the 'Unknown Profile' quick filter from the review banner */
   protected reviewUnknownProfiles() {

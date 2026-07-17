@@ -31,6 +31,16 @@
         [selectedOption]="settings()?.monitor_enabled"
         (optionChange)="updateSetting('monitor_enabled', $event)"
       />
+      <app-options-setting
+        name="Downloads Enabled"
+        description="Automatically download trailers for monitored media."
+        descriptionExtra="When disabled, Trailarr runs in preview mode: scans and syncs keep running and the app shows what it would download, but nothing is downloaded automatically. Manual downloads still work."
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.downloads_enabled"
+        [colorType]="'warning'"
+        [colorTypeOption]="'false'"
+        (optionChange)="updateSetting('downloads_enabled', $event)"
+      />
       <app-text-setting
         name="Monitor Interval"
         description="Frequency (in minutes) to get new media data from Radarr/Sonarr."
