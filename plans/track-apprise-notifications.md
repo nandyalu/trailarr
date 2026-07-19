@@ -1,6 +1,6 @@
 # Parallel Track — Apprise Notifications
 
-**Status:** IMPLEMENTED (July 2026, on dev) — batching via 30s window (≤2 msgs/min/channel, stricter than the 10/min cap); real-webhook Discord test still pending (maintainer) · **Release:** v0.10.0 (alongside Phase 2) · **Depends on:** nothing
+**Status:** SHIPPED — v0.10.0 released July 19, 2026; batching via 30s window (≤2 msgs/min/channel, stricter than the 10/min cap) · **Release:** v0.10.0 (alongside Phase 2) · **Depends on:** nothing
 (can be developed any time; independent of the monitor refactor)
 
 ## Objective
