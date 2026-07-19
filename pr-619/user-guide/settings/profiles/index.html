@@ -2940,19 +2940,22 @@
 <p>Trailarr uses profiles as follows:</p>
 <ul>
 <li>When downloading a trailer from the UI. A dialog will appear allowing you to select a profile from existing profiles. Filters will not be applied in this case.</li>
-<li>When running the <code>Download Missing Trailers</code> task (which runs periodically). <ul>
+<li>When running the <code>Download Missing Trailers</code> task (which runs periodically). <span class="twemoji orange" title="Updated in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0100-july-19-2026">v0.10.0</a><ul>
 <li>If no profiles are available, the task will not run.</li>
-<li>Profiles with high priority will be used first.</li>
-<li>The task will find all profiles that match all the filters for each media item. Then it will start downloading videos for each Profile one by one (in order of priority) until a Profile with <code>Stop Monitoring = true</code> successfully downloads a trailer.</li>
-<li>Media items that does not match any profiles will not be processed.</li>
-<li>Media items that matches a profile but does not have a valid Media folder or <code>monitor</code> set to <code>false</code> will not be processed.</li>
+<li>The task finds all profiles that match all the filters for each monitored media item, in order of priority (highest first).</li>
+<li>A matching profile only downloads if it does not already <strong>own a downloaded video</strong> for that media item. Downloads are tracked per profile — a profile that already has its video never downloads again, so media can stay monitored forever without being re-downloaded.</li>
+<li>If a trailer already exists on disk that Trailarr is not tracking, the highest-priority matching profile claims it instead of downloading a duplicate.</li>
+<li>Failed downloads back off before retrying: 1 day after the first failure, then 2 days, then 4, capped at weekly per media + profile. A successful download (including a manual one) resets the backoff.</li>
+<li>Media items that do not match any profiles will not be processed.</li>
+<li>Media items that match a profile but do not have a valid Media folder or have <code>monitor</code> set to <code>false</code> will not be processed.</li>
 </ul>
 </li>
 </ul>
 <p>The next sections will explain the settings and filters available in profiles. You can instead skip to the <a href="examples/">Examples</a> page to see some examples of profiles and how they can be used.</p>
 <div class="admonition tip">
 <p class="admonition-title">Multiple Profiles - Multiple Downloads</p>
-<p>You can create multiple profiles to download multiple trailers for the same media item. For example, you can create one profile (with <code>Stop Monitoring = false</code>) to download a trailer in Spanish and another profile (with <code>Stop Monitoring = true</code>) to download an English trailer for the same movie/series and stop monitoring it afterwards.</p>
+<p>You can create multiple profiles to download multiple videos for the same media item — each matching profile downloads (and keeps track of) its own video. For example, one profile for a Spanish trailer and another for an English trailer will download both for every media item that matches both profiles.</p>
+<p><span class="twemoji orange" title="Updated in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0100-july-19-2026">v0.10.0</a> <code>Stop Monitoring</code> is no longer needed for this workflow and is deprecated — see <a href="settings/general/#stop-monitoring">Stop Monitoring</a>.</p>
 </div>
 <div class="admonition help">
 <p class="admonition-title">Trailarr is evolving</p>

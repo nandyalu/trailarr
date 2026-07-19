@@ -3108,7 +3108,12 @@
 <p>This setting determines how many times Trailarr should retry downloading a trailer if the previous download attempts failed. A failed download can occur due to various reasons such as network issues, YouTube restrictions, or problems with the video itself. By default, Trailarr will retry downloading a trailer 2 times before giving up. </p>
 <p>Setting this value to <code>0</code> will disable retries and Trailarr will only attempt to download a trailer once. </p>
 <p>Setting this value to a higher number will allow Trailarr to make multiple attempts to download a trailer, increasing the chances of a successful download in case of temporary issues.</p>
+<div class="admonition note">
+<p class="admonition-title">Retries vs. backoff</p>
+<p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0100-july-19-2026">v0.10.0</a> Retries here happen immediately, within the same task run. If all retries fail, the download is attempted again on a later task run with an increasing delay — 1 day after the first failure, then 2 days, then 4, capped at weekly. See <a href="../../../../tasks/#download-missing-trailers">Download Missing Trailers</a>.</p>
+</div>
 <h2 id="stop-monitoring">Stop Monitoring</h2>
+<p><span class="twemoji orange" title="Updated in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0100-july-19-2026">v0.10.0</a></p>
 <table>
 <thead>
 <tr>
@@ -3127,20 +3132,24 @@
 </tr>
 </tbody>
 </table>
-<p>This setting indicates whether Trailarr should stop monitoring the media item after a successful download using this profile. Useful for trailer profiles where you want to download multiple trailers or extras for the same media item.</p>
-<p>This setting will save the downloaded video id as the trailer id for the media after a successful download. So, if you are creating a profile to download additional videos (like extras or optional other language trailers), set this to <code>false</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Deprecated</p>
+<p>Downloads are now tracked per profile, so this option is no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, even if the media item stays monitored. <code>Stop Monitoring</code> will be removed in an upcoming release.</p>
+</div>
+<p>Legacy behavior, still honored for now: when a profile with <code>Stop Monitoring = true</code> successfully downloads, the media item is treated as <strong>fully satisfied</strong> — no other matching profiles will download for it afterwards. Since <code>v0.10.0</code>, the media item's monitor toggle itself is <strong>not</strong> switched off anymore; monitoring always stays as you set it.</p>
+<p>If you want multiple videos per media item, simply create multiple profiles and leave <code>Stop Monitoring = false</code> on all of them — each profile downloads and keeps its own video.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p>If you want to download 2 trailers (English and Spanish) for every media item, you would create trailer profiles like this:</p>
+<p>If you want to download 2 trailers (English and Spanish) for every media item, create two profiles with <code>Stop Monitoring = false</code> on both:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>    Profile Name: Spanish Trailer
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Stop Monitoring: false
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    Priority: 100
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    -------------------------------
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    Profile Name: English Trailer
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    Stop Monitoring: true
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    Stop Monitoring: false
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    Priority: 0 (or any lower number than the Spanish Trailer profile)
 </span></code></pre></div>
-<p>This way, Trailarr will first use the <code>Spanish Trailer</code> profile to download the Spanish trailer. Since <code>Stop Monitoring</code> is set to <code>false</code>, Trailarr will continue to monitor the media item after the download. Next, it will use the <code>English Trailer</code> profile to download the English trailer. After this download, since <code>Stop Monitoring</code> is set to <code>true</code>, Trailarr will stop monitoring the media item.</p>
+<p>Each profile downloads and tracks its own trailer, and the media item stays monitored. If <code>Stop Monitoring</code> were <code>true</code> on the English profile instead, its successful download would mark the media fully satisfied and prevent any other matching profiles from downloading afterwards.</p>
 </div>
 
 

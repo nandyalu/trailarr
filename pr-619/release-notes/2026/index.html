@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0100-tbd" class="md-skip">
+        <a href="#v0100-july-19-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,10 +2418,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0100-tbd" class="md-nav__link">
+  <a href="#v0100-july-19-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.10.0</strong> - <em>TBD</em>
+        <strong>v0.10.0</strong> - <em>July 19, 2026</em>
       </span>
     </span>
   </a>
@@ -2932,10 +2932,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0100-tbd" class="md-nav__link">
+  <a href="#v0100-july-19-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.10.0</strong> - <em>TBD</em>
+        <strong>v0.10.0</strong> - <em>July 19, 2026</em>
       </span>
     </span>
   </a>
@@ -3243,12 +3243,15 @@
 
   <h1 id="__skip">2026</h1>
 
-<h2 id="v0100-tbd"><strong>v0.10.0</strong> - <em>TBD</em></h2>
+<h2 id="v0100-july-19-2026"><strong>v0.10.0</strong> - <em>July 19, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
-<li>
-<p><strong>Downloads now drive the download engine</strong> — The <em>Download Missing Trailers</em> task no longer relies on the <code>trailer_exists</code> flag. For every monitored media item it checks which profiles match and which of them <strong>already own a download</strong> — only genuinely missing ones are downloaded. Existing untracked trailers get claimed instead of re-downloaded, and downloading <strong>no longer switches monitoring off behind your back</strong>: an item can stay monitored forever without ever being re-downloaded. This structurally fixes the endless re-download loop class of bugs (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a> and friends). During this release cycle the engine also logs a <code>SIGNAL-DISAGREE</code> line whenever the old and new logic would have decided differently — if you spot unexpected downloads or skips, include those lines in your report.</p>
-</li>
+<li><strong>Downloads now drive the download engine</strong> — The <em>Download Missing Trailers</em> task no longer relies on the <code>trailer_exists</code> flag. For every monitored media item it checks which profiles match and which of them <strong>already own a download</strong> — only genuinely missing ones are downloaded. Existing untracked trailers get claimed instead of re-downloaded, and downloading <strong>no longer switches monitoring off behind your back</strong>: an item can stay monitored forever without ever being re-downloaded. This structurally fixes the endless re-download loop class of bugs (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a> and friends). During this release cycle the engine also logs a <code>SIGNAL-DISAGREE</code> line whenever the old and new logic would have decided differently — if you spot unexpected downloads or skips, include those lines in your report.</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Profile deletion caveat</strong> — downloads are owned by the profile that made them. Deleting a profile whose downloads exist and creating a similar one later means the new profile does not own those downloads and <strong>will download its own trailers</strong> for matching media. Prefer editing an existing profile over deleting and recreating it.</p>
+</blockquote>
+<ul>
 <li>
 <p><strong>Failed downloads back off instead of retrying every run</strong> — A trailer that can't be found retries after 1 day, then 2, then 4, capped at weekly, per media + profile. A manual download from Media Details always bypasses the backoff, and any successful download resets it.</p>
 </li>
