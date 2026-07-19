@@ -2609,7 +2609,7 @@
   <a href="#phase-2-downloads-drive-the-download-engine-v0100" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 2 — Downloads drive the download engine — <code>v0.10.0</code>
+        Phase 2 — Downloads drive the download engine — <code>v0.10.0</code> ✅
       </span>
     </span>
   </a>
@@ -2906,7 +2906,7 @@
   <a href="#phase-2-downloads-drive-the-download-engine-v0100" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 2 — Downloads drive the download engine — <code>v0.10.0</code>
+        Phase 2 — Downloads drive the download engine — <code>v0.10.0</code> ✅
       </span>
     </span>
   </a>
@@ -3141,17 +3141,17 @@
 </tr>
 <tr>
 <td><strong>v0.10.0</strong></td>
-<td>August 2026</td>
+<td>July 19, 2026 ✅</td>
 <td>Phase 2 — Downloads drive the download engine, plus Notifications (Apprise)</td>
 </tr>
 <tr>
 <td><strong>v0.10.1</strong></td>
-<td>September 2026</td>
+<td>late August 2026</td>
 <td>Phases 3 &amp; 4 — Live status + monitoring becomes yours</td>
 </tr>
 <tr>
 <td><strong>v0.11.0</strong></td>
-<td>late September 2026</td>
+<td>September 2026</td>
 <td>Phase 5 — Cleanup of legacy fields</td>
 </tr>
 <tr>
@@ -3189,9 +3189,9 @@
 <h3 id="phase-1-download-profile-linking-v099">Phase 1 — Download ↔ Profile linking — <code>v0.9.9</code> ✅</h3>
 <p>Every downloaded trailer is now linked to the profile that owns it. Trailers found on disk are attributed to your matching profiles automatically, and you can assign a profile manually from <strong>Media Details → Downloads</strong> for anything the app couldn't match. This builds the data foundation everything else stands on.</p>
 <p><em>What you'll notice:</em> a one-time startup task, log lines about linked downloads, and a new assign option in Media Details. No behavior changes, no downloads triggered.</p>
-<h3 id="phase-2-downloads-drive-the-download-engine-v0100">Phase 2 — Downloads drive the download engine — <code>v0.10.0</code></h3>
-<p>The <strong>Download Missing Trailers</strong> task stops relying on the <code>trailer_exists</code> flag. Instead, for every monitored media item it checks: <em>which profiles match, and which of them already have a download?</em> Only the genuinely missing ones are downloaded. Failed downloads back off gradually instead of retrying on every run, and downloading no longer switches monitoring off behind your back.</p>
-<p>This is the biggest internal change of the roadmap, so it gets a major version bump and <strong>~4 weeks of bake time</strong> before the next phase — please report anything unexpected (wrong re-downloads, skipped items) during this window.</p>
+<h3 id="phase-2-downloads-drive-the-download-engine-v0100">Phase 2 — Downloads drive the download engine — <code>v0.10.0</code> ✅</h3>
+<p>The <strong>Download Missing Trailers</strong> task no longer relies on the <code>trailer_exists</code> flag. Instead, for every monitored media item it checks: <em>which profiles match, and which of them already have a download?</em> Only the genuinely missing ones are downloaded. Failed downloads back off gradually instead of retrying on every run, and downloading no longer switches monitoring off behind your back.</p>
+<p>This is the biggest internal change of the roadmap, so it got a major version bump and gets <strong>~4 weeks of bake time</strong> before the next phase — please report anything unexpected (wrong re-downloads, skipped items) during this window.</p>
 <p><em>What you'll notice:</em> smarter, quieter download runs. Items can stay monitored forever without being re-downloaded.</p>
 <p><strong>Also in <code>v0.10.0</code>: Notifications via <a href="https://github.com/caronc/apprise">Apprise</a>.</strong> Add your preferred notification channels — Discord, Telegram, Slack, email, and the 100+ other services Apprise supports — and choose which Trailarr events each channel receives. For example, point a <code>#trailarr-downloads</code> channel on your Discord server at <em>Trailer Downloaded</em> events, right alongside your Radarr/Sonarr/Plex notifications. Trailarr already tracks everything as events internally, so this wires those straight to your channels — and it makes the Phase 2 changes visible: you'll <em>see</em> what the new download engine does as it happens. When the Issues section arrives in v1.0.0, issue alerts plug into the same channels (e.g. a separate <code>#trailarr-issues</code> channel for things needing attention).</p>
 <h3 id="phases-3-4-live-status-monitoring-becomes-yours-v0101">Phases 3 &amp; 4 — Live status + monitoring becomes yours — <code>v0.10.1</code></h3>
