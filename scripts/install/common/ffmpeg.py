@@ -10,21 +10,23 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from common.display import console, make_download_progress, print_info, print_warning
+from common.display import console, make_download_progress, print_warning
 
 # yt-dlp/FFmpeg-Builds provides static GPL binaries for Linux and Windows.
-# macOS binaries come from evermeet.cx (John Van Sickle style static builds).
+# macOS Intel binaries come from evermeet.cx; Apple Silicon uses native arm64
+# builds from ffmpeg.martin-riedl.de (evermeet only ships x86_64, which would
+# run under Rosetta and slow video conversion down significantly).
 _FFMPEG_URLS: dict[str, str] = {
     "linux-x86_64": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz",
     "linux-aarch64": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz",
     "windows-x86_64": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip",
     "windows-aarch64": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl.zip",
     "darwin-x86_64": "https://evermeet.cx/ffmpeg/get/ffmpeg/zip",
-    "darwin-arm64": "https://evermeet.cx/ffmpeg/get/ffmpeg/zip",
+    "darwin-arm64": "https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip",
 }
 _FFPROBE_URLS: dict[str, str] = {
     "darwin-x86_64": "https://evermeet.cx/ffmpeg/get/ffprobe/zip",
-    "darwin-arm64": "https://evermeet.cx/ffmpeg/get/ffprobe/zip",
+    "darwin-arm64": "https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffprobe.zip",
 }
 
 

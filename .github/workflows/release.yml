@@ -43,9 +43,12 @@ jobs:
           cp install.sh          "${ARCHIVE_DIR}/"
           cp install.ps1         "${ARCHIVE_DIR}/"
           tar -czf "trailarr-${VERSION}-release.tar.gz" "${ARCHIVE_DIR}/"
+          sha256sum "trailarr-${VERSION}-release.tar.gz" > "trailarr-${VERSION}-release.tar.gz.sha256"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v3
         with:
-          files: "trailarr-*-release.tar.gz"
+          files: |
+            trailarr-*-release.tar.gz
+            trailarr-*-release.tar.gz.sha256
           fail_on_unmatched_files: true

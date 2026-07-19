@@ -98,13 +98,6 @@ def step_context(description: str):
 
 
 def print_completion(install_dir: str, data_dir: str, port: int, os_name: str) -> None:
-    instructions: dict[str, str] = {
-        "Linux": "sudo systemctl status trailarr",
-        "Darwin": "launchctl list com.trailarr.app",
-        "Windows": "Get-ScheduledTask -TaskName Trailarr",
-    }
-    status_cmd = instructions.get(os_name, "trailarr status")
-
     console.print()
     console.print(
         Panel(
@@ -122,6 +115,7 @@ def print_completion(install_dir: str, data_dir: str, port: int, os_name: str) -
                 ("  trailarr restart   ", "white"), ("— Restart Trailarr\n", "dim"),
                 ("  trailarr status    ", "white"), ("— Show service status\n", "dim"),
                 ("  trailarr logs      ", "white"), ("— View logs\n", "dim"),
+                ("  trailarr version   ", "white"), ("— Show installed/latest version\n", "dim"),
                 ("  trailarr update    ", "white"), ("— Update to latest version\n", "dim"),
                 ("  trailarr uninstall ", "white"), ("— Remove Trailarr\n", "dim"),
                 ("  run, stop, restart, update, uninstall require " + ("Run as Administrator" if os_name == "Windows" else "sudo") + "\n\n", "dim italic"),

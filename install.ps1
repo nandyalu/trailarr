@@ -112,9 +112,14 @@ function Check-Uv {
 # Download latest release asset
 # --------------------------------------------------------------------------
 function Download-Release {
-    Write-Info "Fetching latest release information..."
-
-    $apiUrl = "https://api.github.com/repos/$GitHubRepo/releases/latest"
+    # Pin a specific release with: $env:TRAILARR_VERSION = 'v0.9.9' (defaults to latest)
+    if ($env:TRAILARR_VERSION) {
+        Write-Info "Fetching release information for $($env:TRAILARR_VERSION)..."
+        $apiUrl = "https://api.github.com/repos/$GitHubRepo/releases/tags/$($env:TRAILARR_VERSION)"
+    } else {
+        Write-Info "Fetching latest release information..."
+        $apiUrl = "https://api.github.com/repos/$GitHubRepo/releases/latest"
+    }
     try {
         $release = Invoke-RestMethod -Uri $apiUrl `
             -Headers @{ 'Accept' = 'application/vnd.github+json'; 'User-Agent' = 'trailarr-installer' } `
@@ -125,7 +130,7 @@ function Download-Release {
     }
 
     $script:AppVersion = $release.tag_name
-    Write-Success "Latest version: $AppVersion"
+    Write-Success "Installing version: $AppVersion"
 
     $asset = $release.assets | Where-Object { $_.name -like '*-release.tar.gz' } | Select-Object -First 1
     if (-not $asset) {
@@ -143,12 +148,31 @@ function Download-Release {
     try {
         $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is slow with progress
         Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $archive -UseBasicParsing
-        $ProgressPreference = 'Continue'
     } catch {
         Write-Err "Download failed: $_"
         exit 1
+    } finally {
+        $ProgressPreference = 'Continue'
     }
     Write-Success "Download complete"
+
+    # Verify checksum when the release publishes one (older releases don't)
+    $shaAsset = $release.assets | Where-Object { $_.name -like '*-release.tar.gz.sha256' } | Select-Object -First 1
+    if ($shaAsset) {
+        try {
+            $expected = ((Invoke-RestMethod -Uri $shaAsset.browser_download_url -UseBasicParsing) -split '\s+')[0]
+            $actual = (Get-FileHash -Path $archive -Algorithm SHA256).Hash
+            if ($expected -and ($actual -ne $expected)) {
+                Write-Err "Checksum mismatch for downloaded archive."
+                Write-Host "  expected: $expected"
+                Write-Host "  actual:   $actual"
+                exit 1
+            }
+            Write-Success "Checksum verified"
+        } catch {
+            Write-Warn "Could not verify checksum: $_"
+        }
+    }
 
     Write-Info "Extracting archive..."
     # Use tar (available in Windows 10 1803+)

@@ -9,7 +9,6 @@ Run via the bootstrap scripts (install.sh / install.ps1):
 import argparse
 import platform
 import sys
-import traceback
 from pathlib import Path
 
 # Ensure sibling packages (common/, platforms/) are importable regardless of cwd

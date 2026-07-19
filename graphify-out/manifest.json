@@ -1780,14 +1780,14 @@
     "semantic_hash": ""
   },
   "install.ps1": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "fce87a546a3aa33bf3dce4c0d5e846f2",
-    "semantic_hash": "fce87a546a3aa33bf3dce4c0d5e846f2"
+    "mtime": 1784439779.803757,
+    "ast_hash": "bd45d1809f5e2a7eb8608aaf7e5b5bd0",
+    "semantic_hash": ""
   },
   "install.sh": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "7be539e4f58937f17210271699f170c3",
-    "semantic_hash": "7be539e4f58937f17210271699f170c3"
+    "mtime": 1784439761.7475126,
+    "ast_hash": "246e00dc11ac3e0338100abee8c307e4",
+    "semantic_hash": ""
   },
   "scripts/box_echo.sh": {
     "mtime": 1762575170.8574586,
@@ -1800,8 +1800,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "scripts/cli/trailarr_cli.py": {
-    "mtime": 1784438769.6339016,
-    "ast_hash": "0fd2554f239a41337f0419aa0af0ced9",
+    "mtime": 1784441068.5856457,
+    "ast_hash": "050908f66f7ded055eb76580b999e1a1",
     "semantic_hash": ""
   },
   "scripts/create_migration.sh": {
@@ -1870,14 +1870,14 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "scripts/install/common/config.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "ba391b18113214d9878152a71fbd843e",
-    "semantic_hash": "ba391b18113214d9878152a71fbd843e"
+    "mtime": 1784439811.308184,
+    "ast_hash": "a5d9bd9acef466fcff27e382d3a3d318",
+    "semantic_hash": ""
   },
   "scripts/install/common/display.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "fd354609f0cbc401b84897ba5b38292d",
-    "semantic_hash": "fd354609f0cbc401b84897ba5b38292d"
+    "mtime": 1784441130.1785102,
+    "ast_hash": "48e7962f29af53da4de5fc56399840e6",
+    "semantic_hash": ""
   },
   "scripts/install/common/env_file.py": {
     "mtime": 1784260559.5538697,
@@ -1885,9 +1885,9 @@
     "semantic_hash": "15b1d8e6382867f2c2f950bfc6121a81"
   },
   "scripts/install/common/ffmpeg.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "3f6525ba18aeca0c27baca7626346d8e",
-    "semantic_hash": "3f6525ba18aeca0c27baca7626346d8e"
+    "mtime": 1784440871.2708786,
+    "ast_hash": "b700f7aba37704ed6f6b9eadea17df59",
+    "semantic_hash": ""
   },
   "scripts/install/common/gpu.py": {
     "mtime": 1784260559.5538697,
@@ -1895,9 +1895,9 @@
     "semantic_hash": "655883e448e13a07f033079b723b8a88"
   },
   "scripts/install/install.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "e6f43c233fac1f399ac7e0a39889a9c3",
-    "semantic_hash": "e6f43c233fac1f399ac7e0a39889a9c3"
+    "mtime": 1784441117.9303381,
+    "ast_hash": "4d7586a1e71cd00f313f3946a40600e2",
+    "semantic_hash": ""
   },
   "scripts/install/platforms/__init__.py": {
     "mtime": 1784260559.5538697,
@@ -1905,24 +1905,24 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "scripts/install/platforms/base.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "2fc6e685ac2d4d3476d0d123c1f738a0",
-    "semantic_hash": "2fc6e685ac2d4d3476d0d123c1f738a0"
+    "mtime": 1784439852.5447443,
+    "ast_hash": "292c4fc58842f49e2fe77da8eb869b6a",
+    "semantic_hash": ""
   },
   "scripts/install/platforms/linux.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "4dcd1e0ec45ae268de2e8fbdf6121aba",
-    "semantic_hash": "4dcd1e0ec45ae268de2e8fbdf6121aba"
+    "mtime": 1784439880.785129,
+    "ast_hash": "39fb8343df34598b0e8eaf889fa5fa96",
+    "semantic_hash": ""
   },
   "scripts/install/platforms/macos.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "97729905dd68e6a8e60723fed4723d85",
-    "semantic_hash": "97729905dd68e6a8e60723fed4723d85"
+    "mtime": 1784439924.2537224,
+    "ast_hash": "75e7144f2779bb5bea20592570869cb5",
+    "semantic_hash": ""
   },
   "scripts/install/platforms/windows.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "666367a155fa133f2de227f0ee5a387a",
-    "semantic_hash": "666367a155fa133f2de227f0ee5a387a"
+    "mtime": 1784440804.26594,
+    "ast_hash": "1daa0f9f6481814eabc4a20c877f98c7",
+    "semantic_hash": ""
   },
   "scripts/install_drivers.sh": {
     "mtime": 1762575170.8614588,
@@ -1945,8 +1945,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "scripts/start/start.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "f8f27664405bc9ca0624b809eadd5f45",
+    "mtime": 1784441086.0338905,
+    "ast_hash": "1044f1342b3bc1a62471a9b9370423a4",
     "semantic_hash": ""
   },
   "scripts/windows/remove-startup.ps1": {
@@ -2145,8 +2145,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/release.yml": {
-    "mtime": 1784260559.4538682,
-    "ast_hash": "0b5aaca6ad6443d47dedfb74379df7b9",
+    "mtime": 1784439731.787108,
+    "ast_hash": "240f7c4f37844109f44f0f9aafffb0ef",
     "semantic_hash": ""
   },
   ".github/workflows/update-dockerhub-description.yml": {
@@ -2300,8 +2300,8 @@
     "semantic_hash": "9bf5e043920039aa4a43b26233782e85"
   },
   "docs/release-notes/2026.md": {
-    "mtime": 1784438042.0395284,
-    "ast_hash": "930f061214a148124ecafd0359a85bd8",
+    "mtime": 1784438824.9866905,
+    "ast_hash": "63464b0511bd0ecb093d70b6194b9655",
     "semantic_hash": ""
   },
   "docs/troubleshooting/common-issues.md": {

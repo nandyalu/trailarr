@@ -48,6 +48,16 @@ cd trailarr-vX.Y.Z
 
 Or you can browse to [github.com/nandyalu/trailarr/releases](https://github.com/nandyalu/trailarr/releases) and download the `*-release.tar.gz` asset manually.
 
+??? tip "Optional: verify the download"
+    Newer releases publish a `.sha256` checksum next to the archive. Compare it against your download:
+
+    ```bash
+    curl -sL "https://github.com/nandyalu/trailarr/releases/download/vX.Y.Z/trailarr-vX.Y.Z-release.tar.gz.sha256"
+    sha256sum trailarr-release.tar.gz    # shasum -a 256 on macOS
+    ```
+
+    The two hashes must match (the filename printed next to them may differ if you renamed the download).
+
 ### Option B: Clone the git repository
 
 If you want the very latest code (or to build from source), clone the repo and build the frontend yourself.
@@ -138,7 +148,7 @@ the automated installer, but you can use any paths you prefer.
 
     ```bash
     cd "$INSTALL_DIR/backend"
-    sudo -u trailarr uv sync --no-cache-dir
+    sudo -u trailarr uv sync --no-cache
     ```
 
     !!! note "uv not found when using sudo?"
@@ -151,26 +161,26 @@ the automated installer, but you can use any paths you prefer.
         sudo cp "$(which uv)" /usr/local/bin/uv
         sudo chmod +x /usr/local/bin/uv
         # now retry:
-        sudo -u trailarr uv sync --no-cache-dir
+        sudo -u trailarr uv sync --no-cache
         ```
 
         **Option B — pass the full path to uv:**
         ```bash
-        sudo -u trailarr "$(which uv)" sync --no-cache-dir
+        sudo -u trailarr "$(which uv)" sync --no-cache
         ```
 
 === "macOS"
 
     ```bash
     cd "$INSTALL_DIR/backend"
-    uv sync --no-cache-dir
+    uv sync --no-cache
     ```
 
 === "Windows"
 
     ```powershell
     cd "$InstallDir\backend"
-    uv sync --no-cache-dir
+    uv sync --no-cache
     ```
 
 This creates a `.venv/` directory inside `backend/` and installs all Python dependencies
@@ -188,7 +198,8 @@ Trailarr needs `ffmpeg` and `ffprobe` binaries. Download the static build for yo
 | Linux arm64 | `https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz` |
 | Windows x64 | `https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip` |
 | Windows arm64 | `https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl.zip` |
-| macOS | `https://evermeet.cx/ffmpeg/get/ffmpeg/zip` and `https://evermeet.cx/ffmpeg/get/ffprobe/zip` |
+| macOS Intel | `https://evermeet.cx/ffmpeg/get/ffmpeg/zip` and `https://evermeet.cx/ffmpeg/get/ffprobe/zip` |
+| macOS Apple Silicon | `https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip` and `https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffprobe.zip` |
 
 Place the extracted `ffmpeg` and `ffprobe` (or `ffmpeg.exe` / `ffprobe.exe`) binaries somewhere accessible.
 The default location the installer uses is `$INSTALL_DIR/bin/`:
@@ -211,6 +222,23 @@ The default location the installer uses is `$INSTALL_DIR/bin/`:
     ```
 
 === "macOS"
+
+    **Apple Silicon** (native arm64 builds — Intel builds would run under Rosetta and convert video much slower):
+
+    ```bash
+    mkdir -p "$INSTALL_DIR/bin"
+
+    curl -L -o /tmp/ffmpeg.zip "https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip"
+    unzip -o /tmp/ffmpeg.zip -d "$INSTALL_DIR/bin/"
+
+    curl -L -o /tmp/ffprobe.zip "https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffprobe.zip"
+    unzip -o /tmp/ffprobe.zip -d "$INSTALL_DIR/bin/"
+
+    chmod +x "$INSTALL_DIR/bin/ffmpeg" "$INSTALL_DIR/bin/ffprobe"
+    "$INSTALL_DIR/bin/ffmpeg" -version
+    ```
+
+    **Intel Macs:**
 
     ```bash
     mkdir -p "$INSTALL_DIR/bin"
@@ -510,8 +538,10 @@ Press `Ctrl+C` to stop it before continuing.
     ```
 
     This registers a Task Scheduler task that starts Trailarr automatically
-    when **you** log in, running as your user account so mapped network drives
-    and UNC shares are fully accessible. The task runs regardless of power/battery state.
+    when **you** log in, running as your user account. The task runs regardless of power/battery state.
+
+    !!! warning "Media on network shares"
+        The S4U logon used above runs **without stored network credentials**, so mapped drives and password-protected UNC shares are not accessible to the task. If your media lives on a network share, either replace `-LogonType S4U` with `-LogonType Password` (you will be prompted to store your password — in Task Scheduler this is *"Run whether user is logged on or not"*), or mount the media on a local path.
 
     Start it immediately without rebooting:
 

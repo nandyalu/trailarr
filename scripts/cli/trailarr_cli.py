@@ -2,16 +2,17 @@
 Trailarr CLI — cross-platform service management tool.
 
 Usage:
-  trailarr run       — Start the Trailarr service
-  trailarr stop      — Stop the Trailarr service
-  trailarr restart   — Restart the Trailarr service
-  trailarr status    — Show service status
-  trailarr logs [N]  — Show last N log lines (default 50)
-  trailarr update    — Update Trailarr to the latest release
-  trailarr uninstall — Remove Trailarr from this machine
+  trailarr run                    — Start the Trailarr service
+  trailarr stop                   — Stop the Trailarr service
+  trailarr restart                — Restart the Trailarr service
+  trailarr status                 — Show service status
+  trailarr logs [N]               — Show last N log lines (default 50)
+  trailarr version                — Show installed and latest versions
+  trailarr update [vX.Y.Z] [--force] — Update Trailarr (latest, or a specific version)
+  trailarr uninstall              — Remove Trailarr from this machine
 """
 
-import io
+import hashlib
 import json
 import os
 import platform
@@ -21,29 +22,55 @@ import sys
 import tarfile
 import tempfile
 import urllib.request
-import zipfile
 from pathlib import Path
 
 _IS_WINDOWS = platform.system() == "Windows"
 _IS_MACOS = platform.system() == "Darwin"
 _IS_LINUX = platform.system() == "Linux"
 
+
+def _resolve_home() -> Path:
+    """Home of the user the service belongs to — the sudo invoker, not root.
+
+    `sudo trailarr update` and plain `trailarr status` must agree on where
+    the data dir and LaunchAgent live.
+    """
+    sudo_user = os.environ.get("SUDO_USER", "")
+    if sudo_user and sudo_user != "root" and not _IS_WINDOWS:
+        try:
+            import pwd
+
+            return Path(pwd.getpwnam(sudo_user).pw_dir)
+        except KeyError:
+            pass
+    return Path.home()
+
+
 # Paths mirror installer defaults
 if _IS_LINUX:
     _INSTALL_DIR = Path("/opt/trailarr")
     _DATA_DIR = Path("/var/lib/trailarr")
+    _LOG_DIR = _DATA_DIR / "logs"
     _SERVICE_NAME = "trailarr"
 elif _IS_MACOS:
     _INSTALL_DIR = Path("/usr/local/opt/trailarr")
-    _DATA_DIR = Path.home() / ".local" / "share" / "trailarr"
+    _USER_HOME = _resolve_home()
+    _DATA_DIR = _USER_HOME / ".local" / "share" / "trailarr"
+    _LOG_DIR = _USER_HOME / "Library" / "Logs" / "trailarr"
     _LAUNCHD_LABEL = "com.trailarr.app"
-    _PLIST_PATH = Path.home() / "Library" / "LaunchAgents" / f"{_LAUNCHD_LABEL}.plist"
+    _PLIST_PATH = _USER_HOME / "Library" / "LaunchAgents" / f"{_LAUNCHD_LABEL}.plist"
 elif _IS_WINDOWS:
     _INSTALL_DIR = Path("C:/Program Files/Trailarr")
     _DATA_DIR = Path("C:/ProgramData/Trailarr")
+    _LOG_DIR = _DATA_DIR / "logs"
     _TASK_NAME = "Trailarr"
 
 _GITHUB_REPO = "nandyalu/trailarr"
+
+# The CLI ships inside scripts/cli/ next to scripts/install/ — reuse the
+# installer's .env helpers instead of carrying local copies.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "install"))
+from common.env_file import load_env, update_env_var  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Rich console
@@ -51,8 +78,6 @@ _GITHUB_REPO = "nandyalu/trailarr"
 
 try:
     from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
 
     console = Console()
 
@@ -84,6 +109,19 @@ def _run(*cmd: str, check: bool = False) -> subprocess.CompletedProcess:
     return subprocess.run(list(cmd), capture_output=True, text=True, check=check)
 
 
+def _macos_uid() -> int:
+    """UID of the user whose launchd gui domain hosts the Trailarr agent."""
+    sudo_user = os.environ.get("SUDO_USER", "")
+    if sudo_user and sudo_user != "root":
+        try:
+            import pwd
+
+            return pwd.getpwnam(sudo_user).pw_uid
+        except KeyError:
+            pass
+    return os.getuid()
+
+
 def _service_start() -> None:
     if _IS_LINUX:
         r = _run("systemctl", "start", _SERVICE_NAME)
@@ -92,7 +130,12 @@ def _service_start() -> None:
         else:
             _err(r.stderr.strip() or "Failed to start service")
     elif _IS_MACOS:
-        r = _run("launchctl", "start", _LAUNCHD_LABEL)
+        # The agent lives in the user's gui launchd domain (not root's) —
+        # bootstrap it there; if already loaded, kickstart instead.
+        uid = _macos_uid()
+        r = _run("launchctl", "bootstrap", f"gui/{uid}", str(_PLIST_PATH))
+        if r.returncode != 0:
+            r = _run("launchctl", "kickstart", f"gui/{uid}/{_LAUNCHD_LABEL}")
         if r.returncode == 0:
             _ok(f"Service '{_LAUNCHD_LABEL}' started")
         else:
@@ -110,7 +153,10 @@ def _service_stop() -> None:
     if _IS_LINUX:
         r = _run("systemctl", "stop", _SERVICE_NAME)
     elif _IS_MACOS:
-        r = _run("launchctl", "stop", _LAUNCHD_LABEL)
+        uid = _macos_uid()
+        r = _run("launchctl", "bootout", f"gui/{uid}/{_LAUNCHD_LABEL}")
+        if r.returncode != 0:
+            r = _run("launchctl", "unload", str(_PLIST_PATH))
     elif _IS_WINDOWS:
         r = _run("powershell", "-NonInteractive", "-Command",
                  f"Stop-ScheduledTask -TaskName '{_TASK_NAME}'")
@@ -139,11 +185,16 @@ def _service_restart() -> None:
 
 def _service_status() -> None:
     if _IS_LINUX:
-        result = subprocess.run(["systemctl", "status", _SERVICE_NAME, "--no-pager"], check=False)
+        subprocess.run(["systemctl", "status", _SERVICE_NAME, "--no-pager"], check=False)
     elif _IS_MACOS:
-        result = subprocess.run(["launchctl", "list", _LAUNCHD_LABEL], check=False)
+        uid = _macos_uid()
+        r = subprocess.run(
+            ["launchctl", "print", f"gui/{uid}/{_LAUNCHD_LABEL}"], check=False
+        )
+        if r.returncode != 0:
+            subprocess.run(["launchctl", "list", _LAUNCHD_LABEL], check=False)
     elif _IS_WINDOWS:
-        result = subprocess.run(
+        subprocess.run(
             ["powershell", "-NonInteractive", "-Command",
              f"Get-ScheduledTask -TaskName '{_TASK_NAME}' | "
              f"Select-Object TaskName, State, Description"],
@@ -153,8 +204,8 @@ def _service_status() -> None:
 
 def _service_logs(lines: int) -> None:
     if _IS_LINUX:
-        log_file = _DATA_DIR / "logs" / "trailarr.log"
-        _info(f"=== Startup logs (journalctl) ===")
+        log_file = _LOG_DIR / "trailarr.log"
+        _info("=== Startup logs (journalctl) ===")
         subprocess.run(["journalctl", "-u", _SERVICE_NAME, "-n", str(lines), "--no-pager"])
         _info(f"=== Application logs ({log_file}) ===")
         if log_file.exists() and log_file.stat().st_size > 0:
@@ -162,7 +213,7 @@ def _service_logs(lines: int) -> None:
         else:
             _warn("Application log file not found or empty — service may have failed to start.")
     elif _IS_MACOS:
-        log_file = Path.home() / "Library" / "Logs" / "trailarr" / "trailarr.log"
+        log_file = _LOG_DIR / "trailarr.log"
         if log_file.exists():
             subprocess.run(["tail", "-n", str(lines), str(log_file)])
         else:
@@ -182,44 +233,162 @@ def _service_logs(lines: int) -> None:
 # Update
 # ---------------------------------------------------------------------------
 
-def _update_env_var(env_path: Path, key: str, value: str) -> None:
-    if not env_path.exists():
-        return
-    lines = env_path.read_text(encoding="utf-8").splitlines()
-    found = False
-    new_lines = []
-    for line in lines:
-        if line.startswith(f"{key}="):
-            new_lines.append(f"{key}={value}")
-            found = True
-        else:
-            new_lines.append(line)
-    if not found:
-        new_lines.append(f"{key}={value}")
-    env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+def _fetch_release(tag: str | None) -> dict:
+    """Fetch release metadata from GitHub (latest, or a specific tag)."""
+    if tag:
+        url = f"https://api.github.com/repos/{_GITHUB_REPO}/releases/tags/{tag}"
+    else:
+        url = f"https://api.github.com/repos/{_GITHUB_REPO}/releases/latest"
+    req = urllib.request.Request(
+        url,
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "trailarr-cli"},
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
+        return json.load(resp)
 
 
-def _update() -> None:
-    _info("Fetching latest release information...")
-    try:
-        req = urllib.request.Request(
-            f"https://api.github.com/repos/{_GITHUB_REPO}/releases/latest",
-            headers={"Accept": "application/vnd.github+json", "User-Agent": "trailarr-cli"},
+def _find_uv() -> str | None:
+    """Locate uv, probing the sudo invoker's install dirs when not in PATH."""
+    uv = shutil.which("uv")
+    if uv:
+        return uv
+    candidates: list[Path] = []
+    sudo_user = os.environ.get("SUDO_USER", "")
+    if sudo_user and sudo_user != "root" and not _IS_WINDOWS:
+        try:
+            import pwd
+
+            candidates.append(Path(pwd.getpwnam(sudo_user).pw_dir) / ".local" / "bin" / "uv")
+        except KeyError:
+            pass
+    candidates += [
+        Path.home() / ".local" / "bin" / "uv",
+        Path("/opt/homebrew/bin/uv"),
+        Path("/usr/local/bin/uv"),
+    ]
+    for c in candidates:
+        if c.exists() and os.access(c, os.X_OK):
+            return str(c)
+    return None
+
+
+def _verify_checksum(archive: Path, sha_url: str) -> None:
+    req = urllib.request.Request(sha_url, headers={"User-Agent": "trailarr-cli"})
+    with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
+        expected = resp.read().decode("utf-8").split()[0].strip().lower()
+    h = hashlib.sha256()
+    with open(archive, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    actual = h.hexdigest()
+    if expected and actual != expected:
+        raise RuntimeError(
+            f"Checksum mismatch for downloaded archive: expected {expected}, got {actual}"
         )
-        with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
-            release = json.load(resp)
+    _ok("Checksum verified")
+
+
+def _sync_python_deps() -> None:
+    """Re-run uv sync for updated Python dependencies. Raises on failure."""
+    _info("Updating Python dependencies...")
+    uv = _find_uv()
+    if not uv:
+        raise RuntimeError(
+            "uv not found — cannot update Python dependencies. "
+            "Install uv (https://docs.astral.sh/uv/) and re-run the update."
+        )
+
+    backend_dir = _INSTALL_DIR / "backend"
+    uv_python_dir = backend_dir / ".uv-python"
+    uv_python_dir.mkdir(parents=True, exist_ok=True)
+    env = {k: v for k, v in os.environ.items() if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")}
+    env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
+
+    subprocess.run(
+        [uv, "python", "install", "cpython-3.13"],
+        capture_output=True, text=True, env=env,
+    )
+    if _IS_WINDOWS:
+        python_bins = sorted(uv_python_dir.glob("cpython-3.13*/python.exe"))
+        python_bin = python_bins[0] if python_bins else None
+    else:
+        python_bins = sorted(uv_python_dir.glob("cpython-3.13*/bin/python3*"))
+        python_bin = next((p for p in python_bins if not p.name.endswith(("-config", ".1"))), None)
+
+    sync_cmd = [uv, "sync", "--no-cache"]
+    if python_bin:
+        sync_cmd += ["--python", str(python_bin)]
+
+    r = subprocess.run(sync_cmd, cwd=str(backend_dir), capture_output=True, text=True, env=env)
+    if r.returncode != 0:
+        raise RuntimeError(f"uv sync failed:\n{r.stderr[:500]}")
+    _ok("Python dependencies updated")
+
+
+def _fix_ownership() -> None:
+    """Linux: hand the whole install tree back to the trailarr service user.
+
+    The update runs as root; chowning only backend/ would leave
+    frontend-build/ (which the app must write for URL_BASE support),
+    scripts/ and assets/ owned by root.
+    """
+    if not _IS_LINUX:
+        return
+    import pwd
+
+    try:
+        pw = pwd.getpwnam("trailarr")
+    except KeyError:
+        return
+    for p in [_INSTALL_DIR, *_INSTALL_DIR.rglob("*")]:
+        try:
+            os.chown(p, pw.pw_uid, pw.pw_gid)
+        except OSError:
+            pass
+
+
+def _version() -> None:
+    installed = load_env(_DATA_DIR / ".env").get("APP_VERSION", "unknown")
+    _info(f"Installed version: {installed}")
+    try:
+        latest = _fetch_release(None).get("tag_name", "unknown")
+    except Exception as exc:
+        _warn(f"Could not check the latest release: {exc}")
+        return
+    _info(f"Latest release:    {latest}")
+    if installed.lstrip("v") == latest.lstrip("v"):
+        _ok("Trailarr is up to date")
+    elif _IS_WINDOWS:
+        _warn("Update available — run 'trailarr update' as Administrator")
+    else:
+        _warn("Update available — run: sudo trailarr update")
+
+
+def _update(target: str | None = None, force: bool = False) -> None:
+    _info("Fetching release information...")
+    try:
+        release = _fetch_release(target)
     except Exception as exc:
         _err(f"Failed to fetch release info: {exc}")
+        if target:
+            _info(f"Check that '{target}' exists: https://github.com/{_GITHUB_REPO}/releases")
         sys.exit(1)
 
     tag = release.get("tag_name", "unknown")
-    asset_url = next(
-        (a["browser_download_url"] for a in release.get("assets", []) if a["name"].endswith("-release.tar.gz")),
-        None,
-    )
-    if not asset_url:
+    env_path = _DATA_DIR / ".env"
+    current = load_env(env_path).get("APP_VERSION", "")
+    if not force and current and current.lstrip("v") == tag.lstrip("v"):
+        _ok(f"Already up to date ({current})")
+        _info("Use 'trailarr update --force' to reinstall anyway.")
+        return
+
+    assets = release.get("assets", [])
+    asset = next((a for a in assets if a["name"].endswith("-release.tar.gz")), None)
+    if not asset:
         _err(f"No release asset found for version {tag}. Cannot update.")
         sys.exit(1)
+    # Checksum asset exists for newer releases only; skip quietly when absent
+    sha_asset = next((a for a in assets if a["name"] == asset["name"] + ".sha256"), None)
 
     _info(f"Updating to {tag}...")
     _service_stop()
@@ -234,74 +403,62 @@ def _update() -> None:
             shutil.copy2(src, backup_dir / fname)
     _ok(f"Backup saved to {backup_dir}")
 
-    # Download release asset
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp)
-        archive = tmp_path / "release.tar.gz"
-        _info(f"Downloading {asset_url}...")
-        urllib.request.urlretrieve(asset_url, archive)  # noqa: S310
-        with tarfile.open(archive, "r:gz") as tf:
-            tf.extractall(tmp_path)
+    # Replaced application dirs are renamed aside (not deleted) so any
+    # failure below can roll the install back to the previous version.
+    replaced: dict[str, Path] = {}
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            archive = tmp_path / "release.tar.gz"
+            _info(f"Downloading {asset['browser_download_url']}...")
+            urllib.request.urlretrieve(asset["browser_download_url"], archive)  # noqa: S310
 
-        extracted = next(tmp_path.glob("trailarr-*/"), None)
-        if not extracted:
-            _err("Failed to find extracted release directory")
-            sys.exit(1)
+            if sha_asset:
+                _verify_checksum(archive, sha_asset["browser_download_url"])
 
-        # Update application files (preserve data dir)
-        for name in ("backend", "frontend-build", "assets", "scripts"):
-            src = extracted / name
-            dst = _INSTALL_DIR / name
-            if src.exists():
+            with tarfile.open(archive, "r:gz") as tf:
+                tf.extractall(tmp_path, filter="data")
+
+            extracted = next(tmp_path.glob("trailarr-*/"), None)
+            if not extracted:
+                raise RuntimeError("Failed to find extracted release directory")
+
+            for name in ("backend", "frontend-build", "assets", "scripts"):
+                src = extracted / name
+                dst = _INSTALL_DIR / name
+                if not src.exists():
+                    continue
                 if dst.exists():
-                    shutil.rmtree(dst)
+                    aside = _INSTALL_DIR / f".{name}.old"
+                    if aside.exists():
+                        shutil.rmtree(aside)
+                    dst.rename(aside)
+                    replaced[name] = aside
                 shutil.copytree(src, dst)
 
-    # Re-run uv sync for updated Python dependencies
-    _info("Updating Python dependencies...")
-    uv = shutil.which("uv")
-    if uv:
-        backend_dir = _INSTALL_DIR / "backend"
-        uv_python_dir = backend_dir / ".uv-python"
-        uv_python_dir.mkdir(parents=True, exist_ok=True)
-        env = {k: v for k, v in os.environ.items() if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")}
-        env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
+        _sync_python_deps()
+        _fix_ownership()
 
-        subprocess.run(
-            [uv, "python", "install", "cpython-3.13"],
-            capture_output=True, text=True, env=env,
-        )
-        python_bins = sorted(uv_python_dir.glob("cpython-3.13*/bin/python3*"))
-        python_bin = next((p for p in python_bins if not p.name.endswith(("-config", ".1"))), None)
+        # Update CLI wrapper to latest version
+        _reinstall_cli()
 
-        sync_cmd = [uv, "sync", "--no-cache"]
-        if python_bin:
-            sync_cmd += ["--python", str(python_bin)]
+        # Record the new version so the app reports it (installer writes the raw tag)
+        update_env_var(env_path, "APP_VERSION", tag)
 
-        r = subprocess.run(sync_cmd, cwd=str(backend_dir), capture_output=True, text=True, env=env)
-        if r.returncode == 0:
-            _ok("Python dependencies updated")
-            if _IS_LINUX:
-                import pwd
-                try:
-                    uid = pwd.getpwnam("trailarr").pw_uid
-                    gid = pwd.getpwnam("trailarr").pw_gid
-                    for p in backend_dir.rglob("*"):
-                        try:
-                            os.chown(p, uid, gid)
-                        except OSError:
-                            pass
-                    os.chown(backend_dir, uid, gid)
-                except KeyError:
-                    pass
-        else:
-            _warn(f"uv sync warning: {r.stderr[:200]}")
+        for aside in replaced.values():
+            shutil.rmtree(aside, ignore_errors=True)
 
-    # Record the new version so the app reports it (installer writes the raw tag)
-    _update_env_var(_DATA_DIR / ".env", "APP_VERSION", tag)
-
-    # Update CLI wrapper to latest version
-    _reinstall_cli()
+    except Exception as exc:
+        _err(f"Update failed: {exc}")
+        _warn("Rolling back to the previous version...")
+        for name, aside in replaced.items():
+            dst = _INSTALL_DIR / name
+            if dst.exists():
+                shutil.rmtree(dst, ignore_errors=True)
+            if aside.exists():
+                aside.rename(dst)
+        _service_start()
+        sys.exit(1)
 
     _ok(f"Update to {tag} complete — restarting service")
     _service_start()
@@ -366,10 +523,14 @@ def _uninstall() -> None:
         _run("userdel", "-r", "trailarr")
         wrapper = Path("/usr/local/bin/trailarr")
         wrapper.unlink(missing_ok=True)
+        shutil.rmtree(Path("/var/log/trailarr"), ignore_errors=True)
     elif _IS_MACOS:
+        uid = _macos_uid()
+        _run("launchctl", "bootout", f"gui/{uid}", str(_PLIST_PATH))
         _run("launchctl", "unload", "-w", str(_PLIST_PATH))
         _PLIST_PATH.unlink(missing_ok=True)
         Path("/usr/local/bin/trailarr").unlink(missing_ok=True)
+        shutil.rmtree(_LOG_DIR, ignore_errors=True)
     elif _IS_WINDOWS:
         _run("powershell", "-NonInteractive", "-Command",
              f"Stop-ScheduledTask -TaskName '{_TASK_NAME}' -ErrorAction SilentlyContinue; "
@@ -403,7 +564,10 @@ def _usage() -> None:
                 "  [bold]trailarr restart[/bold]     — Restart the service\n"
                 "  [bold]trailarr status[/bold]      — Show service status\n"
                 "  [bold]trailarr logs [N][/bold]    — Show last N lines (default 50)\n"
+                "  [bold]trailarr version[/bold]     — Show installed and latest versions\n"
                 "  [bold]trailarr update[/bold]      — Update to latest version\n"
+                "                        [dim]trailarr update vX.Y.Z — specific version;"
+                " --force — reinstall[/dim]\n"
                 "  [bold]trailarr uninstall[/bold]   — Remove Trailarr\n\n"
                 f"  [dim italic]{elevation_hint}[/dim italic]",
                 title="[bold cyan]Trailarr CLI[/bold cyan]",
@@ -431,7 +595,12 @@ def main() -> None:
             lines = int(args[1]) if len(args) > 1 else 50
             _service_logs(lines)
         case "update":
-            _update()
+            rest = args[1:]
+            force = "--force" in rest
+            target = next((a for a in rest if not a.startswith("-")), None)
+            _update(target, force)
+        case "version" | "--version" | "-v":
+            _version()
         case "uninstall":
             _uninstall()
         case "help" | "--help" | "-h" | "":

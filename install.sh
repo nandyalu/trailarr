@@ -51,14 +51,37 @@ trap cleanup EXIT INT TERM
 # Check prerequisites
 # --------------------------------------------------------------------------
 check_uv() {
-    if ! command -v uv >/dev/null 2>&1; then
-        error "uv is not installed."
-        printf "\n  Install uv first (one command):\n"
-        printf "    ${YELLOW}curl -LsSf https://astral.sh/uv/install.sh | sh${RESET}\n\n"
-        printf "  Then re-run this installer.\n\n"
-        exit 1
+    if command -v uv >/dev/null 2>&1; then
+        success "uv found: $(uv --version)"
+        return
     fi
-    success "uv found: $(uv --version)"
+
+    # Under `curl | sudo sh`, root's PATH usually lacks the per-user uv that
+    # the standard uv install script puts in ~/.local/bin. Probe the invoking
+    # user's install locations and prepend to PATH (also needed later by the
+    # Python installer, which looks uv up in PATH).
+    SUDO_HOME=""
+    if [ -n "${SUDO_USER:-}" ]; then
+        SUDO_HOME=$(eval echo "~$SUDO_USER" 2>/dev/null || true)
+    fi
+    for candidate in \
+        "${SUDO_HOME:+$SUDO_HOME/.local/bin}" \
+        "$HOME/.local/bin" \
+        /opt/homebrew/bin \
+        /usr/local/bin; do
+        if [ -n "$candidate" ] && [ -x "$candidate/uv" ]; then
+            PATH="$candidate:$PATH"
+            export PATH
+            success "uv found: $("$candidate/uv" --version) (from $candidate)"
+            return
+        fi
+    done
+
+    error "uv is not installed (or not in root's PATH)."
+    printf "\n  Install uv first (one command):\n"
+    printf "    ${YELLOW}curl -LsSf https://astral.sh/uv/install.sh | sh${RESET}\n\n"
+    printf "  Then re-run this installer.\n\n"
+    exit 1
 }
 
 check_curl() {
@@ -72,19 +95,29 @@ check_curl() {
 # Download latest release asset
 # --------------------------------------------------------------------------
 download_release() {
-    info "Fetching latest release information..."
+    # Pin a specific release with: TRAILARR_VERSION=v0.9.9 (defaults to latest)
+    if [ -n "${TRAILARR_VERSION:-}" ]; then
+        info "Fetching release information for ${TRAILARR_VERSION}..."
+        RELEASE_URL="https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${TRAILARR_VERSION}"
+    else
+        info "Fetching latest release information..."
+        RELEASE_URL="https://api.github.com/repos/${GITHUB_REPO}/releases/latest"
+    fi
     RELEASE_JSON=$(curl -fsSL \
         -H "Accept: application/vnd.github+json" \
-        "https://api.github.com/repos/${GITHUB_REPO}/releases/latest") || {
+        "$RELEASE_URL") || {
         error "Failed to fetch release info from GitHub API"
+        printf "  If this repeats, you may be rate-limited (60 requests/hour per IP)\n"
+        printf "  or the requested version tag may not exist.\n"
         exit 1
     }
 
     APP_VERSION=$(printf '%s' "$RELEASE_JSON" | grep '"tag_name"' | head -n1 | cut -d'"' -f4)
-    success "Latest version: ${APP_VERSION}"
+    success "Installing version: ${APP_VERSION}"
 
-    # Prefer the pre-built release asset (includes frontend-build)
-    ASSET_URL=$(printf '%s' "$RELEASE_JSON" | grep '"browser_download_url"' | grep 'release\.tar\.gz' | head -n1 | cut -d'"' -f4)
+    # Prefer the pre-built release asset (includes frontend-build).
+    # Match the URL end exactly so the .sha256 sibling asset is not picked up.
+    ASSET_URL=$(printf '%s' "$RELEASE_JSON" | grep '"browser_download_url"' | grep 'release\.tar\.gz"' | head -n1 | cut -d'"' -f4)
 
     if [ -z "$ASSET_URL" ]; then
         error "No release asset found for version ${APP_VERSION}."
@@ -103,6 +136,23 @@ download_release() {
     }
     printf '\r\033[K'
     success "Download complete"
+
+    # Verify checksum when the release publishes one (older releases don't)
+    SHA_URL=$(printf '%s' "$RELEASE_JSON" | grep '"browser_download_url"' | grep 'release\.tar\.gz\.sha256"' | head -n1 | cut -d'"' -f4)
+    if [ -n "$SHA_URL" ]; then
+        EXPECTED=$(curl -fsSL "$SHA_URL" | cut -d' ' -f1)
+        if command -v sha256sum >/dev/null 2>&1; then
+            ACTUAL=$(sha256sum "$ARCHIVE" | cut -d' ' -f1)
+        else
+            ACTUAL=$(shasum -a 256 "$ARCHIVE" | cut -d' ' -f1)
+        fi
+        if [ -n "$EXPECTED" ] && [ "$EXPECTED" != "$ACTUAL" ]; then
+            error "Checksum mismatch for downloaded archive."
+            printf "  expected: %s\n  actual:   %s\n" "$EXPECTED" "$ACTUAL"
+            exit 1
+        fi
+        success "Checksum verified"
+    fi
 
     info "Extracting archive..."
     tar -xzf "$ARCHIVE" -C "$TEMP_DIR"
