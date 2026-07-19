@@ -28,14 +28,11 @@ export class PlayVideoDialogComponent implements AfterViewInit {
     const videoUrl = `/api/v1/files/video?file_path=${encodeURIComponent(this.filePath())}`;
     const videoRef = `
       <style>
-        video {
-          width: 75vw;
+        .video-body video {
+          display: block;
+          width: 100%;
           height: auto;
-        }
-        @media (max-width: 768px) {
-          video {
-            width: 100%;
-          }
+          max-height: calc(100vh - 12rem);
         }
       </style>
       <video controls controlsList="nodownload">

@@ -1,8 +1,10 @@
 dialog {
+  width: min(80vw, 1200px);
   max-width: min(80vw, 1200px);
 }
 
 .video-body {
   padding: 0;
   background: #000;
+  overflow: hidden;
 }
