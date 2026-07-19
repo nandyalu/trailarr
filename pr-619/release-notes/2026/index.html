@@ -3271,6 +3271,9 @@
 <p><strong>Logs database now reclaims disk space</strong> — The daily logs cleanup deleted old log entries but SQLite never returned the freed space, so <code>logs.db</code> only ever grew. The cleanup now purges old entries in a single efficient statement and compacts the database file afterwards (a 13 MB logs file with 50k old entries shrinks to ~0.1 MB in under a second).</p>
 </li>
 <li>
+<p><strong>Direct installs now report the correct version after updating</strong> — Running <code>trailarr update</code> on a bare-metal (non-Docker) install replaced the application files but never updated the recorded version, so the UI and startup banner kept showing the old version even though the update itself succeeded. The update command now writes the new version alongside the app files. Note: since the update runs the previously installed CLI, the version display corrects itself starting with the <em>next</em> update after this release — or immediately, by editing <code>APP_VERSION</code> in the data directory's <code>.env</code> (e.g. <code>/var/lib/trailarr/.env</code> on Linux) and running <code>trailarr restart</code>.</p>
+</li>
+<li>
 <p><strong>Configured <code>PGID</code> is now preserved for NFS access</strong> — Trailarr set the configured <code>PGID</code> as the app user's primary group but never added the user to that group's member list, so the group was missing from the process's supplementary groups after startup. On NFS servers that authorize against the supplementary group list, this caused permission errors on group-owned media paths even though <code>PUID</code>/<code>PGID</code> were configured correctly. The entrypoint now explicitly adds the app user to the configured group, so the <code>PGID</code> survives into the running process. Thanks <a href="https://github.com/d4rk22">@d4rk22</a>! (<a href="https://github.com/nandyalu/trailarr/pull/620">#620</a>)</p>
 </li>
 </ul>
