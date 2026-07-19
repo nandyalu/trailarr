@@ -3291,6 +3291,11 @@
 <p><strong>Configured <code>PGID</code> is now preserved for NFS access</strong> — Trailarr set the configured <code>PGID</code> as the app user's primary group but never added the user to that group's member list, so the group was missing from the process's supplementary groups after startup. On NFS servers that authorize against the supplementary group list, this caused permission errors on group-owned media paths even though <code>PUID</code>/<code>PGID</code> were configured correctly. The entrypoint now explicitly adds the app user to the configured group, so the <code>PGID</code> survives into the running process. Thanks <a href="https://github.com/d4rk22">@d4rk22</a>! (<a href="https://github.com/nandyalu/trailarr/pull/620">#620</a>)</p>
 </li>
 </ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>The docs site now publishes an <a href="https://nandyalu.github.io/trailarr/llms.txt"><code>llms.txt</code></a> file — AI assistants asked to install or troubleshoot Trailarr can start there for accurate, up-to-date commands and links to the right doc pages.</li>
+<li>Direct install docs updated and corrected: macOS service commands now use the user's launchd session, Apple Silicon ffmpeg sources added, and the Windows guide no longer incorrectly claims network shares are accessible from the default startup task.</li>
+</ul>
 <hr />
 <h2 id="v099-july-05-2026"><strong>v0.9.9</strong> - <em>July 05, 2026</em></h2>
 <p><strong>What's New / Bug Fixes:</strong> ✨</p>
