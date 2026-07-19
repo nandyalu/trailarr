@@ -25,6 +25,13 @@ logger = ModuleLogger("Notifications")
 BATCH_WINDOW_SECONDS = 30.0
 MAX_LINES_PER_MESSAGE = 10
 
+# Public HTTPS URL — services like Discord fetch the bot avatar themselves,
+# so a local file path won't work here.
+_LOGO_URL = (
+    "https://raw.githubusercontent.com/nandyalu/trailarr/main/"
+    "frontend/src/assets/logos/trailarr-192.png"
+)
+
 _queue: deque["EventNote"] = deque()
 _dispatch_task: asyncio.Task | None = None
 _stop_event: asyncio.Event | None = None
@@ -53,29 +60,37 @@ def _event_label(event_type: str) -> str:
     return event_type.replace("_", " ").title()
 
 
-def _media_title(media_id: int | None, cache: dict[int, str]) -> str:
+def _media_info(media_id: int | None, cache: dict[int, object]):
+    """Read the media row for a note (cached per dispatch cycle).
+    Returns None for system notes and for lookups that fail."""
     if media_id is None:
-        return ""
+        return None
     if media_id not in cache:
         try:
-            cache[media_id] = media_manager.read(media_id).title
+            cache[media_id] = media_manager.read(media_id)
         except Exception:
-            cache[media_id] = f"media [{media_id}]"
+            cache[media_id] = None
     return cache[media_id]
 
 
-def _format_batch(notes: list[EventNote]) -> str:
+def _format_batch(notes: list[EventNote], media_cache: dict[int, object]) -> str:
     """One message body for a channel's batch: up to MAX_LINES lines,
     then a summary of the rest."""
-    title_cache: dict[int, str] = {}
     lines: list[str] = []
     for note in notes[:MAX_LINES_PER_MESSAGE]:
-        title = _media_title(note.media_id, title_cache)
         line = f"{_event_label(note.event_type)}"
-        if title:
-            line += f": {title}"
+        media = _media_info(note.media_id, media_cache)
+        if media is not None:
+            line += f": {media.title} ({media.year}) [#{media.id}]"
+        elif note.media_id is not None:
+            line += f": media [{note.media_id}]"
         if note.detail:
             line += f" — {note.detail}"
+        if media is not None and media.youtube_trailer_id:
+            line += (
+                " — [YouTube](https://www.youtube.com/watch?v="
+                f"{media.youtube_trailer_id})"
+            )
         lines.append(line)
     overflow = len(notes) - MAX_LINES_PER_MESSAGE
     if overflow > 0:
@@ -83,14 +98,55 @@ def _format_batch(notes: list[EventNote]) -> str:
     return "\n".join(lines)
 
 
-def _send_sync(url: str, title: str, body: str) -> bool:
-    """Blocking Apprise send — run via asyncio.to_thread."""
+def _poster_attachment(
+    notes: list[EventNote], media_cache: dict[int, object]
+) -> str | None:
+    """Poster file to attach, only when the whole batch is about exactly
+    one media item — batched summaries stay compact, no image pile-up."""
+    media_ids = {n.media_id for n in notes if n.media_id is not None}
+    if len(media_ids) != 1:
+        return None
+    media = _media_info(next(iter(media_ids)), media_cache)
+    if media is None or not media.poster_path:
+        return None
+    from core.download.image import _url_to_fs_path
+
+    poster = _url_to_fs_path(media.poster_path)
+    return str(poster) if poster.is_file() else None
+
+
+def _send_sync(
+    url: str, title: str, body: str, attach: str | None = None
+) -> bool:
+    """Blocking Apprise send — run via asyncio.to_thread. Services without
+    attachment support simply send the text message."""
     import apprise
 
-    notifier = apprise.Apprise()
+    # Brand outgoing messages as Trailarr (bot avatar/icon on Discord,
+    # Slack, Telegram, …) instead of Apprise's default logo.
+    asset = apprise.AppriseAsset(
+        app_id="Trailarr",
+        app_desc="Trailarr",
+        app_url="https://nandyalu.github.io/trailarr/",
+        image_url_mask=_LOGO_URL,
+        image_url_logo=_LOGO_URL,
+    )
+    notifier = apprise.Apprise(asset=asset)
     if not notifier.add(url):
         return False
-    return bool(notifier.notify(title=title, body=body))
+    # Discord only renders rich embeds (clickable [YouTube](…) links,
+    # colored strip) in markdown mode, which otherwise needs an explicit
+    # ?format=markdown on the URL — default it so users don't have to.
+    from apprise.plugins.discord import NotifyDiscord
+
+    for server in notifier:
+        if isinstance(server, NotifyDiscord):
+            server.notify_format = apprise.NotifyFormat.MARKDOWN
+    return bool(
+        notifier.notify(
+            title=title, body=body, body_format="markdown", attach=attach
+        )
+    )
 
 
 async def send_test(channel_id: int) -> bool:
@@ -125,10 +181,14 @@ async def _dispatch_pending() -> None:
         for channel_id, url in subscribed:
             per_channel.setdefault(channel_id, (url, []))[1].append(note)
 
+    media_cache: dict[int, object] = {}
     for channel_id, (url, channel_notes) in per_channel.items():
-        body = _format_batch(channel_notes)
+        body = _format_batch(channel_notes, media_cache)
+        attach = _poster_attachment(channel_notes, media_cache)
         try:
-            ok = await asyncio.to_thread(_send_sync, url, "Trailarr", body)
+            ok = await asyncio.to_thread(
+                _send_sync, url, "Trailarr", body, attach
+            )
             if not ok:
                 logger.warning(
                     f"Notification send failed for channel [{channel_id}]"
