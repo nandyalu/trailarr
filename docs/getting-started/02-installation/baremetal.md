@@ -1,6 +1,6 @@
 # Direct Installation
 
-{{ version_badge("upd", "0.9.0") }}
+{{ version_badge("upd", "0.10.0") }}
 
 Trailarr supports native direct installation on **Linux, macOS, and Windows** — no Docker required.
 The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python package manager that also manages Python versions.
@@ -59,12 +59,28 @@ The only prerequisite is [`uv`](https://docs.astral.sh/uv/), a fast Python packa
 
 The installer will:
 
-1. Download the latest release (includes pre-built web interface)
+1. Download the latest release (includes pre-built web interface) and verify its checksum
 2. Set up an isolated Python environment with `uv sync`
 3. Download the correct ffmpeg static binary for your OS and CPU architecture
 4. Automatically select an available port starting from `7889`
 5. Create and start a system service (systemd / launchd / Task Scheduler)
 6. Detect GPU hardware and display driver installation instructions
+
+!!! tip "Re-running the installer"
+    Re-running the installer over an existing install is safe: it stops the running service first, keeps your configured port, and preserves any settings you have changed (log level, monitor interval, etc.). Only the application files and recorded version are refreshed.
+
+!!! note "Installing a specific version"
+    Set `TRAILARR_VERSION` to pin a release instead of installing the latest:
+
+    ```bash
+    # Linux / macOS
+    curl -LsSf https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo TRAILARR_VERSION=v0.9.9 sh
+    ```
+
+    ```powershell
+    # Windows (before running the installer)
+    $env:TRAILARR_VERSION = 'v0.9.9'
+    ```
 
 ---
 
@@ -134,19 +150,25 @@ The installer will:
 Use the `trailarr` CLI that is installed automatically:
 
 ```bash
-trailarr run        # Start the service
-trailarr stop       # Stop the service
-trailarr restart    # Restart the service
-trailarr status     # Show current status
-trailarr logs       # Show last 50 log lines
-trailarr logs 200   # Show last 200 log lines
-trailarr update     # Update to the latest version
-trailarr uninstall  # Remove Trailarr
+trailarr run             # Start the service
+trailarr stop            # Stop the service
+trailarr restart         # Restart the service
+trailarr status          # Show current status
+trailarr logs            # Show last 50 log lines
+trailarr logs 200        # Show last 200 log lines
+trailarr version         # Show installed and latest versions
+trailarr update          # Update to the latest version
+trailarr update vX.Y.Z   # Install a specific version
+trailarr update --force  # Reinstall even if already up to date
+trailarr uninstall       # Remove Trailarr
 ```
 
 !!! note "Windows"
     On Windows, open a PowerShell with Administrator rights before running `trailarr` commands
     that affect the service (run, stop, restart, update, uninstall).
+
+!!! warning "Windows: media on network shares"
+    The Trailarr startup task runs without stored network credentials (S4U logon), so mapped drives and password-protected network shares are **not** accessible to it. If your media lives on a network share, open **Task Scheduler → Trailarr → Properties** and select *"Run whether user is logged on or not"* (which stores your password), or mount the media on a local path.
 
 You can also use OS-native tools directly:
 
@@ -161,11 +183,19 @@ You can also use OS-native tools directly:
 
 === "macOS"
 
+    The service is a LaunchAgent in your user's launchd session:
+
     ```bash
-    launchctl start com.trailarr.app
-    launchctl stop com.trailarr.app
-    launchctl list com.trailarr.app
+    launchctl kickstart gui/$(id -u)/com.trailarr.app   # Start
+    launchctl bootout gui/$(id -u)/com.trailarr.app     # Stop
+    launchctl print gui/$(id -u)/com.trailarr.app       # Status
     tail -f ~/Library/Logs/trailarr/trailarr.log
+    ```
+
+    After a stop, load it again with:
+
+    ```bash
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.trailarr.app.plist
     ```
 
 === "Windows"
@@ -267,18 +297,22 @@ The configuration file is at:
 ## Updating
 
 ```bash
-trailarr update
+trailarr version           # Check for updates without installing anything
+trailarr update            # Update to the latest release
+trailarr update vX.Y.Z     # Install a specific version
+trailarr update --force    # Reinstall even if already up to date
 ```
 
-This will:
+An update will:
 
-1. Stop the service
-2. Back up your database and `.env` to the `backups/` folder
-3. Download the latest release
-4. Run `uv sync` to update Python dependencies
-5. Restart the service
+1. Check the target release — if you are already on it, nothing is changed
+2. Stop the service
+3. Back up your database and `.env` to the `backups/` folder
+4. Download the release and verify its checksum
+5. Swap in the new application files and run `uv sync` to update Python dependencies
+6. Restart the service
 
-Your data directory is **never modified** during an update.
+If any step fails, the previous version is automatically restored and the service restarted — a failed update never leaves a broken install. Your data directory is **never modified** during an update.
 
 ---
 

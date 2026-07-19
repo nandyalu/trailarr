@@ -299,7 +299,17 @@ def _redirect_output_to_log() -> None:
         pass
     log_dir = _DATA_DIR / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
-    f = open(log_dir / "trailarr.log", "a", encoding="utf-8", buffering=1)
+    log_file = log_dir / "trailarr.log"
+    # Rotate at 5 MB (checked at startup) so the file cannot grow unbounded;
+    # one previous file is kept as trailarr.log.1.
+    try:
+        if log_file.exists() and log_file.stat().st_size > 5 * 1024 * 1024:
+            rotated = log_dir / "trailarr.log.1"
+            rotated.unlink(missing_ok=True)
+            log_file.rename(rotated)
+    except OSError:
+        pass
+    f = open(log_file, "a", encoding="utf-8", buffering=1)
     sys.stdout = f
     sys.stderr = f
 
@@ -315,8 +325,6 @@ def main() -> None:
         _print_banner(env, console)
 
         if console:
-            from rich.rule import Rule
-
             console.rule("[bold]Starting Trailarr[/bold]")
         else:
             print("=" * 60, flush=True)

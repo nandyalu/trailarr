@@ -1,5 +1,6 @@
 """Abstract base class shared by all platform installers."""
 
+import os
 import shutil
 import subprocess
 import sys
@@ -7,7 +8,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from common.config import ask_port, write_initial_config
-from common.display import console, print_info, print_section, print_step, print_success, step_context
+from common.display import print_info, print_success, step_context
+from common.env_file import load_env
 from common.ffmpeg import download_ffmpeg
 from common.gpu import detect_gpus, print_gpu_report
 
@@ -40,15 +42,27 @@ class BaseInstaller(ABC):
 
     def run(self) -> None:
         self.check_prerequisites()
+        # Read any existing config before touching files, and stop a running
+        # service so it doesn't hold the app port during re-install/upgrade.
+        existing_env = load_env(self.env_path)
+        self.stop_existing_service()
         self.create_dirs()
         self.copy_files()
         self.setup_python()
         self.download_ffmpeg_binary()
-        port = ask_port()
+        port = self._resolve_port(existing_env)
         self.write_config(port)
         self.create_service(port)
         self.install_cli()
         self.detect_and_report_gpu()
+
+    def _resolve_port(self, existing_env: dict[str, str]) -> int:
+        """Keep the port from a previous install so bookmarks keep working."""
+        existing = existing_env.get("APP_PORT", "")
+        if existing.isdigit() and 0 < int(existing) <= 65535:
+            print_info(f"Reusing configured port {existing}")
+            return int(existing)
+        return ask_port()
 
     # ------------------------------------------------------------------
     # Shared implementations
@@ -69,14 +83,55 @@ class BaseInstaller(ABC):
             uv = shutil.which("uv")
             if not uv:
                 raise RuntimeError("uv not found in PATH. Please install uv first: https://docs.astral.sh/uv/")
+
+            # Install a managed Python inside the install dir so the account
+            # the service runs as owns/reads the stdlib. Without this, uv
+            # reuses the installing user's ~/.local/share/uv/python (root's,
+            # on Linux/macOS), which the service account cannot read —
+            # "Failed to import encodings" at service start.
+            uv_python_dir = self.backend_dir / ".uv-python"
+            uv_python_dir.mkdir(parents=True, exist_ok=True)
+
+            # Clear VIRTUAL_ENV to avoid conflicts with the outer `uv run`
+            # environment the installer itself executes in.
+            env = {
+                k: v
+                for k, v in os.environ.items()
+                if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")
+            }
+            env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
+
+            subprocess.run(
+                [uv, "python", "install", "cpython-3.13"],
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+
+            python_bin = self._find_managed_python(uv_python_dir)
+            if not python_bin:
+                raise RuntimeError(f"Python 3.13 not found in {uv_python_dir} after install")
+
             result = subprocess.run(
-                [uv, "sync", "--no-cache-dir"],
+                [uv, "sync", "--no-cache", "--python", str(python_bin)],
                 cwd=self.backend_dir,
                 capture_output=True,
                 text=True,
+                env=env,
             )
             if result.returncode != 0:
                 raise RuntimeError(f"uv sync failed:\n{result.stderr}")
+
+    @staticmethod
+    def _find_managed_python(uv_python_dir: Path) -> Path | None:
+        if sys.platform == "win32":
+            bins = sorted(uv_python_dir.glob("cpython-3.13*/python.exe"))
+            return bins[0] if bins else None
+        bins = sorted(uv_python_dir.glob("cpython-3.13*/bin/python3*"))
+        return next(
+            (p for p in bins if not p.name.endswith(("-config", ".1"))),
+            None,
+        )
 
     def download_ffmpeg_binary(self) -> None:
         self.ffmpeg_path, self.ffprobe_path = download_ffmpeg(self.bin_dir)
@@ -112,6 +167,10 @@ class BaseInstaller(ABC):
     def check_prerequisites(self) -> None: ...
 
     @abstractmethod
+    def stop_existing_service(self) -> None:
+        """Stop a service left over from a previous install (no-op if absent)."""
+
+    @abstractmethod
     def create_dirs(self) -> None: ...
 
     @abstractmethod
@@ -128,6 +187,3 @@ class BaseInstaller(ABC):
         if sys.platform == "win32":
             return self.venv_dir / "Scripts" / "python.exe"
         return self.venv_dir / "bin" / "python"
-
-    def _run(self, cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
-        return subprocess.run(cmd, check=True, **kwargs)

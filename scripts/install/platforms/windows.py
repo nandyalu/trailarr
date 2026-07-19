@@ -2,10 +2,9 @@
 
 import os
 import subprocess
-from pathlib import Path, WindowsPath
+from pathlib import Path
 
 from common.display import (
-    console,
     print_info,
     print_warning,
     step_context,
@@ -36,6 +35,19 @@ class WindowsInstaller(BaseInstaller):
                 "This installer must be run as Administrator.\n"
                 "Right-click install.ps1 and choose 'Run as Administrator'."
             )
+
+    def stop_existing_service(self) -> None:
+        subprocess.run(
+            [
+                "powershell",
+                "-NonInteractive",
+                "-Command",
+                f"Stop-ScheduledTask -TaskName '{_TASK_NAME}'"
+                " -ErrorAction SilentlyContinue",
+            ],
+            check=False,
+            capture_output=True,
+        )
 
     def create_dirs(self) -> None:
         with step_context("Creating directories"):
@@ -131,6 +143,17 @@ Start-ScheduledTask -TaskName '{_TASK_NAME}'
                     f"Failed to register task:\n{result.stderr.strip()}"
                 )
         print_info(f"Task Scheduler startup task registered for {username}")
+        # S4U runs without network credentials — flag the limitation for
+        # users whose media lives on a NAS.
+        print_warning(
+            "The Trailarr task runs without network credentials (S4U logon):"
+            " mapped drives and password-protected network shares will NOT be"
+            " accessible. If your media is on a network share, re-register the"
+            " task with a password-based logon"
+            " (Task Scheduler > Trailarr > Properties > 'Run whether user is"
+            " logged on or not' with your password), or mount the media"
+            " locally."
+        )
 
     def install_cli(self) -> None:
         with step_context("Installing trailarr CLI command"):
@@ -180,5 +203,3 @@ def _add_to_system_path(new_path: str) -> None:
     except Exception as e:
         print_warning(f"Could not update system PATH automatically: {e}")
         print_warning(f"Add manually: {new_path}")
-
-

@@ -1,6 +1,5 @@
 """Linux-specific installer: creates trailarr system user, systemd service."""
 
-import grp
 import os
 import pwd
 import subprocess
@@ -29,6 +28,15 @@ class LinuxInstaller(BaseInstaller):
             raise RuntimeError(
                 "This installer must be run with root privileges.\n"
                 "Please re-run with sudo:  sudo bash install.sh"
+            )
+
+    def stop_existing_service(self) -> None:
+        if Path("/etc/systemd/system/trailarr.service").exists():
+            print_info("Stopping existing trailarr service...")
+            subprocess.run(
+                ["systemctl", "stop", "trailarr"],
+                check=False,
+                capture_output=True,
             )
 
     def create_dirs(self) -> None:
@@ -89,66 +97,9 @@ class LinuxInstaller(BaseInstaller):
             os.chown(self.env_path, uid, gid)
 
     def setup_python(self) -> None:
-        with step_context("Setting up Python environment (uv sync)"):
-            import shutil as _shutil
-
-            uv = _shutil.which("uv")
-            if not uv:
-                raise RuntimeError("uv not found in PATH.")
-
-            # Install Python into the install dir so the trailarr service user owns
-            # the stdlib. Without this, uv reuses root's ~/.local/share/uv/python which
-            # trailarr cannot read, causing "Failed to import encodings" at service start.
-            uv_python_dir = self.backend_dir / ".uv-python"
-            uv_python_dir.mkdir(parents=True, exist_ok=True)
-
-            # Clear VIRTUAL_ENV to avoid conflicts with the outer `uv run` environment.
-            env = {
-                k: v
-                for k, v in os.environ.items()
-                if k not in ("VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT")
-            }
-            env["UV_PYTHON_INSTALL_DIR"] = str(uv_python_dir)
-
-            # Explicitly install Python 3.13 into our directory so uv doesn't fall
-            # back to root's existing managed Python at the default location.
-            subprocess.run(
-                [uv, "python", "install", "cpython-3.13"],
-                capture_output=True,
-                text=True,
-                env=env,
-            )
-
-            # Locate the installed binary to pass explicitly to `uv sync`, ensuring
-            # the venv's pyvenv.cfg points to our Python, not root's.
-            python_bins = sorted(
-                uv_python_dir.glob("cpython-3.13*/bin/python3*")
-            )
-            python_bin = next(
-                (
-                    p
-                    for p in python_bins
-                    if not p.name.endswith(("-config", ".1"))
-                ),
-                None,
-            )
-            if not python_bin:
-                raise RuntimeError(
-                    f"Python 3.13 not found in {uv_python_dir} after install"
-                )
-
-            result = subprocess.run(
-                [uv, "sync", "--no-cache", "--python", str(python_bin)],
-                cwd=self.backend_dir,
-                capture_output=True,
-                text=True,
-                env=env,
-            )
-            if result.returncode != 0:
-                raise RuntimeError(f"uv sync failed:\n{result.stderr}")
-
+        super().setup_python()
         # Re-apply ownership so the trailarr service user can use the venv and
-        # the Python installation (both now live under backend_dir).
+        # the managed Python installation (both live under backend_dir).
         uid = pwd.getpwnam("trailarr").pw_uid
         gid = pwd.getpwnam("trailarr").pw_gid
         _chown_recursive(self.backend_dir, uid, gid)
