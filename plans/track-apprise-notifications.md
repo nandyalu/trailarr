@@ -42,6 +42,20 @@ behavior visible during its bake window.
 7. **What is notifiable:** exactly the `EventType` values. No custom templates in this
    release (keep scope); message format is `<emoji> <Event label>: <media title> — <desc>`
    reusing the same description strings the Events page builds.
+8. **Enriched messages (July 2026 amendment):** lines carry `<title> (<year>) [#<id>]`
+   plus a `[YouTube](…)` markdown link when the media has a `youtube_trailer_id`
+   (body sent with `body_format=markdown`; non-markdown services degrade to raw text).
+   The media **poster is attached only when a batch is about exactly one media item**
+   (single-media steady-state case) — batched summaries stay text-only so bulk syncs
+   don't pile up images. Services without attachment support just get the text. No
+   Trailarr deep-link in messages yet: the app has no external base-URL setting
+   (possible follow-up).
+9. **Branding (July 2026 amendment):** sends use an `AppriseAsset` with
+   `app_id=Trailarr` and the repo's `trailarr-192.png` (raw GitHub URL — must stay
+   public HTTPS; services fetch it themselves) as `image_url_mask`/`image_url_logo`,
+   so the Discord/Slack/Telegram bot avatar is the Trailarr logo instead of Apprise's.
+   Discord is force-defaulted to `NotifyFormat.MARKDOWN` in `_send_sync` (embeds +
+   clickable links) so users don't need `?format=markdown` on their URL.
 
 ## Wargame
 

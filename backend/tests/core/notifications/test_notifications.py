@@ -1,7 +1,9 @@
 """Tests for notification channels (manager + dispatcher) —
 plans/track-apprise-notifications.md wargame scenarios."""
 
-from unittest.mock import patch
+import json
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -175,9 +177,135 @@ class TestDispatcher:
             EventNote("TRAILER_DOWNLOADED", "SYSTEM", None, "abc123"),
             EventNote("MEDIA_ADDED", "SYSTEM", None, ""),
         ]
-        body = dispatcher._format_batch(notes)
+        body = dispatcher._format_batch(notes, {})
         assert "Trailer Downloaded — abc123" in body
         assert "Media Added" in body
+
+
+def _fake_media(**overrides):
+    base = dict(
+        id=7,
+        title="Test Movie",
+        year=2024,
+        youtube_trailer_id="ytabc123",
+        poster_path="/images/movies/posters/x.jpg",
+    )
+    base.update(overrides)
+    return SimpleNamespace(**base)
+
+
+class TestEnrichedNotifications:
+    """Lines carry year/id/YouTube link; posters attach only when a batch
+    is about exactly one media item."""
+
+    def test_lines_include_year_id_and_youtube_link(self):
+        with patch.object(
+            dispatcher.media_manager, "read", return_value=_fake_media()
+        ):
+            body = dispatcher._format_batch(
+                [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "1080p")], {}
+            )
+        assert "Trailer Downloaded: Test Movie (2024) [#7] — 1080p" in body
+        assert "[YouTube](https://www.youtube.com/watch?v=ytabc123)" in body
+
+    def test_no_youtube_link_without_trailer_id(self):
+        with patch.object(
+            dispatcher.media_manager,
+            "read",
+            return_value=_fake_media(youtube_trailer_id=None),
+        ):
+            body = dispatcher._format_batch(
+                [EventNote("MEDIA_ADDED", "SYSTEM", 7, "")], {}
+            )
+        assert "Media Added: Test Movie (2024) [#7]" in body
+        assert "YouTube" not in body
+
+    def test_failed_media_lookup_keeps_fallback_label(self):
+        with patch.object(
+            dispatcher.media_manager,
+            "read",
+            side_effect=RuntimeError("gone"),
+        ):
+            body = dispatcher._format_batch(
+                [EventNote("MEDIA_ADDED", "SYSTEM", 42, "")], {}
+            )
+        assert "Media Added: media [42]" in body
+
+    def test_poster_attached_for_single_media_batch(self, tmp_path):
+        poster = tmp_path / "poster.jpg"
+        poster.write_bytes(b"jpg")
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, ""),
+            EventNote("MEDIA_UPDATED", "SYSTEM", 7, ""),
+        ]
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=_fake_media()
+            ),
+            patch("core.download.image._url_to_fs_path", return_value=poster),
+        ):
+            assert dispatcher._poster_attachment(notes, {}) == str(poster)
+
+    def test_no_poster_for_multi_media_batch(self):
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, ""),
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 8, ""),
+        ]
+        assert dispatcher._poster_attachment(notes, {}) is None
+
+    def test_no_poster_when_file_missing(self, tmp_path):
+        notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")]
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=_fake_media()
+            ),
+            patch(
+                "core.download.image._url_to_fs_path",
+                return_value=tmp_path / "nope.jpg",
+            ),
+        ):
+            assert dispatcher._poster_attachment(notes, {}) is None
+
+    @pytest.mark.asyncio
+    async def test_dispatch_passes_poster_to_send(self, tmp_path):
+        poster = tmp_path / "poster.jpg"
+        poster.write_bytes(b"jpg")
+        make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", 7, "1080p")
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=_fake_media()
+            ),
+            patch("core.download.image._url_to_fs_path", return_value=poster),
+            patch.object(
+                dispatcher, "_send_sync", return_value=True
+            ) as send,
+        ):
+            await dispatcher._dispatch_pending()
+        assert send.call_count == 1
+        assert send.call_args[0][3] == str(poster)
+
+
+class TestBranding:
+    """Outgoing messages are branded as Trailarr (avatar/icon), and Discord
+    defaults to markdown embeds so [YouTube](…) links render. No network:
+    requests.post is intercepted."""
+
+    def test_discord_payload_has_trailarr_avatar_and_embed(self):
+        resp = MagicMock(status_code=200, content=b"", headers={})
+        with patch("requests.post", return_value=resp) as post:
+            ok = dispatcher._send_sync(
+                "discord://fakewebhookid/fakewebhooktoken",
+                "Trailarr",
+                "Trailer Downloaded — [YouTube](https://youtu.be/x)",
+            )
+        assert ok
+        raw = post.call_args.kwargs.get("data") or post.call_args.args[1]
+        payload = json.loads(raw)
+        assert payload["avatar_url"].endswith("trailarr-192.png")
+        embed = payload["embeds"][0]
+        assert embed["author"]["name"] == "Trailarr"
+        assert "[YouTube](https://youtu.be/x)" in embed["description"]
 
 
 class TestDispatcherLifecycle:
