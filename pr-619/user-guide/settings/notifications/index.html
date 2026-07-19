@@ -1732,6 +1732,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Adding a channel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-a-discord-webhook" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Setting up a Discord webhook
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-messages-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the messages look like
+      </span>
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2745,6 +2773,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Adding a channel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-a-discord-webhook" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Setting up a Discord webhook
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-messages-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the messages look like
+      </span>
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2888,9 +2944,7 @@
 
 
 <h1 id="notifications">Notifications</h1>
-<p>Trailarr can send notifications to your favorite services using
-<a href="https://github.com/caronc/apprise">Apprise</a> — Discord, Telegram, Slack, email,
-Pushover, ntfy, Gotify and <a href="https://appriseit.com/services/">100+ others</a>.</p>
+<p>Trailarr can send notifications to your favorite services using <a href="https://github.com/caronc/apprise">Apprise</a> — Discord, Telegram, Slack, email, Pushover, ntfy, Gotify and <a href="https://appriseit.com/services/">100+ others</a>.</p>
 <p>Set them up under <strong>Settings → Notifications</strong>.</p>
 <h2 id="adding-a-channel">Adding a channel</h2>
 <ol>
@@ -2928,31 +2982,28 @@ Pushover, ntfy, Gotify and <a href="https://appriseit.com/services/">100+ others
 </tr>
 </tbody>
 </table>
-<p>See the <a href="https://appriseit.com/services/">Apprise services list</a> for every
-supported service and its URL format.</p>
+<p>See the <a href="https://appriseit.com/services/">Apprise services list</a> for every supported service and its URL format.</p>
 </li>
 <li>
-<p>Pick which <strong>events</strong> the channel should receive — for example, subscribe a
-   <code>#trailarr-downloads</code> channel to <em>Trailer Downloaded</em> only, right alongside
-   your Radarr/Sonarr/Plex notifications.</p>
+<p>Pick which <strong>events</strong> the channel should receive — for example, subscribe a <code>#trailarr-downloads</code> channel to <em>Trailer Downloaded</em> only, right alongside your Radarr/Sonarr/Plex notifications.</p>
 </li>
-<li>Click <strong>Save</strong>, then use the <strong>Test</strong> button to send a test message and
-   confirm the setup.</li>
+<li>Click <strong>Save</strong>, then use the <strong>Test</strong> button to send a test message and confirm the setup.</li>
 </ol>
+<h3 id="setting-up-a-discord-webhook">Setting up a Discord webhook</h3>
+<ol>
+<li>In Discord, open the channel's settings (gear icon) → <strong>Integrations</strong> → <strong>Webhooks</strong> → <strong>New Webhook</strong>.</li>
+<li>Give the webhook a name and pick the channel it posts to, then click <strong>Copy Webhook URL</strong>.</li>
+<li>Paste that URL directly into Trailarr as the channel URL — the <code>https://discord.com/api/webhooks/…</code> form works as-is, or you can rewrite it as <code>discord://webhook_id/webhook_token</code>.</li>
+</ol>
+<h2 id="what-the-messages-look-like">What the messages look like</h2>
+<p><strong>Discord</strong> channels get rich embeds, sent by a Trailarr-branded bot: the media title as the header, the event details, <strong>Media</strong>/<strong>Trailer</strong> fields with a ▶ YouTube link to the trailer, the poster inside the embed, and a color-coded strip (green for downloads, red for deletions/failures). When one message covers many media items (e.g. a library sync), it's a compact summary embed instead — no poster pile-up.</p>
+<p><strong>All other services</strong> receive the same information as text: each line carries the event, the media title, year and id, plus a YouTube link when the media has a trailer. On services that support attachments, single-media notifications also include the poster image.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
-<li><strong>Batching:</strong> bulk operations (library syncs, full scans) can produce many
-  events at once — Trailarr groups them into a single summarized message per
-  channel instead of flooding it.</li>
-<li><strong>User-initiated events</strong> (your own clicks in the UI) are excluded by
-  default; enable <em>Include user-initiated events</em> per channel if you want them.</li>
-<li><strong>Apprise URLs contain credentials</strong> — Trailarr stores them write-only. They
-  are never shown again after saving (the list shows a masked form like
-  <code>discord://12ab****</code>), never appear in logs, and are excluded from any
-  diagnostics output. To change a URL, just paste a new one; leaving the field
-  blank when editing keeps the saved one.</li>
-<li>A failing channel never affects Trailarr's operation — a warning is logged
-  and the app carries on. Use <strong>Test</strong> to diagnose.</li>
+<li><strong>Batching:</strong> bulk operations (library syncs, full scans) can produce many events at once — Trailarr groups them into a single summarized message per channel instead of flooding it.</li>
+<li><strong>User-initiated events</strong> (your own clicks in the UI) are excluded by default; enable <em>Include user-initiated events</em> per channel if you want them.</li>
+<li><strong>Apprise URLs contain credentials</strong> — Trailarr stores them write-only. They are never shown again after saving (the list shows a masked form like <code>discord://12ab****</code>), never appear in logs, and are excluded from any diagnostics output. To change a URL, just paste a new one; leaving the field blank when editing keeps the saved one.</li>
+<li>A failing channel never affects Trailarr's operation — a warning is logged and the app carries on. Use <strong>Test</strong> to diagnose.</li>
 </ul>
 
 
