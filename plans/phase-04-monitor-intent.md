@@ -84,8 +84,30 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
   existing items, defaulted for new; toggle in UI works; connection form renders toggle.
 - config-dev soak: sync twice; diff `SELECT id, monitor FROM media` between runs → empty.
 
+## Docs to update
+
+- `docs/user-guide/settings/connections/index.md` — the **Monitor Types** section is
+  the big one: the enum is gone, replaced by the "Monitor new media" toggle (creation
+  time only). Note: `docs/troubleshooting/faq.md` ("not downloading for some media")
+  deep-links to `#monitor-types` — update both the anchor target and the FAQ answer.
+- `docs/getting-started/03-setup/connections.md` — connection setup flow shows the
+  Monitor Type choice; swap for the toggle with the new semantics ("sets the initial
+  state of new media; Trailarr never changes monitoring afterwards — only you do").
+- `docs/user-guide/library/media-details/index.md` + `docs/user-guide/library/index.md`
+  — monitor is now purely user intent; syncs never touch it. Extend the Phase 2 note.
+- **SYNC-replacement recipe:** document the `arr_monitored = true` profile-filter
+  pattern in `docs/user-guide/settings/profiles/filters.md` (and/or `examples.md`) —
+  the release notes walk-through should link to this docs anchor, not inline it all.
+- `docs/user-guide/settings/profiles/settings/general.md` — if the Stop Monitoring
+  option is removed from the UI this phase (decision 5), replace the deprecated section
+  with a short "removed in v0.10.1" note pointing at the multi-profile pattern (column
+  drop is Phase 5; the `exclusive` option, if introduced, gets its own subsection).
+- API breaking change (connection enum→bool): call out in release notes for API
+  consumers; regenerate `docs/references/api-docs/`.
+- Release notes: SYNC walk-through leads; roadmap tick.
+
 ## Exit criteria
 
 Grep-proof: no writer of `media.monitor` outside `update_monitoring(_bulk)` and media
 creation. Zero MONITOR_CHANGED events from a full sync. Release notes carry the SYNC
-walk-through prominently.
+walk-through prominently. Docs section executed (FAQ monitor-types link verified).

@@ -85,7 +85,31 @@ Migration matrix incl. W1/W2 fixtures + config-dev copy (maintainer reviews the
 classification report before release); scratch: series with 3 seasons + TMDB key →
 3 downloads with correct names; growth test (bump season_count → 1 new pending unit).
 
+## Docs to update
+
+- **New season-trailers docs page** (pitfalls deliverable) under the profiles docs:
+  enabling `per_season`, units = seasons 1..season_count (season 0/specials skipped by
+  design — W3), TMDB-only sourcing (needs key + tmdb_id), naming/placement convention
+  (whatever decision 6 lands on), what happens when season_count grows/shrinks.
+- `docs/user-guide/settings/profiles/…` — `for_movies` on every relevant page: the
+  create flow (movie vs series is now the first choice), settings reference, and the
+  examples page (both default examples' `Is Movie` filters are GONE — replaced by the
+  profile type; rewrite Examples 1/2 again, third rewrite after Phases 2 and 5, so
+  check git history for what they should build on).
+- **Breaking-change guidance** (W2, the disabled-profile scenario): a docs section for
+  "my profile was disabled after upgrading" — how classification worked, how to set
+  the type and re-enable, when to duplicate into movie+series pairs. Release notes and
+  the startup log line link here.
+- **Profile presets + import/export** (decision 8): document under profiles docs —
+  export format caveats (no ids, version-stamped), preset gallery contents.
+- `docs/getting-started/03-setup/profiles.md` — the guided-setup profile description
+  must reflect movie/series split + presets as the new starting point.
+- `docs/troubleshooting/faq.md` — anime/specials (W3: season 0 skipped, document);
+  season-trailer player support expectations per decision 6 findings.
+- Release notes: W2 leads; roadmap tick.
+
 ## Exit criteria
 
 Classification report clean on config-dev; season satisfaction idempotent (two runs →
-zero repeat downloads); breaking-change comms in release notes + roadmap page updated.
+zero repeat downloads); breaking-change comms in release notes + roadmap page updated;
+Docs section executed (season page live, examples rewritten).

@@ -80,9 +80,21 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 
 ### **Download Missing Trailers**
 
+{{ version_badge("upd", "0.10.0") }}
+
 - Runs every 60 minutes (same as Arr Data Refresh; first run starts 15 minutes after app launch).
-- Downloads trailers for media that are missing them, based on your profiles and filters.
+- For every monitored media item, finds the [Profiles](../settings/profiles/index.md) whose filters match, and downloads a video for each matching profile that does not already **own** one.
+- Downloads are tracked per profile: a profile that already has its downloaded video never downloads again, so monitored media is not re-downloaded — you can keep media monitored forever. Existing trailers on disk that Trailarr is not yet tracking are claimed by the highest-priority matching profile instead of being downloaded again.
+- Downloading no longer turns monitoring off — the monitor toggle stays exactly as you set it.
+- If a trailer file is deleted from disk, the next files scan notices it and the owning profile becomes unsatisfied — the trailer is downloaded again on the following run.
 - Uses yt-dlp and ffmpeg for downloading and conversion.
+
+!!! note "Failed downloads back off"
+    {{ version_badge("add", "0.10.0") }} When a download attempt genuinely fails (e.g. no matching video can be found), that media + profile combination is not retried on every run. The retry delay doubles after each failure — 1 day, then 2 days, then 4 days — capped at one attempt per week. A successful download resets the backoff, and a manual download from Media Details always bypasses it. Skips (missing media folder, waiting for the media file) do not count as failed attempts.
+
+!!! info "`SIGNAL-DISAGREE` log lines in v0.10.0"
+    During the v0.10.0 release cycle, the task also logs a `SIGNAL-DISAGREE` line whenever the previous decision logic and the new download-tracking logic would have decided differently. If you notice unexpected downloads or skips, include those log lines in your bug report.
+
 - There is a delay between consecutive trailer downloads. The delays are as follows:
 
     | Download No | Delay     |

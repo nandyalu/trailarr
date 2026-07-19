@@ -46,18 +46,26 @@ Setting this value to `0` will disable retries and Trailarr will only attempt to
 
 Setting this value to a higher number will allow Trailarr to make multiple attempts to download a trailer, increasing the chances of a successful download in case of temporary issues.
 
+!!! note "Retries vs. backoff"
+    {{ version_badge("add", "0.10.0") }} Retries here happen immediately, within the same task run. If all retries fail, the download is attempted again on a later task run with an increasing delay — 1 day after the first failure, then 2 days, then 4, capped at weekly. See [Download Missing Trailers](../../../tasks/index.md#download-missing-trailers).
+
 ## Stop Monitoring
+
+{{ version_badge("upd", "0.10.0") }}
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true or false |
 
-This setting indicates whether Trailarr should stop monitoring the media item after a successful download using this profile. Useful for trailer profiles where you want to download multiple trailers or extras for the same media item.
+!!! warning "Deprecated"
+    Downloads are now tracked per profile, so this option is no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, even if the media item stays monitored. `Stop Monitoring` will be removed in an upcoming release.
 
-This setting will save the downloaded video id as the trailer id for the media after a successful download. So, if you are creating a profile to download additional videos (like extras or optional other language trailers), set this to `false`.
+Legacy behavior, still honored for now: when a profile with `Stop Monitoring = true` successfully downloads, the media item is treated as **fully satisfied** — no other matching profiles will download for it afterwards. Since `v0.10.0`, the media item's monitor toggle itself is **not** switched off anymore; monitoring always stays as you set it.
+
+If you want multiple videos per media item, simply create multiple profiles and leave `Stop Monitoring = false` on all of them — each profile downloads and keeps its own video.
 
 !!! example
-    If you want to download 2 trailers (English and Spanish) for every media item, you would create trailer profiles like this:
+    If you want to download 2 trailers (English and Spanish) for every media item, create two profiles with `Stop Monitoring = false` on both:
     
     ```
         Profile Name: Spanish Trailer
@@ -65,8 +73,8 @@ This setting will save the downloaded video id as the trailer id for the media a
         Priority: 100
         -------------------------------
         Profile Name: English Trailer
-        Stop Monitoring: true
+        Stop Monitoring: false
         Priority: 0 (or any lower number than the Spanish Trailer profile)
     ```
 
-    This way, Trailarr will first use the `Spanish Trailer` profile to download the Spanish trailer. Since `Stop Monitoring` is set to `false`, Trailarr will continue to monitor the media item after the download. Next, it will use the `English Trailer` profile to download the English trailer. After this download, since `Stop Monitoring` is set to `true`, Trailarr will stop monitoring the media item.
+    Each profile downloads and tracks its own trailer, and the media item stays monitored. If `Stop Monitoring` were `true` on the English profile instead, its successful download would mark the media fully satisfied and prevent any other matching profiles from downloading afterwards.

@@ -64,18 +64,22 @@ To delete a profile, open the Profile edit page and click on the `Delete` button
 Trailarr uses profiles as follows:
 
 - When downloading a trailer from the UI. A dialog will appear allowing you to select a profile from existing profiles. Filters will not be applied in this case.
-- When running the `Download Missing Trailers` task (which runs periodically). 
+- When running the `Download Missing Trailers` task (which runs periodically). {{ version_badge("upd", "0.10.0") }}
     - If no profiles are available, the task will not run.
-    - Profiles with high priority will be used first.
-    - The task will find all profiles that match all the filters for each media item. Then it will start downloading videos for each Profile one by one (in order of priority) until a Profile with `Stop Monitoring = true` successfully downloads a trailer.
-    - Media items that does not match any profiles will not be processed.
-    - Media items that matches a profile but does not have a valid Media folder or `monitor` set to `false` will not be processed.
+    - The task finds all profiles that match all the filters for each monitored media item, in order of priority (highest first).
+    - A matching profile only downloads if it does not already **own a downloaded video** for that media item. Downloads are tracked per profile — a profile that already has its video never downloads again, so media can stay monitored forever without being re-downloaded.
+    - If a trailer already exists on disk that Trailarr is not tracking, the highest-priority matching profile claims it instead of downloading a duplicate.
+    - Failed downloads back off before retrying: 1 day after the first failure, then 2 days, then 4, capped at weekly per media + profile. A successful download (including a manual one) resets the backoff.
+    - Media items that do not match any profiles will not be processed.
+    - Media items that match a profile but do not have a valid Media folder or have `monitor` set to `false` will not be processed.
 
 The next sections will explain the settings and filters available in profiles. You can instead skip to the [Examples](examples.md) page to see some examples of profiles and how they can be used.
 
 
 !!! tip "Multiple Profiles - Multiple Downloads"
-    You can create multiple profiles to download multiple trailers for the same media item. For example, you can create one profile (with `Stop Monitoring = false`) to download a trailer in Spanish and another profile (with `Stop Monitoring = true`) to download an English trailer for the same movie/series and stop monitoring it afterwards.
+    You can create multiple profiles to download multiple videos for the same media item — each matching profile downloads (and keeps track of) its own video. For example, one profile for a Spanish trailer and another for an English trailer will download both for every media item that matches both profiles.
+
+    {{ version_badge("upd", "0.10.0") }} `Stop Monitoring` is no longer needed for this workflow and is deprecated — see [Stop Monitoring](settings/general.md#stop-monitoring).
 
 
 !!! help "Trailarr is evolving"

@@ -97,8 +97,28 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
   home/movies/details (console errors, no flicker regression on throttled reload).
 - config-dev copy: home page stats equal old stats (they measure the same reality).
 
+## Docs to update
+
+- `docs/user-guide/library/index.md` — the status legend / quick-filter list
+  ("Missing: Trailer missing (also includes monitored items)" etc.) must describe the
+  COMPUTED status trio (downloaded / monitored / missing) and that `Downloading` is a
+  live runtime overlay, not a stored state that can get stuck.
+- `docs/user-guide/library/media-details/index.md` — new section for the per-profile
+  matrix (which profiles match, satisfied-by, pending, backing off) with the page's
+  existing video-clip convention; update the Status hover-details section.
+- `docs/user-guide/tasks/index.md` — REMOVE the `SIGNAL-DISAGREE` admonition added for
+  the v0.10.0 bake window (the shadow logging is deleted this phase); mention preview
+  mode gating actual downloads only.
+- Preview mode (`downloads_enabled`): document the setting in
+  `docs/user-guide/settings/general-settings/index.md` and, if persisted to `.env`,
+  in `docs/getting-started/01-first-things/environment-variables.md`. Explain what
+  preview shows and that scans/syncs keep running.
+- Stale-claim grep: `stuck`, `Downloading` status in `docs/troubleshooting/` —
+  stuck-status troubleshooting entries become obsolete this phase; delete or reword.
+- Release notes: computed status, matrix screenshot, preview mode; roadmap tick.
+
 ## Exit criteria
 
 Stored `status` no longer read anywhere (grep `\.status` in backend/frontend media
 paths); stuck-status impossible by construction; matrix visible on details; stats/
-filters/sorts equivalent on config-dev.
+filters/sorts equivalent on config-dev; Docs section executed.

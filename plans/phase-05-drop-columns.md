@@ -96,7 +96,30 @@ referenced removed fields. After this release the old failure modes are unrepres
 - Full suites; headless pass over home (custom filter dropdown), settings/profiles
   (filters editor shows has_downloads, not trailer_exists), media details.
 
+## Docs to update
+
+- `docs/user-guide/settings/profiles/examples.md` — Examples 1 and 2 build on the
+  `Trailer Exists = false` filter (with a v0.10.0 "optional" note): REWRITE them —
+  the field no longer exists for profile filters; the examples become filter-less (or
+  `Is Movie`-only) with a sentence on satisfaction handling "already has a trailer".
+- `docs/user-guide/settings/profiles/filters.md` — remove `trailer_exists`/`status`
+  from any field lists; document the new `has_downloads` virtual field (view filters).
+- `docs/user-guide/settings/general-settings/index.md` — the one-shot full-scan setting
+  description says "for situations where `trailer_exists` or `media_exists` flags are
+  stale" — reword to download-records language.
+- `docs/troubleshooting/backup-restore.md` — this is the roadmap's only destructive
+  migration: add a "no downgrade past v0.11.0" note (pre-migration backup is the
+  rollback) and mention the post-migration VACUUM (db file shrinks — not corruption).
+- Stale-claim grep across `docs/`: `trailer_exists`, `status` (as a stored field),
+  `stop_monitoring`, `Stop Monitoring` — after this phase any remaining mention outside
+  release notes is wrong. This includes the Phase 2-era deprecation notes, which now
+  become "removed in v0.11.0".
+- Release notes: the exact CustomFilter transformation table (W1) so users can
+  reconstruct deleted/rewritten filters; API compat end for `status`/`trailer_exists`
+  response fields; roadmap tick.
+
 ## Exit criteria
 
 `grep -rn "trailer_exists\|MonitorStatus\|stop_monitoring" backend/ frontend/src/`
-returns only alembic history + release notes. All migration-matrix paths green.
+returns only alembic history + release notes. Same grep over `docs/` returns only
+release notes. All migration-matrix paths green.

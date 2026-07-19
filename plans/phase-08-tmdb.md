@@ -102,8 +102,33 @@ Full suites; scratch env with a real TMDB key (maintainer's) resolving a known m
 TMDB id; key-less scratch run identical to v0.12.0 behavior; config-dev copy: refresh
 task on ~50-item slice, inspect rows.
 
+## Docs to update
+
+- **TMDB setup docs** (exit-criteria deliverable): where to get an API key, pasting it
+  in Settings → General, what changes with/without a key. Home:
+  `docs/user-guide/settings/general-settings/index.md` (the key field) + a setup
+  walkthrough section either there or under `docs/getting-started/` — decide by size.
+- `docs/user-guide/settings/profiles/…` — the new profile `language` field (general
+  settings page of profiles docs) and how language interacts with resolution order
+  (profile language → en → any official → ARR → search).
+- `docs/user-guide/library/media-details/index.md` — "Known videos" list and the
+  **Add video** flow replacing "edit YouTube id" (USER rows: never touched by
+  automation, highest precedence, kept even when failing).
+- `docs/troubleshooting/faq.md` — the "incorrect trailer" answer walks through editing
+  the youtube trailer link: rewrite for the Add-video flow. ⚠️ That answer also claims
+  "Sonarr does not provide a youtube trailer link" — decision 5 says both Radarr AND
+  Sonarr provide it; verify against the parsers and fix the FAQ regardless.
+- `docs/getting-started/01-first-things/environment-variables.md` — `tmdb_api_key` if
+  persisted to `.env` like other settings.
+- Missing `tmdb_id` guidance (decision 6): docs explain fixing TVDB linkage — put it
+  in the TMDB setup page's troubleshooting subsection.
+- `docs/llms.txt` — add the TMDB key to the setup-flow facts if it becomes a
+  recommended setup step.
+- Release notes: key-setup walkthrough (exit criteria), `always_search` semantics
+  change (pitfalls); roadmap tick.
+
 ## Exit criteria
 
 Trailer resolution provably prefers TMDB (log line per resolution source); no key = no
-behavior change; candidates visible on media details; docs page for TMDB setup + roadmap
-tick; release notes with key-setup walkthrough.
+behavior change; candidates visible on media details; Docs section executed (TMDB setup
+page live) + roadmap tick; release notes with key-setup walkthrough.
