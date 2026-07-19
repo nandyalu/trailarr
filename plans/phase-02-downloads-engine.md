@@ -206,6 +206,28 @@ Additive-only schema → rolling back the app binary is safe; attempt table is i
 old code. Abort criteria: any S1 idempotency failure, or unexplained SIGNAL-DISAGREE on
 config-dev.
 
+## Docs to update — DONE (July 19, 2026)
+
+Executed as a post-release audit (the docs shipped stale — the README "Docs rule" was
+added because of this phase). Record of what changed, for later phases building on it:
+
+- `docs/user-guide/settings/profiles/index.md` — Usage section rewritten to
+  downloads-ownership semantics (satisfaction, claiming, backoff); multi-profile tip no
+  longer recommends `Stop Monitoring`.
+- `docs/user-guide/settings/profiles/settings/general.md` — Stop Monitoring marked
+  deprecated with legacy "fully satisfied" semantics; Retry Count vs backoff note added.
+- `docs/user-guide/tasks/index.md` — Download Missing Trailers section: per-profile
+  ownership decision, monitor untouched, deleted-file re-download, backoff schedule,
+  SIGNAL-DISAGREE note (remove that note in Phase 3 with the shadow logging).
+- `docs/user-guide/library/media-details/index.md` — monitor stays on; manual download
+  bypasses/resets backoff.
+- `docs/user-guide/settings/profiles/examples.md` — `Trailer Exists` filter marked
+  optional (Phase 5 removes it entirely — rewrite the examples then).
+- `docs/troubleshooting/faq.md` — multiple-trailers answer (now: one per matching
+  profile), backoff explanation, Plex-without-Arr answer corrected.
+- Release notes — engine bullet + S5 profile-deletion caveat + backoff + Stop
+  Monitoring deprecation warning.
+
 ## Exit criteria
 
 - Two consecutive task runs on a satisfied library: 0 downloads, 0 writes.

@@ -30,6 +30,9 @@ This filter checks if a trailer already exists for the media item. If a trailer 
 ### Result
 With these filters, the **Movie Trailers** profile will only apply to movies that do not already have a trailer downloaded. This means that when the `Download Missing Trailers` task runs, it will only download trailers for movies that do not have a trailer already available in Trailarr.
 
+!!! note "The `Trailer Exists` filter is optional since v0.10.0"
+    Downloads are now tracked per profile — a profile that already owns a downloaded trailer will not download again even without this filter. The filter still works and keeps the profile from applying to media that already have a trailer, but it is no longer required to prevent re-downloads.
+
 ## Example 2: Series Trailers Profile
 
 The **Series Trailers** profile is used to download trailers for TV series. It comes with all the default settings as defined in the [Settings](./settings/general.md) section, and the following filters:

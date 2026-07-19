@@ -118,6 +118,33 @@ ticks "include library details"). Issue templates updated to request the bundle.
 - Frontend: one new Health page + connection status chips + wizard (C is the only
   big UI item); follow MD3 conventions; OpenAPI regen per milestone.
 
+## Docs to update (per milestone)
+
+The pitfalls rule ("every remediation message links to a specific docs anchor —
+write/refresh those pages in the same PR") is the driver; concretely:
+
+- **A (Connection Doctor):** the remediation anchors it links to must be current:
+  `docs/getting-started/01-first-things/radarr-sonarr-volumes.md` (path mappings — the
+  suggester's docs link), `docs/getting-started/01-first-things/environment-variables.md`
+  + `docs/troubleshooting/common-issues.md` (PUID/PGID, issue #17 class),
+  `docs/getting-started/01-first-things/network-drives.md` (A2's "reachable but empty").
+  Document the Doctor itself on the connections settings page (status chips, Run check).
+- **B (Health page + cookies):** new Health page section under
+  `docs/user-guide/settings/`; move/expand the cookies documentation (currently a
+  `Yt-dlp Cookies Path` mention in general-settings + FAQ) to cover the upload/paste UI
+  and when cookies are needed (bot-check/sign-in errors); refresh
+  `docs/getting-started/02-installation/hardware-acceleration.md` for the encoder
+  probe surfacing. Classified download-failure messages should match FAQ wording.
+- **C (First-run wizard):** `docs/getting-started/` is largely superseded for fresh
+  installs — rewrite the flow around the wizard (docs describe what the wizard does
+  and the manual path for advanced users); preview-mode default for fresh installs
+  documented in general-settings; URL_BASE note in
+  `docs/user-guide/reverse-proxy.md` (C2). Update `docs/llms.txt` setup-flow facts
+  (it currently describes the manual connection→profile flow).
+- **D (Diagnostics bundle):** document under About/Health settings docs + a
+  "attach the diagnostics bundle" line in `docs/references/contributing.md` and the
+  GitHub issue templates (which the milestone updates anyway).
+
 ## Exit criteria (per milestone)
 
 A: a wrong-volume docker-compose setup gets a one-click working mapping; permission

@@ -117,6 +117,23 @@ one dedicated commit so the spec diff is reviewable).
 - Grep-proof: `grep -rn "from core\.\|import core\." backend/ | wc -l` == 0 (excluding
   alembic history if left self-contained).
 
+## Docs to update
+
+Zero user-facing behavior change → zero user-guide changes expected. The docs work is
+contributor-facing:
+
+- `CLAUDE.md` Architecture section — same PR, non-negotiable (already in pitfalls).
+- `docs/references/contributing.md` — any backend path references (`core/…` →
+  `services/…`/`database/…`), dev-setup instructions still accurate post-move.
+- `docs/references/api-docs/openapi.json` — byte-identical is the invariant; the one
+  permitted diff (documented 500s from Stage B) regenerated in its dedicated commit.
+- `docs/llms.txt` — no change expected (it documents install/usage, not code layout);
+  verify the install commands still hold after script-path checks.
+- Stale-claim grep: `docs/` for `core/` code paths (log-line examples referencing
+  module paths are cosmetic — skip per pitfalls note).
+- Release notes: internal-only statement ("no functional changes; report anything that
+  behaves differently"); roadmap tick.
+
 ## Exit criteria
 
 Invariants 1–4 hold; CLAUDE.md/docs/graphify updated; release notes describe the reorg

@@ -76,8 +76,28 @@ stabilization checklist.
 - W4. Empty state: zero issues → celebratory empty page (this is the v1.0.0 trust
   moment — design it well).
 
+## Docs to update
+
+- **New Issues page docs** under `docs/user-guide/` (+ `mkdocs.yml` nav entry): every
+  feed kind with its meaning and the fix it points to, dismiss vs snooze semantics
+  (W2), the topnav badge, and the "zero issues" state.
+- `docs/user-guide/settings/notifications.md` — the Issues event-type subscription
+  (`#trailarr-issues` use case from the Apprise track's objective).
+- `docs/troubleshooting/` — Issues absorbs several troubleshooting flows
+  (unattributed downloads, folder-unreachable, failing downloads): cross-link
+  common-issues/FAQ entries to the Issues page rather than duplicating diagnosis steps;
+  prune entries the app now self-diagnoses.
+- Delight items: coverage strip (home docs in `docs/user-guide/general/index.md`) and
+  in-UI playback (media-details files section) if shipped.
+- **v1.0.0 docs audit** (already in the stabilization checklist: "every settings page
+  current, roadmap page rewritten as delivered, README/index sync") — explicitly
+  include: `docs/llms.txt` full re-verification (commands, ports, links), a stale-claim
+  grep for every term retired by Phases 2–10, and the getting-started flow walked
+  end-to-end against a fresh v1.0.0 install.
+- Release notes: the arc story (exit criteria); API freeze note (/api/v1 stable).
+
 ## Exit criteria
 
 All feeds live + tested + linked-actions working; badge/count accurate; Apprise issues
-channel demo; stabilization checklist complete; roadmap page marked delivered; v1.0.0
-release notes tell the whole arc's story.
+channel demo; stabilization checklist complete (docs audit included); roadmap page
+marked delivered; v1.0.0 release notes tell the whole arc's story.

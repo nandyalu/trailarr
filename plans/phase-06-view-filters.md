@@ -63,8 +63,22 @@ fields** (a profile filtering on its own outputs is circular; enforce in validat
 
 Full suites; parity fixture green on both sides; headless: build a "Missing 1080p"
 style filter in the UI (`download_resolution LESS_THAN 1080` OR `has_downloads=false`),
-verify the list, edit, delete. Docs: extend the profiles/filters docs page with the new
-field family + ANY-semantics note.
+verify the list, edit, delete.
+
+## Docs to update
+
+- `docs/user-guide/settings/profiles/filters.md` — new "Downloads & Files fields"
+  section: the full field table from decision 1, the ANY-semantics rule stated
+  explicitly ("matches if ANY download matches"), and the view-only restriction
+  (profile filters reject these fields, with the rationale — a profile filtering on
+  its own outputs is circular).
+- `docs/user-guide/settings/profiles/examples.md` — add one view-filter recipe
+  (the "Missing 1080p" example from Verification is the natural one); mirrors the two
+  recipe examples promised for release notes.
+- `docs/user-guide/library/index.md` — if the filter dropdown docs enumerate available
+  custom-filter fields or show the editor, refresh for the grouped (Media / Downloads /
+  Files) field picker.
+- Release notes: 2 recipe examples (exit criteria); roadmap tick.
 
 ## Exit criteria
 

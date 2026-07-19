@@ -8,8 +8,8 @@ You can watch the trailers in the Movie or Series details in Plex, Emby, or Jell
 You can also watch the trailer in the Media details page by clicking on the trailer file (in Files section) and selecting `Play Video`.
 
 
-## Can I use Tailarr without Radarr or Sonarr?
-No, Trailarr relies on data from Radarr and Sonarr to monitor Movies and Series. You need to have Radarr and/or Sonarr setup and connected to Trailarr to download trailers.
+## Can I use Trailarr without Radarr or Sonarr?
+Yes — Trailarr also supports [Plex connections](../getting-started/03-setup/plex-connection.md) as a first-class media source, so you can run it against a Plex library without Radarr or Sonarr. Emby and Jellyfin are supported as well. That said, Radarr/Sonarr connections provide the richest metadata (including YouTube trailer links from TMDB for movies), so connecting them is recommended when available.
 
 
 ## Can I use Trailarr with multiple Radarr or Sonarr instances?
@@ -20,6 +20,8 @@ Yes, you can connect multiple Radarr and Sonarr instances to Trailarr. Trailarr 
 Trailarr monitors the Movies and Series from connected Radarr and Sonarr instances based on the Monitor Type set. Make sure you have correct Monitor Types set for the Movies and Series you want Trailarr to download trailers for, and also have a Profile that applies to the Media item.
 
 More info about [Monitor Types here](../user-guide/settings/connections/index.md#monitor-types).
+
+Also note that since `v0.10.0`, a download that failed previously is retried with an increasing delay — 1 day after the first failure, doubling up to at most one attempt per week. You can always trigger an immediate download from the Media Details page, which bypasses this wait.
 
 
 ## Trailarr downloaded an incorrect trailer for a Movie or Series. How can I fix it?
@@ -36,7 +38,7 @@ Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions o
 
 
 ## Can I download multiple trailers for a Movie or Series?
-Trailarr will not download multiple trailers for same Movie or Series automatically. You can manually update the youtube trailer link and click `Download` to download another trailer. Trailarr will download and save the new trailer in the Movie or Series folder along with the old trailer.
+Yes — create multiple [Trailer Profiles](../user-guide/settings/profiles/index.md) that match the same media. Each matching profile downloads and keeps track of its own video (for example, an English trailer profile and a Spanish trailer profile will each download one trailer). You can also manually update the youtube trailer link and click `Download` on the Media Details page to download another video at any time — it is saved alongside the existing ones.
 
 ## App is stuck on "Downloading" status for a long time. What should I do?
 Trailarr downloads the best available video in the selected resolution, and then use ffmpeg to convert to selected audio and video codecs. This process can take some time based on the video size and your server hardware. 

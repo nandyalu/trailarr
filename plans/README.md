@@ -19,10 +19,38 @@ prior context beyond this repository.
 5. Run the full **Verification protocol** — backend tests, frontend tests, AND the
    real-app checks. `npm run build`/pytest alone is never sufficient
    (see CLAUDE.md → "Verifying Frontend Changes End-to-End").
-6. Update the phase file's **Status** line, the release notes
-   (`docs/release-notes/2026.md`), docs pages, and `docs/references/roadmap.md` if
+6. Execute the phase's **Docs to update** section (see "Docs rule" below) — docs ship
+   in the same release as the behavior change, never afterwards.
+7. Update the phase file's **Status** line, the release notes
+   (`docs/release-notes/2026.md`), and `docs/references/roadmap.md` if
    dates or content shifted. Regenerate OpenAPI (`uv run python ./export_openapi.py` from
    `backend/`) after any API change. Run `graphify update .` after code changes.
+
+## Docs rule (every phase)
+
+Every phase plan carries a **Docs to update** section: the doc pages its changes touch,
+with enough context to update them accurately. Execute it as part of the phase, in the
+same PR/release — v0.10.0 shipped with docs still describing the pre-Phase-2 engine
+(Stop Monitoring as the multi-trailer mechanism, "Trailarr will not download multiple
+trailers automatically", no mention of backoff); a follow-up audit had to fix seven
+pages. This rule exists so that never happens again.
+
+Standard checklist, in addition to each phase's listed pages:
+
+- **Stale-claim grep, not just new pages:** grep `docs/` for the feature's old terms
+  (Phase 2 example: `Stop Monitoring`, `trailer_exists`, `stop monitoring`) — docs rot
+  comes from old sentences, not missing ones. FAQ and troubleshooting pages are the
+  most frequent offenders.
+- **Release notes** (`docs/release-notes/2026.md`) — every user-visible change,
+  including the caveats the phase's Wargame section flags for release-noting.
+- **`docs/references/roadmap.md`** — phase status/dates.
+- **`docs/llms.txt`** — update whenever install steps, CLI commands, ports, config
+  paths, or the setup flow change (it inlines those facts for AI assistants; a stale
+  llms.txt is worse than none).
+- **Version badges:** mark changed sections with
+  `{{ version_badge("add"|"upd", "<version>") }}`.
+- **Formatting:** docs prose is single-line paragraphs (no hard wrapping — zensical);
+  verify with `uv run --project backend zensical build` and spot-check rendered HTML.
 
 ## Testbed assets
 

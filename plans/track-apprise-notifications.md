@@ -108,6 +108,14 @@ behavior visible during its bake window.
   channel via UI, Test button, then trigger a manual trailer download and see the batch
   message arrive. Headless-Chromium pass over the new Settings page (console errors).
 
+## Docs to update — DONE (shipped with v0.10.0)
+
+- `docs/user-guide/settings/notifications.md` — the setup guide (channel add/edit,
+  event-type selection, Test button, write-only URLs, batching behavior); linked from
+  the v0.10.0 release notes. Keep current when channels/features change.
+- Phase 11 adds the Issues event-type subscription — that phase's Docs section covers
+  extending this page.
+
 ## Exit criteria
 
 - 500-event storm produces ≤ 5 messages on a subscribed channel.

@@ -10,7 +10,10 @@ Media Details view offers some features for managing media items. They are descr
 
 <video autoplay loop src="./monitor-toggle.mp4" title="Media - Monitor Toggle"></video>
 
-If a trailer hasn't been downloaded for Media, it can be either Monitored or UnMonitored by clicking the icon before the Media Title.
+Media can be Monitored or UnMonitored by clicking the icon before the Media Title. Only monitored media is processed by the [Download Missing Trailers](../../tasks/index.md#download-missing-trailers) task.
+
+!!! info ""
+    {{ version_badge("upd", "0.10.0") }} Downloading no longer turns monitoring off. A monitored media item whose matching profiles already have their downloads simply stays monitored without being re-downloaded — it is safe to keep everything monitored forever.
 
 ## Status - Additional Details
 
@@ -80,7 +83,9 @@ There are up to 2 action buttons that can appear depending on the selected Media
 - This will schedule a task for Trailarr to download a trailer for this Media, uses `YouTube Trailer ID` if provided/existing.
 
 !!! tip "Multiple trailers"
-    Because Trailarr supports downloading multiple trailers per media item (via [Stop Monitoring](../../settings/profiles/settings/general.md#stop-monitoring) in a Profile), the Download button is always shown so you can trigger additional downloads at any time.
+    Because Trailarr supports downloading multiple trailers per media item (one per matching [Profile](../../settings/profiles/index.md)), the Download button is always shown so you can trigger additional downloads at any time.
+
+    {{ version_badge("add", "0.10.0") }} A manual download always runs immediately — it bypasses the retry backoff that applies to automatic downloads after failures, and a successful manual download resets that backoff.
 
 !!! tip ""
     To delete a trailer, use the **Files Section** below — click the trailer file and choose **Delete**.

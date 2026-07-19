@@ -84,7 +84,31 @@ correct name; hacky-profile fixture upgrade produces suggestions and NO unexpect
 downloads (assert download task dry pass). config-dev copy: inference pass summary
 reviewed by maintainer before release.
 
+## Docs to update
+
+- `docs/user-guide/settings/profiles/settings/general.md` (or a dedicated settings
+  subpage) — **Video Type** section: the type list, TRAILER-only search fallback
+  ("non-trailer types come exclusively from TMDB — they need a TMDB key and a
+  `tmdb_id`"), naming/folder conventions per type, the `{video_type}` template token.
+- `docs/user-guide/settings/profiles/examples.md` — add a real extras-profile example
+  (e.g. Featurettes profile) replacing the keyword-hack pattern users invented.
+- `docs/user-guide/settings/profiles/index.md` — the "Trailarr is evolving" help box
+  says "Maybe (maybe, no promises!) let the user download Featurettes, Clips, etc." —
+  this phase DELIVERS that; rewrite the box.
+- `docs/user-guide/library/media-details/index.md` — type badges on downloads/matrix;
+  Known-videos type column + USER-candidate picker; the delete action's final UX
+  (pitfalls: "Delete trailer" vs "Delete videos" — document whichever is decided).
+- **Extras-profile migration guidance** (W1, the mass-download risk): a docs section
+  users can be linked to from the startup nudge and release notes — exact steps for
+  "I had a hacky featurette profile". Put it in the profiles docs; release notes link
+  to the anchor.
+- `docs/user-guide/settings/profiles/filters.md` — `download_video_type` added to the
+  Phase 6 virtual-field table.
+- `docs/troubleshooting/faq.md` — add/refresh "Can Trailarr download extras
+  (featurettes, clips, teasers)?" — now yes, per profile video type, TMDB-only.
+- Release notes: extras-profile migration guidance leads (exit criteria); roadmap tick.
+
 ## Exit criteria
 
-Type-aware satisfaction proven; zero-unexpected-downloads on hacky fixture; docs +
-release notes with the extras-profile migration guidance.
+Type-aware satisfaction proven; zero-unexpected-downloads on hacky fixture; Docs
+section executed; release notes with the extras-profile migration guidance.
