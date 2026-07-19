@@ -23,9 +23,9 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | Version | Target | What's in it |
 |---|---|---|
 | **v0.9.9** | July 2026 ✅ | Phase 1 — Download ↔ Profile linking |
-| **v0.10.0** | August 2026 | Phase 2 — Downloads drive the download engine, plus Notifications (Apprise) |
-| **v0.10.1** | September 2026 | Phases 3 & 4 — Live status + monitoring becomes yours |
-| **v0.11.0** | late September 2026 | Phase 5 — Cleanup of legacy fields |
+| **v0.10.0** | July 19, 2026 ✅ | Phase 2 — Downloads drive the download engine, plus Notifications (Apprise) |
+| **v0.10.1** | late August 2026 | Phases 3 & 4 — Live status + monitoring becomes yours |
+| **v0.11.0** | September 2026 | Phase 5 — Cleanup of legacy fields |
 | **v0.11.1** | October 2026 | Phase 6 — Filter by downloads & files |
 | **v0.12.0** | November 2026 | Phase 7 — Internal reorganization for long-term maintainability |
 | **v0.13.0** | December 2026 | Phase 8 — TMDB integration |
@@ -39,11 +39,11 @@ Every downloaded trailer is now linked to the profile that owns it. Trailers fou
 
 *What you'll notice:* a one-time startup task, log lines about linked downloads, and a new assign option in Media Details. No behavior changes, no downloads triggered.
 
-### Phase 2 — Downloads drive the download engine — `v0.10.0`
+### Phase 2 — Downloads drive the download engine — `v0.10.0` ✅
 
-The **Download Missing Trailers** task stops relying on the `trailer_exists` flag. Instead, for every monitored media item it checks: *which profiles match, and which of them already have a download?* Only the genuinely missing ones are downloaded. Failed downloads back off gradually instead of retrying on every run, and downloading no longer switches monitoring off behind your back.
+The **Download Missing Trailers** task no longer relies on the `trailer_exists` flag. Instead, for every monitored media item it checks: *which profiles match, and which of them already have a download?* Only the genuinely missing ones are downloaded. Failed downloads back off gradually instead of retrying on every run, and downloading no longer switches monitoring off behind your back.
 
-This is the biggest internal change of the roadmap, so it gets a major version bump and **~4 weeks of bake time** before the next phase — please report anything unexpected (wrong re-downloads, skipped items) during this window.
+This is the biggest internal change of the roadmap, so it got a major version bump and gets **~4 weeks of bake time** before the next phase — please report anything unexpected (wrong re-downloads, skipped items) during this window.
 
 *What you'll notice:* smarter, quieter download runs. Items can stay monitored forever without being re-downloaded.
 
