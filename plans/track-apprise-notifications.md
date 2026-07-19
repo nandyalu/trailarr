@@ -56,6 +56,17 @@ behavior visible during its bake window.
    so the Discord/Slack/Telegram bot avatar is the Trailarr logo instead of Apprise's.
    Discord is force-defaulted to `NotifyFormat.MARKDOWN` in `_send_sync` (embeds +
    clickable links) so users don't need `?format=markdown` on their URL.
+10. **Native Discord embeds (July 2026 amendment):** Apprise's Discord plugin can't
+    place the poster inside the embed, set fields, or a timestamped footer, so
+    `discord://` channels (and pasted `discord.com/api/webhooks` URLs — both resolved
+    via Apprise's own parser in `_discord_webhook_url`) bypass Apprise: the dispatcher
+    POSTs the webhook payload itself. Single-media batches: media title header,
+    emoji event lines, Media/#id + YouTube fields, poster uploaded multipart and
+    referenced `attachment://` inside the embed (works even when the poster source
+    URL isn't public, e.g. Plex), Trailarr footer + timestamp, color by event type
+    (green download / red delete-fail / blurple). Multi-media batches: compact text
+    embed, no poster. All other services stay on the Apprise path (D8/D9). The
+    Test button (`send_test`) still uses Apprise for Discord — plain but functional.
 
 ## Wargame
 

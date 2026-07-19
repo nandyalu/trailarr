@@ -65,15 +65,31 @@
 
     <label class="field">
       <span>Name</span>
-      <input type="text" [(ngModel)]="formName" placeholder="e.g. Discord — downloads" />
+      <!-- name/autocomplete attrs: keep browsers from reading this dialog
+           as a login form (text field + password field = saved-credential
+           autofill offers) -->
+      <input
+        type="text"
+        name="channel-name"
+        [(ngModel)]="formName"
+        placeholder="e.g. Discord — downloads"
+        autocomplete="off"
+        data-lpignore="true"
+        data-1p-ignore
+        data-bwignore
+      />
     </label>
     <label class="field">
       <span>Apprise URL</span>
       <input
         type="password"
+        name="apprise-url"
         [(ngModel)]="formUrl"
         [placeholder]="editingId() === null ? 'e.g. discord://webhook_id/webhook_token' : 'Leave blank to keep the saved URL'"
-        autocomplete="off"
+        autocomplete="new-password"
+        data-lpignore="true"
+        data-1p-ignore
+        data-bwignore
       />
       <small>
         Kept secret — never shown again after saving. See the

@@ -1,4 +1,4 @@
-"""Apprise notification dispatcher.
+"""Notification dispatcher (Apprise + native Discord embeds).
 
 Fire-and-forget by design: event creation enqueues a note (thread-safe,
 never raises into the caller) and a background loop drains the queue every
@@ -8,13 +8,21 @@ library scans) can create thousands of events in seconds; a subscribed
 Discord channel receives a single summarized message instead
 (track-apprise-notifications.md decision D4).
 
-Apprise URLs contain credentials: they must never appear in logs or error
+Discord channels bypass Apprise's generic send: its plugin cannot place
+the poster inside the embed, set fields, or a timestamped footer, so we
+POST the webhook payload ourselves (decision D10). Every other service
+goes through Apprise.
+
+Channel URLs contain credentials: they must never appear in logs or error
 messages here.
 """
 
 import asyncio
+import json
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 
 from app_logger import ModuleLogger
 import core.base.database.manager.media as media_manager
@@ -115,6 +123,138 @@ def _poster_attachment(
     return str(poster) if poster.is_file() else None
 
 
+_EVENT_EMOJI = (
+    ("DOWNLOAD", "⬇️"),
+    ("ADDED", "➕"),
+    ("DELETE", "🗑️"),
+    ("CHANGE", "🔄"),
+    ("RENAM", "✏️"),
+    ("LINK", "🔗"),
+)
+_COLOR_GREEN = 0x57F287
+_COLOR_RED = 0xED4245
+_COLOR_BLURPLE = 0x5865F2
+
+
+def _event_emoji(event_type: str) -> str:
+    for key, emoji in _EVENT_EMOJI:
+        if key in event_type:
+            return emoji
+    return "📌"
+
+
+def _event_color(event_type: str) -> int:
+    if "DOWNLOAD" in event_type:
+        return _COLOR_GREEN
+    if "DELETE" in event_type or "FAIL" in event_type:
+        return _COLOR_RED
+    return _COLOR_BLURPLE
+
+
+def _discord_webhook_url(url: str) -> str | None:
+    """The raw webhook endpoint if this channel is a Discord webhook
+    (discord:// scheme or a pasted discord.com/api/webhooks URL), else
+    None. Parsed via Apprise so every URL form it accepts works here."""
+    try:
+        import apprise
+        from apprise.plugins.discord import NotifyDiscord
+
+        notifier = apprise.Apprise()
+        if not notifier.add(url):
+            return None
+        server = notifier[0]
+        if isinstance(server, NotifyDiscord):
+            return (
+                "https://discord.com/api/webhooks/"
+                f"{server.webhook_id}/{server.webhook_token}"
+            )
+    except Exception:
+        return None
+    return None
+
+
+def _discord_payload(
+    notes: list[EventNote], media_cache: dict[int, object]
+) -> tuple[dict, str | None]:
+    """Native Discord embed for a batch. Single-media batches lead with
+    the media title, Media/Trailer fields, and the poster inside the
+    embed (uploaded, referenced as attachment://); multi-media batches
+    stay a compact text summary."""
+    media_ids = {n.media_id for n in notes if n.media_id is not None}
+    single = (
+        _media_info(next(iter(media_ids)), media_cache)
+        if len(media_ids) == 1
+        else None
+    )
+    embed: dict = {
+        "color": _event_color(notes[0].event_type),
+        "footer": {"text": "Trailarr", "icon_url": _LOGO_URL},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    poster: str | None = None
+    if single is not None:
+        embed["title"] = f"{single.title} ({single.year})"
+        lines = [
+            f"{_event_emoji(n.event_type)} {_event_label(n.event_type)}"
+            + (f" — {n.detail}" if n.detail else "")
+            for n in notes[:MAX_LINES_PER_MESSAGE]
+        ]
+        overflow = len(notes) - MAX_LINES_PER_MESSAGE
+        if overflow > 0:
+            lines.append(f"…and {overflow} more")
+        embed["description"] = "\n".join(lines)
+        fields = [{"name": "Media", "value": f"#{single.id}", "inline": True}]
+        if single.youtube_trailer_id:
+            fields.append(
+                {
+                    "name": "Trailer",
+                    "value": (
+                        "[▶ YouTube](https://www.youtube.com/watch?v="
+                        f"{single.youtube_trailer_id})"
+                    ),
+                    "inline": True,
+                }
+            )
+        embed["fields"] = fields
+        poster = _poster_attachment(notes, media_cache)
+        if poster:
+            embed["image"] = {
+                "url": f"attachment://poster{Path(poster).suffix}"
+            }
+    else:
+        count = len(notes)
+        embed["title"] = f"Trailarr — {count} update{'s' if count != 1 else ''}"
+        embed["description"] = _format_batch(notes, media_cache)
+    payload = {
+        "username": "Trailarr",
+        "avatar_url": _LOGO_URL,
+        "embeds": [embed],
+    }
+    return payload, poster
+
+
+def _post_discord_sync(
+    webhook_url: str, payload: dict, poster_path: str | None = None
+) -> bool:
+    """Blocking Discord webhook POST — run via asyncio.to_thread. The
+    poster is uploaded multipart so the embed's attachment:// reference
+    resolves regardless of whether the poster's source URL is public."""
+    import requests
+
+    if poster_path:
+        with open(poster_path, "rb") as fh:
+            name = f"poster{Path(poster_path).suffix}"
+            response = requests.post(
+                webhook_url,
+                data={"payload_json": json.dumps(payload)},
+                files={"files[0]": (name, fh)},
+                timeout=30,
+            )
+    else:
+        response = requests.post(webhook_url, json=payload, timeout=30)
+    return response.status_code < 300
+
+
 def _send_sync(
     url: str, title: str, body: str, attach: str | None = None
 ) -> bool:
@@ -183,12 +323,19 @@ async def _dispatch_pending() -> None:
 
     media_cache: dict[int, object] = {}
     for channel_id, (url, channel_notes) in per_channel.items():
-        body = _format_batch(channel_notes, media_cache)
-        attach = _poster_attachment(channel_notes, media_cache)
+        webhook = _discord_webhook_url(url)
         try:
-            ok = await asyncio.to_thread(
-                _send_sync, url, "Trailarr", body, attach
-            )
+            if webhook:
+                payload, poster = _discord_payload(channel_notes, media_cache)
+                ok = await asyncio.to_thread(
+                    _post_discord_sync, webhook, payload, poster
+                )
+            else:
+                body = _format_batch(channel_notes, media_cache)
+                attach = _poster_attachment(channel_notes, media_cache)
+                ok = await asyncio.to_thread(
+                    _send_sync, url, "Trailarr", body, attach
+                )
             if not ok:
                 logger.warning(
                     f"Notification send failed for channel [{channel_id}]"
