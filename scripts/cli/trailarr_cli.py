@@ -182,6 +182,23 @@ def _service_logs(lines: int) -> None:
 # Update
 # ---------------------------------------------------------------------------
 
+def _update_env_var(env_path: Path, key: str, value: str) -> None:
+    if not env_path.exists():
+        return
+    lines = env_path.read_text(encoding="utf-8").splitlines()
+    found = False
+    new_lines = []
+    for line in lines:
+        if line.startswith(f"{key}="):
+            new_lines.append(f"{key}={value}")
+            found = True
+        else:
+            new_lines.append(line)
+    if not found:
+        new_lines.append(f"{key}={value}")
+    env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+
 def _update() -> None:
     _info("Fetching latest release information...")
     try:
@@ -279,6 +296,9 @@ def _update() -> None:
                     pass
         else:
             _warn(f"uv sync warning: {r.stderr[:200]}")
+
+    # Record the new version so the app reports it (installer writes the raw tag)
+    _update_env_var(_DATA_DIR / ".env", "APP_VERSION", tag)
 
     # Update CLI wrapper to latest version
     _reinstall_cli()
