@@ -1800,9 +1800,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "scripts/cli/trailarr_cli.py": {
-    "mtime": 1784260559.5538697,
-    "ast_hash": "cfc3c186b1f1152cb1320dcf1e246861",
-    "semantic_hash": "cfc3c186b1f1152cb1320dcf1e246861"
+    "mtime": 1784438769.6339016,
+    "ast_hash": "0fd2554f239a41337f0419aa0af0ced9",
+    "semantic_hash": ""
   },
   "scripts/create_migration.sh": {
     "mtime": 1755139415.0724587,
@@ -2300,8 +2300,8 @@
     "semantic_hash": "9bf5e043920039aa4a43b26233782e85"
   },
   "docs/release-notes/2026.md": {
-    "mtime": 1784431192.3103526,
-    "ast_hash": "7a5d6973c01035895706d1e08062f79c",
+    "mtime": 1784438042.0395284,
+    "ast_hash": "930f061214a148124ecafd0359a85bd8",
     "semantic_hash": ""
   },
   "docs/troubleshooting/common-issues.md": {
@@ -3265,8 +3265,8 @@
     "semantic_hash": ""
   },
   "plans/track-apprise-notifications.md": {
-    "mtime": 1784260933.7112103,
-    "ast_hash": "2db9dd7d01e1cc20e335469d1a12744a",
+    "mtime": 1784437767.7436173,
+    "ast_hash": "884fb245fac9181577fcad61bdb72fe5",
     "semantic_hash": ""
   },
   "plans/track-onboarding-diagnostics.md": {
@@ -3335,8 +3335,8 @@
     "semantic_hash": ""
   },
   "backend/core/notifications/dispatcher.py": {
-    "mtime": 1784260933.6712096,
-    "ast_hash": "becdef69cf415f8ec370535f567a3e86",
+    "mtime": 1784437588.1690564,
+    "ast_hash": "b5a5df1b2ca75127afd1060ae5809ead",
     "semantic_hash": ""
   },
   "backend/core/tasks/startup_passes.py": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "backend/tests/core/notifications/test_notifications.py": {
-    "mtime": 1784260933.6712096,
-    "ast_hash": "dc63410cb012351957c9d6a9501d04e4",
+    "mtime": 1784437695.2865841,
+    "ast_hash": "79759282369245b37cd1f469f1855b2f",
     "semantic_hash": ""
   },
   "backend/tests/core/tasks/test_startup_passes.py": {
@@ -3405,13 +3405,13 @@
     "semantic_hash": ""
   },
   "docs/user-guide/settings/notifications.md": {
-    "mtime": 1784260933.6752095,
-    "ast_hash": "3b8682a0c33b32adf3007a8425fe7c28",
+    "mtime": 1784438033.6234083,
+    "ast_hash": "a7c15e3a93eec56eeeecb7d7e1f4d084",
     "semantic_hash": ""
   },
   "frontend/src/app/settings/notifications/notifications.component.html": {
-    "mtime": 1784260933.6752095,
-    "ast_hash": "dfee562ba6e2559a7c0dcb1c581aaa2f",
+    "mtime": 1784438220.166068,
+    "ast_hash": "ed49b4cdcc58b06f72c2f89b8730055d",
     "semantic_hash": ""
   },
   "backend/pyproject.toml": {
