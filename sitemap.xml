@@ -88,6 +88,9 @@
         <loc>https://nandyalu.github.io/trailarr/user-guide/settings/connections/plex/</loc>
       </url>
       <url>
+        <loc>https://nandyalu.github.io/trailarr/user-guide/settings/notifications/</loc>
+      </url>
+      <url>
         <loc>https://nandyalu.github.io/trailarr/user-guide/settings/profiles/</loc>
       </url>
       <url>
@@ -125,6 +128,9 @@
       </url>
       <url>
         <loc>https://nandyalu.github.io/trailarr/troubleshooting/common-issues/</loc>
+      </url>
+      <url>
+        <loc>https://nandyalu.github.io/trailarr/troubleshooting/backup-restore/</loc>
       </url>
       <url>
         <loc>https://nandyalu.github.io/trailarr/troubleshooting/faq/</loc>

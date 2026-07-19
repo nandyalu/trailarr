@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.46">
+      <meta name="generator" content="zensical-0.0.50">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.19d3147f.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.62c9b9cc.min.css">
       
         
           
@@ -305,6 +305,8 @@
   
     
       
+      
+        
       
         
       
@@ -1468,6 +1470,8 @@
       
         
       
+        
+      
     
     
     
@@ -1658,6 +1662,33 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Notifications
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1688,7 +1719,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1709,14 +1740,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_7_4" id="__nav_3_7_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3_7_5" id="__nav_3_7_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_7_4">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_7_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1765,10 +1796,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_5_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_7_4_2" id="__nav_3_7_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_7_5_2" id="__nav_3_7_5_2_label" tabindex="0">
             
   
   
@@ -1785,8 +1816,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_4_2">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_5_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2290,6 +2321,8 @@
       
         
       
+        
+      
     
     
     
@@ -2350,6 +2383,33 @@
     
   
   Common Issues
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../troubleshooting/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Backup & Restore
 
     
   </span>
@@ -2966,6 +3026,8 @@
       
         
       
+        
+      
     
     
     
@@ -3073,6 +3135,10 @@
 <p>This filter checks if a trailer already exists for the media item. If a trailer does not exist, the filter will match and the profile will be applied.</p>
 <h3 id="result">Result</h3>
 <p>With these filters, the <strong>Movie Trailers</strong> profile will only apply to movies that do not already have a trailer downloaded. This means that when the <code>Download Missing Trailers</code> task runs, it will only download trailers for movies that do not have a trailer already available in Trailarr.</p>
+<div class="admonition note">
+<p class="admonition-title">The <code>Trailer Exists</code> filter is optional since v0.10.0</p>
+<p>Downloads are now tracked per profile — a profile that already owns a downloaded trailer will not download again even without this filter. The filter still works and keeps the profile from applying to media that already have a trailer, but it is no longer required to prevent re-downloads.</p>
+</div>
 <h2 id="example-2-series-trailers-profile">Example 2: Series Trailers Profile</h2>
 <p>The <strong>Series Trailers</strong> profile is used to download trailers for TV series. It comes with all the default settings as defined in the <a href=".././settings/general/">Settings</a> section, and the following filters:</p>
 <table>
@@ -3328,7 +3394,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.ee611ef6.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7f30b55.min.js"></script>
       
     
   </body>
