@@ -3265,6 +3265,9 @@
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li>
+<p><strong>Play Video dialog no longer shows scrollbars</strong> — On wide screens (wider than 1600px) the video in Media Details → Files → Play Video was sized larger than the dialog itself, producing a horizontal scrollbar. The video now always fits the dialog exactly, and very tall videos shrink to fit the screen instead of scrolling.</p>
+</li>
+<li>
 <p><strong>Logs database now reclaims disk space</strong> — The daily logs cleanup deleted old log entries but SQLite never returned the freed space, so <code>logs.db</code> only ever grew. The cleanup now purges old entries in a single efficient statement and compacts the database file afterwards (a 13 MB logs file with 50k old entries shrinks to ~0.1 MB in under a second).</p>
 </li>
 <li>
