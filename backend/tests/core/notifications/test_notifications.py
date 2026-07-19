@@ -130,18 +130,36 @@ class TestDispatcher:
 
     @pytest.mark.asyncio
     async def test_batch_sends_one_message_per_channel(self):
-        """W2: an event storm produces ONE Apprise send per channel."""
+        """W2: an event storm produces ONE send per channel (Discord
+        channels route through the native webhook path)."""
         make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
         for i in range(500):
             dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, f"yt{i}")
 
-        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
             await dispatcher._dispatch_pending()
 
         assert send.call_count == 1
-        body = send.call_args[0][2]
+        body = send.call_args[0][1]["embeds"][0]["description"]
         assert "…and 490 more" in body
         assert len(body.splitlines()) == 11  # 10 lines + overflow summary
+
+    @pytest.mark.asyncio
+    async def test_apprise_path_used_for_non_discord(self):
+        """W2 for the generic path: non-Discord channels still go
+        through Apprise's _send_sync."""
+        make_channel(
+            name="generic",
+            url="json://localhost/notify",
+            event_types=["TRAILER_DOWNLOADED"],
+        )
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "yt0")
+        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+            await dispatcher._dispatch_pending()
+        assert send.call_count == 1
+        assert "Trailer Downloaded — yt0" in send.call_args[0][2]
 
     @pytest.mark.asyncio
     async def test_send_failure_never_raises(self):
@@ -149,7 +167,7 @@ class TestDispatcher:
         make_channel(name="dead", event_types=["TRAILER_DOWNLOADED"])
         dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "x")
         with patch.object(
-            dispatcher, "_send_sync", side_effect=RuntimeError("boom")
+            dispatcher, "_post_discord_sync", side_effect=RuntimeError("boom")
         ):
             await dispatcher._dispatch_pending()  # must not raise
 
@@ -157,16 +175,28 @@ class TestDispatcher:
     async def test_unsubscribed_events_send_nothing(self):
         make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
         dispatcher.enqueue("MEDIA_ADDED", "SYSTEM", None, "")
-        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+        with (
+            patch.object(dispatcher, "_send_sync", return_value=True) as send,
+            patch.object(
+                dispatcher, "_post_discord_sync", return_value=True
+            ) as post,
+        ):
             await dispatcher._dispatch_pending()
         assert send.call_count == 0
+        assert post.call_count == 0
 
     @pytest.mark.asyncio
     async def test_no_channels_no_sends(self):
         dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "")
-        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+        with (
+            patch.object(dispatcher, "_send_sync", return_value=True) as send,
+            patch.object(
+                dispatcher, "_post_discord_sync", return_value=True
+            ) as post,
+        ):
             await dispatcher._dispatch_pending()
         assert send.call_count == 0
+        assert post.call_count == 0
 
     def test_enqueue_never_raises(self):
         """The event-creation hook depends on this being un-crashable."""
@@ -267,10 +297,14 @@ class TestEnrichedNotifications:
             assert dispatcher._poster_attachment(notes, {}) is None
 
     @pytest.mark.asyncio
-    async def test_dispatch_passes_poster_to_send(self, tmp_path):
+    async def test_apprise_dispatch_passes_poster_to_send(self, tmp_path):
         poster = tmp_path / "poster.jpg"
         poster.write_bytes(b"jpg")
-        make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
+        make_channel(
+            name="generic",
+            url="json://localhost/notify",
+            event_types=["TRAILER_DOWNLOADED"],
+        )
         dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", 7, "1080p")
         with (
             patch.object(
@@ -284,6 +318,90 @@ class TestEnrichedNotifications:
             await dispatcher._dispatch_pending()
         assert send.call_count == 1
         assert send.call_args[0][3] == str(poster)
+
+
+class TestDiscordNative:
+    """D10: Discord channels get a native embed — media title header,
+    Media/Trailer fields, poster inside the embed, footer + timestamp."""
+
+    # Realistic shapes — Apprise validates the id/token format on the
+    # pasted-URL form (short placeholders parse as discord:// but not
+    # as https://discord.com/api/webhooks/…).
+    _ID = "123456789012345678"
+    _TOKEN = "abcDEFghiJKLmnoPQRstuVWXyz-1234567890abcdefghij"
+
+    def test_webhook_url_from_discord_scheme(self):
+        assert dispatcher._discord_webhook_url(
+            f"discord://{self._ID}/{self._TOKEN}"
+        ) == f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+
+    def test_webhook_url_from_pasted_discord_url(self):
+        url = f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+        assert dispatcher._discord_webhook_url(url) == url
+
+    def test_webhook_url_none_for_other_services(self):
+        assert dispatcher._discord_webhook_url("json://localhost/x") is None
+
+    def test_single_media_payload(self, tmp_path):
+        poster_file = tmp_path / "poster.jpg"
+        poster_file.write_bytes(b"jpg")
+        notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "1080p")]
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=_fake_media()
+            ),
+            patch(
+                "core.download.image._url_to_fs_path",
+                return_value=poster_file,
+            ),
+        ):
+            payload, poster = dispatcher._discord_payload(notes, {})
+        assert poster == str(poster_file)
+        embed = payload["embeds"][0]
+        assert embed["title"] == "Test Movie (2024)"
+        assert "⬇️ Trailer Downloaded — 1080p" in embed["description"]
+        assert embed["image"] == {"url": "attachment://poster.jpg"}
+        assert {"name": "Media", "value": "#7", "inline": True} in (
+            embed["fields"]
+        )
+        assert any(
+            "youtube.com/watch?v=ytabc123" in f["value"]
+            for f in embed["fields"]
+        )
+        assert embed["footer"]["text"] == "Trailarr"
+        assert "timestamp" in embed
+        assert embed["color"] == dispatcher._COLOR_GREEN
+        assert payload["username"] == "Trailarr"
+
+    def test_multi_media_payload_stays_compact(self):
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, ""),
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 8, ""),
+        ]
+        with patch.object(
+            dispatcher.media_manager, "read", return_value=_fake_media()
+        ):
+            payload, poster = dispatcher._discord_payload(notes, {})
+        assert poster is None
+        embed = payload["embeds"][0]
+        assert embed["title"] == "Trailarr — 2 updates"
+        assert "image" not in embed
+        assert "fields" not in embed
+
+    def test_post_uploads_poster_multipart(self, tmp_path):
+        poster = tmp_path / "poster.jpg"
+        poster.write_bytes(b"jpg")
+        resp = MagicMock(status_code=200)
+        with patch("requests.post", return_value=resp) as post:
+            ok = dispatcher._post_discord_sync(
+                "https://discord.com/api/webhooks/id/token",
+                {"embeds": []},
+                str(poster),
+            )
+        assert ok
+        assert "files" in post.call_args.kwargs
+        sent = json.loads(post.call_args.kwargs["data"]["payload_json"])
+        assert sent == {"embeds": []}
 
 
 class TestBranding:
@@ -333,11 +451,13 @@ class TestDispatcherLifecycle:
         dispatcher.start()
         dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "race-note")
 
-        with patch.object(dispatcher, "_send_sync", return_value=True) as send:
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
             await dispatcher.stop()  # no `await asyncio.sleep(0)` first
 
         assert send.call_count == 1
-        assert "race-note" in send.call_args[0][2]
+        assert "race-note" in send.call_args[0][1]["embeds"][0]["description"]
         assert list(dispatcher._queue) == []
 
     @pytest.mark.asyncio
