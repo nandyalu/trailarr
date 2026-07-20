@@ -51,30 +51,11 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 
 ## Stop Monitoring
 
-{{ version_badge("upd", "0.10.0") }}
+{{ version_badge("upd", "0.10.1") }}
 
-| Type    | Required | Default | Valid Values  |
-|:-------:|:--------:|:-------:|:-------------:|
-| Boolean | Yes      | false   | true or false |
+This option has been **removed in v0.10.1**. Downloads have been tracked per profile since `v0.10.0`, so it was no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, and downloading never changes the media item's monitor state.
 
-!!! warning "Deprecated"
-    Downloads are now tracked per profile, so this option is no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, even if the media item stays monitored. `Stop Monitoring` will be removed in an upcoming release.
+If you want multiple videos per media item, simply create multiple profiles — each matching profile downloads and keeps track of its own video.
 
-Legacy behavior, still honored for now: when a profile with `Stop Monitoring = true` successfully downloads, the media item is treated as **fully satisfied** — no other matching profiles will download for it afterwards. Since `v0.10.0`, the media item's monitor toggle itself is **not** switched off anymore; monitoring always stays as you set it.
-
-If you want multiple videos per media item, simply create multiple profiles and leave `Stop Monitoring = false` on all of them — each profile downloads and keeps its own video.
-
-!!! example
-    If you want to download 2 trailers (English and Spanish) for every media item, create two profiles with `Stop Monitoring = false` on both:
-    
-    ```
-        Profile Name: Spanish Trailer
-        Stop Monitoring: false
-        Priority: 100
-        -------------------------------
-        Profile Name: English Trailer
-        Stop Monitoring: false
-        Priority: 0 (or any lower number than the Spanish Trailer profile)
-    ```
-
-    Each profile downloads and tracks its own trailer, and the media item stays monitored. If `Stop Monitoring` were `true` on the English profile instead, its successful download would mark the media fully satisfied and prevent any other matching profiles from downloading afterwards.
+!!! note "Overlapping profiles"
+    If several of your profiles match the same media and you previously relied on a `Stop Monitoring` profile's download to suppress the others, each matching profile now downloads its own video. Narrow or split the profile filters if you want only one video per media item. Non-overlapping setups — like the default Movie/Series profiles — are unaffected.

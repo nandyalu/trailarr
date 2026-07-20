@@ -4,6 +4,16 @@ There are several settings that you can use to customize the behavior of Trailar
 
 ## General Settings
 
+### Downloads Enabled
+
+{{ version_badge("add", "0.10.1") }}
+
+- Default is `true`
+
+When disabled, Trailarr switches to **Preview mode**: the scheduled *Download Missing Trailers* task computes and publishes its full work list but downloads nothing. The media pages show a *Preview mode* banner with the would-download count and the list of every (media, profile) pair. Scans, syncs and attribution keep running so the preview stays accurate, and manual downloads from Media Details still work.
+
+Useful for pointing Trailarr at a large, carefully curated library and reviewing exactly what it would do before letting it do it.
+
 ### Monitor Trailers
 
 - Default is `true`

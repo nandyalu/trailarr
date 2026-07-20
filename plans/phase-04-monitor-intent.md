@@ -92,7 +92,17 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
   existing items, defaulted for new; toggle in UI works; connection form renders toggle.
 - config-dev soak: sync twice; diff `SELECT id, monitor FROM media` between runs → empty.
 
-## Docs to update
+## Docs to update — DONE (July 19, 2026)
+
+All items below executed on the `dev` branch: connections settings page (Arr
+AND Plex — the Plex page had its own Monitor Type section) + getting-started
+connection setup rewritten for the Monitor New Media toggle, with the old
+`#monitor-types` anchor preserved via attr_list so the FAQ deep-link keeps
+working (verified in built HTML); `arr_monitored` SYNC-replacement recipe added
+to filters docs (stable anchor, linked from the connections upgrade note);
+Stop Monitoring section rewritten as removed-in-v0.10.1; monitor-intent notes
+extended on library + media-details pages; FAQ "not downloading" answer
+rewritten. Release notes + OpenAPI were already done with the code commits.
 
 - `docs/user-guide/settings/connections/index.md` — the **Monitor Types** section is
   the big one: the enum is gone, replaced by the "Monitor new media" toggle (creation

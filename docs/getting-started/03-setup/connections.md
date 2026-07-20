@@ -16,7 +16,7 @@ Setting up a connection involves three main steps:
       I am adding a `Radarr` connection, so I named it `Radarr`
     - **Arr Type:** Select Radarr or Sonarr.
       It's already set to `Radarr` by default, so I didn't change it.
-    - **Monitor Type:** Choose which Media items Trailarr needs to monitor from this connection.
+    - **Monitor New Media:** Whether media added by this connection should start monitored (trailers downloaded for them). This only sets the starting state for newly added media — monitoring stays entirely under your control afterwards.
     - **Server URL:** The full URL of your *Arr instance. Eg: `http://192.168.0.15:6969`
         
         !!! warning "Do NOT use `localhost`"

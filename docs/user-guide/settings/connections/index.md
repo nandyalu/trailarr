@@ -4,7 +4,7 @@
 
 - **Name**: A unique name for your connection (min. 3 characters).
 - **Arr Type**: Select either Radarr or Sonarr.
-- **Monitor Type**: Choose how trailers are monitored/downloaded (see below).
+- **Monitor New Media**: Whether media added by this connection start monitored (see below).
 - **Server URL**: The full URL to your Radarr/Sonarr server (e.g., http://192.168.0.15:7878).
 - **External URL**: (Optional) If you access your Radarr/Sonarr instance through a reverse proxy or a different URL than the server URL, specify that here. 
     
@@ -18,22 +18,17 @@
 - **API Key**: The API key from your Radarr/Sonarr server settings.
 - **Path Mappings**: Map Radarr/Sonarr internal paths to Trailarr paths for correct file access.
 
-### Monitor Types
+### Monitor New Media {: #monitor-types }
 
-#### `Missing`
-Monitors and downloads trailers for movies/series without a trailer.
+{{ version_badge("upd", "0.10.1") }}
 
-#### `New`
-Only Monitors and download trailers for movies/series that gets added after the change.
+This Yes/No toggle decides the **starting monitor state** for media added by this connection: `Yes` → new media start monitored (a trailer will be downloaded for them), `No` → new media start unmonitored. It applies only once, when a media item is first added — after that, monitoring belongs entirely to you: change it per item (or in bulk) from the library pages, and nothing changes it back. Connection syncs and downloads never touch it.
 
-#### `Sync`
-Monitors and downloads trailers for movie/series that are monitored in Radarr/Sonarr.
-
-#### `None`
-Turns off monitoring for the connection and does not download any trailers.
+!!! note "Upgrading from Monitor Types"
+    Before `v0.10.1` this was a four-value **Monitor Type** dropdown (`Missing` / `New` / `Sync` / `None`). Existing connections migrate automatically: `None` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values. If you used **Sync**, Trailarr no longer follows monitoring changes from Radarr/Sonarr; to keep sync-like behavior, add a profile filter on `arr_monitored` instead — see [Sync-like behavior with `arr_monitored`](../profiles/filters.md#sync-like-behavior-with-arr-monitored). The upgrade logs list your affected connections.
 
 !!! tip
-    _If you have a huge library and don't want to download trailers for all of them, set the monitor type to `None` when adding a Radarr/Sonarr Connection. Wait for an hour or so to let the app sync all media from that connection, and change it to `New` to download trailers for new media. You can always manually set the monitor type for the movies/series you want to download trailers for._
+    _If you have a huge library and don't want to download trailers for all of it, set **Monitor New Media** to `No` when adding the connection. Wait for the first sync to finish, then flip it to `Yes` — only media added from then on start monitored. You can always monitor individual movies/series by hand from the library._
 
 ---
 

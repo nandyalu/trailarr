@@ -79,7 +79,7 @@ The next sections will explain the settings and filters available in profiles. Y
 !!! tip "Multiple Profiles - Multiple Downloads"
     You can create multiple profiles to download multiple videos for the same media item — each matching profile downloads (and keeps track of) its own video. For example, one profile for a Spanish trailer and another for an English trailer will download both for every media item that matches both profiles.
 
-    {{ version_badge("upd", "0.10.0") }} `Stop Monitoring` is no longer needed for this workflow and is deprecated — see [Stop Monitoring](settings/general.md#stop-monitoring).
+    {{ version_badge("upd", "0.10.1") }} The old `Stop Monitoring` option has been removed — multiple profiles are the supported way to get multiple videos. See [Stop Monitoring](settings/general.md#stop-monitoring).
 
 
 !!! help "Trailarr is evolving"

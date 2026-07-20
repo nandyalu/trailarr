@@ -162,3 +162,15 @@ The value is the value to compare against the property. The available values dep
 - **Integer Values**: Any integer value.
 - **String Values**: Any string value.
 - **Date Values**: A date in the format `YYYY-MM-DD` or a number of days (e.g., `7` for the last 7 days).
+
+## Sync-like behavior with `arr_monitored` {: #sync-like-behavior-with-arr-monitored }
+
+{{ version_badge("add", "0.10.1") }}
+
+Before `v0.10.1`, the connection **Monitor Type** `Sync` made Trailarr follow the monitored state from Radarr/Sonarr. Monitoring is now yours alone — syncs never change it — but Trailarr still updates the `ARR Monitored` **fact** on every sync, so you can get the same effect with a profile filter:
+
+| Filter By       | Condition | Filter Value |
+|:---------------:|:---------:|:------------:|
+| `ARR Monitored` | `Equals`  | `true`       |
+
+Add this filter to your download profiles and they will only apply to media currently monitored in your Arr apps: unmonitor a movie in Radarr and Trailarr stops downloading for it on the next sync — without ever touching your Trailarr monitor flags. Remove the filter to decouple from Arr again.

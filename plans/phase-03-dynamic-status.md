@@ -114,7 +114,14 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
   home/movies/details (console errors, no flicker regression on throttled reload).
 - config-dev copy: home page stats equal old stats (they measure the same reality).
 
-## Docs to update
+## Docs to update — DONE (July 19, 2026)
+
+All items below executed on the `dev` branch (commit with the P4 docs pass):
+library status legend + computed-status note, media-details "Download Profiles
+Section", tasks page (SIGNAL-DISAGREE note removed, preview-mode note added),
+general-settings "Downloads Enabled", FAQ stuck-Downloading answer rewritten.
+`DOWNLOADS_ENABLED` is a UI setting persisted like the others — env-vars page
+deliberately not extended (it documents deploy-time vars only).
 
 - `docs/user-guide/library/index.md` — the status legend / quick-filter list
   ("Missing: Trailer missing (also includes monitored items)" etc.) must describe the
