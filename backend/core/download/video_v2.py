@@ -1,5 +1,6 @@
 import shlex
 import subprocess
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -81,6 +82,10 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     _options.append(app_settings.ffmpeg_path)
     # _options.append("--no-warnings")
     _options.append("--no-playlist")
+    # Livestreams have no end and would download until the subprocess
+    # timeout, leaving multi-GB partial files behind (#626)
+    _options.append("--match-filter")
+    _options.append("!is_live & !is_upcoming")
     _options.append("--progress-delta")
     _options.append("3")  # Update progress every 3 seconds
     _options.append("--force-overwrites")  # Override files if exists
@@ -173,6 +178,62 @@ def _find_downloaded_file(file_path: str | Path) -> str | None:
     return None
 
 
+def cleanup_stale_temp_downloads() -> None:
+    """Remove leftover files from the trailer temp download directory.
+
+    Called at app startup — no download is in flight then, so anything in
+    the directory is an orphan from a previous run, e.g. a partial file
+    from a download that was killed mid-write (#626).
+    """
+    tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
+    if not tmp_dir.is_dir():
+        return
+    removed, freed = 0, 0
+    for file in tmp_dir.iterdir():
+        if not file.is_file():
+            continue
+        try:
+            freed += file.stat().st_size
+            file.unlink()
+            removed += 1
+        except OSError as e:
+            logger.warning(f"Failed to remove stale temp file '{file}': {e}")
+    if removed:
+        logger.info(
+            f"Removed {removed} stale temp download file(s), freed"
+            f" {freed / 2**20:.1f} MB"
+        )
+
+
+def _cleanup_partial_downloads(file_path: str | Path) -> None:
+    """Remove any files yt-dlp left behind for the given output template.
+
+    A failed or timed-out yt-dlp process leaves `.part` (and intermediate
+    format) files in place; on live content these can be many GB (#626).
+    """
+    path = Path(file_path)
+    if "%(ext)s" in path.name:
+        base_name = path.name.replace("%(ext)s", "").rstrip(".")
+    else:
+        # Literal name (e.g. temp_311-trailer.mkv) — match on the stem so
+        # intermediate/partial variants (.mkv.part, .f616.mp4.part) match too
+        base_name = path.stem
+    if not base_name or not path.parent.is_dir():
+        return
+    for file in path.parent.iterdir():
+        # Require a "." delimiter after the base name (.mkv, .mkv.part,
+        # .f616.mp4.part) so e.g. "temp_311-trailer2.mkv" never matches
+        if file.name != base_name and not file.name.startswith(
+            f"{base_name}."
+        ):
+            continue
+        try:
+            file.unlink()
+            logger.info(f"Removed partial download file: {file}")
+        except OSError as e:
+            logger.warning(f"Failed to remove partial file '{file}': {e}")
+
+
 def _download_with_ytdlp(
     url: str, file_path: str, profile: TrailerProfileRead
 ) -> str:
@@ -231,6 +292,11 @@ def _download_with_ytdlp(
         # Find the downloaded file
         downloaded_file = _find_downloaded_file(file_path)
         if not downloaded_file:
+            if "does not pass filter" in combined_output:
+                raise DownloadFailedError(
+                    "Video skipped: livestream/premiere or filtered out",
+                    output=combined_output,
+                )
             raise DownloadFailedError(
                 "Downloaded file not found", output=combined_output
             )
@@ -240,9 +306,14 @@ def _download_with_ytdlp(
             logger.debug(f"YT-DLP Output::\n{combined_output}")
 
     except subprocess.TimeoutExpired:
+        _cleanup_partial_downloads(file_path)
         msg = "yt-dlp download timed out after 15 minutes"
         raise DownloadFailedError(msg)
+    except DownloadFailedError:
+        _cleanup_partial_downloads(file_path)
+        raise
     except Exception as e:
+        _cleanup_partial_downloads(file_path)
         msg = f"Error running yt-dlp process: {str(e)}"
         raise DownloadFailedError(msg)
 

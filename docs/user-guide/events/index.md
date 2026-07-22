@@ -55,16 +55,17 @@ Logged when the monitor status of a media item changes.
 | Field | Value |
 |-------|-------|
 | Source | User or System |
-| Source Detail | `API`, `ConnectionRefresh`, or `TrailerDownload` |
-| Old Value | Previous monitor status (`true` or `false`) |
+| Source Detail | `API`, `ConnectionRefresh`, `PlexRefresh`, or `TrailerDownload` |
+| Old Value | Previous monitor status (`true` or `false`); empty for the initial status of newly added media |
 | New Value | New monitor status (`true` or `false`) |
 
 **Triggers:**
 
 - **User**: Toggling the monitor switch in the UI
 - **System**: 
+    - Newly added media during a connection refresh — a single event records the initial monitoring decision, with an empty old value {{ version_badge("upd", "0.10.1") }}
     - Connection refresh when monitor status changes in Radarr/Sonarr
-    - Trailer download task when it auto-unmonitors after successful download
+    - Trailer download task when it auto-unmonitors after successful download (logged after the [Trailer Downloaded](#trailer-downloaded) event)
 
 ---
 
@@ -193,6 +194,21 @@ Logged when Trailarr skips downloading a trailer for a media item.
 | `Folder not found` | Media folder doesn't exist on disk |
 | `Already downloaded` | A trailer already exists for this media |
 | `Unmonitored` | Media item is not monitored for trailer downloads |
+
+---
+
+### Download Attributed
+
+{{ version_badge("add", "0.9.9") }}
+
+Logged when a download with no profile (shown as **Unknown** in Media Details → Downloads) is manually assigned to a Trailer Profile using the profile dropdown.
+
+| Field | Value |
+|-------|-------|
+| Source | User |
+| Source Detail | `MediaDetails` |
+| Old Value | File name of the download |
+| New Value | Name of the assigned profile |
 
 ---
 

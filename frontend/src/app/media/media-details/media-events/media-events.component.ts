@@ -39,9 +39,10 @@ export class MediaEventsComponent {
       case EventType.MEDIA_ADDED:
         return 'Media was added to the library';
       case EventType.MONITOR_CHANGED:
-        if (event.old_value === 'true' && event.new_value === 'false') {
+        // Empty old_value = initial status of newly added media
+        if (event.new_value === 'false') {
           return 'Monitoring disabled';
-        } else if (event.old_value === 'false' && event.new_value === 'true') {
+        } else if (event.new_value === 'true') {
           return 'Monitoring enabled';
         }
         return `Monitor: ${event.old_value} → ${event.new_value}`;

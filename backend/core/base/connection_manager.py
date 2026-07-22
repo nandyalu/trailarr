@@ -198,10 +198,19 @@ class BaseConnectionManager(ABC):
             self.media_ids.append(media_read.id)
             if created:
                 self.created_count += 1
-                # Track all events for new media (added, youtube_id, monitor)
+                # Track events for new media (added, youtube_id)
                 event_manager.track_media_added(
                     media=media_read,
                     connection_name=self.connection_name,
+                    source=EventSource.SYSTEM,
+                    source_detail="ConnectionRefresh",
+                )
+                # Single initial MONITOR_CHANGED — monitor_new_media was
+                # already applied to the row, so this is the final decision
+                event_manager.track_monitor_changed(
+                    media_id=media_read.id,
+                    old_monitor=None,
+                    new_monitor=media_read.monitor,
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",
                 )

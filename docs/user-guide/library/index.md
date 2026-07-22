@@ -48,9 +48,14 @@ Media items in the view can be filtered using the following options:
 - Missing: No downloaded video (also includes monitored items)
 - Monitored: Monitored for trailer download
 - Unmonitored: No downloaded video and not monitored
+- Unknown Profile: Media with downloads that have no profile assigned. {{ version_badge("add", "0.9.9") }}
 
 !!! info "Status is computed live"
-    {{ version_badge("upd", "0.10.1") }} Status is always derived from your actual downloads and the monitor flag: any active download → **Downloaded**, else monitored → **Monitored**, else **Missing**. It can never get stuck or drift out of sync with reality. **Downloading** is a live indicator of in-progress downloads (updated in real time) — it is not stored, so a crash or restart can never leave items showing *Downloading* forever.
+    {{ version_badge("upd", "0.10.2") }} Status is always derived from your actual downloads and the monitor flag: any active download → **Downloaded**, else monitored → **Monitored**, else **Missing**. It can never get stuck or drift out of sync with reality. **Downloading** is a live indicator of in-progress downloads (updated in real time) — it is not stored, so a crash or restart can never leave items showing *Downloading* forever.
+
+!!! note "Downloads with no profile assigned"
+    {{ version_badge("add", "0.9.9") }}
+    When any downloads are not linked to a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a **Review** button, and the **Unknown Profile** quick filter appears in the filter dropdown. Open each media item and assign a profile from the Downloads section (see [Media Details](media-details/index.md#downloads-section)) — the banner and filter disappear automatically once every download has a profile.
 
 !!! tip
     There is also an option to add a custom filter to fit your needs. These are same as `Filters` used in `Profiles` (infact they use the same mechanism underneath). For more information see [Filters](../settings/profiles/filters.md).
@@ -82,7 +87,7 @@ Click on the `Edit` button in the top bar to enable edit view where you can perf
 This will enable Monitoring of the selected Media items (no effect on items already monitored).
 
 !!! info ""
-    {{ version_badge("upd", "0.10.1") }} You can monitor anything — including media that already have a trailer. The download engine decides from per-profile download records, so monitored-and-satisfied media are simply left alone. Monitoring is changed only by you: connection syncs and downloads never touch it.
+    {{ version_badge("upd", "0.10.2") }} You can monitor anything — including media that already have a trailer. The download engine decides from per-profile download records, so monitored-and-satisfied media are simply left alone. Monitoring is changed only by you: connection syncs and downloads never touch it.
 
 ### UnMonitor
 

@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, timezone
 
+from core.base.database.models.helpers import MonitorStatus
 from core.download.video_analysis import VideoInfo, StreamInfo
 from exceptions import DownloadFailedError
 
@@ -145,6 +146,65 @@ class TestDownloadTrailer:
         mock_verify.assert_called_once()
         mock_move.assert_called_once()
         mock_record.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.event_manager.track_youtube_id_changed")
+    @patch("core.download.trailer.event_manager.track_monitor_changed")
+    @patch("core.download.trailer.trailer_search.get_video_id")
+    @patch("core.download.trailer.download_video")
+    @patch("core.download.trailer.trailer_file.verify_download")
+    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch(
+        "core.download.trailer.record_new_trailer_download",
+        new_callable=AsyncMock,
+    )
+    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
+    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch(
+        "core.download.trailer.websockets.ws_manager.broadcast",
+        new_callable=AsyncMock,
+    )
+    async def test_downloaded_event_logged_before_status_update(
+        self,
+        mock_broadcast,
+        mock_update_status,
+        mock_track_download,
+        mock_record,
+        mock_move,
+        mock_verify,
+        mock_download,
+        mock_get_video_id,
+        mock_track_monitor,
+        mock_track_yt_id,
+        mock_media,
+        mock_profile,
+        mock_video_info,
+    ):
+        """Trailer Downloaded event fires before the DOWNLOADED status
+        update, so Monitor Changed events appear after it in the log."""
+        mock_get_video_id.return_value = "dQw4w9WgXcQ"
+        mock_download.return_value = "/tmp/test-trailer.mp4"
+        mock_verify.return_value = (True, mock_video_info)
+        mock_move.return_value = "/media/movies/Test/Trailers/trailer.mp4"
+
+        manager = MagicMock()
+        manager.attach_mock(mock_update_status, "update_status")
+        manager.attach_mock(mock_track_download, "track_download")
+
+        from core.download.trailer import download_trailer
+
+        result = await download_trailer(mock_media, mock_profile)
+
+        assert result is True
+        call_names = [name for name, *_ in manager.mock_calls]
+        # Phase 3: no DOWNLOADING status write at start (in-flight registry)
+        assert call_names == [
+            "track_download",  # Trailer Downloaded event
+            "update_status",  # DOWNLOADED status mirror last
+        ]
+        assert (
+            manager.mock_calls[-1].args[0].status == MonitorStatus.DOWNLOADED
+        )
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")

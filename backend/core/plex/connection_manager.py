@@ -213,10 +213,8 @@ class PlexConnectionManager:
 
         # 3. Collect pending events and identify new items needing file checks
         pending_events: list[EventCreate] = []
-        # (media_read, folder_path) for new items — need async file check
-        new_items: list[tuple[int, str, bool]] = (
-            []
-        )  # (id, folder_path, default_monitor)
+        # (id, folder_path) for new items — need async file check
+        new_items: list[tuple[int, str]] = []
         # (media_read, plex_fields_changed) for existing items
         existing_items: list[tuple[MediaRead, bool]] = []
 

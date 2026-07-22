@@ -160,6 +160,21 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 !!! note
     This filter only applies to YouTube search results. If a `YouTube Trailer ID` is set directly on a media item, it bypasses all search filters including this one.
 
+## Automatic Exclusions
+
+{{ version_badge("upd", "0.10.1") }}
+
+In addition to the filters you configure above, some videos are always excluded from YouTube search results regardless of profile settings:
+
+- **Livestreams and premieres** — live or upcoming videos are never selected as trailers, since they have no bounded duration and would keep downloading until the app's 15-minute timeout kills them, leaving huge partial files behind.
+- **Videos with unknown duration** — a real trailer always has a known, bounded duration, so videos where YouTube reports no duration are skipped.
+- **YouTube Shorts** — vertical videos are skipped.
+- **Reviews** — videos with "review" in the title are skipped.
+
+As a second layer of protection, the download command itself also refuses live and upcoming content — this covers trailer URLs provided directly by Radarr or set manually as `YouTube Trailer ID`, which bypass search filters.
+
+If a download fails or times out for any reason, its partially downloaded files are deleted immediately, and any leftover temporary files from previous runs are cleaned up automatically at every app startup.
+
 ## Yt-dlp Extra Options
 
 | Type    | Required | Default | Valid Values                  |

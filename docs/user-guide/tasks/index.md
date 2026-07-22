@@ -67,6 +67,13 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 | An existing trailer's content changes but keeps the same name (e.g. re-encoded outside the app) | Detected via a content-hash mismatch — the file's metadata (size, resolution, codecs, duration) is refreshed automatically. Logged as a [**Trailer Modified**](../events/index.md#trailer-modified) event. |
 | An existing trailer is deleted | The download record is marked as missing. Logged as a [**Trailer Deleted**](../events/index.md#trailer-deleted) event. |
 
+!!! note "How trailers are detected"
+    {{ version_badge("upd", "0.9.6") }}
+    A video file counts as a trailer if either of the following is true:
+
+    - It is inside a recognized trailer folder — `Trailers/`, `Trailer/`, or any custom [Folder Name](../settings/profiles/settings/file.md#folder-name) set in a profile. Folder placement is authoritative: any video file in such a folder is a trailer, with no size or name requirements.
+    - It sits next to the media file ("inline") with `trailer` in its file name and no `SxxEyy` episode pattern. Files under 200 MB are accepted directly; larger files are verified with ffprobe and only count if their duration is 10 minutes or less — so a full movie with "trailer" in its name is not mistaken for one.
+
 !!! note "Minimal Files Scan from `v0.9.0`"
     The task now checks folder modification times before doing a full recursive scan. If neither the media folder nor any of its immediate subdirectories (e.g., `Trailers/`) have changed since the last scan, the folder is skipped entirely. User-initiated scans always run in full. This significantly reduces scan time for large libraries where most folders are unchanged between runs.
 

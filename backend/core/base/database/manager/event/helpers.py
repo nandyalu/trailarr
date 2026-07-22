@@ -37,7 +37,10 @@ def track_media_added(
     Creates the following events in order:
     1. MEDIA_ADDED - Records the media addition
     2. YOUTUBE_ID_CHANGED - Records initial YouTube ID (if present)
-    3. MONITOR_CHANGED - Records initial monitor status
+
+    The initial MONITOR_CHANGED event is fired separately by the caller
+    once the final monitoring decision is made, so only a single monitor
+    event is logged per new media item.
 
     Args:
         media (MediaRead): The newly created media object.
@@ -79,26 +82,10 @@ def track_media_added(
                 f" [{media_id}]: {e}"
             )
 
-    # 3. Create monitor_changed event to track initial monitor status
-    try:
-        event_create = EventCreate(
-            media_id=media_id,
-            event_type=EventType.MONITOR_CHANGED,
-            source=source,
-            source_detail=source_detail,
-            old_value="",
-            new_value=str(media.monitor).lower(),
-        )
-        create_event(event_create)
-    except Exception as e:
-        logger.warning(
-            f"Failed to track monitor_changed event for [{media_id}]: {e}"
-        )
-
 
 def track_monitor_changed(
     media_id: int,
-    old_monitor: bool,
+    old_monitor: bool | None,
     new_monitor: bool,
     source: EventSource = EventSource.USER,
     source_detail: str = "",
@@ -106,7 +93,8 @@ def track_monitor_changed(
     """Track when monitor status changes for a media item. \n
     Args:
         media_id (int): The ID of the media item.
-        old_monitor (bool): The previous monitor status.
+        old_monitor (bool | None): The previous monitor status. Use None
+            for the initial status of newly added media (empty old value).
         new_monitor (bool): The new monitor status.
         source (EventSource): The source of the event (USER or SYSTEM).
         source_detail (str): Additional details about the source (e.g., task name).
@@ -117,7 +105,9 @@ def track_monitor_changed(
             event_type=EventType.MONITOR_CHANGED,
             source=source,
             source_detail=source_detail,
-            old_value=str(old_monitor).lower(),
+            old_value=(
+                "" if old_monitor is None else str(old_monitor).lower()
+            ),
             new_value=str(new_monitor).lower(),
         )
         create_event(event_create)

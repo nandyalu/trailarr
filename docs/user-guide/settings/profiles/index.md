@@ -58,6 +58,10 @@ To edit an existing profile, click on the relevant profile in the `Profiles` pag
 
 To delete a profile, open the Profile edit page and click on the `Delete` button at the top right corner.
 
+!!! warning "Downloads are owned by the profile that made them"
+    {{ version_badge("upd", "0.10.0") }}
+    Deleting a profile does not delete its downloaded trailers, but the ownership link is lost — its downloads show their profile as `Deleted`. If you later create a similar profile, the new profile does not own those downloads and **will download its own trailers** for all matching media. Prefer editing an existing profile over deleting and recreating it.
+
 
 ## Usage
 
