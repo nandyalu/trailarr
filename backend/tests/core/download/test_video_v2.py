@@ -73,6 +73,18 @@ class TestCleanupPartialDownloads:
 
         assert keep.exists()
 
+    def test_prefix_requires_dot_delimiter(self, tmp_path):
+        # A similarly named file without a "." after the base name survives
+        keep = tmp_path / "temp_311-trailer2.mkv.part"
+        keep.write_bytes(b"x")
+        remove = tmp_path / "temp_311-trailer.mkv.part"
+        remove.write_bytes(b"x")
+
+        _cleanup_partial_downloads(tmp_path / "temp_311-trailer.mkv")
+
+        assert keep.exists()
+        assert not remove.exists()
+
     def test_handles_ext_template_output_path(self, tmp_path):
         part = tmp_path / "temp_311-trailer.webm.part"
         part.write_bytes(b"x")
@@ -172,4 +184,13 @@ class TestCleanupStaleTempDownloads:
             "core.download.video_v2.tempfile.gettempdir",
             lambda: str(tmp_path / "nope"),
         )
+        cleanup_stale_temp_downloads()
+
+    def test_temp_dir_being_a_file_is_noop(self, tmp_path, monkeypatch):
+        # A file at the temp dir path must not break app startup
+        monkeypatch.setattr(
+            "core.download.video_v2.tempfile.gettempdir",
+            lambda: str(tmp_path),
+        )
+        (tmp_path / "trailarr").write_bytes(b"not a directory")
         cleanup_stale_temp_downloads()
