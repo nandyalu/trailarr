@@ -48,6 +48,11 @@ Media items in the view can be filtered using the following options:
 - Missing: Trailer missing (also includes monitored items)
 - Monitored: Monitored for trailer download
 - Unmonitored: Trailer missing (does not include monitored items)
+- Unknown Profile: Media with downloads that have no profile assigned. {{ version_badge("add", "0.9.9") }}
+
+!!! note "Downloads with no profile assigned"
+    {{ version_badge("add", "0.9.9") }}
+    When any downloads are not linked to a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a **Review** button, and the **Unknown Profile** quick filter appears in the filter dropdown. Open each media item and assign a profile from the Downloads section (see [Media Details](media-details/index.md#downloads-section)) — the banner and filter disappear automatically once every download has a profile.
 
 !!! tip
     There is also an option to add a custom filter to fit your needs. These are same as `Filters` used in `Profiles` (infact they use the same mechanism underneath). For more information see [Filters](../settings/profiles/filters.md).

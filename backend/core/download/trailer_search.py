@@ -123,13 +123,25 @@ def _yt_search_filter(
     if id in exclude:
         logger.debug(f"Skipping video in excluded list: {id}")
         return "Video in excluded list"
-    duration = int(info.get("duration", 0))
+    # Live/upcoming streams have no bounded duration and would download
+    # until the subprocess timeout kills them (#626)
+    if info.get("is_live") or info.get("live_status") in (
+        "is_live",
+        "is_upcoming",
+    ):
+        logger.debug(f"Skipping live/upcoming video: {id}")
+        return "The video is a livestream or premiere"
+    duration = int(info.get("duration") or 0)
+    if not duration:
+        # A trailer always has a known, bounded duration
+        logger.debug(f"Skipping video with unknown duration: {id}")
+        return "The video duration is unknown"
     min_duration = profile.min_duration
-    if duration and duration < min_duration:
+    if duration < min_duration:
         logger.debug(f"Skipping short video (<{min_duration}): {id}")
         return f"The video is shorter than {min_duration} seconds"
     max_duration = profile.max_duration
-    if duration and duration > max_duration:
+    if duration > max_duration:
         logger.debug(f"Skipping long video (>{max_duration}): {id}")
         return f"The video is longer than {max_duration} seconds"
     # Shorts URLs contain /shorts/ — these are vertical videos
