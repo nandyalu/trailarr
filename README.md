@@ -47,7 +47,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 
 ## Installation & Setup
 
-See the [Installation Guide](https://nandyalu.github.io/trailarr/getting-started/installation/) for full instructions. Available methods:
+See the [Installation Guide](https://nandyalu.github.io/trailarr/getting-started/02-installation/) for full instructions. Available methods:
 
 - **Docker Compose** ⭐ — recommended for most users, easiest to set up and update
 - **Direct Install** — native installer script for Linux, macOS, and Windows
