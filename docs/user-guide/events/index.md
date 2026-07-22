@@ -196,6 +196,21 @@ Logged when Trailarr skips downloading a trailer for a media item.
 
 ---
 
+### Download Attributed
+
+{{ version_badge("add", "0.9.9") }}
+
+Logged when a download with no profile (shown as **Unknown** in Media Details → Downloads) is manually assigned to a Trailer Profile using the profile dropdown.
+
+| Field | Value |
+|-------|-------|
+| Source | User |
+| Source Detail | `MediaDetails` |
+| Old Value | File name of the download |
+| New Value | Name of the assigned profile |
+
+---
+
 ### Plex Linked
 
 {{ version_badge("add", "0.9.0") }}

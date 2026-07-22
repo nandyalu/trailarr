@@ -1,5 +1,8 @@
 import pytest
+from core.base.database.models.customfilter import CustomFilterRead, FilterType
+from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.trailers.utils import extract_youtube_id
+from core.download.trailer_search import _yt_search_filter
 from core.download.trailer_search import __replace_media_options
 from core.download.trailer_search import __has_all_words
 from core.download.trailer_search import __has_any_words
@@ -188,3 +191,100 @@ def test_has_all_words(words, title, expected):
 )
 def test_has_any_words(words, title, expected):
     assert __has_any_words(words, title) == expected
+
+
+@pytest.fixture
+def trailer_profile():
+    cf = CustomFilterRead(
+        id=1,
+        filter_name="Test CF",
+        filter_type=FilterType.TRAILER,
+        filters=[],
+    )
+    return TrailerProfileRead(
+        id=1,
+        customfilter=cf,
+        customfilter_id=cf.id,
+        video_format="h264",
+        audio_format="aac",
+        subtitles_format="srt",
+        file_format="mkv",
+        video_resolution=1080,
+        audio_volume_level=100,
+        subtitles_enabled=True,
+        subtitles_language="en",
+        embed_metadata=True,
+        ytdlp_extra_options="",
+    )
+
+
+def _video_info(**overrides) -> dict:
+    """A search result info dict for a normal trailer video."""
+    info = {
+        "id": "abcdefghijk",
+        "url": "https://www.youtube.com/watch?v=abcdefghijk",
+        "title": "Test Movie Trailer",
+        "duration": 120,
+        "live_status": "not_live",
+    }
+    info.update(overrides)
+    return info
+
+
+class TestYtSearchFilterLiveContent:
+    """Livestreams/premieres must never match as trailers (#626)."""
+
+    def _run(self, info, profile):
+        return _yt_search_filter(
+            info,
+            incomplete=False,
+            media=DummyMedia(),
+            profile=profile,
+            exclude=None,
+        )
+
+    def test_normal_video_passes(self, trailer_profile):
+        assert self._run(_video_info(), trailer_profile) is None
+
+    def test_is_live_flag_rejected(self, trailer_profile):
+        info = _video_info(is_live=True, duration=None)
+        result = self._run(info, trailer_profile)
+        assert result == "The video is a livestream or premiere"
+
+    @pytest.mark.parametrize("live_status", ["is_live", "is_upcoming"])
+    def test_live_status_rejected(self, trailer_profile, live_status):
+        info = _video_info(live_status=live_status, duration=None)
+        result = self._run(info, trailer_profile)
+        assert result == "The video is a livestream or premiere"
+
+    def test_finished_livestream_vod_passes(self, trailer_profile):
+        # A VOD of an ended stream has a bounded duration — allowed
+        info = _video_info(live_status="was_live", duration=120)
+        assert self._run(info, trailer_profile) is None
+
+    def test_none_duration_rejected(self, trailer_profile):
+        # Livestreams report duration as None — must reject, not crash
+        info = _video_info(duration=None)
+        result = self._run(info, trailer_profile)
+        assert result == "The video duration is unknown"
+
+    def test_missing_duration_rejected(self, trailer_profile):
+        info = _video_info()
+        del info["duration"]
+        result = self._run(info, trailer_profile)
+        assert result == "The video duration is unknown"
+
+    def test_zero_duration_rejected(self, trailer_profile):
+        info = _video_info(duration=0)
+        result = self._run(info, trailer_profile)
+        assert result == "The video duration is unknown"
+
+    def test_short_video_rejected(self, trailer_profile):
+        info = _video_info(duration=30)
+        result = self._run(info, trailer_profile)
+        assert result == "The video is shorter than 60 seconds"
+
+    def test_long_video_rejected(self, trailer_profile):
+        info = _video_info(duration=700)
+        result = self._run(info, trailer_profile)
+        assert result == "The video is longer than 600 seconds"
