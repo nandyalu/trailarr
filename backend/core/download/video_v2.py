@@ -186,7 +186,7 @@ def cleanup_stale_temp_downloads() -> None:
     from a download that was killed mid-write (#626).
     """
     tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
-    if not tmp_dir.exists():
+    if not tmp_dir.is_dir():
         return
     removed, freed = 0, 0
     for file in tmp_dir.iterdir():
@@ -218,10 +218,14 @@ def _cleanup_partial_downloads(file_path: str | Path) -> None:
         # Literal name (e.g. temp_311-trailer.mkv) — match on the stem so
         # intermediate/partial variants (.mkv.part, .f616.mp4.part) match too
         base_name = path.stem
-    if not base_name or not path.parent.exists():
+    if not base_name or not path.parent.is_dir():
         return
     for file in path.parent.iterdir():
-        if not file.name.startswith(base_name):
+        # Require a "." delimiter after the base name (.mkv, .mkv.part,
+        # .f616.mp4.part) so e.g. "temp_311-trailer2.mkv" never matches
+        if file.name != base_name and not file.name.startswith(
+            f"{base_name}."
+        ):
             continue
         try:
             file.unlink()
