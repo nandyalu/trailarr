@@ -292,7 +292,6 @@ async def download_trailer(
         final_path = trailer_file.move_trailer_to_folder(
             output_file, media, profile, video_info
         )
-        __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
         # Record the download in the database
         await record_new_trailer_download(
             media, profile.id, final_path, video_id, video_info
@@ -308,6 +307,10 @@ async def download_trailer(
             source=EventSource.SYSTEM,
             source_detail="TrailerDownload",
         )
+
+        # Update media status last so its Monitor Changed / YouTube ID
+        # Changed events are logged after the Trailer Downloaded event
+        __update_media_status(media, MonitorStatus.DOWNLOADED, profile)
 
         # Notify Plex to scan the media folder if enabled in the profile
         if profile.notify_plex:

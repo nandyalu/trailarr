@@ -55,16 +55,17 @@ Logged when the monitor status of a media item changes.
 | Field | Value |
 |-------|-------|
 | Source | User or System |
-| Source Detail | `API`, `ConnectionRefresh`, or `TrailerDownload` |
-| Old Value | Previous monitor status (`true` or `false`) |
+| Source Detail | `API`, `ConnectionRefresh`, `PlexRefresh`, or `TrailerDownload` |
+| Old Value | Previous monitor status (`true` or `false`); empty for the initial status of newly added media |
 | New Value | New monitor status (`true` or `false`) |
 
 **Triggers:**
 
 - **User**: Toggling the monitor switch in the UI
 - **System**: 
+    - Newly added media during a connection refresh — a single event records the initial monitoring decision, with an empty old value {{ version_badge("upd", "0.10.1") }}
     - Connection refresh when monitor status changes in Radarr/Sonarr
-    - Trailer download task when it auto-unmonitors after successful download
+    - Trailer download task when it auto-unmonitors after successful download (logged after the [Trailer Downloaded](#trailer-downloaded) event)
 
 ---
 

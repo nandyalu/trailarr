@@ -359,11 +359,15 @@ class BaseConnectionManager(ABC):
                     trailer_exists,
                     media_read.arr_monitored,
                 )
-            # Track monitor change event if monitor status changed
-            if monitor_media != media_read.monitor:
+            # Track a single monitor event: initial status (with the final
+            # monitoring decision) for new media, or an actual change for
+            # existing media
+            if media_read.created or monitor_media != media_read.monitor:
                 event_manager.track_monitor_changed(
                     media_id=media_read.id,
-                    old_monitor=media_read.monitor,
+                    old_monitor=(
+                        None if media_read.created else media_read.monitor
+                    ),
                     new_monitor=monitor_media,
                     source=EventSource.SYSTEM,
                     source_detail="ConnectionRefresh",

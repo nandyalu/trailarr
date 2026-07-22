@@ -240,7 +240,9 @@ class TestEventHelpers:
         self.media, _, _, _ = result[0]
 
     def test_track_media_added(self):
-        """Test tracking media_added event creates media_added, youtube_id, and monitor events."""
+        """Test tracking media_added event creates media_added and youtube_id
+        events only — the initial monitor event is fired separately by the
+        caller once the final monitoring decision is made."""
         # Create a media with youtube_id and monitor for testing
         media_data = MediaCreate(
             connection_id=self.connection.id,  # type: ignore
@@ -277,11 +279,28 @@ class TestEventHelpers:
         assert len(yt_events) >= 1
         assert yt_events[0].new_value == "test_yt_id"
 
-        # Check monitor_changed event
+        # No monitor_changed event — fired separately by the caller so only
+        # a single monitor event is logged per new media item
+        monitor_events = [
+            e for e in events if e.event_type == EventType.MONITOR_CHANGED
+        ]
+        assert len(monitor_events) == 0
+
+    def test_track_monitor_changed_initial_status(self):
+        """old_monitor=None records an initial status with empty old value."""
+        event_manager.track_monitor_changed(
+            media_id=self.media.id,
+            old_monitor=None,
+            new_monitor=True,
+            source=EventSource.SYSTEM,
+            source_detail="ConnectionRefresh",
+        )
+        events = event_manager.read_by_media_id(self.media.id)
         monitor_events = [
             e for e in events if e.event_type == EventType.MONITOR_CHANGED
         ]
         assert len(monitor_events) >= 1
+        assert monitor_events[0].old_value == ""
         assert monitor_events[0].new_value == "true"
 
     def test_track_monitor_changed(self):
