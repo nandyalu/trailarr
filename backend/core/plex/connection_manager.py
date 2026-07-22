@@ -226,10 +226,8 @@ class PlexConnectionManager:
 
         # 3. Collect pending events and identify new items needing file checks
         pending_events: list[EventCreate] = []
-        # (media_read, folder_path) for new items — need async file check
-        new_items: list[tuple[int, str, bool]] = (
-            []
-        )  # (id, folder_path, default_monitor)
+        # (id, folder_path) for new items — need async file check
+        new_items: list[tuple[int, str]] = []
         # (media_read, plex_fields_changed) for existing items
         existing_items: list[tuple[MediaRead, bool]] = []
 
@@ -275,23 +273,11 @@ class PlexConnectionManager:
                             new_value=media_read.youtube_trailer_id,
                         )
                     )
-                # Initial MONITOR_CHANGED (from False default)
-                pending_events.append(
-                    EventCreate(
-                        media_id=media_read.id,
-                        event_type=EventType.MONITOR_CHANGED,
-                        source=EventSource.SYSTEM,
-                        source_detail="PlexRefresh",
-                        old_value="",
-                        new_value=str(media_read.monitor).lower(),
-                    )
-                )
+                # Initial MONITOR_CHANGED is appended in step 4, once the
+                # final monitoring decision is made — a single event per
+                # new item instead of an initial + change pair
                 new_items.append(
-                    (
-                        media_read.id,
-                        media_read.folder_path or "",
-                        media_read.monitor,
-                    )
+                    (media_read.id, media_read.folder_path or "")
                 )
                 self._stats_added += 1
             else:
@@ -309,25 +295,23 @@ class PlexConnectionManager:
 
         if new_items:
             trailer_results = await asyncio.gather(
-                *[_check_trailer(fp) for _, fp, _ in new_items]
+                *[_check_trailer(fp) for _, fp in new_items]
             )
-            for (
-                media_id,
-                folder_path,
-                default_monitor,
-            ), trailer_exists in zip(new_items, trailer_results):
+            for (media_id, folder_path), trailer_exists in zip(
+                new_items, trailer_results
+            ):
                 monitor = self._check_monitoring(trailer_exists)
-                if monitor != default_monitor:
-                    pending_events.append(
-                        EventCreate(
-                            media_id=media_id,
-                            event_type=EventType.MONITOR_CHANGED,
-                            source=EventSource.SYSTEM,
-                            source_detail="PlexRefresh",
-                            old_value=str(default_monitor).lower(),
-                            new_value=str(monitor).lower(),
-                        )
+                # Single initial MONITOR_CHANGED with the final decision
+                pending_events.append(
+                    EventCreate(
+                        media_id=media_id,
+                        event_type=EventType.MONITOR_CHANGED,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                        old_value="",
+                        new_value=str(monitor).lower(),
                     )
+                )
                 if trailer_exists:
                     pending_events.append(
                         EventCreate(
