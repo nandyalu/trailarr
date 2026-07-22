@@ -91,7 +91,7 @@ referenced removed fields. After this release the old failure modes are unrepres
 
 ## Verification
 
-- Migration matrix: fresh install; v0.9.9→; v0.10.1→; v0.9.6-fixture→; config-dev copy→.
+- Migration matrix: fresh install; v0.9.9→; v0.10.1→; v0.10.2→; v0.9.6-fixture→; config-dev copy→.
   Each: boots, filters render, zero tracebacks, spot-check rewritten filters in UI.
 - Full suites; headless pass over home (custom filter dropdown), settings/profiles
   (filters editor shows has_downloads, not trailer_exists), media details.

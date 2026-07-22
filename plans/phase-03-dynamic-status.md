@@ -1,6 +1,6 @@
 # Phase 3 — Dynamic Status
 
-**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev — merge into dev after v0.10.0 ships; releases with Phase 4) · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev — merge into dev after v0.10.0 ships; releases with Phase 4) · **Release:** v0.10.2 (with Phase 4) · **Depends on:** Phase 2
 
 ## Objective
 
@@ -170,7 +170,7 @@ filters/sorts equivalent on config-dev; Docs section executed.
   unit tests assert registry empty after failure paths) + fresh-boot [] on the
   real app. A literal kill -9 during a live stubbed download was NOT run —
   no real download path exists on the dev machine (media folders absent);
-  revisit during the v0.10.1 release soak if desired.
+  revisit during the v0.10.2 release soak if desired.
 - **W6:** MediaRead.status remains in all API responses, populated from the
   computed value (model validator). `/media/all_raw` intentionally keeps raw
   column values (frontend derives its own).

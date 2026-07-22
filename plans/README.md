@@ -70,7 +70,7 @@ Standard checklist, in addition to each phase's listed pages:
 |---|---|---|---|---|
 | v0.9.9 | 1 | Download↔profile attribution + manual assign + heal | Jul 2026 | ✅ shipped |
 | v0.10.0 | 2 | Downloads-driven download engine + Apprise notifications | ✅ shipped Jul 19, 2026 | ~4 weeks (baking) |
-| v0.10.1 | 3+4 | Dynamic status + monitor becomes user intent | late Aug 2026 | ~2 weeks |
+| v0.10.2 | 3+4 | Dynamic status + monitor becomes user intent | late Aug 2026 | ~2 weeks |
 | v0.11.0 | 5 | Drop trailer_exists/status columns, filter migration | Sep 2026 | ~2 weeks |
 | v0.11.1 | 6 | Downloads/files custom-filter family (views) | Oct 2026 | ~2 weeks |
 | v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Nov 2026 | ~3 weeks |
@@ -82,7 +82,7 @@ Standard checklist, in addition to each phase's listed pages:
 **Parallel track — Onboarding & Diagnostics** (`track-onboarding-diagnostics.md`):
 Connection Doctor + Health page + cookies UI ride v0.11.x releases; the first-run
 guided setup rides v0.13.x (post-reorg); the diagnostics bundle fits any release.
-Library-wide **preview mode** ships with Phase 3 (v0.10.1).
+Library-wide **preview mode** ships with Phase 3 (v0.10.2).
 
 Rules of the ladder:
 

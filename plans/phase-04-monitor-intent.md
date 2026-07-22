@@ -1,11 +1,11 @@
 # Phase 4 — Monitor Becomes User Intent
 
-**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3 — merge into dev after v0.10.0 ships) · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3 — merge into dev after v0.10.0 ships) · **Release:** v0.10.2 (with Phase 3) · **Depends on:** Phase 2
 
 > **Decision-5 note (July 2026):** v0.10.0 has not shipped yet, so the Phase 2
 > shadow logs the `exclusive` option was conditioned on DO NOT EXIST. Implementing
 > the stated default path (remove stop_monitoring, no replacement option).
-> **Checkpoint before releasing v0.10.1:** review the v0.10.0 bake-window
+> **Checkpoint before releasing v0.10.2:** review the v0.10.0 bake-window
 > SIGNAL-DISAGREE logs (via=stop_monitoring on media with >1 matching profile);
 > if real overlapping-profile setups show up, add the `exclusive` per-profile
 > bool then.
@@ -100,7 +100,7 @@ connection setup rewritten for the Monitor New Media toggle, with the old
 `#monitor-types` anchor preserved via attr_list so the FAQ deep-link keeps
 working (verified in built HTML); `arr_monitored` SYNC-replacement recipe added
 to filters docs (stable anchor, linked from the connections upgrade note);
-Stop Monitoring section rewritten as removed-in-v0.10.1; monitor-intent notes
+Stop Monitoring section rewritten as removed-in-v0.10.2; monitor-intent notes
 extended on library + media-details pages; FAQ "not downloading" answer
 rewritten. Release notes + OpenAPI were already done with the code commits.
 
@@ -118,7 +118,7 @@ rewritten. Release notes + OpenAPI were already done with the code commits.
   the release notes walk-through should link to this docs anchor, not inline it all.
 - `docs/user-guide/settings/profiles/settings/general.md` — if the Stop Monitoring
   option is removed from the UI this phase (decision 5), replace the deprecated section
-  with a short "removed in v0.10.1" note pointing at the multi-profile pattern (column
+  with a short "removed in v0.10.2" note pointing at the multi-profile pattern (column
   drop is Phase 5; the `exclusive` option, if introduced, gets its own subsection).
 - API breaking change (connection enum→bool): call out in release notes for API
   consumers; regenerate `docs/references/api-docs/`.
@@ -156,4 +156,4 @@ walk-through prominently. Docs section executed (FAQ monitor-types link verified
   (fact keeps syncing while monitor stays user-owned) — the full
   filter→satisfaction→no-download chain rides the existing satisfaction tests.
 - **Decision-5 checkpoint still open:** revisit v0.10.0 bake-window shadow logs for
-  overlapping-profile stop_monitoring usage before releasing v0.10.1 (see note at top).
+  overlapping-profile stop_monitoring usage before releasing v0.10.2 (see note at top).

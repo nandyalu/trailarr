@@ -51,9 +51,9 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 
 ## Stop Monitoring
 
-{{ version_badge("upd", "0.10.1") }}
+{{ version_badge("upd", "0.10.2") }}
 
-This option has been **removed in v0.10.1**. Downloads have been tracked per profile since `v0.10.0`, so it was no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, and downloading never changes the media item's monitor state.
+This option has been **removed in v0.10.2**. Downloads have been tracked per profile since `v0.10.0`, so it was no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, and downloading never changes the media item's monitor state.
 
 If you want multiple videos per media item, simply create multiple profiles — each matching profile downloads and keeps track of its own video.
 

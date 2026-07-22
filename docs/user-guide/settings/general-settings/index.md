@@ -6,7 +6,7 @@ There are several settings that you can use to customize the behavior of Trailar
 
 ### Downloads Enabled
 
-{{ version_badge("add", "0.10.1") }}
+{{ version_badge("add", "0.10.2") }}
 
 - Default is `true`
 

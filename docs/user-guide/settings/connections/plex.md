@@ -54,7 +54,7 @@ Your Plex authentication token, used to authenticate all API requests from Trail
 
 ## Monitor New Media
 
-{{ version_badge("upd", "0.10.1") }}
+{{ version_badge("upd", "0.10.2") }}
 
 | Type    | Required | Valid Values  |
 |:-------:|:--------:|:-------------:|
@@ -66,7 +66,7 @@ Whether media items discovered through this Plex connection should **start monit
     When setting up a Plex connection for the first time, set **Monitor New Media** to `No` until the initial library scan finishes, then switch it to `Yes` so only future additions start monitored. You can always monitor individual items by hand from the library.
 
 !!! note "Upgrading from Monitor Types"
-    Before `v0.10.1` this was a `missing` / `new` / `none` dropdown. Existing Plex connections migrate automatically: `none` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values.
+    Before `v0.10.2` this was a `missing` / `new` / `none` dropdown. Existing Plex connections migrate automatically: `none` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values.
 
 ---
 

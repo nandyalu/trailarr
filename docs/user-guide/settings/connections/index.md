@@ -20,12 +20,12 @@
 
 ### Monitor New Media {: #monitor-types }
 
-{{ version_badge("upd", "0.10.1") }}
+{{ version_badge("upd", "0.10.2") }}
 
 This Yes/No toggle decides the **starting monitor state** for media added by this connection: `Yes` → new media start monitored (a trailer will be downloaded for them), `No` → new media start unmonitored. It applies only once, when a media item is first added — after that, monitoring belongs entirely to you: change it per item (or in bulk) from the library pages, and nothing changes it back. Connection syncs and downloads never touch it.
 
 !!! note "Upgrading from Monitor Types"
-    Before `v0.10.1` this was a four-value **Monitor Type** dropdown (`Missing` / `New` / `Sync` / `None`). Existing connections migrate automatically: `None` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values. If you used **Sync**, Trailarr no longer follows monitoring changes from Radarr/Sonarr; to keep sync-like behavior, add a profile filter on `arr_monitored` instead — see [Sync-like behavior with `arr_monitored`](../profiles/filters.md#sync-like-behavior-with-arr-monitored). The upgrade logs list your affected connections.
+    Before `v0.10.2` this was a four-value **Monitor Type** dropdown (`Missing` / `New` / `Sync` / `None`). Existing connections migrate automatically: `None` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values. If you used **Sync**, Trailarr no longer follows monitoring changes from Radarr/Sonarr; to keep sync-like behavior, add a profile filter on `arr_monitored` instead — see [Sync-like behavior with `arr_monitored`](../profiles/filters.md#sync-like-behavior-with-arr-monitored). The upgrade logs list your affected connections.
 
 !!! tip
     _If you have a huge library and don't want to download trailers for all of it, set **Monitor New Media** to `No` when adding the connection. Wait for the first sync to finish, then flip it to `Yes` — only media added from then on start monitored. You can always monitor individual movies/series by hand from the library._

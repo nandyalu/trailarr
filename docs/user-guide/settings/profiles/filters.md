@@ -165,9 +165,9 @@ The value is the value to compare against the property. The available values dep
 
 ## Sync-like behavior with `arr_monitored` {: #sync-like-behavior-with-arr-monitored }
 
-{{ version_badge("add", "0.10.1") }}
+{{ version_badge("add", "0.10.2") }}
 
-Before `v0.10.1`, the connection **Monitor Type** `Sync` made Trailarr follow the monitored state from Radarr/Sonarr. Monitoring is now yours alone — syncs never change it — but Trailarr still updates the `ARR Monitored` **fact** on every sync, so you can get the same effect with a profile filter:
+Before `v0.10.2`, the connection **Monitor Type** `Sync` made Trailarr follow the monitored state from Radarr/Sonarr. Monitoring is now yours alone — syncs never change it — but Trailarr still updates the `ARR Monitored` **fact** on every sync, so you can get the same effect with a profile filter:
 
 | Filter By       | Condition | Filter Value |
 |:---------------:|:---------:|:------------:|

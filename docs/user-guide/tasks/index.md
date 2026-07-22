@@ -100,7 +100,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
     {{ version_badge("add", "0.10.0") }} When a download attempt genuinely fails (e.g. no matching video can be found), that media + profile combination is not retried on every run. The retry delay doubles after each failure — 1 day, then 2 days, then 4 days — capped at one attempt per week. A successful download resets the backoff, and a manual download from Media Details always bypasses it. Skips (missing media folder, waiting for the media file) do not count as failed attempts.
 
 !!! note "Preview mode"
-    {{ version_badge("add", "0.10.1") }} When **Downloads Enabled** is turned off in [Settings → General](../settings/general-settings/index.md#downloads-enabled), this task computes and publishes its full work list but downloads nothing — the media pages show a *Preview mode* banner listing every (media, profile) pair it would download. Scans, syncs and attribution keep running so the preview stays accurate, and manual downloads still work.
+    {{ version_badge("add", "0.10.2") }} When **Downloads Enabled** is turned off in [Settings → General](../settings/general-settings/index.md#downloads-enabled), this task computes and publishes its full work list but downloads nothing — the media pages show a *Preview mode* banner listing every (media, profile) pair it would download. Scans, syncs and attribution keep running so the preview stays accurate, and manual downloads still work.
 
 - There is a delay between consecutive trailer downloads. The delays are as follows:
 

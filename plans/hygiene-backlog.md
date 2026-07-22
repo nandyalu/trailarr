@@ -23,7 +23,7 @@ none justify their own release. Check items off with the release that shipped th
   would only add memory pressure and slow responses on large libraries — raw reads
   are deliberately the efficient list-scale path. Rationale documented in CLAUDE.md
   (Key Conventions); do not convert these to typed responses.
-- [x] **H7 — Startup-fix module retirement** — DONE (Phase 3, ships v0.10.1):
+- [x] **H7 — Startup-fix module retirement** — DONE (Phase 3, ships v0.10.2):
   `startup_fixes.py` and its tests deleted with `fix_trailer_exists_flags`
   (justification recorded in `phase-03-dynamic-status.md`).
 - [ ] **H8 — Scan TODO comments** ("once the planned Issues section exists…") in
