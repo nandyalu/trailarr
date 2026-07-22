@@ -3267,6 +3267,15 @@
 </tbody>
 </table>
 <div class="admonition note">
+<p class="admonition-title">How trailers are detected</p>
+<p><span class="twemoji orange" title="Updated in v0.9.6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v096-beta-june-07-2026">v0.9.6</a>
+A video file counts as a trailer if either of the following is true:</p>
+<ul>
+<li>It is inside a recognized trailer folder — <code>Trailers/</code>, <code>Trailer/</code>, or any custom <a href="../settings/profiles/settings/file/#folder-name">Folder Name</a> set in a profile. Folder placement is authoritative: any video file in such a folder is a trailer, with no size or name requirements.</li>
+<li>It sits next to the media file ("inline") with <code>trailer</code> in its file name and no <code>SxxEyy</code> episode pattern. Files under 200 MB are accepted directly; larger files are verified with ffprobe and only count if their duration is 10 minutes or less — so a full movie with "trailer" in its name is not mistaken for one.</li>
+</ul>
+</div>
+<div class="admonition note">
 <p class="admonition-title">Minimal Files Scan from <code>v0.9.0</code></p>
 <p>The task now checks folder modification times before doing a full recursive scan. If neither the media folder nor any of its immediate subdirectories (e.g., <code>Trailers/</code>) have changed since the last scan, the folder is skipped entirely. User-initiated scans always run in full. This significantly reduces scan time for large libraries where most folders are unchanged between runs.</p>
 </div>

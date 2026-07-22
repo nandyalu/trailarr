@@ -2100,6 +2100,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#automatic-exclusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Automatic Exclusions
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#yt-dlp-extra-options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2872,6 +2883,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#automatic-exclusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Automatic Exclusions
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#yt-dlp-extra-options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3398,6 +3420,17 @@
 <p class="admonition-title">Note</p>
 <p>This filter only applies to YouTube search results. If a <code>YouTube Trailer ID</code> is set directly on a media item, it bypasses all search filters including this one.</p>
 </div>
+<h2 id="automatic-exclusions">Automatic Exclusions</h2>
+<p><span class="twemoji orange" title="Updated in v0.10.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0101-july-21-2026">v0.10.1</a></p>
+<p>In addition to the filters you configure above, some videos are always excluded from YouTube search results regardless of profile settings:</p>
+<ul>
+<li><strong>Livestreams and premieres</strong> — live or upcoming videos are never selected as trailers, since they have no bounded duration and would keep downloading until the app's 15-minute timeout kills them, leaving huge partial files behind.</li>
+<li><strong>Videos with unknown duration</strong> — a real trailer always has a known, bounded duration, so videos where YouTube reports no duration are skipped.</li>
+<li><strong>YouTube Shorts</strong> — vertical videos are skipped.</li>
+<li><strong>Reviews</strong> — videos with "review" in the title are skipped.</li>
+</ul>
+<p>As a second layer of protection, the download command itself also refuses live and upcoming content — this covers trailer URLs provided directly by Radarr or set manually as <code>YouTube Trailer ID</code>, which bypass search filters.</p>
+<p>If a download fails or times out for any reason, its partially downloaded files are deleted immediately, and any leftover temporary files from previous runs are cleaned up automatically at every app startup.</p>
 <h2 id="yt-dlp-extra-options">Yt-dlp Extra Options</h2>
 <table>
 <thead>

@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0100-july-19-2026" class="md-skip">
+        <a href="#v0101-july-21-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,6 +2418,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0101-july-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.1</strong> - <em>July 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0100-july-19-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2932,6 +2943,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0101-july-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.1</strong> - <em>July 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0100-july-19-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3243,6 +3265,20 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0101-july-21-2026"><strong>v0.10.1</strong> - <em>July 21, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Livestreams can no longer be matched or downloaded as trailers</strong> — live and upcoming videos (and videos with no known duration) are now rejected at both search and download time, instead of downloading endlessly until the timeout and filling up disk space — see <a href="../../user-guide/settings/profiles/settings/search/#automatic-exclusions">Automatic Exclusions</a>. Thanks <a href="https://github.com/kevin2xk">@kevin2xk</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/626">#626</a>)</p>
+</li>
+<li>
+<p><strong>Failed downloads no longer leave partial files behind</strong> — partial files are now deleted whenever a download fails or times out, and any orphaned temp files from previous runs are removed automatically at startup.</p>
+</li>
+<li>
+<p><strong>Cleaner event ordering in the Events log</strong> — the <em>Monitor Changed</em> event from a trailer download is now logged after <em>Trailer Downloaded</em>, and newly added media logs a single <em>Monitor Changed</em> event with the final monitoring decision instead of an initial + change pair — see <a href="../../user-guide/events/#monitor-changed">Monitor Changed</a>.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0100-july-19-2026"><strong>v0.10.0</strong> - <em>July 19, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
