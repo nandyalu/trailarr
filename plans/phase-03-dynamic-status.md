@@ -147,6 +147,19 @@ Stored `status` no longer read anywhere (grep `\.status` in backend/frontend med
 paths); stuck-status impossible by construction; matrix visible on details; stats/
 filters/sorts equivalent on config-dev; Docs section executed.
 
+## Addition (2026-07-19): storage-reachability download guard
+
+Added post-verification, ships with v0.10.1: `_is_valid_media` in the download
+task now distinguishes "storage unreachable" from "folder missing" (reusing the
+scan's `is_disk_available`, moved to `core/files_handler.py` with a compat
+alias in files_scan) and checks the existing folder is actually listable —
+a stale handle on a half-dead mount previously passed isdir, failed mid-write,
+and was misrecorded as a failed ATTEMPT (accruing backoff) instead of a skip.
+Skips fire `DOWNLOAD_SKIPPED` with reason "Storage unreachable" (existing
+dedupe). 4 unit tests. This is the early-shipped half of the issue-gated
+downloads decision recorded in phase-11 (4b); re-run of the backend suite
+covered it.
+
 ## Verification record (July 2026)
 
 - **Suites:** backend 808 passed; frontend 69 passed + production build green.

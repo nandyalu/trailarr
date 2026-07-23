@@ -94,6 +94,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Downloads are tracked per profile: a profile that already has its downloaded video never downloads again, so monitored media is not re-downloaded — you can keep media monitored forever. Existing trailers on disk that Trailarr is not yet tracking are claimed by the highest-priority matching profile instead of being downloaded again.
 - Downloading no longer turns monitoring off — the monitor toggle stays exactly as you set it.
 - If a trailer file is deleted from disk, the next files scan notices it and the owning profile becomes unsatisfied — the trailer is downloaded again on the following run.
+- {{ version_badge("add", "0.10.1") }} If the storage backing a media folder is unreachable (e.g. a disconnected network drive), the item is skipped with a *Storage unreachable* reason — it is not counted as a failed download attempt, and is simply retried on the next run once the storage is back.
 - Uses yt-dlp and ffmpeg for downloading and conversion.
 
 !!! note "Failed downloads back off"

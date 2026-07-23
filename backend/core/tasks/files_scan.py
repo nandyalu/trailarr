@@ -19,6 +19,7 @@ from core.download.trailers.service import (
     rename_trailer_download,
 )
 from core.files.media_scanner import MediaScanner
+from core.files_handler import is_disk_available
 
 logger = ModuleLogger("TrailersFilesScan")
 
@@ -71,41 +72,9 @@ def _handle_folder_gone(media: MediaRead) -> None:
         media_manager.update_media_exists(media.id, False)
 
 
-def _is_disk_available(folder_path: str) -> bool:
-    """Best-effort check for whether the drive/network share backing a media
-    folder is currently reachable — used to distinguish "this media's
-    trailers were genuinely deleted" from "the network drive is temporarily
-    disconnected", which can otherwise look identical: the folder appears
-    empty or inaccessible either way, and some network filesystems (soft-
-    mounted SMB/NFS shares, autofs) don't raise an error when disconnected —
-    they just silently present the mount point as an empty local directory.
-
-    Walks up from folder_path's parent to the nearest existing ancestor and
-    confirms it can actually be listed. Catches stale-handle/I-O errors that
-    a plain os.path.isdir() check (used by MediaScanner) would silently
-    swallow as "not a directory". If even that ancestor is unreachable, the
-    whole drive/share is likely unavailable, not just this one folder.
-    Args:
-        folder_path (str): The media's configured folder path.
-    Returns:
-        bool: True if a reachable, listable ancestor was found (storage
-            looks available — any "missing" trailers are probably genuine).
-            False if nothing above folder_path could be reached (storage
-            looks unavailable — treat "missing" trailers as suspect).
-    """
-    path = os.path.dirname(os.path.abspath(folder_path.rstrip(os.sep)))
-    while True:
-        if os.path.isdir(path):
-            try:
-                os.listdir(path)
-                return True
-            except OSError as e:
-                logger.error(f"Disk unavailable: cannot list '{path}': {e}")
-                return False
-        parent = os.path.dirname(path)
-        if parent == path:
-            return False  # walked all the way to filesystem root
-        path = parent
+# Moved to core.files_handler so the download task can share it; the alias
+# keeps this module's historical import path and test patch targets working.
+_is_disk_available = is_disk_available
 
 
 async def _process_trailer_changes(

@@ -35,6 +35,27 @@ stabilization checklist.
 4. **Notifications:** issue transitions (new issue appeared) dispatch through the
    Apprise channels — new "Issues" pseudo-event-type subscription; batched like
    everything else (`#trailarr-issues` use case).
+4b. **Issue-gated downloads (decided 2026-07-19, KR):** issues are inputs to the
+   download engine, not just reports — media with a blocking pending issue is
+   skipped by the download task until the issue resolves. Per-kind gating
+   semantics (NOT "any issue blocks"):
+
+   | Issue kind | Gates downloads for the media? |
+   |---|---|
+   | `folder-unreachable` | Yes — prevents writes into dead mounts (the storage-reachability skip shipped early, in v0.10.1 — this phase re-expresses it as issue-gating, same behavior) |
+   | `unattributed-download` | Yes (conservative; load-bearing from Phase 9 type-aware claiming — see phase-09 W4) |
+   | `download-failing` | No — backoff governs it; gating would deadlock its own resolution |
+   | `unmatched-monitored` | Vacuous — nothing to download |
+   | `missing-tmdb-id` | Only gates TMDB-only demands (already per-unit in Phases 9/10) |
+   | `profile-needs-review` | No — profile-scoped, not media-scoped |
+   | `user-video-failing` | No — backoff + candidate fallback already handle it |
+
+   Two invariants: (a) gating follows the FACT, never the dismissal — dismissing
+   an issue silences notifications/badges but must not un-gate safety-relevant
+   skips (a dismissed folder-unreachable must still block writes); (b) every
+   gate surfaces as a reason in the Phase 3 matrix/pending endpoint — an
+   engine skip the matrix can't explain violates "what you see is what the
+   engine does" (W3 parity applies to gates too).
 5. **Performance:** feeds computed on request with a short in-process cache (60s);
    heavy feeds (unmatched-monitored needs profile matching across the library) reuse
    the satisfaction helper and must stay <1s on 1,700 items — measure; precompute

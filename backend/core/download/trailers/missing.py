@@ -1,3 +1,4 @@
+import os
 import threading
 
 from app_logger import ModuleLogger
@@ -18,7 +19,7 @@ from core.base.utils.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader
 from core.download.inflight import inflight_registry
 from core.download.trailers import utils
-from core.files_handler import FilesHandler
+from core.files_handler import FilesHandler, is_disk_available
 from core.tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
 
@@ -44,6 +45,21 @@ def _is_valid_media(
             return False
 
         if not FilesHandler.check_folder_exists(db_media.folder_path):
+            # Distinguish "folder genuinely missing" from "the storage
+            # backing it is unreachable" (disconnected network mount) —
+            # an offline drive must not be treated like a normal missing
+            # folder, and must never lead to writes into a dead mount.
+            if not is_disk_available(db_media.folder_path):
+                logger.info(
+                    f"Media '{db_media.title}' [{db_media.id}] skipped:"
+                    " storage backing the media folder is unreachable."
+                )
+                event_manager.track_download_skipped(
+                    media_id=db_media.id,
+                    skip_reason="Storage unreachable",
+                    source_detail="DownloadMissingTrailers",
+                )
+                return False
             logger.info(
                 f"Media '{db_media.title}' [{db_media.id}] skipped: folder"
                 " does not exist."
@@ -51,6 +67,25 @@ def _is_valid_media(
             event_manager.track_download_skipped(
                 media_id=db_media.id,
                 skip_reason="Folder does not exist",
+                source_detail="DownloadMissingTrailers",
+            )
+            return False
+
+        # Folder exists — confirm it is actually readable. A stale handle
+        # on a half-dead network mount can pass the isdir check but fail
+        # on first read; downloading would then fail mid-write and be
+        # recorded as a failed *attempt* (accruing backoff) when the real
+        # problem is storage, which must be a skip instead.
+        try:
+            os.listdir(db_media.folder_path)
+        except OSError as exc:
+            logger.info(
+                f"Media '{db_media.title}' [{db_media.id}] skipped: media"
+                f" folder is not readable ({exc}); storage may be offline."
+            )
+            event_manager.track_download_skipped(
+                media_id=db_media.id,
+                skip_reason="Storage unreachable",
                 source_detail="DownloadMissingTrailers",
             )
             return False

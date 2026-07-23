@@ -278,3 +278,95 @@ async def test_preview_pass_publishes_would_download_list():
         message = mock_broadcast.await_args[0][0]
         assert "Preview mode" in message
         assert "1 trailer(s)" in message
+
+
+class TestIsValidMediaStorageGuard:
+    """Storage-reachability guard: unreachable storage must be a SKIP
+    (never a failed download attempt), distinct from a genuinely missing
+    folder."""
+
+    def _media(self, mock_media_no_trailer):
+        mock_media_no_trailer.folder_path = "/mnt/media/Test Movie"
+        return mock_media_no_trailer
+
+    def test_folder_missing_storage_down_skips_as_unreachable(
+        self, mock_media_no_trailer
+    ):
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.is_disk_available",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is False
+            skip_reason = mock_events.track_download_skipped.call_args.kwargs[
+                "skip_reason"
+            ]
+            assert skip_reason == "Storage unreachable"
+
+    def test_folder_missing_storage_up_skips_as_missing_folder(
+        self, mock_media_no_trailer
+    ):
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.is_disk_available",
+            return_value=True,
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is False
+            skip_reason = mock_events.track_download_skipped.call_args.kwargs[
+                "skip_reason"
+            ]
+            assert skip_reason == "Folder does not exist"
+
+    def test_folder_exists_but_unreadable_skips_as_unreachable(
+        self, mock_media_no_trailer
+    ):
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=True,
+        ), patch(
+            "core.download.trailers.missing.os.listdir",
+            side_effect=OSError(112, "Host is down"),
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is False
+            skip_reason = mock_events.track_download_skipped.call_args.kwargs[
+                "skip_reason"
+            ]
+            assert skip_reason == "Storage unreachable"
+
+    def test_folder_exists_and_readable_passes(self, mock_media_no_trailer):
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=True,
+        ), patch(
+            "core.download.trailers.missing.os.listdir",
+            return_value=[],
+        ), patch(
+            "core.download.trailers.missing.app_settings"
+        ) as mock_settings, patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            mock_settings.wait_for_media = False
+            assert _is_valid_media(media) is True
+            mock_events.track_download_skipped.assert_not_called()

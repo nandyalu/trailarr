@@ -62,6 +62,12 @@ TMDB candidates — no YouTube search fallback exists for them, by construction.
   not download backoff) so it doesn't hammer refresh.
 - W4. Mixed-type unattributed downloads + claim pass: type-aware claiming must not
   assign a teaser file to a trailer profile (extends v0.9.9 attribution logic).
+  NOTE (2026-07-19): type-aware claiming creates the first state where a pending
+  profile coexists with an unclaimable unattributed file (pre-P9, claim-on-spot
+  resolves every such case). Per the issue-gating decision in phase-11 (4b),
+  media with unresolved unattributed downloads should be SKIPPED by the download
+  task from this phase on — implement the gate here (skip-not-attempt, reason
+  surfaced in the matrix), don't wait for Phase 11's feed framework.
 - W5. Type added to `EventType`-style VARCHAR enum later: no migration — verified by
   design.
 
