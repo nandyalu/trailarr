@@ -21,8 +21,10 @@ def clean_channels_and_queue():
     for channel in channel_manager.read_all():
         channel_manager.delete(channel.id)
     dispatcher._queue.clear()
+    dispatcher._send_times.clear()
     yield
     dispatcher._queue.clear()
+    dispatcher._send_times.clear()
 
 
 def make_channel(
@@ -198,6 +200,53 @@ class TestDispatcher:
         assert send.call_count == 0
         assert post.call_count == 0
 
+    @pytest.mark.asyncio
+    async def test_rate_limit_holds_queue_for_next_batch(self):
+        """At MAX_SENDS_PER_MINUTE recent sends, a cycle sends nothing and
+        leaves the queue intact so notes merge into the next allowed batch."""
+        import time
+
+        make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "held")
+        now = time.monotonic()
+        dispatcher._send_times.extend(
+            now - i for i in range(dispatcher.MAX_SENDS_PER_MINUTE)
+        )
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
+            await dispatcher._dispatch_pending()
+        assert send.call_count == 0
+        assert len(dispatcher._queue) == 1
+
+        # Once the oldest stamp ages past a minute, the held note goes out
+        dispatcher._send_times.clear()
+        dispatcher._send_times.extend(
+            now - 61 for _ in range(dispatcher.MAX_SENDS_PER_MINUTE)
+        )
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
+            await dispatcher._dispatch_pending()
+        assert send.call_count == 1
+        assert len(dispatcher._queue) == 0
+
+    @pytest.mark.asyncio
+    async def test_forced_flush_bypasses_rate_limit(self):
+        """Shutdown flush must never drop notes to the rate cap."""
+        import time
+
+        make_channel(name="downloads", event_types=["TRAILER_DOWNLOADED"])
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "held")
+        dispatcher._send_times.extend(
+            time.monotonic() for _ in range(dispatcher.MAX_SENDS_PER_MINUTE)
+        )
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
+            await dispatcher._dispatch_pending(force=True)
+        assert send.call_count == 1
+
     def test_enqueue_never_raises(self):
         """The event-creation hook depends on this being un-crashable."""
         dispatcher.enqueue("ANYTHING", "SYSTEM", None, "")
@@ -219,6 +268,8 @@ def _fake_media(**overrides):
         year=2024,
         youtube_trailer_id="ytabc123",
         poster_path="/images/movies/posters/x.jpg",
+        poster_url=None,
+        arr_id=0,
     )
     base.update(overrides)
     return SimpleNamespace(**base)
@@ -372,6 +423,81 @@ class TestDiscordNative:
         assert "timestamp" in embed
         assert embed["color"] == dispatcher._COLOR_GREEN
         assert payload["username"] == "Trailarr"
+        # Mobile push previews only show top-level content — without it
+        # a poster-attachment message notifies as just "image received"
+        assert payload["content"] == (
+            "⬇️ Trailer Downloaded: Test Movie (2024)"
+        )
+
+    def test_single_media_multi_note_content_lists_event_types(
+        self, tmp_path
+    ):
+        poster_file = tmp_path / "poster.jpg"
+        poster_file.write_bytes(b"jpg")
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, ""),
+            EventNote("MEDIA_RENAMED", "SYSTEM", 7, ""),
+        ]
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=_fake_media()
+            ),
+            patch(
+                "core.download.image._url_to_fs_path",
+                return_value=poster_file,
+            ),
+        ):
+            payload, _ = dispatcher._discord_payload(notes, {})
+        assert payload["content"] == (
+            "Test Movie (2024): Trailer Downloaded, Media Renamed"
+        )
+
+    def test_arr_media_uses_public_poster_url_and_no_content(self):
+        """Radarr-style: Arr media has a public TMDB poster URL, so the
+        poster goes in the embed by URL (no upload) and no content line is
+        needed — mobile push falls back to the embed title/description."""
+        media = _fake_media(
+            arr_id=101,
+            poster_url="https://image.tmdb.org/t/p/original/x.jpg",
+        )
+        notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "1080p")]
+        with patch.object(
+            dispatcher.media_manager, "read", return_value=media
+        ):
+            payload, poster = dispatcher._discord_payload(notes, {})
+        assert poster is None
+        assert payload["embeds"][0]["image"] == {
+            "url": "https://image.tmdb.org/t/p/original/x.jpg"
+        }
+        assert "content" not in payload
+
+    def test_plex_only_media_falls_back_to_poster_upload(self, tmp_path):
+        """Plex-only media's poster_url points at the LAN server, which
+        Discord can't fetch — upload the cached poster instead and keep
+        the content line so mobile push doesn't say 'image received'."""
+        poster_file = tmp_path / "poster.jpg"
+        poster_file.write_bytes(b"jpg")
+        media = _fake_media(
+            arr_id=0, poster_url="http://192.168.1.5:32400/thumb/1"
+        )
+        notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")]
+        with (
+            patch.object(
+                dispatcher.media_manager, "read", return_value=media
+            ),
+            patch(
+                "core.download.image._url_to_fs_path",
+                return_value=poster_file,
+            ),
+        ):
+            payload, poster = dispatcher._discord_payload(notes, {})
+        assert poster == str(poster_file)
+        assert payload["embeds"][0]["image"] == {
+            "url": "attachment://poster.jpg"
+        }
+        assert payload["content"] == (
+            "⬇️ Trailer Downloaded: Test Movie (2024)"
+        )
 
     def test_multi_media_payload_stays_compact(self):
         notes = [
@@ -387,6 +513,24 @@ class TestDiscordNative:
         assert embed["title"] == "Trailarr — 2 updates"
         assert "image" not in embed
         assert "fields" not in embed
+        assert payload["content"] == (
+            "Test Movie — Trailer Downloaded;"
+            " Test Movie — Trailer Downloaded"
+        )
+
+    def test_multi_media_content_truncates_after_two(self):
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", i, "")
+            for i in range(1, 6)
+        ]
+        with patch.object(
+            dispatcher.media_manager, "read", return_value=_fake_media()
+        ):
+            payload, _ = dispatcher._discord_payload(notes, {})
+        assert payload["content"] == (
+            "Test Movie — Trailer Downloaded;"
+            " Test Movie — Trailer Downloaded; …and 3 more"
+        )
 
     def test_post_uploads_poster_multipart(self, tmp_path):
         poster = tmp_path / "poster.jpg"
