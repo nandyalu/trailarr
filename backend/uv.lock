@@ -606,7 +606,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.140.4"
+version = "0.140.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -615,9 +615,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ca/24/da8da082a850c9732dd5a5b3ccdfe51844750e42f83c430b0d8e241eab2e/fastapi-0.140.4.tar.gz", hash = "sha256:4a040c5d047486a62c497eb6e926a6d6b281efb7f99b8b50288489ba1fa0a468", size = 421514, upload-time = "2026-07-27T15:46:48.011Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/cb/7a4d2c2eb5a5d8a91763c05b7383d72917862e32f780daa0e27ffbb34cc6/fastapi-0.140.13.tar.gz", hash = "sha256:500172a08cf1459901f90b05c37d93060dada3b573fec8f0862445db52ba6b4b", size = 424843, upload-time = "2026-07-28T15:37:00.805Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/77/2915c0cc8b602f3d611294920171c67ce396b43cda5fa63f3e4b465d635e/fastapi-0.140.4-py3-none-any.whl", hash = "sha256:6a1f8ec2f01ae47c96dc991d49660ce4f31f50ed0d7c9df80c5e57037bfe1240", size = 130958, upload-time = "2026-07-27T15:46:49.175Z" },
+    { url = "https://files.pythonhosted.org/packages/84/4e/f9e8c762ef5e05c40482131e3d5e8b36bca13fa127578261f1d6b35a25d4/fastapi-0.140.13-py3-none-any.whl", hash = "sha256:8b017110e1e9f30a95e8bdb8f71fbe2f0fe3af5717109e5b14f9e069df54f6d4", size = 131222, upload-time = "2026-07-28T15:37:02.124Z" },
 ]
 
 [package.optional-dependencies]
@@ -1936,7 +1936,7 @@ requires-dist = [
     { name = "apprise", specifier = ">=1.12.0" },
     { name = "async-lru", specifier = "==2.3.0" },
     { name = "bcrypt", specifier = "==5.0.0" },
-    { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.140.4" },
+    { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.140.13" },
     { name = "pillow", specifier = "==12.3.0" },
     { name = "quiv", specifier = ">=0.5.0" },
     { name = "rich", specifier = ">=15.0.0" },
