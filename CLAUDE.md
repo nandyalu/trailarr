@@ -316,6 +316,7 @@ LOG_LEVEL=Info                 # Logging level
 - **GitHub**: use the `gh` CLI for all GitHub operations (PRs, issues, releases, API) — it is already authenticated in this environment
 - **Raw endpoints are a deliberate design, not a cleanup target**: `/media/all_raw`, `/media/downloads_raw`, `/files/files_raw` return raw dicts from SQL on purpose. Data is validated when WRITTEN to the database, so re-validating and building typed Python objects on every read would only add memory pressure and latency on large libraries. Do not "fix" them into typed responses; new list-scale endpoints may follow the same pattern when hot.
 - **Docs prose style**: write each sentence/paragraph as ONE continuous line — never hard-wrap prose across multiple lines in `docs/` markdown. Zensical renders continuous lines correctly, but a paragraph broken into separate lines can break formatting. (Code blocks and lists are fine as usual.)
+- **Simplified Technical English**: when writing or updating log lines, docs, and comments, follow [ASD-STE100](https://www.asd-ste100.org/) Simplified Technical English. Short sentences, one instruction/idea per sentence, active voice, approved/simple vocabulary, present tense, no strung-together noun clusters. Applies to new/changed content only — no need to rewrite untouched text just to comply.
 
 ## Roadmap Execution Plans
 
