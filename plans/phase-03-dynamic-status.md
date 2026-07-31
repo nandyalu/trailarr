@@ -1,6 +1,6 @@
 # Phase 3 — Dynamic Status
 
-**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev — merge into dev after v0.10.0 ships; releases with Phase 4) · **Release:** v0.10.2 (with Phase 4) · **Depends on:** Phase 2
+**Status:** DONE — shipped in v0.10.2 (Jul 30, 2026, with Phase 4) · **Release:** v0.10.2 (with Phase 4) · **Depends on:** Phase 2
 
 ## Objective
 
