@@ -25,8 +25,8 @@
         [autocomplete]="autocomplete()"
       />
       @if (showFolderButton()) {
-        <button class="tertiary folder-icon" (click)="openPathSelectDialog()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <button class="tertiary folder-icon" aria-label="Browse folders" (click)="openPathSelectDialog()">
+          <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
             <path
               d="M137-144q-28.72 0-50.86-22.32T64-217v-526q0-28.36 22.14-50.68T137-816h271l73 73h342q28.36 0 50.68 22.32T896-670v453q0 28.36-22.32 50.68T823-144H137Zm0-73h686v-453H451l-73-73H137v526Zm0 0v-526 526Z"
             />
@@ -36,7 +36,7 @@
     </div>
     @if (value() != oldValue() && !disabled()) {
       <button class="secondary icononly-button" [id]="inputId + 'reset'" [title]="'Reset ' + name()" (click)="resetValue()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
           <path
             d="M263-179.67v-84h317.67q65 0 110.83-45.5t45.83-110.5q0-64.33-45.83-110.16-45.83-45.84-110.83-45.84H297.33l104 104-58.66 57.34-204-203 204-204 58.66 57.66-104 104H580q99.67 0 170.5 70.17t70.83 169.83q0 100.34-70.83 170.17-70.83 69.83-170.5 69.83H263Z"
           />
@@ -49,7 +49,7 @@
         [disabled]="disableConfirm()"
         (click)="onSubmitValue()"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
           <path d="M378-235 142-471l52-52 184 184 388-388 52 52-440 440Z" />
         </svg>
       </button>
