@@ -145,6 +145,17 @@ def plex_create_or_update_bulk(
                 if not db_media.arr_id and media_create.media_filename
                 else None
             )
+            # Season count is synced for Plex-only series rows too — for
+            # Arr-linked rows Sonarr stays authoritative. A value of 0 is
+            # never written over an existing count: it can also mean the
+            # leaves listing produced no season data this refresh.
+            plex_season_count = (
+                media_create.season_count
+                if not db_media.arr_id
+                and not media_create.is_movie
+                and media_create.season_count > 0
+                else None
+            )
             changed = (
                 db_media.plex_rating_key != media_create.plex_rating_key
                 or db_media.plex_section_key != media_create.plex_section_key
@@ -153,6 +164,10 @@ def plex_create_or_update_bulk(
                     plex_media_filename is not None
                     and db_media.media_filename != plex_media_filename
                 )
+                or (
+                    plex_season_count is not None
+                    and db_media.season_count != plex_season_count
+                )
             )
             if changed:
                 db_media.plex_rating_key = media_create.plex_rating_key
@@ -160,6 +175,8 @@ def plex_create_or_update_bulk(
                 db_media.plex_connection_id = media_create.plex_connection_id
                 if plex_media_filename is not None:
                     db_media.media_filename = plex_media_filename
+                if plex_season_count is not None:
+                    db_media.season_count = plex_season_count
                 db_media.updated_at = datetime.now(timezone.utc)
                 _session.add(db_media)
             db_results.append((db_media, False, newly_linked, changed))

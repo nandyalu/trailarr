@@ -56,6 +56,7 @@ def parse_plex_item(
         folder_path=item.media_folder if item.media_folder else None,
         media_filename=item.media_filename,
         media_exists=bool(item.media_filename),
+        season_count=0 if is_movie else item.season_count,
         plex_rating_key=item.ratingKey if item.ratingKey else None,
         plex_section_key=section_key,
         plex_connection_id=connection_id,

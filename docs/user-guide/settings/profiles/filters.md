@@ -48,7 +48,7 @@ Here are the available integer filters:
 | `Connection ID`  | ID of the connection used for the media item in Trailarr.                         |
 | `Year`           | Year the media item was released.                                                 |
 | `Runtime`        | Runtime of the media item in minutes.                                             |
-| `Season Count`   | Number of seasons for the series. If the media item is a movie, this will be `0`. |
+| `Season Count`   | Number of seasons for the series. Sonarr series use the count Sonarr reports; Plex-only series count the seasons present in the Plex library (Specials excluded). Movies have `0`. |
 | `TMDB ID`        | The Movie Database (TMDB) ID of the media item. Populated for movies from Radarr and for any media item where Plex or Sonarr provides a TMDB ID. `null` for Plex-only items without a TMDB entry. Eg: `603` |
 | `TVDB ID`        | The TV Database (TVDB) ID of the media item. Populated for series from Sonarr and for any media item where Plex or Radarr provides a TVDB ID. `null` for Plex-only items without a TVDB entry. Eg: `71663` |
 

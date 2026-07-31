@@ -65,6 +65,8 @@ class PlexEpisodeLeaf(BaseModel):
     """
 
     grandparentRatingKey: str = Field(default="")
+    parentIndex: int = Field(default=0)
+    """Season number of the episode's parent season (0 = Specials)."""
     media_filename: str = Field(
         validation_alias=AliasPath("Media", 0, "Part", 0, "file"), default=""
     )
@@ -142,6 +144,10 @@ class PlexMediaItem(BaseModel):
         default_factory=list,
         validation_alias=AliasPath("Extras", "Metadata"),
     )
+    season_count: int = Field(default=0)
+    """Number of seasons the library has for a show, excluding Specials.
+    Not a Plex API field — the connection manager sets it from the distinct
+    episode season numbers collected during the /allLeaves pass."""
 
     @field_validator("locations", mode="before")
     @classmethod

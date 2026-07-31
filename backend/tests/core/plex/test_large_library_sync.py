@@ -22,7 +22,6 @@ from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.event import Event, EventType
 from core.base.database.models.media import Media
 from core.base.database.utils.engine import get_session, write_session
-from core.plex.api_manager import PlexAPI
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 
@@ -72,12 +71,18 @@ def _show(prefix: str, i: int) -> PlexMediaItem:
     })
 
 
-def _episode(prefix: str, show_i: int, ep: int) -> PlexEpisodeLeaf:
-    """Dummy episode leaf used to resolve show-root folder."""
+def _episode(
+    prefix: str, show_i: int, ep: int, season: int = 1
+) -> PlexEpisodeLeaf:
+    """Dummy episode leaf used to resolve show-root folder + season count."""
     return PlexEpisodeLeaf.model_validate({
         "grandparentRatingKey": str(50000 + show_i),
+        "parentIndex": season,
         "Media": [{
-            "Part": [{"file": f"/plex/{prefix}/shows/Show {show_i}/Season 1/S01E{ep:02d}.mkv"}]
+            "Part": [{
+                "file": f"/plex/{prefix}/shows/Show {show_i}"
+                f"/Season {season}/S{season:02d}E{ep:02d}.mkv"
+            }]
         }],
     })
 
@@ -278,6 +283,32 @@ class TestPlexLargeLibrarySync:
             f"Second sync must not create duplicate rows. "
             f"Expected {self.MOVIE_COUNT + self.SHOW_COUNT}, got {total}"
         )
+
+    @pytest.mark.asyncio
+    async def test_plex_only_shows_get_season_count_from_leaves(self):
+        """Plex-only series get season_count from distinct episode season
+        numbers; Specials (season 0) are excluded to match Sonarr."""
+        p = self._prefix
+        # Show 0: seasons 1+2 plus a Specials episode → count 2.
+        # Show 1: keeps the default single Season 1 leaves → count 1.
+        self.leaves.extend([
+            _episode(p, 0, 1, season=2),
+            _episode(p, 0, 2, season=2),
+            _episode(p, 0, 1, season=0),
+        ])
+        await self._run_refresh()
+
+        _, shows_in_db = self._query_media(self.conn_id)
+        by_title = {m.title: m for m in shows_in_db}
+        assert by_title["Plex Show 0"].season_count == 2
+        assert by_title["Plex Show 1"].season_count == 1
+
+        # A later refresh sees a new season → the existing row is updated
+        self.leaves.append(_episode(p, 1, 1, season=3))
+        await self._run_refresh()
+        _, shows_in_db = self._query_media(self.conn_id)
+        by_title = {m.title: m for m in shows_in_db}
+        assert by_title["Plex Show 1"].season_count == 2
 
     @pytest.mark.asyncio
     async def test_plex_linked_event_fires_on_relinking(self):
