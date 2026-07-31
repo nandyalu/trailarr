@@ -32,6 +32,19 @@ export class AuthService {
     );
   }
 
+  /** Delete the session server-side WITHOUT flipping isAuthenticated.
+   * Used by the auth-disabled pause flow: the app shell (and the paused
+   * dialog) must stay mounted, but the session id must stop working so
+   * requests that replay it get 401s. Zeroing the cache makes the next
+   * checkAuthStatus() call /auth/status, which mints a fresh session. */
+  endSession(): Observable<void> {
+    return this.http.post<void>(this.authUrl + 'logout', {}).pipe(
+      tap(() => {
+        this._lastChecked = 0;
+      }),
+    );
+  }
+
   checkAuthStatus(): Observable<boolean> {
     // Return cached result if authenticated and checked within the last 60 seconds
     if (this.isAuthenticated() && Date.now() - this._lastChecked < this.CACHE_TTL) {
