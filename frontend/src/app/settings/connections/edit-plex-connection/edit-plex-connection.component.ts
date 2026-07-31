@@ -65,6 +65,14 @@ export class EditPlexConnectionComponent implements OnDestroy {
   /** Flat list of (label, uri) options for the server-selection dropdown */
   serverUriOptions = signal<{label: string; uri: string}[]>([]);
   selectedServerUri = signal<string>('');
+  /** Sentinel value for the "Custom URL" dropdown entry */
+  readonly CUSTOM_URI = '__custom__';
+  /** True when the user picked "Custom URL" — Plex often runs on the same
+   * machine as Trailarr, so a local address can beat the plex.tv URIs */
+  useCustomUrl = signal(false);
+  customServerUrl = signal<string>('');
+  serverTestResult = signal<string>('');
+  isTestingServer = signal(false);
   private clientId = '';
   private pinId = 0;
   private plexToken = '';
@@ -203,17 +211,23 @@ export class EditPlexConnectionComponent implements OnDestroy {
             serverName: s.name,
           })),
         );
+        // Always show the selection step, even for a single server or no
+        // servers: the user can pick a custom (local) URL instead of the
+        // plex.tv-provided ones, and test it before connecting.
+        this.serverUriOptions.set(options);
+        this.serverTestResult.set('');
+        this.customServerUrl.set('');
         if (options.length === 0) {
-          this.oauthState.set('error');
-          this.errorMessage.set('No Plex Media Servers found for this account.');
-        } else if (options.length === 1) {
-          this._applyUri(options[0].serverName, options[0].uri);
+          this.useCustomUrl.set(true);
+          this.selectedServerUri.set(this.CUSTOM_URI);
+          this.selectedServerName = 'Plex';
+          this.serverTestResult.set('No servers found for this Plex account. Enter your server URL manually.');
         } else {
-          this.serverUriOptions.set(options);
+          this.useCustomUrl.set(false);
           this.selectedServerUri.set(options[0].uri);
           this.selectedServerName = options[0].serverName;
-          this.oauthState.set('server_select');
         }
+        this.oauthState.set('server_select');
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -227,12 +241,70 @@ export class EditPlexConnectionComponent implements OnDestroy {
   setSelectedServerUri(event: Event) {
     const uri = (event.target as HTMLSelectElement).value;
     this.selectedServerUri.set(uri);
+    this.serverTestResult.set('');
+    if (uri === this.CUSTOM_URI) {
+      this.useCustomUrl.set(true);
+      // Keep the last real server's name — a custom URL points at the
+      // same server, just over a different (usually local) address.
+      if (!this.selectedServerName) this.selectedServerName = 'Plex';
+      return;
+    }
+    this.useCustomUrl.set(false);
     const opt = this.serverUriOptions().find((o) => o.uri === uri);
     this.selectedServerName = (opt as any)?.serverName ?? '';
   }
 
+  setCustomServerUrl(event: Event) {
+    this.customServerUrl.set((event.target as HTMLInputElement).value);
+    this.serverTestResult.set('');
+  }
+
+  /** The URL the user is about to connect with: custom or Plex-provided */
+  candidateServerUrl(): string {
+    return this.useCustomUrl() ? this.customServerUrl().trim().replace(/\/+$/, '') : this.selectedServerUri();
+  }
+
+  /** Test the candidate URL with the OAuth token before connecting */
+  testServerUrl() {
+    const url = this.candidateServerUrl();
+    if (!url) {
+      this.serverTestResult.set('Enter a server URL first.');
+      return;
+    }
+    if (!/^https?:\/\//i.test(url)) {
+      this.serverTestResult.set('The URL must start with http:// or https://');
+      return;
+    }
+    this.isTestingServer.set(true);
+    this.serverTestResult.set('Testing…');
+    const payload: ConnectionCreate = {
+      ...this.connectionData(),
+      name: this.connectionData().name || this.selectedServerName || 'Plex',
+      url: url,
+      api_key: this.plexToken,
+      path_mappings: [],
+    };
+    this.connectionService.testConnection(payload).subscribe({
+      next: (result) => {
+        this.isTestingServer.set(false);
+        this.serverTestResult.set(result);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isTestingServer.set(false);
+        this.serverTestResult.set(`Not reachable: ${err.message ?? err}`);
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   applySelectedServer() {
-    this._applyUri(this.selectedServerName, this.selectedServerUri());
+    const url = this.candidateServerUrl();
+    if (!url || !/^https?:\/\//i.test(url)) {
+      this.serverTestResult.set('Enter a server URL that starts with http:// or https://');
+      return;
+    }
+    this._applyUri(this.selectedServerName, url);
   }
 
   private _applyUri(serverName: string, uri: string) {
@@ -247,6 +319,12 @@ export class EditPlexConnectionComponent implements OnDestroy {
     this.cdr.markForCheck();
   }
 
+  /** True when the last server test reported success */
+  serverTestOk(): boolean {
+    const result = this.serverTestResult().toLowerCase();
+    return result.includes('success') || result.includes('connected');
+  }
+
   reconnect() {
     this.oauthState.set('idle');
     this.plexToken = '';
@@ -254,6 +332,9 @@ export class EditPlexConnectionComponent implements OnDestroy {
     this.isPathMappingsLoaded.set(false);
     this.isReadyToSubmit.set(false);
     this.submitResult.set('');
+    this.serverTestResult.set('');
+    this.customServerUrl.set('');
+    this.useCustomUrl.set(false);
   }
 
   // ----------------------------------------------------------------

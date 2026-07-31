@@ -39,11 +39,34 @@
           <label for="serverSelect">Select Server URL</label>
           <select id="serverSelect" (change)="setSelectedServerUri($event)">
             @for (opt of serverUriOptions(); track opt.uri) {
-              <option [value]="opt.uri">{{ opt.label }}</option>
+              <option [value]="opt.uri" [selected]="opt.uri === selectedServerUri()">{{ opt.label }}</option>
             }
+            <option [value]="CUSTOM_URI" [selected]="useCustomUrl()">Custom URL…</option>
           </select>
         </div>
-        <button class="plex-button" type="button" (click)="applySelectedServer()">Connect to this server</button>
+        @if (useCustomUrl()) {
+          <div class="input-group">
+            <label for="customServerUrl">Custom Server URL</label>
+            <input
+              id="customServerUrl"
+              type="url"
+              placeholder="http://192.168.1.100:32400"
+              autocomplete="off"
+              [value]="customServerUrl()"
+              (input)="setCustomServerUrl($event)"
+            />
+            <p class="oauth-hint">Use a local address when Plex runs on the same machine or network as Trailarr.</p>
+          </div>
+        }
+        @if (serverTestResult()) {
+          <p class="server-test-result" [class.success]="serverTestOk()">{{ serverTestResult() }}</p>
+        }
+        <div class="server-select-buttons">
+          <button class="btn secondary" type="button" (click)="testServerUrl()" [disabled]="isTestingServer()">
+            {{ isTestingServer() ? 'Testing…' : 'Test' }}
+          </button>
+          <button class="plex-button" type="button" (click)="applySelectedServer()">Connect to this server</button>
+        </div>
       }
       @case ('authenticated') {
         <div class="auth-status">

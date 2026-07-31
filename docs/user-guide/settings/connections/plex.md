@@ -37,6 +37,10 @@ The URL Trailarr uses to reach your Plex Media Server (e.g., `http://192.168.0.1
 !!! note ""
     This field is filled in automatically after you complete the OAuth sign-in and select your server. You generally do not need to edit it manually.
 
+!!! tip "Use a local address"
+    {{ version_badge("add", "0.11.0") }}
+    The server list shows the URLs that Plex provides, which are often external addresses. If Plex runs on the same machine or network as Trailarr, select **Custom URL…** in the server dropdown and enter the local address (for example `http://192.168.0.10:32400`). Use the **Test** button on the same screen to check that the address is reachable before you connect.
+
 ---
 
 ## API Token
