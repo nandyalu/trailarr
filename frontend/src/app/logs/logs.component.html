@@ -7,7 +7,7 @@
       title="Refresh"
       (click)="allLogs.reload()"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path
           d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
         />
@@ -16,7 +16,7 @@
 
     <!-- Download Button -->
     <button class="logs-header-button header-refresh-btn" title="Download Logs" (click)="downloadLogs()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path
           d="M480-313 287-506l43-43 120 120v-371h60v371l120-120 43 43-193 193ZM220-160q-24 0-42-18t-18-42v-143h60v143h520v-143h60v143q0 24-18 42t-42 18H220Z"
         />
@@ -40,7 +40,7 @@
 
     <!-- Log Level Filter -->
     <button class="logs-header-button dropdown" popovertarget="levelDropdown" title="Log Level">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
+      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="button-icon">
         <path d="M371-158v-135h219v135H371ZM200-413v-135h558v135H200ZM74-668v-135h812v135H74Z" />
       </svg>
       <span>{{ selectedLogLevel() | titlecase }}</span>
@@ -60,7 +60,7 @@
         >
           <span>{{ level | titlecase }}</span>
           @if (selectedLogLevel() === level) {
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
+            <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="icon">
               <path d="M382-200 113-469l97-97 172 173 369-369 97 96-466 466Z" />
             </svg>
           }
@@ -82,47 +82,47 @@
           <div class="log-icon">
             @switch (log.level) {
               @case (logLevels.Info) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
                   />
                 </svg>
               }
               @case (logLevels.Debug) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="M320-242 80-482l242-242 43 43-199 199 197 197-43 43Zm318 2-43-43 199-199-197-197 43-43 240 240-242 242Z" />
                 </svg>
               }
               @case (logLevels.Warning) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"
                   />
                 </svg>
               }
               @case (logLevels.Error) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
                   />
                 </svg>
               }
               @case (logLevels.Exception) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M479.91-120q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5ZM410-360v-480h140v480H410Z"
                   />
                 </svg>
               }
               @case (logLevels.Critical) {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M479.91-120q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5ZM410-360v-480h140v480H410Z"
                   />
                 </svg>
               }
               @default {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
                   />
@@ -144,7 +144,7 @@
           <div class="log-actions">
             @if (log.traceback) {
               <button class="log-traceback-btn" title="View Exception" (click)="openTraceback(log)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
                     d="M479.91-120q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5ZM410-360v-480h140v480H410Z"
                   />
@@ -154,7 +154,7 @@
             @let mediaId = getMediaId(log);
             @if (mediaId !== null) {
               <a class="log-media-link" [routerLink]="['/media', mediaId]" title="View Media">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="m560-240-56-58 142-142H160v-80h486L504-662l56-58 240 240-240 240Z" />
                 </svg>
               </a>
@@ -176,7 +176,7 @@
           <span class="traceback-logger">{{ log.loggername }}</span>
         </div>
         <button class="traceback-close" (click)="closeTraceback()" title="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
             <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
           </svg>
         </button>

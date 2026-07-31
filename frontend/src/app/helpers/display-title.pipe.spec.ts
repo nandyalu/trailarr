@@ -75,6 +75,33 @@ describe('DisplayTitlePipe', () => {
         expect(pipe.transform('hello_world_123')).toBe('Hello World 123');
       });
     });
+
+    describe('transform with fieldKey', () => {
+      let pipe: DisplayTitlePipe;
+
+      beforeEach(() => {
+        pipe = new DisplayTitlePipe();
+      });
+
+      it('should drop a trailing _at from field keys', () => {
+        expect(pipe.transform('added_at', true)).toBe('Added');
+        expect(pipe.transform('downloaded_at', true)).toBe('Downloaded');
+      });
+
+      it('should keep the casing of user-defined names', () => {
+        expect(pipe.transform('HD Movies', true)).toBe('HD Movies');
+        expect(pipe.transform('Missing w Media', true)).toBe('Missing W Media');
+      });
+
+      it('should format plain option keys', () => {
+        expect(pipe.transform('poster', true)).toBe('Poster');
+        expect(pipe.transform('unknown_profile', true)).toBe('Unknown Profile');
+      });
+
+      it('should not drop _at in the middle of a value', () => {
+        expect(pipe.transform('great_at_heart', true)).toBe('Great At Heart');
+      });
+    });
   });
 
 
