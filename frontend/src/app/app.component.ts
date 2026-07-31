@@ -1,5 +1,5 @@
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {msMinute} from 'src/util';
 import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
@@ -7,6 +7,7 @@ import {SidenavComponent} from './nav/sidenav/sidenav.component';
 import {TopnavComponent} from './nav/topnav/topnav.component';
 import {NotificationsComponent} from './notifications/notifications.component';
 import {AuthService} from './services/auth.service';
+import {SettingsService} from './services/settings.service';
 import {WebsocketService} from './services/websocket.service';
 import {LoadIndicatorComponent} from './shared/load-indicator';
 
@@ -24,7 +25,16 @@ import {LoadIndicatorComponent} from './shared/load-indicator';
 export class AppComponent implements OnDestroy, OnInit {
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly settingsService = inject(SettingsService);
   private readonly websocketService = inject(WebsocketService);
+
+  /** With auth disabled there is no session to end — a logout would only
+   * bounce through /login and come back with a fresh session. The idle
+   * flow pauses live updates instead (see sessionPaused). */
+  protected readonly authDisabled = computed(() => this.settingsService.settingsResource.value()?.webui_disable_auth ?? false);
+  /** True after the idle countdown ran out with auth disabled: the
+   * websocket is closed and the dialog stays open until the user resumes. */
+  protected readonly sessionPaused = signal(false);
 
   constructor() {
     effect(() => {
@@ -47,6 +57,8 @@ export class AppComponent implements OnDestroy, OnInit {
   // Uncomment the below code to enable mouse movement detection too!
   // host: { '(document:mousemove)': 'resetIdleTimer()' }
   resetIdleTimer(): void {
+    // While paused, only an explicit Resume (or Esc) restarts the timers
+    if (this.sessionPaused()) return;
     // Activity detected, reset the idle timer
     clearTimeout(this.sessionTimeoutId);
     clearTimeout(this.extendTimeoutId);
@@ -59,6 +71,7 @@ export class AppComponent implements OnDestroy, OnInit {
 
   closeAllSubscriptions() {
     this.websocketService.close();
+    if (this.authDisabled()) return;
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
@@ -81,7 +94,11 @@ export class AppComponent implements OnDestroy, OnInit {
     this.sessionEndTime.set(Date.now() + this.EXTEND_LIMIT);
     this.sessionEndingDialog()?.nativeElement.showModal();
     this.sessionTimeoutId = setTimeout(() => {
-      this.closeAllSubscriptions();
+      if (this.authDisabled()) {
+        this.pauseSession();
+      } else {
+        this.closeAllSubscriptions();
+      }
     }, this.EXTEND_LIMIT);
   }
 
@@ -95,4 +112,27 @@ export class AppComponent implements OnDestroy, OnInit {
     this.closeEndingDialog();
   }
 
+  /** Idle countdown ran out with auth disabled: stop live updates and
+   * keep the dialog open in its paused state. */
+  pauseSession(): void {
+    this.websocketService.close();
+    this.sessionPaused.set(true);
+  }
+
+  /** The user is back: reconnect live updates and restart the idle timer. */
+  resumeSession(): void {
+    this.sessionPaused.set(false);
+    this.websocketService.connect();
+    this.closeEndingDialog();
+    this.resetIdleTimer();
+  }
+
+  /** Esc on the dialog: while paused it means "I am back" — resume
+   * instead of leaving the app without live updates and no dialog. */
+  onDialogCancel(event: Event): void {
+    if (this.sessionPaused()) {
+      event.preventDefault();
+      this.resumeSession();
+    }
+  }
 }
