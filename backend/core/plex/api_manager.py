@@ -23,12 +23,13 @@ _MEDIA_EXCLUDE_FIELDS = (
     "leafCount,viewedLeafCount,childCount,primaryExtraKey,theme,index"
 )
 
-# For allLeaves we only need grandparentRatingKey + Media[0].Part[0].file
+# For allLeaves we only need grandparentRatingKey, parentIndex (season
+# number, for season counting) and Media[0].Part[0].file
 # (~51% payload reduction confirmed against live server)
 _LEAF_EXCLUDE_FIELDS = (
     "guid,parentGuid,grandparentGuid,grandparentSlug,type,title,"
     "grandparentKey,parentKey,grandparentTitle,parentTitle,"
-    "contentRating,summary,index,parentIndex,audienceRating,"
+    "contentRating,summary,index,audienceRating,"
     "viewCount,lastViewedAt,year,thumb,art,parentThumb,"
     "grandparentThumb,grandparentArt,grandparentTheme,"
     "duration,originallyAvailableAt,addedAt,audienceRatingImage,"

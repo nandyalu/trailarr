@@ -312,7 +312,11 @@ class PlexConnectionManager:
         # Step 1: build grandparentRatingKey → show-root-folder from episodes.
         # Collect every episode's parent directory per show, then take the
         # common path — this correctly handles both seasonal and flat layouts.
+        # The same pass collects each show's distinct season numbers, so a
+        # season count is available for Plex-only series (Specials/season 0
+        # are excluded to match Sonarr's seasonCount semantics).
         folder_paths: dict[str, list[str]] = {}
+        season_numbers: dict[str, set[int]] = {}
         leaf_count = 0
         async for leaf in self.api.get_library_leaves(section.key):
             leaf_count += 1
@@ -321,6 +325,10 @@ class PlexConnectionManager:
                 folder_paths[leaf.grandparentRatingKey].append(
                     leaf.media_folder
                 )
+            if leaf.grandparentRatingKey and leaf.parentIndex > 0:
+                season_numbers.setdefault(
+                    leaf.grandparentRatingKey, set()
+                ).add(leaf.parentIndex)
         folder_map: dict[str, str] = {}
         for rating_key, paths in folder_paths.items():
             try:
@@ -340,6 +348,7 @@ class PlexConnectionManager:
                 folder_map.get(item.ratingKey, item.media_folder),
                 item.title,
             )
+            item.season_count = len(season_numbers.get(item.ratingKey, ()))
             buffer.append((item, section, False, plex_folder))
             total += 1
             if len(buffer) >= 100:
