@@ -94,6 +94,11 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
+    applied_revisions: list[str] = []
+
+    def on_version_apply(ctx, step, heads, run_args) -> None:
+        applied_revisions.append(str(step.up_revision_id))
+
     with connectable.connect() as connection:
         # set_sqlite_pragmas(connection)
         context.configure(
@@ -102,10 +107,25 @@ def run_migrations_online() -> None:
             render_as_batch=True,
             compare_server_default=True,
             include_object=include_object,
+            on_version_apply=on_version_apply,
         )
 
         with context.begin_transaction():
             context.run_migrations()
+
+    if applied_revisions:
+        # SQLite table rebuilds keep the freed pages in the file. Run
+        # VACUUM after migrations apply so the database file shrinks.
+        # VACUUM must run outside a transaction.
+        logging.info(
+            f"Applied {len(applied_revisions)} migration(s)."
+            " Running VACUUM to return free space..."
+        )
+        with connectable.connect() as connection:
+            connection.execution_options(
+                isolation_level="AUTOCOMMIT"
+            ).execute(sa_text("VACUUM"))
+        logging.info("VACUUM complete.")
 
 
 try:
