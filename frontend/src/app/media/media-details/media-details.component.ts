@@ -165,14 +165,6 @@ export class MediaDetailsComponent {
    * @returns {void}
    */
   downloadTrailer(profileId: number): void {
-    // const old_id = this.selectedMedia()?.youtube_trailer_id?.toLowerCase() || '';
-    // const new_id = this.trailer_url.toLowerCase();
-    // const trailer_exists = this.selectedMedia()?.trailer_exists || false;
-    // if (old_id && new_id.includes(old_id) && trailer_exists) {
-    //   // Trailer id is the same, no need to download
-    //   this.webSocketService.showToast('Trailer ID is the same as the existing one. No need to download.', 'Error');
-    //   return;
-    // }
     this.isLoadingDownload.set(true);
     // console.log('Downloading trailer');
     this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {

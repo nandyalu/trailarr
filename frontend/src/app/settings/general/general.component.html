@@ -96,7 +96,7 @@
       <app-options-setting
         name="Force Full Files Scan"
         description="Force the next 'Scan Media Folders' run to scan all folders, ignoring the folder-change check."
-        descriptionExtra="Useful if trailer_exists or media_exists flags are stale. Automatically resets to False once the full scan completes."
+        descriptionExtra="Useful if download records or media_exists flags are stale. Automatically resets to False once the full scan completes."
         [options]="trueFalseOptions"
         [selectedOption]="settings()?.files_full_scan"
         [colorType]="'warning'"

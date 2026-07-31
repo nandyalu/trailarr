@@ -49,9 +49,9 @@ export interface InflightDownload {
   profile_id: number;
 }
 
-/** Phase 3: list-level status is computed from downloads + monitor, never
- * read from the stored column. 'downloading' comes only from the runtime
- * in-flight overlay (MediaService.downloadingResource). */
+/** List-level status is computed from downloads + monitor (the backend
+ * stores no status since v0.11.0). 'downloading' comes only from the
+ * runtime in-flight overlay (MediaService.downloadingResource). */
 export function computeMediaStatus(monitor: boolean, downloads: Download[], downloading = false): string {
   if (downloading) return 'downloading';
   if (downloads.some((download) => download.file_exists)) return 'downloaded';
@@ -98,7 +98,6 @@ export interface Media {
   fanart_url: string;
   poster_path: string;
   fanart_path: string;
-  trailer_exists: boolean;
   monitor: boolean;
   arr_monitored: boolean;
   status: string;
@@ -122,12 +121,12 @@ export function mapMedia(media: any): Media {
     ...media,
     is_movie: Boolean(media.is_movie),
     media_exists: Boolean(media.media_exists),
-    trailer_exists: Boolean(media.trailer_exists),
     monitor: Boolean(media.monitor),
     arr_monitored: Boolean(media.arr_monitored),
-    // The stored status is only a first-paint fallback until the downloads
-    // map arrives; a legacy stuck 'downloading' value must never surface.
-    status: media.status === 'downloading' ? (media.monitor ? 'monitored' : 'missing') : media.status,
+    // Phase 5: the API no longer sends a status field — this is only a
+    // first-paint value until the downloads map arrives and
+    // computeMediaStatus takes over.
+    status: media.monitor ? 'monitored' : 'missing',
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),

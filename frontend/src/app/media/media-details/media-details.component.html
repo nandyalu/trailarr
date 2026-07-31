@@ -16,7 +16,7 @@
       </div>
       <div class="media-details-col">
         <div class="media-details-row">
-          @if (selectedMedia_.trailer_exists) {
+          @if (selectedMedia_.status === 'downloaded') {
             <div class="icon-link" title="Trailer Downloaded">
               <!-- Show Downloaded icon -->
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon success" aria-label="Trailer Exists">
@@ -146,7 +146,7 @@
                     <p>Seasons: {{ selectedMedia_.season_count }}</p>
                   }
                   <p>Monitored: {{ selectedMedia_.monitor ? 'True' : 'False' }}</p>
-                  <p>Downloaded: {{ selectedMedia_.trailer_exists ? 'True' : 'False' }}</p>
+                  <p>Downloaded: {{ selectedMedia_.status === 'downloaded' ? 'True' : 'False' }}</p>
                   @if (selectedMedia_.plex_trailer !== null) {
                     <p>Plex Trailer: {{ selectedMedia_.plex_trailer ? 'True' : 'False' }}</p>
                   }
