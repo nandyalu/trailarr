@@ -81,6 +81,10 @@ This environment variable is used to disable the authentication for the web inte
 !!! warning "Use with caution"
     When auth is disabled, a `session_id` is generated to use with frontend without authentication by calling auth endpoints. These endpoints can be reached from other apps or services to get a `session_id` and use that for authentication. So, use with caution!
 
+!!! note "No logout with auth disabled"
+    {{ version_badge("upd", "0.11.0") }}
+    When auth is disabled, the web UI hides the logout button — there is no session to log out of. After a period of inactivity, the UI pauses live updates and shows a **Session Paused** dialog. Click **Resume** to continue.
+
 ### `WEBUI_PASSWORD`
 
 - Default is `trailarr` (hashed).

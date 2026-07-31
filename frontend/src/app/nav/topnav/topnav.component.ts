@@ -45,7 +45,9 @@ export class TopnavComponent {
   searchResults = signal<Media[]>([]);
   selectedIndex = signal(-1);
   selectedId = signal(-1);
-  loginDisabled = this.settingsService.settingsResource.value()?.webui_disable_auth ?? false;
+  /** Computed so it updates when the settings resource loads — with auth
+   * disabled there is no session to log out of, so the button hides. */
+  loginDisabled = computed(() => this.settingsService.settingsResource.value()?.webui_disable_auth ?? false);
 
   protected readonly RouteHome = RouteHome;
 
