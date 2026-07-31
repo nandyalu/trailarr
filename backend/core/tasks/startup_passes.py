@@ -56,8 +56,8 @@ async def _pass_full_scan_guard() -> None:
     scans keep reconciling the remainder.
     """
     logger.info(
-        "Running a full disk scan before the first download run so"
-        " trailers already on disk are recorded as downloads."
+        "Running one full disk scan before the first download run."
+        " The scan records trailers that are already on disk as downloads."
     )
     # Import here to avoid a circular import (files_scan → profiles utils)
     from core.tasks.files_scan import scan_all_media_folders

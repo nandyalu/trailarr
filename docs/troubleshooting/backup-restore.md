@@ -29,9 +29,9 @@ most recent** backups and deletes older ones automatically.
 
 {{ version_badge("add", "0.11.0") }}
 
-The `v0.11.0` upgrade removes old database fields, so you cannot downgrade to an earlier version after it runs. To go back, restore the pre-upgrade backup (see below) and start the older version.
+The `v0.11.0` upgrade removes old database fields. Because of this, you cannot downgrade to an earlier version after it runs. To go back, restore the pre-upgrade backup (see below) and start the older version.
 
-Also since `v0.11.0`, Trailarr runs a `VACUUM` on the database after migrations apply. The database file can visibly shrink after an upgrade — this is space reclamation, not data loss or corruption.
+Also since `v0.11.0`, Trailarr runs a `VACUUM` on the database after migrations apply. The database file can become smaller after an upgrade. This is normal: `VACUUM` returns free space to the filesystem. It is not data loss or corruption.
 
 ## Restore a backup
 

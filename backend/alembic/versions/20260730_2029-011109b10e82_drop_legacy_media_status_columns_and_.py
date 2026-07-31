@@ -76,14 +76,14 @@ def _migrate_custom_filters(conn) -> None:
                 logger.warning(
                     f"{label}: removed condition 'trailer_exists = true'."
                     " This condition made the profile match only media that"
-                    " already had a trailer — that behavior is not possible"
+                    " already had a trailer. That behavior is not possible"
                     " anymore. Review this profile's filters."
                 )
             else:
                 logger.info(
                     f"{label}: removed condition"
-                    f" '{row.filter_by} {cond} {row.filter_value}' —"
-                    " the download engine now handles this automatically."
+                    f" '{row.filter_by} {cond} {row.filter_value}'."
+                    " The download engine now handles this automatically."
                 )
             continue
 
@@ -123,9 +123,8 @@ def _migrate_custom_filters(conn) -> None:
             )
             logger.warning(
                 f"{label}: removed condition '{row.filter_by} {cond}"
-                f" {row.filter_value}' — it has no equivalent after the"
-                " status field removal. Recreate it with the new fields if"
-                " needed."
+                f" {row.filter_value}'. It has no equivalent after v0.11.0."
+                " Recreate it with the new fields if you need it."
             )
 
     # Custom filters left with zero conditions match everything — keep
@@ -144,7 +143,7 @@ def _migrate_custom_filters(conn) -> None:
     for row in empty:
         logger.info(
             f"Filter '{row.filter_name}' [{row.filter_type}] has no"
-            " conditions left after migration — it now matches all media."
+            " conditions left after the migration. It now matches all media."
         )
 
 
@@ -170,5 +169,5 @@ def downgrade() -> None:
     raise NotImplementedError(
         "v0.11.0 removed the media.trailer_exists, media.status and"
         " trailerprofile.stop_monitoring columns. Downgrade is not"
-        " supported — restore the pre-upgrade database backup instead."
+        " supported. Restore the pre-upgrade database backup instead."
     )
