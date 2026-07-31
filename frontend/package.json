@@ -37,6 +37,9 @@
     "typescript": "~6.0.3",
     "vitest": "^4.0.16"
   },
+  "overrides": {
+    "@hono/node-server": "^2.0.12"
+  },
   "allowScripts": {
     "@parcel/watcher@2.5.6": true,
     "esbuild@0.28.1": true,
