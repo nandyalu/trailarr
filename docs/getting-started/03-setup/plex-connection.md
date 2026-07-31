@@ -31,8 +31,12 @@ Adding a Plex connection is optional, but unlocks some powerful features:
 
 ### 3. Select Your Plex Server
 
+{{ version_badge("upd", "0.11.0") }}
+
 - After authorization, Trailarr will fetch the list of Plex servers available on your account.
 - Select the server you want to connect to from the dropdown.
+- If Plex runs on the same machine or network as Trailarr, you can select **Custom URL…** instead and enter a local address (for example `http://192.168.0.10:32400`). A local address is usually faster and works without internet access.
+- Click **Test** to check that Trailarr can reach the server with your Plex token before you connect.
 - Trailarr will automatically fill in the **Server URL** and **Machine Identifier**.
 
 ### 4. Save the Connection

@@ -125,6 +125,24 @@
   font-size: 0.875rem;
 }
 
+.server-test-result {
+  color: var(--color-warning);
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: pre-wrap;
+
+  &.success {
+    color: var(--color-success);
+  }
+}
+
+.server-select-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 // ── Form ──────────────────────────────────────────────────────────────────────
 
 form {
