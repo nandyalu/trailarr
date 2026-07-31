@@ -7,15 +7,16 @@ none justify their own release. Check items off with the release that shipped th
   pattern from `update_download_profile` (ItemNotFoundError→404, unexpected→logged 500
   with generic detail — no `str(e)` leaks, no blanket 404s). Scheduled: Phase 7 Stage B
   (touches every handler anyway).
-- [ ] **H2 — Decorative SVG accessibility sweep**: `aria-hidden="true"
-  focusable="false"` on presentational inline SVGs app-wide (only the v0.9.9 banner
-  icon has it). Any frontend-heavy release; Phase 3's matrix UI work is a natural slot.
+- [x] **H2 — Decorative SVG accessibility sweep** — DONE (ships in v0.11.0): 159
+  decorative inline SVGs got `aria-hidden="true" focusable="false"`; three icon-only
+  buttons gained aria-labels; two stale "Trailer Exists" labels renamed "Downloaded".
 - [ ] **H3 — Older API endpoints marked deprecated** (`/media/all` etc.) — actually
   remove at v1.0.0 API freeze.
 - [ ] **H4 — `tests/conftest.py` TODO** ("Update all tests to current codebase") —
   address during Phase 7 test-tree mirror.
-- [ ] **H5 — Duplicate `displayTitle` pipes** (helpers/ vs media/pipes/) — merge in
-  Phase 7 frontend light touch (keep the underscore-aware one).
+- [x] **H5 — Duplicate `displayTitle` pipes** — DONE (ships in v0.11.0): merged into
+  `helpers/display-title.pipe.ts` with a `fieldKey` mode (preserves casing, strips the
+  `_at` suffix) so header output is unchanged; `media/pipes/` copy deleted.
 - [x] **H6 — `read_all_raw`/`downloads_raw` raw-SQL endpoints** — RESOLVED as a
   settled design decision (July 2026), not a cleanup: raw endpoints stay raw. Data is
   validated when WRITTEN to the database, so re-validating and converting every row
