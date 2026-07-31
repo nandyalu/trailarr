@@ -23,11 +23,11 @@ The **Movie Trailers** profile is used to download trailers for movies. It comes
 This filter checks if the media item is a movie. If the media item is a movie, the filter will match and the profile will be applied.
 
 ### Result
-With this filter, the **Movie Trailers** profile applies to all movies. When the `Download Missing Trailers` task runs, it downloads a trailer only for movies where this profile does not already have one — a profile that already owns a downloaded trailer never downloads again.
+With this filter, the **Movie Trailers** profile applies to all movies. When the `Download Missing Trailers` task runs, it downloads a trailer only for movies where this profile does not already have one. A profile that already owns a downloaded trailer never downloads again.
 
 !!! note "No `Trailer Exists` filter anymore"
     {{ version_badge("upd", "0.11.0") }}
-    Older versions used a `Trailer Exists = false` filter here to avoid re-downloads. Downloads are tracked per profile since `v0.10.0`, so the app handles this automatically and the filter was removed in `v0.11.0`.
+    Older versions used a `Trailer Exists = false` filter here to prevent re-downloads. Trailarr tracks downloads per profile since `v0.10.0` and prevents re-downloads automatically. The filter was removed in `v0.11.0`.
 
 ## Example 2: Series Trailers Profile
 

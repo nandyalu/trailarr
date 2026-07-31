@@ -35,7 +35,7 @@ Here are the available boolean filters:
 
 !!! note "`Trailer Exists` and `Status` filters removed in v0.11.0"
     {{ version_badge("upd", "0.11.0") }}
-    Downloads are tracked per profile since `v0.10.0`, so profiles no longer need a filter to avoid re-downloads — a profile that already owns a downloaded video never downloads again. Existing filters were migrated automatically: view filters on `Trailer Exists` became `Has Downloads`, view filters like `Status = downloaded` became `Has Downloads = true`, and profile filters on these fields were removed. See the [v0.11.0 release notes](../../../release-notes/2026.md) for the full migration table.
+    Trailarr tracks downloads per profile since `v0.10.0`. A profile that already owns a downloaded video never downloads again, so profiles no longer need a filter to prevent re-downloads. Trailarr migrated existing filters automatically. View filters on `Trailer Exists` became `Has Downloads`, view filters like `Status = downloaded` became `Has Downloads = true`, and profile filters on these fields were removed. See the [v0.11.0 release notes](../../../release-notes/2026.md) for the full migration table.
 
 ### Integer Filters
 
@@ -48,7 +48,7 @@ Here are the available integer filters:
 | `Connection ID`  | ID of the connection used for the media item in Trailarr.                         |
 | `Year`           | Year the media item was released.                                                 |
 | `Runtime`        | Runtime of the media item in minutes.                                             |
-| `Season Count`   | Number of seasons for the series. Sonarr series use the count Sonarr reports; Plex-only series count the seasons present in the Plex library (Specials excluded). Movies have `0`. |
+| `Season Count`   | Number of seasons for the series. Sonarr series use the count Sonarr reports. Plex-only series count the seasons present in the Plex library (Specials excluded). Movies have `0`. |
 | `TMDB ID`        | The Movie Database (TMDB) ID of the media item. Populated for movies from Radarr and for any media item where Plex or Sonarr provides a TMDB ID. `null` for Plex-only items without a TMDB entry. Eg: `603` |
 | `TVDB ID`        | The TV Database (TVDB) ID of the media item. Populated for series from Sonarr and for any media item where Plex or Radarr provides a TVDB ID. `null` for Plex-only items without a TVDB entry. Eg: `71663` |
 
