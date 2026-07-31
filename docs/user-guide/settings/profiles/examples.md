@@ -14,7 +14,6 @@ The **Movie Trailers** profile is used to download trailers for movies. It comes
 | ID    | Filter By        | Condition         | Filter Value        |
 |:-----:|:----------------:|:-----------------:|:-------------------:|
 | 1     | Is Movie         | Equals            | true                |
-| 2     | Trailer Exists   | Equals            | false               |
 
 !!! info ""
     Ignore the `ID` column, it is just for reference.
@@ -23,15 +22,12 @@ The **Movie Trailers** profile is used to download trailers for movies. It comes
 
 This filter checks if the media item is a movie. If the media item is a movie, the filter will match and the profile will be applied.
 
-### Filter 2
-
-This filter checks if a trailer already exists for the media item. If a trailer does not exist, the filter will match and the profile will be applied.
-
 ### Result
-With these filters, the **Movie Trailers** profile will only apply to movies that do not already have a trailer downloaded. This means that when the `Download Missing Trailers` task runs, it will only download trailers for movies that do not have a trailer already available in Trailarr.
+With this filter, the **Movie Trailers** profile applies to all movies. When the `Download Missing Trailers` task runs, it downloads a trailer only for movies where this profile does not already have one — a profile that already owns a downloaded trailer never downloads again.
 
-!!! note "The `Trailer Exists` filter is optional since v0.10.0"
-    Downloads are now tracked per profile — a profile that already owns a downloaded trailer will not download again even without this filter. The filter still works and keeps the profile from applying to media that already have a trailer, but it is no longer required to prevent re-downloads.
+!!! note "No `Trailer Exists` filter anymore"
+    {{ version_badge("upd", "0.11.0") }}
+    Older versions used a `Trailer Exists = false` filter here to avoid re-downloads. Downloads are tracked per profile since `v0.10.0`, so the app handles this automatically and the filter was removed in `v0.11.0`.
 
 ## Example 2: Series Trailers Profile
 
@@ -40,7 +36,6 @@ The **Series Trailers** profile is used to download trailers for TV series. It c
 | ID    | Filter By        | Condition         | Filter Value        |
 |:-----:|:----------------:|:-----------------:|:-------------------:|
 | 1     | Is Movie         | Equals            | false               |
-| 2     | Trailer Exists   | Equals            | false               |
 
 !!! info ""
     Ignore the `ID` column, it is just for reference.
@@ -51,12 +46,8 @@ One Setting that is different from the **Movie Trailers** profile is that the **
 
 This filter checks if the media item is a series. If the media item is a series, the filter will match and the profile will be applied.
 
-### Filter 2
-
-This filter checks if a trailer already exists for the media item. If a trailer does not exist, the filter will match and the profile will be applied.
-
 ### Result
-With these filters, the **Series Trailers** profile will only apply to TV series that do not already have a trailer downloaded. This means that when the `Download Missing Trailers` task runs, it will only download trailers for TV series that do not have a trailer already available in Trailarr.
+With this filter, the **Series Trailers** profile applies to all TV series. When the `Download Missing Trailers` task runs, it downloads a trailer only for series where this profile does not already have one.
 
 ## Example 3: Spanish Movie Trailers Profile
 
@@ -67,8 +58,7 @@ With these filters, the **Series Trailers** profile will only apply to TV series
     | ID    | Filter By        | Condition         | Filter Value        |
     |:-----:|:----------------:|:-----------------:|:-------------------:|
     | 1     | Is Movie         | Equals            | true                |
-    | 2     | Trailer Exists   | Equals            | false               |
-    | 3     | Language         | Equals            | Spanish             |
+    | 2     | Language         | Equals            | Spanish             |
 
 - Click `Create` to create the profile.
 - Change the following `Settings`:

@@ -25,6 +25,14 @@ most recent** backups and deletes older ones automatically.
 > 💡 Since a backup is taken on every startup, restarting Trailarr right before an
 > upgrade guarantees you have a fresh pre-upgrade backup.
 
+## No downgrade below v0.11.0
+
+{{ version_badge("add", "0.11.0") }}
+
+The `v0.11.0` upgrade removes old database fields, so you cannot downgrade to an earlier version after it runs. To go back, restore the pre-upgrade backup (see below) and start the older version.
+
+Also since `v0.11.0`, Trailarr runs a `VACUUM` on the database after migrations apply. The database file can visibly shrink after an upgrade — this is space reclamation, not data loss or corruption.
+
 ## Restore a backup
 
 Use this when the database is damaged, or something went wrong after an upgrade.
