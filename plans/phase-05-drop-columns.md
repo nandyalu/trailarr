@@ -1,6 +1,6 @@
 # Phase 5 — Drop Legacy Columns
 
-**Status:** not started · **Release:** v0.11.0 · **Depends on:** Phases 2–4 shipped and
+**Status:** IMPLEMENTED (Jul 30, 2026, on dev — releases as v0.11.0) · **Release:** v0.11.0 · **Depends on:** Phases 2–4 shipped and
 baked (this is the roadmap's only destructive-migration release — keep it MINIMAL; the
 richer filter family moved to Phase 6)
 
@@ -50,6 +50,21 @@ referenced removed fields. After this release the old failure modes are unrepres
    direction). Also add VACUUM to `logs.db` after the daily `delete_old_logs` purge —
    verified July 2026 that log rows are deleted daily but space is never reclaimed
    (see hygiene H10; can ship in any earlier release).
+
+## Execution notes (Jul 30, 2026)
+
+- W4 resolved: Phase 4 did not introduce `exclusive` — `stop_monitoring` was a plain drop.
+- `downloaded_at` STAYS (decision 1 reassessment: still real data — used by the
+  download service dedup check and date sorts; no derived variant shipped).
+- The full-scan startup pass (`full-scan-before-downloads-v0.10`) lost its
+  trailer_exists pre-check: an unrecorded pass now always runs one full disk scan
+  (fresh installs: no media, no-op; v0.9.x skippers: exactly the protective scan
+  they need). `count_untracked_trailer_media`/`report_attribution_health` removed
+  with the mirror; `count_tracked_media` (telemetry) replaced them.
+- Sync-time disk trailer checks removed with the mirror: TRAILER_DETECTED now
+  fires only from the files scan (was also ConnectionRefresh/PlexRefresh).
+- VACUUM implemented in alembic env.py `on_version_apply` — runs whenever any
+  migration applied (generalizes decision 6; logs.db VACUUM was already done, H10).
 
 ## Wargame
 

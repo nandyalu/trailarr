@@ -21,15 +21,21 @@ See below for the available filters in each category.
 
 ### Boolean Filters
 
+{{ version_badge("upd", "0.11.0") }}
+
 Here are the available boolean filters:
 
 | Filter By        | Description                                                                          |
 |-----------------:|:-------------------------------------------------------------------------------------|
 | `Is Movie`       | `true` if the media item is a movie, `false` for series.                             |
 | `Media Exists`   | `true` if the media (movie/series) is downloaded for the item.                       |
-| `Trailer Exists` | `true` if a trailer already exists for the media item.                               |
+| `Has Downloads`  | `true` if the media item has at least one downloaded video on disk. Replaces the removed `Trailer Exists` filter (see below). |
 | `Monitor`        | `true` if the media item is monitored in Trailarr.                                   |
 | `ARR Monitored`  | `true` if the media item is monitored in the ARR application (e.g., Radarr, Sonarr). |
+
+!!! note "`Trailer Exists` and `Status` filters removed in v0.11.0"
+    {{ version_badge("upd", "0.11.0") }}
+    Downloads are tracked per profile since `v0.10.0`, so profiles no longer need a filter to avoid re-downloads — a profile that already owns a downloaded video never downloads again. Existing filters were migrated automatically: view filters on `Trailer Exists` became `Has Downloads`, view filters like `Status = downloaded` became `Has Downloads = true`, and profile filters on these fields were removed. See the [v0.11.0 release notes](../../../release-notes/2026.md) for the full migration table.
 
 ### Integer Filters
 
@@ -62,7 +68,6 @@ Here are the available string filters:
 | `IMDB ID`        | IMDB ID of the media. Eg: 'tt0133093'                                          |
 | `TXDB ID`        | Legacy combined ID field — TMDB ID for movies, TVDB ID for series, stored as a string. Eg: `'603'` (movie), `'71663'` (series). Prefer `TMDB ID` or `TVDB ID` integer filters instead — they are type-safe, support proper numeric comparisons, and correctly handle Plex-only items with no external ID. |
 | `Title Slug`     | Title slug of the media. Eg: 'the-matrix'                                      |
-| `Status`         | Status of the media. One of [[downloaded, downloading, missing, monitored]]      |
 
 ### Date Filters
 

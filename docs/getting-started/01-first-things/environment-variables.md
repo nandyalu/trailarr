@@ -117,7 +117,7 @@ To change the password, go to `Settings > About > Password` in web interface.
 
 - Default: `false`
 
-When set to `true`, the next **Scan Media Folders** task run will scan every media folder in full, ignoring the folder-change optimisation that normally skips unchanged folders. Useful for correcting stale `trailer_exists` or `media_exists` flags after trailers are added or removed outside of Trailarr.
+When set to `true`, the next **Scan Media Folders** task run will scan every media folder in full, ignoring the folder-change optimisation that normally skips unchanged folders. Useful for correcting stale download records or `media_exists` flags after trailers are added or removed outside of Trailarr.
 
 The value is **automatically reset to `false`** once the full scan finishes — you do not need to remove it manually.
 
