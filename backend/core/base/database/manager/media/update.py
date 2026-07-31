@@ -1,14 +1,9 @@
 from datetime import datetime, timezone
-from typing import Sequence
 from sqlmodel import Session, col, select
 
 from . import base
 from core.base.database.models.helpers import MediaImage, MediaUpdateDC
-from core.base.database.models.media import (
-    Media,
-    MediaUpdate,
-    MonitorStatus,
-)
+from core.base.database.models.media import Media, MediaUpdate
 from core.base.database.utils.engine import write_session
 
 
@@ -43,46 +38,19 @@ def update_media_image(
 
 
 @write_session
-def update_trailer_exists_bulk(
-    media_update_list: Sequence[tuple[int, bool]],
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Update the trailer_exists mirror of multiple media items at once.\n
-    Phase 4: replaced update_monitor_and_trailer_exists_bulk — syncs no
-    longer write the monitor flag (user intent); they only reconcile the
-    trailer_exists fact.\n
-    Args:
-        media_update_list (Sequence[tuple[int, bool]]): Sequence of tuples \
-            containing media id and trailer_exists status.\n
-        _session (Session, Optional): A session to use for the database connection.\n
-            Default is None, in which case a new session will be created.
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If any of the media items with provided id's don't exist.
-    """
-    for media_id, trailer_exists in media_update_list:
-        update_trailer_exists(
-            media_id,
-            trailer_exists,
-            _session=_session,
-            _commit=False,
-        )
-    _session.commit()
-    return
-
-
-@write_session
-def update_media_status(
+def update_download_facts(
     media_update: MediaUpdateDC,
     *,
     _commit: bool = True,
     _session: Session = None,  # type: ignore
 ) -> None:
-    """Update the monitoring status of a media item in the database by id.\n
+    """Persist the facts a successful download owns: downloaded_at and the
+    YouTube id that was used.\n
+    Phase 4: downloads never write `monitor` — it is user intent.\n
+    Phase 5: the stored mirror columns are dropped — download rows are the
+    only record of downloaded-ness.\n
     Args:
-        media_update (MediaUpdateProtocol): The media update object satisfying the protocol.
+        media_update (MediaUpdateDC): The download-fact payload.
         _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
         _session (Session, Optional): A session to use for the database connection. \
             Default is `None`, in which case a new session will be created.
@@ -95,13 +63,6 @@ def update_media_status(
     _update = MediaUpdate(**media_update.model_dump())
     if base.has_updated(db_media, _update):
         db_media.updated_at = datetime.now(timezone.utc)
-    if media_update.trailer_exists is not None:
-        db_media.trailer_exists = media_update.trailer_exists
-    # Phase 4: downloads never write `monitor` — it is user intent. Only
-    # the status mirror (and trailer facts below) are persisted here.
-    db_media.status = base.get_status(
-        db_media.monitor, db_media.trailer_exists, media_update.status
-    )
     if media_update.downloaded_at:
         db_media.downloaded_at = media_update.downloaded_at
     if media_update.yt_id:
@@ -121,7 +82,6 @@ def update_monitoring(
     _session: Session = None,  # type: ignore
 ) -> tuple[str, bool]:
     """Update the monitoring status of a media item in the database by id.\n
-    Also updates the status based on the monitor status and trailer existence.\n
     Args:
         media_id (int): The id of the media to update.
         monitor (bool): The monitoring status to set.
@@ -141,14 +101,10 @@ def update_monitoring(
         msg += " monitored!" if monitor else " not monitored!"
         return msg, False
     # Phase 4: monitor is pure user intent — a plain flag write with no
-    # trailer_exists refusals or status coupling. Whether a trailer already
+    # refusals or status coupling. Whether a trailer already
     # exists is the satisfaction rule's concern, not the toggle's.
     db_media.monitor = monitor
     db_media.updated_at = datetime.now(timezone.utc)
-    # Keep the passive status mirror roughly coherent until Phase 5
-    db_media.status = base.get_status(
-        db_media.monitor, db_media.trailer_exists, db_media.status
-    )
     _session.add(db_media)
     if _commit:
         _session.commit()
@@ -183,73 +139,6 @@ def update_monitoring_bulk(
         update_monitoring(media_id, monitor, _session=_session, _commit=False)
     _session.commit()
     return
-
-
-@write_session
-def update_no_trailers_exist(
-    media_id: int,
-    *,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Update a media item in the database to set trailer_exists to False.\n
-    Does not change the monitor status, but updates the status accordingly.\n
-    Args:
-        media_id (int): The id of the media to update.
-        _session (Session, Optional): A session to use for the database connection. \
-            Default is None, in which case a new session will be created.
-    Returns:
-        None
-    """
-    db_media = base._get_db_item(media_id, _session)
-    if db_media.trailer_exists is True:
-        db_media.updated_at = datetime.now(timezone.utc)
-    db_media.trailer_exists = False
-    # Update status based on monitor status, but don't interrupt an active download
-    db_media.status = base.get_status(db_media.monitor, False, db_media.status)
-    _session.add(db_media)
-    _session.commit()
-    return None
-
-
-# TODO: Split this up into separate simpler methods
-@write_session
-def update_trailer_exists(
-    media_id: int,
-    trailer_exists: bool,
-    *,
-    _commit: bool = True,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Update the trailer_exists status of a media item in the database by id.\n
-    Args:
-        media_id (int): The id of the media to update.
-        trailer_exists (bool): The trailer_exists status to set.
-        _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
-        _session (Session, Optional): A session to use for the database connection. \
-            Default is `None`, in which case a new session will be created.
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If the media item with provided id doesn't exist.
-    """
-    db_media = base._get_db_item(media_id, _session)
-    if db_media.trailer_exists != trailer_exists:
-        db_media.updated_at = datetime.now(timezone.utc)
-    db_media.trailer_exists = trailer_exists
-    if trailer_exists:
-        # Phase 2: downloads no longer flip monitor off — `monitor` is user
-        # intent (fully so after Phase 4). The satisfaction rule prevents
-        # re-downloads, so monitored media with trailers stays monitored.
-        db_media.status = MonitorStatus.DOWNLOADED
-    else:
-        # Don't interrupt an active download
-        db_media.status = base.get_status(
-            db_media.monitor, trailer_exists, db_media.status
-        )
-    _session.add(db_media)
-    if _commit:
-        _session.commit()
-    return None
 
 
 @write_session

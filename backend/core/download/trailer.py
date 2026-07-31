@@ -12,7 +12,7 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import ArrType
 from core.base.database.models.event import EventSource
 from core.base.database.models.helpers import MediaUpdateDC
-from core.base.database.models.media import MediaRead, MonitorStatus
+from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.inflight import inflight_registry
 from core.download.trailers.service import record_new_trailer_download
@@ -118,37 +118,23 @@ async def _notify_plex(media: MediaRead) -> None:
         )
 
 
-def __update_media_status(media: MediaRead, type: MonitorStatus):
-    """Update the media status mirror in the database.
+def __record_download_facts(media: MediaRead):
+    """Record the facts a successful download owns: downloaded_at and the
+    YouTube id that was used.
 
     Phase 3: DOWNLOADING is runtime-only (see core/download/inflight.py) and
-    is never written to the database — status/trailer_exists writes here are
-    passive mirrors kept until Phase 5 drops the columns.
+    is never written to the database.
     Phase 4: downloads never write `monitor` — it is user intent (invariant
     #6). No MONITOR_CHANGED events can originate from downloads anymore.
+    Phase 5: the stored mirror columns are gone — download rows are the
+    only record of downloaded-ness, so failures write nothing here.
     """
-    if type == MonitorStatus.DOWNLOADED:
-        update = MediaUpdateDC(
-            id=media.id,
-            status=MonitorStatus.DOWNLOADED,
-            trailer_exists=True,
-            downloaded_at=datetime.now(timezone.utc),
-            yt_id=media.youtube_trailer_id,
-        )
-    elif type == MonitorStatus.MISSING:
-        # Download failed — if a trailer already exists on disk the mirror
-        # stays DOWNLOADED, else it reflects the miss.
-        _status = (
-            MonitorStatus.DOWNLOADED
-            if media.trailer_exists
-            else MonitorStatus.MISSING
-        )
-        update = MediaUpdateDC(id=media.id, status=_status)
-    else:
-        # Handle other statuses if needed
-        return None
-
-    media_manager.update_media_status(update)
+    update = MediaUpdateDC(
+        id=media.id,
+        downloaded_at=datetime.now(timezone.utc),
+        yt_id=media.youtube_trailer_id,
+    )
+    media_manager.update_download_facts(update)
     return None
 
 
@@ -220,8 +206,10 @@ async def download_trailer(
     if not exclude:
         exclude = []
 
-    # Exclude the current trailer ID if it exists
-    if media.trailer_exists and media.youtube_trailer_id:
+    # Exclude the current trailer ID if an active download already uses it
+    if media.youtube_trailer_id and any(
+        d.file_exists for d in media.downloads
+    ):
         exclude.append(media.youtube_trailer_id)
 
     # Ignore the current trailer ID if always_search is enabled
@@ -281,9 +269,9 @@ async def download_trailer(
             source_detail="TrailerDownload",
         )
 
-        # Update the status mirror last so any events it logs (e.g.
+        # Record download facts last so any events they log (e.g.
         # YouTube ID Changed) appear after the Trailer Downloaded event
-        __update_media_status(media, MonitorStatus.DOWNLOADED)
+        __record_download_facts(media)
 
         # Notify Plex to scan the media folder if enabled in the profile
         if profile.notify_plex:
@@ -304,7 +292,6 @@ async def download_trailer(
         return True
     except Exception as e:
         logger.exception(f"Failed to download trailer: {e}")
-        __update_media_status(media, MonitorStatus.MISSING)
         if _stop_event and _stop_event.is_set():
             logger.info(
                 f"Download stopped for {media.title} [{media.id}] due to stop"

@@ -33,7 +33,6 @@
 #     - year: current year
 #     - language: "en"
 #     - runtime: 0
-#     - trailer_exists: False
 #     - monitor: False
 #     - arr_monitored: False
 #     """

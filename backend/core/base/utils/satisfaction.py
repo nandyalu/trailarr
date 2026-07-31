@@ -44,10 +44,10 @@ def evaluate_satisfaction(
 ) -> SatisfactionResult:
     """THE Phase-2 rule: a profile is satisfied iff an active
     (file_exists=True) download exists with its profile_id, or an
-    unattributed active download can be claimed for it. Downloads — not the
-    trailer_exists flag — decide what still needs downloading.
+    unattributed active download can be claimed for it. Downloads — not any
+    stored flag — decide what still needs downloading.
 
-    Phase 4 removed the legacy stop_monitoring carve-out: satisfaction is
+    Phase 4 removed the legacy stop-monitoring carve-out: satisfaction is
     purely per-profile ownership now. Users with multiple profiles matching
     the same media get one download per profile — exactly what overlapping
     profiles configure.

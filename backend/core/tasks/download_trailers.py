@@ -135,7 +135,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
             continue
         # Phase 2: skip only when THIS profile already has an active download
         # for the media (user picked the profile explicitly — other profiles'
-        # downloads or the trailer_exists flag are irrelevant here)
+        # downloads are irrelevant here)
         if any(
             d.file_exists and d.profile_id == profile.id
             for d in db_media.downloads

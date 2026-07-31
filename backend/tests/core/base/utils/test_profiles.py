@@ -36,14 +36,16 @@ def make_profile(
 
 
 def make_media(
-    is_movie: bool = True, trailer_exists: bool = False, monitor: bool = False
+    is_movie: bool = True, has_downloads: bool = False, monitor: bool = False
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=1,
         title="Test Movie",
         is_movie=is_movie,
-        trailer_exists=trailer_exists,
         monitor=monitor,
+        downloads=(
+            [SimpleNamespace(file_exists=True)] if has_downloads else []
+        ),
     )
 
 
@@ -63,28 +65,28 @@ class TestFindMatchingProfiles:
         assert find_matching_profiles(make_media(), [low, high]) == [high, low]
 
     def test_state_filter_blocks_match_by_default(self):
-        """A trailer_exists=false filter (as shipped in the default profiles)
-        excludes media that already has a trailer."""
+        """A has_downloads=false filter (as shipped in the default profiles)
+        excludes media that already has an active download."""
         profiles = [
-            make_profile(1, filters=[make_filter("trailer_exists", "false")])
+            make_profile(1, filters=[make_filter("has_downloads", "false")])
         ]
-        media = make_media(trailer_exists=True)
+        media = make_media(has_downloads=True)
         assert find_matching_profiles(media, profiles) == []
 
-    def test_ignore_state_filters_skips_trailer_exists_condition(self):
+    def test_ignore_state_filters_skips_has_downloads_condition(self):
         """With ignore_state_filters=True, download-state conditions are
         skipped while media-identity conditions still apply."""
         profiles = [
             make_profile(
                 1,
                 filters=[
-                    make_filter("trailer_exists", "false"),
+                    make_filter("has_downloads", "false"),
                     make_filter("is_movie", "true", filter_id=2),
                 ],
             )
         ]
-        movie = make_media(is_movie=True, trailer_exists=True)
-        series = make_media(is_movie=False, trailer_exists=True)
+        movie = make_media(is_movie=True, has_downloads=True)
+        series = make_media(is_movie=False, has_downloads=True)
         assert (
             find_matching_profiles(movie, profiles, ignore_state_filters=True)
             == profiles
@@ -123,10 +125,10 @@ class TestPickProfileForDownload:
         assert pick_profile_for_download(media, profiles, set()) == 0
 
     def test_ignores_state_filters_when_picking(self):
-        """Ownership picking must treat 'trailer_exists=false' profiles as
-        matching — the trailer existing is exactly why we're attributing."""
+        """Ownership picking must treat 'has_downloads=false' profiles as
+        matching — the download existing is exactly why we're attributing."""
         profiles = [
-            make_profile(1, filters=[make_filter("trailer_exists", "false")])
+            make_profile(1, filters=[make_filter("has_downloads", "false")])
         ]
-        media = make_media(trailer_exists=True)
+        media = make_media(has_downloads=True)
         assert pick_profile_for_download(media, profiles, set()) == 1

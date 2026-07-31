@@ -62,7 +62,6 @@ def mock_profile():
     profile.audio_format = "aac"
     profile.min_duration = 30
     profile.max_duration = 300
-    profile.stop_monitoring = True
     return profile
 
 

@@ -3,7 +3,6 @@ at creation and never rewrite the flag afterwards
 (plans/phase-04-monitor-intent.md, decisions 2/3; exit criteria)."""
 
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlmodel import Session
@@ -74,13 +73,7 @@ def _monitor_changed_count(media_ids: list[int]) -> int:
 
 
 async def _sync(manager: BaseConnectionManager, parsed: list[MediaCreate]):
-    with patch.object(
-        BaseConnectionManager,
-        "_check_trailer",
-        new_callable=AsyncMock,
-        return_value=False,
-    ):
-        await manager._process_media_list(parsed)
+    await manager._process_media_list(parsed)
 
 
 class TestArrSyncMonitorIntent:

@@ -27,15 +27,12 @@ FIXTURES = sorted(
 PASS_SCRIPT = """
 import asyncio, json
 from core.tasks.startup_passes import run_startup_passes, downloads_ready
-from core.tasks.download_attribution import count_untracked_trailer_media
 import core.base.database.manager.media as media_manager
 
 asyncio.run(run_startup_passes())
-untracked, _total = count_untracked_trailer_media()
 media_count = sum(1 for _ in media_manager.read_all_generator())
 print("GAUNTLET:" + json.dumps({
     "ready": downloads_ready(),
-    "untracked": untracked,
     "media": media_count,
 }))
 """
@@ -75,6 +72,23 @@ def test_upgrade_gauntlet(fixture: Path, tmp_path: Path):
         f"migration failed for {fixture.stem}:\n{result.stderr[-2000:]}"
     )
 
+    # 1b. Phase 5 invariants: legacy columns are gone and no saved filter
+    # references them anymore
+    db = sqlite3.connect(data_dir / "trailarr.db")
+    media_cols = {r[1] for r in db.execute("PRAGMA table_info(media)")}
+    profile_cols = {
+        r[1] for r in db.execute("PRAGMA table_info(trailerprofile)")
+    }
+    legacy_filters = db.execute(
+        "SELECT COUNT(*) FROM filter"
+        " WHERE filter_by IN ('trailer_exists', 'status')"
+    ).fetchone()[0]
+    db.close()
+    assert "trailer_exists" not in media_cols, media_cols
+    assert "status" not in media_cols, media_cols
+    assert "stop_monitoring" not in profile_cols, profile_cols
+    assert legacy_filters == 0, f"{legacy_filters} legacy filter rows left"
+
     # 2. All startup passes run to completion and unlock downloads
     result = _run(["uv", "run", "python", "-c", PASS_SCRIPT], env, 300)
     assert result.returncode == 0, (
@@ -88,8 +102,6 @@ def test_upgrade_gauntlet(fixture: Path, tmp_path: Path):
     assert lines, f"no gauntlet payload in output:\n{result.stdout[-2000:]}"
     payload = json.loads(lines[-1][len("GAUNTLET:"):])
 
-    # Core invariants: download engine unlocked, no media lost, and no
-    # media left claiming a trailer that downloads can't account for
+    # Core invariants: download engine unlocked and no media lost
     assert payload["ready"] is True, payload
     assert payload["media"] == 3, payload
-    assert payload["untracked"] == 0, payload

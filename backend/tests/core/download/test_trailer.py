@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, timezone
 
-from core.base.database.models.helpers import MonitorStatus
 from core.download.video_analysis import VideoInfo, StreamInfo
 from exceptions import DownloadFailedError
 
@@ -23,7 +22,7 @@ def mock_media():
     media.youtube_trailer_id = "dQw4w9WgXcQ"
     media.language = "en"
     media.monitor = True
-    media.trailer_exists = False
+    media.downloads = []  # No active downloads yet
     media.plex_connection_id = None  # Not Plex-linked; keeps _check_plex_trailer from hitting the API
     media.model_dump.return_value = {
         "id": 1,
@@ -53,7 +52,6 @@ def mock_profile():
     profile.audio_format = "aac"
     profile.min_duration = 30
     profile.max_duration = 300
-    profile.stop_monitoring = True
     profile.always_search = False
     profile.remove_silence = False
     profile.skip_if_plex_trailer = False  # Not testing Plex skip; keeps _check_plex_trailer inactive
@@ -94,7 +92,7 @@ def mock_video_info():
     )
 
 
-# Private functions (__update_media_status, __download_and_verify_trailer)
+# Private functions (__record_download_facts, __download_and_verify_trailer)
 # are tested through the public download_trailer interface
 
 
@@ -111,7 +109,7 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
@@ -119,7 +117,7 @@ class TestDownloadTrailer:
     async def test_successful_download(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -159,15 +157,15 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
-    async def test_downloaded_event_logged_before_status_update(
+    async def test_downloaded_event_logged_before_facts_write(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -180,15 +178,15 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
-        """Trailer Downloaded event fires before the DOWNLOADED status
-        update, so Monitor Changed events appear after it in the log."""
+        """Trailer Downloaded event fires before the download-facts write,
+        so events it logs (e.g. YouTube ID Changed) appear after it."""
         mock_get_video_id.return_value = "dQw4w9WgXcQ"
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/movies/Test/Trailers/trailer.mp4"
 
         manager = MagicMock()
-        manager.attach_mock(mock_update_status, "update_status")
+        manager.attach_mock(mock_update_facts, "update_facts")
         manager.attach_mock(mock_track_download, "track_download")
 
         from core.download.trailer import download_trailer
@@ -197,14 +195,14 @@ class TestDownloadTrailer:
 
         assert result is True
         call_names = [name for name, *_ in manager.mock_calls]
-        # Phase 3: no DOWNLOADING status write at start (in-flight registry)
+        # Phase 3: no DOWNLOADING write at start (in-flight registry)
         assert call_names == [
             "track_download",  # Trailer Downloaded event
-            "update_status",  # DOWNLOADED status mirror last
+            "update_facts",  # download-facts write last
         ]
-        assert (
-            manager.mock_calls[-1].args[0].status == MonitorStatus.DOWNLOADED
-        )
+        update = manager.mock_calls[-1].args[0]
+        assert update.downloaded_at is not None
+        assert update.yt_id == "dQw4w9WgXcQ"
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
@@ -223,10 +221,10 @@ class TestDownloadTrailer:
     @patch("core.download.trailer.trailer_search.get_video_id")
     @patch("core.download.trailer.download_video")
     @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     async def test_retries_on_failure(
         self,
-        mock_update_status,
+        mock_update_facts,
         mock_verify,
         mock_download,
         mock_get_video_id,
@@ -256,7 +254,7 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
@@ -264,7 +262,7 @@ class TestDownloadTrailer:
     async def test_excludes_existing_trailer_id(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -275,8 +273,8 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
-        """Excludes existing trailer ID when trailer_exists."""
-        mock_media.trailer_exists = True
+        """Excludes existing trailer ID when an active download uses it."""
+        mock_media.downloads = [MagicMock(file_exists=True)]
         mock_media.youtube_trailer_id = "existing_id"
         mock_get_video_id.return_value = "new_video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
@@ -301,7 +299,7 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
@@ -309,7 +307,7 @@ class TestDownloadTrailer:
     async def test_always_search_ignores_existing_id(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -347,7 +345,7 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
@@ -355,7 +353,7 @@ class TestDownloadTrailer:
     async def test_removes_silence_when_enabled(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -395,7 +393,7 @@ class TestDownloadTrailer:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
@@ -403,7 +401,7 @@ class TestDownloadTrailer:
     async def test_passes_video_info_to_move_and_record(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -446,10 +444,10 @@ class TestDownloadTrailerRetryBehavior:
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
     @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     async def test_excludes_failed_video_id_on_retry(
         self,
-        mock_update_status,
+        mock_update_facts,
         mock_download,
         mock_get_video_id,
         mock_media,
@@ -482,10 +480,10 @@ class TestDownloadTrailerRetryBehavior:
     @patch("core.download.trailer.trailer_search.get_video_id")
     @patch("core.download.trailer.download_video")
     @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     async def test_no_retry_when_retry_count_is_zero(
         self,
-        mock_update_status,
+        mock_update_facts,
         mock_verify,
         mock_download,
         mock_get_video_id,
@@ -506,8 +504,8 @@ class TestDownloadTrailerRetryBehavior:
         assert mock_get_video_id.call_count == 1
 
 
-class TestDownloadTrailerMediaStatus:
-    """Tests for media status updates during download."""
+class TestDownloadTrailerDownloadFacts:
+    """Tests for the download-facts write during download."""
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
@@ -519,15 +517,15 @@ class TestDownloadTrailerMediaStatus:
         new_callable=AsyncMock,
     )
     @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_media_status")
+    @patch("core.download.trailer.media_manager.update_download_facts")
     @patch(
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
-    async def test_downloading_is_runtime_only_status_written_once(
+    async def test_downloading_is_runtime_only_facts_written_once(
         self,
         mock_broadcast,
-        mock_update_status,
+        mock_update_facts,
         mock_track_download,
         mock_record,
         mock_move,
@@ -539,7 +537,7 @@ class TestDownloadTrailerMediaStatus:
         mock_video_info,
     ):
         """Phase 3: DOWNLOADING is never written to the DB — only the
-        DOWNLOADED mirror write happens on success; the in-flight state
+        download-facts write happens on success; the in-flight state
         lives in the registry and is broadcast over the websocket."""
         from core.download.inflight import inflight_registry
         from core.download.trailer import download_trailer
@@ -551,12 +549,11 @@ class TestDownloadTrailerMediaStatus:
 
         await download_trailer(mock_media, mock_profile)
 
-        # Exactly one status write (DOWNLOADED) — no DOWNLOADING write
-        assert mock_update_status.call_count == 1
-        from core.base.database.models.media import MonitorStatus
-
-        update = mock_update_status.call_args[0][0]
-        assert update.status == MonitorStatus.DOWNLOADED
+        # Exactly one facts write on success — no DOWNLOADING write
+        assert mock_update_facts.call_count == 1
+        update = mock_update_facts.call_args[0][0]
+        assert update.downloaded_at is not None
+        assert update.yt_id == "video_id"
 
         # Registry is empty once the download completes
         assert inflight_registry.snapshot() == {}
@@ -574,16 +571,17 @@ class TestDownloadTrailerMediaStatus:
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
     @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.media_manager.update_media_status")
-    async def test_updates_status_to_missing_on_final_failure(
+    @patch("core.download.trailer.media_manager.update_download_facts")
+    async def test_no_media_write_on_final_failure(
         self,
-        mock_update_status,
+        mock_update_facts,
         mock_download,
         mock_get_video_id,
         mock_media,
         mock_profile,
     ):
-        """Updates media status to MISSING after all retries fail."""
+        """Phase 5: failure writes nothing to media — download rows are the
+        only record of downloaded-ness."""
         mock_get_video_id.return_value = "video_id"
         mock_download.side_effect = DownloadFailedError("Download failed")
 
@@ -592,8 +590,8 @@ class TestDownloadTrailerMediaStatus:
         with pytest.raises(DownloadFailedError):
             await download_trailer(mock_media, mock_profile, retry_count=0)
 
-        # Should update status including MISSING
-        assert mock_update_status.call_count >= 1
+        # No download-facts write on failure
+        mock_update_facts.assert_not_called()
 
         # Failure must never leave an in-flight entry behind (W3: a crash or
         # failure can't produce a stuck DOWNLOADING state anywhere)

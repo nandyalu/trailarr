@@ -45,8 +45,11 @@ BOOL_COLS = [
     "is_movie",
     "media_exists",
     "monitor",
-    "trailer_exists",
 ]
+# Virtual boolean fields — NOT SQL columns. Evaluated from related rows
+# (has_downloads: any download with file_exists=True) in the backend
+# matches_filters and the frontend applyCustomFilter (Phase 5).
+VIRTUAL_BOOL_COLS = ["has_downloads"]
 INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "tmdb_id", "tvdb_id", "year"]
 STR_COLS = [
     "clean_title",
@@ -55,7 +58,6 @@ STR_COLS = [
     "language",
     "media_filename",
     "overview",
-    "status",
     "studio",
     "title",
     "title_slug",
@@ -65,7 +67,9 @@ STR_COLS = [
 DATE_COLS = ["added_at", "downloaded_at", "updated_at"]
 FILE_COLS = ["has_file", "has_folder"]
 
-ALL_COLS = BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS + FILE_COLS
+ALL_COLS = (
+    BOOL_COLS + VIRTUAL_BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS + FILE_COLS
+)
 
 
 def _validate_bool_filter(filter: "Filter") -> None:
@@ -321,8 +325,8 @@ class Filter(_FilterBase, table=True):
     @model_validator(mode="after")
     def validate_filter_condition_for_filter_by(self) -> Self:
         filter_by = self.filter_by
-        # Boolean conditions
-        if filter_by in BOOL_COLS:
+        # Boolean conditions (real columns and virtual fields)
+        if filter_by in BOOL_COLS or filter_by in VIRTUAL_BOOL_COLS:
             _validate_bool_filter(self)
             return self
         # Integer conditions

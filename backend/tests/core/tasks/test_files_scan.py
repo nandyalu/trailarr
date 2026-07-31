@@ -20,7 +20,6 @@ def make_mock_media(
     title: str = "Test Movie",
     folder_path: str | None = "/media/Test Movie (2025)",
     downloads: list | None = None,
-    trailer_exists: bool = False,
     media_exists: bool = False,
     monitor: bool = False,
 ) -> SimpleNamespace:
@@ -29,7 +28,6 @@ def make_mock_media(
         title=title,
         folder_path=folder_path,
         downloads=downloads if downloads is not None else [],
-        trailer_exists=trailer_exists,
         media_exists=media_exists,
         monitor=monitor,
     )
@@ -259,36 +257,6 @@ class TestScanMediaFolder:
         )
 
     @pytest.mark.asyncio
-    async def test_folder_gone_resets_trailer_exists(self):
-        """When the folder is inaccessible/deleted, trailer_exists is cleared."""
-        media = make_mock_media(trailer_exists=True)
-        mock_scanner = MagicMock()
-        mock_scanner.get_folder_files = AsyncMock(return_value=None)
-
-        with patch(
-            "core.tasks.files_scan.media_manager.update_trailer_exists"
-        ) as mock_update:
-            new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
-
-        assert (new, missing, renamed, modified, unavailable) == (0, 0, 0, 0, 0)
-        mock_update.assert_called_once_with(media.id, False)
-
-    @pytest.mark.asyncio
-    async def test_folder_gone_no_trailers_skips_update(self):
-        """When the folder is gone but trailer_exists is already False, no update."""
-        media = make_mock_media(trailer_exists=False)
-        mock_scanner = MagicMock()
-        mock_scanner.get_folder_files = AsyncMock(return_value=None)
-
-        with patch(
-            "core.tasks.files_scan.media_manager.update_trailer_exists"
-        ) as mock_update:
-            new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
-
-        assert (new, missing, renamed, modified, unavailable) == (0, 0, 0, 0, 0)
-        mock_update.assert_not_called()
-
-    @pytest.mark.asyncio
     async def test_folder_gone_resets_media_exists(self):
         """When the folder is gone and media_exists is True, it is cleared."""
         media = make_mock_media(media_exists=True)
@@ -376,11 +344,11 @@ class TestScanMediaFolder:
         mock_update.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_stale_trailer_exists_corrected_to_true(self):
-        """When trailer_exists=False but trailers are already recorded as downloads,
-        the flag is corrected to True (monitor=False means no active download)."""
+    async def test_already_recorded_trailer_not_recorded_again(self):
+        """A disk trailer whose path already has a download row is left
+        alone — no new download entry is created."""
         existing_dl = SimpleNamespace(path="/media/Test Movie (2025)/Test Movie-trailer.mkv", file_exists=True)
-        media = make_mock_media(trailer_exists=False, monitor=False, downloads=[existing_dl])
+        media = make_mock_media(monitor=False, downloads=[existing_dl])
         trailer_path = existing_dl.path
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
@@ -390,9 +358,6 @@ class TestScanMediaFolder:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
@@ -402,44 +367,15 @@ class TestScanMediaFolder:
         # Trailer was already recorded — no new download entry
         mock_record.assert_not_called()
         assert new == 0
-        # Flag corrected upward because monitor=False
-        mock_trailer_update.assert_called_once_with(media.id, True)
 
     @pytest.mark.asyncio
-    async def test_stale_trailer_exists_corrected_even_when_monitored(self):
-        """Phase 2: reconciliation follows disk truth regardless of monitor —
-        setting trailer_exists no longer flips monitor, so the old guard
-        (which caused the #591 monitored-media deadlock) is gone."""
-        existing_dl = SimpleNamespace(path="/media/Test Movie (2025)/Test Movie-trailer.mkv", file_exists=True)
-        media = make_mock_media(trailer_exists=False, monitor=True, downloads=[existing_dl])
-        trailer_path = existing_dl.path
-        mock_scanner = MagicMock()
-        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
-        mock_scanner.check_media_exists = AsyncMock(return_value=False)
-        mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
-
-        with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
-            patch("core.tasks.files_scan.record_new_trailer_download"),
-        ):
-            new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
-
-        # Flag IS corrected from disk truth, monitored or not
-        mock_trailer_update.assert_called_once_with(media.id, True)
-        assert new == 0
-
-    @pytest.mark.asyncio
-    async def test_new_trailer_found_while_monitored_records_and_sets_flag(self):
-        """Phase 2: a new trailer found on disk records the download AND sets
-        trailer_exists even while monitored — the flag no longer controls
-        monitoring or download decisions (satisfaction rule does)."""
+    async def test_new_trailer_found_while_monitored_records_download(self):
+        """A new trailer found on disk records the download even while
+        monitored — download rows alone decide whether a trailer exists
+        (satisfaction rule prevents re-downloads)."""
         trailer_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
         # No existing downloads — file is brand new
-        media = make_mock_media(trailer_exists=False, monitor=True, downloads=[])
+        media = make_mock_media(monitor=True, downloads=[])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=False)
@@ -448,9 +384,6 @@ class TestScanMediaFolder:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
@@ -461,8 +394,6 @@ class TestScanMediaFolder:
         # File is new — download is recorded
         mock_record.assert_called_once()
         assert new == 1
-        # Flag reconciled from disk truth, monitored or not
-        mock_trailer_update.assert_called_with(media.id, True)
 
     @pytest.mark.asyncio
     async def test_missing_trailer_marks_deleted(self):
@@ -476,7 +407,7 @@ class TestScanMediaFolder:
             file_hash="abc",
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -488,9 +419,6 @@ class TestScanMediaFolder:
             patch(
                 "core.tasks.files_scan._is_disk_available", return_value=True
             ),
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
@@ -508,8 +436,6 @@ class TestScanMediaFolder:
             source_detail="FilesScan",
         )
         assert missing == 1
-        # trailer_exists flips to False since no trailers remain on disk
-        mock_trailer_update.assert_called_once_with(media.id, False)
 
 
 class TestRenameAndHashDetection:
@@ -529,7 +455,7 @@ class TestRenameAndHashDetection:
             file_hash="abc123",
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -538,7 +464,6 @@ class TestRenameAndHashDetection:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch(
                 "core.tasks.files_scan.compute_file_hash",
                 return_value="abc123",
@@ -581,7 +506,7 @@ class TestRenameAndHashDetection:
             profile_id=1,
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -590,7 +515,6 @@ class TestRenameAndHashDetection:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch(
                 "core.tasks.files_scan.compute_file_hash",
                 return_value="different_hash",
@@ -628,7 +552,7 @@ class TestRenameAndHashDetection:
             file_hash="old_hash",
             updated_at=old_updated_at,
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -640,7 +564,6 @@ class TestRenameAndHashDetection:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch("core.tasks.files_scan.os.stat", return_value=fake_stat),
             patch(
                 "core.tasks.files_scan.compute_file_hash",
@@ -679,7 +602,7 @@ class TestRenameAndHashDetection:
             file_hash="same_hash",
             updated_at=stored_updated_at,
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -690,7 +613,6 @@ class TestRenameAndHashDetection:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch("core.tasks.files_scan.os.stat", return_value=fake_stat),
             patch("core.tasks.files_scan.compute_file_hash") as mock_hash,
             patch(
@@ -723,7 +645,6 @@ class TestDiskUnavailable:
         media = make_mock_media(
             folder_path="/mnt/network-share/Movie (2025)",
             downloads=[existing_dl],
-            trailer_exists=True,
         )
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
@@ -734,9 +655,6 @@ class TestDiskUnavailable:
                 "core.tasks.files_scan._is_disk_available", return_value=False
             ) as mock_available,
             patch("core.tasks.files_scan.files_manager.update") as mock_files_update,
-            patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
             patch(
                 "core.tasks.files_scan.media_manager.update_media_exists"
             ) as mock_media_update,
@@ -750,7 +668,6 @@ class TestDiskUnavailable:
         mock_available.assert_called_once_with(media.folder_path)
         # Nothing should have been touched — no destructive updates at all.
         mock_files_update.assert_not_called()
-        mock_trailer_update.assert_not_called()
         mock_media_update.assert_not_called()
         mock_delete.assert_not_called()
 
@@ -766,7 +683,7 @@ class TestDiskUnavailable:
             file_hash="abc",
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
@@ -778,7 +695,6 @@ class TestDiskUnavailable:
             ),
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch(
                 "core.tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
@@ -791,7 +707,7 @@ class TestDiskUnavailable:
     @pytest.mark.asyncio
     async def test_folder_gone_skips_reset_when_disk_unavailable(self):
         """get_folder_files returns None (folder appears gone) — if the
-        storage looks unreachable, don't reset trailer_exists/media_exists."""
+        storage looks unreachable, don't reset media_exists."""
         existing_dl = SimpleNamespace(
             id=1,
             path="/mnt/network-share/Movie (2025)/Movie-trailer.mkv",
@@ -802,7 +718,6 @@ class TestDiskUnavailable:
         media = make_mock_media(
             folder_path="/mnt/network-share/Movie (2025)",
             downloads=[existing_dl],
-            trailer_exists=True,
             media_exists=True,
         )
         mock_scanner = MagicMock()
@@ -813,16 +728,12 @@ class TestDiskUnavailable:
                 "core.tasks.files_scan._is_disk_available", return_value=False
             ),
             patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
-            patch(
                 "core.tasks.files_scan.media_manager.update_media_exists"
             ) as mock_media_update,
         ):
             result = await scan_media_folder(media, scanner=mock_scanner)
 
         assert result == (0, 0, 0, 0, 1)
-        mock_trailer_update.assert_not_called()
         mock_media_update.assert_not_called()
 
     @pytest.mark.asyncio
@@ -830,7 +741,7 @@ class TestDiskUnavailable:
         """When there's nothing to lose (no existing downloads), the
         reachability check isn't even invoked — existing folder-gone
         behavior for fresh/empty media is unaffected."""
-        media = make_mock_media(downloads=[], trailer_exists=True)
+        media = make_mock_media(downloads=[], media_exists=True)
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
@@ -839,14 +750,14 @@ class TestDiskUnavailable:
                 "core.tasks.files_scan._is_disk_available"
             ) as mock_available,
             patch(
-                "core.tasks.files_scan.media_manager.update_trailer_exists"
-            ) as mock_trailer_update,
+                "core.tasks.files_scan.media_manager.update_media_exists"
+            ) as mock_media_update,
         ):
             result = await scan_media_folder(media, scanner=mock_scanner)
 
         assert result == (0, 0, 0, 0, 0)
         mock_available.assert_not_called()
-        mock_trailer_update.assert_called_once_with(media.id, False)
+        mock_media_update.assert_called_once_with(media.id, False)
 
 
 class TestNewTrailerAttribution:
@@ -876,7 +787,6 @@ class TestNewTrailerAttribution:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
             patch(
                 "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
@@ -904,7 +814,7 @@ class TestNewTrailerAttribution:
             profile_id=5,
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[existing_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[existing_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=False)
@@ -916,7 +826,6 @@ class TestNewTrailerAttribution:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
             patch(
                 "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
@@ -946,7 +855,7 @@ class TestNewTrailerAttribution:
             profile_id=5,
             updated_at=datetime.now(tz=timezone.utc),
         )
-        media = make_mock_media(downloads=[stale_dl], trailer_exists=True)
+        media = make_mock_media(downloads=[stale_dl])
         mock_scanner = MagicMock()
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=False)
@@ -956,7 +865,6 @@ class TestNewTrailerAttribution:
         with (
             patch("core.tasks.files_scan.files_manager.update"),
             patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.media_manager.update_trailer_exists"),
             patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
             patch("core.tasks.files_scan.event_manager.track_trailer_deleted"),
             patch(

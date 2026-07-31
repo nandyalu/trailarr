@@ -171,19 +171,6 @@ class BaseConnectionManager(ABC):
             )
         return media_list
 
-    async def _check_trailer(self, folder_path: str) -> bool:
-        """Check if a trailer exists for the media in the folder path.\n
-        Args:
-            folder_path (str): The folder path to check for the trailer.\n
-        Returns:
-            bool: True if the trailer exists, False otherwise."""
-        # Check if there ia a trailer either inline or in a 'Trailers' subfolder
-        trailer_exists = await FilesHandler.check_trailer_exists(
-            path=folder_path,
-            check_inline_file=True,
-        )
-        return trailer_exists
-
     def create_or_update_bulk(
         self, media_data: list[MediaCreate]
     ) -> list[MediaReadDC]:
@@ -317,38 +304,10 @@ class BaseConnectionManager(ABC):
         # `monitor`, so this can never overwrite an existing row's flag.
         for media_create in parsed_media:
             media_create.monitor = self.monitor_new_media
-        # Create or update the media in the database
-        media_res = self.create_or_update_bulk(parsed_media)
-        # Reconcile the trailer_exists mirror (monitor is NOT written here)
-        update_list: list[tuple[int, bool]] = []
-        for media_read in media_res:
-            # Check if trailer exists
-            trailer_exists = None
-            if media_read.folder_path is None:
-                trailer_exists = False
-            else:
-                # Check if trailer exists on disk for new media only
-                if media_read.created:
-                    trailer_exists = await self._check_trailer(
-                        media_read.folder_path
-                    )
-                else:
-                    trailer_exists = media_read.trailer_exists
-            # Track trailer detected if existing media now has a trailer
-            trailer_newly_detected = (
-                not media_read.created
-                and trailer_exists
-                and not media_read.trailer_exists
-            )
-            if trailer_newly_detected:
-                event_manager.track_trailer_detected(
-                    media_id=media_read.id,
-                    source=EventSource.SYSTEM,
-                    source_detail="ConnectionRefresh",
-                )
-            update_list.append((media_read.id, trailer_exists))
-        # Update the database with trailer status
-        media_manager.update_trailer_exists_bulk(update_list)
+        # Create or update the media in the database. Phase 5: syncs write
+        # sync-derived facts only — trailer detection on disk is the files
+        # scan's job (it records download rows and fires TRAILER_DETECTED).
+        self.create_or_update_bulk(parsed_media)
         return
 
     async def refresh(self):

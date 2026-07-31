@@ -13,8 +13,8 @@ from core.base.database.utils.engine import read_session
 
 def _active_download_exists():
     """Correlated EXISTS: the media has at least one active
-    (file_exists=True) download row. Phase 3: downloads — not the
-    trailer_exists flag — are the source of truth for downloaded-ness."""
+    (file_exists=True) download row. Phase 3: downloads — not any stored
+    flag — are the source of truth for downloaded-ness."""
     return (
         select(Download.id)
         .where(
@@ -364,7 +364,7 @@ def _apply_filter(
         SelectOfScalar[Media]: The updated statement with the filter applied.
     """
     # Phase 3: downloaded/missing/unmonitored are decided by download rows
-    # (EXISTS subquery), never by the trailer_exists mirror column.
+    # (EXISTS subquery), never by a stored mirror column.
     if filter_by == "downloaded":
         statement = statement.where(_active_download_exists())
         return statement

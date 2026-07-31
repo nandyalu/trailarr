@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from core.base.database.models.base import AppSQLModel
-from core.base.database.models.media import MonitorStatus
 
 
 @dataclass
@@ -41,19 +40,16 @@ class MediaReadDC(AppSQLModel):
     folder_path: str | None
     arr_monitored: bool
     monitor: bool
-    status: MonitorStatus
-    trailer_exists: bool
 
 
 @dataclass(eq=False, repr=False, slots=True)
 class MediaUpdateDC:
-    """Mirror-write payload for download paths (Phase 4: deliberately has
+    """Download-fact payload for download paths (Phase 4: deliberately has
     NO monitor field — `monitor` is user intent and downloads can't write
-    it; see cross-phase invariant #6 in plans/README.md)."""
+    it; see cross-phase invariant #6 in plans/README.md. Phase 5: the
+    stored mirror columns are gone — downloads own only these facts)."""
 
     id: int
-    status: MonitorStatus
-    trailer_exists: bool | None = None
     yt_id: str | None = None
     downloaded_at: datetime | None = None
 
@@ -61,8 +57,6 @@ class MediaUpdateDC:
         """Dump MediaUpdateDC to dictionary."""
         return {
             "id": self.id,
-            "status": self.status,
-            "trailer_exists": self.trailer_exists,
             "yt_id": self.yt_id,
             "downloaded_at": self.downloaded_at,
         }

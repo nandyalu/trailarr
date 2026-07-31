@@ -66,8 +66,6 @@ def _has_folder_changed(folder_path: str, media_id: int, tz) -> bool:
 
 def _handle_folder_gone(media: MediaRead) -> None:
     """Reset stale flags when the media folder is inaccessible or deleted."""
-    if media.trailer_exists:
-        media_manager.update_trailer_exists(media.id, False)
     if media.media_exists:
         media_manager.update_media_exists(media.id, False)
 
@@ -83,8 +81,7 @@ async def _process_trailer_changes(
     existing_downloads: list,
     source: EventSource,
 ) -> tuple[int, int, int, int]:
-    """Detect new/renamed/modified trailers and mark deleted downloads, then
-    reconcile trailer_exists.
+    """Detect new/renamed/modified trailers and mark deleted downloads.
 
     Matching is exact-path first; a disk path with no exact match is checked
     against still-unmatched "missing" downloads by content hash to recognize
@@ -183,12 +180,6 @@ async def _process_trailer_changes(
             source=source,
             source_detail="FilesScan",
         )
-        if not media.trailer_exists:
-            # Reconcile from disk truth unconditionally: since Phase 2,
-            # setting trailer_exists no longer flips monitor off, so this
-            # can't cut short a multi-profile download chain anymore.
-            media.trailer_exists = True
-            media_manager.update_trailer_exists(media.id, True)
 
     # Downloads whose file no longer exists on disk (renamed matches excluded)
     missing_count = 0
@@ -238,20 +229,6 @@ async def _process_trailer_changes(
                     source=source,
                     source_detail="FilesScan",
                 )
-
-    # Reconcile trailer_exists in both directions
-    if not trailer_paths and media.trailer_exists:
-        # No trailers on disk but flag is True → reset
-        media.trailer_exists = False
-        media_manager.update_trailer_exists(media.id, False)
-    elif trailer_paths and not media.trailer_exists:
-        # Trailers exist on disk but flag is stale False — reconcile from
-        # disk truth unconditionally: since Phase 2, setting trailer_exists
-        # no longer flips monitor off, so this can't cut short a
-        # multi-profile download chain anymore (the guard that used to sit
-        # here caused the #591 monitored-media deadlock).
-        media.trailer_exists = True
-        media_manager.update_trailer_exists(media.id, True)
 
     return new_count, missing_count, renamed_count, modified_count
 

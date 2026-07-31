@@ -31,7 +31,6 @@ def make_download(
 def make_profile(
     profile_id: int,
     priority: int = 100,
-    stop_monitoring: bool = False,
     enabled: bool = True,
     name: str | None = None,
     filters: list | None = None,
@@ -39,7 +38,6 @@ def make_profile(
     return SimpleNamespace(
         id=profile_id,
         priority=priority,
-        stop_monitoring=stop_monitoring,
         enabled=enabled,
         customfilter=SimpleNamespace(
             filter_name=name or f"Profile {profile_id}",
@@ -138,21 +136,6 @@ class TestComputeMediaPending:
         assert row.satisfied_via == "claim"
         assert row.satisfied_by == 9
         assert row.pending is False
-
-    def test_stop_monitoring_no_longer_carves_out(self):
-        """Phase 4: stop_monitoring is not honored — each profile is judged
-        on its own downloads only. The legacy flag on the owner changes
-        nothing for other matching profiles."""
-        stopper = make_profile(1, priority=10, stop_monitoring=True)
-        other = make_profile(2, priority=20)
-        media = make_media([make_download(5, profile_id=1)])
-        view = compute_media_pending(media, [stopper, other], attempts={})
-
-        owner_row, other_row = view.profiles
-        assert owner_row.satisfied is True
-        assert owner_row.satisfied_via == "own_download"
-        assert other_row.satisfied is False
-        assert other_row.pending is True
 
     def test_disabled_profile_with_own_download_shown_satisfied(self):
         """Disabled profiles are outside the engine run but their downloads

@@ -6,7 +6,6 @@ from core.base.database.models.media import (
     MediaCreate,
     MediaRead,
     MediaUpdate,
-    MonitorStatus,
 )
 from exceptions import ItemNotFoundError
 
@@ -54,7 +53,6 @@ def has_updated(
         - media_exists
         - media_filename
         - folder_path
-        - trailer_exists
         - monitor
         - arr_monitored
     Args:
@@ -69,7 +67,6 @@ def has_updated(
         "media_exists",
         "media_filename",
         "folder_path",
-        "trailer_exists",
         "monitor",
         "arr_monitored",
     }
@@ -117,47 +114,5 @@ def has_updated(
     #             f" {update.folder_path}"
     #         )
     #         return True
-    # if update.trailer_exists is not None:
-    #     if db_media.trailer_exists != update.trailer_exists:
-    #         print(
-    #             f"trailer_exists changed, {db_media.trailer_exists} ->"
-    #             f" {update.trailer_exists}"
-    #         )
-    #         return True
-    # if update.monitor is not None:
-    #     if db_media.monitor != update.monitor:
-    #         print(f"monitor changed, {db_media.monitor} -> {update.monitor}")
-    #         return True
-    # if update.arr_monitored is not None:
-    #     if db_media.arr_monitored != update.arr_monitored:
-    #         print(
-    #             f"arr_monitored changed, {db_media.arr_monitored} ->"
-    #             f" {update.arr_monitored}"
-    #         )
-    #         return True
-    # return False
 
 
-def get_status(
-    monitor: bool, trailer_exists: bool, status: MonitorStatus
-) -> MonitorStatus:
-    """🚨This is a private method🚨 \n
-    Get the monitor status string based on monitor and trailer_exists flags.\n
-    Phase 3: the stored status is only a passive mirror (MediaRead computes
-    the real status from downloads); DOWNLOADING is runtime-only and never
-    stored, so a legacy stuck DOWNLOADING value is no longer preserved —
-    any later write heals it.\n
-    Args:
-        monitor (bool): Whether monitoring is enabled for the media.
-        trailer_exists (bool): Whether the trailer already exists for the media.
-        status (MonitorStatus): Current monitor status of the media.\n
-    Returns:
-        MonitorStatus: The monitor status.
-    """
-    if status == MonitorStatus.MISSING:
-        return status
-    if trailer_exists:
-        return MonitorStatus.DOWNLOADED
-    if monitor:
-        return MonitorStatus.MONITORED
-    return MonitorStatus.MISSING

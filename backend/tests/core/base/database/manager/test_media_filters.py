@@ -1,6 +1,6 @@
 """Phase 3: built-in media filters, recently-downloaded and home stats are
-decided by download rows (EXISTS), never by the trailer_exists/status
-mirror columns (plans/phase-03-dynamic-status.md, design decision 4)."""
+decided by download rows (EXISTS) — download rows are the only record of
+downloaded-ness (plans/phase-03-dynamic-status.md, design decision 4)."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -15,7 +15,7 @@ from core.base.database.models.connection import (
     Connection,
 )
 from core.base.database.models.download import DownloadCreate
-from core.base.database.models.media import MediaCreate, MonitorStatus
+from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 
 NOW = datetime.now(timezone.utc)
@@ -43,7 +43,6 @@ def _make_media(
     connection_id: int,
     txdb_id: str,
     monitor: bool = False,
-    trailer_exists: bool = False,
 ) -> MediaCreate:
     return MediaCreate(
         connection_id=connection_id,
@@ -52,7 +51,6 @@ def _make_media(
         title=f"Filters Media {txdb_id}",
         txdb_id=txdb_id,
         monitor=monitor,
-        trailer_exists=trailer_exists,
     )
 
 
@@ -77,8 +75,8 @@ def _make_download(
 
 
 class TestDownloadsDrivenFilters:
-    """The seeded rows deliberately contradict their mirror columns, so any
-    filter still reading trailer_exists fails these tests."""
+    """Download rows alone decide the filters — no stored media column says
+    whether a trailer exists."""
 
     @pytest.fixture(autouse=True)
     def seed(self):
@@ -86,11 +84,10 @@ class TestDownloadsDrivenFilters:
         cid = conn.id
         result = media_manager.create_or_update_bulk(
             [
-                # active download; stale trailer_exists=False on purpose
+                # active download
                 _make_media(cid, f"flt{cid}a", monitor=False),
-                # monitored, nothing downloaded; stale trailer_exists=True
-                _make_media(cid, f"flt{cid}b", monitor=True,
-                            trailer_exists=True),
+                # monitored, nothing downloaded
+                _make_media(cid, f"flt{cid}b", monitor=True),
                 # deleted download (file_exists=False), unmonitored
                 _make_media(cid, f"flt{cid}c", monitor=False),
             ]
@@ -109,13 +106,13 @@ class TestDownloadsDrivenFilters:
     def test_downloaded_filter_uses_download_rows(self):
         downloaded = self._ids("downloaded")
         assert self.with_download.id in downloaded
-        assert self.monitored.id not in downloaded  # despite trailer_exists
+        assert self.monitored.id not in downloaded  # nothing downloaded
         assert self.deleted_download.id not in downloaded
 
     def test_missing_filter_uses_download_rows(self):
         missing = self._ids("missing")
         assert self.with_download.id not in missing
-        assert self.monitored.id in missing  # despite trailer_exists=True
+        assert self.monitored.id in missing  # nothing downloaded
         assert self.deleted_download.id in missing
 
     def test_unmonitored_filter(self):
@@ -128,15 +125,6 @@ class TestDownloadsDrivenFilters:
         monitored = self._ids("monitored")
         assert self.monitored.id in monitored
         assert self.with_download.id not in monitored
-
-    def test_computed_status_matches_filters(self):
-        """The list filter and the computed status agree by construction."""
-        media = media_manager.read(self.with_download.id)
-        assert media.status == MonitorStatus.DOWNLOADED
-        media = media_manager.read(self.monitored.id)
-        assert media.status == MonitorStatus.MONITORED
-        media = media_manager.read(self.deleted_download.id)
-        assert media.status == MonitorStatus.MISSING
 
 
 class TestRecentlyDownloaded:
@@ -182,8 +170,8 @@ class TestStats:
         result = media_manager.create_or_update_bulk(
             [
                 _make_media(conn.id, f"st{conn.id}a"),
-                # stale mirror flag must NOT count
-                _make_media(conn.id, f"st{conn.id}b", trailer_exists=True),
+                # no download rows — must NOT count
+                _make_media(conn.id, f"st{conn.id}b"),
             ]
         )
         with_download = result[0][0]
