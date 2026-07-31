@@ -14,7 +14,7 @@ import uuid
 
 import pytest
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from sqlmodel import Session, select
 
@@ -22,7 +22,6 @@ from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.event import Event, EventType
 from core.base.database.models.media import Media
 from core.base.database.utils.engine import get_session, write_session
-from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
@@ -183,14 +182,8 @@ class TestPlexLargeLibrarySync:
         mock_api.get_library_media = get_library_media
         mock_api.get_library_leaves = get_library_leaves
 
-        with (
-            patch("core.plex.connection_manager.PlexAPI", return_value=mock_api),
-            patch.object(
-                FilesHandler,
-                "check_trailer_exists",
-                new_callable=AsyncMock,
-                return_value=False,
-            ),
+        with patch(
+            "core.plex.connection_manager.PlexAPI", return_value=mock_api
         ):
             manager = PlexConnectionManager(conn)
             await manager.refresh()

@@ -1,5 +1,3 @@
-from warnings import deprecated
-
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
@@ -644,12 +642,6 @@ async def delete_media_trailer(media_id: int) -> str:
     logger.info(f"Deleting trailer for media with ID: {media_id}")
     try:
         media = media_manager.read(media_id)
-        if not media.trailer_exists:
-            msg = (
-                f"Media '{media.title}' [{media.id}] has no trailer to delete"
-            )
-            await websockets.ws_manager.broadcast(msg, "Error")
-            return msg
         if not media.folder_path:
             msg = f"Media '{media.title}' [{media.id}] has no folder path"
             await websockets.ws_manager.broadcast(msg, "Error")
@@ -668,8 +660,6 @@ async def delete_media_trailer(media_id: int) -> str:
         for d in live:
             await FilesHandler.delete_file(d.path)
             download_manager.mark_as_deleted(d.id)
-
-        media_manager.update_trailer_exists(media_id, False)
 
         # Track trailer_deleted event (once per media item, not per file)
         event_manager.track_trailer_deleted(

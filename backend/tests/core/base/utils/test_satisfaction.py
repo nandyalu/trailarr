@@ -1,6 +1,6 @@
 """Table-driven tests for the satisfaction rule
-(plans/phase-02-downloads-engine.md wargame scenarios S1-S12; Phase 4
-removed the stop_monitoring carve-out — ownership is purely per profile)."""
+(plans/phase-02-downloads-engine.md wargame scenarios S1-S12;
+ownership is purely per profile)."""
 
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -24,12 +24,8 @@ def make_download(
     )
 
 
-def make_profile(
-    profile_id: int, priority: int = 100, stop_monitoring: bool = False
-) -> SimpleNamespace:
-    return SimpleNamespace(
-        id=profile_id, priority=priority, stop_monitoring=stop_monitoring
-    )
+def make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
+    return SimpleNamespace(id=profile_id, priority=priority)
 
 
 def make_media(downloads: list) -> SimpleNamespace:
@@ -93,28 +89,19 @@ class TestSatisfaction:
         assert result.unsatisfied == [p2]
         assert result.claims == []
 
-    def test_s10_stop_monitoring_flag_is_ignored(self):
-        """Phase 4: the legacy stop_monitoring carve-out is gone — the
-        owner's flag changes nothing for other matching profiles; each is
-        judged on its own downloads."""
-        stopper = make_profile(1, stop_monitoring=True)
+    def test_s10_owner_download_satisfies_only_its_profile(self):
+        """Each profile is judged on its own downloads — a download owned
+        by one profile changes nothing for other matching profiles."""
+        owner = make_profile(1)
         other = make_profile(2)
         media = make_media([make_download(1, 1)])
-        result = evaluate_satisfaction(media, [stopper, other])
+        result = evaluate_satisfaction(media, [owner, other])
         assert result.unsatisfied == [other]
-
-    def test_s10b_stop_monitoring_false_gets_one_per_profile(self):
-        multi1 = make_profile(1, stop_monitoring=False)
-        multi2 = make_profile(2, stop_monitoring=False)
-        media = make_media([make_download(1, 1)])
-        result = evaluate_satisfaction(media, [multi1, multi2])
-        assert result.unsatisfied == [multi2]
 
     def test_s10c_non_matching_owner_download_satisfies_nothing(self):
         """A download owned by profile 1 (not in matching_profiles — filters
-        changed) — Phase 4: it satisfies only its owner, so the other
-        matching profile is pending regardless of the owner's legacy
-        stop_monitoring flag."""
+        changed) — it satisfies only its owner, so the other matching
+        profile is pending."""
         other = make_profile(2)
         media = make_media([make_download(1, 1)])
         result = evaluate_satisfaction(media, [other])
@@ -173,13 +160,13 @@ class TestSatisfactionDetails:
         assert detail.satisfied_by is None
         assert detail.via is None
 
-    def test_stop_monitoring_flag_does_not_leak_into_details(self):
-        """Phase 4: no stop_monitoring via — the owner shows own_download,
-        the other matching profile is plainly pending."""
-        stopper = make_profile(1, priority=10, stop_monitoring=True)
+    def test_owner_detail_does_not_leak_to_other_profiles(self):
+        """The owner shows own_download; the other matching profile is
+        plainly pending."""
+        owner = make_profile(1, priority=10)
         other = make_profile(2, priority=20)
         media = make_media([make_download(5, 1)])
-        result = evaluate_satisfaction(media, [stopper, other])
+        result = evaluate_satisfaction(media, [owner, other])
         assert [d.profile_id for d in result.details] == [1, 2]
         assert result.details[0].via == "own_download"
         assert result.details[0].satisfied_by == 5

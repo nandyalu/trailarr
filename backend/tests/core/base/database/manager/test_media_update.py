@@ -68,18 +68,18 @@ class TestUpdatePlexTrailer:
         assert self.media.plex_trailer is None
 
     def test_update_does_not_touch_other_fields(self):
-        """update_plex_trailer only changes plex_trailer, not title or status."""
+        """update_plex_trailer only changes plex_trailer, not other fields."""
         original_title = self.media.title
-        original_status = self.media.status
+        original_monitor = self.media.monitor
         media_manager.update_plex_trailer(self.media.id, True)
         updated = media_manager.read(self.media.id)
         assert updated.title == original_title
-        assert updated.status == original_status
+        assert updated.monitor == original_monitor
 
 
 class TestUpdateMonitoringPlainWrite:
     """Phase 4: the monitor toggle is pure user intent — a plain flag write
-    with no trailer_exists refusals and no download-path coupling."""
+    with no refusals and no download-path coupling."""
 
     def _make_media(self, txdb_id: str, **overrides) -> int:
         conn = _create_test_connection()
@@ -97,7 +97,29 @@ class TestUpdateMonitoringPlainWrite:
     def test_monitor_true_allowed_even_with_trailer(self):
         """The old guardrail refused monitoring media whose trailer exists;
         user intent now always wins (satisfaction prevents re-downloads)."""
-        media_id = self._make_media("mon1", trailer_exists=True)
+        from datetime import datetime, timezone
+
+        import core.base.database.manager.download as download_manager
+        from core.base.database.models.download import DownloadCreate
+
+        media_id = self._make_media("mon1")
+        now = datetime.now(timezone.utc)
+        download_manager.create(
+            DownloadCreate(
+                media_id=media_id,
+                path=f"/tmp/{media_id}/trailer.mkv",
+                file_name="trailer.mkv",
+                file_hash=f"hash{media_id}",
+                size=1000,
+                resolution=1080,
+                file_format="mkv",
+                video_format="h264",
+                audio_format="aac",
+                file_exists=True,
+                added_at=now,
+                updated_at=now,
+            )
+        )
         msg, updated = media_manager.update_monitoring(media_id, True)
         assert updated is True
         assert media_manager.read(media_id).monitor is True
@@ -119,9 +141,10 @@ class TestDownloadsCannotWriteMonitor:
     """Phase 4 invariant #6: download-path status writes never touch the
     monitor flag (MediaUpdateDC deliberately has no monitor field)."""
 
-    def test_update_media_status_leaves_monitor_untouched(self):
+    def test_update_download_facts_leaves_monitor_untouched(self):
+        from datetime import datetime, timezone
+
         from core.base.database.models.helpers import MediaUpdateDC
-        from core.base.database.models.media import MonitorStatus
 
         conn = _create_test_connection()
         create = MediaCreate(
@@ -134,15 +157,18 @@ class TestDownloadsCannotWriteMonitor:
         )
         media_id = media_manager.create_or_update_bulk([create])[0][0].id
 
-        media_manager.update_media_status(
+        downloaded_at = datetime.now(timezone.utc)
+        media_manager.update_download_facts(
             MediaUpdateDC(
                 id=media_id,
-                status=MonitorStatus.DOWNLOADED,
-                trailer_exists=True,
+                yt_id="yt123",
+                downloaded_at=downloaded_at,
             )
         )
         media = media_manager.read(media_id)
-        assert media.monitor is True  # unchanged despite trailer_exists=True
+        assert media.monitor is True  # unchanged despite download facts write
+        assert media.youtube_trailer_id == "yt123"
+        assert media.downloaded_at is not None
 
     def test_media_update_dc_has_no_monitor_field(self):
         from core.base.database.models.helpers import MediaUpdateDC

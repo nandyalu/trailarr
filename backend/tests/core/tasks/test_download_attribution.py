@@ -20,7 +20,7 @@ from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 from core.tasks.download_attribution import (
     attribute_unattributed_downloads,
-    report_attribution_health,
+    count_tracked_media,
 )
 
 
@@ -55,14 +55,12 @@ def make_download(
 def make_media(
     media_id: int = 1,
     downloads: list | None = None,
-    trailer_exists: bool = True,
     is_movie: bool = True,
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=media_id,
         title=f"Media {media_id}",
         downloads=downloads if downloads is not None else [],
-        trailer_exists=trailer_exists,
         is_movie=is_movie,
         monitor=False,
     )
@@ -249,10 +247,11 @@ class TestAttributeUnattributedDownloads:
         mock_update.assert_called_once_with(2, 7)
 
 
-class TestReportAttributionHealth:
+class TestCountTrackedMedia:
 
-    @pytest.mark.asyncio
-    async def test_warns_for_trailer_exists_without_downloads(self, caplog):
+    def test_counts_media_with_active_downloads(self):
+        """Only downloads with file_exists=True make a media item tracked;
+        deleted-only downloads do not count."""
         tracked = make_media(
             media_id=1, downloads=[make_download(1, profile_id=5)]
         )
@@ -260,21 +259,16 @@ class TestReportAttributionHealth:
         deleted_only = make_media(
             media_id=3, downloads=[make_download(2, file_exists=False)]
         )
-        no_trailer = make_media(media_id=4, trailer_exists=False)
 
         def gen():
-            yield from [tracked, untracked, deleted_only, no_trailer]
+            yield from [tracked, untracked, deleted_only]
 
         with patch(
             f"{PKG}.media_manager.read_all_generator", return_value=gen()
         ):
-            with caplog.at_level("WARNING"):
-                await report_attribution_health()
+            assert count_tracked_media() == (1, 3)
 
-        assert "2 of 3" in caplog.text
-
-    @pytest.mark.asyncio
-    async def test_no_warning_when_all_tracked(self, caplog):
+    def test_all_tracked(self):
         tracked = make_media(
             media_id=1, downloads=[make_download(1, profile_id=5)]
         )
@@ -285,10 +279,7 @@ class TestReportAttributionHealth:
         with patch(
             f"{PKG}.media_manager.read_all_generator", return_value=gen()
         ):
-            with caplog.at_level("WARNING"):
-                await report_attribution_health()
-
-        assert "have no tracked download" not in caplog.text
+            assert count_tracked_media() == (1, 1)
 
 
 @write_session
@@ -326,7 +317,7 @@ def _make_download_create(media_id: int, path: str) -> DownloadCreate:
 
 def _make_default_like_profile(filter_name: str, is_movie: bool):
     """Create a profile shaped like the shipped defaults: an is_movie filter
-    plus the trailer_exists=false state filter."""
+    plus the has_downloads=false state filter."""
     from core.base.database.models.customfilter import CustomFilterCreate
     from core.base.database.models.filter import (
         FilterCondition,
@@ -345,7 +336,7 @@ def _make_default_like_profile(filter_name: str, is_movie: bool):
                         filter_value="true" if is_movie else "false",
                     ),
                     FilterCreate(
-                        filter_by="trailer_exists",
+                        filter_by="has_downloads",
                         filter_condition=FilterCondition.EQUALS,
                         filter_value="false",
                     ),
@@ -358,7 +349,7 @@ def _make_default_like_profile(filter_name: str, is_movie: bool):
 class TestAttributionAgainstRealDatabase:
     """End-to-end check against the real test DB using profiles shaped like
     the two shipped defaults ('Movie Trailers' / 'Series Trailers', both
-    filtering on is_movie plus trailer_exists=false)."""
+    filtering on is_movie plus has_downloads=false)."""
 
     @pytest.mark.asyncio
     async def test_default_profiles_claim_movie_and_series_downloads(self):
@@ -400,10 +391,9 @@ class TestAttributionAgainstRealDatabase:
         series_dl = download_manager.create(
             _make_download_create(series.id, "/media/attr-series/s-trailer.mkv")
         )
-        # The exact upgrade scenario: trailer already exists on disk, which
-        # the default profiles' trailer_exists=false filter must not block.
-        media_manager.update_trailer_exists(movie.id, True)
-        media_manager.update_trailer_exists(series.id, True)
+        # The exact upgrade scenario: the trailer download rows already exist
+        # (file_exists=True), which the default profiles' has_downloads=false
+        # state filter must not block during attribution.
 
         await attribute_unattributed_downloads()
 

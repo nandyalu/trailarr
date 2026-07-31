@@ -130,31 +130,15 @@ class TestRunStartupPasses:
 class TestFullScanGuardPass:
 
     @pytest.mark.asyncio
-    async def test_healthy_db_skips_scan(self):
-        with (
-            patch(
-                f"{PKG}.count_untracked_trailer_media", return_value=(0, 100)
-            ),
-            patch(
-                "core.tasks.files_scan.scan_all_media_folders",
-                new=AsyncMock(),
-            ) as mock_scan,
-        ):
-            await startup_passes._pass_full_scan_guard()
-        mock_scan.assert_not_awaited()
-
-    @pytest.mark.asyncio
-    async def test_untracked_media_triggers_full_scan(self):
-        with (
-            patch(
-                f"{PKG}.count_untracked_trailer_media",
-                side_effect=[(42, 100), (0, 100)],
-            ),
-            patch(
-                "core.tasks.files_scan.scan_all_media_folders",
-                new=AsyncMock(),
-            ) as mock_scan,
-        ):
+    async def test_unrecorded_pass_always_runs_full_scan(self):
+        """Phase 5: the stored mirror flags are gone, so there is no cheap
+        pre-check anymore — an unrecorded pass runs one full disk scan
+        unconditionally (a fresh install has no media, so the scan is a
+        no-op there; the "once" policy keeps it from repeating)."""
+        with patch(
+            "core.tasks.files_scan.scan_all_media_folders",
+            new=AsyncMock(),
+        ) as mock_scan:
             await startup_passes._pass_full_scan_guard()
         mock_scan.assert_awaited_once()
 

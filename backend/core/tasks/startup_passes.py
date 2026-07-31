@@ -17,10 +17,7 @@ from typing import Awaitable, Callable
 
 from app_logger import ModuleLogger
 import core.base.database.manager.startuppass as startuppass_manager
-from core.tasks.download_attribution import (
-    count_untracked_trailer_media,
-    run_attribution_pass,
-)
+from core.tasks.download_attribution import run_attribution_pass
 
 logger = ModuleLogger("StartupPasses")
 
@@ -37,46 +34,35 @@ DOWNLOADS_REQUIRED_PASSES = {
 
 
 async def _pass_attribute_downloads() -> None:
-    """v0.9.9 attribution pass: claim unattributed downloads, heal stale
-    trailer flags, report health. Idempotent and convergent — runs every
-    boot so profiles added later can claim older downloads."""
+    """v0.9.9 attribution pass: claim unattributed downloads. Idempotent and
+    convergent — runs every boot so profiles added later can claim older
+    downloads."""
     await run_attribution_pass()
 
 
 async def _pass_full_scan_guard() -> None:
     """Ensure the downloads table can be trusted before the downloads-driven
-    engine ever runs: if any media claims a trailer (trailer_exists=True)
-    with no active download record — typical for upgrades from versions
-    before download tracking — run one full disk scan first.
+    engine ever runs: run one full disk scan so trailers already on disk are
+    recorded as download rows.
 
-    Recorded complete after one scan attempt even if some media remain
-    untracked (e.g. unreachable network folders): downloads must not be
-    blocked forever, and the attribution health report keeps warning about
-    the remainder on every boot.
+    This matters for upgrades from versions before download tracking —
+    without the scan, the engine would re-download trailers that already
+    exist. Phase 5 dropped the stored mirror flags, so there is no cheap
+    pre-check anymore: an unrecorded pass always scans once. On a fresh
+    install the library is empty and the scan is a no-op.
+
+    Recorded complete after one scan attempt even if some folders are
+    unreachable: downloads must not be blocked forever, and later scheduled
+    scans keep reconciling the remainder.
     """
-    untracked, total = count_untracked_trailer_media()
-    if untracked == 0:
-        logger.info(
-            "Download records are consistent with trailer flags"
-            f" ({total} media with trailers) — no pre-download scan needed."
-        )
-        return
-    logger.warning(
-        f"{untracked} of {total} media with trailer_exists=True have no"
-        " tracked download record — running a full disk scan before the"
-        " first download run to avoid re-downloading existing trailers."
+    logger.info(
+        "Running a full disk scan before the first download run so"
+        " trailers already on disk are recorded as downloads."
     )
     # Import here to avoid a circular import (files_scan → profiles utils)
     from core.tasks.files_scan import scan_all_media_folders
 
     await scan_all_media_folders()
-    remaining, _ = count_untracked_trailer_media()
-    if remaining:
-        logger.warning(
-            f"{remaining} media still have untracked trailers after the"
-            " scan (unreachable folders?). Downloads will proceed; the"
-            " attribution health report will keep flagging these."
-        )
 
 
 # Ordered registry — order is the dependency order.

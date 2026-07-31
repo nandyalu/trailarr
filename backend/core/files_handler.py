@@ -345,68 +345,6 @@ class FilesHandler:
         return False
 
     @staticmethod
-    async def _check_trailer_as_folder(path: str) -> bool:
-        """Check if a trailer exists in the 'trailers' folder.\n
-        Args:
-            path (str): Folder path to check for a 'trailers' folder with a trailer file.\n
-        Returns:
-            bool: True if a trailer exists in the folder, False otherwise."""
-        for entry in await aiofiles.os.scandir(path):
-            # Check if the directory matches any of the trailers (case-insensitive)
-            if not entry.is_dir():
-                continue
-            if not FilesHandler.is_trailer_folder(entry.name):
-                continue
-            # Folder placement is authoritative — any video file counts, no size limit.
-            for sub_entry in await aiofiles.os.scandir(entry.path):
-                if sub_entry.is_file() and FilesHandler.is_video_file(sub_entry.name):
-                    return True
-        # No trailer folder or no trailer file found
-        return False
-
-    @staticmethod
-    async def _check_trailer_as_file(path: str) -> bool:
-        """Check if a trailer file exists in the folder.\n
-        Args:
-            path (str): Folder path to check for a trailer file.\n
-        Returns:
-            bool: True if a trailer file exists in the folder, False otherwise.
-
-        """
-        for entry in await aiofiles.os.scandir(path):
-            if not entry.is_file():
-                continue
-            if await FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
-                return True
-        return False
-
-    @staticmethod
-    async def check_trailer_exists(path: str, check_inline_file=False) -> bool:
-        """Checks if a trailer exists in the specified folder.\n
-        Checks for a file with '-trailer.' in it's name or for a 'trailers' folder\n
-        Only checks for video files with extensions '.mp4', '.mkv', '.avi'\n
-        Args:
-            path (str): The path to the folder to check for a trailer.\n
-            check_inline_file (bool): If True, check for a trailer file in the given folder and \
-            as a seperate file. If False (default), only checks for a 'trailers' folder \
-            for a trailer file.\n
-        Returns:
-            bool: True if a movie trailer exists in the folder, False otherwise."""
-        # Check if folder exists
-        if not await aiofiles.os.path.isdir(path):
-            return False
-
-        # Check for trailer as a folder
-        if await FilesHandler._check_trailer_as_folder(path):
-            return True
-
-        # Check for trailer as a file
-        if check_inline_file:
-            if await FilesHandler._check_trailer_as_file(path):
-                return True
-        return False
-
-    @staticmethod
     def check_file_exists(folder_path: str, file_name: str) -> bool:
         """Check if a file exists in the specified folder.\n
         Args:

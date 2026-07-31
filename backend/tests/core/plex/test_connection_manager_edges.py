@@ -3,7 +3,7 @@
 Covers branches not exercised by the large-library integration test:
   - creation-time monitor default (Phase 4: monitor is user intent; syncs
     never rewrite it)
-  - _process_item_chunk: empty chunk, filtered items, youtube_id, trailer detected,
+  - _process_item_chunk: empty chunk, filtered items, youtube_id,
     empty folder_path
   - _process_show_section: leaf with no key, commonpath ValueError
   - _process_section: untracked section, unsupported type, _persist_section_keys
@@ -22,7 +22,6 @@ from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.media import MediaCreate
 from core.base.database.utils.engine import write_session
 import core.base.database.manager.media as media_manager
-from core.files_handler import FilesHandler
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 
@@ -111,8 +110,7 @@ class TestCreationMonitorDefault:
         ]
 
     @pytest.mark.asyncio
-    async def _sync_one(self, monitor_new_media: bool, prefix: str,
-                        trailer_return: bool = False):
+    async def _sync_one(self, monitor_new_media: bool, prefix: str):
         conn_id = _make_plex_conn(f"CrDef-{prefix}")
         mgr = _build_manager(
             conn_id, prefix, monitor_new_media=monitor_new_media
@@ -120,10 +118,7 @@ class TestCreationMonitorDefault:
         section = _section("1", "movie", f"/plex/{prefix}/movies")
         item = _movie_item(prefix, 0)
         chunk = [(item, section, True, f"/plex/{prefix}/movies/Film0")]
-        with patch.object(FilesHandler, "check_trailer_exists",
-                          new_callable=AsyncMock,
-                          return_value=trailer_return):
-            await mgr._process_item_chunk(chunk)
+        await mgr._process_item_chunk(chunk)
         return conn_id
 
     @pytest.mark.asyncio
@@ -137,16 +132,6 @@ class TestCreationMonitorDefault:
         import uuid
         conn_id = await self._sync_one(False, uuid.uuid4().hex[:10])
         assert [m.monitor for m in self._our_media(conn_id)] == [False]
-
-    @pytest.mark.asyncio
-    async def test_trailer_on_disk_does_not_flip_monitor(self):
-        """Previously a found trailer forced monitor=False at creation —
-        Phase 4: the creation default stands regardless."""
-        import uuid
-        conn_id = await self._sync_one(
-            True, uuid.uuid4().hex[:10], trailer_return=True
-        )
-        assert [m.monitor for m in self._our_media(conn_id)] == [True]
 
 
 # ---------------------------------------------------------------------------
@@ -163,10 +148,8 @@ class TestProcessItemChunkEdges:
         self.mgr = _build_manager(self.conn_id, self._p)
         self.section = _section("1", "movie", f"/plex/{self._p}/movies")
 
-    async def _run_chunk(self, chunk, *, trailer_return=False):
-        with patch.object(FilesHandler, "check_trailer_exists",
-                          new_callable=AsyncMock, return_value=trailer_return):
-            await self.mgr._process_item_chunk(chunk)
+    async def _run_chunk(self, chunk):
+        await self.mgr._process_item_chunk(chunk)
 
     @pytest.mark.asyncio
     async def test_empty_chunk_returns_immediately(self):
@@ -186,7 +169,7 @@ class TestProcessItemChunkEdges:
     @pytest.mark.asyncio
     async def test_item_with_empty_plex_folder_skips_path_mapping(self):
         """Item with empty plex_folder skips library check and path mapping
-        (line 199 else branch); _check_trailer('') returns False (lines 287-288)."""
+        (else branch of the plex_folder check)."""
         item = PlexMediaItem.model_validate({
             "ratingKey": "9001",
             "title": "No Folder Film",
@@ -221,16 +204,6 @@ class TestProcessItemChunkEdges:
         assert self.mgr._stats_added == 1
 
     @pytest.mark.asyncio
-    async def test_trailer_detected_event_fires_when_trailer_exists(self):
-        """When check_trailer_exists returns True for a new item, a
-        TRAILER_DETECTED event is queued (monitor is untouched — Phase 4)."""
-        item = _movie_item(self._p, 51)
-        folder = f"/plex/{self._p}/movies/Film51"
-        chunk = [(item, self.section, True, folder)]
-        await self._run_chunk(chunk, trailer_return=True)
-        assert self.mgr._stats_added == 1
-
-    @pytest.mark.asyncio
     async def test_user_monitor_choice_survives_resync(self):
         """Phase 4 regression: syncs never rewrite the monitor flag — a
         user's unmonitor choice survives any number of re-syncs."""
@@ -238,7 +211,7 @@ class TestProcessItemChunkEdges:
         item = _movie_item(self._p, 100)
         folder = f"/plex/{self._p}/movies/Film100"
         chunk = [(item, self.section, True, folder)]
-        await self._run_chunk(chunk, trailer_return=False)
+        await self._run_chunk(chunk)
         assert self.mgr._stats_added == 1
 
         # User unmonitors the item
@@ -248,7 +221,7 @@ class TestProcessItemChunkEdges:
         media_manager.update_monitoring(our_media[-1].id, monitor=False)
 
         # Second sync: monitor stays False, nothing counts as updated
-        await self._run_chunk(chunk, trailer_return=False)
+        await self._run_chunk(chunk)
         refreshed = [
             m
             for m in media_manager.read_all()
@@ -300,9 +273,7 @@ class TestProcessShowSectionEdges:
         self.mgr.api = mock_api
         self.mgr.server_url = ""
 
-        with patch.object(FilesHandler, "check_trailer_exists",
-                          new_callable=AsyncMock, return_value=False):
-            await self.mgr._process_show_section(self.section)
+        await self.mgr._process_show_section(self.section)
 
         # Show still processed via Location fallback; leaf had no grandparentRatingKey
         assert self.mgr._stats_added == 1
@@ -335,10 +306,8 @@ class TestProcessShowSectionEdges:
         self.mgr.api = mock_api
         self.mgr.server_url = ""
 
-        with (
-            patch.object(FilesHandler, "check_trailer_exists",
-                         new_callable=AsyncMock, return_value=False),
-            patch("os.path.commonpath", side_effect=ValueError("mixed drives")),
+        with patch(
+            "os.path.commonpath", side_effect=ValueError("mixed drives")
         ):
             await self.mgr._process_show_section(self.section)
 

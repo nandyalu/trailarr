@@ -15,8 +15,8 @@ async def attribute_unattributed_downloads() -> None:
     to the user's trailer profiles.
 
     For each media item with unattributed downloads, profiles matching the
-    media are considered in priority order (ignoring download-state filter
-    conditions like trailer_exists — see STATE_FILTER_FIELDS). Each
+    media are considered in priority order (ignoring filter conditions on
+    download-state fields — see STATE_FILTER_FIELDS). Each
     unattributed download (oldest first) is assigned the next matching
     profile that doesn't already own an active download for that media.
     Downloads with no matching profile left to claim them stay at
@@ -100,56 +100,28 @@ async def attribute_unattributed_downloads() -> None:
     )
 
 
-def count_untracked_trailer_media() -> tuple[int, int]:
-    """Count media with trailer_exists=True but no active download record.
+def count_tracked_media() -> tuple[int, int]:
+    """Count media that have at least one active download record.
 
-    Returns (untracked_count, trailer_exists_count). A non-zero untracked
-    count is the population at risk of mass re-download under the
-    downloads-driven engine — the full-scan startup pass gates on this.
+    Returns (tracked_count, media_count). Phase 5 removed the stored
+    mirror flags, so download rows are the only measure of
+    downloaded-ness — this is telemetry, not a gate.
     """
-    untracked_count = 0
-    trailer_exists_count = 0
+    tracked_count = 0
+    media_count = 0
     for media in media_manager.read_all_generator():
-        if not media.trailer_exists:
-            continue
-        trailer_exists_count += 1
-        if not any(d.file_exists for d in media.downloads):
-            untracked_count += 1
-    return untracked_count, trailer_exists_count
-
-
-async def report_attribution_health() -> None:
-    """Log how many media items have trailer_exists=True without any active
-    download record backing it.
-
-    These media would be treated as having no trailers once downloads become
-    the source of truth for which profiles are satisfied — a non-zero count
-    means the files scan hasn't recorded their trailers yet and needs to run
-    before downloads can be trusted for download decisions.
-    """
-    untracked_count, trailer_exists_count = count_untracked_trailer_media()
-
-    if untracked_count:
-        logger.warning(
-            f"{untracked_count} of {trailer_exists_count} media item(s) with"
-            " trailer_exists=True have no tracked download record. Their"
-            " trailers should be picked up by the next files scan; if this"
-            " count persists across scans, those folders may be unreachable."
-        )
-    else:
-        logger.info(
-            f"All {trailer_exists_count} media item(s) with"
-            " trailer_exists=True have tracked download records."
-        )
+        media_count += 1
+        if any(d.file_exists for d in media.downloads):
+            tracked_count += 1
+    return tracked_count, media_count
 
 
 async def run_attribution_pass() -> None:
-    """Run the download attribution pass, then report attribution health.
+    """Run the download attribution pass.
 
-    Phase 3 removed the fix_trailer_exists_flags step that used to chain
-    here: status is computed from download rows at read time, so a stale
-    trailer_exists mirror can no longer mislead anything (justification
-    recorded in plans/phase-03-dynamic-status.md).
+    Phase 3 removed the mirror-flag fixup step that used to chain
+    here; Phase 5 removed the mirror columns themselves, and with them the
+    mirror-vs-downloads health report — download rows are the only record
+    of downloaded-ness now.
     """
     await attribute_unattributed_downloads()
-    await report_attribution_health()

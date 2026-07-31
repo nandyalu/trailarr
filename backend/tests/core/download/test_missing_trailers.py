@@ -4,7 +4,7 @@ import datetime
 import pytest
 from unittest.mock import MagicMock, patch
 from core.download.trailers.missing import download_missing_trailers
-from core.base.database.models.media import MediaRead, MonitorStatus
+from core.base.database.models.media import MediaRead
 
 
 @pytest.fixture
@@ -22,10 +22,8 @@ def mock_media_no_trailer():
         studio="Test Studio",
         txdb_id="12345",
         title_slug="test-movie",
-        trailer_exists=False,
         monitor=True,
         arr_monitored=True,
-        status=MonitorStatus.MONITORED,
         media_exists=False,
         media_filename="",
         season_count=0,
@@ -55,10 +53,8 @@ def mock_media_with_trailer():
         studio="Test Studio",
         txdb_id="12346",
         title_slug="test-movie-2",
-        trailer_exists=True,  # Has trailer
         monitor=True,
         arr_monitored=True,
-        status=MonitorStatus.DOWNLOADED,
         media_exists=False,
         media_filename="",
         season_count=0,
@@ -109,10 +105,8 @@ async def test_download_missing_trailers_prevents_infinite_loop():
             studio="Test Studio",
             txdb_id="12345",
             title_slug="test-movie",
-            trailer_exists=False,  # No trailer
             monitor=True,  # Still monitored
             arr_monitored=True,
-            status=MonitorStatus.MONITORED,  # Still MONITORED status
             media_exists=False,
             media_filename="",
             season_count=0,
@@ -138,7 +132,6 @@ async def test_download_missing_trailers_prevents_infinite_loop():
         mock_profile.id = 1
         mock_profile.priority = 100
         mock_profile.enabled = True
-        mock_profile.stop_monitoring = False
         mock_customfilter = MagicMock()
         mock_customfilter.filters = []
         mock_profile.customfilter = mock_customfilter

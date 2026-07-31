@@ -143,6 +143,12 @@ def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     _files: list[FileFolderInfoRead] | None = None
 
     for filter in filters:
+        # Virtual field: media has at least one active download (Phase 5)
+        if filter.filter_by == "has_downloads":
+            has_downloads = any(d.file_exists for d in media.downloads)
+            if not _matches_boolean(has_downloads, filter):
+                return False
+            continue
         # Handle special cases for 'has_file' and 'has_folder'
         if filter.filter_by in ("has_file", "has_folder"):
             if _files is None:

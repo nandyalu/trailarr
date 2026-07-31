@@ -60,7 +60,6 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
     for media in media_with_trailers:
         # Skip media with no downloads
         if not media.downloads:
-            media_manager.update_no_trailers_exist(media.id)
             continue
         logger.debug(f"Analyzing trailers for {media.title}")
         for download in media.downloads:

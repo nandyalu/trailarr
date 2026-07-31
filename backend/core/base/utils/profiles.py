@@ -2,13 +2,13 @@ from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.filters import matches_filters
 
-# Media fields that change *because* a trailer was downloaded (or monitoring
-# was auto-toggled by a download). Filters on these fields say "when to
-# download", not "which media this profile is for" — so they must be ignored
-# when deciding which profile should own a trailer that already exists on
-# disk. The shipped default profiles filter on trailer_exists=false, which
-# would otherwise never match media whose trailer is already downloaded.
-STATE_FILTER_FIELDS = {"monitor", "status", "trailer_exists"}
+# Media fields that change with download state rather than describing which
+# media a profile is for. Filters on these fields say "when to download",
+# not "which media this profile is for" — so they must be ignored when
+# deciding which profile should own a trailer that already exists on disk.
+# (Phase 5 removed the stored mirror columns; has_downloads is their
+# virtual successor for view filters and is state by definition.)
+STATE_FILTER_FIELDS = {"monitor", "has_downloads"}
 
 
 def find_matching_profiles(

@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 from difflib import SequenceMatcher
@@ -16,7 +15,6 @@ from core.base.utils.path_utils import (
     is_subpath,
     reverse_path_mappings,
 )
-from core.files_handler import FilesHandler
 from core.plex.api_manager import PlexAPI
 from core.plex.data_parser import parse_plex_item
 from core.plex.models import PlexLibrarySection, PlexMediaItem
@@ -211,10 +209,8 @@ class PlexConnectionManager:
             [mc for mc, _ in parsed]
         )
 
-        # 3. Collect pending events and identify new items needing file checks
+        # 3. Collect pending events
         pending_events: list[EventCreate] = []
-        # (id, folder_path) for new items — need async file check
-        new_items: list[tuple[int, str]] = []
         # (media_read, plex_fields_changed) for existing items
         existing_items: list[tuple[MediaRead, bool]] = []
 
@@ -272,52 +268,18 @@ class PlexConnectionManager:
                         new_value=str(media_read.monitor).lower(),
                     )
                 )
-                new_items.append(
-                    (media_read.id, media_read.folder_path or "")
-                )
                 self._stats_added += 1
             else:
                 existing_items.append((media_read, plex_fields_changed))
 
-        # 4. Concurrent async file checks for new items (trailer facts only —
-        # Phase 4: monitor is user intent and is never derived or re-written)
-        update_list: list[tuple[int, bool]] = []
-
-        async def _check_trailer(folder_path: str) -> bool:
-            if not folder_path:
-                return False
-            return await FilesHandler.check_trailer_exists(
-                path=folder_path, check_inline_file=True
-            )
-
-        if new_items:
-            trailer_results = await asyncio.gather(
-                *[_check_trailer(fp) for _, fp in new_items]
-            )
-            for (media_id, folder_path), trailer_exists in zip(
-                new_items, trailer_results
-            ):
-                if trailer_exists:
-                    pending_events.append(
-                        EventCreate(
-                            media_id=media_id,
-                            event_type=EventType.TRAILER_DETECTED,
-                            source=EventSource.SYSTEM,
-                            source_detail="PlexRefresh",
-                        )
-                    )
-                update_list.append((media_id, trailer_exists))
-
-        # 5. Stats for existing items (Phase 4: no monitor re-evaluation)
+        # 4. Stats for existing items (Phase 4: no monitor re-evaluation.
+        # Phase 5: no disk trailer checks here either — the files scan owns
+        # trailer detection and records download rows for it.)
         for media_read, plex_fields_changed in existing_items:
             if plex_fields_changed:
                 self._stats_updated += 1
 
-        # 6. Bulk update trailer_exists — 1 DB session
-        if update_list:
-            media_manager.update_trailer_exists_bulk(update_list)
-
-        # 7. Bulk event insert — 1 DB session
+        # 5. Bulk event insert — 1 DB session
         if pending_events:
             event_manager.create_bulk(pending_events)
 

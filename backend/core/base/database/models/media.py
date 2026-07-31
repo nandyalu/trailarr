@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
-from enum import Enum
-from typing import Sequence
-from pydantic import field_validator, model_validator
-from sqlalchemy import Boolean, Column, String, text, Enum as sa_Enum
+from pydantic import field_validator
+from sqlalchemy import Boolean, Column, String, text
 from sqlmodel import Field, Integer, Relationship
 
 from core.base.database.models.filefolderinfo import FileFolderInfo
@@ -20,33 +18,6 @@ def get_current_time():
 
 def get_current_year():
     return datetime.now(timezone.utc).year
-
-
-class MonitorStatus(Enum):
-    """Monitor status for media. \n"""
-
-    DOWNLOADED = "downloaded"
-    DOWNLOADING = "downloading"
-    MISSING = "missing"
-    MONITORED = "monitored"
-
-
-def compute_media_status(
-    monitor: bool, downloads: Sequence[DownloadRead]
-) -> MonitorStatus:
-    """List-level media status, derived from downloads + monitor (Phase 3).
-
-    Any active (file_exists=True) download makes the media DOWNLOADED;
-    otherwise the monitor flag decides MONITORED vs MISSING. DOWNLOADING is
-    runtime-only state (in-flight registry overlay), never derived here. The
-    stored `status` column keeps being written as a passive mirror until
-    Phase 5 drops it, but nothing meaningful reads it anymore.
-    """
-    if any(download.file_exists for download in downloads):
-        return MonitorStatus.DOWNLOADED
-    if monitor:
-        return MonitorStatus.MONITORED
-    return MonitorStatus.MISSING
 
 
 class MediaBase(AppSQLModel):
@@ -103,21 +74,12 @@ class MediaBase(AppSQLModel):
     fanart_url: str | None = None
     poster_path: str | None = None
     fanart_path: str | None = None
-    trailer_exists: bool = Field(default=False)
     monitor: bool = Field(default=False)
     arr_monitored: bool = Field(default=False)
     plex_rating_key: str | None = None
     plex_section_key: str | None = None
     plex_connection_id: int | None = None
     plex_trailer: bool | None = None
-    status: MonitorStatus = Field(
-        default=MonitorStatus.MISSING,
-        sa_column=Column(
-            sa_Enum(MonitorStatus, native_enum=False),
-            server_default=text("'MISSING'"),
-            nullable=False,
-        ),
-    )
 
 
 class Media(MediaBase, table=True):
@@ -152,7 +114,6 @@ class MediaCreate(MediaBase):
     - language: "en"
     - runtime: 0
     - youtube_trailer_id: None
-    - trailer_exists: False
     - monitor: False
     - arr_monitored: False
     """
@@ -176,14 +137,6 @@ class MediaRead(MediaBase):
     @classmethod
     def correct_timezone(cls, value: datetime) -> datetime:
         return cls.set_timezone_to_utc(value)
-
-    @model_validator(mode="after")
-    def _derive_status(self) -> "MediaRead":
-        """Status is computed, never stored-then-trusted (Phase 3). The
-        `downloads` relationship is materialized during validation, so this
-        adds no queries beyond what MediaRead already loads."""
-        self.status = compute_media_status(self.monitor, self.downloads)
-        return self
 
     # NOTE: We are not using this as it is causing performance issues
 
@@ -244,7 +197,6 @@ class MediaUpdate(MediaBase):
     media_exists: bool | None = None  # type: ignore
     media_filename: str | None = None  # type: ignore
     folder_path: str | None = None  # type: ignore
-    trailer_exists: bool | None = None  # type: ignore
     monitor: bool | None = None  # type: ignore
     arr_monitored: bool | None = None  # type: ignore
     plex_trailer: bool | None = None  # type: ignore

@@ -25,7 +25,7 @@ def get_stats(
     _downloaded = len(_session.exec(statement).all())
 
     # Detected trailers count — distinct media with an active download row
-    # (Phase 3: disk truth lives in downloads, not the trailer_exists mirror)
+    # (Phase 3: disk truth lives in downloads, not a stored mirror flag)
     statement = (
         select(Download.media_id)
         .where(col(Download.file_exists).is_(True))

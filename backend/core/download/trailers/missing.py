@@ -205,8 +205,8 @@ async def download_missing_trailers(
     """Download missing trailers for monitored media items.
 
     Phase 2 engine: downloads are decided per profile from download records
-    (see core/base/utils/satisfaction.py), never from the trailer_exists
-    flag. Failed downloads back off exponentially per (media, profile).
+    (see core/base/utils/satisfaction.py), never from the legacy mirror
+    flags (removed in Phase 5). Failed downloads back off exponentially per (media, profile).
     """
     # Exit if monitoring is disabled
     if not app_settings.monitor_enabled:
@@ -389,8 +389,8 @@ async def _process_single_media_item(
                 download_attempted = True
                 successful_downloads += 1
                 # (attempt record cleared inside download_trailer on success)
-                # Phase 4: stop_monitoring is no longer honored — every
-                # unsatisfied matching profile gets its download.
+                # Phase 4: profiles no longer stop monitoring on success —
+                # every unsatisfied matching profile gets its download.
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(
