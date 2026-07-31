@@ -71,7 +71,13 @@ export class AppComponent implements OnDestroy, OnInit {
 
   closeAllSubscriptions() {
     this.websocketService.close();
-    if (this.authDisabled()) return;
+    if (this.authDisabled()) {
+      // Delete the session server-side so the old session id gets 401s,
+      // but keep the app shell mounted (no isAuthenticated flip, no
+      // /login round-trip — it would only mint a new session).
+      this.authService.endSession().subscribe();
+      return;
+    }
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
@@ -112,19 +118,24 @@ export class AppComponent implements OnDestroy, OnInit {
     this.closeEndingDialog();
   }
 
-  /** Idle countdown ran out with auth disabled: stop live updates and
-   * keep the dialog open in its paused state. */
+  /** Idle countdown ran out with auth disabled: stop live updates,
+   * delete the session server-side (so the old session id gets 401s),
+   * and keep the dialog open in its paused state. */
   pauseSession(): void {
-    this.websocketService.close();
+    this.closeAllSubscriptions();
     this.sessionPaused.set(true);
   }
 
-  /** The user is back: reconnect live updates and restart the idle timer. */
+  /** The user is back: get a fresh session first (the paused one was
+   * deleted), then reconnect live updates and restart the idle timer. */
   resumeSession(): void {
-    this.sessionPaused.set(false);
-    this.websocketService.connect();
-    this.closeEndingDialog();
-    this.resetIdleTimer();
+    this.authService.checkAuthStatus().subscribe((ok) => {
+      if (!ok) return; // server unreachable — stay paused
+      this.sessionPaused.set(false);
+      this.websocketService.connect();
+      this.closeEndingDialog();
+      this.resetIdleTimer();
+    });
   }
 
   /** Esc on the dialog: while paused it means "I am back" — resume

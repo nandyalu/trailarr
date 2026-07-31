@@ -83,7 +83,7 @@ This environment variable is used to disable the authentication for the web inte
 
 !!! note "No logout with auth disabled"
     {{ version_badge("upd", "0.11.0") }}
-    When auth is disabled, the web UI hides the logout button — there is no session to log out of. After a period of inactivity, the UI pauses live updates and shows a **Session Paused** dialog. Click **Resume** to continue.
+    When auth is disabled, the web UI hides the logout button — there is no session to log out of. After a period of inactivity, the UI pauses live updates, deletes its session id on the server, and shows a **Session Paused** dialog. Requests that replay the old session id get a `401` response. Click **Resume** to continue with a fresh session.
 
 ### `WEBUI_PASSWORD`
 
