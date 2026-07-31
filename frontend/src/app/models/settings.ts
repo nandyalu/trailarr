@@ -7,6 +7,7 @@ export interface Settings {
   delete_trailer_connection: boolean;
   files_full_scan: boolean;
   delete_trailer_media: boolean;
+  downloads_enabled: boolean;
   ffmpeg_timeout: number;
   gpu_available_amd: boolean;
   gpu_available_intel: boolean;

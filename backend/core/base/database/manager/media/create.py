@@ -232,6 +232,9 @@ def _create_or_update(
                 "downloaded_at",
                 "created_at",
                 "updated_at",
+                # Phase 4: monitor is user intent — the creation default set
+                # by the sync managers must never overwrite an existing row.
+                "monitor",
             },
         )
         db_media.sqlmodel_update(media_update_data)

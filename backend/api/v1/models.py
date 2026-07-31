@@ -13,6 +13,17 @@ class ErrorResponse(BaseModel):
     message: str
 
 
+class InflightDownload(BaseModel):
+    """A media item with a trailer download currently in flight.
+
+    Runtime state (Phase 3): sourced from the in-memory registry, never the
+    database — restarting the app empties it by construction.
+    """
+
+    media_id: int
+    profile_id: int
+
+
 class Log(BaseModel):
     datetime: str
     level: str
@@ -42,6 +53,7 @@ class Settings(BaseModel):
     delete_corrupted_trailers: bool
     delete_trailer_connection: bool
     delete_trailer_media: bool
+    downloads_enabled: bool
     ffmpeg_timeout: int
     files_full_scan: bool
     gpu_available_amd: bool

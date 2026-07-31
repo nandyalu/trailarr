@@ -1,7 +1,7 @@
 import {HttpClient, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {catchError, Observable} from 'rxjs';
-import {ArrType, ConnectionCreate, ConnectionRead, ConnectionUpdate, MonitorType} from 'src/app/models/connection';
+import {ArrType, ConnectionCreate, ConnectionRead, ConnectionUpdate} from 'src/app/models/connection';
 import {environment} from 'src/environment';
 import {handleError} from './utils';
 import {WebsocketService} from './websocket.service';
@@ -24,7 +24,7 @@ export class ConnectionService {
     api_key: '',
     arr_type: ArrType.Radarr,
     id: -1,
-    monitor: MonitorType.None,
+    monitor_new_media: true,
     name: '',
     machine_identifier: null,
     path_mappings: [],

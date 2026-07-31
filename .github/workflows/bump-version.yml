@@ -44,7 +44,14 @@ jobs:
         run: sed -i "s/^version = .*/version = \"${{ steps.version.outputs.version }}\"/" backend/pyproject.toml
 
       - name: Bump version in package.json
-        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --prefix frontend
+        run: |
+          CURRENT=$(node -p "require('./frontend/package.json').version")
+          TARGET="${{ steps.version.outputs.version }}"
+          if [ "$CURRENT" = "$TARGET" ]; then
+            echo "frontend/package.json already at $TARGET, skipping"
+          else
+            npm version "$TARGET" --no-git-tag-version --prefix frontend
+          fi
 
       - name: Bump APP_VERSION in tasks.json
         run: |

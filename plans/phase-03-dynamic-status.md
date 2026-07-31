@@ -1,6 +1,6 @@
 # Phase 3 — Dynamic Status
 
-**Status:** not started · **Release:** v0.10.1 (with Phase 4) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev — merge into dev after v0.10.0 ships; releases with Phase 4) · **Release:** v0.10.2 (with Phase 4) · **Depends on:** Phase 2
 
 ## Objective
 
@@ -52,6 +52,23 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
    preview until the user explicitly enables downloads. Addresses the
    mass-download-fear class (#36, #435).
 
+## Deletion record (README upgrade-safety rule 2)
+
+- **`fix_trailer_exists_flags` (core/tasks/startup_fixes.py) — DELETED.**
+  It healed `trailer_exists=False` for media whose stop_monitoring profile
+  owned an active download, purely so status/filter reads of the flag showed
+  the truth. After this phase nothing reads the flag or stored status for
+  decisions or display: `MediaRead.status` is computed from downloads,
+  built-in filters/stats/recently-downloaded use EXISTS on downloads, and
+  download decisions have been satisfaction-based since Phase 2. The files
+  scan keeps mirroring `trailer_exists` from disk truth (passive, dropped in
+  Phase 5). No later code depends on the deleted pass's effect. It was not a
+  registered startup pass itself — it chained inside `attribute-downloads-v0.9.9`,
+  which continues (attribution + health report are still needed).
+- **`SIGNAL-DISAGREE` shadow logging (missing.py) — DELETED** as planned
+  (Phase 2 bake-window instrumentation; the per-profile `details` on
+  `SatisfactionResult` now expose the same explanation on demand).
+
 ## Wargame
 
 - **W1. Sort by "date downloaded":** table/expanded views sort on `downloaded_at`
@@ -97,7 +114,14 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
   home/movies/details (console errors, no flicker regression on throttled reload).
 - config-dev copy: home page stats equal old stats (they measure the same reality).
 
-## Docs to update
+## Docs to update — DONE (July 19, 2026)
+
+All items below executed on the `dev` branch (commit with the P4 docs pass):
+library status legend + computed-status note, media-details "Download Profiles
+Section", tasks page (SIGNAL-DISAGREE note removed, preview-mode note added),
+general-settings "Downloads Enabled", FAQ stuck-Downloading answer rewritten.
+`DOWNLOADS_ENABLED` is a UI setting persisted like the others — env-vars page
+deliberately not extended (it documents deploy-time vars only).
 
 - `docs/user-guide/library/index.md` — the status legend / quick-filter list
   ("Missing: Trailer missing (also includes monitored items)" etc.) must describe the
@@ -122,3 +146,44 @@ columns keep existing until Phase 5 but nothing meaningful reads them.
 Stored `status` no longer read anywhere (grep `\.status` in backend/frontend media
 paths); stuck-status impossible by construction; matrix visible on details; stats/
 filters/sorts equivalent on config-dev; Docs section executed.
+
+## Addition (2026-07-19): storage-reachability download guard
+
+Added post-verification, ships with v0.10.1: `_is_valid_media` in the download
+task now distinguishes "storage unreachable" from "folder missing" (reusing the
+scan's `is_disk_available`, moved to `core/files_handler.py` with a compat
+alias in files_scan) and checks the existing folder is actually listable —
+a stale handle on a half-dead mount previously passed isdir, failed mid-write,
+and was misrecorded as a failed ATTEMPT (accruing backoff) instead of a skip.
+Skips fire `DOWNLOAD_SKIPPED` with reason "Storage unreachable" (existing
+dedupe). 4 unit tests. This is the early-shipped half of the issue-gated
+downloads decision recorded in phase-11 (4b); re-run of the backend suite
+covered it.
+
+## Verification record (July 2026)
+
+- **Suites:** backend 808 passed; frontend 69 passed + production build green.
+- **Grep audit:** backend `.status` occurrences are mirror WRITES in
+  `manager/media/update.py` only; custom filters evaluate against MediaRead
+  (computed). Frontend reads computed status from `combinedMedia`; the stored
+  value survives only as the deliberate first-paint fallback (W5) and is
+  sanitized in `mapMedia` (legacy `downloading` can never surface).
+- **Synthetic 1,700-item scratch env:** W4 generator full iteration 0.53s
+  (computed DOWNLOADED count == download rows); W8 library pending 0.32s;
+  old-vs-new trailers_detected parity exact; poisoned mirror row
+  (trailer_exists=0/status=MISSING with active download) computes DOWNLOADED.
+- **config-dev (fresh copy of the maintainer's real 3,608-item library):**
+  untracked count 0 (P2 precondition holds); stats parity EXACT
+  (old 2,738 == new 2,738, zero disagreement rows either direction); library
+  pending 49ms → 56 real pending pairs; `/media/downloading` == [] on fresh
+  boot; headless-Chromium drive of home/movies/details → 0 console errors,
+  preview banner + 56-item dialog render, matrix shows the real 3-profile
+  setup (Satisfied-own-download / Not matching / Disabled).
+- **W3:** structural (in-memory registry, no DB DOWNLOADING writers — grep +
+  unit tests assert registry empty after failure paths) + fresh-boot [] on the
+  real app. A literal kill -9 during a live stubbed download was NOT run —
+  no real download path exists on the dev machine (media folders absent);
+  revisit during the v0.10.2 release soak if desired.
+- **W6:** MediaRead.status remains in all API responses, populated from the
+  computed value (model validator). `/media/all_raw` intentionally keeps raw
+  column values (frontend derives its own).

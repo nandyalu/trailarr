@@ -5,7 +5,8 @@ import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
-import {buildDownloadMap, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {mapMediaPending, MediaPendingView} from '../models/pending';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
 
@@ -67,20 +68,70 @@ export class MediaService {
       return new Map<number, FileFolderInfo>();
     },
   });
+  /** Per-profile download matrix for the selected media item — which
+   * profiles match, which are satisfied by which download, which are
+   * pending or backing off. Computed by the backend with the exact
+   * satisfaction rule the download task uses. */
+  readonly mediaPendingResource = httpResource<MediaPendingView | null>(
+    () => {
+      const mediaID = this.selectedMediaID();
+      return mediaID === null ? undefined : {url: `${this.mediaUrl}${mediaID}/pending`};
+    },
+    {
+      defaultValue: null,
+      parse: (response) => (response ? mapMediaPending(response) : null),
+    },
+  );
+  /** Runtime in-flight downloads (media_id -> profile_id). Backend pushes
+   * reload="downloading" whenever it changes; empty on app restart by
+   * construction, so a stuck 'downloading' status is impossible. */
+  readonly downloadingResource = httpResource<Map<number, number>>(() => ({url: this.mediaUrl + 'downloading'}), {
+    defaultValue: new Map<number, number>(),
+    parse: (response) => {
+      const inflight = new Map<number, number>();
+      if (response && Array.isArray(response)) {
+        for (const item of response) {
+          inflight.set(item.media_id, item.profile_id);
+        }
+      }
+      return inflight;
+    },
+  });
 
   // Computed Signals
-  /** Combined media list with associated files and downloads */
+  /** True once the downloads map has arrived at least once. Until then,
+   * status falls back to the server-sent value instead of being computed
+   * from an empty map (W5: no transient 'missing' flash on first paint).
+   * During reloads httpResource retains the previous value, so computed
+   * statuses never regress mid-refresh. */
+  private readonly downloadsMapReady = computed(() => {
+    const status = this.mediaDownloadsResource.status();
+    return status === 'resolved' || status === 'reloading' || status === 'local';
+  });
+
+  /** Combined media list with associated files and downloads.
+   * Phase 3: `status` is derived here — in-flight overlay first, then
+   * downloads + monitor — never trusted from the stored column. */
   readonly combinedMedia = computed<Media[]>(() => {
     const mediaList = this.mediaResource.value();
     const downloadsMap = this.mediaDownloadsResource.value();
     const filesMap = this.mediaFilesResource.value();
+    const downloadingMap = this.downloadingResource.value();
+    const downloadsReady = this.downloadsMapReady();
     return mediaList.map((media) => {
       const downloads = downloadsMap.get(media.id) || [];
       const files = filesMap.get(media.id) || null;
+      let status = media.status;
+      if (downloadingMap.has(media.id)) {
+        status = 'downloading';
+      } else if (downloadsReady) {
+        status = computeMediaStatus(media.monitor, downloads);
+      }
       return {
         ...media,
         files: files,
         downloads: downloads,
+        status: status,
       };
     });
   });
@@ -203,6 +254,17 @@ export class MediaService {
       if (msg.reload?.includes('downloads')) {
         this.mediaDownloadsResource.reload();
       }
+      if (msg.reload?.includes('downloading')) {
+        this.downloadingResource.reload();
+      }
+      // The profile matrix depends on downloads and attempt state — refresh
+      // it whenever either may have changed (no-op unless a media details
+      // page is open).
+      if (msg.reload?.includes('downloads') || msg.reload?.includes('downloading')) {
+        if (this.selectedMediaID() !== null) {
+          this.mediaPendingResource.reload();
+        }
+      }
     });
   }
 
@@ -215,6 +277,7 @@ export class MediaService {
     this.mediaResource.reload();
     this.mediaFilesResource.reload();
     this.mediaDownloadsResource.reload();
+    this.downloadingResource.reload();
   }
 
   /**

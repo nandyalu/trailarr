@@ -58,7 +58,7 @@ python3 scripts/launch.py
 # 3. Drive http://localhost:7890 with headless Chromium (Playwright) and check console errors
 ```
 
-`scripts/launch.py` uses the persistent dev config at `config/.env` / `config/trailarr.db` (gitignored). If `WEBUI_DISABLE_AUTH=true` there, no login is needed. Stop it with `pkill -f "scripts/launch.py"` and `pkill -f "uvicorn main:trailarr_api"` (it execs into `uv run uvicorn`, so both process names can exist). Prefer this over `ng serve` + `src/proxy.conf.json` for verification — the dev proxy is a different code path (Angular dev server proxying to the backend) than the production static-file serving in `router.py`.
+`scripts/launch.py` uses the persistent dev config at `config-dev/.env` / `config-dev/trailarr.db` (gitignored). If `WEBUI_DISABLE_AUTH=true` there, no login is needed. Stop it with `pkill -f "scripts/launch.py"` and `pkill -f "uvicorn main:trailarr_api"` (it execs into `uv run uvicorn`, so both process names can exist). Prefer this over `ng serve` + `src/proxy.conf.json` for verification — the dev proxy is a different code path (Angular dev server proxying to the backend) than the production static-file serving in `router.py`.
 
 ### Testing
 
@@ -313,6 +313,10 @@ LOG_LEVEL=Info                 # Logging level
 - **API changes**: Always regenerate OpenAPI client after backend API modifications
 - **Database changes**: Always create Alembic migration after SQLModel model changes
 - **EventType**: stored as VARCHAR — new enum values require no migration, just add to `EventType` in `models/event.py` and add a `track_*` helper in `manager/event/helpers.py`
+- **GitHub**: use the `gh` CLI for all GitHub operations (PRs, issues, releases, API) — it is already authenticated in this environment
+- **Raw endpoints are a deliberate design, not a cleanup target**: `/media/all_raw`, `/media/downloads_raw`, `/files/files_raw` return raw dicts from SQL on purpose. Data is validated when WRITTEN to the database, so re-validating and building typed Python objects on every read would only add memory pressure and latency on large libraries. Do not "fix" them into typed responses; new list-scale endpoints may follow the same pattern when hot.
+- **Docs prose style**: write each sentence/paragraph as ONE continuous line — never hard-wrap prose across multiple lines in `docs/` markdown. Zensical renders continuous lines correctly, but a paragraph broken into separate lines can break formatting. (Code blocks and lists are fine as usual.)
+- **Simplified Technical English**: when writing or updating log lines, docs, and comments, follow [ASD-STE100](https://www.asd-ste100.org/) Simplified Technical English. Short sentences, one instruction/idea per sentence, active voice, approved/simple vocabulary, present tense, no strung-together noun clusters. Applies to new/changed content only — no need to rewrite untouched text just to comply.
 
 ## Roadmap Execution Plans
 

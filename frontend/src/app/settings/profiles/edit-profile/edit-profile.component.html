@@ -62,14 +62,6 @@
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('priority', $event)"
       />
-      <app-options-setting
-        name="Stop Monitoring"
-        description="⚠️ Deprecated — will be removed in an upcoming release. When 'true', a successful download from this profile marks the media as fully satisfied (no other profiles will download for it)."
-        descriptionExtra="Downloads are now tracked per profile, so this option is no longer needed to prevent re-downloads. Set to 'false' only for multi-trailer setups."
-        [options]="trueFalseOptions"
-        [selectedOption]="profile()?.stop_monitoring"
-        (optionChange)="profileService.updateSetting('stop_monitoring', $event)"
-      />
       <app-text-setting
         name="Retry Count"
         description="Download retry count when a download fails while using this profile."

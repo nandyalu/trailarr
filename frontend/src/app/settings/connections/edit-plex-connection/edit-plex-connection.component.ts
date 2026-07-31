@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import {interval, Subscription, switchMap, takeWhile} from 'rxjs';
 import {Router} from '@angular/router';
-import {ArrType, ConnectionCreate, MonitorType, PathMappingCreate} from 'src/app/models/connection';
+import {ArrType, ConnectionCreate, PathMappingCreate} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {PlexOAuthService} from 'src/app/services/plex-oauth.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
@@ -49,7 +49,10 @@ export class EditPlexConnectionComponent implements OnDestroy {
   //#endregion
 
   //#region Constants
-  readonly monitorOptions: MonitorType[] = [MonitorType.Missing, MonitorType.New, MonitorType.None];
+  readonly monitorNewMediaOptions = [
+    {label: 'Yes', value: true},
+    {label: 'No', value: false},
+  ] as const;
   //#endregion
 
   //#region Dialog refs
@@ -86,10 +89,10 @@ export class EditPlexConnectionComponent implements OnDestroy {
     url: '',
     external_url: '',
     api_key: '',
-    monitor: MonitorType.New,
+    monitor_new_media: true,
     path_mappings: [],
   });
-  selectedMonitor = signal<MonitorType>(MonitorType.New);
+  selectedMonitor = signal<boolean>(true);
   //#endregion
 
   //#region Computed helpers
@@ -117,7 +120,7 @@ export class EditPlexConnectionComponent implements OnDestroy {
     const conn = this.connectionService.selectedConnection();
     if (conn && conn.arr_type === ArrType.Plex) {
       this.connectionData.set(conn);
-      this.selectedMonitor.set(conn.monitor);
+      this.selectedMonitor.set(conn.monitor_new_media);
       this.isCreate.set(conn.id === -1);
       this.oauthState.set('authenticated');
       this.isPathMappingsLoaded.set(conn.path_mappings.length > 0);
@@ -262,9 +265,9 @@ export class EditPlexConnectionComponent implements OnDestroy {
     this.connectionData.update((d) => ({...d, name: value}));
   }
 
-  setMonitor(monitor: MonitorType) {
-    this.selectedMonitor.set(monitor);
-    this.connectionData.update((d) => ({...d, monitor}));
+  setMonitorNewMedia(value: boolean) {
+    this.selectedMonitor.set(value);
+    this.connectionData.update((d) => ({...d, monitor_new_media: value}));
     this.isReadyToSubmit.set(false);
   }
 

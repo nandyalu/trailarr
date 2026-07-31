@@ -197,10 +197,10 @@ class TestDownloadTrailer:
 
         assert result is True
         call_names = [name for name, *_ in manager.mock_calls]
+        # Phase 3: no DOWNLOADING status write at start (in-flight registry)
         assert call_names == [
-            "update_status",  # DOWNLOADING at start
             "track_download",  # Trailer Downloaded event
-            "update_status",  # DOWNLOADED (fires Monitor Changed) last
+            "update_status",  # DOWNLOADED status mirror last
         ]
         assert (
             manager.mock_calls[-1].args[0].status == MonitorStatus.DOWNLOADED
@@ -524,7 +524,7 @@ class TestDownloadTrailerMediaStatus:
         "core.download.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
-    async def test_updates_status_to_downloading_then_downloaded(
+    async def test_downloading_is_runtime_only_status_written_once(
         self,
         mock_broadcast,
         mock_update_status,
@@ -538,18 +538,38 @@ class TestDownloadTrailerMediaStatus:
         mock_profile,
         mock_video_info,
     ):
-        """Updates media status to DOWNLOADING then DOWNLOADED."""
+        """Phase 3: DOWNLOADING is never written to the DB — only the
+        DOWNLOADED mirror write happens on success; the in-flight state
+        lives in the registry and is broadcast over the websocket."""
+        from core.download.inflight import inflight_registry
+        from core.download.trailer import download_trailer
+
         mock_get_video_id.return_value = "video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
-
         await download_trailer(mock_media, mock_profile)
 
-        # Should have been called at least twice (DOWNLOADING and DOWNLOADED)
-        assert mock_update_status.call_count >= 2
+        # Exactly one status write (DOWNLOADED) — no DOWNLOADING write
+        assert mock_update_status.call_count == 1
+        from core.base.database.models.media import MonitorStatus
+
+        update = mock_update_status.call_args[0][0]
+        assert update.status == MonitorStatus.DOWNLOADED
+
+        # Registry is empty once the download completes
+        assert inflight_registry.snapshot() == {}
+
+        # Both the start and the completion broadcast refresh the overlay
+        reloads = [
+            call.kwargs.get("reload", "")
+            for call in mock_broadcast.call_args_list
+        ]
+        assert any("downloading" in reload for reload in reloads)
+        assert any(
+            "downloads" in reload and "media" in reload for reload in reloads
+        )
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
@@ -574,6 +594,12 @@ class TestDownloadTrailerMediaStatus:
 
         # Should update status including MISSING
         assert mock_update_status.call_count >= 1
+
+        # Failure must never leave an in-flight entry behind (W3: a crash or
+        # failure can't produce a stuck DOWNLOADING state anywhere)
+        from core.download.inflight import inflight_registry
+
+        assert inflight_registry.snapshot() == {}
 
 
 class TestCheckPlexTrailer:

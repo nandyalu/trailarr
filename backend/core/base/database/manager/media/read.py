@@ -1,12 +1,28 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
+from sqlalchemy import func
 from sqlmodel import Session, col, desc, or_, select, text
 from sqlmodel.sql.expression import SelectOfScalar
 
 from . import base
 import core.base.database.manager.connection as connection_manager
-from core.base.database.models.media import Media, MediaRead, MonitorStatus
+from core.base.database.models.download import Download
+from core.base.database.models.media import Media, MediaRead
 from core.base.database.utils.engine import read_session
+
+
+def _active_download_exists():
+    """Correlated EXISTS: the media has at least one active
+    (file_exists=True) download row. Phase 3: downloads — not the
+    trailer_exists flag — are the source of truth for downloaded-ness."""
+    return (
+        select(Download.id)
+        .where(
+            col(Download.media_id) == col(Media.id),
+            col(Download.file_exists).is_(True),
+        )
+        .exists()
+    )
 
 
 @read_session
@@ -292,10 +308,14 @@ def read_recently_downloaded(
     """
     offset = max(0, offset)
     limit = max(1, min(limit, 100))
+    # Phase 3: downloaded-ness and recency come from download rows, never
+    # from the stored status/downloaded_at columns.
     statement = (
         select(Media)
-        .where(Media.status == MonitorStatus.DOWNLOADED)
-        .order_by(desc(Media.downloaded_at))
+        .join(Download)
+        .where(col(Download.file_exists).is_(True))
+        .group_by(col(Media.id))
+        .order_by(desc(func.max(col(Download.added_at))))
         .offset(offset)
         .limit(limit)
     )
@@ -343,18 +363,20 @@ def _apply_filter(
     Returns:
         SelectOfScalar[Media]: The updated statement with the filter applied.
     """
+    # Phase 3: downloaded/missing/unmonitored are decided by download rows
+    # (EXISTS subquery), never by the trailer_exists mirror column.
     if filter_by == "downloaded":
-        statement = statement.where(col(Media.trailer_exists).is_(True))
+        statement = statement.where(_active_download_exists())
         return statement
     if filter_by == "monitored":
         statement = statement.where(col(Media.monitor).is_(True))
         return statement
     if filter_by == "missing":
-        statement = statement.where(col(Media.trailer_exists).is_(False))
+        statement = statement.where(~_active_download_exists())
         return statement
     if filter_by == "unmonitored":
         statement = statement.where(col(Media.monitor).is_(False))
-        statement = statement.where(col(Media.trailer_exists).is_(False))
+        statement = statement.where(~_active_download_exists())
         return statement
     # If filter_by is `all` or doesn't match any of the above,
     # return the statement as is

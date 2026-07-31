@@ -52,28 +52,21 @@ Your Plex authentication token, used to authenticate all API requests from Trail
 
 ---
 
-## Monitor Type
+## Monitor New Media
 
-| Type   | Required | Valid Values                        |
-|:------:|:--------:|:-----------------------------------:|
-| Enum   | Yes      | `missing`, `new`, `none`            |
+{{ version_badge("upd", "0.10.2") }}
 
-Controls which Plex-linked media Trailarr will download trailers for.
+| Type    | Required | Valid Values  |
+|:-------:|:--------:|:-------------:|
+| Boolean | Yes      | Yes or No     |
 
-| Option    | Behaviour |
-|-----------|-----------|
-| `missing` | Downloads trailers for all Plex-linked media that does not already have a trailer. |
-| `new`     | Downloads trailers only for media added to Plex **after** this connection was created. |
-| `none`    | Disables trailer downloading for all media linked through this connection. |
-
-!!! note ""
-    `new` is disabled when **adding** a new connection because there is no prior state to compare against. Set it to `new` after the initial sync has completed.
+Whether media items discovered through this Plex connection should **start monitored** (a trailer will be downloaded for them). Like Arr connections, this applies only once, when a media item is first added — monitoring stays entirely under your control afterwards; syncs never change it.
 
 !!! tip
-    When setting up a Plex connection for the first time, leave Monitor Type as `none` until the initial library scan finishes, then switch to `new` so only future additions are downloaded.
+    When setting up a Plex connection for the first time, set **Monitor New Media** to `No` until the initial library scan finishes, then switch it to `Yes` so only future additions start monitored. You can always monitor individual items by hand from the library.
 
-!!! info ""
-    `sync` is not available for Plex connections. Synced monitoring is based on Radarr/Sonarr monitored state, which does not apply to Plex.
+!!! note "Upgrading from Monitor Types"
+    Before `v0.10.2` this was a `missing` / `new` / `none` dropdown. Existing Plex connections migrate automatically: `none` becomes `No`, everything else becomes `Yes` — and your media keep their current monitor values.
 
 ---
 

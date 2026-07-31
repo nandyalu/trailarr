@@ -1,19 +1,19 @@
 [project]
 name = "Trailarr"
-version = "0.10.1"
+version = "0.10.2"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
 readme = "../README.md"
 requires-python = ">=3.13.5"
 dependencies = [
     "aiofiles==25.1.0",
-    "aiohttp==3.14.1",
+    "aiohttp==3.14.3",
     "aiosqlite==0.22.1",
     "alembic==1.18.5",
     "async-lru==2.3.0",
     "bcrypt==5.0.0",
-    "fastapi[standard-no-fastapi-cloud-cli]==0.139.2",
+    "fastapi[standard-no-fastapi-cloud-cli]==0.141.1",
     "pillow==12.3.0",
-    "quiv>=0.4.0",
+    "quiv>=0.5.0",
     "sqlmodel==0.0.39",
     "yt-dlp[curl-cffi,default]==2026.7.4",
     "rich>=15.0.0",
@@ -29,12 +29,12 @@ dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "zensical==0.0.50",
+    "zensical==0.0.52",
 ]
 docs = [
     "mkdocs-git-revision-date-localized-plugin==1.5.3",
     "mkdocs-glightbox==0.5.2",
-    "zensical==0.0.50",
+    "zensical==0.0.52",
 ]
 testing = [
     "aioresponses==0.7.9",

@@ -14,7 +14,6 @@ import core.base.database.manager.trailerprofile as trailerprofile_manager
 from core.base.database.models.connection import (
     ArrType,
     Connection,
-    MonitorType,
 )
 from core.base.database.models.download import DownloadCreate
 from core.base.database.models.media import MediaCreate
@@ -299,7 +298,7 @@ def _make_connection(*, _session: Session = None) -> Connection:  # type: ignore
         arr_type=ArrType.RADARR,
         url="http://localhost:7878",
         api_key="test_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()
@@ -430,52 +429,6 @@ class TestAttributionAgainstRealDatabase:
             for d in download_manager.read_all_raw()
         }
         assert before == after
-
-
-class TestRunAttributionPass:
-
-    @pytest.mark.asyncio
-    async def test_fix_flags_runs_after_attribution(self):
-        """fix_trailer_exists_flags only sees profile-linked downloads, so it
-        must run after the attribution pass — one startup fixes both."""
-        order = []
-
-        async def fake_fix():
-            order.append("fix")
-
-        dl = make_download(1)
-        media = make_media(downloads=[dl])
-        profile = make_profile(7)
-
-        def record_update(download_id, profile_id):
-            order.append("attribute")
-
-        def gen():
-            yield from []
-
-        from core.tasks.download_attribution import run_attribution_pass
-
-        with (
-            patch(
-                f"{PKG}.download_manager.read_unattributed", return_value=[dl]
-            ),
-            patch(
-                f"{PKG}.trailerprofile_manager.get_trailerprofiles",
-                return_value=[profile],
-            ),
-            patch(f"{PKG}.media_manager.read", return_value=media),
-            patch(
-                f"{PKG}.download_manager.update_profile_id",
-                side_effect=record_update,
-            ),
-            patch(f"{PKG}.fix_trailer_exists_flags", side_effect=fake_fix),
-            patch(
-                f"{PKG}.media_manager.read_all_generator", return_value=gen()
-            ),
-        ):
-            await run_attribution_pass()
-
-        assert order == ["attribute", "fix"]
 
 
 class TestUnclaimedReasons:

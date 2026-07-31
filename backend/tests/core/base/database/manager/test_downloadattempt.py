@@ -10,7 +10,6 @@ import core.base.database.manager.media as media_manager
 from core.base.database.models.connection import (
     ArrType,
     Connection,
-    MonitorType,
 )
 from core.base.database.models.downloadattempt import (
     DownloadAttemptRead,
@@ -28,7 +27,7 @@ def _make_connection(*, _session: Session = None) -> Connection:  # type: ignore
         arr_type=ArrType.RADARR,
         url="http://localhost:7878",
         api_key="test_key",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()

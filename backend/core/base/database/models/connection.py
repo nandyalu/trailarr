@@ -17,14 +17,6 @@ class ArrType(Enum):
     PLEX = "plex"
 
 
-class MonitorType(Enum):
-    # MONITOR_ALL = "all"
-    MONITOR_MISSING = "missing"
-    MONITOR_NEW = "new"
-    MONITOR_NONE = "none"
-    MONITOR_SYNC = "sync"
-
-
 # Note: Creating a separate model for PathMappingCRU to avoid unwanted DB updates \
 # on PathMapping table in database.
 class PathMappingCRU(AppSQLModel):
@@ -65,7 +57,10 @@ class ConnectionBase(AppSQLModel):
     url: str
     external_url: str = ""
     api_key: str
-    monitor: MonitorType
+    monitor_new_media: bool = True
+    """Phase 4: monitor is user intent — this bool is applied ONCE, when a
+    media item is first created for this connection. Syncs never write the
+    monitor flag afterwards (replaced the MonitorType enum)."""
     # path_mappings: list[PathMappingCreate] = []
 
 
@@ -110,5 +105,5 @@ class ConnectionUpdate(AppSQLModel):
     url: str | None = None
     external_url: str | None = None
     api_key: str | None = None
-    monitor: MonitorType | None = None
+    monitor_new_media: bool | None = None
     path_mappings: list[PathMappingCRU]

@@ -16,6 +16,17 @@ def _to_read(attempt: DownloadAttempt) -> DownloadAttemptRead:
 
 
 @read_session
+def read_all(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadAttemptRead]:
+    """Get every download attempt row — used by the library-wide pending
+    view so it never issues per-media attempt queries."""
+    statement = select(DownloadAttempt)
+    return [_to_read(a) for a in _session.exec(statement).all()]
+
+
+@read_session
 def read_for_media(
     media_id: int,
     *,

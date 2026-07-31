@@ -1,6 +1,6 @@
 {
   "name": "trailarr",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -36,6 +36,9 @@
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3",
     "vitest": "^4.0.16"
+  },
+  "overrides": {
+    "@hono/node-server": "^2.0.12"
   },
   "allowScripts": {
     "@parcel/watcher@2.5.6": true,

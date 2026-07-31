@@ -22,6 +22,60 @@
       <button class="attention-review-button" (click)="reviewUnknownProfiles()">Review</button>
     </div>
   }
+  @if (!inEditMode() && previewMode()) {
+    <div class="attention-banner" role="status">
+      <!-- Visibility (eye) icon - Google Fonts -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="attention-icon" aria-hidden="true" focusable="false">
+        <path
+          d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"
+        />
+      </svg>
+      <span>
+        Preview mode — automatic downloads are disabled.
+        @if (pendingSummaryResource.value(); as summary) {
+          {{ summary.pending_pairs }} trailer{{ summary.pending_pairs === 1 ? '' : 's' }} would be downloaded.
+        }
+      </span>
+      <button class="attention-review-button" (click)="openPreviewDialog()">View list</button>
+    </div>
+    <dialog #previewDialog class="preview-dialog" aria-label="Pending downloads preview">
+      <div class="preview-dialog-header">
+        <h3>Pending downloads</h3>
+        <button class="close-button" (click)="closePreviewDialog()" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+          </svg>
+        </button>
+      </div>
+      <div class="preview-dialog-body">
+        @if (pendingSummaryResource.value(); as summary) {
+          <p class="preview-summary">
+            {{ summary.pending_pairs }} download{{ summary.pending_pairs === 1 ? '' : 's' }} across {{ summary.total_media }} media
+            item{{ summary.total_media === 1 ? '' : 's' }} would run now{{ summary.backoff_pairs > 0 ? ', ' + summary.backoff_pairs + ' backing off after failures' : '' }}.
+            Enable downloads in Settings &gt; General to perform them.
+          </p>
+          <div class="preview-list">
+            @for (item of summary.items; track $index) {
+              <div class="preview-item">
+                <span class="preview-title link" [routerLink]="['/media', item.media_id]" (click)="closePreviewDialog()">{{ item.title }}</span>
+                <span class="preview-profile">{{ item.profile_name }}</span>
+                <span class="preview-reason" [class.backoff]="item.reason === 'backoff'">
+                  {{ item.reason === 'backoff' ? 'backing off' : 'would download' }}
+                </span>
+              </div>
+            } @empty {
+              <p class="preview-empty">Nothing pending — every monitored item is satisfied.</p>
+            }
+            @if (summary.items.length < summary.pending_pairs + summary.backoff_pairs) {
+              <p class="preview-more">…and {{ summary.pending_pairs + summary.backoff_pairs - summary.items.length }} more.</p>
+            }
+          </div>
+        } @else {
+          <app-load-indicator class="center" />
+        }
+      </div>
+    </dialog>
+  }
   @if (isLoading()) {
     <app-load-indicator class="center" />
   } @else {

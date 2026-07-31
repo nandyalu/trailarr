@@ -13,7 +13,7 @@ Media Details view offers some features for managing media items. They are descr
 Media can be Monitored or UnMonitored by clicking the icon before the Media Title. Only monitored media is processed by the [Download Missing Trailers](../../tasks/index.md#download-missing-trailers) task.
 
 !!! info ""
-    {{ version_badge("upd", "0.10.0") }} Downloading no longer turns monitoring off. A monitored media item whose matching profiles already have their downloads simply stays monitored without being re-downloaded — it is safe to keep everything monitored forever.
+    {{ version_badge("upd", "0.10.2") }} Monitoring belongs to you alone: downloads no longer turn it off (since `v0.10.0`), and connection syncs never change it (since `v0.10.2`) — only you set it, plus the one-time starting value when media is first added ([Monitor New Media](../../settings/connections/index.md#monitor-types)). A monitored item whose matching profiles already have their downloads simply stays monitored without being re-downloaded — it is safe to keep everything monitored forever.
 
 ## Status - Additional Details
 
@@ -89,6 +89,19 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 !!! tip ""
     To delete a trailer, use the **Files Section** below — click the trailer file and choose **Delete**.
+
+## Download Profiles Section
+
+{{ version_badge("add", "0.10.2") }}
+
+This section shows, for **every** Trailer Profile, exactly where it stands with this media item:
+
+- **Not matching** — the profile's filters do not apply to this item (or the profile is disabled).
+- **Satisfied** — the profile already owns a downloaded video (its own download, or an existing file it claimed).
+- **Pending** — the profile matches but has no download yet; it will download on the next task run.
+- **Backing off** — previous download attempts failed; shows the attempt count, the last error, and when the next retry is due. A manual download bypasses the wait.
+
+The matrix is computed with the exact same rule the download task uses, so what you see here is precisely what the engine will do next — there is no separate bookkeeping that could disagree with it.
 
 ## Downloads Section
 

@@ -9,7 +9,6 @@ import core.base.connection_manager as connection_manager_module
 from core.base.database.models.connection import (
     ArrType,
     ConnectionRead,
-    MonitorType,
 )
 from core.base.database.models.media import MediaRead, MonitorStatus
 
@@ -116,7 +115,7 @@ async def test_refresh_deletes_trailers_not_enabled(monkeypatch, tmp_path):
         arr_type=ArrType.RADARR,
         url="http://example.com",
         api_key="API_KEY",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
         added_at=datetime.now(timezone.utc),
         path_mappings=[],
     )
@@ -265,7 +264,7 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr(
         arr_type=ArrType.RADARR,
         url="http://example.com",
         api_key="API_KEY",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
         added_at=datetime.now(timezone.utc),
         path_mappings=[],
     )
@@ -405,7 +404,7 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_exists(
         arr_type=ArrType.RADARR,
         url="http://example.com",
         api_key="API_KEY",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
         added_at=datetime.now(timezone.utc),
         path_mappings=[],
     )
@@ -557,7 +556,7 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_deleted
         arr_type=ArrType.RADARR,
         url="http://example.com",
         api_key="API_KEY",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
         added_at=datetime.now(timezone.utc),
         path_mappings=[],
     )

@@ -1,6 +1,14 @@
 # Phase 4 — Monitor Becomes User Intent
 
-**Status:** not started · **Release:** v0.10.1 (with Phase 3) · **Depends on:** Phase 2
+**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3 — merge into dev after v0.10.0 ships) · **Release:** v0.10.2 (with Phase 3) · **Depends on:** Phase 2
+
+> **Decision-5 note (July 2026):** v0.10.0 has not shipped yet, so the Phase 2
+> shadow logs the `exclusive` option was conditioned on DO NOT EXIST. Implementing
+> the stated default path (remove stop_monitoring, no replacement option).
+> **Checkpoint before releasing v0.10.2:** review the v0.10.0 bake-window
+> SIGNAL-DISAGREE logs (via=stop_monitoring on media with >1 matching profile);
+> if real overlapping-profile setups show up, add the `exclusive` per-profile
+> bool then.
 
 ## Objective
 
@@ -84,7 +92,17 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
   existing items, defaulted for new; toggle in UI works; connection form renders toggle.
 - config-dev soak: sync twice; diff `SELECT id, monitor FROM media` between runs → empty.
 
-## Docs to update
+## Docs to update — DONE (July 19, 2026)
+
+All items below executed on the `dev` branch: connections settings page (Arr
+AND Plex — the Plex page had its own Monitor Type section) + getting-started
+connection setup rewritten for the Monitor New Media toggle, with the old
+`#monitor-types` anchor preserved via attr_list so the FAQ deep-link keeps
+working (verified in built HTML); `arr_monitored` SYNC-replacement recipe added
+to filters docs (stable anchor, linked from the connections upgrade note);
+Stop Monitoring section rewritten as removed-in-v0.10.2; monitor-intent notes
+extended on library + media-details pages; FAQ "not downloading" answer
+rewritten. Release notes + OpenAPI were already done with the code commits.
 
 - `docs/user-guide/settings/connections/index.md` — the **Monitor Types** section is
   the big one: the enum is gone, replaced by the "Monitor new media" toggle (creation
@@ -100,7 +118,7 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
   the release notes walk-through should link to this docs anchor, not inline it all.
 - `docs/user-guide/settings/profiles/settings/general.md` — if the Stop Monitoring
   option is removed from the UI this phase (decision 5), replace the deprecated section
-  with a short "removed in v0.10.1" note pointing at the multi-profile pattern (column
+  with a short "removed in v0.10.2" note pointing at the multi-profile pattern (column
   drop is Phase 5; the `exclusive` option, if introduced, gets its own subsection).
 - API breaking change (connection enum→bool): call out in release notes for API
   consumers; regenerate `docs/references/api-docs/`.
@@ -111,3 +129,31 @@ cross-phase invariant #6 ("automation may only write what automation owns" —
 Grep-proof: no writer of `media.monitor` outside `update_monitoring(_bulk)` and media
 creation. Zero MONITOR_CHANGED events from a full sync. Release notes carry the SYNC
 walk-through prominently. Docs section executed (FAQ monitor-types link verified).
+
+## Verification record (July 2026)
+
+- **Suites:** backend 816 passed; frontend 69 passed + production build green.
+- **Grep-proof:** the only `db_media.monitor =` writer across managers, syncs and
+  download paths is `update_monitoring` (update.py); creation writes go through
+  `Media.model_validate(media_create)` with the connection default. MediaUpdateDC has
+  no monitor field (structural), and the media-update path excludes `monitor`.
+- **Migration on the real config-dev copy** (fresh copy of the maintainer's
+  3,608-item instance): Sonarr/Radarr `MONITOR_NEW → True`, Discovery
+  `MONITOR_NONE → False`, one mapping log line per connection; no SYNC connections
+  present so the walk-through warning correctly did not fire. Fresh-install chain +
+  lossy downgrade round-trip verified on a scratch DB.
+- **Real double-sync soak:** three full sync cycles against the maintainer's LIVE
+  Arr/Plex servers (Sonarr 255 items, Radarr 3,349 items, Plex refresh) —
+  `SELECT id, monitor FROM media` hash identical before/after all cycles
+  (56 monitored, unchanged), and **0 MONITOR_CHANGED events** (0 events of any kind)
+  produced by the Phase-4 app session. (12 pre-existing MONITOR_CHANGED events in the
+  copied DB predate the copy — they came from the live v0.9.9 instance.)
+- **Headless-Chromium drive:** connection chips show MONITOR NEW / MANUAL; the
+  Radarr editor renders the "Monitor New Media" Yes/No toggle with the migrated value
+  pre-selected and toggles correctly both ways; profile settings page no longer
+  contains "Stop Monitoring"; zero console errors.
+- **W1 note:** the `arr_monitored`-filter replacement path is covered by unit test
+  (fact keeps syncing while monitor stays user-owned) — the full
+  filter→satisfaction→no-download chain rides the existing satisfaction tests.
+- **Decision-5 checkpoint still open:** revisit v0.10.0 bake-window shadow logs for
+  overlapping-profile stop_monitoring usage before releasing v0.10.2 (see note at top).

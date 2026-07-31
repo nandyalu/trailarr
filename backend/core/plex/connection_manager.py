@@ -8,7 +8,7 @@ from app_logger import ModuleLogger
 import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import ConnectionRead, MonitorType
+from core.base.database.models.connection import ConnectionRead
 from core.base.database.models.event import EventCreate, EventSource, EventType
 from core.base.database.models.media import MediaCreate, MediaRead
 from core.base.utils.path_utils import (
@@ -98,7 +98,7 @@ class PlexConnectionManager:
         self.path_mappings = [
             pm for pm in connection.path_mappings if pm.path_from != pm.path_to
         ]
-        self.monitor = connection.monitor
+        self.monitor_new_media = connection.monitor_new_media
         # Refresh-run counters — reset at the start of each refresh() call.
         self._stats_added = 0
         self._stats_updated = 0
@@ -117,23 +117,6 @@ class PlexConnectionManager:
 
     def _apply_path_mapping(self, path: str) -> str:
         return apply_path_mappings(path, self.path_mappings)
-
-    def _check_monitoring(self, trailer_exists: bool) -> bool:
-        """Return the monitor value for a newly-created Plex-only media item.
-
-        Plex items have no arr_monitored concept; MONITOR_SYNC treats presence
-        in the Plex library as implicitly monitored (arr_monitored=True)."""
-        if trailer_exists:
-            return False
-        if self.monitor == MonitorType.MONITOR_NONE:
-            return False
-        # MONITOR_MISSING, MONITOR_NEW, MONITOR_SYNC all resolve to True:
-        # - MISSING: no trailer → monitor
-        # - NEW: Plex-only items are always newly created → monitor
-        #        Existing items don't call this function since they won't
-        #        be re-created → no change
-        # - SYNC: Plex library presence = monitored → monitor
-        return True
 
     # ------------------------------------------------------------------
     # Core refresh logic
@@ -214,6 +197,10 @@ class PlexConnectionManager:
             )
             if folder_path:
                 media_create.folder_path = folder_path
+            # Phase 4: monitor is user intent — the connection default is
+            # applied ONCE at creation (the plex bulk upsert never writes
+            # monitor on existing rows).
+            media_create.monitor = self.monitor_new_media
             parsed.append((media_create, item))
 
         if not parsed:
@@ -273,9 +260,18 @@ class PlexConnectionManager:
                             new_value=media_read.youtube_trailer_id,
                         )
                     )
-                # Initial MONITOR_CHANGED is appended in step 4, once the
-                # final monitoring decision is made — a single event per
-                # new item instead of an initial + change pair
+                # Initial MONITOR_CHANGED — records the creation default
+                # (monitor_new_media); syncs never change monitor afterwards
+                pending_events.append(
+                    EventCreate(
+                        media_id=media_read.id,
+                        event_type=EventType.MONITOR_CHANGED,
+                        source=EventSource.SYSTEM,
+                        source_detail="PlexRefresh",
+                        old_value="",
+                        new_value=str(media_read.monitor).lower(),
+                    )
+                )
                 new_items.append(
                     (media_read.id, media_read.folder_path or "")
                 )
@@ -283,8 +279,9 @@ class PlexConnectionManager:
             else:
                 existing_items.append((media_read, plex_fields_changed))
 
-        # 4. Concurrent async file checks for new items
-        update_list: list[tuple[int, bool, bool]] = []
+        # 4. Concurrent async file checks for new items (trailer facts only —
+        # Phase 4: monitor is user intent and is never derived or re-written)
+        update_list: list[tuple[int, bool]] = []
 
         async def _check_trailer(folder_path: str) -> bool:
             if not folder_path:
@@ -300,18 +297,6 @@ class PlexConnectionManager:
             for (media_id, folder_path), trailer_exists in zip(
                 new_items, trailer_results
             ):
-                monitor = self._check_monitoring(trailer_exists)
-                # Single initial MONITOR_CHANGED with the final decision
-                pending_events.append(
-                    EventCreate(
-                        media_id=media_id,
-                        event_type=EventType.MONITOR_CHANGED,
-                        source=EventSource.SYSTEM,
-                        source_detail="PlexRefresh",
-                        old_value="",
-                        new_value=str(monitor).lower(),
-                    )
-                )
                 if trailer_exists:
                     pending_events.append(
                         EventCreate(
@@ -321,37 +306,16 @@ class PlexConnectionManager:
                             source_detail="PlexRefresh",
                         )
                     )
-                update_list.append((media_id, monitor, trailer_exists))
+                update_list.append((media_id, trailer_exists))
 
-        # 5. Monitor check for existing Plex-only items
+        # 5. Stats for existing items (Phase 4: no monitor re-evaluation)
         for media_read, plex_fields_changed in existing_items:
-            monitor_changed = False
-            if (
-                not media_read.arr_id
-                and self.monitor != MonitorType.MONITOR_NEW
-            ):
-                new_monitor = self._check_monitoring(media_read.trailer_exists)
-                if new_monitor != media_read.monitor:
-                    pending_events.append(
-                        EventCreate(
-                            media_id=media_read.id,
-                            event_type=EventType.MONITOR_CHANGED,
-                            source=EventSource.SYSTEM,
-                            source_detail="PlexRefresh",
-                            old_value=str(media_read.monitor).lower(),
-                            new_value=str(new_monitor).lower(),
-                        )
-                    )
-                    update_list.append(
-                        (media_read.id, new_monitor, media_read.trailer_exists)
-                    )
-                    monitor_changed = True
-            if plex_fields_changed or monitor_changed:
+            if plex_fields_changed:
                 self._stats_updated += 1
 
-        # 6. Bulk update monitor and trailer_exists — 1 DB session
+        # 6. Bulk update trailer_exists — 1 DB session
         if update_list:
-            media_manager.update_monitor_and_trailer_exists_bulk(update_list)
+            media_manager.update_trailer_exists_bulk(update_list)
 
         # 7. Bulk event insert — 1 DB session
         if pending_events:

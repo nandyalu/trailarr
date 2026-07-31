@@ -1,5 +1,6 @@
-"""Table-driven tests for the Phase-2 satisfaction rule
-(plans/phase-02-downloads-engine.md wargame scenarios S1-S12)."""
+"""Table-driven tests for the satisfaction rule
+(plans/phase-02-downloads-engine.md wargame scenarios S1-S12; Phase 4
+removed the stop_monitoring carve-out — ownership is purely per profile)."""
 
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -35,38 +36,33 @@ def make_media(downloads: list) -> SimpleNamespace:
     return SimpleNamespace(id=1, title="Test", downloads=downloads)
 
 
-def by_id(*profiles) -> dict:
-    return {p.id: p for p in profiles}
-
-
 class TestSatisfaction:
 
     def test_s1_all_satisfied_nothing_pending(self):
         p1, p2 = make_profile(1), make_profile(2)
         media = make_media([make_download(1, 1), make_download(2, 2)])
-        result = evaluate_satisfaction(media, [p1, p2], by_id(p1, p2))
+        result = evaluate_satisfaction(media, [p1, p2])
         assert result.unsatisfied == []
         assert result.claims == []
-        assert not result.fully_satisfied_by_stop_monitoring
 
     def test_s2_monitored_forever_never_redownloads(self):
         """Satisfied media stays satisfied on every run — idempotency core."""
         p1 = make_profile(1)
         media = make_media([make_download(1, 1)])
         for _ in range(3):
-            result = evaluate_satisfaction(media, [p1], by_id(p1))
+            result = evaluate_satisfaction(media, [p1])
             assert result.unsatisfied == []
 
     def test_s3_deleted_file_makes_profile_pending_again(self):
         p1 = make_profile(1)
         media = make_media([make_download(1, 1, file_exists=False)])
-        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        result = evaluate_satisfaction(media, [p1])
         assert result.unsatisfied == [p1]
 
     def test_s4_unattributed_claimed_not_downloaded(self):
         p1 = make_profile(1)
         media = make_media([make_download(7, 0)])
-        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        result = evaluate_satisfaction(media, [p1])
         assert result.unsatisfied == []
         assert result.claims == [(7, 1)]
 
@@ -75,7 +71,7 @@ class TestSatisfaction:
         high = make_profile(1, priority=10)
         low = make_profile(2, priority=500)
         media = make_media([make_download(7, 0)])
-        result = evaluate_satisfaction(media, [low, high], by_id(high, low))
+        result = evaluate_satisfaction(media, [low, high])
         assert result.claims == [(7, 1)]
         assert result.unsatisfied == [low]
 
@@ -85,66 +81,120 @@ class TestSatisfaction:
         older = make_download(8, 0, age_hours=48)
         newer = make_download(9, 0, age_hours=1)
         media = make_media([newer, older])
-        result = evaluate_satisfaction(media, [p1, p2], by_id(p1, p2))
+        result = evaluate_satisfaction(media, [p1, p2])
         assert result.claims == [(8, 1), (9, 2)]
 
     def test_s5_dead_profile_downloads_satisfy_nothing(self):
         """Download owned by a deleted profile: doesn't satisfy the living
-        profile, and (owner unknown) can't trigger the stop_monitoring
-        carve-out. It is NOT claimable either (it's attributed)."""
+        profile. It is NOT claimable either (it's attributed)."""
         p2 = make_profile(2)
         media = make_media([make_download(1, profile_id=99)])
-        result = evaluate_satisfaction(media, [p2], by_id(p2))
+        result = evaluate_satisfaction(media, [p2])
         assert result.unsatisfied == [p2]
         assert result.claims == []
 
-    def test_s10_stop_monitoring_download_fully_satisfies(self):
-        """Legacy volume preserved: any active download owned by a
-        stop_monitoring profile ends all pending work for the media."""
+    def test_s10_stop_monitoring_flag_is_ignored(self):
+        """Phase 4: the legacy stop_monitoring carve-out is gone — the
+        owner's flag changes nothing for other matching profiles; each is
+        judged on its own downloads."""
         stopper = make_profile(1, stop_monitoring=True)
         other = make_profile(2)
         media = make_media([make_download(1, 1)])
-        result = evaluate_satisfaction(
-            media, [stopper, other], by_id(stopper, other)
-        )
-        assert result.fully_satisfied_by_stop_monitoring
-        assert result.unsatisfied == []
+        result = evaluate_satisfaction(media, [stopper, other])
+        assert result.unsatisfied == [other]
 
     def test_s10b_stop_monitoring_false_gets_one_per_profile(self):
         multi1 = make_profile(1, stop_monitoring=False)
         multi2 = make_profile(2, stop_monitoring=False)
         media = make_media([make_download(1, 1)])
-        result = evaluate_satisfaction(
-            media, [multi1, multi2], by_id(multi1, multi2)
-        )
+        result = evaluate_satisfaction(media, [multi1, multi2])
         assert result.unsatisfied == [multi2]
 
-    def test_s10c_carveout_applies_even_if_owner_no_longer_matches(self):
-        """Owner profile exists but is not in matching_profiles (filters
-        changed) — its stop_monitoring download still fully satisfies."""
-        stopper = make_profile(1, stop_monitoring=True)
+    def test_s10c_non_matching_owner_download_satisfies_nothing(self):
+        """A download owned by profile 1 (not in matching_profiles — filters
+        changed) — Phase 4: it satisfies only its owner, so the other
+        matching profile is pending regardless of the owner's legacy
+        stop_monitoring flag."""
         other = make_profile(2)
         media = make_media([make_download(1, 1)])
-        result = evaluate_satisfaction(media, [other], by_id(stopper, other))
-        assert result.fully_satisfied_by_stop_monitoring
+        result = evaluate_satisfaction(media, [other])
+        assert result.unsatisfied == [other]
 
     def test_s12_duplicate_downloads_same_profile(self):
         """Historical duplicates (multiple rows, same profile) — satisfied,
         no assumption of uniqueness."""
         p1 = make_profile(1)
         media = make_media([make_download(1, 1), make_download(2, 1)])
-        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        result = evaluate_satisfaction(media, [p1])
         assert result.unsatisfied == []
 
     def test_deleted_files_never_claimable(self):
         p1 = make_profile(1)
         media = make_media([make_download(1, 0, file_exists=False)])
-        result = evaluate_satisfaction(media, [p1], by_id(p1))
+        result = evaluate_satisfaction(media, [p1])
         assert result.claims == []
         assert result.unsatisfied == [p1]
 
     def test_no_matching_profiles(self):
         media = make_media([make_download(1, 0)])
-        result = evaluate_satisfaction(media, [], {})
+        result = evaluate_satisfaction(media, [])
         assert result.unsatisfied == []
         assert result.claims == []
+
+
+class TestSatisfactionDetails:
+    """Phase 3: per-profile explanations built in the SAME decision loop —
+    the pending endpoint feed can never disagree with the download task."""
+
+    def test_own_download_detail(self):
+        p1 = make_profile(1)
+        media = make_media([make_download(7, 1)])
+        result = evaluate_satisfaction(media, [p1])
+        detail = result.details[0]
+        assert (detail.profile_id, detail.satisfied) == (1, True)
+        assert detail.satisfied_by == 7
+        assert detail.via == "own_download"
+
+    def test_claim_detail(self):
+        p1 = make_profile(1)
+        media = make_media([make_download(9, 0)])
+        result = evaluate_satisfaction(media, [p1])
+        detail = result.details[0]
+        assert detail.satisfied
+        assert detail.satisfied_by == 9
+        assert detail.via == "claim"
+
+    def test_pending_detail(self):
+        p1 = make_profile(1)
+        media = make_media([])
+        result = evaluate_satisfaction(media, [p1])
+        detail = result.details[0]
+        assert not detail.satisfied
+        assert detail.satisfied_by is None
+        assert detail.via is None
+
+    def test_stop_monitoring_flag_does_not_leak_into_details(self):
+        """Phase 4: no stop_monitoring via — the owner shows own_download,
+        the other matching profile is plainly pending."""
+        stopper = make_profile(1, priority=10, stop_monitoring=True)
+        other = make_profile(2, priority=20)
+        media = make_media([make_download(5, 1)])
+        result = evaluate_satisfaction(media, [stopper, other])
+        assert [d.profile_id for d in result.details] == [1, 2]
+        assert result.details[0].via == "own_download"
+        assert result.details[0].satisfied_by == 5
+        assert result.details[1].satisfied is False
+        assert result.details[1].via is None
+
+    def test_details_cover_every_matching_profile_in_priority_order(self):
+        p_own = make_profile(1, priority=10)
+        p_claim = make_profile(2, priority=20)
+        p_pending = make_profile(3, priority=30)
+        media = make_media([make_download(1, 1), make_download(2, 0)])
+        result = evaluate_satisfaction(media, [p_pending, p_claim, p_own])
+        assert [d.profile_id for d in result.details] == [1, 2, 3]
+        assert [d.via for d in result.details] == [
+            "own_download",
+            "claim",
+            None,
+        ]

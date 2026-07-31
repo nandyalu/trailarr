@@ -47,8 +47,11 @@ class MediaReadDC(AppSQLModel):
 
 @dataclass(eq=False, repr=False, slots=True)
 class MediaUpdateDC:
+    """Mirror-write payload for download paths (Phase 4: deliberately has
+    NO monitor field — `monitor` is user intent and downloads can't write
+    it; see cross-phase invariant #6 in plans/README.md)."""
+
     id: int
-    monitor: bool
     status: MonitorStatus
     trailer_exists: bool | None = None
     yt_id: str | None = None
@@ -58,7 +61,6 @@ class MediaUpdateDC:
         """Dump MediaUpdateDC to dictionary."""
         return {
             "id": self.id,
-            "monitor": self.monitor,
             "status": self.status,
             "trailer_exists": self.trailer_exists,
             "yt_id": self.yt_id,

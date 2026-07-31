@@ -3,7 +3,12 @@ from warnings import deprecated
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
-from api.v1.models import BatchUpdate, ErrorResponse, SearchMedia
+from api.v1.models import (
+    BatchUpdate,
+    ErrorResponse,
+    InflightDownload,
+    SearchMedia,
+)
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 import core.base.database.manager.download as download_manager
@@ -15,7 +20,14 @@ from core.base.database.models.filefolderinfo import FileFolderInfoRead
 from core.base.database.models.download import DownloadRead
 from core.base.database.models.media import MediaRead
 from core.download import trailer_search
+from core.download.inflight import inflight_registry
 from core.download.trailers import utils as trailer_utils
+from core.download.trailers.pending import (
+    MediaPendingView,
+    PendingSummary,
+    compute_library_pending,
+    compute_media_pending,
+)
 from core.files_handler import FilesHandler
 from core.tasks.files_scan import scan_media_folder
 from core.tasks.download_trailers import (
@@ -77,6 +89,38 @@ async def get_all_media_raw() -> list[dict]:
     """
     media_raw = media_manager.read_all_raw()
     return media_raw
+
+
+@media_router.get("/downloading")
+async def get_downloading() -> list[InflightDownload]:
+    """Get the media items with a trailer download currently in flight. \n
+    Runtime state from the in-memory registry — pushed over the websocket
+    with `reload="downloading"` whenever it changes. \n
+    Returns:
+        list[InflightDownload]: In-flight (media_id, profile_id) pairs. \n
+    """
+    return [
+        InflightDownload(media_id=media_id, profile_id=profile_id)
+        for media_id, profile_id in inflight_registry.snapshot().items()
+    ]
+
+
+@media_router.get("/pending")
+async def get_library_pending(
+    limit: int = 100, offset: int = 0
+) -> PendingSummary:
+    """Library-wide pending downloads — the download task's work list. \n
+    For every monitored media item and enabled matching profile that has no
+    active download of its own: whether it would download now ("pending") or
+    is waiting out failure backoff ("backoff"). Computed with the exact
+    satisfaction rule the download task uses; performs no writes. \n
+    Args:
+        limit (int, Optional=100): Max items to return (1-1000).
+        offset (int, Optional=0): Offset into the item list. \n
+    Returns:
+        PendingSummary: Counts plus the paginated (media, profile) list. \n
+    """
+    return compute_library_pending(limit=limit, offset=offset)
 
 
 @media_router.get("/downloads_raw")
@@ -223,6 +267,38 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
+
+
+@media_router.get(
+    "/{media_id}/pending",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        }
+    },
+)
+async def get_media_pending(media_id: int) -> MediaPendingView:
+    """Get the per-profile download matrix for a media item. \n
+    For every profile: whether it matches this media, whether it is
+    satisfied (and by which download — own, claimed, or a stop-monitoring
+    profile's), or pending/backing-off with attempt info. This is the same
+    satisfaction rule the download task uses — the UI and the task can
+    never disagree. \n
+    Args:
+        media_id (int): The ID of the media item. \n
+    Returns:
+        MediaPendingView: Profile matrix for the media item. \n
+    """
+    try:
+        media = media_manager.read(media_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+    profiles = trailerprofile.get_trailerprofiles()
+    return compute_media_pending(media, profiles)
 
 
 @media_router.put(

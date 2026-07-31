@@ -17,9 +17,7 @@ Yes, you can connect multiple Radarr and Sonarr instances to Trailarr. Trailarr 
 
 
 ## Trailarr is not downloading trailers for some Movies or Series. Why?
-Trailarr monitors the Movies and Series from connected Radarr and Sonarr instances based on the Monitor Type set. Make sure you have correct Monitor Types set for the Movies and Series you want Trailarr to download trailers for, and also have a Profile that applies to the Media item.
-
-More info about [Monitor Types here](../user-guide/settings/connections/index.md#monitor-types).
+Trailarr only downloads trailers for **monitored** media that match at least one enabled Profile. Check that the media item is monitored (toggle it from the library or Media Details — monitoring is fully under your control since `v0.10.1`), and that a Profile applies to it (the **Download Profiles** section on Media Details shows exactly which profiles match and why). New media start monitored or unmonitored based on the connection's [Monitor New Media](../user-guide/settings/connections/index.md#monitor-types) setting.
 
 Also note that since `v0.10.0`, a download that failed previously is retried with an increasing delay — 1 day after the first failure, doubling up to at most one attempt per week. You can always trigger an immediate download from the Media Details page, which bypasses this wait.
 
@@ -40,8 +38,10 @@ Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions o
 ## Can I download multiple trailers for a Movie or Series?
 Yes — create multiple [Trailer Profiles](../user-guide/settings/profiles/index.md) that match the same media. Each matching profile downloads and keeps track of its own video (for example, an English trailer profile and a Spanish trailer profile will each download one trailer). You can also manually update the youtube trailer link and click `Download` on the Media Details page to download another video at any time — it is saved alongside the existing ones.
 
-## App is stuck on "Downloading" status for a long time. What should I do?
+## Media shows "Downloading" status for a long time. What should I do?
 Trailarr downloads the best available video in the selected resolution, and then use ffmpeg to convert to selected audio and video codecs. This process can take some time based on the video size and your server hardware. 
+
+Since `v0.10.1`, *Downloading* is a live indicator of an actual in-progress download — it is not stored, so it can no longer get stuck: if the app restarts mid-download the status simply resets, and the download is retried on the next task run. If you see *Downloading* for a long time, a conversion really is running — check the (debug) logs for its progress.
 
 The amount of time it takes to convert a 3 minute video usually takes around 1-2 minutes on latest hardware (like i3-12100 or Ryzen 5 5600X). 
 

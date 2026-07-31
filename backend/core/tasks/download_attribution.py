@@ -6,7 +6,6 @@ import core.base.database.manager.media as media_manager
 import core.base.database.manager.trailerprofile as trailerprofile_manager
 from core.base.database.models.download import DownloadRead
 from core.base.utils.profiles import find_matching_profiles
-from core.tasks.startup_fixes import fix_trailer_exists_flags
 
 logger = ModuleLogger("DownloadAttribution")
 
@@ -145,14 +144,12 @@ async def report_attribution_health() -> None:
 
 
 async def run_attribution_pass() -> None:
-    """Run the download attribution pass, then fix stale trailer_exists
-    flags, then report attribution health.
+    """Run the download attribution pass, then report attribution health.
 
-    The flag fix must run *after* attribution: it only corrects media whose
-    downloads are linked to a profile, so pre-Trailarr trailers recorded
-    with profile_id=0 were invisible to it until the attribution pass
-    assigns them a profile. Chaining guarantees one startup fixes both.
+    Phase 3 removed the fix_trailer_exists_flags step that used to chain
+    here: status is computed from download rows at read time, so a stale
+    trailer_exists mirror can no longer mislead anything (justification
+    recorded in plans/phase-03-dynamic-status.md).
     """
     await attribute_unattributed_downloads()
-    await fix_trailer_exists_flags()
     await report_attribution_health()

@@ -6,7 +6,9 @@ BATCH_WINDOW seconds, sending ONE message per channel per window. Batching
 is the flood control — bulk operations (Arr syncs, attribution passes,
 library scans) can create thousands of events in seconds; a subscribed
 Discord channel receives a single summarized message instead
-(track-apprise-notifications.md decision D4).
+(track-apprise-notifications.md decision D4). On top of the window, sends
+are capped at MAX_SENDS_PER_MINUTE: a rate-limited cycle leaves the queue
+untouched, so held notes simply merge into the next allowed batch.
 
 Discord channels bypass Apprise's generic send: its plugin cannot place
 the poster inside the embed, set fields, or a timestamped footer, so we
@@ -19,6 +21,7 @@ messages here.
 
 import asyncio
 import json
+import time
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -30,8 +33,9 @@ import core.base.database.manager.notificationchannel as channel_manager
 
 logger = ModuleLogger("Notifications")
 
-BATCH_WINDOW_SECONDS = 30.0
+BATCH_WINDOW_SECONDS = 10.0
 MAX_LINES_PER_MESSAGE = 10
+MAX_SENDS_PER_MINUTE = 5
 
 # Public HTTPS URL — services like Discord fetch the bot avatar themselves,
 # so a local file path won't work here.
@@ -41,6 +45,7 @@ _LOGO_URL = (
 )
 
 _queue: deque["EventNote"] = deque()
+_send_times: deque[float] = deque()  # monotonic stamps of recent sends
 _dispatch_task: asyncio.Task | None = None
 _stop_event: asyncio.Event | None = None
 
@@ -151,6 +156,60 @@ def _event_color(event_type: str) -> int:
     return _COLOR_BLURPLE
 
 
+def _public_poster_url(media) -> str | None:
+    """Poster URL Discord can fetch itself. Arr-synced media stores the
+    public remoteUrl (TMDB/TVDB) in poster_url; Plex-only media (arr_id=0)
+    stores a LAN server URL Discord can't reach, so it falls back to the
+    attachment-upload path."""
+    url = (getattr(media, "poster_url", None) or "").strip()
+    if url.startswith("http") and getattr(media, "arr_id", 0):
+        return url
+    return None
+
+
+def _push_summary(
+    notes: list[EventNote], media_cache: dict[int, object]
+) -> str:
+    """One-line text for the payload's top-level `content`. Mobile push
+    previews only read this field — an embed-only message with an uploaded
+    poster notifies as just "image received" — so every Discord payload
+    carries a compact summary here too."""
+    media_ids = {n.media_id for n in notes if n.media_id is not None}
+    single = (
+        _media_info(next(iter(media_ids)), media_cache)
+        if len(media_ids) == 1
+        else None
+    )
+    if single is not None:
+        if len(notes) == 1:
+            note = notes[0]
+            return (
+                f"{_event_emoji(note.event_type)} "
+                f"{_event_label(note.event_type)}: "
+                f"{single.title} ({single.year})"
+            )
+        # Same media, several events: title once, then the event types
+        labels: list[str] = []
+        for note in notes:
+            label = _event_label(note.event_type)
+            if label not in labels:
+                labels.append(label)
+        shown = labels[:3]
+        if len(labels) > 3:
+            shown.append(f"+{len(labels) - 3} more")
+        return f"{single.title} ({single.year}): {', '.join(shown)}"
+    # Mixed media: short "Title — Event" notes for the first couple
+    entries: list[str] = []
+    for note in notes[:2]:
+        media = _media_info(note.media_id, media_cache)
+        label = _event_label(note.event_type)
+        entries.append(f"{media.title} — {label}" if media else label)
+    remaining = len(notes) - 2
+    if remaining > 0:
+        entries.append(f"…and {remaining} more")
+    return "; ".join(entries)
+
+
 def _discord_webhook_url(url: str) -> str | None:
     """The raw webhook endpoint if this channel is a Discord webhook
     (discord:// scheme or a pasted discord.com/api/webhooks URL), else
@@ -216,11 +275,15 @@ def _discord_payload(
                 }
             )
         embed["fields"] = fields
-        poster = _poster_attachment(notes, media_cache)
-        if poster:
-            embed["image"] = {
-                "url": f"attachment://poster{Path(poster).suffix}"
-            }
+        public_poster = _public_poster_url(single)
+        if public_poster:
+            embed["image"] = {"url": public_poster}
+        else:
+            poster = _poster_attachment(notes, media_cache)
+            if poster:
+                embed["image"] = {
+                    "url": f"attachment://poster{Path(poster).suffix}"
+                }
     else:
         count = len(notes)
         embed["title"] = f"Trailarr — {count} update{'s' if count != 1 else ''}"
@@ -230,6 +293,13 @@ def _discord_payload(
         "avatar_url": _LOGO_URL,
         "embeds": [embed],
     }
+    # Push previews read `content` first and fall back to the embed's
+    # title/description — unless the message carries an attachment, which
+    # previews as "image received". So a content line is added only where
+    # the embed fallback isn't enough: attachment uploads, and multi-media
+    # batches whose embed title alone ("Trailarr — N updates") says little.
+    if poster or single is None:
+        payload["content"] = _push_summary(notes, media_cache)
     return payload, poster
 
 
@@ -300,9 +370,24 @@ async def send_test(channel_id: int) -> bool:
     )
 
 
-async def _dispatch_pending() -> None:
-    """Drain the queue and send one batched message per subscribed channel."""
+def _rate_limited() -> bool:
+    """True when MAX_SENDS_PER_MINUTE cycles already sent in the last
+    minute. Expired stamps are pruned here."""
+    now = time.monotonic()
+    while _send_times and now - _send_times[0] >= 60.0:
+        _send_times.popleft()
+    return len(_send_times) >= MAX_SENDS_PER_MINUTE
+
+
+async def _dispatch_pending(force: bool = False) -> None:
+    """Drain the queue and send one batched message per subscribed channel.
+
+    A rate-limited cycle returns with the queue untouched — those notes
+    merge into the next allowed batch. `force` (shutdown flush) bypasses
+    the cap so pending notes are never dropped."""
     if not _queue:
+        return
+    if not force and _rate_limited():
         return
     notes: list[EventNote] = []
     while _queue:
@@ -321,6 +406,8 @@ async def _dispatch_pending() -> None:
         for channel_id, url in subscribed:
             per_channel.setdefault(channel_id, (url, []))[1].append(note)
 
+    if per_channel:
+        _send_times.append(time.monotonic())
     media_cache: dict[int, object] = {}
     for channel_id, (url, channel_notes) in per_channel.items():
         webhook = _discord_webhook_url(url)
@@ -396,7 +483,7 @@ async def stop() -> None:
     _dispatch_task = None
     _stop_event = None
     try:
-        await _dispatch_pending()
+        await _dispatch_pending(force=True)
     except Exception as e:  # best-effort — never block shutdown
         logger.warning(f"Final notification flush failed: {type(e).__name__}")
     logger.debug("Notification dispatcher stopped")

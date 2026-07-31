@@ -16,11 +16,16 @@ none justify their own release. Check items off with the release that shipped th
   address during Phase 7 test-tree mirror.
 - [ ] **H5 — Duplicate `displayTitle` pipes** (helpers/ vs media/pipes/) — merge in
   Phase 7 frontend light touch (keep the underscore-aware one).
-- [ ] **H6 — `read_all_raw`/`downloads_raw` raw-SQL endpoints**: revisit typed
-  responses when Phase 3 changes list plumbing; at minimum document why raw exists
-  (perf).
-- [ ] **H7 — Startup-fix module retirement**: after Phase 3 deletes
-  `fix_trailer_exists_flags`, remove `startup_fixes.py` and its tests entirely.
+- [x] **H6 — `read_all_raw`/`downloads_raw` raw-SQL endpoints** — RESOLVED as a
+  settled design decision (July 2026), not a cleanup: raw endpoints stay raw. Data is
+  validated when WRITTEN to the database, so re-validating and converting every row
+  into typed Python objects at read time (for the frontend or external API consumers)
+  would only add memory pressure and slow responses on large libraries — raw reads
+  are deliberately the efficient list-scale path. Rationale documented in CLAUDE.md
+  (Key Conventions); do not convert these to typed responses.
+- [x] **H7 — Startup-fix module retirement** — DONE (Phase 3, ships v0.10.2):
+  `startup_fixes.py` and its tests deleted with `fix_trailer_exists_flags`
+  (justification recorded in `phase-03-dynamic-status.md`).
 - [ ] **H8 — Scan TODO comments** ("once the planned Issues section exists…") in
   files-scan → wired and removed in Phase 11.
 - [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table

@@ -43,12 +43,15 @@ You can select the same sort option again to switch between Ascending and Descen
 Media items in the view can be filtered using the following options:
 
 - All: No filter applied
-- Downloaded: Trailer downloaded
-- Downloading: Trailer downloading
-- Missing: Trailer missing (also includes monitored items)
+- Downloaded: Has at least one downloaded video
+- Downloading: Download currently in progress (live)
+- Missing: No downloaded video (also includes monitored items)
 - Monitored: Monitored for trailer download
-- Unmonitored: Trailer missing (does not include monitored items)
+- Unmonitored: No downloaded video and not monitored
 - Unknown Profile: Media with downloads that have no profile assigned. {{ version_badge("add", "0.9.9") }}
+
+!!! info "Status is computed live"
+    {{ version_badge("upd", "0.10.2") }} Status is always derived from your actual downloads and the monitor flag: any active download → **Downloaded**, else monitored → **Monitored**, else **Missing**. It can never get stuck or drift out of sync with reality. **Downloading** is a live indicator of in-progress downloads (updated in real time) — it is not stored, so a crash or restart can never leave items showing *Downloading* forever.
 
 !!! note "Downloads with no profile assigned"
     {{ version_badge("add", "0.9.9") }}
@@ -81,12 +84,10 @@ Click on the `Edit` button in the top bar to enable edit view where you can perf
 
 ### Monitor
 
-This will enable Monitoring of the selected Media items.
+This will enable Monitoring of the selected Media items (no effect on items already monitored).
 
-However, this will have no effect on items:
-
-- already monitored.
-- has a downloaded trailer.
+!!! info ""
+    {{ version_badge("upd", "0.10.2") }} You can monitor anything — including media that already have a trailer. The download engine decides from per-profile download records, so monitored-and-satisfied media are simply left alone. Monitoring is changed only by you: connection syncs and downloads never touch it.
 
 ### UnMonitor
 

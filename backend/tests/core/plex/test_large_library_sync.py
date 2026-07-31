@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from sqlmodel import Session, select
 
-from core.base.database.models.connection import ArrType, Connection, MonitorType
+from core.base.database.models.connection import ArrType, Connection
 from core.base.database.models.event import Event, EventType
 from core.base.database.models.media import Media
 from core.base.database.utils.engine import get_session, write_session
@@ -39,7 +39,7 @@ def _create_plex_connection(name: str, *, _session: Session = None) -> int:  # t
         arr_type=ArrType.PLEX,
         url="http://localhost:32400",
         api_key="integration_test_token",
-        monitor=MonitorType.MONITOR_MISSING,
+        monitor_new_media=True,
     )
     _session.add(conn)
     _session.commit()
@@ -133,7 +133,7 @@ class TestPlexLargeLibrarySync:
             name=f"LargeSyncTest-{self._prefix}",
             url="http://localhost:32400",
             api_key="integration_test_token",
-            monitor=MonitorType.MONITOR_MISSING,
+            monitor_new_media=True,
             path_mappings=self.path_mappings,
         )
 
@@ -300,7 +300,7 @@ class TestPlexLargeLibrarySync:
             name=f"LargeSyncTest2-{self._prefix}",
             url="http://localhost:32400",
             api_key="integration_test_token_2",
-            monitor=MonitorType.MONITOR_MISSING,
+            monitor_new_media=True,
             path_mappings=[
                 SimpleNamespace(
                     id=9902,

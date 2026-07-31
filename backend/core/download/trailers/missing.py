@@ -1,3 +1,4 @@
+import os
 import threading
 
 from app_logger import ModuleLogger
@@ -14,13 +15,11 @@ from core.base.database.models.downloadattempt import (
 from core.base.database.models.media import MediaRead
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.profiles import find_matching_profiles
-from core.base.utils.satisfaction import (
-    SatisfactionResult,
-    evaluate_satisfaction,
-)
+from core.base.utils.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader
+from core.download.inflight import inflight_registry
 from core.download.trailers import utils
-from core.files_handler import FilesHandler
+from core.files_handler import FilesHandler, is_disk_available
 from core.tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
 
@@ -46,6 +45,21 @@ def _is_valid_media(
             return False
 
         if not FilesHandler.check_folder_exists(db_media.folder_path):
+            # Distinguish "folder genuinely missing" from "the storage
+            # backing it is unreachable" (disconnected network mount) —
+            # an offline drive must not be treated like a normal missing
+            # folder, and must never lead to writes into a dead mount.
+            if not is_disk_available(db_media.folder_path):
+                logger.info(
+                    f"Media '{db_media.title}' [{db_media.id}] skipped:"
+                    " storage backing the media folder is unreachable."
+                )
+                event_manager.track_download_skipped(
+                    media_id=db_media.id,
+                    skip_reason="Storage unreachable",
+                    source_detail="DownloadMissingTrailers",
+                )
+                return False
             logger.info(
                 f"Media '{db_media.title}' [{db_media.id}] skipped: folder"
                 " does not exist."
@@ -53,6 +67,25 @@ def _is_valid_media(
             event_manager.track_download_skipped(
                 media_id=db_media.id,
                 skip_reason="Folder does not exist",
+                source_detail="DownloadMissingTrailers",
+            )
+            return False
+
+        # Folder exists — confirm it is actually readable. A stale handle
+        # on a half-dead network mount can pass the isdir check but fail
+        # on first read; downloading would then fail mid-write and be
+        # recorded as a failed *attempt* (accruing backoff) when the real
+        # problem is storage, which must be a skip instead.
+        try:
+            os.listdir(db_media.folder_path)
+        except OSError as exc:
+            logger.info(
+                f"Media '{db_media.title}' [{db_media.id}] skipped: media"
+                f" folder is not readable ({exc}); storage may be offline."
+            )
+            event_manager.track_download_skipped(
+                media_id=db_media.id,
+                skip_reason="Storage unreachable",
                 source_detail="DownloadMissingTrailers",
             )
             return False
@@ -107,33 +140,6 @@ def _apply_claims(
         )
 
 
-def _log_signal_disagreements(
-    media: MediaRead,
-    matching_profiles: list[TrailerProfileRead],
-    result: SatisfactionResult,
-) -> None:
-    """Bake-window instrumentation (remove in Phase 3): the legacy engine
-    downloaded for every matching profile; log each matching profile the
-    satisfaction rule deems already satisfied, so real installs audit the
-    new engine during the v0.10.x cycle."""
-    unsatisfied_ids = {p.id for p in result.unsatisfied}
-    claimed_ids = {profile_id for _, profile_id in result.claims}
-    for profile in matching_profiles:
-        if profile.id in unsatisfied_ids:
-            continue
-        if result.fully_satisfied_by_stop_monitoring:
-            via = "stop_monitoring"
-        elif profile.id in claimed_ids:
-            via = "claim"
-        else:
-            via = "own_download"
-        logger.info(
-            f"SIGNAL-DISAGREE media={media.id} profile={profile.id}"
-            f" trailer_exists={media.trailer_exists} satisfied=True"
-            f" via={via}"
-        )
-
-
 def _filter_backoff_eligible(
     media: MediaRead, unsatisfied: list[TrailerProfileRead]
 ) -> list[TrailerProfileRead]:
@@ -157,6 +163,40 @@ def _filter_backoff_eligible(
                 f" attempt(s), next eligible {next_eligible_at(attempt)}"
             )
     return eligible
+
+
+_PREVIEW_LOG_LIMIT = 25
+
+
+async def _run_preview_pass() -> None:
+    """Downloads disabled: publish the would-download list instead.
+
+    Uses the same library-wide pending computation as GET /media/pending,
+    which itself reuses the task's exact satisfaction rule — the preview is
+    the real work list, not an estimate."""
+    from api.v1.websockets import ws_manager
+    from core.download.trailers.pending import compute_library_pending
+
+    summary = compute_library_pending(limit=1000)
+    would_download = [i for i in summary.items if i.reason == "pending"]
+    for item in would_download[:_PREVIEW_LOG_LIMIT]:
+        logger.info(
+            f"PREVIEW would download: '{item.title}' [{item.media_id}]"
+            f" with profile '{item.profile_name}'"
+        )
+    if len(would_download) > _PREVIEW_LOG_LIMIT:
+        logger.info(
+            f"PREVIEW … and {len(would_download) - _PREVIEW_LOG_LIMIT} more"
+            " (see the pending downloads view for the full list)."
+        )
+    msg = (
+        f"Preview mode: {summary.pending_pairs} trailer(s) across"
+        f" {summary.total_media} media item(s) would be downloaded"
+        f" ({summary.backoff_pairs} backing off). Enable downloads in"
+        " settings to perform them."
+    )
+    logger.info(msg)
+    await ws_manager.broadcast(msg, "Info", reload="none")
 
 
 async def download_missing_trailers(
@@ -183,6 +223,18 @@ async def download_missing_trailers(
             " once the passes finish (usually within minutes of startup)."
         )
         return
+
+    # Preview mode (Phase 3): compute and publish what this run WOULD do,
+    # download nothing. Gates ONLY the scheduled downloads — scans, syncs
+    # and attribution keep running, and manual downloads still work.
+    if not app_settings.downloads_enabled:
+        await _run_preview_pass()
+        return
+
+    # Defensive: no in-flight entries can survive between runs (the registry
+    # is process-local and download_trailer cleans up in finally), but a
+    # fresh task run must never start with a stale overlay.
+    inflight_registry.clear()
 
     # Prune attempt rows for profiles that no longer exist (lazy cleanup)
     all_profiles = trailerprofile.get_trailerprofiles()
@@ -222,9 +274,9 @@ async def download_missing_trailers(
             )
             return
 
-        # All profiles (incl. disabled) — download ownership is about
-        # identity, not activity: a disabled profile's downloads still
-        # satisfy it, and its stop_monitoring carve-out still applies.
+        # All profiles (incl. disabled) — used for claim logging; download
+        # ownership is about identity, not activity: a disabled profile's
+        # downloads still satisfy it.
         profiles_by_id = {
             p.id: p for p in trailer_profiles if p.id is not None
         }
@@ -241,12 +293,9 @@ async def download_missing_trailers(
             )
             if not matching_profiles:
                 continue
-            result = evaluate_satisfaction(
-                db_media, matching_profiles, profiles_by_id
-            )
+            result = evaluate_satisfaction(db_media, matching_profiles)
             if result.claims:
                 _apply_claims(db_media, result.claims, profiles_by_id)
-            _log_signal_disagreements(db_media, matching_profiles, result)
             if not result.unsatisfied:
                 processed_media_ids.add(db_media.id)
                 continue
@@ -340,16 +389,8 @@ async def _process_single_media_item(
                 download_attempted = True
                 successful_downloads += 1
                 # (attempt record cleared inside download_trailer on success)
-                if profile.stop_monitoring:
-                    # Legacy semantics preserved (deprecated — Phase 4):
-                    # remaining profiles are considered fully satisfied via
-                    # the satisfaction rule's stop_monitoring carve-out.
-                    logger.info(
-                        f"Skipping remaining profiles for {media.title} after"
-                        f" successful download with profile: {_profile_name}"
-                        " (Stop Monitoring is enabled on it)"
-                    )
-                    break
+                # Phase 4: stop_monitoring is no longer honored — every
+                # unsatisfied matching profile gets its download.
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(

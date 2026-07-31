@@ -189,28 +189,32 @@ function applyCustomFilter(customFilters: CustomFilter[], filter_name: string, m
  * @returns An array of media items that match the selected filter criteria.
  */
 export function applySelectedFilter(allMedia: Media[], selectedFilter: string, customFilters: CustomFilter[]): Media[] {
+  // Phase 3: downloaded-ness comes from download rows, never the
+  // trailer_exists mirror; 'downloading' reads the computed status, which
+  // the media service derives from the runtime in-flight overlay.
+  const hasActiveDownload = (media: Media) => media.downloads.some((d) => d.file_exists);
   // Filter the media list by the selected filter option
   return allMedia.filter((media) => {
     switch (selectedFilter) {
       case 'all':
         return true;
       case 'downloaded':
-        return media.trailer_exists;
+        return hasActiveDownload(media);
       case 'downloading':
         return media.status.toLowerCase() === 'downloading';
       case 'missing':
-        return !media.trailer_exists;
+        return !hasActiveDownload(media);
       case 'monitored':
         return media.monitor;
       case 'unmonitored':
-        return !media.monitor && !media.trailer_exists;
+        return !media.monitor && !hasActiveDownload(media);
       case 'unknown_profile':
         // Media with an active download that has no profile assigned
         return media.downloads.some((d) => d.file_exists && d.profile_id === 0);
       case 'movies':
-        return media.is_movie && media.trailer_exists;
+        return media.is_movie && hasActiveDownload(media);
       case 'series':
-        return !media.is_movie && media.trailer_exists;
+        return !media.is_movie && hasActiveDownload(media);
       default:
         return applyCustomFilter(customFilters, selectedFilter, media);
     }
@@ -224,7 +228,7 @@ export function applySelectedFilter(allMedia: Media[], selectedFilter: string, c
  * @param media - The media object containing download information
  * @returns The most recent download date, or null if no downloads with existing files are found
  */
-function getMediaRecentDownloadDate(media: Media): Date | null {
+export function getMediaRecentDownloadDate(media: Media): Date | null {
   const downloadDates = media.downloads
     .filter((d) => d.file_exists)
     .map((d) => new Date(d.added_at))
