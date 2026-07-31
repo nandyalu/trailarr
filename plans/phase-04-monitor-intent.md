@@ -1,6 +1,6 @@
 # Phase 4 — Monitor Becomes User Intent
 
-**Status:** IMPLEMENTED (July 2026, branch `feat/phase-03-dynamic-status` off dev, with Phase 3 — merge into dev after v0.10.0 ships) · **Release:** v0.10.2 (with Phase 3) · **Depends on:** Phase 2
+**Status:** DONE — shipped in v0.10.2 (Jul 30, 2026, with Phase 3) · **Release:** v0.10.2 (with Phase 3) · **Depends on:** Phase 2
 
 > **Decision-5 note (July 2026):** v0.10.0 has not shipped yet, so the Phase 2
 > shadow logs the `exclusive` option was conditioned on DO NOT EXIST. Implementing

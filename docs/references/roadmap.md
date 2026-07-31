@@ -24,7 +24,7 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 |---|---|---|
 | **v0.9.9** | July 2026 ✅ | Phase 1 — Download ↔ Profile linking |
 | **v0.10.0** | July 19, 2026 ✅ | Phase 2 — Downloads drive the download engine, plus Notifications (Apprise) |
-| **v0.10.1** | late August 2026 | Phases 3 & 4 — Live status + monitoring becomes yours |
+| **v0.10.2** | July 30, 2026 ✅ | Phases 3 & 4 — Live status + monitoring becomes yours |
 | **v0.11.0** | September 2026 | Phase 5 — Cleanup of legacy fields |
 | **v0.11.1** | October 2026 | Phase 6 — Filter by downloads & files |
 | **v0.12.0** | November 2026 | Phase 7 — Internal reorganization for long-term maintainability |
@@ -49,7 +49,7 @@ This is the biggest internal change of the roadmap, so it got a major version bu
 
 **Also in `v0.10.0`: Notifications via [Apprise](https://github.com/caronc/apprise).** Add your preferred notification channels — Discord, Telegram, Slack, email, and the 100+ other services Apprise supports — and choose which Trailarr events each channel receives. For example, point a `#trailarr-downloads` channel on your Discord server at *Trailer Downloaded* events, right alongside your Radarr/Sonarr/Plex notifications. Trailarr already tracks everything as events internally, so this wires those straight to your channels — and it makes the Phase 2 changes visible: you'll *see* what the new download engine does as it happens. When the Issues section arrives in v1.0.0, issue alerts plug into the same channels (e.g. a separate `#trailarr-issues` channel for things needing attention).
 
-### Phases 3 & 4 — Live status + monitoring becomes yours — `v0.10.1`
+### Phases 3 & 4 — Live status + monitoring becomes yours — `v0.10.2` ✅
 
 The stored monitor status is replaced by a **live computed status** — what you see is always derived from actual downloads and your monitor flag, so it can never get stuck or drift out of sync (goodbye, stuck "downloading" states). Media Details gains a per-profile view: which profiles match this item, which are satisfied by which download, and which are still pending.
 

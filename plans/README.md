@@ -69,8 +69,8 @@ Standard checklist, in addition to each phase's listed pages:
 | Release | Phase | Content | Target | Bake before next |
 |---|---|---|---|---|
 | v0.9.9 | 1 | Download↔profile attribution + manual assign + heal | Jul 2026 | ✅ shipped |
-| v0.10.0 | 2 | Downloads-driven download engine + Apprise notifications | ✅ shipped Jul 19, 2026 | ~4 weeks (baking) |
-| v0.10.2 | 3+4 | Dynamic status + monitor becomes user intent | late Aug 2026 | ~2 weeks |
+| v0.10.0 | 2 | Downloads-driven download engine + Apprise notifications | ✅ shipped Jul 19, 2026 | ✅ done |
+| v0.10.2 | 3+4 | Dynamic status + monitor becomes user intent | ✅ shipped Jul 30, 2026 | ~2 weeks (baking) |
 | v0.11.0 | 5 | Drop trailer_exists/status columns, filter migration | Sep 2026 | ~2 weeks |
 | v0.11.1 | 6 | Downloads/files custom-filter family (views) | Oct 2026 | ~2 weeks |
 | v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Nov 2026 | ~3 weeks |
@@ -146,13 +146,13 @@ skip-safe too:
 ## File index
 
 - `phase-01-attribution.md` — DONE (v0.9.9); kept as reference for patterns/conventions.
-- `phase-02-downloads-engine.md` — DONE (v0.10.0, Jul 19 2026); baking ~4 weeks —
-  watch SIGNAL-DISAGREE reports before starting Phase 3.
+- `phase-02-downloads-engine.md` — DONE (v0.10.0, Jul 19 2026).
 - `track-apprise-notifications.md` — DONE (shipped with v0.10.0).
 - `track-onboarding-diagnostics.md` — parallel track: Connection Doctor, Health page,
   cookies UI, first-run guided setup, diagnostics bundle (milestones A–D).
-- `phase-03-dynamic-status.md`
-- `phase-04-monitor-intent.md`
+- `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4); baking
+  ~2 weeks — watch computed-status/monitor reports before starting Phase 5.
+- `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
 - `phase-05-drop-columns.md`
 - `phase-06-view-filters.md`
 - `phase-07-backend-reorg.md`
