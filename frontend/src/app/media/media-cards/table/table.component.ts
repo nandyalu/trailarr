@@ -41,7 +41,6 @@ export class TableComponent {
     {key: 'monitor', label: 'Monitored'},
     {key: 'arr_monitored', label: 'Arr Monitored'},
     {key: 'media_exists', label: 'Media Exists'},
-    {key: 'trailer_exists', label: 'Trailer Exists'},
     {key: 'imdb_id', label: 'IMDB ID'},
     {key: 'txdb_id', label: 'TVDB/TMDB ID'},
     {key: 'folder_path', label: 'Folder Path'},
@@ -90,7 +89,6 @@ export class TableComponent {
       case 'monitor':       return media.monitor ? 'Yes' : 'No';
       case 'arr_monitored': return media.arr_monitored ? 'Yes' : 'No';
       case 'media_exists':  return media.media_exists ? 'Yes' : 'No';
-      case 'trailer_exists': return media.trailer_exists ? 'Yes' : 'No';
       case 'imdb_id':       return media.imdb_id || '—';
       case 'txdb_id':       return media.txdb_id || '—';
       case 'folder_path':   return media.folder_path || '—';

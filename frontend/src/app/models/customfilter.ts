@@ -84,7 +84,8 @@ export type FilterCondition =
   | DateFilterCondition
   | FileFilterCondition;
 
-export const booleanFilterKeys = ['arr_monitored', 'is_movie', 'media_exists', 'monitor', 'trailer_exists'];
+// has_downloads is a virtual field: any download with file_exists=true
+export const booleanFilterKeys = ['arr_monitored', 'has_downloads', 'is_movie', 'media_exists', 'monitor'];
 
 export const dateFilterKeys = ['added_at', 'downloaded_at', 'updated_at'];
 
@@ -96,7 +97,6 @@ export const stringFilterKeys = [
   'language',
   'media_filename',
   'overview',
-  'status',
   'studio',
   'title',
   'title_slug',

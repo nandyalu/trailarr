@@ -66,7 +66,6 @@ export class NormalHeaderComponent {
     {key: 'monitor', label: 'Monitored'},
     {key: 'arr_monitored', label: 'Arr Monitored'},
     {key: 'media_exists', label: 'Media Exists'},
-    {key: 'trailer_exists', label: 'Trailer Exists'},
     {key: 'imdb_id', label: 'IMDB ID'},
     {key: 'txdb_id', label: 'TVDB/TMDB ID'},
     {key: 'folder_path', label: 'Folder Path'},
@@ -87,7 +86,6 @@ export class NormalHeaderComponent {
     {key: 'monitor', label: 'Monitored'},
     {key: 'arr_monitored', label: 'Arr Monitored'},
     {key: 'media_exists', label: 'Media Exists'},
-    {key: 'trailer_exists', label: 'Trailer Exists'},
     {key: 'imdb_id', label: 'IMDB ID'},
     {key: 'txdb_id', label: 'TVDB/TMDB ID'},
     {key: 'folder_path', label: 'Folder Path'},
@@ -134,7 +132,7 @@ export class NormalHeaderComponent {
     // Retrieve the sort option from the local session
     let savedSortOption = localStorage.getItem(`Trailarr${pageType}Sort`);
     let savedSortAscending = localStorage.getItem(`Trailarr${pageType}SortAscending`);
-    if (savedSortOption) {
+    if (savedSortOption && this.sortOptions.includes(savedSortOption as keyof Media)) {
       this.selectedSort.set(savedSortOption as keyof Media);
     }
     if (savedSortAscending) {

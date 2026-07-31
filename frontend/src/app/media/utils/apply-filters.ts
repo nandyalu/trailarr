@@ -135,6 +135,15 @@ function findInFileTree(node: FileFolderInfo | null, type: 'FILE' | 'FOLDER', fi
 function applyFilter(filter: Filter, media: Media): boolean {
   const {filter_by, filter_value, filter_condition} = filter;
 
+  // Virtual field: media has at least one active download (v0.11.0)
+  if (filter_by === 'has_downloads') {
+    const boolVal = filter_value.toLowerCase() === 'true';
+    return FilterFunctions.applyBooleanFilter(
+      media.downloads.some((d) => d.file_exists),
+      boolVal,
+    );
+  }
+
   // Special handling for file/folder filters
   if (fileFilterKeys.includes(filter_by)) {
     const fileType = filter_by === 'has_file' ? 'FILE' : 'FOLDER';
@@ -189,8 +198,8 @@ function applyCustomFilter(customFilters: CustomFilter[], filter_name: string, m
  * @returns An array of media items that match the selected filter criteria.
  */
 export function applySelectedFilter(allMedia: Media[], selectedFilter: string, customFilters: CustomFilter[]): Media[] {
-  // Phase 3: downloaded-ness comes from download rows, never the
-  // trailer_exists mirror; 'downloading' reads the computed status, which
+  // Phase 3: downloaded-ness comes from download rows, never a stored
+  // mirror flag; 'downloading' reads the computed status, which
   // the media service derives from the runtime in-flight overlay.
   const hasActiveDownload = (media: Media) => media.downloads.some((d) => d.file_exists);
   // Filter the media list by the selected filter option

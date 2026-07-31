@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {computeMediaStatus, Media} from 'src/app/models/media';
+import {CustomFilter} from 'src/app/models/customfilter';
 import {applySelectedFilter} from './apply-filters';
 
 function makeMedia(
@@ -11,7 +12,6 @@ function makeMedia(
     id,
     title: `Media ${id}`,
     monitor: false,
-    trailer_exists: false,
     status: 'missing',
     is_movie: true,
     downloads,
@@ -42,10 +42,10 @@ describe('applySelectedFilter — unknown_profile', () => {
 });
 
 describe('applySelectedFilter — downloads-driven built-ins (Phase 3)', () => {
-  // Mirror flags deliberately contradict the download rows: any filter
-  // still reading trailer_exists fails these expectations.
-  const withDownload = makeMedia(1, [{file_exists: true, profile_id: 5}], {trailer_exists: false});
-  const staleFlag = makeMedia(2, [], {trailer_exists: true, monitor: true});
+  // Only download rows decide downloaded-ness (the legacy mirror flag is
+  // gone since v0.11.0).
+  const withDownload = makeMedia(1, [{file_exists: true, profile_id: 5}]);
+  const staleFlag = makeMedia(2, [], {monitor: true});
   const deletedDownload = makeMedia(3, [{file_exists: false, profile_id: 5}]);
   const all = [withDownload, staleFlag, deletedDownload];
 
@@ -90,5 +90,30 @@ describe('computeMediaStatus (Phase 3)', () => {
 
   it('downloading overlay takes precedence over everything', () => {
     expect(computeMediaStatus(true, active, true)).toBe('downloading');
+  });
+});
+
+describe('applySelectedFilter — has_downloads virtual filter (v0.11.0)', () => {
+  const withDownload = makeMedia(1, [{file_exists: true, profile_id: 5}]);
+  const deletedOnly = makeMedia(2, [{file_exists: false, profile_id: 5}]);
+  const noDownloads = makeMedia(3, []);
+  const all = [withDownload, deletedOnly, noDownloads];
+
+  const makeCustomFilter = (value: string): CustomFilter[] =>
+    [
+      {
+        id: 9,
+        filter_name: 'HasTrailer',
+        filter_type: 'MOVIES',
+        filters: [{id: 90, customfilter_id: 9, filter_by: 'has_downloads', filter_condition: 'EQUALS', filter_value: value}],
+      },
+    ] as unknown as CustomFilter[];
+
+  it('has_downloads = true matches only media with an active download', () => {
+    expect(applySelectedFilter(all, 'HasTrailer', makeCustomFilter('true'))).toEqual([withDownload]);
+  });
+
+  it('has_downloads = false matches media with no active download (deleted counts as none)', () => {
+    expect(applySelectedFilter(all, 'HasTrailer', makeCustomFilter('false'))).toEqual([deletedOnly, noDownloads]);
   });
 });
