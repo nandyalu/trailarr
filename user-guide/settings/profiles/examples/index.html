@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.52">
+      <meta name="generator" content="zensical-0.0.53">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.8b3b5a67.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.20815dad.min.css">
       
         
           
@@ -2135,17 +2135,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#filter-2" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Filter 2
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#result" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2178,17 +2167,6 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Filter 1
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#filter-2_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Filter 2
       </span>
     </span>
   </a>
@@ -2841,17 +2819,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#filter-2" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Filter 2
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#result" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2884,17 +2851,6 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Filter 1
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#filter-2_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Filter 2
       </span>
     </span>
   </a>
@@ -3118,12 +3074,6 @@
 <td style="text-align: center;">Equals</td>
 <td style="text-align: center;">true</td>
 </tr>
-<tr>
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">Trailer Exists</td>
-<td style="text-align: center;">Equals</td>
-<td style="text-align: center;">false</td>
-</tr>
 </tbody>
 </table>
 <div class="admonition info">
@@ -3131,13 +3081,12 @@
 </div>
 <h3 id="filter-1">Filter 1</h3>
 <p>This filter checks if the media item is a movie. If the media item is a movie, the filter will match and the profile will be applied.</p>
-<h3 id="filter-2">Filter 2</h3>
-<p>This filter checks if a trailer already exists for the media item. If a trailer does not exist, the filter will match and the profile will be applied.</p>
 <h3 id="result">Result</h3>
-<p>With these filters, the <strong>Movie Trailers</strong> profile will only apply to movies that do not already have a trailer downloaded. This means that when the <code>Download Missing Trailers</code> task runs, it will only download trailers for movies that do not have a trailer already available in Trailarr.</p>
+<p>With this filter, the <strong>Movie Trailers</strong> profile applies to all movies. When the <code>Download Missing Trailers</code> task runs, it downloads a trailer only for movies where this profile does not already have one. A profile that already owns a downloaded trailer never downloads again.</p>
 <div class="admonition note">
-<p class="admonition-title">The <code>Trailer Exists</code> filter is optional since v0.10.0</p>
-<p>Downloads are now tracked per profile — a profile that already owns a downloaded trailer will not download again even without this filter. The filter still works and keeps the profile from applying to media that already have a trailer, but it is no longer required to prevent re-downloads.</p>
+<p class="admonition-title">No <code>Trailer Exists</code> filter anymore</p>
+<p><span class="twemoji orange" title="Updated in v0.11.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0110-august-9-2026">v0.11.0</a>
+Older versions used a <code>Trailer Exists = false</code> filter here to prevent re-downloads. Trailarr tracks downloads per profile since <code>v0.10.0</code> and prevents re-downloads automatically. The filter was removed in <code>v0.11.0</code>.</p>
 </div>
 <h2 id="example-2-series-trailers-profile">Example 2: Series Trailers Profile</h2>
 <p>The <strong>Series Trailers</strong> profile is used to download trailers for TV series. It comes with all the default settings as defined in the <a href=".././settings/general/">Settings</a> section, and the following filters:</p>
@@ -3157,12 +3106,6 @@
 <td style="text-align: center;">Equals</td>
 <td style="text-align: center;">false</td>
 </tr>
-<tr>
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">Trailer Exists</td>
-<td style="text-align: center;">Equals</td>
-<td style="text-align: center;">false</td>
-</tr>
 </tbody>
 </table>
 <div class="admonition info">
@@ -3171,10 +3114,8 @@
 <p>One Setting that is different from the <strong>Movie Trailers</strong> profile is that the <strong>Series Trailers</strong> profile has <code>Folder Enabled</code> set to <code>true</code>. So that Series trailers are saved in a <code>Trailers</code> folder inside the Series folder.</p>
 <h3 id="filter-1_1">Filter 1</h3>
 <p>This filter checks if the media item is a series. If the media item is a series, the filter will match and the profile will be applied.</p>
-<h3 id="filter-2_1">Filter 2</h3>
-<p>This filter checks if a trailer already exists for the media item. If a trailer does not exist, the filter will match and the profile will be applied.</p>
 <h3 id="result_1">Result</h3>
-<p>With these filters, the <strong>Series Trailers</strong> profile will only apply to TV series that do not already have a trailer downloaded. This means that when the <code>Download Missing Trailers</code> task runs, it will only download trailers for TV series that do not have a trailer already available in Trailarr.</p>
+<p>With this filter, the <strong>Series Trailers</strong> profile applies to all TV series. When the <code>Download Missing Trailers</code> task runs, it downloads a trailer only for series where this profile does not already have one.</p>
 <h2 id="example-3-spanish-movie-trailers-profile">Example 3: Spanish Movie Trailers Profile</h2>
 <ul>
 <li>Create a profile by clicking on the <code>Add New</code> button in the <code>Profiles</code> page.</li>
@@ -3199,12 +3140,6 @@
 </tr>
 <tr>
 <td style="text-align: center;">2</td>
-<td style="text-align: center;">Trailer Exists</td>
-<td style="text-align: center;">Equals</td>
-<td style="text-align: center;">false</td>
-</tr>
-<tr>
-<td style="text-align: center;">3</td>
 <td style="text-align: center;">Language</td>
 <td style="text-align: center;">Equals</td>
 <td style="text-align: center;">Spanish</td>
@@ -3394,7 +3329,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.ed145cee.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.69c251d7.min.js"></script>
       
     
   </body>

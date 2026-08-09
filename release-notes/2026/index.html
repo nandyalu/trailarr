@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.52">
+      <meta name="generator" content="zensical-0.0.53">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.8b3b5a67.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.20815dad.min.css">
       
         
           
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0102-july-30-2026" class="md-skip">
+        <a href="#v0110-august-9-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,6 +2418,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0110-august-9-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.0</strong> - <em>August 9, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0102-july-30-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2954,6 +2965,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0110-august-9-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.0</strong> - <em>August 9, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0102-july-30-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3287,6 +3309,99 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0110-august-9-2026"><strong>v0.11.0</strong> - <em>August 9, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>The legacy status fields are gone for good</strong> — Trailarr removed the internal <code>trailer_exists</code> and stored <code>status</code> database fields, so your download records are now the only source of truth — see the <a href="../../references/roadmap/">roadmap</a>.</p>
+</li>
+<li>
+<p><strong>New <code>Has Downloads</code> filter</strong> — custom filters can check whether a media item has at least one downloaded video on disk — see <a href="../../user-guide/settings/profiles/filters/">Filters</a>.</p>
+</li>
+<li>
+<p><strong>Pick a local address for your Plex server</strong> — the server-selection step after Plex sign-in now offers a <strong>Custom URL</strong> choice and a <strong>Test</strong> button, so you can point Trailarr at a local address (instead of the external URLs Plex provides) and check that it is reachable before you connect — see <a href="../../getting-started/03-setup/plex-connection/">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>Season counts for Plex-only series</strong> — series tracked only through a Plex connection now get their season count from the seasons present in your Plex library (Specials excluded), so <code>Season Count</code> filters and views work without a Sonarr connection.</p>
+</li>
+<li>
+<p><strong>Your database file shrinks after upgrades</strong> — Trailarr now runs a <code>VACUUM</code> after database migrations, so space freed by schema changes is returned to the filesystem — see <a href="../../troubleshooting/backup-restore/">Backup &amp; Restore</a>.</p>
+</li>
+</ul>
+<p><strong>Custom filters are migrated automatically.</strong> Every change is logged at migration time with the filter's name. The exact transformations:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Your old filter</th>
+<th style="text-align: left;">What happens in v0.11.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Profile filter on <code>Trailer Exists</code> (any value)</td>
+<td style="text-align: left;">Removed — a profile that already owns a download never re-downloads, so the condition is automatic now</td>
+</tr>
+<tr>
+<td style="text-align: left;">Profile filter on <code>Status</code> (any value)</td>
+<td style="text-align: left;">Removed — same reason</td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Trailer Exists Equals true/false</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals true/false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals downloaded</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals true</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals missing</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals monitored</code></td>
+<td style="text-align: left;">Becomes <code>Monitor Equals true</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Any other <code>Status</code> filter (e.g. <code>Equals downloading</code>, <code>Not Equals</code>, <code>Contains</code>)</td>
+<td style="text-align: left;">Removed — it has no equivalent; recreate it with the new fields if needed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Dropdown menus open in the correct place again on new Chrome versions</strong> — a change in Chrome 151 moved the filter, sort, view, log level, event, and assign-profile dropdown menus to the corner of the screen instead of next to their buttons.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>The API no longer returns <code>trailer_exists</code> or <code>status</code> fields on media objects. Read the <code>downloads</code> list (any entry with <code>file_exists=true</code>) and the <code>monitor</code> flag instead.</p>
+</li>
+<li>
+<p>The <code>Monitor Interval</code> setting is removed from Settings &gt; General and from the settings API — it has had no effect since <code>v0.8.0</code>; change each task's interval on the <a href="../../user-guide/tasks/">Tasks</a> page instead.</p>
+</li>
+<li>
+<p>You cannot downgrade below <code>v0.11.0</code> after upgrading. To go back, restore the automatic pre-upgrade backup — see <a href="../../troubleshooting/backup-restore/">Backup &amp; Restore</a>.</p>
+</li>
+<li>
+<p>Connection syncs no longer scan media folders for trailer files. The files scan owns trailer detection, so <em>Trailer Detected</em> events now come only from it.</p>
+</li>
+<li>
+<p>Screen readers now skip the app's decorative icons, and every icon-only button has an accessible name.</p>
+</li>
+<li>
+<p>With <code>WEBUI_DISABLE_AUTH=true</code>, the UI now hides the logout button and pauses live updates after inactivity (with a <strong>Resume</strong> dialog) instead of bouncing through the login page for a new session. The paused session id is deleted on the server, so requests that replay it get a <code>401</code> response.</p>
+</li>
+<li>
+<p>Trailarr checks the configured <code>yt-dlp</code>, <code>ffmpeg</code>, and <code>ffprobe</code> paths at startup, falls back to the system <code>PATH</code> when a configured path does not exist, and logs a clear error that names the variable to set when the tool is not found at all — see <a href="../../getting-started/02-installation/self-install/#step-6-create-the-env-configuration-file">Self Install</a>.</p>
+</li>
+<li>
+<p>When a download or scan fails because a configured binary is missing, the error now names the configured path and the environment variable to fix instead of a bare <code>FileNotFoundError</code> / <code>[WinError 2]</code> message.</p>
+</li>
+<li>
+<p>Trailarr logs a warning when a profile's yt-dlp extra options override an option Trailarr sets (for example <code>-f</code>); the profile value stays active — see <a href="../../user-guide/settings/profiles/settings/search/#yt-dlp-extra-options">Yt-dlp Extra Options</a>.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0102-july-30-2026"><strong>v0.10.2</strong> - <em>July 30, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3999,7 +4114,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.ed145cee.min.js"></script>
+      <script src="../../assets/javascripts/bundle.69c251d7.min.js"></script>
       
     
   </body>

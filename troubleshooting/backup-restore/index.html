@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.52">
+      <meta name="generator" content="zensical-0.0.53">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.8b3b5a67.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.20815dad.min.css">
       
         
           
@@ -2312,6 +2312,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#no-downgrade-below-v0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        No downgrade below v0.11.0
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#restore-a-backup" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2764,6 +2775,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#no-downgrade-below-v0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        No downgrade below v0.11.0
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#restore-a-backup" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2896,6 +2918,10 @@ most recent</strong> backups and deletes older ones automatically.</p>
 <p>💡 Since a backup is taken on every startup, restarting Trailarr right before an
 upgrade guarantees you have a fresh pre-upgrade backup.</p>
 </blockquote>
+<h2 id="no-downgrade-below-v0110">No downgrade below v0.11.0</h2>
+<p><span class="twemoji golden" title="Added in v0.11.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0110-august-9-2026">v0.11.0</a></p>
+<p>The <code>v0.11.0</code> upgrade removes old database fields. Because of this, you cannot downgrade to an earlier version after it runs. To go back, restore the pre-upgrade backup (see below) and start the older version.</p>
+<p>Also since <code>v0.11.0</code>, Trailarr runs a <code>VACUUM</code> on the database after migrations apply. The database file can become smaller after an upgrade. This is normal: <code>VACUUM</code> returns free space to the filesystem. It is not data loss or corruption.</p>
 <h2 id="restore-a-backup">Restore a backup</h2>
 <p>Use this when the database is damaged, or something went wrong after an upgrade.</p>
 <ol>
@@ -3108,7 +3134,7 @@ pre-upgrade backup is exactly the right file for a rollback.</p>
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.ed145cee.min.js"></script>
+      <script src="../../assets/javascripts/bundle.69c251d7.min.js"></script>
       
     
   </body>
