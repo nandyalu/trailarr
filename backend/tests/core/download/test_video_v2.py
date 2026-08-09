@@ -48,6 +48,31 @@ class TestLiveContentExcludedFromDownload:
         assert options[idx + 1] == "!is_live & !is_upcoming"
 
 
+class TestSubtitleOptions:
+    """Auto-generated (AI) subtitles are opt-in per profile (#644)."""
+
+    def test_default_skips_auto_generated_subs(self, trailer_profile):
+        options = _get_ytdl_options(trailer_profile)
+        assert "--write-subs" in options
+        assert "--write-auto-subs" not in options
+        assert "--embed-subs" in options
+
+    def test_opt_in_adds_auto_generated_subs(self, trailer_profile):
+        trailer_profile.subtitles_auto_generated = True
+        options = _get_ytdl_options(trailer_profile)
+        assert "--write-subs" in options
+        assert "--write-auto-subs" in options
+
+    def test_disabled_subtitles_add_no_subtitle_options(
+        self, trailer_profile
+    ):
+        trailer_profile.subtitles_enabled = False
+        options = _get_ytdl_options(trailer_profile)
+        assert "--write-subs" not in options
+        assert "--write-auto-subs" not in options
+        assert "--embed-subs" not in options
+
+
 class TestUserOptionOverrideWarning:
     def test_user_format_option_warns_and_stays_active(
         self, trailer_profile

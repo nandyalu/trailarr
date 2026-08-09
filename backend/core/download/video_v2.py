@@ -157,7 +157,13 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
 
     # Subtitle options
     if profile.subtitles_enabled:
-        _options.append("--write-auto-subs")
+        # Uploader-provided subtitles
+        _options.append("--write-subs")
+        if profile.subtitles_auto_generated:
+            # Also accept YouTube auto-generated subtitles. When both are
+            # requested, yt-dlp prefers uploader subtitles for a language
+            # and uses the auto-generated ones only as a fallback.
+            _options.append("--write-auto-subs")
         _options.append("--embed-subs")
         _options.append("--sub-langs")
         _options.append(profile.subtitles_language)

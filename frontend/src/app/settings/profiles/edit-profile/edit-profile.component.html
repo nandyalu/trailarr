@@ -276,6 +276,13 @@
         (optionChange)="profileService.updateSetting('subtitles_enabled', $event)"
       />
       <app-options-setting
+        name="Auto-Generated Subtitles"
+        description="Also accept YouTube auto-generated (AI) subtitles when the video has no uploader subtitles."
+        [options]="trueFalseOptions"
+        [selectedOption]="profile()?.subtitles_auto_generated"
+        (optionChange)="profileService.updateSetting('subtitles_auto_generated', $event)"
+      />
+      <app-options-setting
         name="Subtitles Format"
         description="Final subtitle format of the trailer file."
         [options]="subtitleFormatOptions"
