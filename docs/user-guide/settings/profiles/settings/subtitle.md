@@ -7,6 +7,21 @@
 
 Enable this setting to download subtitles for trailers, if available.
 
+## Auto-Generated Subtitles
+
+{{ version_badge("add", "0.11.1") }}
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | false   | true or false |
+
+Enable this setting to also accept YouTube auto-generated (AI) subtitles.
+
+When enabled, Trailarr prefers the uploader's subtitles for a language and uses the auto-generated ones only when the video has no uploader subtitles.
+
+!!! note ""
+    Before `v0.11.1`, Trailarr downloaded only auto-generated subtitles. Auto-generated subtitles are often low quality, so they are now off by default ([#644](https://github.com/nandyalu/trailarr/issues/644)).
+
 ## Subtitles Format
 
 | Type    | Required | Default | Valid Values  |

@@ -87,6 +87,10 @@ class _TrailerProfileBase(AppSQLModel):
     video_resolution: int = 1080
     # Subtitle settings
     subtitles_enabled: bool = True
+    subtitles_auto_generated: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
     subtitles_format: str = "srt"
     subtitles_language: str = "en"
     # General settings
@@ -190,6 +194,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "enabled",
             "folder_enabled",
             "subtitles_enabled",
+            "subtitles_auto_generated",
             "always_search",
             "embed_metadata",
             "remove_silence",
@@ -215,6 +220,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "enabled",
         "folder_enabled",
         "subtitles_enabled",
+        "subtitles_auto_generated",
         "always_search",
         "embed_metadata",
         "remove_silence",
