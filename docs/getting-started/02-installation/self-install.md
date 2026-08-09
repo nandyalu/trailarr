@@ -362,6 +362,10 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     All other settings (connections, profiles, etc.) can be configured from the web UI.
     See [Environment Variables](../01-first-things/environment-variables.md) for a full reference.
 
+{{ version_badge("add", "0.11.0") }}
+
+Trailarr checks `FFMPEG_PATH`, `FFPROBE_PATH`, and `YTDLP_PATH` at each startup. If a configured path does not point to an executable, Trailarr searches the system `PATH` for the tool and uses that copy for the session, with a warning in the logs. If the tool is not found at all, the startup log shows an error that names the variable to set.
+
 ---
 
 ## Step 7 — Run database migrations
@@ -649,6 +653,8 @@ before starting uvicorn.
 
 **Web UI doesn't load (404)** — Check that `frontend-build/` exists inside `$INSTALL_DIR`.
 If you cloned the repo, you need to run the Angular build first (Step 1, Option B).
+
+**Downloads or scans fail with `FileNotFoundError` or `[WinError 2]`** — Trailarr cannot find `yt-dlp`, `ffmpeg`, or `ffprobe` at the configured path. Check `YTDLP_PATH`, `FFMPEG_PATH`, and `FFPROBE_PATH` in your `.env` (Step 6). The startup log names the missing tool and the variable to set. Trailarr runs only these configured paths — it does not search the system `PATH` unless the configured path is missing.
 
 ---
 

@@ -185,5 +185,12 @@ Enter any additional options you want to pass to `yt-dlp` when downloading the t
 
 Please refer to the [yt-dlp documentation](https://github.com/yt-dlp/yt-dlp#usage-and-options) for a list of all available options.
 
+{{ version_badge("upd", "0.11.0") }}
+
+Extra options are added after the options that Trailarr sets, and `yt-dlp` uses the last value of a repeated option. If you pass an option that Trailarr also sets (for example `-f` / `--format`), your value wins, and Trailarr writes a warning to the logs.
+
 !!! warning "Use with Caution"
     This setting is for advanced users only and should be used with caution. It allows you to pass any valid `yt-dlp` options to the download command. Incorrect options can cause the download to fail.
+
+!!! warning "Custom `-f` removes Trailarr's fallbacks"
+    A custom `-f` replaces Trailarr's format selection, which includes fallback formats and a final `best` fallback. A strict format with no fallback (for example `-f "bestvideo[vcodec=h265]+bestaudio"`) fails with `Requested format is not available` — YouTube does not provide `h265` streams. Set the resolution and codecs in the profile instead; Trailarr downloads the best available format and converts it with `ffmpeg`.
