@@ -2,10 +2,19 @@
   display: contents;
 }
 
-svg {
-  width: 1.5rem;
-  height: 1.5rem;
+.help-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0;
   margin: 0 0.5rem;
-  fill: var(--color-info);
   cursor: help;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: var(--color-info);
+  }
 }

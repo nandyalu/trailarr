@@ -316,8 +316,11 @@ def _make_download_create(media_id: int, path: str) -> DownloadCreate:
 
 
 def _make_default_like_profile(filter_name: str, is_movie: bool):
-    """Create a profile shaped like the shipped defaults: an is_movie filter
-    plus the has_downloads=false state filter."""
+    """Create a profile with an is_movie filter plus an explicit
+    has_downloads=false state filter. Note: the v0.11.0 shipped defaults
+    carry only the is_movie filter — the Phase 5 migration removes
+    download-state filters from profiles. The extra filter here exercises
+    attribution with a user-added state filter."""
     from core.base.database.models.customfilter import CustomFilterCreate
     from core.base.database.models.filter import (
         FilterCondition,
@@ -347,9 +350,11 @@ def _make_default_like_profile(filter_name: str, is_movie: bool):
 
 
 class TestAttributionAgainstRealDatabase:
-    """End-to-end check against the real test DB using profiles shaped like
-    the two shipped defaults ('Movie Trailers' / 'Series Trailers', both
-    filtering on is_movie plus has_downloads=false)."""
+    """End-to-end check against the real test DB using two profiles named
+    like the shipped defaults ('Movie Trailers' / 'Series Trailers'). Each
+    filters on is_movie plus an explicit has_downloads=false state filter —
+    a stricter shape than the v0.11.0 defaults, which carry only is_movie
+    (Phase 5 removes download-state filters from profiles)."""
 
     @pytest.mark.asyncio
     async def test_default_profiles_claim_movie_and_series_downloads(self):
