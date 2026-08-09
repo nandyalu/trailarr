@@ -19,6 +19,51 @@ from core.base.database.models.media import (
 logger = ModuleLogger("ConnectionManager")
 
 
+async def delete_trailers_for_removed_media(
+    media: MediaRead, removed_from: str
+) -> bool:
+    """Delete trailer files for a media item that left its source library.
+    - If `app_settings.delete_trailer_media` is True, keep the trailers
+      while the media files still exist on disk.
+    Args:
+        media (MediaRead): The media item.
+        removed_from (str): Log context, e.g. "Arr application" or
+            "Plex library".\n
+    Returns:
+        bool: True if any trailers were deleted, False otherwise."""
+    if app_settings.delete_trailer_media:
+        if not media.folder_path:
+            return False
+        if FilesHandler.check_media_exists(media.folder_path):
+            # Media files still exist on disk, nothing to delete
+            return False
+    # Delete download files associated with the media
+    _deleted = False
+    for download in media.downloads:
+        if not download.file_exists:
+            continue
+        if not download.path:
+            continue
+        if await FilesHandler.delete_file(download.path):
+            _deleted = True
+            logger.info(
+                f"Media '{media.title}' removed from {removed_from}."
+                f" Deleted trailer file '{download.path}'"
+            )
+        else:
+            logger.warning(
+                f"Media '{media.title}' removed from {removed_from}."
+                f" Failed to delete trailer file '{download.path}'"
+            )
+    if not media.folder_path:
+        return _deleted
+    # Delete trailers from media folder and 'Trailers' subfolder if exists
+    _deleted = _deleted or await FilesHandler.delete_trailers_for_media(
+        media.folder_path
+    )
+    return _deleted
+
+
 class ArrManagerProtocol(Protocol):
     """Abstract class for getting data from the Arr APIs."""
 
@@ -223,37 +268,9 @@ class BaseConnectionManager(ABC):
             media (MediaRead): The media item.\n
         Returns:
             bool: True if the trailers were deleted, False otherwise."""
-        if app_settings.delete_trailer_media:
-            if not media.folder_path:
-                return False
-            if FilesHandler.check_media_exists(media.folder_path):
-                # Media files still exist on disk, nothing to delete
-                return False
-        # Delete download files associated with the media
-        _deleted = False
-        for download in media.downloads:
-            if not download.file_exists:
-                continue
-            if not download.path:
-                continue
-            if await FilesHandler.delete_file(download.path):
-                _deleted = True
-                logger.info(
-                    f"Media '{media.title}' removed from Arr application."
-                    f" Deleted trailer file '{download.path}'"
-                )
-            else:
-                logger.warning(
-                    f"Media '{media.title}' removed from Arr application."
-                    f" Failed to delete trailer file '{download.path}'"
-                )
-        if not media.folder_path:
-            return _deleted
-        # Delete trailers from media folder and 'Trailers' subfolder if exists
-        _deleted = _deleted or await FilesHandler.delete_trailers_for_media(
-            media.folder_path
+        return await delete_trailers_for_removed_media(
+            media, "Arr application"
         )
-        return _deleted
 
     async def delete_removed_media_trailers(self) -> None:
         """Delete trailers for media that have been removed from the Arr application."""

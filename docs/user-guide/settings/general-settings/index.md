@@ -119,9 +119,11 @@ Delete downloaded trailers when media is removed from Radarr/Sonarr and optional
 
 ### On Deleting from Connection
 
+{{ version_badge("upd", "0.11.1") }}
+
 - Default is `false`
 
-Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. 
+Enable this setting to delete the downloaded trailers when media is removed from the connected Arr application. Since `v0.11.1`, this also applies to Plex-only media that is removed from the Plex library.
 
 !!! warning
     Enabling this setting will delete all downloaded trailers for media that is removed from the connected Arr application. Use with caution!

@@ -118,6 +118,7 @@ A unique identifier for your Plex Media Server instance, used internally by Trai
 | **Media linking** | Trailarr scans your Plex libraries and matches media items from Radarr/Sonarr to their Plex counterparts. |
 | **Trailer detection** | The weekly [Refresh Plex Trailer Flags](../../tasks/index.md#refresh-plex-trailer-flags) task checks whether Plex has a remote trailer for each linked item and caches the result. Profiles can use this to skip downloading if Plex already has a qualifying trailer. |
 | **Plex notifications** | After a trailer is downloaded, Trailarr can trigger a Plex library refresh so the new file appears in Plex immediately. |
+| **Removal cleanup** {{ version_badge("add", "0.11.1") }} | When an item is no longer in your Plex library, the next sync cleans it up. A Plex-only item is deleted from Trailarr (trailer files are also deleted when [On Deleting from Connection](../general-settings/index.md#on-deleting-from-connection) is on). An item that Radarr/Sonarr still tracks only loses its Plex link (a `Plex Unlinked` event is recorded). If a library section fails to sync, the cleanup is skipped for that run so a partial sync never deletes media. |
 
 !!! tip ""
     All Plex-specific behaviour (skip logic, notifications) is configured per [Trailer Profile](../profiles/index.md), not on the connection itself. A Plex connection only needs to be set up once.
