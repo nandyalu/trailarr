@@ -15,6 +15,7 @@ from .read import (
 from .search import search
 from .update import (
     demote_arr_items_with_plex_to_plex_only,
+    unlink_plex_missing_items,
     update_download_facts,
     update_media_exists,
     update_media_image,
@@ -32,6 +33,7 @@ __all__ = [
     "plex_create_or_update_bulk",
     "delete_except",
     "demote_arr_items_with_plex_to_plex_only",
+    "unlink_plex_missing_items",
     "read",
     "read_all",
     "read_all_raw",

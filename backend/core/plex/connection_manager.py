@@ -4,9 +4,11 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 from app_logger import ModuleLogger
+from config.settings import app_settings
 import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
+from core.base.connection_manager import delete_trailers_for_removed_media
 from core.base.database.models.connection import ConnectionRead
 from core.base.database.models.event import EventCreate, EventSource, EventType
 from core.base.database.models.media import MediaCreate, MediaRead
@@ -102,6 +104,10 @@ class PlexConnectionManager:
         self._stats_updated = 0
         self._stats_linked = 0
         self._stats_sections_scanned = 0
+        self._sections_failed = 0
+        # Media ids seen during the current refresh — used afterwards to
+        # remove items that are no longer in the Plex library.
+        self.media_ids: list[int] = []
         self.api = PlexAPI(
             server_url=connection.url,
             token=connection.api_key,
@@ -220,6 +226,8 @@ class PlexConnectionManager:
             newly_linked,
             plex_fields_changed,
         ) in zip(parsed, bulk_results):
+            if media_read.id:
+                self.media_ids.append(media_read.id)
             if newly_linked:
                 pending_events.append(
                     EventCreate(
@@ -413,12 +421,57 @@ class PlexConnectionManager:
             )
         return success
 
+    async def _remove_media_deleted_in_plex(self) -> None:
+        """Remove media that are no longer present in the Plex library.
+
+        The mirror of the Arr-side `remove_media_deleted_in_arr_from_db`:
+        - Arr-sourced rows that lost their Plex presence only lose their
+          `plex_*` fields (PLEX_UNLINKED) — Radarr/Sonarr still owns them.
+        - Plex-only rows are deleted, with trailer-file cleanup when the
+          `delete_trailer_connection` setting is on.
+        """
+        if self._sections_failed:
+            logger.warning(
+                f"Plex connection '{self.connection_name}':"
+                f" {self._sections_failed} section(s) failed to process —"
+                " skipping removal of missing media this run."
+            )
+            return
+        if len(self.media_ids) == 0:
+            # If no media IDs exist, avoid deleting all media
+            return
+        # Unlink Arr-sourced rows that are gone from the Plex library
+        unlinked_ids = media_manager.unlink_plex_missing_items(
+            self.connection_id, self.media_ids
+        )
+        for media_id in unlinked_ids:
+            event_manager.track_plex_unlinked(
+                media_id=media_id,
+                connection_name=self.connection_name,
+                source=EventSource.SYSTEM,
+                source_detail="PlexRefresh",
+            )
+        # Delete trailer files for Plex-only rows that are being removed
+        if app_settings.delete_trailer_connection:
+            all_media = media_manager.read_all_by_connection(
+                self.connection_id
+            )
+            ids_to_keep = set(self.media_ids)
+            for media in all_media:
+                if media.id in ids_to_keep:
+                    continue
+                await delete_trailers_for_removed_media(media, "Plex library")
+        # Delete Plex-only rows that are not in the Plex library anymore
+        media_manager.delete_except(self.connection_id, self.media_ids)
+
     async def refresh(self) -> None:
         """Fetch all Plex libraries and sync them into the database."""
         self._stats_added = 0
         self._stats_updated = 0
         self._stats_linked = 0
         self._stats_sections_scanned = 0
+        self._sections_failed = 0
+        self.media_ids = []
         logger.info(
             f"Starting Plex refresh for connection '{self.connection_name}'"
         )
@@ -438,9 +491,13 @@ class PlexConnectionManager:
             try:
                 await self._process_section(section)
             except Exception as e:
+                self._sections_failed += 1
                 logger.error(
                     f"Error processing section '{section.title}': {e}"
                 )
+        # Remove media that disappeared from the Plex library. Skipped
+        # when any section failed — a partial sync must not delete media.
+        await self._remove_media_deleted_in_plex()
         logger.info(
             f"Plex refresh complete for '{self.connection_name}':"
             f" {self._stats_sections_scanned}/{len(sections)} sections"

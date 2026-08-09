@@ -324,3 +324,44 @@ def demote_arr_items_with_plex_to_plex_only(
         demoted_ids.append(db_media.id)  # type: ignore
     _session.commit()
     return demoted_ids
+
+
+@write_session
+def unlink_plex_missing_items(
+    plex_connection_id: int,
+    keep_ids: list[int],
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[int]:
+    """Clear the Plex link on Arr-sourced rows removed from the Plex library.
+
+    The mirror of `demote_arr_items_with_plex_to_plex_only` for the Plex
+    side: when an item leaves the Plex library but Radarr/Sonarr still
+    tracks it, the row stays and only loses its `plex_*` fields.
+
+    Args:
+        plex_connection_id (int): The Plex connection id to scope the query.
+        keep_ids (list[int]): Media ids still present in the Plex library.
+
+    Returns:
+        list[int]: IDs of unlinked media items so the caller can fire
+            PLEX_UNLINKED events.
+    """
+    statement = (
+        select(Media)
+        .where(Media.plex_connection_id == plex_connection_id)
+        .where(Media.connection_id != plex_connection_id)
+        .where(~col(Media.id).in_(keep_ids))
+    )
+    rows = _session.exec(statement).all()
+    unlinked_ids: list[int] = []
+    for db_media in rows:
+        db_media.plex_connection_id = None
+        db_media.plex_rating_key = None
+        db_media.plex_section_key = None
+        db_media.plex_trailer = None
+        db_media.updated_at = datetime.now(timezone.utc)
+        _session.add(db_media)
+        unlinked_ids.append(db_media.id)  # type: ignore
+    _session.commit()
+    return unlinked_ids
