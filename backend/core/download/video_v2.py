@@ -75,6 +75,42 @@ _AUDIO_CODECS = {
 }
 
 
+# Long/short forms of the same yt-dlp option, mapped to one canonical form
+_YTDLP_OPTION_ALIASES = {
+    "--format": "-f",
+    "--output": "-o",
+}
+
+
+def _warn_user_overrides(
+    trailarr_options: list[str], user_args: list[str]
+) -> None:
+    """Warn when profile extra options repeat an option Trailarr sets.
+
+    Trailarr appends the profile's extra options after its own, and
+    yt-dlp uses the last value of a repeated option. The user value
+    stays active — this only makes the override visible in the logs.
+    """
+
+    def canonical(arg: str) -> str:
+        arg = arg.split("=", 1)[0]  # normalize '--format=...' form
+        return _YTDLP_OPTION_ALIASES.get(arg, arg)
+
+    trailarr_flags = {
+        canonical(arg) for arg in trailarr_options if arg.startswith("-")
+    }
+    # '-o' is set outside _get_ytdl_options, but Trailarr always sets it
+    trailarr_flags.add("-o")
+    for arg in user_args:
+        if not arg.startswith("-"):
+            continue
+        if canonical(arg) in trailarr_flags:
+            logger.warning(
+                f"Profile yt-dlp extra option '{arg}' overrides an option"
+                " that Trailarr sets. Trailarr uses the profile value."
+            )
+
+
 def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     """Get the YoutubeDL options for downloading the video"""
     _options: list[str] = []
@@ -151,6 +187,7 @@ def _get_ytdl_options(profile: TrailerProfileRead) -> list[str]:
     user_options = profile.ytdlp_extra_options
     if user_options:
         user_args = shlex.split(user_options)
+        _warn_user_overrides(_options, user_args)
         _options.extend(user_args)
     return _options
 
