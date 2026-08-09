@@ -58,7 +58,7 @@ python3 scripts/launch.py
 # 3. Drive http://localhost:7890 with headless Chromium (Playwright) and check console errors
 ```
 
-`scripts/launch.py` uses the persistent dev config at `config-dev/.env` / `config-dev/trailarr.db` (gitignored). If `WEBUI_DISABLE_AUTH=true` there, no login is needed. Stop it with `pkill -f "scripts/launch.py"` and `pkill -f "uvicorn main:trailarr_api"` (it execs into `uv run uvicorn`, so both process names can exist). Prefer this over `ng serve` + `src/proxy.conf.json` for verification — the dev proxy is a different code path (Angular dev server proxying to the backend) than the production static-file serving in `router.py`.
+`scripts/launch.py` uses the persistent dev config at `config/.env` / `config/trailarr.db` (gitignored; NOT `config-dev/`, which is a copy of a real library — never write to it). That `.env` does not disable auth, so launch with `WEBUI_DISABLE_AUTH=true python3 scripts/launch.py` to skip the login page (the shell env var wins because `load_dotenv(override=False)`), or sign in with admin/trailarr. Stop it with `pkill -f "scripts/launch.py"` and `pkill -f "uvicorn main:trailarr_api"` (it execs into `uv run uvicorn`, so both process names can exist). Prefer this over `ng serve` + `src/proxy.conf.json` for verification — the dev proxy is a different code path (Angular dev server proxying to the backend) than the production static-file serving in `router.py`.
 
 ### Testing
 
