@@ -196,10 +196,11 @@
 }
 
 .popover {
-  // Reset the UA popover inset:0 so only the anchored sides position the box
+  // Chromium 151+ does not resolve anchor() against the implicit anchor from
+  // popovertarget. position-area still uses it, so anchor the popover with it.
+  // inset: auto clears the UA popover inset: 0 inside the position area.
   inset: auto;
-  left: anchor(left);
-  top: anchor(bottom);
+  position-area: block-end span-inline-end;
   margin: 0.25rem 0 0;
   border: 1px solid var(--color-outline-variant);
   border-radius: 0.75rem;
@@ -212,8 +213,7 @@
   // can sit at the bottom of the viewport) — set from the click handler,
   // since position-try-fallbacks doesn't fire for in-flow anchors
   &.open-up {
-    top: auto;
-    bottom: anchor(top);
+    position-area: block-start span-inline-end;
     margin: 0 0 0.25rem;
   }
 }
