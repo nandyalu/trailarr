@@ -48,6 +48,42 @@ class TestLiveContentExcludedFromDownload:
         assert options[idx + 1] == "!is_live & !is_upcoming"
 
 
+class TestUserOptionOverrideWarning:
+    def test_user_format_option_warns_and_stays_active(
+        self, trailer_profile
+    ):
+        trailer_profile.ytdlp_extra_options = "-f bestvideo+bestaudio"
+        with patch("core.download.video_v2.logger.warning") as mock_warn:
+            options = _get_ytdl_options(trailer_profile)
+        assert mock_warn.called
+        assert "'-f'" in mock_warn.call_args[0][0]
+        # The user override stays in the command, after Trailarr's own -f
+        assert options.count("-f") == 2
+        assert options[-2:] == ["-f", "bestvideo+bestaudio"]
+
+    def test_long_form_alias_is_detected(self, trailer_profile):
+        trailer_profile.ytdlp_extra_options = "--format=best"
+        with patch("core.download.video_v2.logger.warning") as mock_warn:
+            _get_ytdl_options(trailer_profile)
+        assert mock_warn.called
+        assert "'--format=best'" in mock_warn.call_args[0][0]
+
+    def test_output_option_is_detected(self, trailer_profile):
+        # -o is set by Trailarr outside _get_ytdl_options, but a user
+        # -o would still override it
+        trailer_profile.ytdlp_extra_options = "-o /tmp/other.mkv"
+        with patch("core.download.video_v2.logger.warning") as mock_warn:
+            _get_ytdl_options(trailer_profile)
+        assert mock_warn.called
+
+    def test_non_conflicting_option_does_not_warn(self, trailer_profile):
+        trailer_profile.ytdlp_extra_options = "--socket-timeout 30"
+        with patch("core.download.video_v2.logger.warning") as mock_warn:
+            options = _get_ytdl_options(trailer_profile)
+        assert not mock_warn.called
+        assert options[-2:] == ["--socket-timeout", "30"]
+
+
 class TestCleanupPartialDownloads:
     def test_removes_partial_and_intermediate_files(self, tmp_path):
         (tmp_path / "temp_311-trailer.mkv.part").write_bytes(b"x" * 10)
