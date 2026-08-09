@@ -37,7 +37,7 @@ Tasks can be edited to change their name, interval and delay.
 
 ### **Arr Data Refresh**
 
-- Runs every 60 minutes (first run starts 30 seconds after app launch) (configurable in [Settings > General > Monitor Interval](../settings/general-settings/index.md#monitor-interval)).
+- Runs every 60 minutes (first run starts 30 seconds after app launch). Use the task's edit dialog on this page to change the interval.
 - Connects to all Radarr and Sonarr connections to sync media items and their status in Trailarr.
 - Applies `Monitor` and `Status` values, and scans for trailers for new items.
 - Runs as a background job; first run starts 30 seconds after app launch.

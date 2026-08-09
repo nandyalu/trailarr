@@ -55,7 +55,6 @@ def write_initial_config(
     }
     defaults_if_missing = {
         "TZ": _detect_timezone(),
-        "MONITOR_INTERVAL": str(60),
         "WAIT_FOR_MEDIA": str("true"),
         "UPDATE_YTDLP": str("false"),
         "LOG_LEVEL": str("INFO"),
