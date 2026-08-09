@@ -112,9 +112,11 @@
 }
 
 .popover {
-  right: calc(anchor(right));
-  top: calc(anchor(bottom));
-  justify-self: anchor-center;
+  // Chromium 151+ does not resolve anchor() against the implicit anchor from
+  // popovertarget. position-area still uses it, so anchor the popover with it.
+  // inset: auto clears the UA popover inset: 0 inside the position area.
+  inset: auto;
+  position-area: block-end span-inline-start;
   border: 1px solid var(--color-outline-variant);
   border-radius: 0.75rem;
   margin: 0.25rem 0 0;
@@ -124,8 +126,7 @@
   overflow: hidden;
 
   @media (width < 765px) {
-    top: auto;
-    bottom: calc(anchor(top));
+    position-area: block-start span-inline-start;
     margin: 0 0 0.25rem;
   }
 }
