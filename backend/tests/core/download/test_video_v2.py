@@ -158,6 +158,27 @@ class TestDownloadFailureCleanup:
 
         assert not part.exists()
 
+    def test_missing_ytdlp_binary_raises_clear_error(
+        self, tmp_path, trailer_profile
+    ):
+        # WinError 2 / ENOENT from subprocess means the yt-dlp executable
+        # itself is missing — the error must name YTDLP_PATH, not just
+        # repeat the OS message (#direct-install Windows report)
+        out_file = tmp_path / "temp_311-trailer.mkv"
+        part = tmp_path / "temp_311-trailer.mkv.part"
+        part.write_bytes(b"x")
+
+        with patch(
+            "core.download.video_v2.subprocess.run",
+            side_effect=FileNotFoundError(2, "No such file or directory"),
+        ):
+            with pytest.raises(DownloadFailedError, match="YTDLP_PATH"):
+                _download_with_ytdlp(
+                    "https://youtu.be/abc", str(out_file), trailer_profile
+                )
+
+        assert not part.exists()
+
 
 class TestCleanupStaleTempDownloads:
     def test_removes_stale_files_and_keeps_directories(

@@ -312,6 +312,15 @@ def _download_with_ytdlp(
     except DownloadFailedError:
         _cleanup_partial_downloads(file_path)
         raise
+    except FileNotFoundError:
+        _cleanup_partial_downloads(file_path)
+        msg = (
+            "yt-dlp executable not found at"
+            f" '{app_settings.ytdlp_path}'. Set YTDLP_PATH in the .env"
+            " file in APP_DATA_DIR to the full path of the yt-dlp"
+            " executable."
+        )
+        raise DownloadFailedError(msg)
     except Exception as e:
         _cleanup_partial_downloads(file_path)
         msg = f"Error running yt-dlp process: {str(e)}"
@@ -386,6 +395,14 @@ def _convert_video(
 
     except subprocess.TimeoutExpired:
         msg = "FFmpeg conversion timed out after 15 minutes"
+        raise ConversionFailedError(msg)
+    except FileNotFoundError:
+        msg = (
+            "ffmpeg executable not found at"
+            f" '{app_settings.ffmpeg_path}'. Set FFMPEG_PATH in the .env"
+            " file in APP_DATA_DIR to the full path of the ffmpeg"
+            " executable."
+        )
         raise ConversionFailedError(msg)
     except Exception as e:
         msg = f"Error running FFmpeg process: {str(e)}"

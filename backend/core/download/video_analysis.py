@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import json
 import tempfile
@@ -169,6 +170,17 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             )
             video_info.streams.append(stream_info)
         return video_info
+    except FileNotFoundError as e:
+        if shutil.which(app_settings.ffprobe_path):
+            # ffprobe exists — the media file itself is gone
+            logger.exception(f"Error extracting video info: {str(e)}")
+        else:
+            logger.error(
+                "ffprobe executable not found at"
+                f" '{app_settings.ffprobe_path}'. Set FFPROBE_PATH in the"
+                " .env file in APP_DATA_DIR to the full path of the"
+                " ffprobe executable."
+            )
     except Exception as e:
         logger.exception(f"Error extracting video info: {str(e)}")
     return None

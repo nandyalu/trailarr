@@ -25,6 +25,7 @@ from core.base.database.utils.engine import flush_records_to_db
 from core.base.database.utils.version_guard import (
     ensure_db_not_from_newer_version,
 )
+from core.binaries import validate_binary_paths
 from core.download.video_v2 import cleanup_stale_temp_downloads
 from core.notifications import dispatcher as notification_dispatcher
 from core.tasks import scheduler
@@ -39,6 +40,8 @@ async def lifespan(app: FastAPI):
     # Before startup
     # Refuse to run an older app version against a newer-schema database
     ensure_db_not_from_newer_version()
+    # Check yt-dlp/ffmpeg/ffprobe paths; fall back to system PATH if needed
+    validate_binary_paths()
     # Remove orphaned partial downloads from previous runs (#626)
     cleanup_stale_temp_downloads()
     # Schedule all tasks
