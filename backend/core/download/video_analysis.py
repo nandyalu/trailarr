@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import json
 import tempfile
@@ -171,16 +170,19 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             video_info.streams.append(stream_info)
         return video_info
     except FileNotFoundError as e:
-        if shutil.which(app_settings.ffprobe_path):
-            # ffprobe exists — the media file itself is gone
-            logger.exception(f"Error extracting video info: {str(e)}")
-        else:
+        # subprocess sets e.filename to the executable when it cannot run
+        # ffprobe. Path.stat() sets it to the media file when the file is
+        # deleted after the probe. A missing media file at probe time does
+        # not raise — ffprobe returns a non-zero exit code instead.
+        if e.filename == app_settings.ffprobe_path:
             logger.error(
                 "ffprobe executable not found at"
                 f" '{app_settings.ffprobe_path}'. Set FFPROBE_PATH in the"
                 " .env file in APP_DATA_DIR to the full path of the"
                 " ffprobe executable."
             )
+        else:
+            logger.exception(f"Error extracting video info: {str(e)}")
     except Exception as e:
         logger.exception(f"Error extracting video info: {str(e)}")
     return None
