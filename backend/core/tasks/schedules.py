@@ -105,13 +105,14 @@ TASK_REGISTRY: dict[str, Callable] = {
 
 
 def _build_defaults() -> list[dict[str, str | float]]:
-    """Return default task config dicts using current app settings."""
-    monitor_interval_seconds = app_settings.monitor_interval * 60.0
+    """Return default task config dicts.
+    These apply only when a task has no persisted config yet.
+    Users change the intervals on the Tasks page."""
     return [
         {
             "task_key": "api_refresh",
             "task_name": "Arr Data Refresh",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": 3600.0,
             "delay_seconds": 30.0,
         },
         {
@@ -123,13 +124,13 @@ def _build_defaults() -> list[dict[str, str | float]]:
         {
             "task_key": "scan_disk",
             "task_name": "Scan All Media Folders",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": 3600.0,
             "delay_seconds": 480.0,
         },
         {
             "task_key": "download_trailers",
             "task_name": "Download Missing Trailers",
-            "interval_seconds": monitor_interval_seconds,
+            "interval_seconds": 3600.0,
             "delay_seconds": 900.0,
         },
         {

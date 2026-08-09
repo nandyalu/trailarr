@@ -304,7 +304,6 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     PYTHONPATH=/opt/trailarr/backend
 
     LOG_LEVEL=INFO
-    MONITOR_INTERVAL=60
     WAIT_FOR_MEDIA=true
     UPDATE_YTDLP=false
     EOF
@@ -329,7 +328,6 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     PYTHONPATH=$INSTALL_DIR/backend
 
     LOG_LEVEL=INFO
-    MONITOR_INTERVAL=60
     WAIT_FOR_MEDIA=true
     UPDATE_YTDLP=false
     EOF
@@ -352,7 +350,6 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     PYTHONPATH=C:\Program Files\Trailarr\backend
 
     LOG_LEVEL=INFO
-    MONITOR_INTERVAL=60
     WAIT_FOR_MEDIA=true
     UPDATE_YTDLP=false
     "@ | Set-Content "$DataDir\.env" -Encoding UTF8

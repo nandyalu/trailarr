@@ -64,7 +64,6 @@ class Settings(BaseModel):
     gpu_enabled_nvidia: bool
     log_level: str
     monitor_enabled: bool
-    monitor_interval: int
     server_hostname: str
     server_model: str
     server_platform: str
