@@ -3336,9 +3336,18 @@
 <ul>
 <li><strong>You control AI subtitles now</strong> — the new per-profile <code>Auto-Generated Subtitles</code> setting (off by default) decides if YouTube auto-generated subtitles are used when a video has no uploader subtitles — see <a href="../../user-guide/settings/profiles/settings/subtitle/#auto-generated-subtitles">Subtitle Settings</a>. (<a href="https://github.com/nandyalu/trailarr/issues/644">#644</a>)</li>
 </ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Plex-only media no longer lingers after deletion</strong> — when an item is removed from your Plex library and has no Radarr/Sonarr link, the next Plex sync now deletes it from Trailarr, the same way Arr syncs already clean up — see <a href="../../user-guide/settings/connections/plex/#what-a-plex-connection-does">Plex Connection</a>.</li>
+</ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
-<li>Trailers now embed the uploader's subtitles when available; before, Trailarr embedded only the auto-generated ones.</li>
+<li>
+<p>Trailers now embed the uploader's subtitles when available; before, Trailarr embedded only the auto-generated ones.</p>
+</li>
+<li>
+<p>Media that Radarr/Sonarr still tracks only loses its Plex link when it leaves the Plex library, and Trailarr records a <code>Plex Unlinked</code> event for it.</p>
+</li>
 </ul>
 <hr />
 <h2 id="v0110-august-9-2026"><strong>v0.11.0</strong> - <em>August 9, 2026</em></h2>
