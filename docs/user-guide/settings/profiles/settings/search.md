@@ -185,7 +185,7 @@ Enter any additional options you want to pass to `yt-dlp` when downloading the t
 
 Please refer to the [yt-dlp documentation](https://github.com/yt-dlp/yt-dlp#usage-and-options) for a list of all available options.
 
-{{ version_badge("upd", "0.11.0") }}
+{{ version_badge("upd", "0.11.1") }}
 
 Extra options are added after the options that Trailarr sets, and `yt-dlp` uses the last value of a repeated option. If you pass an option that Trailarr also sets (for example `-f` / `--format`), your value wins, and Trailarr writes a warning to the logs.
 
