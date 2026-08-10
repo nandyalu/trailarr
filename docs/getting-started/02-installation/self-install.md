@@ -283,7 +283,7 @@ The default location the installer uses is `$INSTALL_DIR/bin/`:
 
 ### Deno (JavaScript runtime for yt-dlp)
 
-{{ version_badge("add", "0.11.2") }}
+{{ version_badge("add", "0.11.1") }}
 
 `yt-dlp` needs a JavaScript runtime to solve YouTube's challenges. Without one, YouTube provides only image formats, and every download fails with `Requested format is not available` after a `n challenge solving failed` warning. The automated installer downloads [Deno](https://deno.com) into `$INSTALL_DIR/bin/`; for a manual install, download the zip for your platform from the [Deno releases page](https://github.com/denoland/deno/releases/latest) and place the `deno` (or `deno.exe`) binary next to `ffmpeg`. Then set `DENO_PATH` in your `.env` (Step 6). If Deno is already on the system `PATH`, you can skip this step and leave `DENO_PATH` unset.
 
