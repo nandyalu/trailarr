@@ -533,6 +533,12 @@ class _Config:
         - For bare metal installations, this should point to local yt-dlp installation.
         - Valid values are any valid file path to yt-dlp binary."""
 
+    deno_path = str_property("DENO_PATH", default="")
+    """Path to the Deno binary (JavaScript runtime for yt-dlp).
+        - Default is empty: yt-dlp finds Deno on the system PATH (Docker).
+        - For direct installations, set this when Deno is not on PATH.
+        - Valid values are any valid file path to the Deno binary."""
+
     # def resolve_closest_resolution(self, value: str | int) -> int:
     #     """Resolve the closest resolution for the given value. \n
     #     Returns the closest resolution as an integer. \n

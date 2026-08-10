@@ -34,6 +34,7 @@ def write_initial_config(
     ffmpeg_path: Path,
     ffprobe_path: Path,
     ytdlp_path: Path,
+    deno_path: Path | None,
     python_executable: Path,
 ) -> None:
     """Write the .env configuration file.
@@ -53,6 +54,9 @@ def write_initial_config(
         "PYTHON_EXECUTABLE": str(python_executable),
         "PYTHONPATH": str(install_dir / "backend"),
     }
+    # Keep an existing DENO_PATH when this install could not provide Deno
+    if deno_path:
+        always_write["DENO_PATH"] = str(deno_path)
     defaults_if_missing = {
         "TZ": _detect_timezone(),
         "WAIT_FOR_MEDIA": str("true"),
