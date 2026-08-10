@@ -125,7 +125,7 @@ $action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
 $trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
               -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
-              -DisallowStartIfOnBatteries $false -StopIfGoingOnBatteries $false
+              -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 $principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
 Register-ScheduledTask -TaskName '{_TASK_NAME}' `
   -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
