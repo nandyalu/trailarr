@@ -281,6 +281,12 @@ The default location the installer uses is `$INSTALL_DIR/bin/`:
     & "$InstallDir\bin\ffmpeg.exe" -version
     ```
 
+### Deno (JavaScript runtime for yt-dlp)
+
+{{ version_badge("add", "0.11.2") }}
+
+`yt-dlp` needs a JavaScript runtime to solve YouTube's challenges. Without one, YouTube provides only image formats, and every download fails with `Requested format is not available` after a `n challenge solving failed` warning. The automated installer downloads [Deno](https://deno.com) into `$INSTALL_DIR/bin/`; for a manual install, download the zip for your platform from the [Deno releases page](https://github.com/denoland/deno/releases/latest) and place the `deno` (or `deno.exe`) binary next to `ffmpeg`. Then set `DENO_PATH` in your `.env` (Step 6). If Deno is already on the system `PATH`, you can skip this step and leave `DENO_PATH` unset.
+
 ---
 
 ## Step 6 — Create the .env configuration file
@@ -300,6 +306,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     FFMPEG_PATH=/opt/trailarr/bin/ffmpeg
     FFPROBE_PATH=/opt/trailarr/bin/ffprobe
     YTDLP_PATH=/opt/trailarr/backend/.venv/bin/yt-dlp
+    DENO_PATH=/opt/trailarr/bin/deno
     PYTHON_EXECUTABLE=/opt/trailarr/backend/.venv/bin/python
     PYTHONPATH=/opt/trailarr/backend
 
@@ -324,6 +331,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     FFMPEG_PATH=$INSTALL_DIR/bin/ffmpeg
     FFPROBE_PATH=$INSTALL_DIR/bin/ffprobe
     YTDLP_PATH=$INSTALL_DIR/backend/.venv/bin/yt-dlp
+    DENO_PATH=$INSTALL_DIR/bin/deno
     PYTHON_EXECUTABLE=$INSTALL_DIR/backend/.venv/bin/python
     PYTHONPATH=$INSTALL_DIR/backend
 
@@ -346,6 +354,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     FFMPEG_PATH=C:\Program Files\Trailarr\bin\ffmpeg.exe
     FFPROBE_PATH=C:\Program Files\Trailarr\bin\ffprobe.exe
     YTDLP_PATH=C:\Program Files\Trailarr\backend\.venv\Scripts\yt-dlp.exe
+    DENO_PATH=C:\Program Files\Trailarr\bin\deno.exe
     PYTHON_EXECUTABLE=C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe
     PYTHONPATH=C:\Program Files\Trailarr\backend
 
@@ -652,6 +661,8 @@ before starting uvicorn.
 If you cloned the repo, you need to run the Angular build first (Step 1, Option B).
 
 **Downloads or scans fail with `FileNotFoundError` or `[WinError 2]`** — Trailarr cannot find `yt-dlp`, `ffmpeg`, or `ffprobe` at the configured path. Check `YTDLP_PATH`, `FFMPEG_PATH`, and `FFPROBE_PATH` in your `.env` (Step 6). The startup log names the missing tool and the variable to set. Trailarr runs only these configured paths — it does not search the system `PATH` unless the configured path is missing.
+
+**Downloads fail with `Requested format is not available` after a `n challenge solving failed` warning** — `yt-dlp` has no JavaScript runtime to solve YouTube's challenges, so YouTube provides only image formats. Install Deno (Step 5) and set `DENO_PATH` in your `.env`, or install Deno on the system `PATH`. The startup log warns when no runtime is found.
 
 ---
 

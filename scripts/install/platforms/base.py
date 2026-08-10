@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from common.config import ask_port, write_initial_config
+from common.deno import download_deno
 from common.display import print_info, print_success, step_context
 from common.env_file import load_env
 from common.ffmpeg import download_ffmpeg
@@ -35,6 +36,8 @@ class BaseInstaller(ABC):
         # Set by download_ffmpeg_binary(); used by write_config()
         self.ffmpeg_path: Path = self.bin_dir / "ffmpeg"
         self.ffprobe_path: Path = self.bin_dir / "ffprobe"
+        # Set by download_deno_binary(); None when Deno is unavailable
+        self.deno_path: Path | None = None
 
     # ------------------------------------------------------------------
     # Main flow
@@ -50,6 +53,7 @@ class BaseInstaller(ABC):
         self.copy_files()
         self.setup_python()
         self.download_ffmpeg_binary()
+        self.download_deno_binary()
         port = self._resolve_port(existing_env)
         self.write_config(port)
         self.create_service(port)
@@ -138,6 +142,13 @@ class BaseInstaller(ABC):
         print_success("ffmpeg downloaded")
         print_info(f"ffmpeg installed to {self.bin_dir}")
 
+    def download_deno_binary(self) -> None:
+        # yt-dlp needs a JavaScript runtime for YouTube downloads
+        self.deno_path = download_deno(self.bin_dir)
+        if self.deno_path:
+            print_success("Deno downloaded")
+            print_info(f"Deno installed to {self.deno_path}")
+
     def write_config(self, port: int) -> None:
         venv_bin = self.venv_dir / "Scripts" if sys.platform == "win32" else self.venv_dir / "bin"
         ytdlp_name = "yt-dlp.exe" if sys.platform == "win32" else "yt-dlp"
@@ -152,6 +163,7 @@ class BaseInstaller(ABC):
             ffmpeg_path=self.ffmpeg_path,
             ffprobe_path=self.ffprobe_path,
             ytdlp_path=venv_bin / ytdlp_name,
+            deno_path=self.deno_path,
             python_executable=venv_bin / python_name,
         )
 

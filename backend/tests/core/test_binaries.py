@@ -3,7 +3,11 @@
 import os
 from unittest.mock import patch
 
-from core.binaries import _resolve_binary, validate_binary_paths
+from core.binaries import (
+    _ensure_js_runtime,
+    _resolve_binary,
+    validate_binary_paths,
+)
 
 
 class TestResolveBinary:
@@ -39,8 +43,50 @@ class TestResolveBinary:
 
 
 class TestValidateBinaryPaths:
-    def test_checks_all_three_tools(self):
-        with patch("core.binaries._resolve_binary") as mock_resolve:
+    def test_checks_all_three_tools_and_js_runtime(self):
+        with (
+            patch("core.binaries._resolve_binary") as mock_resolve,
+            patch("core.binaries._ensure_js_runtime") as mock_js,
+        ):
             validate_binary_paths()
         tools = [call.args[0] for call in mock_resolve.call_args_list]
         assert tools == ["yt-dlp", "ffmpeg", "ffprobe"]
+        assert mock_js.called
+
+
+class TestEnsureJsRuntime:
+    def test_deno_on_path_is_noop(self, monkeypatch):
+        monkeypatch.setenv("PATH", "/usr/bin")
+        with patch(
+            "core.binaries.shutil.which", return_value="/usr/bin/deno"
+        ):
+            _ensure_js_runtime()
+        assert os.environ["PATH"] == "/usr/bin"
+
+    def test_deno_path_setting_is_added_to_path(self, monkeypatch):
+        monkeypatch.setenv("PATH", "/usr/bin")
+        monkeypatch.setenv("DENO_PATH", "/opt/trailarr/bin/deno")
+
+        def fake_which(cmd):
+            # Not on PATH by name; the configured absolute path resolves
+            if cmd == "/opt/trailarr/bin/deno":
+                return "/opt/trailarr/bin/deno"
+            return None
+
+        with patch("core.binaries.shutil.which", side_effect=fake_which):
+            _ensure_js_runtime()
+        assert os.environ["PATH"].startswith(
+            "/opt/trailarr/bin" + os.pathsep
+        )
+
+    def test_no_runtime_anywhere_logs_warning(self, monkeypatch):
+        monkeypatch.setenv("PATH", "/usr/bin")
+        monkeypatch.delenv("DENO_PATH", raising=False)
+        with (
+            patch("core.binaries.shutil.which", return_value=None),
+            patch("core.binaries.logger.warning") as mock_warn,
+        ):
+            _ensure_js_runtime()
+        assert mock_warn.called
+        assert "DENO_PATH" in mock_warn.call_args[0][0]
+        assert os.environ["PATH"] == "/usr/bin"
