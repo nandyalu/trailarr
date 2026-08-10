@@ -368,7 +368,7 @@ Create `$DATA_DIR/.env` with at minimum these values. Adjust paths to match your
     All other settings (connections, profiles, etc.) can be configured from the web UI.
     See [Environment Variables](../01-first-things/environment-variables.md) for a full reference.
 
-{{ version_badge("add", "0.11.0") }}
+{{ version_badge("add", "0.11.1") }}
 
 Trailarr checks `FFMPEG_PATH`, `FFPROBE_PATH`, and `YTDLP_PATH` at each startup. If a configured path does not point to an executable, Trailarr searches the system `PATH` for the tool and uses that copy for the session, with a warning in the logs. If the tool is not found at all, the startup log shows an error that names the variable to set.
 
