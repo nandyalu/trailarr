@@ -3325,7 +3325,7 @@ The server list shows the URLs that Plex provides, which are often external addr
 <td>After a trailer is downloaded, Trailarr can trigger a Plex library refresh so the new file appears in Plex immediately.</td>
 </tr>
 <tr>
-<td><strong>Removal cleanup</strong> <span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-august-9-2026">v0.11.1</a></td>
+<td><strong>Removal cleanup</strong> <span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-tbd">v0.11.1</a></td>
 <td>When an item is no longer in your Plex library, the next sync cleans it up. A Plex-only item is deleted from Trailarr (trailer files are also deleted when <a href="../../general-settings/#on-deleting-from-connection">On Deleting from Connection</a> is on). An item that Radarr/Sonarr still tracks only loses its Plex link (a <code>Plex Unlinked</code> event is recorded). If a library section fails to sync, the cleanup is skipped for that run so a partial sync never deletes media.</td>
 </tr>
 </tbody>
