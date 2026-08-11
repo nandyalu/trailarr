@@ -3511,7 +3511,7 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 </div>
 </div>
 <h3 id="deno-javascript-runtime-for-yt-dlp">Deno (JavaScript runtime for yt-dlp)</h3>
-<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-tbd">v0.11.1</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-august-11-2026">v0.11.1</a></p>
 <p><code>yt-dlp</code> needs a JavaScript runtime to solve YouTube's challenges. Without one, YouTube provides only image formats, and every download fails with <code>Requested format is not available</code> after a <code>n challenge solving failed</code> warning. The automated installer downloads <a href="https://deno.com">Deno</a> into <code>$INSTALL_DIR/bin/</code>; for a manual install, download the zip for your platform from the <a href="https://github.com/denoland/deno/releases/latest">Deno releases page</a> and place the <code>deno</code> (or <code>deno.exe</code>) binary next to <code>ffmpeg</code>. Then set <code>DENO_PATH</code> in your <code>.env</code> (Step 6). If Deno is already on the system <code>PATH</code>, you can skip this step and leave <code>DENO_PATH</code> unset.</p>
 <hr />
 <h2 id="step-6-create-the-env-configuration-file">Step 6 — Create the .env configuration file</h2>
@@ -3590,7 +3590,7 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 <p>All other settings (connections, profiles, etc.) can be configured from the web UI.
 See <a href="../../01-first-things/environment-variables/">Environment Variables</a> for a full reference.</p>
 </div>
-<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-tbd">v0.11.1</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-august-11-2026">v0.11.1</a></p>
 <p>Trailarr checks <code>FFMPEG_PATH</code>, <code>FFPROBE_PATH</code>, and <code>YTDLP_PATH</code> at each startup. If a configured path does not point to an executable, Trailarr searches the system <code>PATH</code> for the tool and uses that copy for the session, with a warning in the logs. If the tool is not found at all, the startup log shows an error that names the variable to set.</p>
 <hr />
 <h2 id="step-7-run-database-migrations">Step 7 — Run database migrations</h2>
