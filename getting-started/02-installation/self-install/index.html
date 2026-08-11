@@ -1029,6 +1029,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 5 — Download ffmpeg">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deno-javascript-runtime-for-yt-dlp" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Deno (JavaScript runtime for yt-dlp)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2991,6 +3008,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 5 — Download ffmpeg">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deno-javascript-runtime-for-yt-dlp" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Deno (JavaScript runtime for yt-dlp)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3476,6 +3510,9 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 </div>
 </div>
 </div>
+<h3 id="deno-javascript-runtime-for-yt-dlp">Deno (JavaScript runtime for yt-dlp)</h3>
+<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-august-11-2026">v0.11.1</a></p>
+<p><code>yt-dlp</code> needs a JavaScript runtime to solve YouTube's challenges. Without one, YouTube provides only image formats, and every download fails with <code>Requested format is not available</code> after a <code>n challenge solving failed</code> warning. The automated installer downloads <a href="https://deno.com">Deno</a> into <code>$INSTALL_DIR/bin/</code>; for a manual install, download the zip for your platform from the <a href="https://github.com/denoland/deno/releases/latest">Deno releases page</a> and place the <code>deno</code> (or <code>deno.exe</code>) binary next to <code>ffmpeg</code>. Then set <code>DENO_PATH</code> in your <code>.env</code> (Step 6). If Deno is already on the system <code>PATH</code>, you can skip this step and leave <code>DENO_PATH</code> unset.</p>
 <hr />
 <h2 id="step-6-create-the-env-configuration-file">Step 6 — Create the .env configuration file</h2>
 <p>Create <code>$DATA_DIR/.env</code> with at minimum these values. Adjust paths to match your choices above.</p>
@@ -3492,15 +3529,16 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 </span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="s">FFMPEG_PATH=/opt/trailarr/bin/ffmpeg</span>
 </span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="s">FFPROBE_PATH=/opt/trailarr/bin/ffprobe</span>
 </span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="s">YTDLP_PATH=/opt/trailarr/backend/.venv/bin/yt-dlp</span>
-</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="s">PYTHON_EXECUTABLE=/opt/trailarr/backend/.venv/bin/python</span>
-</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="s">PYTHONPATH=/opt/trailarr/backend</span>
-</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>
-</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="s">LOG_LEVEL=INFO</span>
-</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="s">WAIT_FOR_MEDIA=true</span>
-</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="s">UPDATE_YTDLP=false</span>
-</span><span id="__span-20-17"><a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="s">EOF</span>
-</span><span id="__span-20-18"><a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>
-</span><span id="__span-20-19"><a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>sudo<span class="w"> </span>chown<span class="w"> </span>trailarr:trailarr<span class="w"> </span>/var/lib/trailarr/.env
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="s">DENO_PATH=/opt/trailarr/bin/deno</span>
+</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="s">PYTHON_EXECUTABLE=/opt/trailarr/backend/.venv/bin/python</span>
+</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="s">PYTHONPATH=/opt/trailarr/backend</span>
+</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
+</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="s">LOG_LEVEL=INFO</span>
+</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="s">WAIT_FOR_MEDIA=true</span>
+</span><span id="__span-20-17"><a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="s">UPDATE_YTDLP=false</span>
+</span><span id="__span-20-18"><a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="s">EOF</span>
+</span><span id="__span-20-19"><a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>
+</span><span id="__span-20-20"><a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>sudo<span class="w"> </span>chown<span class="w"> </span>trailarr:trailarr<span class="w"> </span>/var/lib/trailarr/.env
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -3514,13 +3552,14 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 </span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="s">FFMPEG_PATH=$INSTALL_DIR/bin/ffmpeg</span>
 </span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="s">FFPROBE_PATH=$INSTALL_DIR/bin/ffprobe</span>
 </span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="s">YTDLP_PATH=$INSTALL_DIR/backend/.venv/bin/yt-dlp</span>
-</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="s">PYTHON_EXECUTABLE=$INSTALL_DIR/backend/.venv/bin/python</span>
-</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="s">PYTHONPATH=$INSTALL_DIR/backend</span>
-</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>
-</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="s">LOG_LEVEL=INFO</span>
-</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="s">WAIT_FOR_MEDIA=true</span>
-</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="s">UPDATE_YTDLP=false</span>
-</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="s">EOF</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="s">DENO_PATH=$INSTALL_DIR/bin/deno</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="s">PYTHON_EXECUTABLE=$INSTALL_DIR/backend/.venv/bin/python</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="s">PYTHONPATH=$INSTALL_DIR/backend</span>
+</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>
+</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="s">LOG_LEVEL=INFO</span>
+</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="s">WAIT_FOR_MEDIA=true</span>
+</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="s">UPDATE_YTDLP=false</span>
+</span><span id="__span-21-18"><a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="s">EOF</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -3534,13 +3573,14 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 </span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="sh">FFMPEG_PATH=C:\Program Files\Trailarr\bin\ffmpeg.exe</span>
 </span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="sh">FFPROBE_PATH=C:\Program Files\Trailarr\bin\ffprobe.exe</span>
 </span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="sh">YTDLP_PATH=C:\Program Files\Trailarr\backend\.venv\Scripts\yt-dlp.exe</span>
-</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="sh">PYTHON_EXECUTABLE=C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe</span>
-</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="sh">PYTHONPATH=C:\Program Files\Trailarr\backend</span>
-</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>
-</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="sh">LOG_LEVEL=INFO</span>
-</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="sh">WAIT_FOR_MEDIA=true</span>
-</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="sh">UPDATE_YTDLP=false</span>
-</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="sh">&quot;@</span> <span class="p">|</span> <span class="nb">Set-Content</span> <span class="s2">&quot;$DataDir\.env&quot;</span> <span class="n">-Encoding</span> <span class="n">UTF8</span>
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="sh">DENO_PATH=C:\Program Files\Trailarr\bin\deno.exe</span>
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="sh">PYTHON_EXECUTABLE=C:\Program Files\Trailarr\backend\.venv\Scripts\python.exe</span>
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="sh">PYTHONPATH=C:\Program Files\Trailarr\backend</span>
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="sh">LOG_LEVEL=INFO</span>
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="sh">WAIT_FOR_MEDIA=true</span>
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="sh">UPDATE_YTDLP=false</span>
+</span><span id="__span-22-18"><a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="sh">&quot;@</span> <span class="p">|</span> <span class="nb">Set-Content</span> <span class="s2">&quot;$DataDir\.env&quot;</span> <span class="n">-Encoding</span> <span class="n">UTF8</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3550,7 +3590,7 @@ The default location the installer uses is <code>$INSTALL_DIR/bin/</code>:</p>
 <p>All other settings (connections, profiles, etc.) can be configured from the web UI.
 See <a href="../../01-first-things/environment-variables/">Environment Variables</a> for a full reference.</p>
 </div>
-<p><span class="twemoji golden" title="Added in v0.11.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0110-august-9-2026">v0.11.0</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0111-august-11-2026">v0.11.1</a></p>
 <p>Trailarr checks <code>FFMPEG_PATH</code>, <code>FFPROBE_PATH</code>, and <code>YTDLP_PATH</code> at each startup. If a configured path does not point to an executable, Trailarr searches the system <code>PATH</code> for the tool and uses that copy for the session, with a warning in the logs. If the tool is not found at all, the startup log shows an error that names the variable to set.</p>
 <hr />
 <h2 id="step-7-run-database-migrations">Step 7 — Run database migrations</h2>
@@ -3794,6 +3834,7 @@ before starting uvicorn.</p>
 <p><strong>Web UI doesn't load (404)</strong> — Check that <code>frontend-build/</code> exists inside <code>$INSTALL_DIR</code>.
 If you cloned the repo, you need to run the Angular build first (Step 1, Option B).</p>
 <p><strong>Downloads or scans fail with <code>FileNotFoundError</code> or <code>[WinError 2]</code></strong> — Trailarr cannot find <code>yt-dlp</code>, <code>ffmpeg</code>, or <code>ffprobe</code> at the configured path. Check <code>YTDLP_PATH</code>, <code>FFMPEG_PATH</code>, and <code>FFPROBE_PATH</code> in your <code>.env</code> (Step 6). The startup log names the missing tool and the variable to set. Trailarr runs only these configured paths — it does not search the system <code>PATH</code> unless the configured path is missing.</p>
+<p><strong>Downloads fail with <code>Requested format is not available</code> after a <code>n challenge solving failed</code> warning</strong> — <code>yt-dlp</code> has no JavaScript runtime to solve YouTube's challenges, so YouTube provides only image formats. Install Deno (Step 5) and set <code>DENO_PATH</code> in your <code>.env</code>, or install Deno on the system <code>PATH</code>. The startup log warns when no runtime is found.</p>
 <hr />
 <h2 id="uninstall">Uninstall</h2>
 <div class="tabbed-set tabbed-alternate" data-tabs="10:3"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><input id="__tabbed_10_3" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Linux</label><label for="__tabbed_10_2">macOS</label><label for="__tabbed_10_3">Windows</label></div>

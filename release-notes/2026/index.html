@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0110-august-9-2026" class="md-skip">
+        <a href="#v0111-august-11-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,6 +2418,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0111-august-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.1</strong> - <em>August 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0110-august-9-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2965,6 +2976,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0111-august-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.1</strong> - <em>August 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0110-august-9-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3309,6 +3331,45 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0111-august-11-2026"><strong>v0.11.1</strong> - <em>August 11, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>You control AI subtitles now</strong> — the new per-profile <code>Auto-Generated Subtitles</code> setting (off by default) decides if YouTube auto-generated subtitles are used when a video has no uploader subtitles — see <a href="../../user-guide/settings/profiles/settings/subtitle/#auto-generated-subtitles">Subtitle Settings</a>. (<a href="https://github.com/nandyalu/trailarr/issues/644">#644</a>)</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Plex-only media no longer lingers after deletion</strong> — when an item is removed from your Plex library and has no Radarr/Sonarr link, the next Plex sync now deletes it from Trailarr, the same way Arr syncs already clean up — see <a href="../../user-guide/settings/connections/plex/#what-a-plex-connection-does">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>Windows install works again</strong> — the installer passed two parameters that <code>New-ScheduledTaskSettingsSet</code> does not accept, so every Windows install or upgrade failed at the "Registering Task Scheduler startup task" step; the task now registers correctly.</p>
+</li>
+<li>
+<p><strong>YouTube downloads work on direct installs</strong> — the installer now bundles the <a href="https://deno.com">Deno</a> JavaScript runtime that <code>yt-dlp</code> needs to solve YouTube's challenges; without it, every download failed with <code>Requested format is not available</code> — see <a href="../../getting-started/02-installation/self-install/#deno-javascript-runtime-for-yt-dlp">Self Install</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>Trailers now embed the uploader's subtitles when available; before, Trailarr embedded only the auto-generated ones.</p>
+</li>
+<li>
+<p>Media that Radarr/Sonarr still tracks only loses its Plex link when it leaves the Plex library, and Trailarr records a <code>Plex Unlinked</code> event for it.</p>
+</li>
+<li>
+<p>Trailarr checks for a JavaScript runtime at startup, adds a configured <code>DENO_PATH</code> to the process <code>PATH</code> so <code>yt-dlp</code> can find it, and logs a warning when no runtime exists.</p>
+</li>
+<li>
+<p>Trailarr checks the configured <code>yt-dlp</code>, <code>ffmpeg</code>, and <code>ffprobe</code> paths at startup, falls back to the system <code>PATH</code> when a configured path does not exist, and logs a clear error that names the variable to set when the tool is not found at all — see <a href="../../getting-started/02-installation/self-install/#step-6-create-the-env-configuration-file">Self Install</a>.</p>
+</li>
+<li>
+<p>When a download or scan fails because a configured binary is missing, the error now names the configured path and the environment variable to fix instead of a bare <code>FileNotFoundError</code> / <code>[WinError 2]</code> message.</p>
+</li>
+<li>
+<p>Trailarr logs a warning when a profile's yt-dlp extra options override an option Trailarr sets (for example <code>-f</code>); the profile value stays active — see <a href="../../user-guide/settings/profiles/settings/search/#yt-dlp-extra-options">Yt-dlp Extra Options</a>.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0110-august-9-2026"><strong>v0.11.0</strong> - <em>August 9, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -3390,15 +3451,6 @@
 </li>
 <li>
 <p>With <code>WEBUI_DISABLE_AUTH=true</code>, the UI now hides the logout button and pauses live updates after inactivity (with a <strong>Resume</strong> dialog) instead of bouncing through the login page for a new session. The paused session id is deleted on the server, so requests that replay it get a <code>401</code> response.</p>
-</li>
-<li>
-<p>Trailarr checks the configured <code>yt-dlp</code>, <code>ffmpeg</code>, and <code>ffprobe</code> paths at startup, falls back to the system <code>PATH</code> when a configured path does not exist, and logs a clear error that names the variable to set when the tool is not found at all — see <a href="../../getting-started/02-installation/self-install/#step-6-create-the-env-configuration-file">Self Install</a>.</p>
-</li>
-<li>
-<p>When a download or scan fails because a configured binary is missing, the error now names the configured path and the environment variable to fix instead of a bare <code>FileNotFoundError</code> / <code>[WinError 2]</code> message.</p>
-</li>
-<li>
-<p>Trailarr logs a warning when a profile's yt-dlp extra options override an option Trailarr sets (for example <code>-f</code>); the profile value stays active — see <a href="../../user-guide/settings/profiles/settings/search/#yt-dlp-extra-options">Yt-dlp Extra Options</a>.</p>
 </li>
 </ul>
 <hr />
