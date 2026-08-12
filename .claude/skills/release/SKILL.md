@@ -1,6 +1,6 @@
 ---
 name: release
-description: "Ship a Trailarr release from dev to main: update and prune dependencies, sync version badges, write release notes in ASD-STE100 style, open the release PR with the house title/body convention, merge it, and reset dev from main afterward. Trigger: /release"
+description: "Ship a Trailarr release from dev to main: update and prune dependencies, sync version badges, write release notes in ASD-STE100 style, open the release PR with the house title/body convention, merge it, reset dev from main, and create the GitHub release that mints the tag and triggers the release/Docker workflows. Trigger: /release"
 trigger: /release
 ---
 
@@ -18,6 +18,7 @@ No step in this skill includes a Claude Code / `Co-Authored-By` footer in any co
 /release notes            # just the release-notes step (date + ASD-STE100 rewrite)
 /release pr               # just open the PR (assumes dev is already ready)
 /release merge            # merge the open release PR, then reset dev from main
+/release publish          # just create the GitHub release (tag + workflows)
 ```
 
 ## 1. Pre-release checklist (deps, tests, docs)
@@ -53,6 +54,8 @@ Commit the dependency/version/badge/notes changes on `dev` with a plain message 
 
 Prefer **"Rebase and merge"**. Fall back to **"Create a merge commit"** only if GitHub blocks the rebase — `dev` has occasionally picked up a `Merge branch 'main' into dev` commit from a prior sync, and GitHub's rebase-and-merge button refuses to rebase a branch containing merge commits ("this branch cannot be rebased" error). Never fall back to squash for this reason, and never force a clean rebase by rewriting `dev` locally and force-pushing — it's shared branch history. Confirm the actual merge with the user before executing it (shared-state, hard to reverse).
 
+Wait for the PR checks to pass first (`gh pr checks <n> --watch`). The repo ruleset reports `REVIEW_REQUIRED` because the owner authors the release PR and cannot self-review — merge with `gh pr merge <n> --rebase --admin` once all checks are green.
+
 ## 6. Post-merge cleanup
 
 Merging deletes `dev` on GitHub. Locally:
@@ -64,3 +67,16 @@ git branch -D dev
 git checkout -b dev main
 git push -u origin dev
 ```
+
+## 7. Create the GitHub release (required — nothing else mints the tag)
+
+No workflow on a `main` push creates the tag or release. Creating the GitHub release is what mints the `vX.Y.Z` tag, and the tag push then triggers `release.yml` (builds the direct-install asset `trailarr-vX.Y.Z-release.tar.gz` + `.sha256`), `docker-publish.yml` (versioned Docker image), and the Discord release notification.
+
+```
+gh release create vX.Y.Z --target main --latest \
+  --title "vX.Y.Z - Same short title as the PR" \
+  --notes-file <file>
+```
+
+- **Notes file**: the same release-notes section used for the PR body (heading line included), but **without** any `Closes #N` lines — those are PR-only.
+- Verify afterward: the `Release` and `Docker Publish` workflow runs succeed (`gh run list` / `gh run watch`), and the release shows both asset files (`gh release view vX.Y.Z --json assets`).
