@@ -1,6 +1,6 @@
 # Phase 8 — TMDB Integration
 
-**Status:** not started · **Release:** v0.13.0 · **Depends on:** Phase 7 (paths below are
+**Status:** not started · **Release:** v0.13.0, target Nov 2026 · **Depends on:** Phase 7 (paths below are
 post-reorg; translate via phase-07 move map if executing earlier)
 **Refresh this plan before execution** — verify TMDB API terms/endpoints unchanged.
 

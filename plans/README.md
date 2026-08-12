@@ -64,25 +64,37 @@ Standard checklist, in addition to each phase's listed pages:
 - The startup pass ("Attribute Trailer Downloads") fires at +60s; disk scan at +480s;
   download task at +900s. Time your verification windows accordingly.
 
-## Release ladder (estimates as of July 2026)
+## Release ladder (estimates as of August 11, 2026)
 
 | Release | Phase | Content | Target | Bake before next |
 |---|---|---|---|---|
-| v0.9.9 | 1 | Download↔profile attribution + manual assign + heal | Jul 2026 | ✅ shipped |
+| v0.9.9 | 1 | Download↔profile attribution + manual assign + heal | ✅ shipped Jul 2026 | ✅ done |
 | v0.10.0 | 2 | Downloads-driven download engine + Apprise notifications | ✅ shipped Jul 19, 2026 | ✅ done |
-| v0.10.2 | 3+4 | Dynamic status + monitor becomes user intent | ✅ shipped Jul 30, 2026 | ~2 weeks (baking) |
-| v0.11.0 | 5 | Drop trailer_exists/status columns, filter migration | Sep 2026 | ~2 weeks |
-| v0.11.1 | 6 | Downloads/files custom-filter family (views) | Oct 2026 | ~2 weeks |
-| v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Nov 2026 | ~3 weeks |
-| v0.13.0 | 8 | TMDB integration (media-videos candidates table) | Dec 2026 | ~3–4 weeks |
-| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | Jan 2027 | ~3 weeks |
+| v0.10.2 | 3+4 | Dynamic status + monitor becomes user intent | ✅ shipped Jul 30, 2026 | ✅ done |
+| v0.11.0 | 5 | Drop trailer_exists/status columns, filter migration | ✅ shipped Aug 9, 2026 | ~2 weeks (baking, to ~Aug 23) |
+| v0.11.1 | — | Unplanned fixes (Plex-only removal cleanup, Windows install, yt-dlp/Deno) | ✅ shipped Aug 11, 2026 | — |
+| v0.11.2 | — | Unplanned fixes (Plex library-root folder match) | TBD (ready) | — |
+| v0.11.3 | 6 | Downloads/files custom-filter family (views) | Sep 2026 | ~2 weeks |
+| v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Oct 2026 | ~3 weeks |
+| v0.13.0 | 8 | TMDB integration (media-videos candidates table) | Nov 2026 | ~3–4 weeks |
+| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | Dec 2026 – Jan 2027 | ~3 weeks |
 | v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | Feb 2027 | ~4 weeks |
-| v1.0.0 | 11 | Issues section + delight items + stabilization | Mar–Apr 2027 | — |
+| v1.0.0 | 11 | Issues section + delight items + stabilization | Mar 2027 | — |
+
+**Patch releases do not carry phases.** v0.11.1 and v0.11.2 are fix-only releases that
+came out of real-library bug reports, so Phase 6 moved from v0.11.1 to v0.11.3. Expect
+this to repeat: when a fix release takes the next patch number, the pending phase moves
+down the ladder instead of being folded into the fix release.
+
+**Timeline reassessment (Aug 11, 2026):** Phase 5 shipped ~3 weeks ahead of its Sep 2026
+target, so every later phase pulls in by ~1 month against the July estimates. v1.0.0
+moves from Mar–Apr 2027 to Mar 2027 — one month of the gain is deliberately held back as
+buffer for the December slowdown (Phase 9 spans Dec–Jan) rather than being spent.
 
 **Parallel track — Onboarding & Diagnostics** (`track-onboarding-diagnostics.md`):
-Connection Doctor + Health page + cookies UI ride v0.11.x releases; the first-run
-guided setup rides v0.13.x (post-reorg); the diagnostics bundle fits any release.
-Library-wide **preview mode** ships with Phase 3 (v0.10.2).
+Connection Doctor + Health page + cookies UI ride the v0.11.3–v0.12.x releases; the
+first-run guided setup rides v0.13.x (post-reorg); the diagnostics bundle fits any
+release. Library-wide **preview mode** shipped with Phase 3 (v0.10.2).
 
 Rules of the ladder:
 
@@ -150,11 +162,11 @@ skip-safe too:
 - `track-apprise-notifications.md` — DONE (shipped with v0.10.0).
 - `track-onboarding-diagnostics.md` — parallel track: Connection Doctor, Health page,
   cookies UI, first-run guided setup, diagnostics bundle (milestones A–D).
-- `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4); baking
-  ~2 weeks — watch computed-status/monitor reports before starting Phase 5.
+- `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
 - `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
-- `phase-05-drop-columns.md`
-- `phase-06-view-filters.md`
+- `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
+  — watch for filter-migration and has_downloads reports before starting Phase 6.
+- `phase-06-view-filters.md` — NEXT (v0.11.3); start after the Phase 5 bake window.
 - `phase-07-backend-reorg.md`
 - `phase-08-tmdb.md`
 - `phase-09-video-types.md`

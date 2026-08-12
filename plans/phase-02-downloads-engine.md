@@ -1,6 +1,6 @@
 # Phase 2 — Downloads-Driven Download Engine
 
-**Status:** SHIPPED — v0.10.0 released July 19, 2026; bake window ~4 weeks (until ~mid-Aug 2026): watch for SIGNAL-DISAGREE reports and unexpected download/skip issues before starting Phase 3 · **Release:** v0.10.0 (with `track-apprise-notifications.md`)
+**Status:** DONE — v0.10.0 released July 19, 2026; bake window closed (Phases 3–5 shipped on top of it) · **Release:** v0.10.0 (with `track-apprise-notifications.md`)
 **Depends on:** Phase 1 (shipped) · **Blocks:** Phases 3–5
 
 ## Objective

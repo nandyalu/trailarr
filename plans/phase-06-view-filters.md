@@ -1,7 +1,9 @@
 # Phase 6 — Downloads & Files Filter Family (View Filters)
 
-**Status:** not started · **Release:** v0.11.1 · **Depends on:** Phase 5 (virtual-field
-mechanism + `has_downloads` proven)
+**Status:** NEXT — start after the Phase 5 bake window (~Aug 23, 2026); target Sep 2026 ·
+**Release:** v0.11.3 (moved from v0.11.1: that number and v0.11.2 went to unplanned fix
+releases) · **Depends on:** Phase 5 (virtual-field mechanism + `has_downloads` proven),
+shipped in v0.11.0 on Aug 9, 2026
 
 ## Objective
 
