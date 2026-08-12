@@ -1,13 +1,36 @@
 from typing import Sequence
-from sqlmodel import Session
+from sqlmodel import Session, select
 
+from core.base.database.models.connection import PathMapping
 from core.base.database.models.media import (
     Media,
     MediaCreate,
     MediaRead,
     MediaUpdate,
 )
+from core.base.utils.path_utils import is_subpath
 from exceptions import ItemNotFoundError
+
+
+def _library_root_paths(session: Session) -> set[str]:
+    """🚨This is a private method🚨 \n
+    Return the normalized ``path_to`` values of all path mappings.\n
+    These folders are library roots (e.g. ``/media/tv``). A valid media
+    folder is always deeper than a library root."""
+    rows = session.exec(select(PathMapping.path_to)).all()
+    return {p.rstrip("/\\") for p in rows if p}
+
+
+def _is_at_or_above_library_root(path: str, roots: set[str]) -> bool:
+    """🚨This is a private method🚨 \n
+    Return True when *path* is a library root or a parent of one.\n
+    Folder-path prefix matching must never select such a row: it is a
+    parent of every media folder under the root, so it would match (and
+    adopt) any media item in that library."""
+    if not path:
+        return False
+    norm = path.rstrip("/\\")
+    return any(is_subpath(norm, root) for root in roots)
 
 
 def _convert_to_read_list(db_media_list: Sequence[Media]) -> list[MediaRead]:
@@ -114,5 +137,4 @@ def has_updated(
     #             f" {update.folder_path}"
     #         )
     #         return True
-
 

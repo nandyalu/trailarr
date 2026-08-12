@@ -85,7 +85,13 @@ def plex_create_or_update_bulk(
 ) -> list[tuple[MediaRead, bool, bool, bool]]:
     """Create or update media rows for a Plex sync chunk.
 
-    Matches each item to an existing DB row by folder_path (exact then prefix).
+    Matches each item to an existing DB row in three stages:
+    1. Exact match on folder_path.
+    2. Prefix match — a stored path that is a parent of the item's path.
+       A stored path at or above a library root never matches.
+    3. txdb id fallback — (txdb_id, is_movie) when exactly one eligible
+       row matches. Eligible: Arr rows not linked to a different Plex
+       connection, and Plex-only rows of the same connection.
     All folder paths are loaded once per call to avoid per-item table scans.
 
     Args:
@@ -104,14 +110,30 @@ def plex_create_or_update_bulk(
 
     _check_connection_exists_bulk(items, session=_session)
 
-    # Load all (id, folder_path) pairs once — avoids a full-table scan per item
-    id_path_stmt = select(Media.id, Media.folder_path).where(
-        col(Media.folder_path).is_not(None)
-    )
-    all_id_paths: list[tuple[int, str]] = _session.exec(id_path_stmt).all()
+    # Load all row tuples once — avoids a full-table scan per item
+    id_path_stmt = select(
+        Media.id,
+        Media.folder_path,
+        Media.txdb_id,
+        Media.is_movie,
+        Media.arr_id,
+        Media.connection_id,
+        Media.plex_connection_id,
+    ).where(col(Media.folder_path).is_not(None))
+    all_id_paths = _session.exec(id_path_stmt).all()
     exact_map: dict[str, int] = {
-        path: mid for mid, path in all_id_paths if path and mid
+        path: mid for mid, path, *_rest in all_id_paths if path and mid
     }
+    # (txdb_id, is_movie) → (id, arr_id, connection_id, plex_connection_id)
+    # rows, for the stage-3 id fallback
+    txdb_map: dict[tuple[str, bool], list[tuple[int, int, int, int | None]]]
+    txdb_map = {}
+    for mid, _path, txdb, movie, arr_id, conn_id, plex_conn_id in all_id_paths:
+        if mid and txdb:
+            txdb_map.setdefault((txdb, movie), []).append(
+                (mid, arr_id, conn_id, plex_conn_id)
+            )
+    library_roots = base._library_root_paths(_session)
 
     db_results: list[tuple[Media, bool, bool, bool]] = []
 
@@ -124,17 +146,52 @@ def plex_create_or_update_bulk(
         # Stage 2: prefix match — stored path is a parent directory
         if existing_id is None and folder_path:
             best_id: int | None = None
-            best_len = 0
-            for mid, path in all_id_paths:
+            best_norm = ""
+            for mid, path, *_rest in all_id_paths:
                 if not path or not mid:
                     continue
                 norm = path.rstrip("/\\")
                 if (
                     folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
-                ) and len(norm) > best_len:
+                ) and len(norm) > len(best_norm):
                     best_id = mid
-                    best_len = len(norm)
+                    best_norm = norm
+            # Never link to a row whose folder is a library root (bad data
+            # from old versions) — it would match every item in the library.
+            if best_id is not None and base._is_at_or_above_library_root(
+                best_norm, library_roots
+            ):
+                best_id = None
             existing_id = best_id
+
+        # Stage 3: txdb id fallback — link by (txdb_id, is_movie) when the
+        # folder did not match. Eligible rows:
+        # - Arr rows not already linked to a different Plex connection
+        #   (never steal a row from another Plex server), and
+        # - Plex-only rows of this same connection (folder move/rename).
+        # The link is made only when exactly one row is eligible. More
+        # than one match (e.g. the same movie in two Radarr instances)
+        # stays unlinked: linking to an arbitrary row would be wrong.
+        matched_by_txdb = False
+        if existing_id is None and media_create.txdb_id:
+            eligible = [
+                mid
+                for mid, arr_id, conn_id, plex_conn_id in txdb_map.get(
+                    (media_create.txdb_id, media_create.is_movie), []
+                )
+                if (
+                    arr_id
+                    and plex_conn_id
+                    in (None, media_create.plex_connection_id)
+                )
+                or (
+                    not arr_id
+                    and conn_id == media_create.connection_id
+                )
+            ]
+            if len(eligible) == 1:
+                existing_id = eligible[0]
+                matched_by_txdb = True
 
         if existing_id is not None:
             db_media = base._get_db_item(existing_id, _session)
@@ -156,6 +213,17 @@ def plex_create_or_update_bulk(
                 and media_create.season_count > 0
                 else None
             )
+            # A txdb-id match means the Plex folder moved or was renamed.
+            # Follow the move for Plex-only rows; Arr rows keep the Arr
+            # folder (the Arr application stays authoritative).
+            plex_folder_update = (
+                folder_path
+                if matched_by_txdb
+                and not db_media.arr_id
+                and folder_path
+                and db_media.folder_path != folder_path
+                else None
+            )
             changed = (
                 db_media.plex_rating_key != media_create.plex_rating_key
                 or db_media.plex_section_key != media_create.plex_section_key
@@ -168,6 +236,7 @@ def plex_create_or_update_bulk(
                     plex_season_count is not None
                     and db_media.season_count != plex_season_count
                 )
+                or plex_folder_update is not None
             )
             if changed:
                 db_media.plex_rating_key = media_create.plex_rating_key
@@ -177,6 +246,8 @@ def plex_create_or_update_bulk(
                     db_media.media_filename = plex_media_filename
                 if plex_season_count is not None:
                     db_media.season_count = plex_season_count
+                if plex_folder_update is not None:
+                    db_media.folder_path = plex_folder_update
                 db_media.updated_at = datetime.now(timezone.utc)
                 _session.add(db_media)
             db_results.append((db_media, False, newly_linked, changed))
@@ -322,17 +393,25 @@ def _read_plex_only_by_folder_path(
     )
     rows = session.exec(id_path_stmt).all()
     best_id: int | None = None
-    best_path_len: int = 0
+    best_norm: str = ""
     for row_id, row_path in rows:
         if not row_path or not row_id:
             continue
         norm = row_path.rstrip("/\\")
         if (
             folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
-        ) and len(norm) > best_path_len:
+        ) and len(norm) > len(best_norm):
             best_id = row_id
-            best_path_len = len(norm)
+            best_norm = norm
     if best_id is None:
+        return None
+    # Never adopt a row whose folder is a library root (bad data from old
+    # versions). Such a row is a parent of every series/movie folder in
+    # that library — the first new Arr item would adopt it together with
+    # all files and trailers wrongly attributed to it.
+    if base._is_at_or_above_library_root(
+        best_norm, base._library_root_paths(session)
+    ):
         return None
     return base._get_db_item(best_id, session)
 

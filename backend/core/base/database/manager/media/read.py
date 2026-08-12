@@ -243,17 +243,26 @@ def read_by_folder_path(
     rows = _session.exec(id_path_stmt).all()
 
     best_id: int | None = None
-    best_path_len: int = 0
+    best_norm: str = ""
     for row_id, row_path in rows:
         if not row_path or not row_id:
             continue
         norm = row_path.rstrip("/\\")
         if (
             folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
-        ) and len(norm) > best_path_len:
+        ) and len(norm) > len(best_norm):
             best_id = row_id
-            best_path_len = len(norm)
+            best_norm = norm
     if best_id is None:
+        return None
+    # Never match a row whose folder is a library root (bad data from old
+    # versions). Such a row is a parent of every media folder in that
+    # library, so it would incorrectly match all of them. A legitimate
+    # parent row is always deeper than the root, so it always wins the
+    # longest-match rule over a root row when both are present.
+    if base._is_at_or_above_library_root(
+        best_norm, base._library_root_paths(_session)
+    ):
         return None
     return MediaRead.model_validate(base._get_db_item(best_id, _session))
 

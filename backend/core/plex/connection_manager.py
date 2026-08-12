@@ -1,6 +1,6 @@
 import os
 import re
-from difflib import SequenceMatcher
+from collections import Counter
 from pathlib import Path
 
 from app_logger import ModuleLogger
@@ -33,27 +33,15 @@ _SEASON_FOLDER_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Strips (year), {id-tag}, [id-tag] decorators before fuzzy title comparison
-_DECORATOR_RE = re.compile(r"\s*[\[{(][^\]})]*[\]})]\s*")
-
-
-def _normalize_title(name: str) -> str:
-    return _DECORATOR_RE.sub(" ", name).strip().lower()
-
-
-def _resolve_show_root(folder: str, show_title: str) -> str:
-    """Return the true show-root folder, stripping a trailing season directory
+def _resolve_show_root(folder: str) -> str:
+    """Return the show-root folder. Strip a trailing season directory
     if one is detected.
 
-    Signal 1 — regex: last component matches a known season-folder pattern
-    (e.g. 'Season 1', 'S02', 'Staffel 3', 'Specials') → go up one level.
+    When the last component matches a known season-folder pattern
+    (e.g. 'Season 1', 'S02', 'Staffel 3', 'Specials'), go up one level.
 
-    Signal 2 — fuzzy title match: after stripping year/ID decorators, the
-    last component is compared against the show title with SequenceMatcher.
-    A ratio ≥ 0.6 means we are already at the show root → return as-is.
-
-    If neither signal fires the folder is returned unchanged; the prefix
-    match in read_by_folder_path acts as a safety net.
+    Otherwise the folder is returned unchanged; the prefix match in
+    read_by_folder_path acts as a safety net.
     """
     path = Path(folder)
     last = path.name
@@ -61,13 +49,6 @@ def _resolve_show_root(folder: str, show_title: str) -> str:
         return folder
     if _SEASON_FOLDER_RE.match(last):
         return str(path.parent)
-    norm_last = _normalize_title(last)
-    norm_title = _normalize_title(show_title)
-    if (
-        norm_title
-        and SequenceMatcher(None, norm_title, norm_last).ratio() >= 0.6
-    ):
-        return folder
     return folder
 
 
@@ -133,6 +114,56 @@ class PlexConnectionManager:
                 return True
         return False
 
+    def _is_at_or_above_library_root(self, plex_folder: str) -> bool:
+        """Return True if *plex_folder* is a configured library root or a
+        parent of one.
+
+        A media folder must always be deeper than the library root. A folder
+        at or above the root would claim the whole library as one media item.
+        """
+        if not plex_folder:
+            return False
+        for pm in self.all_path_mappings:
+            if is_subpath(plex_folder, pm.path_from):
+                return True
+        return False
+
+    def _derive_show_folder(self, paths: list[str], title: str) -> str:
+        """Derive the show-root folder from episode parent directories.
+
+        Primary signal: the common path of all episode directories,
+        season-stripped. This handles seasonal and flat layouts.
+
+        When episodes live in more than one show folder (e.g. a stale
+        duplicate folder), the common path collapses to the library root.
+        In that case, fall back to a majority vote over the per-episode
+        show-root candidates so one stray folder cannot poison the result.
+
+        Returns an empty string when no safe folder can be derived.
+        """
+        try:
+            common = os.path.commonpath(paths)
+        except ValueError:
+            common = paths[0]
+        folder = _resolve_show_root(common)
+        if not self._is_at_or_above_library_root(folder):
+            return folder
+        candidates = Counter(
+            c
+            for c in (_resolve_show_root(p) for p in paths)
+            if not self._is_at_or_above_library_root(c)
+        )
+        if not candidates:
+            return ""
+        best, count = candidates.most_common(1)[0]
+        logger.warning(
+            f"Show '{title}': episode folders do not share one show root"
+            f" (common path '{common}' is at or above the library root)."
+            f" Selected '{best}' ({count}/{len(paths)} episodes). Check the"
+            " show for stray or duplicate folders in Plex."
+        )
+        return best
+
     def _section_is_tracked(self, section: PlexLibrarySection) -> bool:
         """Return True if any path mapping covers this section's root folders."""
         for pm in self.all_path_mappings:
@@ -187,6 +218,16 @@ class PlexConnectionManager:
                 logger.debug(
                     f"Skipping '{item.title}': folder '{plex_folder}'"
                     " not under any configured library"
+                )
+                continue
+            # Safety net: never store a library root as a media folder. A
+            # root folder would match every media item under it and adopt
+            # their files and trailers.
+            if plex_folder and self._is_at_or_above_library_root(plex_folder):
+                logger.warning(
+                    f"Skipping '{item.title}': derived folder '{plex_folder}'"
+                    " is at or above a library root. Cannot track this item"
+                    " safely."
                 )
                 continue
             folder_path = (
@@ -317,12 +358,12 @@ class PlexConnectionManager:
         The folder map is applied to each show so that folder_path is correctly
         derived from a real episode file rather than the unreliable Location[].path.
         """
-        # Step 1: build grandparentRatingKey → show-root-folder from episodes.
-        # Collect every episode's parent directory per show, then take the
-        # common path — this correctly handles both seasonal and flat layouts.
-        # The same pass collects each show's distinct season numbers, so a
-        # season count is available for Plex-only series (Specials/season 0
-        # are excluded to match Sonarr's seasonCount semantics).
+        # Step 1: collect every episode's parent directory per show
+        # (grandparentRatingKey). The show root is derived from these in
+        # step 2. The same pass collects each show's distinct season
+        # numbers, so a season count is available for Plex-only series
+        # (Specials/season 0 are excluded to match Sonarr's seasonCount
+        # semantics).
         folder_paths: dict[str, list[str]] = {}
         season_numbers: dict[str, set[int]] = {}
         leaf_count = 0
@@ -337,14 +378,8 @@ class PlexConnectionManager:
                 season_numbers.setdefault(
                     leaf.grandparentRatingKey, set()
                 ).add(leaf.parentIndex)
-        folder_map: dict[str, str] = {}
-        for rating_key, paths in folder_paths.items():
-            try:
-                folder_map[rating_key] = os.path.commonpath(paths)
-            except ValueError:
-                folder_map[rating_key] = paths[0]
         logger.debug(
-            f"Section '{section.title}': {len(folder_map)} unique shows"
+            f"Section '{section.title}': {len(folder_paths)} unique shows"
             f" from {leaf_count} episodes"
         )
 
@@ -352,10 +387,18 @@ class PlexConnectionManager:
         buffer: list[tuple[PlexMediaItem, PlexLibrarySection, bool, str]] = []
         total = 0
         async for item in self.api.get_library_media(section.key):
-            plex_folder = _resolve_show_root(
-                folder_map.get(item.ratingKey, item.media_folder),
-                item.title,
-            )
+            paths = folder_paths.get(item.ratingKey)
+            if paths:
+                plex_folder = self._derive_show_folder(paths, item.title)
+                if not plex_folder:
+                    logger.warning(
+                        f"Skipping show '{item.title}': no safe show folder"
+                        " can be derived from its episode folders."
+                    )
+                    continue
+            else:
+                # No episode files — fall back to the show's Location path.
+                plex_folder = _resolve_show_root(item.media_folder)
             item.season_count = len(season_numbers.get(item.ratingKey, ()))
             buffer.append((item, section, False, plex_folder))
             total += 1

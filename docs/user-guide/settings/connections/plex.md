@@ -127,7 +127,9 @@ A unique identifier for your Plex Media Server instance, used internally by Trai
 
 ## How Trailarr Resolves TV Show Folder Paths
 
-To match Plex shows against Radarr/Sonarr entries, Trailarr needs to know each show's root folder path. Plex does not expose this directly, so Trailarr derives it in two steps when syncing a TV library section.
+{{ version_badge("upd", "0.11.2") }}
+
+To match Plex shows against Radarr/Sonarr entries, Trailarr needs to know each show's root folder path. Plex does not expose this directly, so Trailarr derives it from episode files when it syncs a TV library section.
 
 **Step 1 — Episode file scan**
 
@@ -138,13 +140,33 @@ Trailarr calls Plex's `/allLeaves` endpoint to collect the file path of every ep
 | `/tv/Breaking Bad (2008)/Season 1/s01e01.mkv`<br>`/tv/Breaking Bad (2008)/Season 2/s02e01.mkv` | `/tv/Breaking Bad (2008)` ✓ |
 | `/tv/Arcane (2021)/Season 1/s01e01.mkv`<br>`/tv/Arcane (2021)/Season 1/s01e02.mkv` | `/tv/Arcane (2021)/Season 1` ← needs fixing |
 
-**Step 2 — Season folder detection & title confirmation**
+**Step 2 — Season folder detection**
 
-Single-season shows (or shows where Plex has only indexed one season so far) leave `commonpath` stuck inside the season subfolder. Trailarr then checks the last component of that path using two signals:
+Single-season shows (or shows where Plex has only indexed one season so far) leave `commonpath` stuck inside the season subfolder. If the last component of the path matches a known season-folder pattern (`Season 1`, `S02`, `Series 3`, `Specials`, or localized equivalents like `Saison`, `Staffel`, `Temporada`, `Stagione`, …), Trailarr walks up one level to the show root. Otherwise the path is kept as-is, and the parent folder match described below acts as the safety net.
 
-1. **Season folder regex** — if the last component matches a known season-folder pattern (`Season 1`, `S02`, `Series 3`, `Specials`, or localized equivalents like `Saison`, `Staffel`, `Temporada`, `Stagione`, …), Trailarr walks up one level to the show root.
+**Step 3 — Stray folder protection**
 
-2. **Fuzzy title match** — if the regex doesn't fire, Trailarr strips common decorators (`(year)`, `{tvdb-id}`, `[imdb-id]`) from the last component and compares it against the show title using fuzzy matching. A high similarity (≥ 60 %) confirms we are already at the show root. Otherwise the path is kept as-is and Trailarr falls back to a prefix-based lookup at match time.
+{{ version_badge("add", "0.11.2") }}
+
+When a show has episodes in more than one folder (for example, a leftover duplicate folder from an old download or a manual import), the common path collapses to the library root. Trailarr detects this and selects the folder that contains the most episodes instead. It also logs a warning that names the show and the selected folder, so you can find and remove the stray folder in Plex.
+
+A derived folder must always be deeper than a library root. When no safe folder can be derived — for example, all episode files sit directly in the library root — Trailarr skips the show with a warning instead of tracking it with a wrong folder. A folder at or above a library root would make one media item claim every file and trailer in the library.
+
+### How Plex items link to media
+
+{{ version_badge("add", "0.11.2") }}
+
+After the folder is derived and translated through your [Library Folders](#library-folders) mappings, Trailarr matches each Plex item to media in three stages:
+
+1. **Exact folder match** — the Plex item's folder equals a stored media folder. This is the normal case for media that Radarr/Sonarr already tracks.
+
+2. **Parent folder match** — a stored media folder is a parent of the Plex item's folder. This covers season subfolders that step 2 above does not recognize. A stored folder at or above a library root never matches.
+
+3. **ID match** — when the folders do not match, the item links by TMDB id (movies) or TVDB id (shows). The link is made only when exactly one media item has that id; Plex-only items from a different Plex connection and Arr items already linked to a different Plex connection are not considered.
+
+When no stage matches, Trailarr creates a new Plex-only media item. The ID match also lets a Plex-only item follow a folder rename in Plex, so it keeps its events and download history instead of being deleted and added again.
+
+The same rules protect the Radarr/Sonarr side: a new Arr item adopts an existing Plex-only item at the same folder, but never one whose folder is at or above a library root.
 
 ### Naming conventions that work best
 
@@ -153,7 +175,7 @@ Trailarr is designed to work with the default naming schemes used by **Sonarr** 
 | Folder format | Works? |
 |---------------|--------|
 | `Show Name (Year)` | ✓ |
-| `Show Name (Year) {tvdb-ID}` | ✓ — decorators are stripped before matching |
+| `Show Name (Year) {tvdb-ID}` | ✓ |
 | `Show Name (Year) {tvdb-ID} [imdb-ID]` | ✓ |
 | `Season XX` subfolders | ✓ — detected automatically |
 | `Specials` / `Extras` subfolders | ✓ — detected automatically |
@@ -164,8 +186,10 @@ Trailarr is designed to work with the default naming schemes used by **Sonarr** 
 
 If trailers are not being linked to a specific show, check the following:
 
-1. **Verify the folder path in Sonarr/Radarr** matches what Plex sees. The path Sonarr stores for a show must be the same path (or a parent of the path) that Plex uses for the show's files.
+1. **Verify the folder path in Sonarr/Radarr** matches what Plex sees. The path Sonarr stores for a show must be the same path (or a parent of the path) that Plex uses for the show's files, after your path mappings are applied on both sides.
 
-2. **Folder name contains the show title** — after stripping year and ID decorators, Trailarr compares the folder name against the show title. If you have renamed the folder manually to something unrelated to the show title, the fuzzy match will not fire. Use the Sonarr default naming scheme.
+2. **Check the show's ids in Plex** — when the folders differ, Trailarr can still link the show by its TVDB id. Open the show in Plex and confirm the metadata agent found the correct match; a show without a TVDB id can only link by folder path.
 
-3. **Run a manual sync** from the Tasks page after making any folder name changes.
+3. **Check the logs for folder warnings** — a warning that names the show and mentions the library root points to a stray or duplicate folder in Plex. Remove the stray folder and refresh the Plex library.
+
+4. **Run a manual sync** from the Tasks page after making any changes.
