@@ -1,6 +1,6 @@
 # Phase 11 — Issues Section + v1.0.0 Stabilization
 
-**Status:** not started · **Release:** v1.0.0 · **Depends on:** everything.
+**Status:** not started · **Release:** v1.0.0, target Mar 2027 · **Depends on:** everything.
 **Refresh before execution.**
 
 ## Objective

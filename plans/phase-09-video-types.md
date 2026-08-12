@@ -1,6 +1,6 @@
 # Phase 9 — Video Types
 
-**Status:** not started · **Release:** v0.14.0 · **Depends on:** Phases 5 (clean flags),
+**Status:** not started · **Release:** v0.14.0, target Dec 2026 – Jan 2027 · **Depends on:** Phases 5 (clean flags),
 7 (paths), 8 (TMDB — non-trailer types are TMDB-only by construction).
 **Refresh before execution.**
 

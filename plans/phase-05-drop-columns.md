@@ -1,6 +1,8 @@
 # Phase 5 — Drop Legacy Columns
 
-**Status:** DONE — shipped in v0.11.0 (Aug 9, 2026) · **Release:** v0.11.0 · **Depends on:** Phases 2–4 shipped and
+**Status:** DONE — shipped in v0.11.0 (Aug 9, 2026); baking ~2 weeks (to ~Aug 23, 2026)
+before Phase 6 starts — watch for filter-migration and `has_downloads` reports ·
+**Release:** v0.11.0 · **Depends on:** Phases 2–4 shipped and
 baked (this is the roadmap's only destructive-migration release — keep it MINIMAL; the
 richer filter family moved to Phase 6)
 

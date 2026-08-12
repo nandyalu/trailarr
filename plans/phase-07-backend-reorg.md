@@ -1,6 +1,6 @@
 # Phase 7 — Backend Reorganization
 
-**Status:** not started · **Release:** v0.12.0 (own release, ~3-week bake)
+**Status:** not started · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 

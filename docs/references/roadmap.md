@@ -25,13 +25,16 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | **v0.9.9** | July 2026 ✅ | Phase 1 — Download ↔ Profile linking |
 | **v0.10.0** | July 19, 2026 ✅ | Phase 2 — Downloads drive the download engine, plus Notifications (Apprise) |
 | **v0.10.2** | July 30, 2026 ✅ | Phases 3 & 4 — Live status + monitoring becomes yours |
-| **v0.11.0** | September 2026 | Phase 5 — Cleanup of legacy fields |
-| **v0.11.1** | October 2026 | Phase 6 — Filter by downloads & files |
-| **v0.12.0** | November 2026 | Phase 7 — Internal reorganization for long-term maintainability |
-| **v0.13.0** | December 2026 | Phase 8 — TMDB integration |
-| **v0.14.0** | January 2027 | Phase 9 — Video types |
+| **v0.11.0** | August 9, 2026 ✅ | Phase 5 — Cleanup of legacy fields |
+| **v0.11.3** | September 2026 | Phase 6 — Filter by downloads & files |
+| **v0.12.0** | October 2026 | Phase 7 — Internal reorganization for long-term maintainability |
+| **v0.13.0** | November 2026 | Phase 8 — TMDB integration |
+| **v0.14.0** | December 2026 – January 2027 | Phase 9 — Video types |
 | **v0.15.0** | February 2027 | Phase 10 — Movie/Series profiles + season trailers |
-| **v1.0.0** | Q1–Q2 2027 | Phase 11 — Issues section + stabilization |
+| **v1.0.0** | March 2027 | Phase 11 — Issues section + stabilization |
+
+!!! note "Fix releases in between"
+    Phase releases are not the only releases. `v0.11.1` and `v0.11.2` are fix-only releases with no phase in them, which is why Phase 6 targets `v0.11.3`. Bug fixes always come out when they are ready, and a pending phase moves to the next free version instead of waiting.
 
 ### Phase 1 — Download ↔ Profile linking — `v0.9.9` ✅
 
@@ -59,13 +62,13 @@ Monitoring becomes a pure user setting: connection syncs stop changing it, and t
 
 *Action needed (small):* if you used **Monitor: Sync**, add an `arr_monitored` filter to your profiles instead — the release notes will walk you through it. These are minor, transient changes, so only **~2 weeks** before the next step.
 
-### Phase 5 — Cleanup of legacy fields — `v0.11.0`
+### Phase 5 — Cleanup of legacy fields — `v0.11.0` ✅
 
 With nothing depending on them anymore, the legacy `trailer_exists` and stored-status fields are removed. Custom filters that referenced them are migrated automatically (profile filters like `trailer_exists = false` are now implicit; view filters translate to a new `has_downloads` filter).
 
 *What you'll notice:* very little — this is the payoff release where the old failure modes become impossible.
 
-### Phase 6 — Filter by downloads & files — `v0.11.1`
+### Phase 6 — Filter by downloads & files — `v0.11.3`
 
 Custom view filters gain a whole new family of fields: filter your library by download
 count, download resolution, owning profile, download dates, files present, and more.
@@ -108,12 +111,12 @@ The feedback is consistent: people who get Trailarr running love it — and the 
 struggle almost always hit the same first-hour walls (path mappings, permissions,
 YouTube cookies). So a **Setup & Health track** runs alongside the phases:
 
-- **Connection Doctor** *(~v0.11.x)* — after you add a connection, Trailarr checks
+- **Connection Doctor** *(~v0.11.3–v0.12.x)* — after you add a connection, Trailarr checks
   whether it can actually see and write to your media folders, and when it can't, tells
   you exactly why and offers the fix ("Radarr reports `/data/movies` but that's not
   visible here — suggested path mapping: `/data → /media` [Apply]"). Permission problems
   report the exact PUID/PGID mismatch instead of failing three tasks later.
-- **Health page** *(~v0.11.x)* — one place with live checks and fixes: ffmpeg & hardware
+- **Health page** *(~v0.11.3–v0.12.x)* — one place with live checks and fixes: ffmpeg & hardware
   acceleration status, yt-dlp version and a test download, YouTube cookies setup (a
   proper UI for it, with validity checking), connection reachability, disk access and
   space. When a download fails because YouTube wants a sign-in, Trailarr will say so —

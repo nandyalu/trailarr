@@ -1,8 +1,8 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** not started · **Releases:** incremental — Milestones A+B target v0.11.x,
-C targets v0.13.x (post-reorg), D anytime · **Depends on:** nothing hard; C wants Phase 7
-(services layer) and Phase 3 (preview endpoint)
+**Status:** not started · **Releases:** incremental — Milestones A+B target v0.11.3–v0.12.x
+(Sep–Oct 2026), C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:**
+nothing hard; C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 ## Objective
 

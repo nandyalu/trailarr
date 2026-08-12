@@ -1,6 +1,6 @@
 # Phase 10 — Movie/Series Profiles + Season Trailers
 
-**Status:** not started · **Release:** v0.15.0 · **Depends on:** Phases 8, 9.
+**Status:** not started · **Release:** v0.15.0, target Feb 2027 · **Depends on:** Phases 8, 9.
 **Refresh before execution.** This is the release with the accepted breaking change.
 
 ## Objective
