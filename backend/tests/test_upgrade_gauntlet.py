@@ -24,16 +24,47 @@ FIXTURES = sorted(
     (Path(__file__).parent / "fixtures" / "dbs").glob("*.sql")
 )
 
+# Media row count per fixture. Every fixture seeds 3 movies; the ones that
+# also carry Plex state add rows on top.
+EXPECTED_MEDIA = {
+    "v0_11_1_plex_linked": 5,
+}
+DEFAULT_MEDIA_COUNT = 3
+
 PASS_SCRIPT = """
 import asyncio, json
 from core.tasks.startup_passes import run_startup_passes, downloads_ready
+import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.media as media_manager
 
 asyncio.run(run_startup_passes())
 media_count = sum(1 for _ in media_manager.read_all_generator())
+
+# Library-root guard: a media row whose folder IS a library root (bad data
+# from before v0.11.2) must never be returned for a path under that root.
+roots = {
+    pm.path_to.rstrip("/\\\\")
+    for conn in connection_manager.read_all()
+    for pm in conn.path_mappings
+    if pm.path_to
+}
+root_rows = [
+    m
+    for m in media_manager.read_all()
+    if m.folder_path and m.folder_path.rstrip("/\\\\") in roots
+]
+captured = []
+for row in root_rows:
+    probe = row.folder_path.rstrip("/\\\\") + "/Gauntlet Probe Show (2024)"
+    found = media_manager.read_by_folder_path(probe)
+    if found is not None and found.id == row.id:
+        captured.append(row.id)
+
 print("GAUNTLET:" + json.dumps({
     "ready": downloads_ready(),
     "media": media_count,
+    "root_rows": [m.id for m in root_rows],
+    "captured": captured,
 }))
 """
 
@@ -104,4 +135,8 @@ def test_upgrade_gauntlet(fixture: Path, tmp_path: Path):
 
     # Core invariants: download engine unlocked and no media lost
     assert payload["ready"] is True, payload
-    assert payload["media"] == 3, payload
+    expected = EXPECTED_MEDIA.get(fixture.stem, DEFAULT_MEDIA_COUNT)
+    assert payload["media"] == expected, payload
+
+    # A row whose folder is a library root never captures media under it
+    assert payload["captured"] == [], payload

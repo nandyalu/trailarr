@@ -32,6 +32,14 @@ none justify their own release. Check items off with the release that shipped th
 - [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
   candidate).
+- [x] **H11 — Release-fixture gauntlet caught up** — DONE (ships in v0.11.2): the
+  ladder's rule-4 fixtures were missing for v0.11.0 and v0.11.1. Added
+  `v0_11_0_columns_dropped.sql` (post-destructive-migration schema, migrated
+  `has_downloads` filter) and `v0_11_1_plex_linked.sql` (Plex connection + path
+  mappings, an Arr↔Plex linked show, and a poisoned library-root row with a
+  misattributed trailer). The harness now takes per-fixture media counts and probes
+  that a library-root row never captures media under it — verified to fail when the
+  guard is removed.
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
   autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at
