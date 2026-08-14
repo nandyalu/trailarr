@@ -58,7 +58,7 @@ Media items in the view can be filtered using the following options:
     When any downloads are not linked to a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a **Review** button, and the **Unknown Profile** quick filter appears in the filter dropdown. Open each media item and assign a profile from the Downloads section (see [Media Details](media-details/index.md#downloads-section)) — the banner and filter disappear automatically once every download has a profile.
 
 !!! tip
-    There is also an option to add a custom filter to fit your needs. These are same as `Filters` used in `Profiles` (infact they use the same mechanism underneath). For more information see [Filters](../settings/profiles/filters.md).
+    There is also an option to add a custom filter to fit your needs. These use the same mechanism as the `Filters` in `Profiles`, and view filters additionally get the [Download Filters](../settings/profiles/filters.md#download-filters-view-filters-only) family {{ version_badge("add", "0.11.3") }} — filter by download count, resolution, owning profile, download dates, or deleted files. The filter editor groups the fields into **Media**, **Downloads**, and **Files**. For more information see [Filters](../settings/profiles/filters.md).
 
 ![Library - Filtering - Home](library-filtering-home.png)
 

@@ -21,7 +21,7 @@ See below for the available filters in each category.
 
 ### Boolean Filters
 
-{{ version_badge("upd", "0.11.0") }}
+{{ version_badge("upd", "0.11.3") }}
 
 Here are the available boolean filters:
 
@@ -29,9 +29,10 @@ Here are the available boolean filters:
 |-----------------:|:-------------------------------------------------------------------------------------|
 | `Is Movie`       | `true` if the media item is a movie, `false` for series.                             |
 | `Media Exists`   | `true` if the media (movie/series) is downloaded for the item.                       |
-| `Has Downloads`  | `true` if the media item has at least one downloaded video on disk. Replaces the removed `Trailer Exists` filter (see below). |
 | `Monitor`        | `true` if the media item is monitored in Trailarr.                                   |
 | `ARR Monitored`  | `true` if the media item is monitored in the ARR application (e.g., Radarr, Sonarr). |
+
+`Has Downloads` is now part of the [Download Filters](#download-filters-view-filters-only) family, which is available in view filters only.
 
 !!! note "`Trailer Exists` and `Status` filters removed in v0.11.0"
     {{ version_badge("upd", "0.11.0") }}
@@ -94,6 +95,29 @@ Here are the available file filters:
 
 !!! note
     File filters look for files/folders relative to the media item's root folder (anywhere in the media item's folder structure). For example, to check if a movie has a subtitle file, you would use the `Has File` filter with something like `Ends With` condition and the value as `.srt`.
+
+
+### Download Filters (view filters only) {: #download-filters-view-filters-only }
+
+{{ version_badge("add", "0.11.3") }}
+
+Download filters read the download records of each media item. They are grouped under **Downloads** in the filter editor. Here are the available download filters:
+
+| Filter By                       | Type    | Description                                                                 |
+|--------------------------------:|:-------:|:-----------------------------------------------------------------------------|
+| `Has Downloads`                 | Boolean | `true` if the media item has at least one downloaded video on disk.          |
+| `Download Count`                | Integer | Number of downloaded videos on disk for the media item.                      |
+| `Download Profile`              | Profile | Matches when a download is owned by the selected profile. The editor shows profile names; a profile that was deleted shows as `Deleted [id]`. |
+| `Download Resolution`           | Integer | Resolution of a downloaded video. Eg: `1080`, `2160`.                        |
+| `Download Added At`             | Date    | Date a downloaded video was added.                                           |
+| `Download File Missing`         | Boolean | `true` if a download record exists but its file was deleted from disk.       |
+| `Has Unknown Profile Download`  | Boolean | `true` if a downloaded video on disk has no owning profile.                  |
+
+!!! info "A media item matches when ANY download matches"
+    Each download filter checks every download of the media item. The media item matches when at least one download matches the condition. For example, `Download Resolution LESS THAN 1080` matches a media item that has a 720p trailer, even when it also has a 4K one. Only downloads whose files exist on disk are checked — except `Download File Missing`, which exists to find the deleted ones.
+
+!!! warning "Not available in Trailer Profile filters"
+    Download filters work in view filters only. Trailer Profiles reject them: the download engine already skips media that have a download for the profile, so a profile does not need a download filter — and a profile that filtered on its own downloads would stop matching a media item the moment its trailer downloaded. This also applies to `Has Downloads`, which profile filters accepted before `v0.11.3`. If a profile save is rejected, remove the download filter from the profile and create a view filter with it instead.
 
 
 ## Conditions

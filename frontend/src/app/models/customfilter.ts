@@ -89,7 +89,7 @@ export type FilterCondition =
 // least one of its downloads matches. These lists mirror the backend lists in
 // backend/core/base/database/models/filter.py — update both together.
 export const virtualBooleanFilterKeys = ['has_downloads', 'download_file_missing', 'has_unknown_profile_download'];
-export const virtualNumberFilterKeys = ['download_count', 'download_profile', 'download_resolution', 'file_count'];
+export const virtualNumberFilterKeys = ['download_count', 'download_profile', 'download_resolution'];
 export const virtualDateFilterKeys = ['download_added_at'];
 
 // View-only: profile (TRAILER) filters reject these — a profile filtering on

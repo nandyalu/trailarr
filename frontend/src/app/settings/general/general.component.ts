@@ -21,7 +21,7 @@ export class GeneralComponent {
   private webSocketService = inject(WebsocketService);
 
   protected readonly isLoading = this.settingsService.settingsResource.isLoading;
-  protected readonly settings = this.settingsService.settingsResource.value;
+  protected readonly settings = this.settingsService.settings;
 
   loggingOptions = ['Debug', 'Info', 'Warning', 'Error'];
   trueFalseOptions = ['true', 'false'];
