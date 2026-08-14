@@ -42,7 +42,7 @@ export class PlexOAuthService {
   private readonly settings = inject(SettingsService);
 
   private get appVersion(): string {
-    return this.settings.settingsResource.value()?.version ?? '1.0';
+    return this.settings.settings()?.version ?? '1.0';
   }
 
   private plexHeaders(clientId: string): HttpHeaders {
@@ -71,7 +71,7 @@ export class PlexOAuthService {
    * Include a forwardUrl so Plex redirects back after auth (optional, ignored if blank).
    */
   buildAuthUrl(pinCode: string, clientId: string): string {
-    const s = this.settings.settingsResource.value();
+    const s = this.settings.settings();
     const params = new URLSearchParams({
       clientID: clientId,
       code: pinCode,

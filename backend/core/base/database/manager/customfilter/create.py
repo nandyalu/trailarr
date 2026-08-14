@@ -5,7 +5,10 @@ from core.base.database.models.customfilter import (
     CustomFilterCreate,
     CustomFilterRead,
 )
-from core.base.database.models.filter import Filter
+from core.base.database.models.filter import (
+    Filter,
+    validate_view_only_fields,
+)
 from core.base.database.utils.engine import write_session
 
 
@@ -27,6 +30,10 @@ def create_customfilter(
     db_filters: list[Filter] = []
     for filter in filter_create.filters:
         db_filters.append(Filter.model_validate(filter))
+    # Profile filters must not use view-only download fields. Checked here
+    # explicitly: filter_create.filters is emptied below, so the check
+    # inside CustomFilter.model_validate sees no filters on this path.
+    validate_view_only_fields(filter_create.filter_type, db_filters)
     filter_create.filters = []
     db_filter = CustomFilter.model_validate(filter_create)
     db_filter.filters = db_filters

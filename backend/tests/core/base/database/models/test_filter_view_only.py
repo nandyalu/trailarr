@@ -1,9 +1,9 @@
 """Tests for the view-only field rule on filters (Phase 6).
 
-Download and file-count fields are virtual fields evaluated from the media's
-download/file rows. They are available to view filters only: a profile
-(TRAILER) filter that matched on its own downloads would stop matching a
-media item the moment it downloaded a trailer for it.
+Download fields are virtual fields evaluated from the media's download
+rows. They are available to view filters only: a profile (TRAILER) filter
+that matched on its own downloads would stop matching a media item the
+moment it downloaded a trailer for it.
 
 The rule is enforced backend-side (not just hidden in the UI), so raw API
 calls are rejected too.
@@ -34,7 +34,6 @@ VIEW_ONLY_SAMPLES = [
     ("download_added_at", FilterCondition.IN_THE_LAST, "7"),
     ("download_file_missing", FilterCondition.EQUALS, "true"),
     ("has_unknown_profile_download", FilterCondition.EQUALS, "true"),
-    ("file_count", FilterCondition.GREATER_THAN, "0"),
 ]
 
 
@@ -77,7 +76,10 @@ class TestViewOnlyFieldsRejectedOnProfiles:
                 _profile_create([_filter(field, condition, value)])
             )
         assert field in str(exc.value)
-        assert "view filters" in str(exc.value)
+        # The message says the removal is intentional and points users at
+        # the view-filter download fields as the replacement.
+        assert "removed from Trailer Profiles" in str(exc.value)
+        assert "view filter" in str(exc.value)
 
     def test_error_names_every_offending_field(self):
         with pytest.raises(ValueError) as exc:
@@ -95,6 +97,26 @@ class TestViewOnlyFieldsRejectedOnProfiles:
             )
         assert "download_count" in str(exc.value)
         assert "download_resolution" in str(exc.value)
+
+    def test_direct_customfilter_create_rejects_field(self):
+        """The raw customfilters API creates TRAILER filters through
+        customfilter_manager.create_customfilter, which empties the
+        filters list before CustomFilter.model_validate runs — so the
+        create path needs (and has) its own explicit check."""
+        with pytest.raises(ValueError) as exc:
+            customfilter_manager.create_customfilter(
+                CustomFilterCreate(
+                    filter_name=_name("BadProfile"),
+                    filter_type=FilterType.TRAILER,
+                    filters=[
+                        _filter(*_SCOPE_FILTER),
+                        _filter(
+                            "download_count", FilterCondition.EQUALS, "1"
+                        ),
+                    ],
+                )
+            )
+        assert "download_count" in str(exc.value)
 
     def test_profile_update_rejects_field(self):
         profile = trailerprofile_manager.create_trailerprofile(

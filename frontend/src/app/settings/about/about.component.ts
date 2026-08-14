@@ -16,7 +16,7 @@ import {SettingsService} from '../../services/settings.service';
 export class AboutComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
 
-  protected readonly settingsSignal = this.settingsService.settingsResource.value;
+  protected readonly settingsSignal = this.settingsService.settings;
   serverStats = signal<ServerStats>({
     movies_count: 0,
     movies_monitored: 0,

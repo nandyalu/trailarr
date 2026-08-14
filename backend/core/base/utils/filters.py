@@ -13,11 +13,10 @@ from core.base.database.models.filter import (
 )
 from core.base.database.models.media import MediaRead
 
-# Virtual fields evaluated from the media's download rows. 'file_count' is
-# the one virtual field that reads files instead, so it is excluded here.
+# Virtual fields evaluated from the media's download rows
 DOWNLOAD_COLS = frozenset(
     VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS
-) - {"file_count"}
+)
 
 
 def _matches_boolean(media_value: bool, filter: FilterRead) -> bool:
@@ -197,16 +196,6 @@ def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
         # Virtual download fields, ANY semantics over the download rows
         if filter.filter_by in DOWNLOAD_COLS:
             if not _matches_download_filter(media, filter):
-                return False
-            continue
-        # Virtual field: number of files on disk for this media
-        if filter.filter_by == "file_count":
-            if _files is None:
-                _files = files_manager.read_by_media_id_flat(media.id)
-            file_count = sum(
-                1 for f in _files if f.type == FileFolderType.FILE
-            )
-            if not _matches_number(file_count, filter):
                 return False
             continue
         # Handle special cases for 'has_file' and 'has_folder'

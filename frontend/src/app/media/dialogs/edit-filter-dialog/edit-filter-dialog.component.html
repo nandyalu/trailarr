@@ -26,10 +26,14 @@
               <!-- Filter By -->
               <select id="filter_by_{{ i }}" [formField]="filter.filter_by" (change)="onFilterByChange(filter)">
                 <option value="" disabled>Select Filter By</option>
-                @for (filter of filterKeys; track filter) {
-                  <option [value]="filter">
-                    {{ filter | displayTitle }}
-                  </option>
+                @for (group of fieldGroups(); track group.label) {
+                  <optgroup [label]="group.label">
+                    @for (key of group.keys; track key) {
+                      <option [value]="key">
+                        {{ key | displayTitle }}
+                      </option>
+                    }
+                  </optgroup>
                 }
               </select>
 
@@ -63,6 +67,17 @@
                     <option value="" disabled>Select Value</option>
                     <option value="true">True</option>
                     <option value="false">False</option>
+                  </select>
+                }
+                @case ('profile') {
+                  <select id="filter_value_{{ i }}" [formField]="filter.filter_value">
+                    <option value="" disabled>Select Profile</option>
+                    @for (profile of profiles.value(); track profile.id) {
+                      <option [value]="profile.id">{{ profile.customfilter.filter_name }}</option>
+                    }
+                    @if (isDeletedProfileId(filter.filter_value().value())) {
+                      <option [value]="filter.filter_value().value()">Deleted [{{ filter.filter_value().value() }}]</option>
+                    }
                   </select>
                 }
                 @case ('none') {

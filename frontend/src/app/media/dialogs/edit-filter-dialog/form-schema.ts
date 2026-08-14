@@ -1,5 +1,6 @@
 import {applyEach, maxLength, readonly, required, schema} from '@angular/forms/signals';
 import {
+  allFilterKeys,
   BooleanFilterCondition,
   booleanFilterKeys,
   CustomFilterCreate,
@@ -13,6 +14,7 @@ import {
   numberFilterKeys,
   StringFilterCondition,
   stringFilterKeys,
+  viewOnlyFilterKeys,
 } from 'src/app/models/customfilter';
 
 export const filterSchema = schema<FilterCreate>((schema) => {
@@ -59,6 +61,29 @@ export const newCustomFilter: CustomFilterCreate = {
   filters: [{...newFilter}],
 };
 
+/** One group of fields in the filter editor's field picker. */
+export interface FilterFieldGroup {
+  label: string;
+  keys: string[];
+}
+
+/**
+ * Returns the grouped field lists for the filter editor's field picker.
+ *
+ * Profile (TRAILER) filters do not get the Downloads group: the backend
+ * rejects download fields on profiles — a profile that filters on its own
+ * downloads is circular. Media and Files fields are available to all types.
+ */
+export function getFilterFieldGroups(filterType: keyof typeof FilterType): FilterFieldGroup[] {
+  const mediaKeys = allFilterKeys.filter((k) => !viewOnlyFilterKeys.includes(k) && !fileFilterKeys.includes(k));
+  const groups: FilterFieldGroup[] = [{label: 'Media', keys: mediaKeys}];
+  if (filterType !== 'TRAILER') {
+    groups.push({label: 'Downloads', keys: [...viewOnlyFilterKeys].sort()});
+  }
+  groups.push({label: 'Files', keys: fileFilterKeys});
+  return groups;
+}
+
 // Get all enum values for select options.
 const boolFilterConditions = Object.values(BooleanFilterCondition);
 const dateFilterConditions = Object.values(DateFilterCondition);
@@ -69,6 +94,11 @@ const stringFilterConditions = Object.values(StringFilterCondition);
 export function getFilterConditions(filterKey: string): string[] {
   if (filterKey === '') {
     return [];
+  }
+  if (filterKey === 'download_profile') {
+    // A profile either owns a download or it does not — ordering
+    // conditions make no sense for an id.
+    return [NumberFilterCondition.EQUALS, NumberFilterCondition.NOT_EQUALS];
   }
   if (booleanFilterKeys.includes(filterKey)) {
     return boolFilterConditions;
@@ -86,6 +116,10 @@ export function getFilterConditions(filterKey: string): string[] {
 
 // Get the filter value type for a given filter key.
 export function getFilterValueType(filterKey: string, filterCondition: string): string {
+  if (filterKey === 'download_profile') {
+    // Rendered as a profile dropdown that stores the profile id
+    return 'profile';
+  }
   if (booleanFilterKeys.includes(filterKey)) {
     return 'boolean';
   } else if (dateFilterKeys.includes(filterKey)) {

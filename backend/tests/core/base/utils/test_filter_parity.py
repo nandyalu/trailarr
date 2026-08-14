@@ -112,10 +112,5 @@ def test_fixture_covers_every_download_field():
     )
 
     covered = {c["filter_by"] for c in FIXTURE["cases"]}
-    # file_count reads files from the DB, so it is covered by DB-backed
-    # tests instead of this in-memory fixture.
-    expected = (
-        set(VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS)
-        - {"file_count"}
-    )
+    expected = set(VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS)
     assert expected <= covered, expected - covered

@@ -17,9 +17,8 @@ import { FileFolderInfo } from 'src/app/models/filefolderinfo';
 import {Media} from 'src/app/models/media';
 import {CacheDecorator} from 'src/util';
 
-// Virtual fields read from the media's download rows. 'file_count' is the one
-// virtual field that reads files instead, so it is excluded here.
-const downloadFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys].filter((k) => k !== 'file_count');
+// Virtual fields read from the media's download rows
+const downloadFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys];
 
 // ParserCache class with cached parsing methods
 class ParserCache {
@@ -116,15 +115,6 @@ class FilterFunctions {
   }
 }
 
-// Counts the FILE entries in a media's file tree (folders are not counted)
-function countFilesInTree(node: FileFolderInfo | null): number {
-  if (!node) {
-    return 0;
-  }
-  const self = node.type === 'FILE' ? 1 : 0;
-  return (node.children || []).reduce((total, child) => total + countFilesInTree(child), self);
-}
-
 // Helper function to search file tree
 function findInFileTree(node: FileFolderInfo | null, type: 'FILE' | 'FOLDER', filterValue: string, condition: StringFilterCondition): boolean {
   if (!node) {
@@ -203,12 +193,6 @@ function applyFilter(filter: Filter, media: Media): boolean {
   // Virtual download fields, ANY semantics over the download rows
   if (downloadFilterKeys.includes(filter_by)) {
     return applyDownloadFilter(filter, media);
-  }
-
-  // Virtual field: number of files on disk for this media
-  if (filter_by === 'file_count') {
-    const numVal = ParserCache.parseNumber(filter_value);
-    return FilterFunctions.applyNumberFilter(countFilesInTree(media.files), numVal, filter_condition as NumberFilterCondition);
   }
 
   // Special handling for file/folder filters
