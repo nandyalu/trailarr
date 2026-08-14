@@ -5,7 +5,10 @@ from core.base.database.models.customfilter import (
     CustomFilterCreate,
     CustomFilterRead,
 )
-from core.base.database.models.filter import Filter
+from core.base.database.models.filter import (
+    Filter,
+    validate_view_only_fields,
+)
 from core.base.database.utils.engine import write_session
 from exceptions import ItemNotFoundError
 
@@ -24,6 +27,12 @@ def __update_filters(
     new_filters = [
         Filter.model_validate(filter) for filter in cf_create.filters
     ]
+    # Profile filters must not use view-only download/file fields. Checked
+    # here because this is the shared update path for view filters AND
+    # trailer profiles. The type is read from the DB object, which the
+    # caller has already updated, so switching a view filter to a profile
+    # filter is rejected too.
+    validate_view_only_fields(cf_db.filter_type, new_filters)
     # Make a dictionary of new filters by id
     new_filters_ids = [filter.id for filter in new_filters if filter.id]
     # Get existing filters
