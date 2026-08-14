@@ -9,10 +9,17 @@ import {
   numberFilterKeys,
   StringFilterCondition,
   stringFilterKeys,
+  virtualBooleanFilterKeys,
+  virtualDateFilterKeys,
+  virtualNumberFilterKeys,
 } from 'src/app/models/customfilter';
 import { FileFolderInfo } from 'src/app/models/filefolderinfo';
 import {Media} from 'src/app/models/media';
 import {CacheDecorator} from 'src/util';
+
+// Virtual fields read from the media's download rows. 'file_count' is the one
+// virtual field that reads files instead, so it is excluded here.
+const downloadFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys].filter((k) => k !== 'file_count');
 
 // ParserCache class with cached parsing methods
 class ParserCache {
@@ -109,6 +116,15 @@ class FilterFunctions {
   }
 }
 
+// Counts the FILE entries in a media's file tree (folders are not counted)
+function countFilesInTree(node: FileFolderInfo | null): number {
+  if (!node) {
+    return 0;
+  }
+  const self = node.type === 'FILE' ? 1 : 0;
+  return (node.children || []).reduce((total, child) => total + countFilesInTree(child), self);
+}
+
 // Helper function to search file tree
 function findInFileTree(node: FileFolderInfo | null, type: 'FILE' | 'FOLDER', filterValue: string, condition: StringFilterCondition): boolean {
   if (!node) {
@@ -131,17 +147,68 @@ function findInFileTree(node: FileFolderInfo | null, type: 'FILE' | 'FOLDER', fi
   return false;
 }
 
+/**
+ * Evaluates a virtual download field against a media item.
+ *
+ * All fields use ANY semantics over the download rows: the media matches when
+ * at least one download matches the condition. Only active downloads
+ * (file_exists) count, except download_file_missing, which exists to find
+ * media whose trailer file was deleted from disk.
+ *
+ * Mirrors `_matches_download_filter` in backend/core/base/utils/filters.py.
+ */
+function applyDownloadFilter(filter: Filter, media: Media): boolean {
+  const {filter_by, filter_value, filter_condition} = filter;
+  const active = media.downloads.filter((d) => d.file_exists);
+  const boolVal = filter_value.toLowerCase() === 'true';
+  const numVal = ParserCache.parseNumber(filter_value);
+  const numCondition = filter_condition as NumberFilterCondition;
+
+  switch (filter_by) {
+    case 'has_downloads':
+      return FilterFunctions.applyBooleanFilter(active.length > 0, boolVal);
+    case 'download_count':
+      return FilterFunctions.applyNumberFilter(active.length, numVal, numCondition);
+    case 'download_file_missing':
+      return FilterFunctions.applyBooleanFilter(
+        media.downloads.some((d) => !d.file_exists),
+        boolVal,
+      );
+    case 'has_unknown_profile_download':
+      return FilterFunctions.applyBooleanFilter(
+        active.some((d) => !d.profile_id),
+        boolVal,
+      );
+    case 'download_profile':
+      return active.some((d) => FilterFunctions.applyNumberFilter(d.profile_id, numVal, numCondition));
+    case 'download_resolution':
+      return active.some((d) => FilterFunctions.applyNumberFilter(d.resolution, numVal, numCondition));
+    case 'download_added_at': {
+      const filterDate = ParserCache.parseDate(filter_value);
+      const days = parseInt(filter_value);
+      const daysAgo = isNaN(days) ? undefined : ParserCache.getDaysAgo(days);
+      return active.some((d) =>
+        FilterFunctions.applyDateFilter(ParserCache.parseDate(d.added_at as unknown as string), filterDate, filter_condition as DateFilterCondition, daysAgo),
+      );
+    }
+    default:
+      return false;
+  }
+}
+
 // Main filter dispatcher
 function applyFilter(filter: Filter, media: Media): boolean {
   const {filter_by, filter_value, filter_condition} = filter;
 
-  // Virtual field: media has at least one active download (v0.11.0)
-  if (filter_by === 'has_downloads') {
-    const boolVal = filter_value.toLowerCase() === 'true';
-    return FilterFunctions.applyBooleanFilter(
-      media.downloads.some((d) => d.file_exists),
-      boolVal,
-    );
+  // Virtual download fields, ANY semantics over the download rows
+  if (downloadFilterKeys.includes(filter_by)) {
+    return applyDownloadFilter(filter, media);
+  }
+
+  // Virtual field: number of files on disk for this media
+  if (filter_by === 'file_count') {
+    const numVal = ParserCache.parseNumber(filter_value);
+    return FilterFunctions.applyNumberFilter(countFilesInTree(media.files), numVal, filter_condition as NumberFilterCondition);
   }
 
   // Special handling for file/folder filters

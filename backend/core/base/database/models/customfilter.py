@@ -9,6 +9,7 @@ from core.base.database.models.filter import (
     Filter,
     FilterCreate,
     FilterRead,
+    validate_view_only_fields,
 )
 
 # from core.base.database.models.trailerprofile import (
@@ -103,6 +104,8 @@ class CustomFilter(_CustomFilterBase, table=True):
             db_filters = obj.filters
         else:
             db_filters = [Filter.model_validate(f) for f in obj.filters]
+        # Profile filters must not use view-only download/file fields
+        validate_view_only_fields(obj.filter_type, db_filters)
         _validated_obj = super().model_validate(
             obj.model_dump(),
             strict=strict,

@@ -1,0 +1,98 @@
+{
+  "_comment": [
+    "Shared filter-evaluation parity fixture (Phase 6).",
+    "Executed by BOTH evaluators against the same cases:",
+    "  backend: tests/core/base/utils/test_filter_parity.py",
+    "  frontend: src/app/media/utils/filter-parity.spec.ts",
+    "Media values are partial: each test builds a default media object and",
+    "applies these overrides. 'days_ago' in a download means the value is",
+    "computed at run time as (now - N days), so date cases never go stale.",
+    "Keep day offsets away from the 0/boundary values used by filters."
+  ],
+  "media": {
+    "empty": {
+      "downloads": []
+    },
+    "one_1080p": {
+      "downloads": [
+        {"file_exists": true, "profile_id": 1, "resolution": 1080, "days_ago": 3}
+      ]
+    },
+    "one_720p": {
+      "downloads": [
+        {"file_exists": true, "profile_id": 2, "resolution": 720, "days_ago": 40}
+      ]
+    },
+    "mixed_720_and_2160": {
+      "downloads": [
+        {"file_exists": true, "profile_id": 1, "resolution": 720, "days_ago": 40},
+        {"file_exists": true, "profile_id": 3, "resolution": 2160, "days_ago": 3}
+      ]
+    },
+    "deleted_file_only": {
+      "downloads": [
+        {"file_exists": false, "profile_id": 1, "resolution": 1080, "days_ago": 3}
+      ]
+    },
+    "active_plus_deleted": {
+      "downloads": [
+        {"file_exists": true, "profile_id": 1, "resolution": 1080, "days_ago": 3},
+        {"file_exists": false, "profile_id": 2, "resolution": 720, "days_ago": 40}
+      ]
+    },
+    "unknown_profile": {
+      "downloads": [
+        {"file_exists": true, "profile_id": 0, "resolution": 1080, "days_ago": 3}
+      ]
+    },
+    "old_media": {
+      "added_at_days_ago": 40,
+      "downloads": []
+    },
+    "new_media": {
+      "added_at_days_ago": 3,
+      "downloads": []
+    }
+  },
+  "cases": [
+    {"name": "has_downloads true, none", "media": "empty", "filter_by": "has_downloads", "filter_condition": "EQUALS", "filter_value": "true", "expected": false},
+    {"name": "has_downloads false, none", "media": "empty", "filter_by": "has_downloads", "filter_condition": "EQUALS", "filter_value": "false", "expected": true},
+    {"name": "has_downloads true, one active", "media": "one_1080p", "filter_by": "has_downloads", "filter_condition": "EQUALS", "filter_value": "true", "expected": true},
+    {"name": "has_downloads ignores deleted files", "media": "deleted_file_only", "filter_by": "has_downloads", "filter_condition": "EQUALS", "filter_value": "true", "expected": false},
+
+    {"name": "download_count equals 0", "media": "empty", "filter_by": "download_count", "filter_condition": "EQUALS", "filter_value": "0", "expected": true},
+    {"name": "download_count equals 2", "media": "mixed_720_and_2160", "filter_by": "download_count", "filter_condition": "EQUALS", "filter_value": "2", "expected": true},
+    {"name": "download_count counts active only", "media": "active_plus_deleted", "filter_by": "download_count", "filter_condition": "EQUALS", "filter_value": "1", "expected": true},
+    {"name": "download_count greater than 1", "media": "one_1080p", "filter_by": "download_count", "filter_condition": "GREATER_THAN", "filter_value": "1", "expected": false},
+
+    {"name": "download_resolution equals 1080", "media": "one_1080p", "filter_by": "download_resolution", "filter_condition": "EQUALS", "filter_value": "1080", "expected": true},
+    {"name": "download_resolution less than 1080", "media": "one_720p", "filter_by": "download_resolution", "filter_condition": "LESS_THAN", "filter_value": "1080", "expected": true},
+    {"name": "download_resolution less than 1080, none", "media": "one_1080p", "filter_by": "download_resolution", "filter_condition": "LESS_THAN", "filter_value": "1080", "expected": false},
+    {"name": "download_resolution ANY matches low one", "media": "mixed_720_and_2160", "filter_by": "download_resolution", "filter_condition": "LESS_THAN", "filter_value": "1080", "expected": true},
+    {"name": "download_resolution ANY matches high one", "media": "mixed_720_and_2160", "filter_by": "download_resolution", "filter_condition": "GREATER_THAN_EQUAL", "filter_value": "2160", "expected": true},
+    {"name": "download_resolution no active downloads", "media": "empty", "filter_by": "download_resolution", "filter_condition": "EQUALS", "filter_value": "1080", "expected": false},
+
+    {"name": "download_profile equals 1", "media": "one_1080p", "filter_by": "download_profile", "filter_condition": "EQUALS", "filter_value": "1", "expected": true},
+    {"name": "download_profile equals 2, no match", "media": "one_1080p", "filter_by": "download_profile", "filter_condition": "EQUALS", "filter_value": "2", "expected": false},
+    {"name": "download_profile ANY over two", "media": "mixed_720_and_2160", "filter_by": "download_profile", "filter_condition": "EQUALS", "filter_value": "3", "expected": true},
+    {"name": "download_profile deleted profile id", "media": "one_1080p", "filter_by": "download_profile", "filter_condition": "EQUALS", "filter_value": "999", "expected": false},
+
+    {"name": "download_file_missing true", "media": "active_plus_deleted", "filter_by": "download_file_missing", "filter_condition": "EQUALS", "filter_value": "true", "expected": true},
+    {"name": "download_file_missing false", "media": "one_1080p", "filter_by": "download_file_missing", "filter_condition": "EQUALS", "filter_value": "true", "expected": false},
+    {"name": "download_file_missing only deleted", "media": "deleted_file_only", "filter_by": "download_file_missing", "filter_condition": "EQUALS", "filter_value": "true", "expected": true},
+
+    {"name": "has_unknown_profile_download true", "media": "unknown_profile", "filter_by": "has_unknown_profile_download", "filter_condition": "EQUALS", "filter_value": "true", "expected": true},
+    {"name": "has_unknown_profile_download false", "media": "one_1080p", "filter_by": "has_unknown_profile_download", "filter_condition": "EQUALS", "filter_value": "true", "expected": false},
+
+    {"name": "download_added_at in the last 7", "media": "one_1080p", "filter_by": "download_added_at", "filter_condition": "IN_THE_LAST", "filter_value": "7", "expected": true},
+    {"name": "download_added_at in the last 7, old", "media": "one_720p", "filter_by": "download_added_at", "filter_condition": "IN_THE_LAST", "filter_value": "7", "expected": false},
+    {"name": "download_added_at ANY recent", "media": "mixed_720_and_2160", "filter_by": "download_added_at", "filter_condition": "IN_THE_LAST", "filter_value": "7", "expected": true},
+    {"name": "download_added_at not in the last 7", "media": "one_720p", "filter_by": "download_added_at", "filter_condition": "NOT_IN_THE_LAST", "filter_value": "7", "expected": true},
+    {"name": "download_added_at not in the last 7, recent", "media": "one_1080p", "filter_by": "download_added_at", "filter_condition": "NOT_IN_THE_LAST", "filter_value": "7", "expected": false},
+
+    {"name": "added_at in the last 7, recent", "media": "new_media", "filter_by": "added_at", "filter_condition": "IN_THE_LAST", "filter_value": "7", "expected": true},
+    {"name": "added_at in the last 7, old", "media": "old_media", "filter_by": "added_at", "filter_condition": "IN_THE_LAST", "filter_value": "7", "expected": false},
+    {"name": "added_at not in the last 7, old", "media": "old_media", "filter_by": "added_at", "filter_condition": "NOT_IN_THE_LAST", "filter_value": "7", "expected": true},
+    {"name": "added_at not in the last 7, recent", "media": "new_media", "filter_by": "added_at", "filter_condition": "NOT_IN_THE_LAST", "filter_value": "7", "expected": false}
+  ]
+}
