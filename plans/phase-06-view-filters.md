@@ -1,9 +1,29 @@
 # Phase 6 — Downloads & Files Filter Family (View Filters)
 
-**Status:** NEXT — start after the Phase 5 bake window (~Aug 23, 2026); target Sep 2026 ·
+**Status:** IMPLEMENTED — on branch `feat/phase6-download-filters` (Aug 13, 2026);
+exit criteria met, verified against a production-library copy; ships as v0.11.3 after
+the Phase 5 bake window closes (~Aug 23, 2026) ·
 **Release:** v0.11.3 (moved from v0.11.1: that number and v0.11.2 went to unplanned fix
 releases) · **Depends on:** Phase 5 (virtual-field mechanism + `has_downloads` proven),
 shipped in v0.11.0 on Aug 9, 2026
+
+**Decision changes during execution (maintainer-approved, Aug 13, 2026):**
+
+- `file_count` was dropped from the field family — `download_count` covers the download
+  side, and the file side stays with `has_file`/`has_folder`.
+- `has_downloads` moved fully into the view-only family: profile filters now REJECT it
+  (they accepted it in v0.11.0–v0.11.2). The rejection message explains the removal and
+  recommends a view filter; release-noted as an intentional change.
+
+**Shipped alongside (found during execution):**
+
+- Backend `IN_THE_LAST`/`NOT_IN_THE_LAST` evaluated backwards (matched everything /
+  nothing) — caught by the parity fixture, fixed.
+- `create_customfilter` bypassed nested-filter validation (it empties the list before
+  `model_validate`) — the raw API accepted view-only fields on TRAILER; explicit check
+  added, and the customfilters API now returns 400 with the message instead of 500.
+- Fresh sessions with `WEBUI_DISABLE_AUTH=true` froze on first load (settings resource
+  401 race → `value()` throw inside change detection) — safe `settings` computed added.
 
 ## Objective
 
