@@ -77,3 +77,25 @@ With this filter, the **Series Trailers** profile applies to all TV series. When
     - `Language` field in Radarr/Sonarr to be set correctly. If the language is not set to Spanish, this profile will not match.
     - The `Include Words in Title` setting to match the title of the trailer. If the trailer does not have the word `Español` in its title, it will not be downloaded.
     - The `Search Query` setting to return Spanish trailers. If search results does not contain any Spanish trailers, OR if there are no Spanish trailers available, this profile will not download any trailers.
+
+## Example 4: "Missing 1080p Trailer" View Filter
+
+{{ version_badge("add", "0.11.3") }}
+
+This example is a **view filter**, not a profile — it changes what the library pages show, and downloads nothing. It uses the [Download Filters](./filters.md#download-filters-view-filters-only) family to find media whose best trailer is below 1080p, so you can review and re-download them.
+
+- Open the **Filters** dropdown on the Home, Movies, or Series page and click `Add New Filter`.
+- Name the filter `Below 1080p`.
+- Set the below `Filter`s:
+
+    | ID    | Filter By             | Condition         | Filter Value        |
+    |:-----:|:---------------------:|:-----------------:|:-------------------:|
+    | 1     | Has Downloads         | Equals            | true                |
+    | 2     | Download Resolution   | Less Than         | 1080                |
+
+- Click `Create`. The view now lists every media item that has a trailer, where at least one downloaded trailer is below 1080p.
+
+Two more quick recipes with the same fields:
+
+- **Deleted trailer files**: `Download File Missing` `Equals` `true` — download records whose file was deleted from disk.
+- **Owned by one profile**: `Download Profile` `Equals` + pick a profile — media whose downloads came from that profile.

@@ -47,13 +47,13 @@ export class TopnavComponent {
   selectedId = signal(-1);
   /** Computed so it updates when the settings resource loads — with auth
    * disabled there is no session to log out of, so the button hides. */
-  loginDisabled = computed(() => this.settingsService.settingsResource.value()?.webui_disable_auth ?? false);
+  loginDisabled = computed(() => this.settingsService.settings()?.webui_disable_auth ?? false);
 
   protected readonly RouteHome = RouteHome;
 
   // Get theme from settings and apply it
   setThemeEffect = effect(() => {
-    let theme = this.settingsService.settingsResource.value()?.app_theme || 'auto';
+    let theme = this.settingsService.settings()?.app_theme || 'auto';
     theme = theme.toLowerCase().trim();
     if (theme === 'auto') {
       const darkTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;

@@ -40,7 +40,7 @@ export class MediaComponent implements OnInit {
 
   /** Preview mode (Phase 3): automatic downloads are disabled — show the
    * banner with the would-download list. */
-  protected readonly previewMode = computed(() => this.settingsService.settingsResource.value()?.downloads_enabled === false);
+  protected readonly previewMode = computed(() => this.settingsService.settings()?.downloads_enabled === false);
   protected readonly pendingSummaryResource = httpResource<PendingSummary | null>(
     () => (this.previewMode() ? {url: environment.apiUrl + environment.media + 'pending', params: {limit: 500}} : undefined),
     {

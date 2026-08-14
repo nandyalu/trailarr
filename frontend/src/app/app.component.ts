@@ -31,7 +31,7 @@ export class AppComponent implements OnDestroy, OnInit {
   /** With auth disabled there is no session to end — a logout would only
    * bounce through /login and come back with a fresh session. The idle
    * flow pauses live updates instead (see sessionPaused). */
-  protected readonly authDisabled = computed(() => this.settingsService.settingsResource.value()?.webui_disable_auth ?? false);
+  protected readonly authDisabled = computed(() => this.settingsService.settings()?.webui_disable_auth ?? false);
   /** True after the idle countdown ran out with auth disabled: the
    * websocket is closed and the dialog stays open until the user resumes. */
   protected readonly sessionPaused = signal(false);

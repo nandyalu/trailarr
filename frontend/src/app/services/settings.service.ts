@@ -1,5 +1,5 @@
 import {HttpClient, httpResource} from '@angular/common/http';
-import {inject, Injectable, signal} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
 import {catchError, Observable, of} from 'rxjs';
 import {FolderInfo, ServerStats, Settings} from '../models/settings';
 import {environment} from '../../environment';
@@ -14,6 +14,15 @@ export class SettingsService {
   private filesUrl = environment.apiUrl + environment.files;
 
   readonly settingsResource = httpResource<Settings>(() => this.settingsUrl);
+
+  /** Settings, or undefined while loading or after a failed request.
+   *
+   * Read THIS in effects, computeds, and templates — never
+   * `settingsResource.value()` directly. A resource in the error state
+   * throws from `value()`; thrown inside change detection, that error
+   * halts all rendering (a fresh session whose first `/settings/` call
+   * races auth and gets a 401 froze the whole app this way). */
+  readonly settings = computed<Settings | undefined>(() => (this.settingsResource.hasValue() ? this.settingsResource.value() : undefined));
   readonly filesPath = signal<string>('');
   readonly filesResource = httpResource<FolderInfo[]>(
     () => {

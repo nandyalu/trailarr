@@ -59,7 +59,6 @@ VIRTUAL_INT_COLS = [
     "download_count",
     "download_profile",
     "download_resolution",
-    "file_count",
 ]
 VIRTUAL_DATE_COLS = ["download_added_at"]
 
@@ -115,10 +114,11 @@ def validate_view_only_fields(filter_type, filters) -> None:
     if not used:
         return
     raise ValueError(
-        f"Invalid filter_by value(s) for a Trailer Profile filter: "
-        f"{', '.join(used)}. Download and file-count fields are available"
-        " only in view filters. A profile that filters on its own downloads"
-        " never matches a media item twice."
+        f"Download filters were removed from Trailer Profiles:"
+        f" {', '.join(used)}. The download engine already skips media"
+        " that have a download for the profile, so a profile does not"
+        " need a download filter. Use these fields in a view filter"
+        " instead."
     )
 
 

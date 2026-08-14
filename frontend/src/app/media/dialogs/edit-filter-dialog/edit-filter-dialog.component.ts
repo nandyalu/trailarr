@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -13,10 +14,11 @@ import {
 import {FieldTree, form, FormField, submit} from '@angular/forms/signals';
 import {firstValueFrom} from 'rxjs';
 import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
-import {allFilterKeys, CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
+import {CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
+import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
-import {customFilterSchema, getFilterConditions, getFilterValueType, newCustomFilter, newFilter} from './form-schema';
+import {customFilterSchema, getFilterConditions, getFilterFieldGroups, getFilterValueType, newCustomFilter, newFilter} from './form-schema';
 
 @Component({
   selector: 'edit-filter-dialog',
@@ -73,8 +75,23 @@ export class EditFilterDialogComponent implements AfterViewInit {
   }
 
   // Form constants
-  // Get all filter keys.
-  protected readonly filterKeys = allFilterKeys;
+  // Field picker groups (Media / Downloads / Files). Profile (TRAILER)
+  // filters do not get the Downloads group — the backend rejects those
+  // fields on profiles.
+  protected readonly fieldGroups = computed(() => getFilterFieldGroups(this.filterType()));
+
+  // Trailer profiles, for the download_profile value dropdown.
+  protected readonly profileService = inject(ProfileService);
+  protected readonly profiles = this.profileService.allProfiles;
+
+  /** True when the value is a profile id that no longer exists (the
+   * profile was deleted). The editor then shows "Deleted [id]". */
+  protected isDeletedProfileId(value: string): boolean {
+    if (!value) {
+      return false;
+    }
+    return !this.profiles.value().some((profile) => String(profile.id) === value);
+  }
 
   // Get the filter conditions for a given filter key.
   protected getFilterConditions = getFilterConditions;
@@ -147,7 +164,10 @@ export class EditFilterDialogComponent implements AfterViewInit {
         return undefined; // Return undefined to indicate success
       } catch (error) {
         console.error('Error submitting form:', error);
-        this.submitResult.set({type: 'error', message: 'Error submitting form.' + (error as Error).message});
+        // Prefer the API's detail message (e.g. the download-filters-on-a-
+        // profile rejection) over the generic HTTP error text.
+        const detail = (error as {error?: {detail?: string}})?.error?.detail ?? (error as Error).message;
+        this.submitResult.set({type: 'error', message: 'Error submitting form. ' + detail});
         return {
           kind: 'server',
           message: 'An error occurred while submitting the form. Please try again.',
