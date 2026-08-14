@@ -4,8 +4,20 @@ from core.base.database.models.filefolderinfo import (
     FileFolderInfoRead,
     FileFolderType,
 )
-from core.base.database.models.filter import FilterCondition, FilterRead
+from core.base.database.models.filter import (
+    VIRTUAL_BOOL_COLS,
+    VIRTUAL_DATE_COLS,
+    VIRTUAL_INT_COLS,
+    FilterCondition,
+    FilterRead,
+)
 from core.base.database.models.media import MediaRead
+
+# Virtual fields evaluated from the media's download rows. 'file_count' is
+# the one virtual field that reads files instead, so it is excluded here.
+DOWNLOAD_COLS = frozenset(
+    VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS
+) - {"file_count"}
 
 
 def _matches_boolean(media_value: bool, filter: FilterRead) -> bool:
@@ -41,11 +53,14 @@ def _matches_datetime(media_value: datetime, filter: FilterRead) -> bool:
         FilterCondition.IN_THE_LAST,
         FilterCondition.NOT_IN_THE_LAST,
     }:
-        _delta = media_value.date() - datetime.now().date()
+        # Days BEFORE today, so a date 30 days ago gives 30 (not -30).
+        # The old subtraction ran the other way, which made IN_THE_LAST
+        # match every past date and NOT_IN_THE_LAST match none.
+        days_ago = (datetime.now().date() - media_value.date()).days
         if filter.filter_condition == FilterCondition.IN_THE_LAST:
-            return _delta.days <= int(filter.filter_value)
+            return days_ago < int(filter.filter_value)
         elif filter.filter_condition == FilterCondition.NOT_IN_THE_LAST:
-            return _delta.days > int(filter.filter_value)
+            return days_ago > int(filter.filter_value)
     else:
         try:
             filter_date = datetime.strptime(filter.filter_value, "%Y-%m-%d")
@@ -131,6 +146,42 @@ def _matches_file_filter(
     return False
 
 
+def _matches_download_filter(media: MediaRead, filter: FilterRead) -> bool:
+    """Evaluate a virtual download field against a media item.
+
+    All fields use ANY semantics over the download rows: the media matches
+    when at least one download matches the condition. Only active downloads
+    (``file_exists=True``) count, except ``download_file_missing``, which
+    exists to find media whose trailer file was deleted from disk.
+
+    Args:
+        media (MediaRead): The media item to check.
+        filter (FilterRead): The filter to apply.
+    Returns:
+        bool: True if the media item matches the filter.
+    """
+    field = filter.filter_by
+    active = [d for d in media.downloads if d.file_exists]
+
+    if field == "has_downloads":
+        return _matches_boolean(bool(active), filter)
+    if field == "download_count":
+        return _matches_number(len(active), filter)
+    if field == "download_file_missing":
+        missing = any(not d.file_exists for d in media.downloads)
+        return _matches_boolean(missing, filter)
+    if field == "has_unknown_profile_download":
+        unknown = any(not d.profile_id for d in active)
+        return _matches_boolean(unknown, filter)
+    if field == "download_profile":
+        return any(_matches_number(d.profile_id, filter) for d in active)
+    if field == "download_resolution":
+        return any(_matches_number(d.resolution, filter) for d in active)
+    if field == "download_added_at":
+        return any(_matches_datetime(d.added_at, filter) for d in active)
+    return False
+
+
 def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     """Check if a media item matches the given filters.
     Args:
@@ -143,10 +194,19 @@ def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     _files: list[FileFolderInfoRead] | None = None
 
     for filter in filters:
-        # Virtual field: media has at least one active download (Phase 5)
-        if filter.filter_by == "has_downloads":
-            has_downloads = any(d.file_exists for d in media.downloads)
-            if not _matches_boolean(has_downloads, filter):
+        # Virtual download fields, ANY semantics over the download rows
+        if filter.filter_by in DOWNLOAD_COLS:
+            if not _matches_download_filter(media, filter):
+                return False
+            continue
+        # Virtual field: number of files on disk for this media
+        if filter.filter_by == "file_count":
+            if _files is None:
+                _files = files_manager.read_by_media_id_flat(media.id)
+            file_count = sum(
+                1 for f in _files if f.type == FileFolderType.FILE
+            )
+            if not _matches_number(file_count, filter):
                 return False
             continue
         # Handle special cases for 'has_file' and 'has_folder'

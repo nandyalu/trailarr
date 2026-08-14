@@ -84,12 +84,33 @@ export type FilterCondition =
   | DateFilterCondition
   | FileFilterCondition;
 
-// has_downloads is a virtual field: any download with file_exists=true
-export const booleanFilterKeys = ['arr_monitored', 'has_downloads', 'is_movie', 'media_exists', 'monitor'];
+// Virtual fields are computed from download/file rows instead of a media
+// column. Every download field uses ANY semantics: the media matches when at
+// least one of its downloads matches. These lists mirror the backend lists in
+// backend/core/base/database/models/filter.py — update both together.
+export const virtualBooleanFilterKeys = ['has_downloads', 'download_file_missing', 'has_unknown_profile_download'];
+export const virtualNumberFilterKeys = ['download_count', 'download_profile', 'download_resolution', 'file_count'];
+export const virtualDateFilterKeys = ['download_added_at'];
 
-export const dateFilterKeys = ['added_at', 'downloaded_at', 'updated_at'];
+// View-only: profile (TRAILER) filters reject these — a profile filtering on
+// its own downloads is circular. The backend enforces this too.
+export const viewOnlyFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys];
 
-export const numberFilterKeys = ['arr_id', 'connection_id', 'id', 'runtime', 'season_count', 'tmdb_id', 'tvdb_id', 'year'];
+export const booleanFilterKeys = ['arr_monitored', 'is_movie', 'media_exists', 'monitor', ...virtualBooleanFilterKeys];
+
+export const dateFilterKeys = ['added_at', 'downloaded_at', 'updated_at', ...virtualDateFilterKeys];
+
+export const numberFilterKeys = [
+  'arr_id',
+  'connection_id',
+  'id',
+  'runtime',
+  'season_count',
+  'tmdb_id',
+  'tvdb_id',
+  'year',
+  ...virtualNumberFilterKeys,
+];
 export const stringFilterKeys = [
   'clean_title',
   'folder_path',

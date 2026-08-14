@@ -46,10 +46,28 @@ BOOL_COLS = [
     "media_exists",
     "monitor",
 ]
-# Virtual boolean fields — NOT SQL columns. Evaluated from related rows
-# (has_downloads: any download with file_exists=True) in the backend
-# matches_filters and the frontend applyCustomFilter (Phase 5).
-VIRTUAL_BOOL_COLS = ["has_downloads"]
+# Virtual fields — NOT SQL columns. Evaluated from related download and file
+# rows in the backend matches_filters and the frontend applyCustomFilter.
+# Every download field uses ANY semantics: the media matches when AT LEAST
+# ONE of its downloads matches the condition.
+VIRTUAL_BOOL_COLS = [
+    "has_downloads",
+    "download_file_missing",
+    "has_unknown_profile_download",
+]
+VIRTUAL_INT_COLS = [
+    "download_count",
+    "download_profile",
+    "download_resolution",
+    "file_count",
+]
+VIRTUAL_DATE_COLS = ["download_added_at"]
+
+# View-only fields. A profile (TRAILER) filter must not use them: a profile
+# that filters on its own output is circular — it would stop matching the
+# media as soon as it downloads a trailer for it.
+VIEW_ONLY_COLS = set(VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS)
+
 INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "tmdb_id", "tvdb_id", "year"]
 STR_COLS = [
     "clean_title",
@@ -68,8 +86,40 @@ DATE_COLS = ["added_at", "downloaded_at", "updated_at"]
 FILE_COLS = ["has_file", "has_folder"]
 
 ALL_COLS = (
-    BOOL_COLS + VIRTUAL_BOOL_COLS + INT_COLS + STR_COLS + DATE_COLS + FILE_COLS
+    BOOL_COLS
+    + VIRTUAL_BOOL_COLS
+    + VIRTUAL_INT_COLS
+    + VIRTUAL_DATE_COLS
+    + INT_COLS
+    + STR_COLS
+    + DATE_COLS
+    + FILE_COLS
 )
+
+
+def validate_view_only_fields(filter_type, filters) -> None:
+    """Reject view-only fields on a profile (TRAILER) filter.
+
+    Args:
+        filter_type: The FilterType of the parent custom filter.
+        filters: The filters to check. Each needs a ``filter_by``.
+
+    Raises:
+        ValueError: If a profile filter uses a view-only field.
+    """
+    if getattr(filter_type, "value", filter_type) != "TRAILER":
+        return
+    used = sorted(
+        {f.filter_by for f in filters if f.filter_by in VIEW_ONLY_COLS}
+    )
+    if not used:
+        return
+    raise ValueError(
+        f"Invalid filter_by value(s) for a Trailer Profile filter: "
+        f"{', '.join(used)}. Download and file-count fields are available"
+        " only in view filters. A profile that filters on its own downloads"
+        " never matches a media item twice."
+    )
 
 
 def _validate_bool_filter(filter: "Filter") -> None:
@@ -329,16 +379,16 @@ class Filter(_FilterBase, table=True):
         if filter_by in BOOL_COLS or filter_by in VIRTUAL_BOOL_COLS:
             _validate_bool_filter(self)
             return self
-        # Integer conditions
-        if filter_by in INT_COLS:
+        # Integer conditions (real columns and virtual fields)
+        if filter_by in INT_COLS or filter_by in VIRTUAL_INT_COLS:
             _validate_int_filter(self)
             return self
         # String conditions
         if filter_by in STR_COLS:
             _validate_str_filter(self)
             return self
-        # Date conditions
-        if filter_by in DATE_COLS:
+        # Date conditions (real columns and virtual fields)
+        if filter_by in DATE_COLS or filter_by in VIRTUAL_DATE_COLS:
             _validate_date_filter(self)
             return self
         # File/Folder conditions
