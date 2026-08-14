@@ -12,6 +12,7 @@ from api.v1.connections import connections_router
 from api.v1.customfilters import customfilters_router
 from api.v1.events import events_router
 from api.v1.files import files_router
+from api.v1.health import health_router
 from api.v1.media import media_router
 from api.v1.notifications import notifications_router
 from api.v1.settings import settings_router
@@ -39,6 +40,7 @@ authenticated_router.include_router(connections_router)
 authenticated_router.include_router(customfilters_router)
 authenticated_router.include_router(events_router)
 authenticated_router.include_router(files_router)
+authenticated_router.include_router(health_router)
 authenticated_router.include_router(logs_router)
 authenticated_router.include_router(media_router)
 authenticated_router.include_router(notifications_router)

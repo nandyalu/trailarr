@@ -1,0 +1,211 @@
+.title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  h2 {
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.page-description {
+  color: var(--color-on-surface-variant);
+}
+
+.health-message {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.625rem;
+
+  &.success {
+    background-color: color-mix(in srgb, var(--color-success) 12%, transparent);
+    color: var(--color-success);
+  }
+
+  &.error {
+    background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+  }
+}
+
+.health-summary {
+  color: var(--color-on-surface-variant);
+
+  .overall-healthy {
+    color: var(--color-success);
+  }
+
+  .overall-issues {
+    color: var(--color-warning);
+  }
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.check-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.625rem;
+  background-color: var(--color-surface-container-low);
+
+  &.check-error {
+    border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  }
+
+  &.check-warning {
+    border-color: color-mix(in srgb, var(--color-warning) 50%, transparent);
+  }
+}
+
+.check-icon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+
+  .check-ok & {
+    color: var(--color-success);
+  }
+  .check-warning & {
+    color: var(--color-warning);
+  }
+  .check-error & {
+    color: var(--color-danger);
+  }
+}
+
+.check-body {
+  min-width: 0;
+}
+
+.check-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.check-detail {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+  overflow-wrap: anywhere;
+}
+
+.check-remediation {
+  margin: 0.375rem 0 0;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+
+  a {
+    color: var(--color-primary);
+  }
+}
+
+.health-card {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+
+  .card-header {
+    padding: 0.875rem 1rem;
+    background-color: var(--color-surface-container-high);
+    border-bottom: 1px solid var(--color-outline-variant);
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+
+  .card-body {
+    padding: 1rem;
+
+    p {
+      margin: 0 0 0.75rem;
+      color: var(--color-on-surface-variant);
+      font-size: 0.9375rem;
+    }
+  }
+}
+
+.cookies-status {
+  font-weight: 600;
+  color: var(--color-on-surface) !important;
+}
+
+.cookies-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cookies-file-label {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.625rem;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+
+  &:hover {
+    background-color: var(--color-surface-container-highest);
+  }
+}
+
+.cookies-textarea {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.625rem;
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font-family: monospace;
+  font-size: 0.8125rem;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  }
+}
+
+.btn.danger {
+  background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
+  }
+}
+
+#ytdlpConfirmDialog,
+dialog {
+  border: none;
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  padding: 0;
+  box-shadow: var(--shadow-level3);
+
+  &::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(4px);
+  }
+}
