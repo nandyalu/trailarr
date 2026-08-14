@@ -32,6 +32,27 @@ This Yes/No toggle decides the **starting monitor state** for media added by thi
 
 ---
 
+## Connection Doctor
+
+{{ version_badge("add", "0.11.4") }}
+
+Every connection card shows a **Connection Doctor** chip: `HEALTHY`, `ISSUES FOUND`, or `NOT CHECKED`. The doctor runs automatically after you save a connection. Click the chip to see the report or to run the check again.
+
+The doctor runs these checks:
+
+- **API reachability** — Trailarr asks the application for its root folders (Plex: library folders). A wrong URL or API key shows up here.
+- **Path visibility** — each reported folder must exist and list from inside Trailarr, after your path mappings are applied. A folder that is reachable but empty is flagged as a warning: some network mounts present an empty folder when they are down — see [Network Drives](../../../getting-started/01-first-things/network-drives.md).
+- **Mapping suggestions** — when a reported folder is not visible, the doctor compares the remote path against the folders Trailarr can see and suggests a concrete path mapping (for example, `Radarr reports /data/movies — suggested mapping: /data → /media`). Click **Apply** to add the mapping and re-run the check. A suggestion confirmed by only a folder-name match says so — check the folder contents before you apply it.
+- **Write permissions** — the doctor creates and deletes a `.trailarr-write-test` file in one accessible folder. On failure it reports the folder's owner (uid/gid) against the user Trailarr runs as, which is the PUID/PGID fix — see [Environment Variables](../../../getting-started/01-first-things/environment-variables.md).
+
+!!! note "The checks are read-only"
+    The write-test file is the only thing the doctor ever creates, and it deletes it right away. Media files are never touched.
+
+!!! note "Reports do not survive a restart"
+    Reports are kept in memory. After a restart, the chips show `NOT CHECKED` until you save a connection or click the chip and run the check.
+
+---
+
 ## Plex Connection
 
 {{ version_badge("add", "0.9.0") }}

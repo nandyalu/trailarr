@@ -8,6 +8,7 @@ from core.base.database.models.connection import (
     PathMapping,
 )
 from core.base.database.utils.engine import write_session
+from core.base.utils.path_utils import normalize_trailing_slash
 
 
 @write_session
@@ -27,6 +28,42 @@ def update_path_mapping_section_key(
         return
     pm.plex_section_key = section_key
     _session.add(pm)
+    _session.commit()
+
+
+@write_session
+def add_path_mapping(
+    connection_id: int,
+    path_from: str,
+    path_to: str,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Add one path mapping row to a connection.
+
+    Used by the Connection Doctor's one-click "Apply" for a suggested
+    mapping. Skips silently when the same path_from already exists on
+    the connection (the user applied it twice).
+    """
+    path_from = normalize_trailing_slash(path_from)
+    path_to = normalize_trailing_slash(path_to)
+    existing = _session.exec(
+        select(PathMapping)
+        .where(PathMapping.connection_id == connection_id)
+        .where(PathMapping.path_from == path_from)
+    ).first()
+    if existing is not None:
+        existing.path_to = path_to
+        _session.add(existing)
+        _session.commit()
+        return
+    _session.add(
+        PathMapping(
+            connection_id=connection_id,
+            path_from=path_from,
+            path_to=path_to,
+        )
+    )
     _session.commit()
 
 
