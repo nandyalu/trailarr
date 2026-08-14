@@ -50,6 +50,59 @@ class ProbeResult(BaseModel):
     local equivalent of the remote path."""
 
 
+class HealthCheckResult(BaseModel):
+    """Outcome of one system health check."""
+
+    key: str
+    """Stable identifier: 'ffmpeg', 'hardware', 'ytdlp', 'app_version',
+    'cookies', 'connections', 'images', 'disk_space', 'ytdlp_test'."""
+    name: str
+    """Display label, e.g. "FFmpeg"."""
+    status: ProbeStatus
+    detail: str
+    remediation: str = ""
+    docs_url: str = ""
+    checked_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+
+
+class HealthReport(BaseModel):
+    """All health checks, with the overall state."""
+
+    checked_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    status: str = "healthy"
+    """'healthy' when every check is ok/skipped, else 'issues'."""
+    checks: list[HealthCheckResult] = []
+
+    def finalize(self) -> "HealthReport":
+        has_issue = any(
+            c.status in (ProbeStatus.ERROR, ProbeStatus.WARNING)
+            for c in self.checks
+        )
+        self.status = "issues" if has_issue else "healthy"
+        return self
+
+
+class CookiesStatus(BaseModel):
+    """Status of the YouTube cookies file — never its content."""
+
+    configured: bool = False
+    path: str = ""
+    exists: bool = False
+    youtube_cookies: int = 0
+    expired: bool = False
+    detail: str = ""
+
+
+class CookiesUpload(BaseModel):
+    """Cookies file content, write-only (accepted, never returned)."""
+
+    content: str
+
+
 class DoctorReport(BaseModel):
     """All probe results for one connection."""
 

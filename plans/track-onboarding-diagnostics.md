@@ -1,10 +1,9 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestone A IMPLEMENTED — on branch `feat/connection-doctor` (Aug 14, 2026),
-targets v0.11.4; B–D not started · **Releases:** incremental — Milestones A+B target
-v0.11.3–v0.12.x (Sep–Oct 2026), C targets v0.13.x (post-reorg, Nov 2026), D anytime ·
-**Depends on:** nothing hard; C wants Phase 7 (services layer) and Phase 3 (preview
-endpoint)
+**Status:** Milestones A+B IMPLEMENTED — on branch `feat/connection-doctor`
+(Aug 14, 2026), target v0.11.4; C–D not started · **Releases:** incremental —
+C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
+C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 **Milestone A execution notes (Aug 14, 2026):**
 
@@ -22,6 +21,26 @@ endpoint)
 - Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
   end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
   elsewhere) got a one-click Apply that flipped the chip to HEALTHY.
+
+**Milestone B execution notes (Aug 14, 2026):**
+
+- Framework in `core/diagnostics/health.py`: every check async with a 10s hard timeout
+  (B4); on-demand only, never at startup (B1); report cached 24h in memory.
+- Checks: ffmpeg, hardware (surfaces `gpu_available_*`/`gpu_enabled_*`), yt-dlp version
+  + channel + update flag, app version, cookies file validity, Connection Doctor
+  summary, image-cache writability, disk space (config + sample media mount).
+- Cookies UI rides the existing `yt_cookies_path` mechanism (per the VERIFY note — no
+  parallel path): upload/paste stores `APP_DATA_DIR/cookies.txt` mode 600 and sets the
+  setting; status endpoints never return content (B2, tested); delete removes only the
+  Trailarr-managed file, never a user-provided path.
+- yt-dlp live test: `--simulate` on yt-dlp's canonical test video, user-confirmed (B3),
+  result cached 24h and merged into the report.
+- Classified download errors: `core/download/error_classify.py` signatures (sign-in/
+  bot-check, 403/429, format-unavailable → JS runtime, video-unavailable, network);
+  applied where `DownloadAttempt.last_error` is stored — reason first, raw line in
+  brackets. FAQ/docs wording matches (`docs/user-guide/settings/health.md`).
+- The plan's "update channel" for yt-dlp reports the existing `ytdlp_nightly` setting;
+  switching channels from the UI is NOT included (deliberate scope cut).
 
 ## Objective
 
