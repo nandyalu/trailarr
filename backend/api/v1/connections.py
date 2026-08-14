@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
@@ -10,10 +12,88 @@ from core.base.database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
+from core.diagnostics import connection_doctor
+from core.diagnostics.models import DoctorReport, SuggestedMapping
 from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
 from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
+
+def _schedule_doctor(connection_id: int) -> None:
+    """Run the Connection Doctor in the background after a save.
+
+    A failed check must never fail the save — errors show up in the
+    report itself, or only in the log for unexpected ones.
+    """
+
+    async def _run() -> None:
+        try:
+            await connection_doctor.run_doctor(connection_id)
+        except Exception as e:
+            connection_doctor.logger.error(
+                f"Doctor run failed for connection {connection_id}: {e}"
+            )
+
+    asyncio.create_task(_run())
+
+
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
+
+
+@connections_router.get("/doctor")
+async def get_doctor_reports() -> list[DoctorReport]:
+    """Last Connection Doctor report of every checked connection.
+
+    Reports live in memory: after a restart the list is empty until a
+    connection is saved or a check is run.
+    """
+    return connection_doctor.get_all_reports()
+
+
+@connections_router.post(
+    "/{connection_id}/doctor",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Connection Not Found",
+        },
+    },
+)
+async def run_connection_doctor(connection_id: int) -> DoctorReport:
+    """Run the Connection Doctor for one connection and return the report."""
+    try:
+        return await connection_doctor.run_doctor(connection_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
+@connections_router.post(
+    "/{connection_id}/doctor/mappings",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Connection Not Found",
+        },
+    },
+)
+async def apply_doctor_mapping(
+    connection_id: int, mapping: SuggestedMapping
+) -> DoctorReport:
+    """Apply a suggested path mapping, then re-run the check.
+
+    Creates the PathMapping row on the connection (or updates the row
+    with the same `path_from`) and returns the fresh report.
+    """
+    try:
+        connection_manager.add_path_mapping(
+            connection_id, mapping.path_from, mapping.path_to
+        )
+        return await connection_doctor.run_doctor(connection_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @connections_router.get("/")
@@ -90,6 +170,8 @@ async def create_connection(connection: ConnectionCreate) -> str:
         await refresh_connection(connection_id)
         if connection.arr_type == ArrType.PLEX:
             ensure_plex_trailer_refresh_scheduled(delay_seconds=180.0)
+        # Check folder visibility and permissions in the background
+        _schedule_doctor(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Failed to add Connection!", "Error"
@@ -144,6 +226,8 @@ async def update_connection(
         await connection_manager.update(connection_id, connection)
         # Refresh data from API for the connection
         await refresh_connection(connection_id)
+        # Check folder visibility and permissions in the background
+        _schedule_doctor(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Failed to update Connection!", "Error"
@@ -177,6 +261,7 @@ async def delete_connection(connection_id: int) -> str:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
+    connection_doctor.forget_report(connection_id)
     return msg
 
 

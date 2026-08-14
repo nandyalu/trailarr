@@ -63,6 +63,14 @@
             <span class="meta-sep">·</span>
             <span>{{ connection.added_at | date: 'mediumDate' }}</span>
           </div>
+          @let chip = doctorChip(connection.id);
+          <button
+            class="doctor-chip doctor-{{ chip.state }}"
+            title="Connection Doctor — check folder visibility and permissions"
+            (click)="openDoctorDialog(connection.id, $event)"
+          >
+            {{ chip.label }}
+          </button>
         </div>
       </div>
     }
@@ -74,6 +82,65 @@
     </p>
   </div>
 }
+
+<!-- Connection Doctor dialog -->
+<dialog id="doctorDialog" (click)="closeDoctorDialog()" (cancel)="$event.preventDefault(); closeDoctorDialog()">
+  <div class="app-dialog-container doctor-dialog" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Connection Doctor</h2>
+      <button class="app-dialog-close" (click)="closeDoctorDialog()" title="Close">
+        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="app-dialog-body">
+      @if (doctorError()) {
+        <p class="doctor-error">{{ doctorError() }}</p>
+      }
+      @if (doctorRunning()) {
+        <app-load-indicator class="center" />
+        <p class="doctor-checking">Checking folders and permissions…</p>
+      } @else if (doctorDialogReport(); as report) {
+        <p class="doctor-summary">
+          <strong>{{ report.connection_name }}</strong> — checked {{ report.checked_at | date: 'medium' }}
+        </p>
+        <div class="probe-list">
+          @for (probe of report.probes; track $index) {
+            <div class="probe-item probe-{{ probe.status }}">
+              <span class="probe-icon" aria-hidden="true">{{ probeIcon(probe.status) }}</span>
+              <div class="probe-body">
+                <p class="probe-name">{{ probe.name }}</p>
+                <p class="probe-detail">{{ probe.detail }}</p>
+                @if (probe.remediation) {
+                  <p class="probe-remediation">
+                    {{ probe.remediation }}
+                    @if (probe.docs_url) {
+                      <a [href]="probe.docs_url" target="_blank" rel="noopener">Learn more</a>
+                    }
+                  </p>
+                }
+                @if (probe.suggested_mapping; as mapping) {
+                  <button class="btn primary probe-apply" (click)="applyMapping(mapping)" [disabled]="doctorRunning()">
+                    Apply mapping: {{ mapping.path_from }} → {{ mapping.path_to }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="doctor-checking">No report yet. Run the check to see the results.</p>
+      }
+    </div>
+    <div class="app-dialog-footer">
+      <button class="btn secondary" (click)="runDoctor()" [disabled]="doctorRunning()">
+        {{ doctorRunning() ? 'Checking…' : 'Run check' }}
+      </button>
+      <button class="btn tertiary" (click)="closeDoctorDialog()">Close</button>
+    </div>
+  </div>
+</dialog>
 
 <!-- Type picker dialog -->
 <dialog #addTypeDialog (click)="addTypeDialog.close()" (cancel)="$event.preventDefault(); addTypeDialog.close()">

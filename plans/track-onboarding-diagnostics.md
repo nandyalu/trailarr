@@ -1,8 +1,27 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** not started · **Releases:** incremental — Milestones A+B target v0.11.3–v0.12.x
-(Sep–Oct 2026), C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:**
-nothing hard; C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+**Status:** Milestone A IMPLEMENTED — on branch `feat/connection-doctor` (Aug 14, 2026),
+targets v0.11.4; B–D not started · **Releases:** incremental — Milestones A+B target
+v0.11.3–v0.12.x (Sep–Oct 2026), C targets v0.13.x (post-reorg, Nov 2026), D anytime ·
+**Depends on:** nothing hard; C wants Phase 7 (services layer) and Phase 3 (preview
+endpoint)
+
+**Milestone A execution notes (Aug 14, 2026):**
+
+- Code lives in `core/diagnostics/` per the pitfalls rule; add to the phase-07 move map
+  (`services/diagnostics/`).
+- Reports are in-memory only (no DB table): a check re-runs in well under a second, and
+  chips show `NOT CHECKED` after a restart until a save or a manual run.
+- A1 interpretation: suggestions are made per root and verified against media samples;
+  a suggestion corroborated only by the folder-name match IS still offered, but labeled
+  "based on the folder name only — check before you apply" (a hard 2-sample minimum
+  would leave the common fresh-install single-root case with no suggestion at all).
+- Suggester bases: `/` top level (system dirs excluded) plus one level below each, plus
+  existing PathMapping targets — which is how deep bases (e.g. `/mnt/user/media`) are
+  found when any mapping already exists.
+- Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
+  end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
+  elsewhere) got a one-click Apply that flipped the chip to HEALTHY.
 
 ## Objective
 
