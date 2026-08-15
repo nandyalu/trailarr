@@ -28,6 +28,9 @@ export const appConfig: ApplicationConfig = {
     {provide: ErrorHandler, useClass: GlobalErrorHandler},
     provideHttpClient(),
     // withInterceptors([authInterceptor]),
-    {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium', timezone: 'UTC'}},
+    // Dates are stored and sent as UTC; the `date` pipe must render them in
+    // the VIEWER's timezone. Do not set `timezone` here — pinning it to 'UTC'
+    // made every date show UTC clock time regardless of the user's timezone.
+    {provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: {dateFormat: 'medium'}},
   ],
 };
