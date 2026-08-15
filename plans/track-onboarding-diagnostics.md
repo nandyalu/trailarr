@@ -18,6 +18,16 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 - Suggester bases: `/` top level (system dirs excluded) plus one level below each, plus
   existing PathMapping targets — which is how deep bases (e.g. `/mnt/user/media`) are
   found when any mapping already exists.
+- Suggester stage 1 (added after real-library testing, Aug 15): search the disk for a
+  tracked media folder BY NAME (BFS, depth ≤4, 25k-entry budget, likely mounts first)
+  and derive the mapping by longest-common-suffix alignment of the remote and found
+  paths. Fixes two failures of the shallow heuristic on the maintainer's machine: a
+  library 3 levels deep got no suggestion at all, and a folder-name coincidence
+  (`/media/movies/all` tail-matching a dir named `all`) produced a wrong one. Spread
+  media sampling doubles as union-mount disambiguation: a candidate on one physical
+  drive fails some samples while the union mount passes all. Sibling roots reuse the
+  first derived mapping without re-searching. The tail heuristic remains as the
+  fallback for fresh connections with no synced media.
 - Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
   end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
   elsewhere) got a one-click Apply that flipped the chip to HEALTHY.

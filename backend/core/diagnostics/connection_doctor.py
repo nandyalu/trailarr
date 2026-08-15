@@ -23,6 +23,7 @@ in the backend reorganization.
 
 import os
 import re
+from collections import deque
 from types import SimpleNamespace
 
 from app_logger import ModuleLogger
@@ -69,6 +70,18 @@ _SYSTEM_DIRS = frozenset({
 _MAX_MEDIA_SAMPLES = 5
 _MAX_BASES = 200
 
+# Filesystem search limits for the by-name media folder search. The
+# budget counts every directory entry seen, so one huge folder cannot
+# turn the check into a full disk crawl.
+_SEARCH_MAX_DEPTH = 4
+_SEARCH_BUDGET = 25_000
+_SEARCH_MAX_SAMPLES = 3
+# Mount points where media libraries usually live — searched first
+_PREFERRED_SEARCH_ROOTS = [
+    "/media", "/mnt", "/data", "/srv", "/storage", "/share", "/volumes",
+    "/home",
+]
+
 # Last report per connection id — in-memory only.
 _reports: dict[int, DoctorReport] = {}
 
@@ -103,9 +116,14 @@ async def run_doctor(connection_id: int) -> DoctorReport:
     # The filesystem walk for suggester bases runs once per report.
     samples = _arr_side_media_samples(connection)
     bases = _visible_bases(connection)
+    # Mappings already derived this run: sibling roots usually share one
+    # mapping, so later roots try these before searching the disk again.
+    known_mappings: list[SuggestedMapping] = []
     checked_dirs: list[str] = []
     for root in roots:
-        probe, mapped_dir = _probe_root(root, connection, samples, bases)
+        probe, mapped_dir = _probe_root(
+            root, connection, samples, bases, known_mappings
+        )
         report.probes.append(probe)
         if mapped_dir:
             checked_dirs.append(mapped_dir)
@@ -175,11 +193,26 @@ async def _fetch_roots(
     )
 
 
+def _resolve_with_known(
+    root: str, known_mappings: list[SuggestedMapping]
+) -> SuggestedMapping | None:
+    """Return a mapping derived for a sibling root that fits this one too."""
+    for known in known_mappings:
+        candidate = SimpleNamespace(
+            path_from=known.path_from, path_to=known.path_to
+        )
+        mapped = apply_path_mappings(root, [candidate])
+        if mapped != root and os.path.isdir(mapped):
+            return known
+    return None
+
+
 def _probe_root(
     root: str,
     connection: ConnectionRead,
     samples: list[str],
     bases: list[str],
+    known_mappings: list[SuggestedMapping] | None = None,
 ) -> tuple[ProbeResult, str | None]:
     """Check one reported root folder. Returns (probe, mapped_dir).
 
@@ -187,11 +220,14 @@ def _probe_root(
     for use by the permission probe.
     """
     name = f"Folder: {root}"
+    known_mappings = known_mappings if known_mappings is not None else []
     mapped = apply_path_mappings(root, connection.path_mappings)
 
     # A5: Windows-style path on a POSIX host can never exist directly
     if _WINDOWS_ABS_RE.match(mapped) and os.name != "nt":
-        suggestion = _suggest_mapping(root, samples, bases)
+        suggestion = _resolve_with_known(
+            root, known_mappings
+        ) or _suggest_mapping(root, samples, bases)
         return ProbeResult(
             kind="path_style",
             name=name,
@@ -262,7 +298,11 @@ def _probe_root(
         ), mapped
 
     # Not visible: suggest a mapping from what IS visible
-    suggestion = _suggest_mapping(root, samples, bases)
+    suggestion = _resolve_with_known(
+        root, known_mappings
+    ) or _suggest_mapping(root, samples, bases)
+    if suggestion is not None and suggestion not in known_mappings:
+        known_mappings.append(suggestion)
     remediation = (
         "Map this path to the folder where Trailarr sees the same"
         " files, on the connection's Path Mappings."
@@ -428,20 +468,195 @@ def _visible_bases(connection: ConnectionRead) -> list[str]:
     return bases[:_MAX_BASES]
 
 
+def _search_roots() -> list[str]:
+    """Top-level folders to search for media, likely mounts first."""
+    roots = [p for p in _PREFERRED_SEARCH_ROOTS if os.path.isdir(p)]
+    try:
+        for entry in sorted(os.scandir("/"), key=lambda e: e.name):
+            if entry.name in _SYSTEM_DIRS or entry.name.startswith("."):
+                continue
+            path = "/" + entry.name
+            if path in roots:
+                continue
+            try:
+                if entry.is_dir(follow_symlinks=True):
+                    roots.append(path)
+            except OSError:
+                continue
+    except OSError:
+        pass
+    return roots
+
+
+def _search_media_folder(
+    name: str,
+    roots: list[str],
+    max_depth: int = _SEARCH_MAX_DEPTH,
+    budget: int = _SEARCH_BUDGET,
+    max_hits: int = 3,
+) -> list[str]:
+    """Breadth-first search for directories named exactly *name*.
+
+    Media item folders ("Show Name (2015) {tvdb-281662}") are close to
+    unique on a disk, so a name hit is strong evidence of where the
+    library really lives. The entry budget and depth cap keep the walk
+    bounded on large drives.
+    """
+    hits: list[str] = []
+    queue: deque[tuple[str, int]] = deque((r, 0) for r in roots)
+    remaining = budget
+    while queue and remaining > 0 and len(hits) < max_hits:
+        path, depth = queue.popleft()
+        try:
+            entries = list(os.scandir(path))
+        except OSError:
+            continue
+        for entry in entries:
+            remaining -= 1
+            if remaining <= 0:
+                break
+            if entry.name.startswith("."):
+                continue
+            try:
+                if not entry.is_dir(follow_symlinks=True):
+                    continue
+            except OSError:
+                continue
+            if entry.name == name:
+                hits.append(entry.path)
+                if len(hits) >= max_hits:
+                    break
+            elif depth < max_depth:
+                queue.append((entry.path, depth + 1))
+    return hits
+
+
+def _split_parts(path: str) -> list[str]:
+    return [p for p in re.split(r"[/\\]+", path) if p]
+
+
+def _join_prefix(parts: list[str], is_windows: bool) -> str:
+    if is_windows:
+        return "\\".join(parts) + "\\"
+    return "/" + "/".join(parts) + "/"
+
+
+def _align_suffix(
+    remote_path: str, local_path: str
+) -> tuple[str, str] | None:
+    """Derive a mapping from a remote path and its on-disk location.
+
+    Matches the longest common trailing components of the two paths
+    (case-sensitive), then maps what is left of each side:
+    '/media/tv/Show X' found at '/media/all/Media/tv/Show X' shares
+    the suffix 'tv/Show X', so '/media/' maps to '/media/all/Media/'.
+    The remote prefix always keeps at least one component, so a mapping
+    can never claim the filesystem root.
+    """
+    remote = _split_parts(remote_path)
+    local = _split_parts(local_path)
+    if not remote or not local:
+        return None
+    limit = min(len(remote) - 1, len(local) - 1)
+    n = 0
+    while n < limit and remote[-1 - n] == local[-1 - n]:
+        n += 1
+    if n == 0:
+        return None
+    is_windows = bool(_WINDOWS_ABS_RE.match(remote_path))
+    remote_prefix = _join_prefix(remote[:-n], is_windows)
+    local_prefix = _join_prefix(local[:-n], False)
+    if remote_prefix.rstrip("/\\") == local_prefix.rstrip("/\\"):
+        return None
+    return remote_prefix, local_prefix
+
+
+def _suggest_from_search(
+    root: str,
+    samples: list[str],
+    search_roots: list[str],
+) -> SuggestedMapping | None:
+    """Locate a known media folder by name and derive the mapping.
+
+    This is the strong path: it uses the distinctive folder names of
+    media Trailarr already tracks, so a match is evidence the files are
+    really there — a folder-name coincidence in the shallow base walk
+    cannot beat it.
+    """
+    under_root = [s for s in samples if is_subpath(root, s)]
+    best: SuggestedMapping | None = None
+    for sample in under_root[:_SEARCH_MAX_SAMPLES]:
+        name = os.path.basename(sample.rstrip("/\\"))
+        if not name:
+            continue
+        for hit in _search_media_folder(name, search_roots):
+            aligned = _align_suffix(sample, hit)
+            if aligned is None:
+                continue
+            remote_prefix, local_prefix = aligned
+            if not is_subpath(remote_prefix, root):
+                continue
+            candidate_mapping = SimpleNamespace(
+                path_from=remote_prefix, path_to=local_prefix
+            )
+            mapped_root = apply_path_mappings(root, [candidate_mapping])
+            if not os.path.isdir(mapped_root):
+                continue
+            # The found folder counts, the resolving root counts, and
+            # every other sample that resolves under the mapping counts.
+            corroborations = 2
+            for other in under_root:
+                if other == sample:
+                    continue
+                if not is_subpath(remote_prefix, other):
+                    continue
+                if os.path.isdir(
+                    apply_path_mappings(other, [candidate_mapping])
+                ):
+                    corroborations += 1
+            candidate = SuggestedMapping(
+                path_from=remote_prefix,
+                path_to=local_prefix,
+                corroborations=corroborations,
+            )
+            if (
+                best is None
+                or candidate.corroborations > best.corroborations
+            ):
+                best = candidate
+        if best is not None and best.corroborations > 2:
+            break
+    return best
+
+
 def _suggest_mapping(
     root: str,
     samples: list[str],
     bases: list[str],
+    search_roots: list[str] | None = None,
 ) -> SuggestedMapping | None:
     """Find the visible folder that likely holds the files behind *root*.
 
-    Splits the remote path at every component and looks for a visible
-    base where the remaining tail exists. Every candidate is verified
-    against the media samples under the same prefix; the candidate that
-    the most samples confirm wins. A shallower prefix wins a tie, since
-    it covers sibling folders too.
+    Two stages:
+    1. Search the disk for a media folder Trailarr already tracks under
+       this root, by its distinctive name, and derive the mapping from
+       where it was found. This does the work for the user and wins
+       whenever it finds anything.
+    2. Fall back to the shallow heuristic: split the remote path at
+       every component and look for a visible base where the remaining
+       tail exists, verified against the media samples. Used when there
+       are no media samples yet (fresh connection).
     """
-    parts = [p for p in re.split(r"[/\\]+", root) if p]
+    # Stage 1: find a tracked media folder by name
+    if samples:
+        found = _suggest_from_search(
+            root, samples, search_roots or _search_roots()
+        )
+        if found is not None:
+            return found
+
+    # Stage 2: tail matching against visible bases
+    parts = _split_parts(root)
     if not parts:
         return None
     is_windows = bool(_WINDOWS_ABS_RE.match(root))
