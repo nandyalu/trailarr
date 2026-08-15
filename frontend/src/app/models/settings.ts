@@ -30,6 +30,7 @@ export interface Settings {
   url_base: string;
   version: string;
   wait_for_media: boolean;
+  create_missing_folders: boolean;
   webui_disable_auth: boolean;
   webui_username: string;
   yt_cookies_path: string;

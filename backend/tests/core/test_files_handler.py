@@ -678,3 +678,55 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_deleted
     assert not trailer_file.exists()
     assert delete_except_called_with.get("connection_id") == 1
     assert delete_except_called_with.get("media_ids") == [1]
+
+
+class TestCreateFolder:
+    """FilesHandler.create_folder — used by the 'Create Missing Folders'
+    setting (discussion #641)."""
+
+    def test_creates_missing_folder_with_parents(self, tmp_path):
+        target = tmp_path / "movies" / "Some Movie (2026)"
+        assert FilesHandler.create_folder(str(target)) is True
+        assert target.is_dir()
+
+    def test_existing_folder_is_a_no_op(self, tmp_path):
+        target = tmp_path / "already-there"
+        target.mkdir()
+        assert FilesHandler.create_folder(str(target)) is True
+        assert target.is_dir()
+
+    def test_empty_path_is_refused(self):
+        assert FilesHandler.create_folder("") is False
+
+    def test_never_creates_when_storage_is_unreachable(self, tmp_path):
+        """A disconnected share looks like a missing folder; writing into
+        it would hide the real media when it comes back."""
+        from unittest.mock import patch
+
+        target = tmp_path / "dead-mount" / "Some Movie (2026)"
+        with patch(
+            "core.files_handler.is_disk_available", return_value=False
+        ):
+            assert FilesHandler.create_folder(str(target)) is False
+        assert not target.exists()
+
+    def test_inherits_permissions_of_nearest_existing_parent(self, tmp_path):
+        """Created folders must stay writable for the Trailarr user
+        (the PUID/PGID class of problem)."""
+        import os
+        import stat
+
+        parent = tmp_path / "library"
+        parent.mkdir(mode=0o775)
+        os.chmod(parent, 0o775)
+        target = parent / "New Movie (2026)"
+
+        assert FilesHandler.create_folder(str(target)) is True
+        mode = stat.S_IMODE(os.stat(target).st_mode)
+        assert mode & 0o700 == 0o700  # owner can read/write/traverse
+
+    def test_failure_is_reported_not_raised(self, tmp_path):
+        """A file where the folder should go: report False, never raise."""
+        blocker = tmp_path / "blocker"
+        blocker.write_text("not a folder")
+        assert FilesHandler.create_folder(str(blocker / "child")) is False

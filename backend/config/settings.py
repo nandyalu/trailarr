@@ -261,6 +261,7 @@ class _Config:
             "app_data_dir": APP_DATA_DIR,
             "app_mode": self.app_mode,
             "app_theme": self.app_theme,
+            "create_missing_folders": self.create_missing_folders,
             "delete_corrupted_trailers": self.delete_corrupted_trailers,
             "delete_trailer_connection": self.delete_trailer_connection,
             "files_full_scan": self.files_full_scan,
@@ -422,6 +423,15 @@ class _Config:
     wait_for_media = bool_property("WAIT_FOR_MEDIA", default=False)
     """Wait for media to be available.
         - Default is False.
+        - Valid values are True/False."""
+
+    create_missing_folders = bool_property(
+        "CREATE_MISSING_FOLDERS", default=False
+    )
+    """Create the media folder when it does not exist on disk.
+        - Default is False (media with a missing folder is skipped).
+        - Only applies when the storage is reachable — a folder is never
+          created on an unavailable drive or network share.
         - Valid values are True/False."""
 
     delete_trailer_connection = bool_property(

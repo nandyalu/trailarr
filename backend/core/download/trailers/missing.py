@@ -60,6 +60,27 @@ def _is_valid_media(
                     source_detail="DownloadMissingTrailers",
                 )
                 return False
+            # The storage is reachable, so the folder is genuinely
+            # missing. Create it when the user asked for that; otherwise
+            # skip as before.
+            if app_settings.create_missing_folders:
+                if FilesHandler.create_folder(db_media.folder_path):
+                    logger.info(
+                        f"Media '{db_media.title}' [{db_media.id}]:"
+                        f" created missing folder"
+                        f" '{db_media.folder_path}'."
+                    )
+                    return True
+                logger.info(
+                    f"Media '{db_media.title}' [{db_media.id}] skipped:"
+                    " could not create the missing folder."
+                )
+                event_manager.track_download_skipped(
+                    media_id=db_media.id,
+                    skip_reason="Could not create folder",
+                    source_detail="DownloadMissingTrailers",
+                )
+                return False
             logger.info(
                 f"Media '{db_media.title}' [{db_media.id}] skipped: folder"
                 " does not exist."

@@ -78,6 +78,14 @@
         (optionChange)="updateSetting('wait_for_media', $event)"
       />
       <app-options-setting
+        name="Create Missing Folders"
+        description="Create the media folder when it does not exist, instead of skipping the download."
+        descriptionExtra="Useful when trailers are stored in a separate folder, or when media files are not downloaded yet. Folders are never created when the drive or network share is unreachable."
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.create_missing_folders"
+        (optionChange)="updateSetting('create_missing_folders', $event)"
+      />
+      <app-options-setting
         name="Force Full Files Scan"
         description="Force the next 'Scan Media Folders' run to scan all folders, ignoring the folder-change check."
         descriptionExtra="Useful if download records or media_exists flags are stale. Automatically resets to False once the full scan completes."

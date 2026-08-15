@@ -150,8 +150,16 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
                 skipped_titles["missing_folder_path"].append(db_media.title)
                 continue
             if not FilesHandler.check_folder_exists(db_media.folder_path):
-                skipped_titles["missing_folder_path"].append(db_media.title)
-                continue
+                # Batch download from the UI: create the folder when the
+                # user turned that on, else skip as before. create_folder
+                # refuses when the storage itself is unreachable.
+                if not app_settings.create_missing_folders or (
+                    not FilesHandler.create_folder(db_media.folder_path)
+                ):
+                    skipped_titles["missing_folder_path"].append(
+                        db_media.title
+                    )
+                    continue
         if app_settings.wait_for_media:
             if check_folder:
                 if not db_media.folder_path:
