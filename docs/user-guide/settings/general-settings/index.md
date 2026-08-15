@@ -54,6 +54,23 @@ Enable this setting to disable authentication for the WebUI. Use with caution, a
 
 Enable this setting to wait for media to be downloaded before downloading trailers.
 
+### Create Missing Folders
+
+{{ version_badge("add", "0.11.2") }}
+
+- Default is `false`
+- Environment variable: `CREATE_MISSING_FOLDERS`
+
+Trailarr normally skips a media item when its folder does not exist on disk, because a missing folder usually means the media is not downloaded yet. Enable this setting to create the folder instead, so the trailer downloads anyway.
+
+This helps when you keep trailers in a folder of their own, or when you want trailers ready before the media arrives. Trailarr creates the full folder path and gives it the permissions of the closest folder above it, so the new folder stays writable for the user Trailarr runs as.
+
+!!! warning "Folders are never created on unreachable storage"
+    A disconnected network share or an unmounted drive looks the same as a missing folder. Trailarr checks that the storage is reachable first, and skips the media item when it is not — writing into a dead mount would hide your real media when it comes back. See [Network Drives](../../../getting-started/01-first-things/network-drives.md).
+
+!!! note ""
+    Trailarr always creates the trailer's own destination folder (for example a `Trailers` subfolder, or a custom folder from a profile). This setting is only about the **media** folder itself.
+
 ### Force Full Files Scan
 
 {{ version_badge("add", "0.9.1") }}

@@ -3,6 +3,7 @@
 import datetime
 import pytest
 from unittest.mock import MagicMock, patch
+from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
 from core.base.database.models.media import MediaRead
 
@@ -323,6 +324,92 @@ class TestIsValidMediaStorageGuard:
                 "skip_reason"
             ]
             assert skip_reason == "Folder does not exist"
+
+    def test_missing_folder_is_created_when_setting_is_on(
+        self, mock_media_no_trailer
+    ):
+        """Discussion #641: with 'Create Missing Folders' on, a genuinely
+        missing folder is created instead of skipping the download."""
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.is_disk_available",
+            return_value=True,
+        ), patch(
+            "core.download.trailers.missing.FilesHandler.create_folder",
+            return_value=True,
+        ) as mock_create, patch(
+            "core.download.trailers.missing.os.listdir", return_value=[]
+        ), patch.object(
+            type(app_settings), "create_missing_folders", True
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is True
+            mock_create.assert_called_once_with("/mnt/media/Test Movie")
+            mock_events.track_download_skipped.assert_not_called()
+
+    def test_unreachable_storage_never_creates_a_folder(
+        self, mock_media_no_trailer
+    ):
+        """The setting must not defeat the dead-mount guard: writing into
+        a disconnected share would hide the real media."""
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.is_disk_available",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.FilesHandler.create_folder"
+        ) as mock_create, patch.object(
+            type(app_settings), "create_missing_folders", True
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is False
+            mock_create.assert_not_called()
+            assert (
+                mock_events.track_download_skipped.call_args.kwargs[
+                    "skip_reason"
+                ]
+                == "Storage unreachable"
+            )
+
+    def test_failed_creation_skips_with_its_own_reason(
+        self, mock_media_no_trailer
+    ):
+        from core.download.trailers.missing import _is_valid_media
+
+        media = self._media(mock_media_no_trailer)
+        with patch(
+            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            return_value=False,
+        ), patch(
+            "core.download.trailers.missing.is_disk_available",
+            return_value=True,
+        ), patch(
+            "core.download.trailers.missing.FilesHandler.create_folder",
+            return_value=False,
+        ), patch.object(
+            type(app_settings), "create_missing_folders", True
+        ), patch(
+            "core.download.trailers.missing.event_manager"
+        ) as mock_events:
+            assert _is_valid_media(media) is False
+            assert (
+                mock_events.track_download_skipped.call_args.kwargs[
+                    "skip_reason"
+                ]
+                == "Could not create folder"
+            )
 
     def test_folder_exists_but_unreadable_skips_as_unreachable(
         self, mock_media_no_trailer

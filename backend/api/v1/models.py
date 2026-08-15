@@ -77,6 +77,7 @@ class Settings(BaseModel):
     url_base: str
     version: str
     wait_for_media: bool
+    create_missing_folders: bool
     webui_disable_auth: bool
     webui_username: str
     yt_cookies_path: str

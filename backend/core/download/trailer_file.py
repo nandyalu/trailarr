@@ -41,6 +41,17 @@ def get_folder_permissions(path: str | Path) -> int | None:
     return _permissions
 
 
+def _create_media_folder(folder_path: str) -> bool:
+    """Create a missing media folder via the files handler.
+
+    Imported lazily: files_handler imports this module for
+    get_folder_permissions, so a module-level import would be circular.
+    """
+    from core.files_handler import FilesHandler
+
+    return FilesHandler.create_folder(folder_path)
+
+
 def normalize_filename(filename: str) -> str:
     """Normalize the filename to handle Unicode characters. \n
     Args:
@@ -244,7 +255,12 @@ def move_trailer_to_folder(
             )
         media_folder = Path(media.folder_path)
         if not media_folder.exists():
-            raise FolderNotFoundError(folder_path=media.folder_path)
+            # The download gate creates the folder when the user enabled
+            # that; this is the last line of defence for other callers.
+            if not app_settings.create_missing_folders or not (
+                _create_media_folder(media.folder_path)
+            ):
+                raise FolderNotFoundError(folder_path=media.folder_path)
         if profile.folder_enabled:
             folder_name = profile.folder_name.strip()
             if not folder_name:

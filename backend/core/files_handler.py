@@ -14,6 +14,7 @@ import unicodedata
 from app_logger import ModuleLogger
 from core.base.database.manager import trailerprofile
 from core.download import video_analysis
+from core.download.trailer_file import get_folder_permissions
 
 logger = ModuleLogger("FilesHandler")
 
@@ -190,6 +191,48 @@ class FilesHandler:
             bool: True if the folder exists, False otherwise.
         """
         return os.path.isdir(path)
+
+    @staticmethod
+    def create_folder(path: str) -> bool:
+        """Create a media folder that does not exist yet.
+
+        Only used when the `create_missing_folders` setting is on. The
+        folder inherits the permissions of the nearest existing parent,
+        so it stays writable for the user Trailarr runs as (PUID/PGID).
+
+        Refuses to create anything when the storage behind the path is
+        unreachable: a disconnected network share can look like a plain
+        missing folder, and writing into a dead mount would hide the
+        real media once it comes back.
+
+        Args:
+            path (str): Folder path to create.
+        Returns:
+            bool: True if the folder exists after this call.
+        """
+        if not path:
+            return False
+        if os.path.isdir(path):
+            return True
+        if not is_disk_available(path):
+            logger.warning(
+                f"Not creating folder '{path}': the storage behind it is"
+                " unreachable. Check the drive or network share."
+            )
+            return False
+        try:
+            permissions = get_folder_permissions(path)
+            if permissions is not None:
+                os.makedirs(path, mode=permissions, exist_ok=True)
+                # makedirs applies the umask to the mode, so set it again
+                os.chmod(path, permissions)
+            else:
+                os.makedirs(path, exist_ok=True)
+            logger.info(f"Created missing folder: '{path}'")
+            return True
+        except OSError as e:
+            logger.error(f"Failed to create folder '{path}': {e}")
+            return False
 
     @staticmethod
     def check_media_exists(path: str) -> bool:
