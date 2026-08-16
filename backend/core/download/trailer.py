@@ -80,12 +80,12 @@ async def _check_plex_trailer(
 
 
 async def _notify_plex(media: MediaRead) -> None:
-    """Trigger a targeted Plex scan for a media item after trailer download.
+    """Trigger targeted Plex scan and metadata refresh after trailer download.
 
-    Reads the Plex connection, builds a PlexConnectionManager, and calls
-    ``trigger_item_scan``.  Requires ``plex_connection_id``, ``plex_section_key``,
-    and ``folder_path`` to all be set on the media row; silently skips if any
-    are missing.
+    Reads the Plex connection, builds a PlexConnectionManager, and scans the
+    media folder. Linked items also receive a metadata refresh so Plex indexes
+    newly added local extras. Requires ``plex_connection_id``,
+    ``plex_section_key``, and ``folder_path``; silently skips if any are missing.
     """
     if not (
         media.plex_connection_id
@@ -112,6 +112,8 @@ async def _notify_plex(media: MediaRead) -> None:
             source=EventSource.SYSTEM,
             source_detail="TrailerDownloaded",
         )
+        if media.plex_rating_key:
+            await plex_manager.api.refresh_item(media.plex_rating_key)
     except Exception as e:
         logger.warning(
             f"Failed to notify Plex for '{media.title}' [{media.id}]: {e}"
