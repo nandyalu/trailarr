@@ -895,3 +895,67 @@ class TestDownloadTrailerPlexSkip:
             await download_trailer(mock_media, mock_profile)
 
         mock_get_video_id.assert_called_once()
+
+
+class TestNotifyPlex:
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.connection_manager.PlexConnectionManager")
+    async def test_scans_folder_and_refreshes_linked_item(
+        self, mock_plex_manager_cls, mock_read_conn
+    ):
+        """A downloaded local extra needs both a scan and metadata refresh."""
+        from core.base.database.models.connection import ArrType
+        from core.base.database.models.event import EventSource
+        from core.download.trailer import _notify_plex
+
+        media = MagicMock(
+            id=42,
+            title="Example Show",
+            plex_connection_id=3,
+            plex_section_key="8",
+            plex_rating_key="29546",
+            folder_path="/media/tv/Example Show",
+        )
+        mock_read_conn.return_value.arr_type = ArrType.PLEX
+        plex_manager = mock_plex_manager_cls.return_value
+        plex_manager.trigger_item_scan = AsyncMock(return_value=True)
+        plex_manager.api.refresh_item = AsyncMock(return_value=True)
+
+        await _notify_plex(media)
+
+        plex_manager.trigger_item_scan.assert_awaited_once_with(
+            media_id=42,
+            section_key="8",
+            folder_path="/media/tv/Example Show",
+            source=EventSource.SYSTEM,
+            source_detail="TrailerDownloaded",
+        )
+        plex_manager.api.refresh_item.assert_awaited_once_with("29546")
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.connection_manager.PlexConnectionManager")
+    async def test_scans_unlinked_item_without_metadata_refresh(
+        self, mock_plex_manager_cls, mock_read_conn
+    ):
+        from core.base.database.models.connection import ArrType
+        from core.download.trailer import _notify_plex
+
+        media = MagicMock(
+            id=42,
+            title="Example Show",
+            plex_connection_id=3,
+            plex_section_key="8",
+            plex_rating_key=None,
+            folder_path="/media/tv/Example Show",
+        )
+        mock_read_conn.return_value.arr_type = ArrType.PLEX
+        plex_manager = mock_plex_manager_cls.return_value
+        plex_manager.trigger_item_scan = AsyncMock(return_value=True)
+        plex_manager.api.refresh_item = AsyncMock(return_value=True)
+
+        await _notify_plex(media)
+
+        plex_manager.trigger_item_scan.assert_awaited_once()
+        plex_manager.api.refresh_item.assert_not_awaited()
