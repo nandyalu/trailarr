@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0111-august-11-2026" class="md-skip">
+        <a href="#v0112-august-15-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,6 +2418,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0112-august-15-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.2</strong> - <em>August 15, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0111-august-11-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2976,6 +2987,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0112-august-15-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.2</strong> - <em>August 15, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0111-august-11-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3331,6 +3353,33 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0112-august-15-2026"><strong>v0.11.2</strong> - <em>August 15, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>New <code>Create Missing Folders</code> setting</strong> — Trailarr can create a media folder that does not exist, instead of skipping the download. This helps when you keep trailers in a folder of their own. The setting is off by default. Trailarr never creates a folder when the drive or network share is unreachable — see <a href="../../user-guide/settings/general-settings/#create-missing-folders">Create Missing Folders</a>. (<a href="https://github.com/nandyalu/trailarr/discussions/641">#641</a>)</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>A show with a stray duplicate folder no longer takes over the library</strong> — when a Plex show has episodes in more than one folder, Trailarr selects the folder with the most episodes. Before, Trailarr stored the library root, and that one media item claimed every file and trailer below it — see <a href="../../user-guide/settings/connections/plex/#how-trailarr-resolves-tv-show-folder-paths">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>A media item with a library-root folder is never matched again</strong> — a bad item from the problem above could take over the next new series from Radarr/Sonarr. Trailarr now ignores these items in all folder matches. The next Plex sync deletes them.</p>
+</li>
+<li>
+<p><strong>Dates show in your own timezone</strong> — the web interface showed all dates in UTC. A trailer added at 9 AM in Melbourne showed as the evening before. Dates now use the timezone of the device that you use — see <a href="https://github.com/nandyalu/trailarr/issues/650">#650</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>Plex items link to their Radarr/Sonarr media by TMDB/TVDB id when the folder paths are different — see <a href="../../user-guide/settings/connections/plex/#how-plex-items-link-to-media">Plex Connection</a>.</p>
+</li>
+<li>
+<p>A Plex-only media item keeps its history when you rename its folder in Plex. Before, Trailarr deleted the item and added it again.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0111-august-11-2026"><strong>v0.11.1</strong> - <em>August 11, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>

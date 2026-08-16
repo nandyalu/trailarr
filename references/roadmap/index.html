@@ -2631,7 +2631,7 @@
   <a href="#phase-5-cleanup-of-legacy-fields-v0110" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code>
+        Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code> ✅
       </span>
     </span>
   </a>
@@ -2639,10 +2639,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-6-filter-by-downloads-files-v0111" class="md-nav__link">
+  <a href="#phase-6-filter-by-downloads-files-v0113" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 6 — Filter by downloads &amp; files — <code>v0.11.1</code>
+        Phase 6 — Filter by downloads &amp; files — <code>v0.11.3</code>
       </span>
     </span>
   </a>
@@ -2928,7 +2928,7 @@
   <a href="#phase-5-cleanup-of-legacy-fields-v0110" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code>
+        Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code> ✅
       </span>
     </span>
   </a>
@@ -2936,10 +2936,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#phase-6-filter-by-downloads-files-v0111" class="md-nav__link">
+  <a href="#phase-6-filter-by-downloads-files-v0113" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 6 — Filter by downloads &amp; files — <code>v0.11.1</code>
+        Phase 6 — Filter by downloads &amp; files — <code>v0.11.3</code>
       </span>
     </span>
   </a>
@@ -3151,27 +3151,27 @@
 </tr>
 <tr>
 <td><strong>v0.11.0</strong></td>
-<td>September 2026</td>
+<td>August 9, 2026 ✅</td>
 <td>Phase 5 — Cleanup of legacy fields</td>
 </tr>
 <tr>
-<td><strong>v0.11.1</strong></td>
-<td>October 2026</td>
+<td><strong>v0.11.3</strong></td>
+<td>September 2026</td>
 <td>Phase 6 — Filter by downloads &amp; files</td>
 </tr>
 <tr>
 <td><strong>v0.12.0</strong></td>
-<td>November 2026</td>
+<td>October 2026</td>
 <td>Phase 7 — Internal reorganization for long-term maintainability</td>
 </tr>
 <tr>
 <td><strong>v0.13.0</strong></td>
-<td>December 2026</td>
+<td>November 2026</td>
 <td>Phase 8 — TMDB integration</td>
 </tr>
 <tr>
 <td><strong>v0.14.0</strong></td>
-<td>January 2027</td>
+<td>December 2026 – January 2027</td>
 <td>Phase 9 — Video types</td>
 </tr>
 <tr>
@@ -3181,11 +3181,15 @@
 </tr>
 <tr>
 <td><strong>v1.0.0</strong></td>
-<td>Q1–Q2 2027</td>
+<td>March 2027</td>
 <td>Phase 11 — Issues section + stabilization</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Fix releases in between</p>
+<p>Phase releases are not the only releases. <code>v0.11.1</code> and <code>v0.11.2</code> are fix-only releases with no phase in them, which is why Phase 6 targets <code>v0.11.3</code>. Bug fixes always come out when they are ready, and a pending phase moves to the next free version instead of waiting.</p>
+</div>
 <h3 id="phase-1-download-profile-linking-v099">Phase 1 — Download ↔ Profile linking — <code>v0.9.9</code> ✅</h3>
 <p>Every downloaded trailer is now linked to the profile that owns it. Trailers found on disk are attributed to your matching profiles automatically, and you can assign a profile manually from <strong>Media Details → Downloads</strong> for anything the app couldn't match. This builds the data foundation everything else stands on.</p>
 <p><em>What you'll notice:</em> a one-time startup task, log lines about linked downloads, and a new assign option in Media Details. No behavior changes, no downloads triggered.</p>
@@ -3199,10 +3203,10 @@
 <p>Monitoring becomes a pure user setting: connection syncs stop changing it, and the per-connection <em>Monitor Type</em> dropdown becomes a simple <strong>"monitor new media"</strong> toggle.</p>
 <p><strong>Also here: Preview mode.</strong> A library-wide dry run — see exactly what Trailarr <em>would</em> download and why, before it downloads anything. Fresh installs will start in preview until you explicitly enable downloads, so pointing Trailarr at a large, carefully curated library is never a leap of faith.</p>
 <p><em>Action needed (small):</em> if you used <strong>Monitor: Sync</strong>, add an <code>arr_monitored</code> filter to your profiles instead — the release notes will walk you through it. These are minor, transient changes, so only <strong>~2 weeks</strong> before the next step.</p>
-<h3 id="phase-5-cleanup-of-legacy-fields-v0110">Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code></h3>
+<h3 id="phase-5-cleanup-of-legacy-fields-v0110">Phase 5 — Cleanup of legacy fields — <code>v0.11.0</code> ✅</h3>
 <p>With nothing depending on them anymore, the legacy <code>trailer_exists</code> and stored-status fields are removed. Custom filters that referenced them are migrated automatically (profile filters like <code>trailer_exists = false</code> are now implicit; view filters translate to a new <code>has_downloads</code> filter).</p>
 <p><em>What you'll notice:</em> very little — this is the payoff release where the old failure modes become impossible.</p>
-<h3 id="phase-6-filter-by-downloads-files-v0111">Phase 6 — Filter by downloads &amp; files — <code>v0.11.1</code></h3>
+<h3 id="phase-6-filter-by-downloads-files-v0113">Phase 6 — Filter by downloads &amp; files — <code>v0.11.3</code></h3>
 <p>Custom view filters gain a whole new family of fields: filter your library by download
 count, download resolution, owning profile, download dates, files present, and more.
 This is the "feel complete" release for library management — build views like <em>"media
@@ -3230,12 +3234,12 @@ release, that's a bug — please report it.</p>
 struggle almost always hit the same first-hour walls (path mappings, permissions,
 YouTube cookies). So a <strong>Setup &amp; Health track</strong> runs alongside the phases:</p>
 <ul>
-<li><strong>Connection Doctor</strong> <em>(~v0.11.x)</em> — after you add a connection, Trailarr checks
+<li><strong>Connection Doctor</strong> <em>(~v0.11.3–v0.12.x)</em> — after you add a connection, Trailarr checks
   whether it can actually see and write to your media folders, and when it can't, tells
   you exactly why and offers the fix ("Radarr reports <code>/data/movies</code> but that's not
   visible here — suggested path mapping: <code>/data → /media</code> [Apply]"). Permission problems
   report the exact PUID/PGID mismatch instead of failing three tasks later.</li>
-<li><strong>Health page</strong> <em>(~v0.11.x)</em> — one place with live checks and fixes: ffmpeg &amp; hardware
+<li><strong>Health page</strong> <em>(~v0.11.3–v0.12.x)</em> — one place with live checks and fixes: ffmpeg &amp; hardware
   acceleration status, yt-dlp version and a test download, YouTube cookies setup (a
   proper UI for it, with validity checking), connection reachability, disk access and
   space. When a download fails because YouTube wants a sign-in, Trailarr will say so —

@@ -1789,6 +1789,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#how-plex-items-link-to-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        How Plex items link to media
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#naming-conventions-that-work-best" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2942,6 +2953,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#how-plex-items-link-to-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        How Plex items link to media
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#naming-conventions-that-work-best" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3335,7 +3357,8 @@ The server list shows the URLs that Plex provides, which are often external addr
 </div>
 <hr />
 <h2 id="how-trailarr-resolves-tv-show-folder-paths">How Trailarr Resolves TV Show Folder Paths</h2>
-<p>To match Plex shows against Radarr/Sonarr entries, Trailarr needs to know each show's root folder path. Plex does not expose this directly, so Trailarr derives it in two steps when syncing a TV library section.</p>
+<p><span class="twemoji orange" title="Updated in v0.11.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0112-august-15-2026">v0.11.2</a></p>
+<p>To match Plex shows against Radarr/Sonarr entries, Trailarr needs to know each show's root folder path. Plex does not expose this directly, so Trailarr derives it from episode files when it syncs a TV library section.</p>
 <p><strong>Step 1 — Episode file scan</strong></p>
 <p>Trailarr calls Plex's <code>/allLeaves</code> endpoint to collect the file path of every episode in the section. It groups those paths by show and runs <code>commonpath</code> across them to find the deepest folder that all episodes share. For example:</p>
 <table>
@@ -3356,16 +3379,28 @@ The server list shows the URLs that Plex provides, which are often external addr
 </tr>
 </tbody>
 </table>
-<p><strong>Step 2 — Season folder detection &amp; title confirmation</strong></p>
-<p>Single-season shows (or shows where Plex has only indexed one season so far) leave <code>commonpath</code> stuck inside the season subfolder. Trailarr then checks the last component of that path using two signals:</p>
+<p><strong>Step 2 — Season folder detection</strong></p>
+<p>Single-season shows (or shows where Plex has only indexed one season so far) leave <code>commonpath</code> stuck inside the season subfolder. If the last component of the path matches a known season-folder pattern (<code>Season 1</code>, <code>S02</code>, <code>Series 3</code>, <code>Specials</code>, or localized equivalents like <code>Saison</code>, <code>Staffel</code>, <code>Temporada</code>, <code>Stagione</code>, …), Trailarr walks up one level to the show root. Otherwise the path is kept as-is, and the parent folder match described below acts as the safety net.</p>
+<p><strong>Step 3 — Stray folder protection</strong></p>
+<p><span class="twemoji golden" title="Added in v0.11.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0112-august-15-2026">v0.11.2</a></p>
+<p>When a show has episodes in more than one folder (for example, a leftover duplicate folder from an old download or a manual import), the common path collapses to the library root. Trailarr detects this and selects the folder that contains the most episodes instead. It also logs a warning that names the show and the selected folder, so you can find and remove the stray folder in Plex.</p>
+<p>A derived folder must always be deeper than a library root. When no safe folder can be derived — for example, all episode files sit directly in the library root — Trailarr skips the show with a warning instead of tracking it with a wrong folder. A folder at or above a library root would make one media item claim every file and trailer in the library.</p>
+<h3 id="how-plex-items-link-to-media">How Plex items link to media</h3>
+<p><span class="twemoji golden" title="Added in v0.11.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0112-august-15-2026">v0.11.2</a></p>
+<p>After the folder is derived and translated through your <a href="#library-folders">Library Folders</a> mappings, Trailarr matches each Plex item to media in three stages:</p>
 <ol>
 <li>
-<p><strong>Season folder regex</strong> — if the last component matches a known season-folder pattern (<code>Season 1</code>, <code>S02</code>, <code>Series 3</code>, <code>Specials</code>, or localized equivalents like <code>Saison</code>, <code>Staffel</code>, <code>Temporada</code>, <code>Stagione</code>, …), Trailarr walks up one level to the show root.</p>
+<p><strong>Exact folder match</strong> — the Plex item's folder equals a stored media folder. This is the normal case for media that Radarr/Sonarr already tracks.</p>
 </li>
 <li>
-<p><strong>Fuzzy title match</strong> — if the regex doesn't fire, Trailarr strips common decorators (<code>(year)</code>, <code>{tvdb-id}</code>, <code>[imdb-id]</code>) from the last component and compares it against the show title using fuzzy matching. A high similarity (≥ 60 %) confirms we are already at the show root. Otherwise the path is kept as-is and Trailarr falls back to a prefix-based lookup at match time.</p>
+<p><strong>Parent folder match</strong> — a stored media folder is a parent of the Plex item's folder. This covers season subfolders that step 2 above does not recognize. A stored folder at or above a library root never matches.</p>
+</li>
+<li>
+<p><strong>ID match</strong> — when the folders do not match, the item links by TMDB id (movies) or TVDB id (shows). The link is made only when exactly one media item has that id; Plex-only items from a different Plex connection and Arr items already linked to a different Plex connection are not considered.</p>
 </li>
 </ol>
+<p>When no stage matches, Trailarr creates a new Plex-only media item. The ID match also lets a Plex-only item follow a folder rename in Plex, so it keeps its events and download history instead of being deleted and added again.</p>
+<p>The same rules protect the Radarr/Sonarr side: a new Arr item adopts an existing Plex-only item at the same folder, but never one whose folder is at or above a library root.</p>
 <h3 id="naming-conventions-that-work-best">Naming conventions that work best</h3>
 <p>Trailarr is designed to work with the default naming schemes used by <strong>Sonarr</strong> and <strong>Radarr</strong>, which are also the conventions Plex recommends:</p>
 <table>
@@ -3382,7 +3417,7 @@ The server list shows the URLs that Plex provides, which are often external addr
 </tr>
 <tr>
 <td><code>Show Name (Year) {tvdb-ID}</code></td>
-<td>✓ — decorators are stripped before matching</td>
+<td>✓</td>
 </tr>
 <tr>
 <td><code>Show Name (Year) {tvdb-ID} [imdb-ID]</code></td>
@@ -3410,13 +3445,16 @@ The server list shows the URLs that Plex provides, which are often external addr
 <p>If trailers are not being linked to a specific show, check the following:</p>
 <ol>
 <li>
-<p><strong>Verify the folder path in Sonarr/Radarr</strong> matches what Plex sees. The path Sonarr stores for a show must be the same path (or a parent of the path) that Plex uses for the show's files.</p>
+<p><strong>Verify the folder path in Sonarr/Radarr</strong> matches what Plex sees. The path Sonarr stores for a show must be the same path (or a parent of the path) that Plex uses for the show's files, after your path mappings are applied on both sides.</p>
 </li>
 <li>
-<p><strong>Folder name contains the show title</strong> — after stripping year and ID decorators, Trailarr compares the folder name against the show title. If you have renamed the folder manually to something unrelated to the show title, the fuzzy match will not fire. Use the Sonarr default naming scheme.</p>
+<p><strong>Check the show's ids in Plex</strong> — when the folders differ, Trailarr can still link the show by its TVDB id. Open the show in Plex and confirm the metadata agent found the correct match; a show without a TVDB id can only link by folder path.</p>
 </li>
 <li>
-<p><strong>Run a manual sync</strong> from the Tasks page after making any folder name changes.</p>
+<p><strong>Check the logs for folder warnings</strong> — a warning that names the show and mentions the library root points to a stray or duplicate folder in Plex. Remove the stray folder and refresh the Plex library.</p>
+</li>
+<li>
+<p><strong>Run a manual sync</strong> from the Tasks page after making any changes.</p>
 </li>
 </ol>
 
