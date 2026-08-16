@@ -220,3 +220,33 @@ class TestGetLibraryLeaves:
             m.get(url_prefix, payload={"MediaContainer": {"totalSize": 0, "size": 0}})
             results = [item async for item in api.get_library_leaves(3)]
         assert results == []
+
+
+class TestRefreshItem:
+    @pytest.mark.asyncio
+    async def test_accepts_empty_success_response(self, api):
+        """Plex returns an empty body after accepting an item refresh."""
+        url = f"{PLEX_URL}/library/metadata/42/refresh"
+        with aioresponses() as m:
+            m.put(url, status=200, body="")
+            result = await api.refresh_item(42)
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_accepts_no_content_success_response(self, api):
+        url = f"{PLEX_URL}/library/metadata/42/refresh"
+        with aioresponses() as m:
+            m.put(url, status=204)
+            result = await api.refresh_item(42)
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_returns_false_for_error_response(self, api):
+        url = f"{PLEX_URL}/library/metadata/42/refresh"
+        with aioresponses() as m:
+            m.put(url, status=500, body="Plex error")
+            result = await api.refresh_item(42)
+
+        assert result is False

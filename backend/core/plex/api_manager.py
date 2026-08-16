@@ -57,7 +57,11 @@ class PlexAPI:
         }
 
     async def get_query_json(
-        self, url: str, method: str = "GET"
+        self,
+        url: str,
+        method: str = "GET",
+        *,
+        expect_json: bool = True,
     ) -> dict[str, Any]:
         try:
             async with aiohttp.ClientSession() as session:
@@ -68,11 +72,14 @@ class PlexAPI:
                         raise ConnectionError(
                             "Plex authentication failed — invalid token"
                         )
-                    if response.status != 200:
+                    success_statuses = (200,) if expect_json else (200, 204)
+                    if response.status not in success_statuses:
                         error_text = await response.text()
                         raise ConnectionError(
                             f"Plex returned {response.status}: {error_text}"
                         )
+                    if not expect_json:
+                        return {}
                     data: dict[str, Any] = await response.json()
                     return data.get("MediaContainer", {})
         except aiohttp.ClientError as e:
@@ -266,7 +273,7 @@ class PlexAPI:
         """Trigger a targeted metadata refresh for a single item."""
         url = f"{self.server_url}/library/metadata/{rating_key}/refresh"
         try:
-            await self.get_query_json(url, method="PUT")
+            await self.get_query_json(url, method="PUT", expect_json=False)
             logger.debug(f"Triggered refresh for item {rating_key}")
             return True
         except Exception as e:
