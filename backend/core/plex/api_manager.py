@@ -40,9 +40,7 @@ _LEAF_EXCLUDE_FIELDS = (
 class PlexAPI:
     """Async HTTP client for the Plex Media Server API."""
 
-    def __init__(
-        self, server_url: str, token: str, identifier: str = "trailarr"
-    ):
+    def __init__(self, server_url: str, token: str, identifier: str = "trailarr"):
         if not server_url.startswith(("http://", "https://")):
             server_url = f"http://{server_url}"
         if server_url.endswith("/"):
@@ -133,21 +131,16 @@ class PlexAPI:
                         if response.status != 200:
                             error_text = await response.text()
                             raise ConnectionError(
-                                f"Plex returned {response.status}:"
-                                f" {error_text}"
+                                f"Plex returned {response.status}:" f" {error_text}"
                             )
                         data: dict[str, Any] = await response.json()
                         items: list[dict[str, Any]] = data.get(
                             "MediaContainer", {}
                         ).get("Metadata", [])
             except aiohttp.ClientError as e:
-                raise ConnectionError(
-                    f"Network error reaching Plex: {e}"
-                ) from e
+                raise ConnectionError(f"Network error reaching Plex: {e}") from e
             except (ValueError, aiohttp.ContentTypeError) as e:
-                raise ValueError(
-                    f"Failed to parse Plex JSON response: {e}"
-                ) from e
+                raise ValueError(f"Failed to parse Plex JSON response: {e}") from e
 
             if not items:
                 break
@@ -231,13 +224,9 @@ class PlexAPI:
             yield PlexEpisodeLeaf(**raw)
         logger.debug(f"Yielded {count} leaf items from section {section_key}")
 
-    async def get_library_item_details(
-        self, rating_key: str | int
-    ) -> PlexMediaItem:
+    async def get_library_item_details(self, rating_key: str | int) -> PlexMediaItem:
         """Return detailed metadata for a single media item."""
-        url = (
-            f"{self.server_url}/library/metadata/{rating_key}?includeExtras=1"
-        )
+        url = f"{self.server_url}/library/metadata/{rating_key}?includeExtras=1"
         data = await self.get_query_json(url)
         items_raw = data.get("Metadata", [])
         return PlexMediaItem(**items_raw[0])
@@ -256,17 +245,13 @@ class PlexAPI:
     ) -> bool:
         """Add a trailer/extra URL to a Plex media item. Returns True on success."""
         params = urlencode({"extraType": 1, "url": url, "title": title})
-        api_url = (
-            f"{self.server_url}/library/metadata/{rating_key}/extras?{params}"
-        )
+        api_url = f"{self.server_url}/library/metadata/{rating_key}/extras?{params}"
         try:
             await self.get_query_json(api_url, method="POST")
             logger.debug(f"Added extra '{title}' to item {rating_key}")
             return True
         except Exception as e:
-            logger.error(
-                f"Failed to add extra '{title}' to item {rating_key}: {e}"
-            )
+            logger.error(f"Failed to add extra '{title}' to item {rating_key}: {e}")
             return False
 
     async def refresh_item(self, rating_key: str | int) -> bool:
@@ -291,9 +276,7 @@ class PlexAPI:
             logger.error(f"Failed to refresh section {section_key}: {e}")
             return False
 
-    async def scan_section_path(
-        self, section_key: str | int, path: str
-    ) -> bool:
+    async def scan_section_path(self, section_key: str | int, path: str) -> bool:
         """Trigger a targeted file-system scan for a specific folder path.
 
         Tells Plex to scan only the given directory within the library section,
@@ -323,7 +306,5 @@ class PlexAPI:
             )
             return True
         except Exception as e:
-            logger.error(
-                f"Failed to scan path '{path}' in section {section_key}: {e}"
-            )
+            logger.error(f"Failed to scan path '{path}' in section {section_key}: {e}")
             return False
