@@ -24,9 +24,7 @@ from exceptions import DownloadFailedError, StopEventSetError
 logger = ModuleLogger("TrailersDownloader")
 
 
-async def _check_plex_trailer(
-    media: MediaRead, profile: TrailerProfileRead
-) -> bool:
+async def _check_plex_trailer(media: MediaRead, profile: TrailerProfileRead) -> bool:
     """Return True if Plex already has a trailer for this item.
 
     Calls get_library_item_extras for the media's plex_rating_key and checks
@@ -73,8 +71,7 @@ async def _check_plex_trailer(
         return has_trailer
     except Exception as e:
         logger.warning(
-            f"Failed to check Plex trailer for '{media.title}'"
-            f" [{media.id}]: {e}"
+            f"Failed to check Plex trailer for '{media.title}'" f" [{media.id}]: {e}"
         )
         return False
 
@@ -87,11 +84,7 @@ async def _notify_plex(media: MediaRead) -> None:
     newly added local extras. Requires ``plex_connection_id``,
     ``plex_section_key``, and ``folder_path``; silently skips if any are missing.
     """
-    if not (
-        media.plex_connection_id
-        and media.plex_section_key
-        and media.folder_path
-    ):
+    if not (media.plex_connection_id and media.plex_section_key and media.folder_path):
         logger.debug(
             f"Skipping Plex scan notify for '{media.title}' [{media.id}]:"
             " missing plex_connection_id, plex_section_key, or folder_path"
@@ -115,9 +108,7 @@ async def _notify_plex(media: MediaRead) -> None:
         if media.plex_rating_key:
             await plex_manager.api.refresh_item(media.plex_rating_key)
     except Exception as e:
-        logger.warning(
-            f"Failed to notify Plex for '{media.title}' [{media.id}]: {e}"
-        )
+        logger.warning(f"Failed to notify Plex for '{media.title}' [{media.id}]: {e}")
 
 
 def __record_download_facts(media: MediaRead):
@@ -154,8 +145,7 @@ def __download_and_verify_trailer(
     """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
-        f"Downloading trailer for {media.title} [{media.id}] from"
-        f" {trailer_url}"
+        f"Downloading trailer for {media.title} [{media.id}] from" f" {trailer_url}"
     )
     # Use system temp directory for cross-platform compatibility
     tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
@@ -176,9 +166,7 @@ def __download_and_verify_trailer(
         if _stop_event and _stop_event.is_set():
             raise StopEventSetError("Stop event set during silence removal")
 
-        output_file, _trimmed = video_analysis.remove_silence_at_end(
-            output_file
-        )
+        output_file, _trimmed = video_analysis.remove_silence_at_end(output_file)
         # Re-analyze after silence removal as duration/size changed
         if _trimmed:
             video_info = video_analysis.get_media_info(output_file)
@@ -209,9 +197,7 @@ async def download_trailer(
         exclude = []
 
     # Exclude the current trailer ID if an active download already uses it
-    if media.youtube_trailer_id and any(
-        d.file_exists for d in media.downloads
-    ):
+    if media.youtube_trailer_id and any(d.file_exists for d in media.downloads):
         exclude.append(media.youtube_trailer_id)
 
     # Ignore the current trailer ID if always_search is enabled
@@ -296,23 +282,16 @@ async def download_trailer(
         logger.exception(f"Failed to download trailer: {e}")
         if _stop_event and _stop_event.is_set():
             logger.info(
-                f"Download stopped for {media.title} [{media.id}] due to stop"
-                " event."
+                f"Download stopped for {media.title} [{media.id}] due to stop" " event."
             )
             return False
         if retry_count > 0:
-            logger.info(
-                f"Retrying download for {media.title}... ({3 - retry_count}/3)"
-            )
+            logger.info(f"Retrying download for {media.title}... ({3 - retry_count}/3)")
             media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
-            return await download_trailer(
-                media, profile, retry_count - 1, exclude
-            )
-        raise DownloadFailedError(
-            f"Failed to download trailer for {media.title}"
-        )
+            return await download_trailer(media, profile, retry_count - 1, exclude)
+        raise DownloadFailedError(f"Failed to download trailer for {media.title}")
     finally:
         # Safety net for every failure/stop path (retries re-register in
         # their own frame; the pop is idempotent). Stale entries are also
