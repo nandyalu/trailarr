@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 from core.plex.api_manager import PlexAPI
 
-
 PLEX_URL = "http://plex-test"
 PLEX_TOKEN = "test-token"
 
