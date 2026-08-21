@@ -434,19 +434,30 @@ class PlexConnectionManager:
         media_id: int,
         section_key: str,
         folder_path: str,
+        rating_key: str | None = None,
         source: EventSource = EventSource.SYSTEM,
         source_detail: str = "",
     ) -> bool:
-        """Trigger a targeted Plex file-system scan for a single media item.
+        """Make a media item's new files visible in Plex.
 
         Reverses the path mapping so the path sent to Plex is on the Plex
-        side of the mapping (i.e., the path Plex understands).  Fires a
-        ``PLEX_SCAN_TRIGGERED`` event on success.
+        side of the mapping (i.e., the path Plex understands), then does
+        two things:
+
+        1. Scans the folder, so Plex indexes the new files.
+        2. Refreshes the item's metadata when *rating_key* is known.
+
+        Both are needed: a folder scan alone indexes the file but leaves
+        a local extra (a downloaded trailer) invisible on the item, and
+        the metadata refresh is what attaches it. This is one operation
+        for the user, so it fires one ``PLEX_SCAN_TRIGGERED`` event.
 
         Args:
             media_id: DB id of the media item (for event tracking).
             section_key: Plex library section key for this item.
             folder_path: Trailarr-internal folder path of the media item.
+            rating_key: Plex ratingKey of the item, when it is linked.
+                Without it, only the folder scan runs.
             source: Event source (USER for manual triggers, SYSTEM for automatic).
             source_detail: Context string stored on the event (e.g. "TrailerDownloaded").
 
@@ -455,6 +466,8 @@ class PlexConnectionManager:
         """
         plex_path = self._reverse_path_mapping(folder_path)
         success = await self.api.scan_section_path(section_key, plex_path)
+        if rating_key:
+            await self.api.refresh_item(rating_key)
         if success:
             event_manager.track_plex_scan_triggered(
                 media_id=media_id,
