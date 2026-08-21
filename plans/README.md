@@ -122,12 +122,17 @@ skip-safe too:
    unrecorded passes run in order at boot BEFORE scheduled tasks; dependent tasks gate
    on their required passes. A version-skipper simply runs every missed pass on first
    boot. The registry doubles as the upgrade audit trail (feeds the diagnostics bundle).
-4. **Release-fixture gauntlet:** keep one small fixture DB per released version in
-   `backend/tests/fixtures/dbs/` (snapshot after each release, starting with a
-   v0.9.6-era and a v0.9.9 fixture); a shared test harness runs
-   `alembic upgrade head` + all startup passes from EVERY fixture and asserts core
-   invariants. Every phase's verification includes the gauntlet; each release adds its
-   fixture.
+4. **Release-fixture gauntlet:** keep small fixture DBs in
+   `backend/tests/fixtures/dbs/` (starting with a v0.9.6-era and a v0.9.9 fixture); a
+   shared test harness runs `alembic upgrade head` + all startup passes from EVERY
+   fixture and asserts core invariants. Every phase's verification includes the
+   gauntlet.
+   **Add a fixture when a release changes the SCHEMA or introduces a new DATA SHAPE** —
+   not on every release number. Two fixtures with the same Alembic head test the same
+   migration path twice and only slow the gauntlet. v0.11.2 added no migration and no
+   new row shape, so it has no fixture; v0.11.3 has one because Phase 6 introduced
+   saved filters whose `filter_by` names a virtual field with no matching media column
+   (`v0_11_3_download_filters.sql`).
 5. **Downgrade guard:** on boot, if the DB's Alembic revision is unknown to (ahead of)
    the running app, refuse to start with a clear message pointing at the pre-upgrade
    backup — never crash confusingly on a newer schema.
