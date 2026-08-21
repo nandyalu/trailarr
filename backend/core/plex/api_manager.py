@@ -40,7 +40,9 @@ _LEAF_EXCLUDE_FIELDS = (
 class PlexAPI:
     """Async HTTP client for the Plex Media Server API."""
 
-    def __init__(self, server_url: str, token: str, identifier: str = "trailarr"):
+    def __init__(
+        self, server_url: str, token: str, identifier: str = "trailarr"
+    ):
         if not server_url.startswith(("http://", "https://")):
             server_url = f"http://{server_url}"
         if server_url.endswith("/"):
@@ -61,6 +63,15 @@ class PlexAPI:
         *,
         expect_json: bool = True,
     ) -> dict[str, Any]:
+        """Send a request to Plex and return its MediaContainer.
+
+        Args:
+            url: Full request URL, query string included.
+            method: HTTP method to use.
+            expect_json: Set False for the trigger endpoints (scan,
+                refresh, add extra). Plex accepts those with an empty
+                200 or 204 body, which has no JSON to parse.
+        """
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.request(
@@ -70,8 +81,8 @@ class PlexAPI:
                         raise ConnectionError(
                             "Plex authentication failed — invalid token"
                         )
-                    success_statuses = (200,) if expect_json else (200, 204)
-                    if response.status not in success_statuses:
+                    ok_statuses = (200,) if expect_json else (200, 204)
+                    if response.status not in ok_statuses:
                         error_text = await response.text()
                         raise ConnectionError(
                             f"Plex returned {response.status}: {error_text}"
@@ -131,16 +142,21 @@ class PlexAPI:
                         if response.status != 200:
                             error_text = await response.text()
                             raise ConnectionError(
-                                f"Plex returned {response.status}:" f" {error_text}"
+                                f"Plex returned {response.status}:"
+                                f" {error_text}"
                             )
                         data: dict[str, Any] = await response.json()
                         items: list[dict[str, Any]] = data.get(
                             "MediaContainer", {}
                         ).get("Metadata", [])
             except aiohttp.ClientError as e:
-                raise ConnectionError(f"Network error reaching Plex: {e}") from e
+                raise ConnectionError(
+                    f"Network error reaching Plex: {e}"
+                ) from e
             except (ValueError, aiohttp.ContentTypeError) as e:
-                raise ValueError(f"Failed to parse Plex JSON response: {e}") from e
+                raise ValueError(
+                    f"Failed to parse Plex JSON response: {e}"
+                ) from e
 
             if not items:
                 break
@@ -224,9 +240,13 @@ class PlexAPI:
             yield PlexEpisodeLeaf(**raw)
         logger.debug(f"Yielded {count} leaf items from section {section_key}")
 
-    async def get_library_item_details(self, rating_key: str | int) -> PlexMediaItem:
+    async def get_library_item_details(
+        self, rating_key: str | int
+    ) -> PlexMediaItem:
         """Return detailed metadata for a single media item."""
-        url = f"{self.server_url}/library/metadata/{rating_key}?includeExtras=1"
+        url = (
+            f"{self.server_url}/library/metadata/{rating_key}?includeExtras=1"
+        )
         data = await self.get_query_json(url)
         items_raw = data.get("Metadata", [])
         return PlexMediaItem(**items_raw[0])
@@ -245,20 +265,28 @@ class PlexAPI:
     ) -> bool:
         """Add a trailer/extra URL to a Plex media item. Returns True on success."""
         params = urlencode({"extraType": 1, "url": url, "title": title})
-        api_url = f"{self.server_url}/library/metadata/{rating_key}/extras?{params}"
+        api_url = (
+            f"{self.server_url}/library/metadata/{rating_key}/extras?{params}"
+        )
         try:
-            await self.get_query_json(api_url, method="POST")
+            await self.get_query_json(
+                api_url, method="POST", expect_json=False
+            )
             logger.debug(f"Added extra '{title}' to item {rating_key}")
             return True
         except Exception as e:
-            logger.error(f"Failed to add extra '{title}' to item {rating_key}: {e}")
+            logger.error(
+                f"Failed to add extra '{title}' to item {rating_key}: {e}"
+            )
             return False
 
     async def refresh_item(self, rating_key: str | int) -> bool:
         """Trigger a targeted metadata refresh for a single item."""
         url = f"{self.server_url}/library/metadata/{rating_key}/refresh"
         try:
-            await self.get_query_json(url, method="PUT", expect_json=False)
+            await self.get_query_json(
+                url, method="PUT", expect_json=False
+            )
             logger.debug(f"Triggered refresh for item {rating_key}")
             return True
         except Exception as e:
@@ -269,14 +297,16 @@ class PlexAPI:
         """Trigger a library section scan."""
         url = f"{self.server_url}/library/sections/{section_key}/refresh"
         try:
-            await self.get_query_json(url, method="GET")
+            await self.get_query_json(url, expect_json=False)
             logger.debug(f"Triggered refresh for section {section_key}")
             return True
         except Exception as e:
             logger.error(f"Failed to refresh section {section_key}: {e}")
             return False
 
-    async def scan_section_path(self, section_key: str | int, path: str) -> bool:
+    async def scan_section_path(
+        self, section_key: str | int, path: str
+    ) -> bool:
         """Trigger a targeted file-system scan for a specific folder path.
 
         Tells Plex to scan only the given directory within the library section,
@@ -288,23 +318,18 @@ class PlexAPI:
             path: The Plex-side folder path to scan (after reversing path mappings).
         """
         params = urlencode({"path": path})
-        url = f"{self.server_url}/library/sections/{section_key}/refresh?{params}"
+        url = (
+            f"{self.server_url}/library/sections/{section_key}"
+            f"/refresh?{params}"
+        )
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=self.headers, ssl=False) as resp:
-                    if resp.status == 401:
-                        raise ConnectionError(
-                            "Plex authentication failed — invalid token"
-                        )
-                    if resp.status not in (200, 204):
-                        error_text = await resp.text()
-                        raise ConnectionError(
-                            f"Plex returned {resp.status}: {error_text}"
-                        )
+            await self.get_query_json(url, expect_json=False)
             logger.debug(
                 f"Triggered path scan for section {section_key}, path '{path}'"
             )
             return True
         except Exception as e:
-            logger.error(f"Failed to scan path '{path}' in section {section_key}: {e}")
+            logger.error(
+                f"Failed to scan path '{path}' in section {section_key}: {e}"
+            )
             return False

@@ -491,6 +491,37 @@ class TestTriggerItemScan:
         self.mgr.api.scan_section_path.assert_awaited_once()
 
     @pytest.mark.asyncio
+    async def test_refreshes_metadata_when_rating_key_is_known(self):
+        """A downloaded trailer is a local extra: the folder scan indexes
+        the file, but only the metadata refresh attaches it to the item.
+        Verified against a real Plex server — a scan alone left the extra
+        invisible, and the refresh made it appear."""
+        self.mgr.api.scan_section_path = AsyncMock(return_value=True)
+        self.mgr.api.refresh_item = AsyncMock(return_value=True)
+        result = await self.mgr.trigger_item_scan(
+            media_id=self.media_id,
+            section_key="1",
+            folder_path=f"/plex/{self._p}/movies/ScanFilm",
+            rating_key="rk_scan",
+        )
+        assert result is True
+        self.mgr.api.scan_section_path.assert_awaited_once()
+        self.mgr.api.refresh_item.assert_awaited_once_with("rk_scan")
+
+    @pytest.mark.asyncio
+    async def test_no_rating_key_scans_without_refreshing(self):
+        """An unlinked item has nothing to refresh — scan only."""
+        self.mgr.api.scan_section_path = AsyncMock(return_value=True)
+        self.mgr.api.refresh_item = AsyncMock(return_value=True)
+        result = await self.mgr.trigger_item_scan(
+            media_id=self.media_id,
+            section_key="1",
+            folder_path=f"/plex/{self._p}/movies/ScanFilm",
+        )
+        assert result is True
+        self.mgr.api.refresh_item.assert_not_awaited()
+
+    @pytest.mark.asyncio
     async def test_scan_failure_does_not_fire_event(self):
         """When scan_section_path returns False, no event is written and False
         is returned (line 455, skip event block)."""
