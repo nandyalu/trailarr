@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.53">
+      <meta name="generator" content="zensical-0.0.56">
     
     
       
@@ -2200,6 +2200,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-4-missing-1080p-trailer-view-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example 4: "Missing 1080p Trailer" View Filter
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2884,6 +2895,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-4-missing-1080p-trailer-view-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example 4: "Missing 1080p Trailer" View Filter
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3172,6 +3194,48 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
 <li>The <code>Search Query</code> setting to return Spanish trailers. If search results does not contain any Spanish trailers, OR if there are no Spanish trailers available, this profile will not download any trailers.</li>
 </ul>
 </div>
+<h2 id="example-4-missing-1080p-trailer-view-filter">Example 4: "Missing 1080p Trailer" View Filter</h2>
+<p><span class="twemoji golden" title="Added in v0.11.3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0113-august-21-2026">v0.11.3</a></p>
+<p>This example is a <strong>view filter</strong>, not a profile — it changes what the library pages show, and downloads nothing. It uses the <a href=".././filters/#download-filters-view-filters-only">Download Filters</a> family to find media whose best trailer is below 1080p, so you can review and re-download them.</p>
+<ul>
+<li>Open the <strong>Filters</strong> dropdown on the Home, Movies, or Series page and click <code>Add New Filter</code>.</li>
+<li>Name the filter <code>Below 1080p</code>.</li>
+<li>
+<p>Set the below <code>Filter</code>s:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">ID</th>
+<th style="text-align: center;">Filter By</th>
+<th style="text-align: center;">Condition</th>
+<th style="text-align: center;">Filter Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">Has Downloads</td>
+<td style="text-align: center;">Equals</td>
+<td style="text-align: center;">true</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">Download Resolution</td>
+<td style="text-align: center;">Less Than</td>
+<td style="text-align: center;">1080</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Click <code>Create</code>. The view now lists every media item that has a trailer, where at least one downloaded trailer is below 1080p.</p>
+</li>
+</ul>
+<p>Two more quick recipes with the same fields:</p>
+<ul>
+<li><strong>Deleted trailer files</strong>: <code>Download File Missing</code> <code>Equals</code> <code>true</code> — download records whose file was deleted from disk.</li>
+<li><strong>Owned by one profile</strong>: <code>Download Profile</code> <code>Equals</code> + pick a profile — media whose downloads came from that profile.</li>
+</ul>
 
 
 
@@ -3329,7 +3393,7 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.69c251d7.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.e886cdf1.min.js"></script>
       
     
   </body>

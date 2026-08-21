@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.53">
+      <meta name="generator" content="zensical-0.0.56">
     
     
       
@@ -3247,7 +3247,7 @@ Then restart your shell (or run <code>source ~/.bashrc</code> / <code>source ~/.
 </div>
 <div class="tabbed-block">
 <p>Open PowerShell and run:
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">powershell</span> <span class="n">-ExecutionPolicy</span> <span class="n">ByPass</span> <span class="n">-c</span> <span class="s2">&quot;irm https://astral.sh/uv/install.ps1 | iex&quot;</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">powershell</span> <span class="n">-ExecutionPolicy</span> <span class="n">ByPass</span> <span class="n">-c</span> <span class="s2">"irm https://astral.sh/uv/install.ps1 | iex"</span>
 </span></code></pre></div>
 Restart PowerShell after installation.</p>
 </div>
@@ -3295,7 +3295,7 @@ Restart PowerShell after installation.</p>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span><span class="nv">TRAILARR_VERSION</span><span class="o">=</span>v0.9.9<span class="w"> </span>sh
 </span></code></pre></div>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c"># Windows (before running the installer)</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nv">$env:TRAILARR_VERSION</span> <span class="p">=</span> <span class="s1">&#39;v0.9.9&#39;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nv">$env:TRAILARR_VERSION</span> <span class="p">=</span> <span class="s1">'v0.9.9'</span>
 </span></code></pre></div>
 </div>
 <hr />
@@ -3350,7 +3350,7 @@ Restart PowerShell after installation.</p>
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>├── logs\
 </span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>└── web\images\
 </span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>Task Scheduler task: &quot;Trailarr&quot;
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>Task Scheduler task: "Trailarr"
 </span></code></pre></div>
 </div>
 </div>
@@ -3401,10 +3401,10 @@ that affect the service (run, stop, restart, update, uninstall).</p>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">Start-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">Stop-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">(</span><span class="nb">Get-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">&#39;Trailarr&#39;</span><span class="p">).</span><span class="n">State</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nb">Get-Content</span> <span class="s2">&quot;C:\ProgramData\Trailarr\logs\trailarr.log&quot;</span> <span class="n">-Tail</span> <span class="n">50</span> <span class="n">-Wait</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">Start-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">'Trailarr'</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">Stop-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">'Trailarr'</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">(</span><span class="nb">Get-ScheduledTask</span> <span class="n">-TaskName</span> <span class="s1">'Trailarr'</span><span class="p">).</span><span class="n">State</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nb">Get-Content</span> <span class="s2">"C:\ProgramData\Trailarr\logs\trailarr.log"</span> <span class="n">-Tail</span> <span class="n">50</span> <span class="n">-Wait</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3559,12 +3559,12 @@ This removes the application, service, and CLI.</p>
 </span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>cat<span class="w"> </span>~/Library/Logs/trailarr/trailarr.log
 </span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
 </span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Windows (PowerShell)</span>
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>Get-Content<span class="w"> </span><span class="s2">&quot;C:\ProgramData\Trailarr\logs\trailarr.log&quot;</span><span class="w"> </span>-Tail<span class="w"> </span><span class="m">100</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>Get-Content<span class="w"> </span><span class="s2">"C:\ProgramData\Trailarr\logs\trailarr.log"</span><span class="w"> </span>-Tail<span class="w"> </span><span class="m">100</span>
 </span></code></pre></div>
 <p>Common causes: port already in use, database corruption, missing <code>uv</code> or ffmpeg.</p>
 <h3 id="port-conflict">Port conflict</h3>
 <p>Edit the <code>.env</code> file and change <code>APP_PORT</code>, then restart the service.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Check what&#39;s on port 7889</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Check what's on port 7889</span>
 </span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="c1"># Linux / macOS</span>
 </span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>lsof<span class="w"> </span>-i<span class="w"> </span>:7889
 </span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># Windows</span>
@@ -3581,7 +3581,7 @@ This removes the application, service, and CLI.</p>
 </span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Intel / AMD (Linux)</span>
 </span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>vainfo
 </span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="c1"># Check Trailarr logs for &quot;GPU detected&quot; lines</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="c1"># Check Trailarr logs for "GPU detected" lines</span>
 </span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>trailarr<span class="w"> </span>logs<span class="w"> </span><span class="m">100</span>
 </span></code></pre></div>
 <p>Then confirm hardware acceleration is enabled in <strong>Settings → Video Processing</strong>.</p>
@@ -3793,7 +3793,7 @@ simply prefer a native system service.</p>
       <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.69c251d7.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.e886cdf1.min.js"></script>
       
     
   </body>

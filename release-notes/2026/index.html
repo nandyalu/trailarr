@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.53">
+      <meta name="generator" content="zensical-0.0.56">
     
     
       
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0112-august-15-2026" class="md-skip">
+        <a href="#v0113-august-21-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2418,6 +2418,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0113-august-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.3</strong> - <em>August 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0112-august-15-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2987,6 +2998,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0113-august-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.3</strong> - <em>August 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0112-august-15-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3353,6 +3375,42 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0113-august-21-2026"><strong>v0.11.3</strong> - <em>August 21, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Filter your library by downloads and files</strong> — view filters gain a new <strong>Downloads</strong> field family: <code>Download Count</code>, <code>Download Profile</code>, <code>Download Resolution</code>, <code>Download Added At</code>, <code>Download File Missing</code>, and <code>Has Unknown Profile Download</code> — see <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Download Filters</a>.</p>
+</li>
+<li>
+<p><strong>Recipe: find trailers below 1080p</strong> — combine <code>Has Downloads Equals true</code> with <code>Download Resolution Less Than 1080</code> in a view filter to list media whose trailer needs a re-download — see <a href="../../user-guide/settings/profiles/examples/#example-4-missing-1080p-trailer-view-filter">this example</a>.</p>
+</li>
+<li>
+<p><strong>Recipe: find deleted trailer files</strong> — a <code>Download File Missing Equals true</code> view filter lists media with a download record whose file is gone from disk.</p>
+</li>
+<li>
+<p>The filter editor groups fields into <strong>Media</strong>, <strong>Downloads</strong>, and <strong>Files</strong>, and the <code>Download Profile</code> filter shows your profiles by name (a deleted profile shows as <code>Deleted [id]</code>).</p>
+</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Downloaded trailers show in Plex immediately again</strong> — the <code>Notify Plex</code> profile setting scanned the media folder, but Plex kept the new trailer hidden on the media item until its metadata refreshed. Trailarr now refreshes the item too, so the trailer shows in seconds — see <a href="../../user-guide/settings/profiles/settings/plex/#notify-plex">Notify Plex</a>. Thanks <a href="https://github.com/lems111">@lems111</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/pull/652">#652</a>)</p>
+</li>
+<li>
+<p><strong>Plex trigger requests no longer fail on an empty response</strong> — Plex answers a scan, a refresh, or an add-extra request with an empty body, which Trailarr tried to read as JSON and recorded as a failure.</p>
+</li>
+<li>
+<p><strong><code>In The Last</code> / <code>Not In The Last</code> date filters work again in profiles</strong> — the backend evaluated these conditions backwards, so <code>In The Last</code> matched every past date and <code>Not In The Last</code> matched none; a profile filtering on <code>Added At In The Last 7 days</code> silently matched the whole library while view pages showed the correct list.</p>
+</li>
+<li>
+<p><strong>First page load no longer freezes with authentication disabled</strong> — on a fresh browser session with <code>WEBUI_DISABLE_AUTH=true</code>, the first settings request could race session creation and fail, which halted all page rendering and left the library empty until a manual refresh.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li><strong>Trailer Profiles now reject download filters (intentional change)</strong> — a profile that filters on its own downloads is circular: it stops matching a media item the moment its trailer downloads. The download engine already prevents re-downloads, so profiles do not need these filters. This includes <code>Has Downloads</code>, which profiles accepted before; saving such a profile now shows an error that recommends a view filter with the <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Download Filters</a> instead. Existing profiles keep working until you edit them.</li>
+</ul>
+<hr />
 <h2 id="v0112-august-15-2026"><strong>v0.11.2</strong> - <em>August 15, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -4215,7 +4273,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.69c251d7.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e886cdf1.min.js"></script>
       
     
   </body>
