@@ -1,8 +1,7 @@
 # Phase 6 — Downloads & Files Filter Family (View Filters)
 
-**Status:** IMPLEMENTED — on branch `feat/phase6-download-filters` (Aug 13, 2026);
-exit criteria met, verified against a production-library copy; ships as v0.11.3 after
-the Phase 5 bake window closes (~Aug 23, 2026) ·
+**Status:** DONE — shipped in v0.11.3 (Aug 21, 2026), together with the Plex
+metadata-refresh fix from PR #652 ·
 **Release:** v0.11.3 (moved from v0.11.1: that number and v0.11.2 went to unplanned fix
 releases) · **Depends on:** Phase 5 (virtual-field mechanism + `has_downloads` proven),
 shipped in v0.11.0 on Aug 9, 2026
