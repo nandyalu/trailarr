@@ -23,9 +23,7 @@ def mock_media():
     media.language = "en"
     media.monitor = True
     media.downloads = []  # No active downloads yet
-    media.plex_connection_id = (
-        None  # Not Plex-linked; keeps _check_plex_trailer from hitting the API
-    )
+    media.plex_connection_id = None  # Not Plex-linked; keeps _check_plex_trailer from hitting the API
     media.model_dump.return_value = {
         "id": 1,
         "title": "Test Movie",
@@ -56,9 +54,7 @@ def mock_profile():
     profile.max_duration = 300
     profile.always_search = False
     profile.remove_silence = False
-    profile.skip_if_plex_trailer = (
-        False  # Not testing Plex skip; keeps _check_plex_trailer inactive
-    )
+    profile.skip_if_plex_trailer = False  # Not testing Plex skip; keeps _check_plex_trailer inactive
     return profile
 
 
@@ -564,10 +560,13 @@ class TestDownloadTrailerDownloadFacts:
 
         # Both the start and the completion broadcast refresh the overlay
         reloads = [
-            call.kwargs.get("reload", "") for call in mock_broadcast.call_args_list
+            call.kwargs.get("reload", "")
+            for call in mock_broadcast.call_args_list
         ]
         assert any("downloading" in reload for reload in reloads)
-        assert any("downloads" in reload and "media" in reload for reload in reloads)
+        assert any(
+            "downloads" in reload and "media" in reload for reload in reloads
+        )
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.trailer_search.get_video_id")
@@ -611,9 +610,7 @@ class TestCheckPlexTrailer:
         media.title = "Test Movie"
         media.plex_connection_id = 10
         media.plex_rating_key = "123"
-        media.plex_trailer = (
-            None  # Simulate unscanned item so the API fast-path is skipped
-        )
+        media.plex_trailer = None  # Simulate unscanned item so the API fast-path is skipped
         return media
 
     @pytest.fixture
@@ -658,9 +655,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_true_and_updates_db_when_trailer_found(
         self,
@@ -692,9 +687,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_and_updates_db_when_no_trailer(
         self,
@@ -726,9 +719,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_when_connection_is_not_plex(
         self,
@@ -774,9 +765,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_ignores_local_file_trailers(
         self,
@@ -796,9 +785,7 @@ class TestCheckPlexTrailer:
         mock_conn.api_key = "token"
         mock_read_conn.return_value = mock_conn
 
-        local_trailer = PlexMediaExtra(
-            subtype="trailer", title="My Trailer", guid="file:///media/trailers/t.mkv"
-        )
+        local_trailer = PlexMediaExtra(subtype="trailer", title="My Trailer", guid="file:///media/trailers/t.mkv")
         mock_get_extras.return_value = [local_trailer]
 
         from core.download.trailer import _check_plex_trailer
@@ -810,9 +797,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_met_returns_true(
         self,
@@ -833,9 +818,7 @@ class TestCheckPlexTrailer:
         mock_read_conn.return_value = mock_conn
 
         mock_profile_plex.skip_if_plex_trailer_resolution = 720
-        hd_trailer = PlexMediaExtra.model_construct(
-            subtype="trailer", guid="iva://remote/123", resolution=1080
-        )
+        hd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/123", resolution=1080)
         mock_get_extras.return_value = [hd_trailer]
 
         from core.download.trailer import _check_plex_trailer
@@ -846,9 +829,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch(
-        "core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock
-    )
+    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_not_met_returns_false(
         self,
@@ -869,9 +850,7 @@ class TestCheckPlexTrailer:
         mock_read_conn.return_value = mock_conn
 
         mock_profile_plex.skip_if_plex_trailer_resolution = 1080
-        sd_trailer = PlexMediaExtra.model_construct(
-            subtype="trailer", guid="iva://remote/456", resolution=480
-        )
+        sd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/456", resolution=480)
         mock_get_extras.return_value = [sd_trailer]
 
         from core.download.trailer import _check_plex_trailer
@@ -919,64 +898,60 @@ class TestDownloadTrailerPlexSkip:
 
 
 class TestNotifyPlex:
-    @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.connection_manager.PlexConnectionManager")
-    async def test_scans_folder_and_refreshes_linked_item(
-        self, mock_plex_manager_cls, mock_read_conn
-    ):
-        """A downloaded local extra needs both a scan and metadata refresh."""
-        from core.base.database.models.connection import ArrType
-        from core.base.database.models.event import EventSource
-        from core.download.trailer import _notify_plex
+    """A downloaded trailer is a local extra. Plex only attaches it to
+    the item after a metadata refresh, so notifying Plex has to scan the
+    folder AND refresh the item — verified against a real Plex server."""
 
-        media = MagicMock(
+    def _media(self, rating_key: str | None = "29546"):
+        return MagicMock(
             id=42,
             title="Example Show",
             plex_connection_id=3,
             plex_section_key="8",
-            plex_rating_key="29546",
+            plex_rating_key=rating_key,
             folder_path="/media/tv/Example Show",
         )
+
+    @pytest.mark.asyncio
+    @patch("core.download.trailer.connection_manager.read")
+    @patch("core.plex.connection_manager.PlexConnectionManager")
+    async def test_passes_rating_key_for_a_linked_item(
+        self, mock_plex_manager_cls, mock_read_conn
+    ):
+        from core.base.database.models.connection import ArrType
+        from core.base.database.models.event import EventSource
+        from core.download.trailer import _notify_plex
+
         mock_read_conn.return_value.arr_type = ArrType.PLEX
         plex_manager = mock_plex_manager_cls.return_value
         plex_manager.trigger_item_scan = AsyncMock(return_value=True)
-        plex_manager.api.refresh_item = AsyncMock(return_value=True)
 
-        await _notify_plex(media)
+        await _notify_plex(self._media())
 
         plex_manager.trigger_item_scan.assert_awaited_once_with(
             media_id=42,
             section_key="8",
             folder_path="/media/tv/Example Show",
+            rating_key="29546",
             source=EventSource.SYSTEM,
             source_detail="TrailerDownloaded",
         )
-        plex_manager.api.refresh_item.assert_awaited_once_with("29546")
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
     @patch("core.plex.connection_manager.PlexConnectionManager")
-    async def test_scans_unlinked_item_without_metadata_refresh(
+    async def test_unlinked_item_still_scans_without_a_rating_key(
         self, mock_plex_manager_cls, mock_read_conn
     ):
         from core.base.database.models.connection import ArrType
         from core.download.trailer import _notify_plex
 
-        media = MagicMock(
-            id=42,
-            title="Example Show",
-            plex_connection_id=3,
-            plex_section_key="8",
-            plex_rating_key=None,
-            folder_path="/media/tv/Example Show",
-        )
         mock_read_conn.return_value.arr_type = ArrType.PLEX
         plex_manager = mock_plex_manager_cls.return_value
         plex_manager.trigger_item_scan = AsyncMock(return_value=True)
-        plex_manager.api.refresh_item = AsyncMock(return_value=True)
 
-        await _notify_plex(media)
+        await _notify_plex(self._media(rating_key=None))
 
-        plex_manager.trigger_item_scan.assert_awaited_once()
-        plex_manager.api.refresh_item.assert_not_awaited()
+        kwargs = plex_manager.trigger_item_scan.await_args.kwargs
+        assert kwargs["rating_key"] is None
+        assert kwargs["folder_path"] == "/media/tv/Example Show"

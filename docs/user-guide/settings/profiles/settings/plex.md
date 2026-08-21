@@ -1,15 +1,22 @@
 ## Notify Plex
 
-{{ version_badge("add", "0.9.0") }}
+{{ version_badge("add", "0.9.0") }} {{ version_badge("upd", "0.11.3") }}
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true or false |
 
-When enabled, Trailarr will trigger a Plex library scan after successfully downloading a trailer. This causes the new trailer to appear in Plex immediately, without waiting for Plex's scheduled scan interval.
+When enabled, Trailarr tells Plex about the new trailer after a successful download. The trailer then shows in Plex immediately, and you do not wait for the scheduled Plex scan.
+
+Trailarr does two things for the media item:
+
+1. It scans the media folder. Plex then knows about the new file.
+2. It refreshes the item's metadata. Plex then shows the trailer on the item as an extra.
+
+Both steps are necessary. A folder scan alone makes Plex read the file, but the trailer stays invisible on the item until the metadata refresh attaches it.
 
 !!! note ""
-    This setting has no effect if no [Plex connection](../../../../getting-started/03-setup/plex-connection.md) is configured, or if the media item has not been linked to a Plex library item.
+    This setting has no effect if no [Plex connection](../../../../getting-started/03-setup/plex-connection.md) is configured, or if the media item has not been linked to a Plex library item. An item that is not linked gets the folder scan only, because the metadata refresh needs the Plex item id.
 
 ---
 

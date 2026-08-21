@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from core.plex.api_manager import PlexAPI
 
+
 PLEX_URL = "http://plex-test"
 PLEX_TOKEN = "test-token"
 
@@ -221,31 +222,53 @@ class TestGetLibraryLeaves:
         assert results == []
 
 
-class TestRefreshItem:
+class TestTriggerEndpoints:
+    """Plex accepts the trigger endpoints with an empty 200 or 204 body,
+    which has no JSON to parse. Every one of them must handle that."""
+
     @pytest.mark.asyncio
-    async def test_accepts_empty_success_response(self, api):
-        """Plex returns an empty body after accepting an item refresh."""
+    async def test_refresh_item_accepts_empty_success_response(self, api):
         url = f"{PLEX_URL}/library/metadata/42/refresh"
         with aioresponses() as m:
             m.put(url, status=200, body="")
-            result = await api.refresh_item(42)
-
-        assert result is True
+            assert await api.refresh_item(42) is True
 
     @pytest.mark.asyncio
-    async def test_accepts_no_content_success_response(self, api):
+    async def test_refresh_item_accepts_no_content_response(self, api):
         url = f"{PLEX_URL}/library/metadata/42/refresh"
         with aioresponses() as m:
             m.put(url, status=204)
-            result = await api.refresh_item(42)
-
-        assert result is True
+            assert await api.refresh_item(42) is True
 
     @pytest.mark.asyncio
-    async def test_returns_false_for_error_response(self, api):
+    async def test_refresh_item_returns_false_for_error_response(self, api):
         url = f"{PLEX_URL}/library/metadata/42/refresh"
         with aioresponses() as m:
             m.put(url, status=500, body="Plex error")
-            result = await api.refresh_item(42)
+            assert await api.refresh_item(42) is False
 
-        assert result is False
+    @pytest.mark.asyncio
+    async def test_refresh_section_accepts_empty_success_response(self, api):
+        url = f"{PLEX_URL}/library/sections/3/refresh"
+        with aioresponses() as m:
+            m.get(url, status=200, body="")
+            assert await api.refresh_section(3) is True
+
+    @pytest.mark.asyncio
+    async def test_scan_section_path_accepts_no_content_response(self, api):
+        with aioresponses() as m:
+            m.get(re.compile(r".*/library/sections/3/refresh.*"), status=204)
+            assert await api.scan_section_path(3, "/media/tv/Show") is True
+
+    @pytest.mark.asyncio
+    async def test_add_library_item_extra_accepts_empty_response(self, api):
+        with aioresponses() as m:
+            m.post(
+                re.compile(r".*/library/metadata/42/extras.*"),
+                status=200,
+                body="",
+            )
+            result = await api.add_library_item_extra(
+                42, "https://youtu.be/x", "Trailer"
+            )
+            assert result is True
