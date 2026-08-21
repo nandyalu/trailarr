@@ -13,7 +13,11 @@ from unittest.mock import patch
 import pytest
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection
+from core.base.database.models.connection import (
+    ArrType,
+    Connection,
+    PathMapping,
+)
 from core.base.database.utils.engine import write_session
 from core.diagnostics import connection_doctor
 from core.diagnostics.models import ProbeStatus
@@ -23,7 +27,10 @@ PKG = "core.diagnostics.connection_doctor"
 
 @write_session
 def _make_conn(
-    name: str, *, _session: Session = None  # type: ignore
+    name: str,
+    mappings: list[tuple[str, str]] | None = None,
+    *,
+    _session: Session = None,  # type: ignore
 ) -> int:
     conn = Connection(
         name=name,
@@ -35,6 +42,13 @@ def _make_conn(
     _session.add(conn)
     _session.commit()
     _session.refresh(conn)
+    for path_from, path_to in mappings or []:
+        _session.add(
+            PathMapping(
+                connection_id=conn.id, path_from=path_from, path_to=path_to
+            )
+        )
+    _session.commit()
     return conn.id  # type: ignore
 
 
@@ -159,10 +173,11 @@ class TestMappingSuggester:
             report = await connection_doctor.run_doctor(self.conn_id)
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
-        assert probe.suggested_mapping.path_from == "/data/"
-        assert probe.suggested_mapping.path_to == str(self.local) + "/"
+        assert probe.suggested_mapping.path_from == "/data/movies/"
+        assert probe.suggested_mapping.path_to == str(self.local / "movies") + "/"
         assert probe.suggested_mapping.corroborations == 3
         assert "Suggested mapping" in probe.remediation
+        assert probe.suggested_mapping.updates_existing is False
 
     @pytest.mark.asyncio
     async def test_multiple_roots_get_per_root_suggestions(self):
@@ -178,9 +193,16 @@ class TestMappingSuggester:
             p for p in report.probes if p.kind == "path_visibility"
         ]
         assert len(probes) == 2
-        for probe in probes:
-            assert probe.suggested_mapping is not None
-            assert probe.suggested_mapping.path_from == "/data/"
+        # A1 + root-scoping: every suggestion maps the reported root
+        # itself, never a shared shallower prefix
+        by_root = {p.name: p.suggested_mapping for p in probes}
+        movies = by_root["Folder: /data/movies"]
+        tv = by_root["Folder: /data/tv"]
+        assert movies is not None and tv is not None
+        assert movies.path_from == "/data/movies/"
+        assert movies.path_to == str(self.local / "movies") + "/"
+        assert tv.path_from == "/data/tv/"
+        assert tv.path_to == str(self.local / "tv") + "/"
 
     @pytest.mark.asyncio
     async def test_single_sample_suggestion_is_marked_low_confidence(self):
@@ -262,11 +284,11 @@ class TestSearchBasedSuggestions:
             report = await connection_doctor.run_doctor(self.conn_id)
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
-        assert probe.suggested_mapping.path_from == "/media/"
+        assert probe.suggested_mapping.path_from == "/media/tv/"
         assert probe.suggested_mapping.path_to == str(
-            self.tmp / "media" / "all" / "Media"
+            self.tmp / "media" / "all" / "Media" / "tv"
         ) + "/"
-        # found folder + resolving root + the other series folder
+        # resolving root + both series folders
         assert probe.suggested_mapping.corroborations == 3
         assert "confirm it" in probe.remediation
 
@@ -286,10 +308,10 @@ class TestSearchBasedSuggestions:
             report = await connection_doctor.run_doctor(self.conn_id)
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
-        # NOT the decoy ('/media/movies/' -> <tmp>/media/)
-        assert probe.suggested_mapping.path_from == "/media/"
+        # NOT the decoy ('/media/movies/all/' -> <tmp>/media/all/)
+        assert probe.suggested_mapping.path_from == "/media/movies/all/"
         assert probe.suggested_mapping.path_to == str(
-            self.tmp / "media" / "all" / "Media"
+            self.tmp / "media" / "all" / "Media" / "movies" / "all"
         ) + "/"
         assert probe.suggested_mapping.corroborations == 2
 
@@ -315,11 +337,62 @@ class TestSearchBasedSuggestions:
             report = await connection_doctor.run_doctor(self.conn_id)
         probes = [p for p in report.probes if p.kind == "path_visibility"]
         assert len(probes) == 2
-        for probe in probes:
-            assert probe.suggested_mapping is not None
-            assert probe.suggested_mapping.path_from == "/media/"
-        # Second root resolved from the known mapping without a new search
+        by_root = {p.name: p.suggested_mapping for p in probes}
+        tv = by_root["Folder: /media/tv"]
+        movies = by_root["Folder: /media/movies/all"]
+        assert tv is not None and tv.path_from == "/media/tv/"
+        assert movies is not None
+        assert movies.path_from == "/media/movies/all/"
+        assert movies.path_to == str(
+            self.tmp / "media" / "all" / "Media" / "movies" / "all"
+        ) + "/"
+        # Second root resolved from the known alignment without a new search
         assert spy.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_existing_wrong_mapping_marks_update(self):
+        """A root that already has a (broken) mapping gets its
+        suggestion flagged as a change to that mapping, not an add —
+        e.g. identity mappings copied from a Docker setup."""
+        conn_id = _make_conn(
+            f"Upd-{uuid.uuid4().hex[:8]}",
+            mappings=[("/media/tv/", "/media/tv/")],
+        )
+        p1, p2, p3, p4 = _patched(
+            ["/media/tv"],
+            samples=["/media/tv/Show A (2020) {tvdb-1}"],
+            bases=[],
+            search_roots=self.search_roots,
+        )
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+        probe = _probe(report, "path_visibility")
+        assert probe.suggested_mapping is not None
+        assert probe.suggested_mapping.path_from == "/media/tv/"
+        assert probe.suggested_mapping.updates_existing is True
+        assert "change to the existing mapping" in probe.remediation
+
+    @pytest.mark.asyncio
+    async def test_apply_updates_the_existing_mapping_row(self):
+        """Applying a suggestion for an already-mapped root updates that
+        row's target — it never adds a duplicate mapping."""
+        import core.base.database.manager.connection as connection_manager
+
+        conn_id = _make_conn(
+            f"UpdRow-{uuid.uuid4().hex[:8]}",
+            mappings=[("/media/tv/", "/media/tv/")],
+        )
+        connection_manager.add_path_mapping(
+            conn_id, "/media/tv/", str(self.deep / "tv") + "/"
+        )
+        connection = connection_manager.read(conn_id)
+        tv_mappings = [
+            pm
+            for pm in connection.path_mappings
+            if pm.path_from == "/media/tv/"
+        ]
+        assert len(tv_mappings) == 1
+        assert tv_mappings[0].path_to == str(self.deep / "tv") + "/"
 
     @pytest.mark.asyncio
     async def test_falls_back_to_tail_match_when_search_finds_nothing(self):
@@ -336,8 +409,8 @@ class TestSearchBasedSuggestions:
             report = await connection_doctor.run_doctor(self.conn_id)
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
-        assert probe.suggested_mapping.path_from == "/data/"
-        assert probe.suggested_mapping.path_to == str(local) + "/"
+        assert probe.suggested_mapping.path_from == "/data/movies/"
+        assert probe.suggested_mapping.path_to == str(local / "movies") + "/"
 
 
 class TestSearchHelpers:
@@ -391,7 +464,7 @@ class TestSearchHelpers:
     def test_search_respects_entry_budget(self, tmp_path):
         for i in range(20):
             (tmp_path / f"dir{i:02}").mkdir()
-        (tmp_path / "zz" ).mkdir()
+        (tmp_path / "zz").mkdir()
         (tmp_path / "zz" / "Needle (2020)").mkdir()
         hits = connection_doctor._search_media_folder(
             "Needle (2020)", [str(tmp_path)], budget=5

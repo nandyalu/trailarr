@@ -6,6 +6,9 @@ export interface SuggestedMapping {
   /** Number of probed paths that resolve under this mapping. 1 means the
    * match is based on the folder name only — check before applying. */
   corroborations: number;
+  /** True when the connection already has a mapping for this root —
+   * applying changes that mapping's target instead of adding a row. */
+  updates_existing: boolean;
 }
 
 export interface ProbeResult {

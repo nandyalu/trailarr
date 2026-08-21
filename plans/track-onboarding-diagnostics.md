@@ -28,6 +28,14 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
   drive fails some samples while the union mount passes all. Sibling roots reuse the
   first derived mapping without re-searching. The tail heuristic remains as the
   fallback for fresh connections with no synced media.
+- Suggestions are ROOT-SCOPED (maintainer decision, Aug 15): `path_from` is always the
+  root folder exactly as the application reports it, never a shared shallower prefix —
+  path mappings correspond 1:1 with root folders (Plex `plex_section_key` and the
+  library-root guard key on them). The shallower alignment stays internal for sibling-
+  root reuse. When the root already has a mapping, the suggestion carries
+  `updates_existing=True`, the wording says "change to the existing mapping", the UI
+  button says "Update mapping", and applying updates that row's target
+  (`add_path_mapping` upserts by `path_from`) — no duplicates.
 - Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
   end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
   elsewhere) got a one-click Apply that flipped the chip to HEALTHY.

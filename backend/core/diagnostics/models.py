@@ -22,12 +22,15 @@ class SuggestedMapping(BaseModel):
     """A concrete path mapping the user can apply with one click."""
 
     path_from: str
-    """The path prefix as the Arr/Plex application reports it."""
+    """The root folder as the Arr/Plex application reports it."""
     path_to: str
-    """The equivalent path prefix as Trailarr sees it."""
+    """The equivalent folder as Trailarr sees it."""
     corroborations: int = 1
     """Number of probed paths that resolve under this mapping. 1 means
     the match is based on the folder name only — check before applying."""
+    updates_existing: bool = False
+    """True when the connection already has a mapping for this root —
+    applying changes that mapping's target instead of adding a row."""
 
 
 class ProbeResult(BaseModel):
