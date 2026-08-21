@@ -122,7 +122,7 @@
                 }
                 @if (probe.suggested_mapping; as mapping) {
                   <button class="btn primary probe-apply" (click)="applyMapping(mapping)" [disabled]="doctorRunning()">
-                    Apply mapping: {{ mapping.path_from }} → {{ mapping.path_to }}
+                    {{ mapping.updates_existing ? 'Update mapping' : 'Apply mapping' }}: {{ mapping.path_from }} → {{ mapping.path_to }}
                   </button>
                 }
               </div>

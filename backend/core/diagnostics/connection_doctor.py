@@ -33,6 +33,7 @@ from core.base.database.models.connection import ConnectionRead
 from core.base.utils.path_utils import (
     apply_path_mappings,
     is_subpath,
+    normalize_trailing_slash,
     reverse_path_mappings,
 )
 from core.diagnostics.models import (
@@ -116,13 +117,14 @@ async def run_doctor(connection_id: int) -> DoctorReport:
     # The filesystem walk for suggester bases runs once per report.
     samples = _arr_side_media_samples(connection)
     bases = _visible_bases(connection)
-    # Mappings already derived this run: sibling roots usually share one
-    # mapping, so later roots try these before searching the disk again.
-    known_mappings: list[SuggestedMapping] = []
+    # Prefix alignments derived this run: sibling roots usually live
+    # under one alignment, so later roots try these before searching
+    # the disk again. Suggestions themselves stay root-scoped.
+    known_prefixes: list[SimpleNamespace] = []
     checked_dirs: list[str] = []
     for root in roots:
         probe, mapped_dir = _probe_root(
-            root, connection, samples, bases, known_mappings
+            root, connection, samples, bases, known_prefixes
         )
         report.probes.append(probe)
         if mapped_dir:
@@ -193,18 +195,19 @@ async def _fetch_roots(
     )
 
 
-def _resolve_with_known(
-    root: str, known_mappings: list[SuggestedMapping]
-) -> SuggestedMapping | None:
-    """Return a mapping derived for a sibling root that fits this one too."""
-    for known in known_mappings:
-        candidate = SimpleNamespace(
-            path_from=known.path_from, path_to=known.path_to
-        )
-        mapped = apply_path_mappings(root, [candidate])
-        if mapped != root and os.path.isdir(mapped):
-            return known
-    return None
+def _mark_existing(
+    suggestion: SuggestedMapping, connection: ConnectionRead
+) -> None:
+    """Flag a suggestion that changes an existing mapping's target.
+
+    Applying is an update either way (`add_path_mapping` upserts by
+    ``path_from``); the flag lets the report and the UI say so.
+    """
+    wanted = suggestion.path_from.rstrip("/\\")
+    suggestion.updates_existing = any(
+        pm.path_from.rstrip("/\\") == wanted
+        for pm in connection.path_mappings
+    )
 
 
 def _probe_root(
@@ -212,7 +215,7 @@ def _probe_root(
     connection: ConnectionRead,
     samples: list[str],
     bases: list[str],
-    known_mappings: list[SuggestedMapping] | None = None,
+    known_prefixes: list[SimpleNamespace] | None = None,
 ) -> tuple[ProbeResult, str | None]:
     """Check one reported root folder. Returns (probe, mapped_dir).
 
@@ -220,14 +223,16 @@ def _probe_root(
     for use by the permission probe.
     """
     name = f"Folder: {root}"
-    known_mappings = known_mappings if known_mappings is not None else []
+    known_prefixes = known_prefixes if known_prefixes is not None else []
     mapped = apply_path_mappings(root, connection.path_mappings)
 
     # A5: Windows-style path on a POSIX host can never exist directly
     if _WINDOWS_ABS_RE.match(mapped) and os.name != "nt":
-        suggestion = _resolve_with_known(
-            root, known_mappings
-        ) or _suggest_mapping(root, samples, bases)
+        suggestion = _suggest_mapping(
+            root, samples, bases, known_prefixes=known_prefixes
+        )
+        if suggestion:
+            _mark_existing(suggestion, connection)
         return ProbeResult(
             kind="path_style",
             name=name,
@@ -298,24 +303,28 @@ def _probe_root(
         ), mapped
 
     # Not visible: suggest a mapping from what IS visible
-    suggestion = _resolve_with_known(
-        root, known_mappings
-    ) or _suggest_mapping(root, samples, bases)
-    if suggestion is not None and suggestion not in known_mappings:
-        known_mappings.append(suggestion)
+    suggestion = _suggest_mapping(
+        root, samples, bases, known_prefixes=known_prefixes
+    )
     remediation = (
         "Map this path to the folder where Trailarr sees the same"
         " files, on the connection's Path Mappings."
     )
     if suggestion:
+        _mark_existing(suggestion, connection)
         confidence = (
             f" {suggestion.corroborations} probed path(s) confirm it."
             if suggestion.corroborations > 1
             else " The match is based on the folder name only — check"
             " the contents before you apply it."
         )
+        verb = (
+            "Suggested change to the existing mapping"
+            if suggestion.updates_existing
+            else "Suggested mapping"
+        )
         remediation = (
-            f"Suggested mapping: '{suggestion.path_from}' →"
+            f"{verb}: '{suggestion.path_from}' →"
             f" '{suggestion.path_to}'.{confidence}"
         )
     return ProbeResult(
@@ -571,20 +580,51 @@ def _align_suffix(
     return remote_prefix, local_prefix
 
 
+def _root_scoped(
+    root: str,
+    prefix_mapping: SimpleNamespace,
+    samples_under_root: list[str],
+) -> SuggestedMapping | None:
+    """Turn an internal prefix alignment into a root-scoped suggestion.
+
+    Suggestions always map the reported root folder itself (path
+    mappings correspond 1:1 with root folders — Plex section keys and
+    the library-root guard key on them), even when the alignment was
+    derived at a shallower prefix. Corroborations count the resolving
+    root plus every media sample that resolves under the mapping.
+    """
+    mapped = apply_path_mappings(root, [prefix_mapping])
+    if mapped.rstrip("/\\") == root.rstrip("/\\"):
+        return None
+    if not os.path.isdir(mapped):
+        return None
+    corroborations = 1
+    for sample in samples_under_root:
+        if sample.rstrip("/\\") == root.rstrip("/\\"):
+            continue
+        if os.path.isdir(apply_path_mappings(sample, [prefix_mapping])):
+            corroborations += 1
+    return SuggestedMapping(
+        path_from=normalize_trailing_slash(root),
+        path_to=normalize_trailing_slash(mapped),
+        corroborations=corroborations,
+    )
+
+
 def _suggest_from_search(
     root: str,
-    samples: list[str],
+    under_root: list[str],
     search_roots: list[str],
-) -> SuggestedMapping | None:
+) -> tuple[SuggestedMapping, SimpleNamespace] | None:
     """Locate a known media folder by name and derive the mapping.
 
     This is the strong path: it uses the distinctive folder names of
     media Trailarr already tracks, so a match is evidence the files are
     really there — a folder-name coincidence in the shallow base walk
-    cannot beat it.
+    cannot beat it. Returns the root-scoped suggestion together with
+    the internal prefix alignment, which sibling roots can reuse.
     """
-    under_root = [s for s in samples if is_subpath(root, s)]
-    best: SuggestedMapping | None = None
+    best: tuple[SuggestedMapping, SimpleNamespace] | None = None
     for sample in under_root[:_SEARCH_MAX_SAMPLES]:
         name = os.path.basename(sample.rstrip("/\\"))
         if not name:
@@ -596,35 +636,18 @@ def _suggest_from_search(
             remote_prefix, local_prefix = aligned
             if not is_subpath(remote_prefix, root):
                 continue
-            candidate_mapping = SimpleNamespace(
+            prefix_mapping = SimpleNamespace(
                 path_from=remote_prefix, path_to=local_prefix
             )
-            mapped_root = apply_path_mappings(root, [candidate_mapping])
-            if not os.path.isdir(mapped_root):
+            candidate = _root_scoped(root, prefix_mapping, under_root)
+            if candidate is None:
                 continue
-            # The found folder counts, the resolving root counts, and
-            # every other sample that resolves under the mapping counts.
-            corroborations = 2
-            for other in under_root:
-                if other == sample:
-                    continue
-                if not is_subpath(remote_prefix, other):
-                    continue
-                if os.path.isdir(
-                    apply_path_mappings(other, [candidate_mapping])
-                ):
-                    corroborations += 1
-            candidate = SuggestedMapping(
-                path_from=remote_prefix,
-                path_to=local_prefix,
-                corroborations=corroborations,
-            )
             if (
                 best is None
-                or candidate.corroborations > best.corroborations
+                or candidate.corroborations > best[0].corroborations
             ):
-                best = candidate
-        if best is not None and best.corroborations > 2:
+                best = (candidate, prefix_mapping)
+        if best is not None and best[0].corroborations > 2:
             break
     return best
 
@@ -634,33 +657,46 @@ def _suggest_mapping(
     samples: list[str],
     bases: list[str],
     search_roots: list[str] | None = None,
+    known_prefixes: list[SimpleNamespace] | None = None,
 ) -> SuggestedMapping | None:
-    """Find the visible folder that likely holds the files behind *root*.
+    """Suggest a mapping for the reported root folder *root*.
 
-    Two stages:
+    The returned mapping is always root-scoped: ``path_from`` is the
+    root exactly as the application reports it. Three stages find it:
+    0. A prefix alignment derived for a sibling root this run.
     1. Search the disk for a media folder Trailarr already tracks under
-       this root, by its distinctive name, and derive the mapping from
-       where it was found. This does the work for the user and wins
-       whenever it finds anything.
+       this root, by its distinctive name, and align the paths. This
+       does the work for the user and wins whenever it finds anything.
     2. Fall back to the shallow heuristic: split the remote path at
        every component and look for a visible base where the remaining
-       tail exists, verified against the media samples. Used when there
-       are no media samples yet (fresh connection).
+       tail exists. Used when there are no media samples yet (fresh
+       connection).
     """
+    known_prefixes = known_prefixes if known_prefixes is not None else []
+    under_root = [s for s in samples if is_subpath(root, s)]
+
+    # Stage 0: reuse an alignment found for a sibling root
+    for prefix_mapping in known_prefixes:
+        candidate = _root_scoped(root, prefix_mapping, under_root)
+        if candidate is not None:
+            return candidate
+
     # Stage 1: find a tracked media folder by name
-    if samples:
+    if under_root:
         found = _suggest_from_search(
-            root, samples, search_roots or _search_roots()
+            root, under_root, search_roots or _search_roots()
         )
         if found is not None:
-            return found
+            suggestion, prefix_mapping = found
+            known_prefixes.append(prefix_mapping)
+            return suggestion
 
     # Stage 2: tail matching against visible bases
     parts = _split_parts(root)
     if not parts:
         return None
     is_windows = bool(_WINDOWS_ABS_RE.match(root))
-    best: SuggestedMapping | None = None
+    best: tuple[SuggestedMapping, SimpleNamespace] | None = None
 
     for i in range(1, len(parts) + 1):
         prefix_parts, tail = parts[:i], parts[i:]
@@ -675,31 +711,24 @@ def _suggest_mapping(
                 # (e.g. '/movies' → '/media/movies').
                 if os.path.basename(base).lower() != parts[-1].lower():
                     continue
-                target = base
-            else:
-                target = os.path.join(base, *tail)
-            if not os.path.isdir(target):
+            elif not os.path.isdir(os.path.join(base, *tail)):
                 continue
-            candidate_mapping = SimpleNamespace(
+            prefix_mapping = SimpleNamespace(
                 path_from=prefix, path_to=base + "/"
             )
-            corroborations = 1
-            for sample in samples:
-                if sample.rstrip("/\\") == root.rstrip("/\\"):
-                    continue
-                if not is_subpath(prefix, sample):
-                    continue
-                remapped = apply_path_mappings(sample, [candidate_mapping])
-                if os.path.isdir(remapped):
-                    corroborations += 1
-            candidate = SuggestedMapping(
-                path_from=prefix,
-                path_to=base + "/",
-                corroborations=corroborations,
-            )
-            if best is None or candidate.corroborations > best.corroborations:
-                best = candidate
+            candidate = _root_scoped(root, prefix_mapping, under_root)
+            if candidate is None:
+                continue
+            if (
+                best is None
+                or candidate.corroborations > best[0].corroborations
+            ):
+                best = (candidate, prefix_mapping)
         # A corroborated shallow prefix beats any deeper one — stop early
-        if best is not None and best.corroborations > 1:
+        if best is not None and best[0].corroborations > 1:
             break
-    return best
+    if best is None:
+        return None
+    suggestion, prefix_mapping = best
+    known_prefixes.append(prefix_mapping)
+    return suggestion
