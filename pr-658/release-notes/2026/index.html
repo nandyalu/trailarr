@@ -3439,6 +3439,15 @@
 <p><strong>Dead network mounts are flagged, not passed</strong> — a media folder that is reachable but empty is reported as a warning ("your mount may be down") instead of counting as healthy.</p>
 </li>
 <li>
+<p><strong>Applying a path mapping also syncs the connection</strong> — the library fills in right away instead of staying broken until the next scheduled sync.</p>
+</li>
+<li>
+<p><strong>Check every connection at once</strong> — a <strong>Check all</strong> button on the Connections page runs the doctor for all connections, instead of one dialog each.</p>
+</li>
+<li>
+<p><strong>A full media disk is now reported</strong> — the Disk space check warns for every media disk below 5 GB, not only the config volume, and reports each disk of a split library.</p>
+</li>
+<li>
 <p><strong>New Settings &gt; Health page</strong> — live checks of FFmpeg, hardware acceleration (finally visible!), yt-dlp, cookies, connections, the image cache, and disk space; every red state names its fix — see <a href="../../user-guide/settings/health/">Health</a>.</p>
 </li>
 <li>
@@ -3454,7 +3463,18 @@
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
-<li>Known yt-dlp failures are now recorded as a plain-language reason with the fix (for example, "YouTube requires a sign-in for this download. Set up a cookies file on Settings &gt; Health.") instead of a raw traceback — see <a href="../../user-guide/settings/health/#classified-download-errors">Classified download errors</a>.</li>
+<li>
+<p>Known yt-dlp failures are now recorded as a plain-language reason with the fix (for example, "YouTube requires a sign-in for this download. Set up a cookies file on Settings &gt; Health.") instead of a raw traceback — see <a href="../../user-guide/settings/health/#classified-download-errors">Classified download errors</a>.</p>
+</li>
+<li>
+<p>Health check results are kept when Trailarr restarts, so connection chips and the Health page no longer reset to "not checked" after every container update.</p>
+</li>
+<li>
+<p>The Health page runs its checks together instead of one after another, so a hung mount delays only its own check.</p>
+</li>
+<li>
+<p>The Connections health check runs the Connection Doctor itself when nothing was checked yet, instead of asking you to go and run it.</p>
+</li>
 </ul>
 <hr />
 <h2 id="v0113-august-21-2026"><strong>v0.11.3</strong> - <em>August 21, 2026</em></h2>

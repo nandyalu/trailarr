@@ -2964,7 +2964,7 @@
 
 <h1 id="health">Health</h1>
 <p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a></p>
-<p>The <strong>Settings &gt; Health</strong> page runs live checks of the pieces Trailarr depends on. Every red or yellow state names its fix and links to the matching docs page. The checks run when you open the page (cached for a day) or when you click <strong>Run checks</strong> — never at startup, and each check has its own timeout, so a hung network mount cannot hang the page.</p>
+<p>The <strong>Settings &gt; Health</strong> page runs live checks of the pieces Trailarr depends on. Every red or yellow state names its fix and links to the matching docs page. The checks run when you open the page (cached for a day) or when you click <strong>Run checks</strong> — never at startup. The checks run together and each one has its own timeout, so a hung network mount delays only its own check.</p>
 <h2 id="the-checks">The checks</h2>
 <table>
 <thead>
@@ -2996,7 +2996,7 @@
 </tr>
 <tr>
 <td><strong>Connections</strong></td>
-<td>A summary of the latest <a href=".././connections/#connection-doctor">Connection Doctor</a> results.</td>
+<td>A summary of the <a href=".././connections/#connection-doctor">Connection Doctor</a> results. When no connection was checked yet, this check runs the doctor itself.</td>
 </tr>
 <tr>
 <td><strong>Image cache</strong></td>
@@ -3004,7 +3004,7 @@
 </tr>
 <tr>
 <td><strong>Disk space</strong></td>
-<td>Free space on the config volume and on a sample media mount.</td>
+<td>Free space on the config volume and on every media disk. A media disk below 5 GB is a warning, because a full disk fails downloads with an error that does not mention space. Libraries split over more than one disk get one line for each.</td>
 </tr>
 </tbody>
 </table>
@@ -3019,6 +3019,7 @@
 <li>In your browser, sign in to youtube.com.</li>
 <li>Export cookies with an extension such as "Get cookies.txt LOCALLY" (Netscape format) — see <a href="../../../troubleshooting/common-issues/#export-youtube-cookiestxt-file">Export YouTube Cookies.txt file</a>.</li>
 <li>On <strong>Settings &gt; Health</strong>, upload the file or paste its content, then click <strong>Save cookies</strong>.</li>
+<li>Click <strong>Test them now</strong> in the message that follows, to confirm the cookies work.</li>
 </ol>
 <p>Trailarr stores the file in its config folder, readable only by the Trailarr user, and passes it to yt-dlp on every download and search. The content is write-only: no page or API response ever shows it again, and it is never written to the logs. <strong>Remove cookies</strong> deletes the stored file.</p>
 <p>The cookies check on this page tells you when the file has no youtube.com cookies or when they are expired — export a fresh file when that happens.</p>
@@ -3048,6 +3049,14 @@
 <tr>
 <td><code>Requested format is not available</code></td>
 <td>No matching video format. This usually means yt-dlp has no JavaScript runtime (Deno) or is outdated.</td>
+</tr>
+<tr>
+<td><code>nsig extraction failed</code> / <code>Signature extraction failed</code></td>
+<td>YouTube changed its player and this yt-dlp version cannot read it. Update yt-dlp, and make sure a JavaScript runtime (Deno) is available.</td>
+</tr>
+<tr>
+<td>Age-restricted video</td>
+<td>The video is age-restricted. Set up a cookies file on Settings &gt; Health to download it.</td>
 </tr>
 <tr>
 <td><code>Video unavailable</code></td>
