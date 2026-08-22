@@ -3,7 +3,7 @@ site_url: https://nandyalu.github.io/trailarr
 site_description: Trailarr is a simple, lightweight, and easy-to-use media server for your personal media collection.
 repo_name: nandyalu/trailarr
 repo_url: https://github.com/nandyalu/trailarr
-copyright: Copyright &copy; 2024 - 2026 nandyalu
+copyright: Made with <span class="love-heart">&#10084;</span> by <a href="https://github.com/nandyalu" target="_blank" rel="noopener">nandyalu</a> &middot; Copyright &copy; 2024 - <span class="copyright-year">2026</span> nandyalu
 theme:
   name: material
   language: en
@@ -108,6 +108,8 @@ extra:
       link: https://discord.gg/KKPr5kQEzQ
 extra_css:
   - extra.css
+extra_javascript:
+  - copyright-year.js
 nav:
   - Trailarr: index.md
   - Getting Started:
