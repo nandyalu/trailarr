@@ -174,7 +174,9 @@ class TestMappingSuggester:
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
         assert probe.suggested_mapping.path_from == "/data/movies/"
-        assert probe.suggested_mapping.path_to == str(self.local / "movies") + "/"
+        assert (
+            probe.suggested_mapping.path_to == str(self.local / "movies") + "/"
+        )
         assert probe.suggested_mapping.corroborations == 3
         assert "Suggested mapping" in probe.remediation
         assert probe.suggested_mapping.updates_existing is False
@@ -189,9 +191,7 @@ class TestMappingSuggester:
         )
         with p1, p2, p3, p4:
             report = await connection_doctor.run_doctor(self.conn_id)
-        probes = [
-            p for p in report.probes if p.kind == "path_visibility"
-        ]
+        probes = [p for p in report.probes if p.kind == "path_visibility"]
         assert len(probes) == 2
         # A1 + root-scoping: every suggestion maps the reported root
         # itself, never a shared shallower prefix
@@ -231,7 +231,9 @@ class TestMappingSuggester:
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
         assert probe.suggested_mapping.path_from == "/movies/"
-        assert probe.suggested_mapping.path_to == str(self.local / "movies") + "/"
+        assert (
+            probe.suggested_mapping.path_to == str(self.local / "movies") + "/"
+        )
 
     @pytest.mark.asyncio
     async def test_no_suggestion_when_nothing_matches(self):
@@ -285,9 +287,10 @@ class TestSearchBasedSuggestions:
         probe = _probe(report, "path_visibility")
         assert probe.suggested_mapping is not None
         assert probe.suggested_mapping.path_from == "/media/tv/"
-        assert probe.suggested_mapping.path_to == str(
-            self.tmp / "media" / "all" / "Media" / "tv"
-        ) + "/"
+        assert (
+            probe.suggested_mapping.path_to
+            == str(self.tmp / "media" / "all" / "Media" / "tv") + "/"
+        )
         # resolving root + both series folders
         assert probe.suggested_mapping.corroborations == 3
         assert "confirm it" in probe.remediation
@@ -310,9 +313,11 @@ class TestSearchBasedSuggestions:
         assert probe.suggested_mapping is not None
         # NOT the decoy ('/media/movies/all/' -> <tmp>/media/all/)
         assert probe.suggested_mapping.path_from == "/media/movies/all/"
-        assert probe.suggested_mapping.path_to == str(
-            self.tmp / "media" / "all" / "Media" / "movies" / "all"
-        ) + "/"
+        assert (
+            probe.suggested_mapping.path_to
+            == str(self.tmp / "media" / "all" / "Media" / "movies" / "all")
+            + "/"
+        )
         assert probe.suggested_mapping.corroborations == 2
 
     @pytest.mark.asyncio
@@ -328,7 +333,10 @@ class TestSearchBasedSuggestions:
             search_roots=self.search_roots,
         )
         with (
-            p1, p2, p3, p4,
+            p1,
+            p2,
+            p3,
+            p4,
             patch(
                 f"{PKG}._suggest_from_search",
                 wraps=connection_doctor._suggest_from_search,
@@ -343,9 +351,11 @@ class TestSearchBasedSuggestions:
         assert tv is not None and tv.path_from == "/media/tv/"
         assert movies is not None
         assert movies.path_from == "/media/movies/all/"
-        assert movies.path_to == str(
-            self.tmp / "media" / "all" / "Media" / "movies" / "all"
-        ) + "/"
+        assert (
+            movies.path_to
+            == str(self.tmp / "media" / "all" / "Media" / "movies" / "all")
+            + "/"
+        )
         # Second root resolved from the known alignment without a new search
         assert spy.call_count == 1
 
@@ -441,9 +451,12 @@ class TestSearchHelpers:
         assert result == ("/tv/", "/media/tv/")
 
     def test_align_suffix_identity_returns_none(self):
-        assert connection_doctor._align_suffix(
-            "/media/tv/Show X", "/media/tv/Show X"
-        ) is None
+        assert (
+            connection_doctor._align_suffix(
+                "/media/tv/Show X", "/media/tv/Show X"
+            )
+            is None
+        )
 
     def test_search_finds_deep_folder(self, tmp_path):
         target = tmp_path / "a" / "b" / "c" / "Needle (2020)"
@@ -583,3 +596,102 @@ class TestVisibleBases:
         )
         bases = connection_doctor._visible_bases(conn)
         assert "/nonexistent-target" in bases
+
+
+class TestReportsSurviveRestart:
+    """Reports are stored on disk: a restart must not lose them.
+
+    A container restart used to empty every connection chip and send the
+    user back to run the checks by hand.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.conn_id = _make_conn(f"Store-{uuid.uuid4().hex[:8]}")
+        self.tmp = tmp_path
+        connection_doctor._reports = None
+
+    @pytest.mark.asyncio
+    async def test_report_is_reloaded_after_a_restart(self):
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        p1, p2, p3, p4 = _patched([str(movies)])
+        with p1, p2, p3, p4:
+            await connection_doctor.run_doctor(self.conn_id)
+
+        # Simulate a restart: drop the in-memory cache entirely.
+        connection_doctor._reports = None
+        restored = connection_doctor.get_report(self.conn_id)
+        assert restored is not None
+        assert restored.connection_id == self.conn_id
+        assert restored.status == "healthy"
+        assert restored.probes, "probes must survive the round trip"
+
+    @pytest.mark.asyncio
+    async def test_forgetting_a_connection_persists(self):
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        p1, p2, p3, p4 = _patched([str(movies)])
+        with p1, p2, p3, p4:
+            await connection_doctor.run_doctor(self.conn_id)
+        connection_doctor.forget_report(self.conn_id)
+        connection_doctor._reports = None
+        assert connection_doctor.get_report(self.conn_id) is None
+
+    def test_a_damaged_store_file_is_not_fatal(self, tmp_path):
+        from core.diagnostics import store
+
+        with patch.object(
+            store, "_path", return_value=str(tmp_path / "x.json")
+        ):
+            (tmp_path / "x.json").write_text("{not json")
+            assert store.load() == {}
+
+
+class TestPermissionsPerFolder:
+    """Every accessible folder is write-tested, not only the first one.
+
+    A writable movies mount next to a read-only TV share must not report
+    as healthy.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.conn_id = _make_conn(f"Perm-{uuid.uuid4().hex[:8]}")
+        self.tmp = tmp_path
+
+    @pytest.mark.asyncio
+    async def test_readonly_second_folder_is_caught(self):
+        if os.name == "nt" or os.getuid() == 0:
+            pytest.skip("chmod-based denial needs a non-root POSIX user")
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        tv = self.tmp / "tv"
+        (tv / "Show A").mkdir(parents=True)
+        tv.chmod(0o555)
+        try:
+            p1, p2, p3, p4 = _patched([str(movies), str(tv)])
+            with p1, p2, p3, p4:
+                report = await connection_doctor.run_doctor(self.conn_id)
+        finally:
+            tv.chmod(0o755)
+
+        perms = [p for p in report.probes if p.kind == "permissions"]
+        assert len(perms) == 2, "one write test per accessible folder"
+        assert {p.status for p in perms} == {
+            ProbeStatus.OK,
+            ProbeStatus.ERROR,
+        }
+        assert report.status == "issues"
+        failed = next(p for p in perms if p.status == ProbeStatus.ERROR)
+        assert str(tv) in failed.name
+
+    @pytest.mark.asyncio
+    async def test_single_folder_keeps_the_plain_name(self):
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        p1, p2, p3, p4 = _patched([str(movies)])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(self.conn_id)
+        probe = _probe(report, "permissions")
+        assert probe.name == "Write permissions"

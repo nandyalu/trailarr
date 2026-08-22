@@ -28,7 +28,12 @@ _FUTURE = "9999999999"
 _PAST = "1000000000"
 
 
-def _cookie_line(domain=".youtube.com", expiry=_FUTURE, name="SECRET_NAME", value="SECRET_VALUE"):
+def _cookie_line(
+    domain=".youtube.com",
+    expiry=_FUTURE,
+    name="SECRET_NAME",
+    value="SECRET_VALUE",
+):
     return f"{domain}\tTRUE\t/\tTRUE\t{expiry}\t{name}\t{value}"
 
 
@@ -135,9 +140,7 @@ class TestCookiesCheckAndManager:
         content = "# Netscape HTTP Cookie File\n" + _cookie_line() + "\n"
         try:
             status = cookies.save(content)
-            saved = os.path.join(
-                app_settings.app_data_dir, "cookies.txt"
-            )
+            saved = os.path.join(app_settings.app_data_dir, "cookies.txt")
             assert os.path.isfile(saved)
             assert (os.stat(saved).st_mode & 0o777) == 0o600
             assert app_settings.yt_cookies_path == saved
@@ -187,8 +190,9 @@ class TestErrorClassification:
 
     def test_unknown_error_passes_through(self):
         assert classify_ytdlp_error("some brand new failure") is None
-        assert classified_error("some brand new failure") == (
-            "some brand new failure"
+        assert (
+            classified_error("some brand new failure")
+            == "some brand new failure"
         )
 
     def test_classified_error_keeps_raw_line(self):
@@ -221,3 +225,175 @@ class TestErrorClassification:
         )
         assert attempt.last_error is not None
         assert attempt.last_error.startswith("YouTube requires a sign-in")
+
+
+class TestChecksRunConcurrently:
+    """The checks run together: the slowest one sets the wait."""
+
+    @pytest.mark.asyncio
+    async def test_slow_checks_do_not_add_up(self):
+        async def _slow():
+            await asyncio.sleep(0.3)
+            return health.HealthCheckResult(
+                key="slow", name="Slow", status=ProbeStatus.OK, detail=""
+            )
+
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        with patch.object(health, "_CHECK_TIMEOUT_SECONDS", 5):
+            await asyncio.gather(
+                *(health._run_guarded(_slow) for _ in range(6))
+            )
+        elapsed = loop.time() - started
+        # Sequential would be ~1.8s; concurrent stays near one check.
+        assert elapsed < 1.0, f"checks did not overlap ({elapsed:.2f}s)"
+
+    @pytest.mark.asyncio
+    async def test_a_check_may_have_a_longer_timeout(self):
+        assert (
+            health._CHECK_TIMEOUT_OVERRIDES["connections"]
+            > health._CHECK_TIMEOUT_SECONDS
+        )
+
+
+class TestConnectionsCheckRunsTheDoctor:
+    """The Health page collects the data itself instead of asking."""
+
+    @pytest.mark.asyncio
+    async def test_no_stored_reports_triggers_a_doctor_run(self):
+        fake = [
+            type(
+                "R",
+                (),
+                {"status": "healthy", "connection_name": "Radarr"},
+            )()
+        ]
+        with (
+            patch.object(
+                health.connection_doctor, "get_all_reports", return_value=[]
+            ),
+            patch.object(
+                health, "_run_doctor_for_all", return_value=fake
+            ) as ran,
+        ):
+            result = await health._check_connections()
+        ran.assert_awaited()
+        assert result.status == ProbeStatus.OK
+
+    @pytest.mark.asyncio
+    async def test_no_connections_says_so_without_instructions(self):
+        with (
+            patch.object(
+                health.connection_doctor, "get_all_reports", return_value=[]
+            ),
+            patch.object(health, "_run_doctor_for_all", return_value=[]),
+        ):
+            result = await health._check_connections()
+        assert result.status == ProbeStatus.SKIPPED
+        assert "Add a Radarr" in result.detail
+        # It must not tell the user to go and run the checks by hand.
+        assert "run the checks" not in result.detail.lower()
+
+    @pytest.mark.asyncio
+    async def test_a_failing_doctor_does_not_break_the_check(self):
+        conns = [type("C", (), {"id": 1, "name": "Radarr"})()]
+        with (
+            patch.object(
+                health.connection_manager, "read_all", return_value=conns
+            ),
+            patch.object(
+                health.connection_doctor,
+                "run_doctor",
+                side_effect=RuntimeError("boom"),
+            ),
+        ):
+            assert await health._run_doctor_for_all() == []
+
+
+class TestDiskSpace:
+    """A full media disk is reported, not just the config volume."""
+
+    @pytest.mark.asyncio
+    async def test_low_media_space_warns(self, tmp_path):
+        media = tmp_path / "movies"
+        media.mkdir()
+
+        def _usage(path):
+            free = (
+                100 << 30
+                if str(path) == app_settings.app_data_dir
+                else 1 << 30
+            )
+            return (
+                os.terminal_size((0, 0))
+                and type("U", (), {"total": 0, "used": 0, "free": free})()
+            )
+
+        with (
+            patch.object(health, "_media_mounts", return_value=[str(media)]),
+            patch.object(health.shutil, "disk_usage", side_effect=_usage),
+        ):
+            result = await health._check_disk_space()
+        assert result.status == ProbeStatus.WARNING
+        assert str(media) in result.detail
+        assert "Free up space" in result.remediation
+
+    @pytest.mark.asyncio
+    async def test_healthy_when_everything_has_room(self, tmp_path):
+        media = tmp_path / "movies"
+        media.mkdir()
+        big = type("U", (), {"total": 0, "used": 0, "free": 500 << 30})()
+        with (
+            patch.object(health, "_media_mounts", return_value=[str(media)]),
+            patch.object(health.shutil, "disk_usage", return_value=big),
+        ):
+            result = await health._check_disk_space()
+        assert result.status == ProbeStatus.OK
+
+    def test_mounts_are_deduplicated_by_device(self, tmp_path):
+        """Two folders on one disk are reported once."""
+        a = tmp_path / "a"
+        b = tmp_path / "b"
+        a.mkdir()
+        b.mkdir()
+        media = [
+            type("M", (), {"folder_path": str(a)})(),
+            type("M", (), {"folder_path": str(b)})(),
+        ]
+        with (
+            patch.object(
+                health.connection_doctor, "get_all_reports", return_value=[]
+            ),
+            patch.object(
+                health.media_manager, "read_recent", return_value=media
+            ),
+            patch.object(health, "_config_device", return_value=None),
+        ):
+            mounts = health._media_mounts()
+        assert len(mounts) == 1
+
+
+class TestErrorSignatures:
+    """The failures users actually report are classified."""
+
+    @pytest.mark.parametrize(
+        "raw,expected_fragment",
+        [
+            (
+                "ERROR: nsig extraction failed: Some formats may be missing",
+                "player",
+            ),
+            ("WARNING: Signature extraction failed", "player"),
+            ("ERROR: Failed to extract any player response", "player"),
+            ("ERROR: [youtube] video is age-restricted", "age-restricted"),
+            ("ERROR: HTTP Error 410: Gone", "unavailable"),
+            ("ERROR: Sign in to confirm you're not a bot", "sign-in"),
+        ],
+    )
+    def test_known_failures_get_a_reason(self, raw, expected_fragment):
+        reason = classify_ytdlp_error(raw)
+        assert reason is not None, f"unclassified: {raw}"
+        assert expected_fragment in reason.lower()
+
+    def test_unknown_errors_pass_through(self):
+        assert classify_ytdlp_error("ERROR: something brand new") is None

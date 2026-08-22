@@ -23,12 +23,17 @@
 <hr />
 
 <p class="page-description">
-  Live checks of the pieces Trailarr depends on — FFmpeg, yt-dlp, your connections, folders, and disk space. Every red or yellow state
-  names its fix.
+  Live checks of the pieces Trailarr depends on — FFmpeg, yt-dlp, your connections, folders, and disk space. Every red or yellow state names
+  its fix.
 </p>
 
 @if (message(); as msg) {
-  <p class="health-message {{ msg.type }}">{{ msg.text }}</p>
+  <p class="health-message {{ msg.type }}">
+    {{ msg.text }}
+    @if (offerCookieTest() && !testRunning()) {
+      <button class="btn secondary message-action" (click)="testSavedCookies()">Test them now</button>
+    }
+  </p>
 }
 
 @if (report.isLoading() || running()) {

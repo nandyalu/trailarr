@@ -17,19 +17,51 @@ _SIGNATURES: list[tuple[tuple[str, ...], str]] = [
             "login required",
             "use --cookies",
         ),
-        "YouTube requires a sign-in for this download. Set up a cookies"
-        " file on Settings > Health.",
+        (
+            "YouTube requires a sign-in for this download. Set up a cookies"
+            " file on Settings > Health."
+        ),
     ),
     (
         ("http error 403", "http error 429", "too many requests"),
-        "YouTube is rate-limiting or blocking downloads from this"
-        " address. Wait a while, or set up a cookies file on"
-        " Settings > Health.",
+        (
+            "YouTube is rate-limiting or blocking downloads from this"
+            " address. Wait a while, or set up a cookies file on"
+            " Settings > Health."
+        ),
+    ),
+    (
+        (
+            "nsig extraction failed",
+            "signature extraction failed",
+            "unable to decode n-parameter",
+            "some formats may be missing",
+            "failed to extract any player response",
+        ),
+        (
+            "YouTube changed its player and this yt-dlp version cannot read"
+            " it. Update yt-dlp, and make sure a JavaScript runtime (Deno)"
+            " is available."
+        ),
     ),
     (
         ("requested format is not available",),
-        "No matching video format. This usually means yt-dlp has no"
-        " JavaScript runtime (Deno) or is outdated.",
+        (
+            "No matching video format. This usually means yt-dlp has no"
+            " JavaScript runtime (Deno) or is outdated."
+        ),
+    ),
+    (
+        (
+            "age-restricted",
+            "age restricted",
+            "inappropriate for some users",
+            "confirm your age",
+        ),
+        (
+            "The video is age-restricted. Set up a cookies file on"
+            " Settings > Health to download it."
+        ),
     ),
     (
         (
@@ -37,15 +69,25 @@ _SIGNATURES: list[tuple[tuple[str, ...], str]] = [
             "this video is not available",
             "private video",
             "video has been removed",
+            "http error 410",
+            "removed by the uploader",
         ),
-        "The video is unavailable (removed, private, or region-locked)."
-        " A search will pick a different video on the next run.",
+        (
+            "The video is unavailable (removed, private, or region-locked)."
+            " A search will pick a different video on the next run."
+        ),
     ),
     (
-        ("unable to download webpage", "network is unreachable",
-         "temporary failure in name resolution", "connection refused"),
-        "Trailarr could not reach YouTube. Check the network and DNS of"
-        " the container.",
+        (
+            "unable to download webpage",
+            "network is unreachable",
+            "temporary failure in name resolution",
+            "connection refused",
+        ),
+        (
+            "Trailarr could not reach YouTube. Check the network and DNS of"
+            " the container."
+        ),
     ),
 ]
 
@@ -77,10 +119,6 @@ def classified_error(error_text: str) -> str:
     reason = classify_ytdlp_error(error_text)
     if reason is None:
         return error_text
-    lines = [
-        line.strip()
-        for line in error_text.splitlines()
-        if line.strip()
-    ]
+    lines = [line.strip() for line in error_text.splitlines() if line.strip()]
     raw = lines[-1] if lines else ""
     return f"{reason} [{raw}]" if raw else reason

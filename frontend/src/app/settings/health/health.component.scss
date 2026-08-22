@@ -99,8 +99,17 @@
 }
 
 .health-message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.625rem;
+
+  .message-action {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+  }
 
   &.success {
     background-color: color-mix(in srgb, var(--color-success) 12%, transparent);

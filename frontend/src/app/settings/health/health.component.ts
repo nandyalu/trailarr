@@ -23,6 +23,9 @@ export class HealthComponent {
   protected readonly cookiesBusy = signal<boolean>(false);
   protected readonly message = signal<{type: 'success' | 'error'; text: string} | null>(null);
   protected readonly cookiesText = signal<string>('');
+  /** Shown after saving cookies: the next question is always "did that
+   * work?", so the answer is one click away instead of a hunt. */
+  protected readonly offerCookieTest = signal<boolean>(false);
 
   private readonly ytdlpConfirmDialog = viewChild.required<ElementRef<HTMLDialogElement>>('ytdlpConfirmDialog');
 
@@ -49,14 +52,25 @@ export class HealthComponent {
     this.ytdlpConfirmDialog().nativeElement.close();
   }
 
+  /** Run the test straight from the "Cookies saved" message. The click
+   * is the confirmation, so it does not ask twice. */
+  protected async testSavedCookies(): Promise<void> {
+    this.offerCookieTest.set(false);
+    await this.runYtdlpTest();
+  }
+
   protected async runYtdlpTest(): Promise<void> {
     this.closeYtdlpConfirm();
     if (this.testRunning()) return;
     this.testRunning.set(true);
     this.message.set(null);
     try {
-      await firstValueFrom(this.healthService.runYtdlpTest(true));
+      const result = await firstValueFrom(this.healthService.runYtdlpTest(true));
       this.report.reload();
+      this.message.set({
+        type: result.status === 'ok' ? 'success' : 'error',
+        text: result.status === 'ok' ? 'YouTube test passed. ' + result.detail : 'YouTube test failed. ' + result.detail,
+      });
     } catch (error) {
       this.message.set({type: 'error', text: 'The YouTube test failed to run. ' + (error as Error).message});
     } finally {
@@ -84,6 +98,7 @@ export class HealthComponent {
       this.cookiesText.set('');
       this.cookiesResourcesReload();
       this.message.set({type: 'success', text: 'Cookies saved. yt-dlp uses them on the next download.'});
+      this.offerCookieTest.set(true);
     } catch (error) {
       const detail = (error as {error?: {detail?: string}})?.error?.detail ?? (error as Error).message;
       this.message.set({type: 'error', text: 'Could not save the cookies. ' + detail});
@@ -99,6 +114,7 @@ export class HealthComponent {
     try {
       await firstValueFrom(this.healthService.deleteCookies());
       this.cookiesResourcesReload();
+      this.offerCookieTest.set(false);
       this.message.set({type: 'success', text: 'Cookies removed.'});
     } catch (error) {
       this.message.set({type: 'error', text: 'Could not remove the cookies. ' + (error as Error).message});

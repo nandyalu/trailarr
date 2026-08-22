@@ -17,6 +17,11 @@ from core.diagnostics.models import DoctorReport, SuggestedMapping
 from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
 from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
+# Strong references to running background tasks. The event loop only
+# keeps a weak reference, so a task without one can be garbage
+# collected mid-run and the check would silently never finish.
+_background_tasks: set[asyncio.Task] = set()
+
 
 def _schedule_doctor(connection_id: int) -> None:
     """Run the Connection Doctor in the background after a save.
@@ -33,7 +38,24 @@ def _schedule_doctor(connection_id: int) -> None:
                 f"Doctor run failed for connection {connection_id}: {e}"
             )
 
-    asyncio.create_task(_run())
+    task = asyncio.create_task(_run())
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+
+
+def _schedule_refresh(connection_id: int) -> None:
+    """Sync a connection after its path mapping is fixed.
+
+    `api_refresh_by_id_job` only registers the task with the scheduler
+    and returns at once, so this does not hold up the response.
+    """
+    try:
+        api_refresh_by_id_job(connection_id)
+    except Exception as e:
+        connection_doctor.logger.error(
+            "Refresh after a mapping fix failed for connection"
+            f" {connection_id}: {e}"
+        )
 
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
@@ -47,6 +69,28 @@ async def get_doctor_reports() -> list[DoctorReport]:
     connection is saved or a check is run.
     """
     return connection_doctor.get_all_reports()
+
+
+@connections_router.post("/doctor/run-all")
+async def run_all_connection_doctors() -> list[DoctorReport]:
+    """Run the Connection Doctor for every connection, all at once.
+
+    Saves the user from opening one dialog per connection.
+    """
+    connections = connection_manager.read_all()
+    results = await asyncio.gather(
+        *(connection_doctor.run_doctor(c.id) for c in connections),
+        return_exceptions=True,
+    )
+    reports: list[DoctorReport] = []
+    for connection, result in zip(connections, results):
+        if isinstance(result, BaseException):
+            connection_doctor.logger.error(
+                f"Doctor failed for '{connection.name}': {result}"
+            )
+            continue
+        reports.append(result)
+    return reports
 
 
 @connections_router.post(
@@ -80,16 +124,24 @@ async def run_connection_doctor(connection_id: int) -> DoctorReport:
 async def apply_doctor_mapping(
     connection_id: int, mapping: SuggestedMapping
 ) -> DoctorReport:
-    """Apply a suggested path mapping, then re-run the check.
+    """Apply a suggested path mapping, re-check, and refresh the library.
 
     Creates the PathMapping row on the connection (or updates the row
     with the same `path_from`) and returns the fresh report.
+
+    A correct mapping is only half the fix: until the next sync runs,
+    the media still points at paths Trailarr cannot see. The refresh
+    starts right away, so the library fills in instead of staying
+    broken until the next scheduled sync.
     """
     try:
         connection_manager.add_path_mapping(
             connection_id, mapping.path_from, mapping.path_to
         )
-        return await connection_doctor.run_doctor(connection_id)
+        report = await connection_doctor.run_doctor(connection_id)
+        if report.status == "healthy":
+            _schedule_refresh(connection_id)
+        return report
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)

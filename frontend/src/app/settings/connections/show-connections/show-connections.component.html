@@ -9,6 +9,21 @@
       />
     </svg>
   </button>
+  @if ((connections?.length ?? 0) > 0) {
+    <button
+      class="btn secondary"
+      (click)="checkAllConnections()"
+      [disabled]="checkingAll()"
+      title="Run the Connection Doctor for every connection"
+    >
+      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+          d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-84q104-33 172-132t68-220v-189l-240-90-240 90v189q0 121 68 220t172 132Z"
+        />
+      </svg>
+      <span>{{ checkingAll() ? 'Checking…' : 'Check all' }}</span>
+    </button>
+  }
   <button class="btn primary" (click)="addTypeDialog.showModal()">
     <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
