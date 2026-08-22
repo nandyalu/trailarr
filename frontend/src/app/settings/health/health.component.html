@@ -1,0 +1,135 @@
+<div class="title-block">
+  <h2>Health</h2>
+  <button
+    class="icononly-button"
+    [class.loading]="report.isLoading() || running()"
+    title="Refresh"
+    (click)="report.reload(); cookiesStatus.reload()"
+  >
+    <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+      />
+    </svg>
+  </button>
+  <button class="btn primary" (click)="runChecks()" [disabled]="running()">
+    <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path d="M320-200v-560l440 280-440 280Z" />
+    </svg>
+    <span>{{ running() ? 'Checking…' : 'Run checks' }}</span>
+  </button>
+</div>
+
+<hr />
+
+<p class="page-description">
+  Live checks of the pieces Trailarr depends on — FFmpeg, yt-dlp, your connections, folders, and disk space. Every red or yellow state names
+  its fix.
+</p>
+
+@if (message(); as msg) {
+  <p class="health-message {{ msg.type }}">
+    {{ msg.text }}
+    @if (offerCookieTest() && !testRunning()) {
+      <button class="btn secondary message-action" (click)="testSavedCookies()">Test them now</button>
+    }
+  </p>
+}
+
+@if (report.isLoading() || running()) {
+  <app-load-indicator class="center" />
+} @else if (report.value(); as healthReport) {
+  <p class="health-summary">
+    Last checked {{ healthReport.checked_at | date: 'medium' }} — overall:
+    <strong class="overall-{{ healthReport.status }}">{{ healthReport.status === 'healthy' ? 'Healthy' : 'Issues found' }}</strong>
+  </p>
+  <div class="check-list">
+    @for (check of healthReport.checks; track check.key) {
+      <div class="check-item check-{{ check.status }}">
+        <span class="check-icon" aria-hidden="true">{{ statusIcon(check.status) }}</span>
+        <div class="check-body">
+          <p class="check-name">{{ check.name }}</p>
+          <p class="check-detail">{{ check.detail }}</p>
+          @if (check.remediation) {
+            <p class="check-remediation">
+              {{ check.remediation }}
+              @if (check.docs_url) {
+                <a [href]="check.docs_url" target="_blank" rel="noopener">Learn more</a>
+              }
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="health-summary">No report yet. Click <strong>Run checks</strong> above.</p>
+}
+
+<!-- yt-dlp live test -->
+<div class="card health-card">
+  <div class="card-header">
+    <h3>YouTube download test</h3>
+  </div>
+  <div class="card-body">
+    <p>
+      Tests that yt-dlp can read a video from YouTube with your current setup (including cookies, when set up). The result is kept for 24
+      hours and shown with the checks above.
+    </p>
+    <button class="btn secondary" (click)="openYtdlpConfirm()" [disabled]="testRunning()">
+      {{ testRunning() ? 'Testing…' : 'Test YouTube download' }}
+    </button>
+  </div>
+</div>
+
+<!-- Cookies -->
+<div class="card health-card">
+  <div class="card-header">
+    <h3>YouTube cookies</h3>
+  </div>
+  <div class="card-body">
+    @if (cookiesStatus.value(); as cookies) {
+      <p class="cookies-status">{{ cookies.detail }}</p>
+    }
+    <p>
+      Cookies are needed only when downloads fail with a sign-in or bot check. Export cookies from your browser while signed in to
+      youtube.com (with an extension like "Get cookies.txt"), then upload or paste the file here. Trailarr stores it in the config folder,
+      readable only by the Trailarr user, and never shows its content again.
+    </p>
+    <div class="cookies-actions">
+      <label class="btn secondary cookies-file-label">
+        Choose cookies.txt
+        <input type="file" accept=".txt,text/plain" (change)="onCookiesFile($event)" hidden />
+      </label>
+      @if (cookiesStatus.value()?.configured) {
+        <button class="btn danger" (click)="deleteCookies()" [disabled]="cookiesBusy()">Remove cookies</button>
+      }
+    </div>
+    <textarea
+      class="cookies-textarea"
+      rows="6"
+      placeholder="…or paste the content of cookies.txt here"
+      [value]="cookiesText()"
+      (input)="cookiesText.set($any($event.target).value)"
+    ></textarea>
+    <button class="btn primary" (click)="saveCookies()" [disabled]="cookiesBusy() || !cookiesText().trim()">
+      {{ cookiesBusy() ? 'Saving…' : 'Save cookies' }}
+    </button>
+  </div>
+</div>
+
+<!-- yt-dlp test confirmation (B3: it contacts YouTube once) -->
+<dialog #ytdlpConfirmDialog (click)="closeYtdlpConfirm()" (cancel)="$event.preventDefault(); closeYtdlpConfirm()">
+  <div class="app-dialog-container" (click)="$event.stopPropagation()">
+    <div class="app-dialog-header">
+      <h2 class="app-dialog-title">Test YouTube download?</h2>
+    </div>
+    <div class="app-dialog-body">
+      <p>This contacts YouTube once to read a known test video. Nothing is downloaded.</p>
+    </div>
+    <div class="app-dialog-footer">
+      <button class="btn tertiary" (click)="closeYtdlpConfirm()">Cancel</button>
+      <button class="btn primary" (click)="runYtdlpTest()">Run test</button>
+    </div>
+  </div>
+</dialog>

@@ -13,6 +13,7 @@ export const RouteSeries = 'series';
 export const RouteSettings = 'settings';
 export const RouteTasks = 'tasks';
 export const RouteGeneral = 'general';
+export const RouteHealth = 'health';
 
 export const RoutePlex = 'plex';
 

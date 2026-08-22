@@ -1,8 +1,64 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** not started · **Releases:** incremental — Milestones A+B target v0.11.3–v0.12.x
-(Sep–Oct 2026), C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:**
-nothing hard; C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+**Status:** Milestones A+B IMPLEMENTED — on branch `feat/connection-doctor`
+(Aug 14, 2026), target v0.11.4; C–D not started · **Releases:** incremental —
+C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
+C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+
+**Milestone A execution notes (Aug 14, 2026):**
+
+- Code lives in `core/diagnostics/` per the pitfalls rule; add to the phase-07 move map
+  (`services/diagnostics/`).
+- Reports are in-memory only (no DB table): a check re-runs in well under a second, and
+  chips show `NOT CHECKED` after a restart until a save or a manual run.
+- A1 interpretation: suggestions are made per root and verified against media samples;
+  a suggestion corroborated only by the folder-name match IS still offered, but labeled
+  "based on the folder name only — check before you apply" (a hard 2-sample minimum
+  would leave the common fresh-install single-root case with no suggestion at all).
+- Suggester bases: `/` top level (system dirs excluded) plus one level below each, plus
+  existing PathMapping targets — which is how deep bases (e.g. `/mnt/user/media`) are
+  found when any mapping already exists.
+- Suggester stage 1 (added after real-library testing, Aug 15): search the disk for a
+  tracked media folder BY NAME (BFS, depth ≤4, 25k-entry budget, likely mounts first)
+  and derive the mapping by longest-common-suffix alignment of the remote and found
+  paths. Fixes two failures of the shallow heuristic on the maintainer's machine: a
+  library 3 levels deep got no suggestion at all, and a folder-name coincidence
+  (`/media/movies/all` tail-matching a dir named `all`) produced a wrong one. Spread
+  media sampling doubles as union-mount disambiguation: a candidate on one physical
+  drive fails some samples while the union mount passes all. Sibling roots reuse the
+  first derived mapping without re-searching. The tail heuristic remains as the
+  fallback for fresh connections with no synced media.
+- Suggestions are ROOT-SCOPED (maintainer decision, Aug 15): `path_from` is always the
+  root folder exactly as the application reports it, never a shared shallower prefix —
+  path mappings correspond 1:1 with root folders (Plex `plex_section_key` and the
+  library-root guard key on them). The shallower alignment stays internal for sibling-
+  root reuse. When the root already has a mapping, the suggestion carries
+  `updates_existing=True`, the wording says "change to the existing mapping", the UI
+  button says "Update mapping", and applying updates that row's target
+  (`add_path_mapping` upserts by `path_from`) — no duplicates.
+- Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
+  end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
+  elsewhere) got a one-click Apply that flipped the chip to HEALTHY.
+
+**Milestone B execution notes (Aug 14, 2026):**
+
+- Framework in `core/diagnostics/health.py`: every check async with a 10s hard timeout
+  (B4); on-demand only, never at startup (B1); report cached 24h in memory.
+- Checks: ffmpeg, hardware (surfaces `gpu_available_*`/`gpu_enabled_*`), yt-dlp version
+  + channel + update flag, app version, cookies file validity, Connection Doctor
+  summary, image-cache writability, disk space (config + sample media mount).
+- Cookies UI rides the existing `yt_cookies_path` mechanism (per the VERIFY note — no
+  parallel path): upload/paste stores `APP_DATA_DIR/cookies.txt` mode 600 and sets the
+  setting; status endpoints never return content (B2, tested); delete removes only the
+  Trailarr-managed file, never a user-provided path.
+- yt-dlp live test: `--simulate` on yt-dlp's canonical test video, user-confirmed (B3),
+  result cached 24h and merged into the report.
+- Classified download errors: `core/download/error_classify.py` signatures (sign-in/
+  bot-check, 403/429, format-unavailable → JS runtime, video-unavailable, network);
+  applied where `DownloadAttempt.last_error` is stored — reason first, raw line in
+  brackets. FAQ/docs wording matches (`docs/user-guide/settings/health.md`).
+- The plan's "update channel" for yt-dlp reports the existing `ytdlp_nightly` setting;
+  switching channels from the UI is NOT included (deliberate scope cut).
 
 ## Objective
 
