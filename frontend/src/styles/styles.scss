@@ -601,6 +601,13 @@ button > svg {
 }
 
 /* Dialog with Animations */
+/* A transition uses the `transition-property` of the state it moves TO.
+   The closed state below therefore controls the CLOSE animation, and it
+   transitions `display` so the dialog stays visible while it fades out.
+   `dialog[open]` controls the OPEN animation and must NOT transition
+   `display` — see the comment there. Issue #653.
+   NOTE: `transition-property` takes a COMMA-separated list. Spaces make the
+   declaration invalid and it silently falls back to `all`. */
 dialog {
   display: none;
   padding: 0;
@@ -609,7 +616,7 @@ dialog {
   margin: auto;
   border-radius: 1rem;
   translate: 0 25vh;
-  transition-property: overlay display opacity translate;
+  transition-property: opacity, translate, overlay, display;
   transition-duration: 0.45s;
   transition-behavior: allow-discrete;
 }
@@ -617,6 +624,12 @@ dialog {
 dialog[open] {
   display: flex;
   flex-direction: column;
+
+  /* `display` is deliberately absent: it must apply the moment the dialog
+     opens, not through a discrete transition. If an engine reveals a
+     discrete `display` late (or not at all), the backdrop paints and the
+     dialog stays hidden -- a grey page with no modal. Issue #653. */
+  transition-property: opacity, translate;
   opacity: 1;
   translate: 0 0;
   background-color: var(--color-surface-container);
@@ -638,7 +651,7 @@ dialog.error[open] {
 
 dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
-  transition-property: display opacity overlay;
+  transition-property: opacity, overlay, display;
   transition-duration: 0.45s;
   transition-behavior: allow-discrete;
   opacity: 0;
