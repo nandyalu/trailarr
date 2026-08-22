@@ -20,6 +20,7 @@ If you are stuck or unsure about something, ask on our [Discord Server](https://
 - Add a release-notes entry and update the documentation pages your change affects, in the same pull request.
 - Do not change version numbers. A GitHub action does that when the release pull request opens.
 - Using an AI assistant is fine. Read and test everything you submit, keep the diff to your actual change, and say in the pull request that you used one. See [Using AI tools](https://nandyalu.github.io/trailarr/references/contributing/#using-ai-tools).
+- By submitting a pull request, you agree to license your contribution under the GPL-3.0, and you confirm that you hold the rights to do so.
 
 ## Code of Conduct
 
@@ -27,4 +28,4 @@ This project and everyone participating in it is governed by the [Code of Conduc
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file).
+By submitting a pull request, you agree to license your contribution under the [GNU General Public License v3.0 (GPL-3.0)](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file). You confirm that you hold the necessary rights to grant this license.

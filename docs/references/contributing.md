@@ -166,6 +166,7 @@ AI assistants are welcome here. Many good contributions to this project were wri
 - Tell us that you used an AI tool, and which one. This is not a problem, and it helps a reviewer know where to look closely.
 - Write the description yourself, in your own words. Explain the problem, and how you tested the fix. A description that lists what an AI did is not useful to a reviewer.
 - Do not paste an AI report of a test run as evidence. Give the numbers you saw.
+- The [License](#license) confirmation applies to code an AI tool wrote for you: you submit it, so you confirm that you hold the rights to license it under the GPL-3.0.
 
 **What we do not accept:**
 
@@ -285,4 +286,4 @@ It took me a while to figure out how to set it up inside devcontainer, so I thou
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its [GPL-3.0 license](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file).
+By submitting a pull request, you agree to license your contribution under the [GNU General Public License v3.0 (GPL-3.0)](https://github.com/nandyalu/trailarr?tab=GPL-3.0-1-ov-file). You confirm that you hold the necessary rights to grant this license.
