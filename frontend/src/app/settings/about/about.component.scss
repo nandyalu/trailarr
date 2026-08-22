@@ -202,3 +202,37 @@ svg {
     width: 0%;
   }
 }
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.about-footer {
+  margin: 0.5rem 0 1.5rem;
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem;
+
+  p {
+    margin: 0.25rem 0;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .love-heart {
+    // The heart keeps its own color in both themes, so it is set directly
+    // instead of using a surface token.
+    color: #e0245e;
+    font-style: normal;
+  }
+
+  .copyright {
+    font-size: 0.8125rem;
+  }
+}
