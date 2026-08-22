@@ -17,6 +17,8 @@ export class AboutComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
 
   protected readonly settingsSignal = this.settingsService.settings;
+  /** End of the copyright range, so it does not go stale every January. */
+  protected readonly currentYear = new Date().getFullYear();
   serverStats = signal<ServerStats>({
     movies_count: 0,
     movies_monitored: 0,
