@@ -32,6 +32,8 @@ export class ShowConnectionsComponent {
   protected readonly doctorDialogReport = signal<DoctorReport | null>(null);
   protected readonly doctorRunning = signal<boolean>(false);
   protected readonly doctorError = signal<string>('');
+  /** True while "Check all" runs the doctor for every connection. */
+  protected readonly checkingAll = signal<boolean>(false);
 
   protected readonly reportsById = computed(() => {
     const map = new Map<number, DoctorReport>();
@@ -47,6 +49,29 @@ export class ShowConnectionsComponent {
       return {label: 'NOT CHECKED', state: 'unknown'};
     }
     return report.status === 'healthy' ? {label: 'HEALTHY', state: 'healthy'} : {label: 'ISSUES FOUND', state: 'issues'};
+  }
+
+  /** Run the doctor for every connection — one click, not one dialog each. */
+  protected async checkAllConnections(): Promise<void> {
+    if (this.checkingAll()) return;
+    this.checkingAll.set(true);
+    this.resultMessage.set('');
+    try {
+      const reports = await firstValueFrom(this.connectionService.runAllDoctors());
+      this.doctorReports.reload();
+      const issues = reports.filter((r) => r.status !== 'healthy').length;
+      this.resultMessage.set(
+        issues === 0
+          ? `Checked ${reports.length} connection(s) — all healthy.`
+          : `Checked ${reports.length} connection(s) — ${issues} with issues. Open the chip to see the fix.`,
+      );
+      this.resultType.set(issues === 0 ? 'success' : 'error');
+    } catch (error) {
+      this.resultMessage.set('Could not run the checks. ' + ((error as Error).message ?? ''));
+      this.resultType.set('error');
+    } finally {
+      this.checkingAll.set(false);
+    }
   }
 
   protected async openDoctorDialog(connectionId: number, event: Event): Promise<void> {

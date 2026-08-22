@@ -2,9 +2,11 @@
 
 A small checks framework: every check is an async function with a hard
 per-check timeout, so one hung mount or one offline service can never
-hang the page or crash the app (wargame B4). Checks run only on demand
-from the Health page — never at startup (B1) — and the last report is
-cached in memory for a day, so the page always has something to show.
+hang the page or crash the app (wargame B4). The checks run together,
+not one after the other, so the slowest check sets the wait, not the
+sum of them. Checks run only on demand from the Health page — never at
+startup (B1) — and the last report is cached in memory for a day, so
+the page always has something to show.
 
 The yt-dlp live test is NOT part of the normal run: it contacts YouTube,
 so it runs only when the user asks (B3), and its result is cached for
@@ -21,6 +23,7 @@ from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.media as media_manager
 from core.diagnostics import connection_doctor
 from core.diagnostics.models import (
@@ -38,7 +41,16 @@ DOCS_HW_ACCEL = (
 DOCS_COOKIES = DOCS_BASE + "user-guide/settings/health/"
 DOCS_CONNECTIONS = DOCS_BASE + "user-guide/settings/connections/"
 
+# Free-space thresholds. Trailers are small, but a disk this low is
+# about to fail a download with an error that does not mention space.
+_CONFIG_LOW_SPACE = 1 << 30  # 1 GiB
+_MEDIA_LOW_SPACE = 5 << 30  # 5 GiB
+_MAX_MEDIA_MOUNTS = 5
+
 _CHECK_TIMEOUT_SECONDS = 10
+# The connections check runs the Connection Doctor when no report is
+# stored, and that talks to Radarr/Sonarr/Plex over the network.
+_CHECK_TIMEOUT_OVERRIDES = {"connections": 30}
 _REPORT_TTL = timedelta(hours=24)
 _YTDLP_TEST_TTL = timedelta(hours=24)
 
@@ -72,8 +84,11 @@ async def run_health_checks() -> HealthReport:
         _check_images,
         _check_disk_space,
     ]
-    for check in checks:
-        report.checks.append(await _run_guarded(check))
+    # Run every check at once: a hung mount costs its own timeout, not
+    # everyone else's wait as well.
+    report.checks.extend(
+        await asyncio.gather(*(_run_guarded(check) for check in checks))
+    )
     if _ytdlp_test_result is not None:
         report.checks.append(_ytdlp_test_result)
     report.finalize()
@@ -85,18 +100,17 @@ async def run_health_checks() -> HealthReport:
 async def _run_guarded(check) -> HealthCheckResult:
     """Run one check with a hard timeout; a broken check reports itself."""
     key = check.__name__.replace("_check_", "")
+    timeout = _CHECK_TIMEOUT_OVERRIDES.get(key, _CHECK_TIMEOUT_SECONDS)
     try:
-        return await asyncio.wait_for(
-            check(), timeout=_CHECK_TIMEOUT_SECONDS
-        )
+        return await asyncio.wait_for(check(), timeout=timeout)
     except asyncio.TimeoutError:
         return HealthCheckResult(
             key=key,
             name=key.replace("_", " ").title(),
             status=ProbeStatus.ERROR,
             detail=(
-                f"The check did not finish in {_CHECK_TIMEOUT_SECONDS}"
-                " seconds. A mount or a service may be hanging."
+                f"The check did not finish in {timeout} seconds."
+                " A mount or a service may be hanging."
             ),
         )
     except Exception as e:
@@ -160,8 +174,16 @@ async def _check_ffmpeg() -> HealthCheckResult:
 async def _check_hardware() -> HealthCheckResult:
     """Surface the GPU detection that is otherwise invisible."""
     vendors = [
-        ("NVIDIA", app_settings.gpu_available_nvidia, app_settings.gpu_enabled_nvidia),
-        ("Intel", app_settings.gpu_available_intel, app_settings.gpu_enabled_intel),
+        (
+            "NVIDIA",
+            app_settings.gpu_available_nvidia,
+            app_settings.gpu_enabled_nvidia,
+        ),
+        (
+            "Intel",
+            app_settings.gpu_available_intel,
+            app_settings.gpu_enabled_intel,
+        ),
         ("AMD", app_settings.gpu_available_amd, app_settings.gpu_enabled_amd),
     ]
     found = [
@@ -297,13 +319,8 @@ async def _check_cookies() -> HealthCheckResult:
             key="cookies",
             name="YouTube cookies",
             status=ProbeStatus.WARNING,
-            detail=(
-                f"{expired} of {youtube} youtube.com cookies are"
-                " expired."
-            ),
-            remediation=(
-                "Export a fresh cookies file and upload it again."
-            ),
+            detail=f"{expired} of {youtube} youtube.com cookies are expired.",
+            remediation="Export a fresh cookies file and upload it again.",
             docs_url=DOCS_COOKIES,
         )
     return HealthCheckResult(
@@ -315,16 +332,47 @@ async def _check_cookies() -> HealthCheckResult:
     )
 
 
+async def _run_doctor_for_all() -> list:
+    """Run the Connection Doctor for every connection, all at once.
+
+    Used when no report is stored yet (a fresh install, or the first
+    Health page visit). A connection that fails to check is skipped:
+    the health check reports on what it could get.
+    """
+    try:
+        connections = connection_manager.read_all()
+    except Exception as e:
+        logger.error(f"Could not read the connections: {e}")
+        return []
+    if not connections:
+        return []
+    results = await asyncio.gather(
+        *(connection_doctor.run_doctor(c.id) for c in connections),
+        return_exceptions=True,
+    )
+    reports = []
+    for connection, result in zip(connections, results):
+        if isinstance(result, BaseException):
+            logger.error(f"Doctor failed for '{connection.name}': {result}")
+            continue
+        reports.append(result)
+    return reports
+
+
 async def _check_connections() -> HealthCheckResult:
     reports = connection_doctor.get_all_reports()
+    if not reports:
+        # Never tell the user to go and collect this themselves -- the
+        # doctor is one call away, so run it for every connection.
+        reports = await _run_doctor_for_all()
     if not reports:
         return HealthCheckResult(
             key="connections",
             name="Connections",
             status=ProbeStatus.SKIPPED,
             detail=(
-                "No Connection Doctor reports yet. Open the Connections"
-                " page and run the checks."
+                "No connections are set up yet. Add a Radarr, Sonarr,"
+                " or Plex connection to start."
             ),
             docs_url=DOCS_CONNECTIONS,
         )
@@ -401,45 +449,113 @@ def _format_size(size: float) -> str:
 
 
 async def _check_disk_space() -> HealthCheckResult:
+    """Free space on the config volume and on every media mount.
+
+    A full media disk is the painful one: downloads fail with a raw
+    FFmpeg or yt-dlp error and nothing says the disk is full. Each
+    distinct mount is reported once, and a low one is a warning.
+    """
     parts: list[str] = []
     status = ProbeStatus.OK
-    remediation = ""
-    usage = shutil.disk_usage(app_settings.app_data_dir)
-    parts.append(f"Config: {_format_size(usage.free)} free")
-    if usage.free < 1 << 30:  # 1 GiB
-        status = ProbeStatus.WARNING
-        remediation = (
-            "The config volume is nearly full. The database and logs"
-            " need free space to work."
-        )
-    media_folder = _sample_media_folder()
-    if media_folder:
-        try:
-            musage = shutil.disk_usage(media_folder)
-            parts.append(
-                f"media ('{media_folder}'):"
-                f" {_format_size(musage.free)} free"
+    remediations: list[str] = []
+
+    try:
+        usage = shutil.disk_usage(app_settings.app_data_dir)
+        parts.append(f"Config: {_format_size(usage.free)} free")
+        if usage.free < _CONFIG_LOW_SPACE:
+            status = ProbeStatus.WARNING
+            remediations.append(
+                "The config volume is nearly full. The database and"
+                " logs need free space to work."
             )
+    except OSError as e:
+        status = ProbeStatus.WARNING
+        parts.append(f"Config: cannot be read ({e})")
+
+    low_mounts: list[str] = []
+    for folder in _media_mounts():
+        try:
+            usage = shutil.disk_usage(folder)
         except OSError:
-            parts.append(f"media ('{media_folder}'): not reachable")
+            parts.append(f"'{folder}': not reachable")
+            status = ProbeStatus.WARNING
+            remediations.append(
+                f"The storage behind '{folder}' does not answer. Check"
+                " the mount."
+            )
+            continue
+        parts.append(f"'{folder}': {_format_size(usage.free)} free")
+        if usage.free < _MEDIA_LOW_SPACE:
+            low_mounts.append(folder)
+    if low_mounts:
+        status = ProbeStatus.WARNING
+        remediations.append(
+            "Free up space on "
+            + ", ".join(f"'{m}'" for m in low_mounts)
+            + ". Trailers cannot be saved on a full disk."
+        )
+
     return HealthCheckResult(
         key="disk_space",
         name="Disk space",
         status=status,
-        detail=". ".join(parts) + ".",
-        remediation=remediation,
+        detail=". ".join(parts) + "." if parts else "No storage to check.",
+        remediation=" ".join(remediations),
     )
 
 
-def _sample_media_folder() -> str | None:
-    """First existing media folder, for a media-mount disk report."""
+def _config_device() -> int | None:
+    """Device id of the config volume, or None when it cannot be read."""
     try:
-        for media in media_manager.read_recent(limit=25):
-            if media.folder_path and os.path.isdir(media.folder_path):
-                return media.folder_path
-    except Exception:
+        return os.stat(app_settings.app_data_dir).st_dev
+    except OSError:
         return None
-    return None
+
+
+def _media_mounts() -> list[str]:
+    """One existing folder per distinct media mount.
+
+    Media libraries are commonly split over several disks (movies on
+    one, TV on another). Reporting only the first one hides a full
+    second disk, so every distinct device gets its own entry. Folders
+    checked by the Connection Doctor come first, because those are the
+    library roots; recent media folders fill in the rest.
+    """
+    candidates: list[str] = []
+    for report in connection_doctor.get_all_reports():
+        for probe in report.probes:
+            if probe.kind != "permissions":
+                continue
+            # "Write permissions: /media/movies" names the folder
+            _, _, folder = probe.name.partition(": ")
+            if folder:
+                candidates.append(folder)
+    try:
+        for media in media_manager.read_recent(limit=50):
+            if media.folder_path:
+                candidates.append(media.folder_path)
+    except Exception:
+        pass
+
+    mounts: list[str] = []
+    seen_devices: set[int] = set()
+    for folder in candidates:
+        if not folder or not os.path.isdir(folder):
+            continue
+        try:
+            device = os.stat(folder).st_dev
+        except OSError:
+            continue
+        if device in seen_devices:
+            continue
+        # The config volume is reported separately.
+        if device == _config_device():
+            continue
+        seen_devices.add(device)
+        mounts.append(folder)
+        if len(mounts) >= _MAX_MEDIA_MOUNTS:
+            break
+    return mounts
 
 
 # ---------------------------------------------------------------------------
@@ -474,18 +590,15 @@ async def run_ytdlp_test() -> HealthCheckResult:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
-        output, _ = await asyncio.wait_for(
-            process.communicate(), timeout=60
-        )
+        output, _ = await asyncio.wait_for(process.communicate(), timeout=60)
         code = process.returncode or 0
         text = output.decode(errors="replace").strip()
     except asyncio.TimeoutError:
         process.kill()
+        await process.wait()  # reap it, do not leave a zombie behind
         code, text = 1, "The test did not finish in 60 seconds."
     except FileNotFoundError:
-        code, text = 1, (
-            f"yt-dlp was not found at '{app_settings.ytdlp_path}'."
-        )
+        code, text = 1, f"yt-dlp was not found at '{app_settings.ytdlp_path}'."
     if code == 0:
         result = HealthCheckResult(
             key="ytdlp_test",
@@ -518,7 +631,7 @@ def _refresh_report_test_entry(result: HealthCheckResult) -> None:
     """Reflect the newest live-test result in the cached report."""
     if _report is None:
         return
-    _report.checks = [
-        c for c in _report.checks if c.key != "ytdlp_test"
-    ] + [result]
+    _report.checks = [c for c in _report.checks if c.key != "ytdlp_test"] + [
+        result
+    ]
     _report.finalize()

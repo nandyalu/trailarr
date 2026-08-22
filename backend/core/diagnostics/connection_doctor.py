@@ -14,8 +14,9 @@ connection reports, and proposes the concrete fix when it cannot:
    PUID/PGID fix.
 
 Probes are read-only except the write-test file. Media files are never
-touched. Reports are kept in memory only — a check re-runs in well under
-a second, so nothing needs to survive a restart.
+touched. The last report of every connection is kept on disk (see
+`store`), so a container restart does not send the user back to the
+Connections page to collect the results again.
 
 NOTE (phase-07 move map): this package moves to `services/diagnostics/`
 in the backend reorganization.
@@ -36,6 +37,7 @@ from core.base.utils.path_utils import (
     normalize_trailing_slash,
     reverse_path_mappings,
 )
+from core.diagnostics import store
 from core.diagnostics.models import (
     DoctorReport,
     ProbeResult,
@@ -62,11 +64,29 @@ _WINDOWS_ABS_RE = re.compile(r"^(?:[A-Za-z]:[/\\]|\\\\)")
 
 # Top-level directories that can never hold a media library. Everything
 # else under / is a candidate base for the mapping suggester.
-_SYSTEM_DIRS = frozenset({
-    "bin", "boot", "dev", "etc", "init", "lib", "lib32", "lib64",
-    "libx32", "lost+found", "proc", "root", "run", "sbin", "snap",
-    "sys", "tmp", "usr", "var",
-})
+_SYSTEM_DIRS = frozenset(
+    {
+        "bin",
+        "boot",
+        "dev",
+        "etc",
+        "init",
+        "lib",
+        "lib32",
+        "lib64",
+        "libx32",
+        "lost+found",
+        "proc",
+        "root",
+        "run",
+        "sbin",
+        "snap",
+        "sys",
+        "tmp",
+        "usr",
+        "var",
+    }
+)
 
 _MAX_MEDIA_SAMPLES = 5
 _MAX_BASES = 200
@@ -79,27 +99,43 @@ _SEARCH_BUDGET = 25_000
 _SEARCH_MAX_SAMPLES = 3
 # Mount points where media libraries usually live — searched first
 _PREFERRED_SEARCH_ROOTS = [
-    "/media", "/mnt", "/data", "/srv", "/storage", "/share", "/volumes",
+    "/media",
+    "/mnt",
+    "/data",
+    "/srv",
+    "/storage",
+    "/share",
+    "/volumes",
     "/home",
 ]
 
-# Last report per connection id — in-memory only.
-_reports: dict[int, DoctorReport] = {}
+# Last report per connection id. Read from disk on first use and
+# written back after every run, so the results survive a restart.
+_reports: dict[int, DoctorReport] | None = None
+
+
+def _cache() -> dict[int, DoctorReport]:
+    """The report cache, loaded from disk the first time it is used."""
+    global _reports
+    if _reports is None:
+        _reports = store.load()
+    return _reports
 
 
 def get_report(connection_id: int) -> DoctorReport | None:
     """Return the last report for a connection, or None if never run."""
-    return _reports.get(connection_id)
+    return _cache().get(connection_id)
 
 
 def get_all_reports() -> list[DoctorReport]:
     """Return the last report of every checked connection."""
-    return list(_reports.values())
+    return list(_cache().values())
 
 
 def forget_report(connection_id: int) -> None:
     """Drop the stored report of a deleted connection."""
-    _reports.pop(connection_id, None)
+    if _cache().pop(connection_id, None) is not None:
+        store.save(_cache())
 
 
 async def run_doctor(connection_id: int) -> DoctorReport:
@@ -145,16 +181,19 @@ async def run_doctor(connection_id: int) -> DoctorReport:
             )
         )
 
-    # 3. Permissions in the first visible folder
-    report.probes.append(_probe_permissions(checked_dirs))
+    # 3. Permissions in EVERY visible folder. One writable folder does
+    # not make the rest writable: a read-only TV share next to a
+    # writable movies mount must not pass as healthy.
+    report.probes.extend(_probe_permissions(checked_dirs))
 
     report.finalize()
-    _reports[connection_id] = report
+    _cache()[connection_id] = report
+    store.save(_cache())
     logger.info(
         f"Doctor for '{connection.name}' [{connection_id}]:"
         f" {report.status}"
         f" ({sum(1 for p in report.probes if p.status == ProbeStatus.ERROR)}"
-        f" error(s))"
+        " error(s))"
     )
     return report
 
@@ -176,8 +215,7 @@ async def _fetch_roots(
             name="API reachability",
             status=ProbeStatus.ERROR,
             detail=(
-                f"Could not get the folder list from {connection.name}:"
-                f" {e}"
+                f"Could not get the folder list from {connection.name}: {e}"
             ),
             remediation=(
                 "Check that the URL and API key are correct and that"
@@ -189,8 +227,7 @@ async def _fetch_roots(
         name="API reachability",
         status=ProbeStatus.OK,
         detail=(
-            f"{connection.name} answered and reports"
-            f" {len(roots)} folder(s)."
+            f"{connection.name} answered and reports {len(roots)} folder(s)."
         ),
     )
 
@@ -205,8 +242,7 @@ def _mark_existing(
     """
     wanted = suggestion.path_from.rstrip("/\\")
     suggestion.updates_existing = any(
-        pm.path_from.rstrip("/\\") == wanted
-        for pm in connection.path_mappings
+        pm.path_from.rstrip("/\\") == wanted for pm in connection.path_mappings
     )
 
 
@@ -233,74 +269,86 @@ def _probe_root(
         )
         if suggestion:
             _mark_existing(suggestion, connection)
-        return ProbeResult(
-            kind="path_style",
-            name=name,
-            status=ProbeStatus.ERROR,
-            detail=(
-                f"{connection.name} reports a Windows path, but Trailarr"
-                " runs on a non-Windows system. The application likely"
-                " runs on a remote Windows machine."
+        return (
+            ProbeResult(
+                kind="path_style",
+                name=name,
+                status=ProbeStatus.ERROR,
+                detail=(
+                    f"{connection.name} reports a Windows path, but Trailarr"
+                    " runs on a non-Windows system. The application likely"
+                    " runs on a remote Windows machine."
+                ),
+                remediation=(
+                    "Add a path mapping from the Windows path to the folder"
+                    " where Trailarr sees the same files (for example"
+                    f" '{root}' → '/media/movies')."
+                ),
+                docs_url=DOCS_PATH_MAPPINGS,
+                suggested_mapping=suggestion,
             ),
-            remediation=(
-                "Add a path mapping from the Windows path to the folder"
-                f" where Trailarr sees the same files (for example"
-                f" '{root}' → '/media/movies')."
-            ),
-            docs_url=DOCS_PATH_MAPPINGS,
-            suggested_mapping=suggestion,
-        ), None
+            None,
+        )
 
     if os.path.isdir(mapped):
         try:
             entry_count = sum(1 for _ in os.scandir(mapped))
         except OSError as e:
-            return ProbeResult(
-                kind="path_visibility",
-                name=name,
-                status=ProbeStatus.ERROR,
-                detail=f"'{mapped}' exists but cannot be listed: {e}",
-                remediation=(
-                    "Check the mount and the folder permissions for the"
-                    " user Trailarr runs as."
+            return (
+                ProbeResult(
+                    kind="path_visibility",
+                    name=name,
+                    status=ProbeStatus.ERROR,
+                    detail=f"'{mapped}' exists but cannot be listed: {e}",
+                    remediation=(
+                        "Check the mount and the folder permissions for the"
+                        " user Trailarr runs as."
+                    ),
+                    docs_url=DOCS_PUID_PGID,
                 ),
-                docs_url=DOCS_PUID_PGID,
-            ), None
+                None,
+            )
         # A2: an empty folder that passes isdir can be a dead soft-mount
         if entry_count == 0:
             available = is_disk_available(os.path.join(mapped, "probe"))
-            return ProbeResult(
-                kind="path_visibility",
-                name=name,
-                status=ProbeStatus.WARNING,
-                detail=(
-                    f"'{mapped}' is reachable but empty."
-                    " If this library is not empty, the mount behind it"
-                    " may be down."
-                    + (
-                        ""
-                        if available
-                        else " The storage behind it looks unavailable."
-                    )
+            return (
+                ProbeResult(
+                    kind="path_visibility",
+                    name=name,
+                    status=ProbeStatus.WARNING,
+                    detail=(
+                        f"'{mapped}' is reachable but empty."
+                        " If this library is not empty, the mount behind it"
+                        " may be down."
+                        + (
+                            ""
+                            if available
+                            else " The storage behind it looks unavailable."
+                        )
+                    ),
+                    remediation=(
+                        "Check the network share or drive that provides"
+                        " this folder, then run the check again."
+                    ),
+                    docs_url=DOCS_NETWORK_DRIVES,
                 ),
-                remediation=(
-                    "Check the network share or drive that provides"
-                    " this folder, then run the check again."
-                ),
-                docs_url=DOCS_NETWORK_DRIVES,
-            ), mapped
+                mapped,
+            )
         detail = f"'{root}' is visible ({entry_count} entries)."
         if mapped != root:
             detail = (
                 f"'{root}' maps to '{mapped}' and is visible"
                 f" ({entry_count} entries)."
             )
-        return ProbeResult(
-            kind="path_visibility",
-            name=name,
-            status=ProbeStatus.OK,
-            detail=detail,
-        ), mapped
+        return (
+            ProbeResult(
+                kind="path_visibility",
+                name=name,
+                status=ProbeStatus.OK,
+                detail=detail,
+            ),
+            mapped,
+        )
 
     # Not visible: suggest a mapping from what IS visible
     suggestion = _suggest_mapping(
@@ -315,8 +363,10 @@ def _probe_root(
         confidence = (
             f" {suggestion.corroborations} probed path(s) confirm it."
             if suggestion.corroborations > 1
-            else " The match is based on the folder name only — check"
-            " the contents before you apply it."
+            else (
+                " The match is based on the folder name only — check"
+                " the contents before you apply it."
+            )
         )
         verb = (
             "Suggested change to the existing mapping"
@@ -327,35 +377,57 @@ def _probe_root(
             f"{verb}: '{suggestion.path_from}' →"
             f" '{suggestion.path_to}'.{confidence}"
         )
-    return ProbeResult(
-        kind="path_visibility",
-        name=name,
-        status=ProbeStatus.ERROR,
-        detail=(
-            f"{connection.name} reports '{root}', but that path is not"
-            " visible to Trailarr"
-            + (f" (checked as '{mapped}')" if mapped != root else "")
-            + "."
-        ),
-        remediation=remediation,
-        docs_url=DOCS_PATH_MAPPINGS,
-        suggested_mapping=suggestion,
-    ), None
-
-
-def _probe_permissions(checked_dirs: list[str]) -> ProbeResult:
-    """Create and delete a test file in the first accessible folder."""
-    if not checked_dirs:
-        return ProbeResult(
-            kind="permissions",
-            name="Write permissions",
-            status=ProbeStatus.SKIPPED,
+    return (
+        ProbeResult(
+            kind="path_visibility",
+            name=name,
+            status=ProbeStatus.ERROR,
             detail=(
-                "No accessible folder to test. Fix the folder"
-                " visibility first."
+                f"{connection.name} reports '{root}', but that path is not"
+                " visible to Trailarr"
+                + (f" (checked as '{mapped}')" if mapped != root else "")
+                + "."
             ),
-        )
-    folder = checked_dirs[0]
+            remediation=remediation,
+            docs_url=DOCS_PATH_MAPPINGS,
+            suggested_mapping=suggestion,
+        ),
+        None,
+    )
+
+
+def _probe_permissions(checked_dirs: list[str]) -> list[ProbeResult]:
+    """Write-test every accessible folder, one probe result each."""
+    if not checked_dirs:
+        return [
+            ProbeResult(
+                kind="permissions",
+                name="Write permissions",
+                status=ProbeStatus.SKIPPED,
+                detail=(
+                    "No accessible folder to test. Fix the folder"
+                    " visibility first."
+                ),
+            )
+        ]
+    seen: set[str] = set()
+    results: list[ProbeResult] = []
+    for folder in checked_dirs:
+        key = folder.rstrip("/\\")
+        if key in seen:
+            continue
+        seen.add(key)
+        results.append(_probe_one_folder(folder, len(checked_dirs) > 1))
+    return results
+
+
+def _probe_one_folder(folder: str, name_the_folder: bool) -> ProbeResult:
+    """Create and delete a test file in one folder."""
+    name = (
+        f"Write permissions: {folder}"
+        if name_the_folder
+        else "Write permissions"
+    )
     test_file = os.path.join(folder, ".trailarr-write-test")
     try:
         with open(test_file, "w"):
@@ -364,7 +436,7 @@ def _probe_permissions(checked_dirs: list[str]) -> ProbeResult:
     except PermissionError:
         return ProbeResult(
             kind="permissions",
-            name="Write permissions",
+            name=name,
             status=ProbeStatus.ERROR,
             detail=_permission_detail(folder),
             remediation=(
@@ -376,7 +448,7 @@ def _probe_permissions(checked_dirs: list[str]) -> ProbeResult:
     except OSError as e:
         return ProbeResult(
             kind="permissions",
-            name="Write permissions",
+            name=name,
             status=ProbeStatus.ERROR,
             detail=f"Cannot write to '{folder}': {e}",
             remediation=(
@@ -387,7 +459,7 @@ def _probe_permissions(checked_dirs: list[str]) -> ProbeResult:
         )
     return ProbeResult(
         kind="permissions",
-        name="Write permissions",
+        name=name,
         status=ProbeStatus.OK,
         detail=f"Trailarr can create and delete files in '{folder}'.",
     )
@@ -403,9 +475,7 @@ def _permission_detail(folder: str) -> str:
             f" with mode {oct(st.st_mode & 0o777)}."
         )
         if hasattr(os, "getuid"):
-            detail += (
-                f" Trailarr runs as uid={os.getuid()} gid={os.getgid()}."
-            )
+            detail += f" Trailarr runs as uid={os.getuid()} gid={os.getgid()}."
     except OSError:
         pass
     return detail
@@ -431,9 +501,7 @@ def _arr_side_media_samples(connection: ConnectionRead) -> list[str]:
         # Spread the samples instead of taking the first N neighbors
         step = len(paths) // _MAX_MEDIA_SAMPLES
         paths = paths[::step][:_MAX_MEDIA_SAMPLES]
-    return [
-        reverse_path_mappings(p, connection.path_mappings) for p in paths
-    ]
+    return [reverse_path_mappings(p, connection.path_mappings) for p in paths]
 
 
 def _visible_bases(connection: ConnectionRead) -> list[str]:
@@ -550,9 +618,7 @@ def _join_prefix(parts: list[str], is_windows: bool) -> str:
     return "/" + "/".join(parts) + "/"
 
 
-def _align_suffix(
-    remote_path: str, local_path: str
-) -> tuple[str, str] | None:
+def _align_suffix(remote_path: str, local_path: str) -> tuple[str, str] | None:
     """Derive a mapping from a remote path and its on-disk location.
 
     Matches the longest common trailing components of the two paths

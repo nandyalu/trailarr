@@ -67,12 +67,16 @@ export class ConnectionService {
     return this.http.delete<string>(connectionIdUrl).pipe(catchError(handleError()));
   }
 
-  /** Last Connection Doctor report per checked connection. Reports live
-   * in server memory: the list is empty after a restart until a
-   * connection is saved or a check is run. */
+  /** Last Connection Doctor report per checked connection. The backend
+   * keeps these on disk, so they survive a restart. */
   readonly doctorReportsResource = httpResource<DoctorReport[]>(() => ({url: this.connectionsUrl + 'doctor'}), {
     defaultValue: [],
   });
+
+  /** Run the doctor for every connection at once. */
+  runAllDoctors(): Observable<DoctorReport[]> {
+    return this.http.post<DoctorReport[]>(`${this.connectionsUrl}doctor/run-all`, {}).pipe(catchError(handleError()));
+  }
 
   runDoctor(id: number): Observable<DoctorReport> {
     return this.http.post<DoctorReport>(`${this.connectionsUrl}${id}/doctor`, {}).pipe(catchError(handleError()));
