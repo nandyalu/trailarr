@@ -15,7 +15,7 @@ dependencies = [
     "pillow==12.3.0",
     "quiv==0.8.0",
     "sqlmodel==0.0.39",
-    "yt-dlp[curl-cffi,default]==2026.7.4",
+    "yt-dlp[curl-cffi,default]==2026.8.19",
     "rich>=15.0.0",
     "apprise>=1.12.0",
 ]
@@ -23,7 +23,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "aioresponses==0.7.9",
-    "mkdocs-git-revision-date-localized-plugin==1.5.3",
+    "mkdocs-git-revision-date-localized-plugin==1.5.4",
     "mkdocs-github-changelog==0.1.1",
     "mkdocs-glightbox==0.5.2",
     "pytest==9.1.1",
@@ -32,7 +32,7 @@ dev = [
     "zensical==0.0.56",
 ]
 docs = [
-    "mkdocs-git-revision-date-localized-plugin==1.5.3",
+    "mkdocs-git-revision-date-localized-plugin==1.5.4",
     "mkdocs-glightbox==0.5.2",
     "zensical==0.0.56",
 ]
