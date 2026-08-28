@@ -601,13 +601,18 @@ button > svg {
 }
 
 /* Dialog with Animations */
-/* A transition uses the `transition-property` of the state it moves TO.
-   The closed state below therefore controls the CLOSE animation, and it
-   transitions `display` so the dialog stays visible while it fades out.
-   `dialog[open]` controls the OPEN animation and must NOT transition
-   `display` — see the comment there. Issue #653.
-   NOTE: `transition-property` takes a COMMA-separated list. Spaces make the
-   declaration invalid and it silently falls back to `all`. */
+/* Opening a dialog must NEVER depend on an animation running.
+   A transition out of `@starting-style` fails CLOSED: if it does not
+   run, the dialog keeps the starting value (opacity 0) and stays
+   invisible while its backdrop still dims the page — the Safari bug in
+   issue #653. A keyframe animation fails OPEN: if it does not run, the
+   element simply shows at its own computed style. So the entrance is a
+   keyframe animation and the dialog carries no `@starting-style`.
+   The closed state below still transitions `display`, which is what
+   animates the dialog on CLOSE (a transition uses the
+   `transition-property` of the state it moves TO).
+   NOTE: `transition-property` takes a COMMA-separated list. Spaces make
+   the declaration invalid and it silently falls back to `all`. */
 dialog {
   display: none;
   padding: 0;
@@ -630,17 +635,31 @@ dialog[open] {
      discrete `display` late (or not at all), the backdrop paints and the
      dialog stays hidden -- a grey page with no modal. Issue #653. */
   transition-property: opacity, translate;
+
+  /* The entrance. `dialog-open` sets only a `from` state, so the dialog
+     rests at the values below once it ends -- and rests there anyway if
+     the animation never runs. */
+  animation: dialog-open 0.45s ease;
   opacity: 1;
   translate: 0 0;
   background-color: var(--color-surface-container);
   color: var(--color-on-surface);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+}
 
-  /* stylelint-disable-next-line at-rule-no-unknown */
-  @starting-style {
+@keyframes dialog-open {
+  from {
     opacity: 0;
     translate: 0 -25vh;
+  }
+}
+
+/* Reduced motion: show the dialog at once, with no entrance movement.
+   The global rule above only removes transitions. */
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] {
+    animation: none;
   }
 }
 
