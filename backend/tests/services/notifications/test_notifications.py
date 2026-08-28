@@ -12,8 +12,8 @@ from database.models.notificationchannel import (
     NotificationChannelCreate,
     mask_apprise_url,
 )
-from core.notifications import dispatcher
-from core.notifications.dispatcher import EventNote
+from services.notifications import dispatcher
+from services.notifications.dispatcher import EventNote
 
 
 @pytest.fixture(autouse=True)

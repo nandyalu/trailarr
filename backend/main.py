@@ -27,7 +27,7 @@ from database.version_guard import (
 )
 from core.binaries import validate_binary_paths
 from core.download.video_v2 import cleanup_stale_temp_downloads
-from core.notifications import dispatcher as notification_dispatcher
+from services.notifications import dispatcher as notification_dispatcher
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
 from frontend import setup_frontend

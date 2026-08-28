@@ -81,6 +81,34 @@ do it for all routers in one dedicated commit so the spec diff is reviewable).
 Do not rewrite handler docstrings while extracting — Stage C owns that, and mixing the
 two makes the spec diff unreviewable. Move the docstring with the code, unchanged.
 
+### Stage B: the database layer is not standalone (13 call sites)
+
+The objective calls `database/` a "standalone top layer". It is not one today, and
+Stage A deliberately does not fix that (moves stay mechanical). Stage B must, or the
+layering is a diagram rather than a fact. The 13 imports fall into three kinds, and
+they do **not** all get the same treatment:
+
+- **Connection validation reaching into Arr/Plex clients** (`core.plex` ×4,
+  `core.radarr` ×2, `core.sonarr` ×2, all in `database/manager/connection/`). The
+  connection manager calls `validate_connection()` / `get_rootfolders()` against live
+  APIs from inside the database layer. This is the real violation: network I/O behind
+  a database read. Extract to `services/connections/`, leaving the manager to persist
+  rows only.
+- **`services.notifications.dispatcher`** (function-local, in `manager/event/create.py`
+  `_notify`). Move the notify call up to the callers so storing an event does not also
+  publish it. TODO already in the code.
+- **`core.base.utils.path_utils`** (×3 — `is_subpath`, `normalize_trailing_slash`) and
+  **`core.download.error_classify`** (×1). These are pure, dependency-free helpers, and
+  routing them through `services/` would invert the layering for no benefit. **Decision
+  needed, do not default to services/**: either keep a low-level `utils/` module that
+  both `database/` and `services/` may import, or inline the two path helpers into
+  `database/`. Whichever is chosen, write it into the move map so Stage C is not
+  rewriting prose in a file that is about to move again.
+
+Verification for this section: after Stage B, the unanchored audit script reports **0**
+imports from `database/` into `core|services|api|tasks`. That number is the exit
+criterion — a green suite does not prove the layering holds.
+
 ## Stage C: Simplified Technical English sweep (prose only)
 
 Apply the `orwell-writing` skill (Orwell's six rules + ASD-STE100) to every **log line,
@@ -205,12 +233,27 @@ does not start within a few weeks of this date.
 |---|---|
 | Baseline test suite | **1089 passed**, 78s. This is the number every Stage A/B/C commit must still show. |
 | Alembic history importing app modules | **0 files** — the "rewrite migrations to be self-contained" pitfall is moot. Only `alembic/env.py:8` imports `core` (one line). |
-| `database/` → business-logic imports | **none** — `core/base/database/` imports nothing outside itself. The standalone-database-layer circular-import risk does not materialize; no Stage A shims needed. |
+| `database/` → business-logic imports | **13** (3 of them function-local). The first audit said "none" and was simply wrong — see the methodology note below. `database/` is NOT standalone today. Breakdown: `core.plex` ×4, `core.base.utils.path_utils` ×3, `core.radarr` ×2, `core.sonarr` ×2, `core.download.error_classify` ×1, `services.notifications.dispatcher` ×1. Left in place for Stage A per the shim rule; **this is now real Stage B work** (see "Stage B: the database layer is not standalone" below). |
 | `from core.`/`import core.` occurrences | **640** total: 405 app code, 235 tests, 1 alembic. This is the mechanical rewrite budget. |
 | `from api.`/`import api.` occurrences | 42 |
-| String patch targets in tests | **263** `patch("…")` calls. Highest-churn prefixes: `core.download.trailer.*`, `core.tasks.files_scan.*`, `core.download.video_analysis.*`, `api.v1.files.*`, `api.v1.authentication.*`. These break silently (a wrong patch target still "passes" as a no-op patch) — after each move commit, grep the moved package's old dotted prefix across `tests/` and confirm zero hits, rather than trusting a green suite alone. |
+| String patch targets in tests | **501** `patch("…")` calls — 391 target `core.*`, 102 `api.*`. Highest-churn prefixes: `core.download.trailer.*`, `core.tasks.files_scan.*`, `core.download.video_analysis.*`, `api.v1.files.*`, `api.v1.authentication.*`. These break silently (a wrong patch target still "passes" as a no-op patch) — after each move commit, grep the moved package's old dotted prefix across `tests/` and confirm zero hits, rather than trusting a green suite alone. |
 | openapi.json baseline | `sha256 aa8b427ff82e2b443119276ae812a9025e425fe2dc2689211055ab0202ece97a` |
 | Route descriptions in spec | 60 operations carry a docstring-derived `description` (drives the Stage C dedicated commit) |
+
+**Methodology — do not audit this phase with plain `grep` in this environment.** The
+first pass of the table above was wrong twice over: it reported 263 patch targets (real
+number 501) and zero `database/`→business-logic imports (real number 13). Two causes,
+both worth knowing:
+
+1. **`grep` here is proxied by rtk**, which does not return the same match set as GNU
+   grep. Counts taken through it undercounted by ~half.
+2. **Line-anchored patterns (`^from core\.`) miss deferred imports** written inside
+   functions, which is precisely where layering violations live.
+
+Take every count for this phase with a small Python script that walks the tree and
+matches unanchored (`(?:from|import)\s+core\.`), skipping `__pycache__` and `.venv`.
+The numbers in the table above were re-derived that way and are trustworthy; anything
+you re-measure later should be too.
 
 **Move-map drift found and fixed:** four things exist that the original map predated —
 `core/diagnostics/` (6 files, from Onboarding A+B in v0.11.4), `core/binaries.py`, and

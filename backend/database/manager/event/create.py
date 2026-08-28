@@ -12,9 +12,15 @@ from database.engine import write_session
 
 def _notify(event: EventRead | EventCreate) -> None:
     """Queue the event for Apprise notification dispatch. Fire-and-forget:
-    lazy import (avoids manager↔dispatcher cycles) and never raises."""
+    lazy import (avoids manager↔dispatcher cycles) and never raises.
+
+    TODO (Phase 7 Stage B): this is the one place where database/ reaches up
+    into services/, which the layering forbids. The lazy import keeps it
+    working. Move the notify call up to the callers so the database layer
+    only stores events, and delete this function.
+    """
     try:
-        from core.notifications.dispatcher import enqueue
+        from services.notifications.dispatcher import enqueue
 
         enqueue(
             event_type=event.event_type.name,

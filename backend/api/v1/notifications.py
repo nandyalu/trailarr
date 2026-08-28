@@ -7,7 +7,7 @@ from database.models.notificationchannel import (
     NotificationChannelCreate,
     NotificationChannelRead,
 )
-from core.notifications import dispatcher
+from services.notifications import dispatcher
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("NotificationsAPI")
