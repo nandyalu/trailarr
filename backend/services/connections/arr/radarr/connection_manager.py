@@ -1,4 +1,4 @@
-from core.base.connection_manager import BaseConnectionManager
+from services.connections.base import BaseConnectionManager
 from services.connections.arr.radarr.data_parser import parse_movie
 from database.models.connection import ConnectionRead
 from services.connections.arr.radarr.api_manager import RadarrManager

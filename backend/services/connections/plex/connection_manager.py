@@ -8,7 +8,7 @@ from config.settings import app_settings
 import database.manager.connection as connection_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
-from core.base.connection_manager import delete_trailers_for_removed_media
+from services.connections.base import delete_trailers_for_removed_media
 from database.models.connection import ConnectionRead
 from database.models.event import EventCreate, EventSource, EventType
 from database.models.media import MediaCreate, MediaRead

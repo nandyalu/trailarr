@@ -9,7 +9,7 @@ from sqlmodel import Session
 
 import database.manager.event as event_manager
 import database.manager.media as media_manager
-from core.base.connection_manager import BaseConnectionManager
+from services.connections.base import BaseConnectionManager
 from database.models.connection import ArrType, Connection
 from database.models.event import EventType
 from database.models.media import MediaCreate

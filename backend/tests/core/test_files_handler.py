@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 
 from services.files.files_handler import FilesHandler
-import core.base.connection_manager as connection_manager_module
+import services.connections.base as connection_manager_module
 from database.models.connection import (
     ArrType,
     ConnectionRead,

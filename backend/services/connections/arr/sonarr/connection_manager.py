@@ -1,4 +1,4 @@
-from core.base.connection_manager import BaseConnectionManager
+from services.connections.base import BaseConnectionManager
 from services.connections.arr.sonarr.data_parser import parse_series
 from database.models.connection import ConnectionRead
 from services.connections.arr.sonarr.api_manager import SonarrManager
