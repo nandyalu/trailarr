@@ -11,7 +11,7 @@ from database.models.connection import (
     PathMapping,
 )
 from database.engine import read_session
-from core.base.utils.path_utils import normalize_trailing_slash
+from utils.path_utils import normalize_trailing_slash
 from exceptions import ItemNotFoundError
 
 

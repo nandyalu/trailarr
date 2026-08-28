@@ -8,7 +8,7 @@ from database.models.media import (
     MediaRead,
     MediaUpdate,
 )
-from core.base.utils.path_utils import is_subpath
+from utils.path_utils import is_subpath
 from exceptions import ItemNotFoundError
 
 

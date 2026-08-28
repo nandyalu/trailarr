@@ -20,7 +20,7 @@ from database.models.media import MediaRead
 from services.filters import matches_filters
 
 FIXTURE_PATH = (
-    Path(__file__).resolve().parents[3] / "fixtures" / "filter-cases.json"
+    Path(__file__).resolve().parents[1] / "fixtures" / "filter-cases.json"
 )
 FIXTURE = json.loads(FIXTURE_PATH.read_text())
 

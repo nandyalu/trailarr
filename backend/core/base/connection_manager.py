@@ -8,7 +8,7 @@ import database.manager.event as event_manager
 import database.manager.media as media_manager
 from database.models.event import EventSource
 from database.models.helpers import MediaReadDC
-from core.base.utils.path_utils import apply_path_mappings
+from utils.path_utils import apply_path_mappings
 from core.files_handler import FilesHandler
 from database.models.connection import ConnectionRead
 from database.models.media import (

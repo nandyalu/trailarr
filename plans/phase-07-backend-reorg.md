@@ -56,6 +56,10 @@ backend/
     engine.py, init_db.py     ← core/base/database/utils/
   tasks/                      ← core/tasks/{__init__(scheduler), schedules.py, task_config wiring} ONLY —
                                 every task body becomes a thin `await services.x.run(...)`
+  utils/                      ← pure, dependency-free helpers both database/ and
+    path_utils.py                services/ may import (← core/base/utils/path_utils.py).
+                                 DECIDED Aug 28, 2026. utils/ imports nothing from the
+                                 other layers; that rule is what keeps it honest.
   config/, exceptions.py, main.py, app_logger.py   (unchanged)
   frontend/                   (static serving — unchanged)
   alembic/                    (unchanged location; see pitfalls)
@@ -97,13 +101,11 @@ they do **not** all get the same treatment:
 - **`services.notifications.dispatcher`** (function-local, in `manager/event/create.py`
   `_notify`). Move the notify call up to the callers so storing an event does not also
   publish it. TODO already in the code.
-- **`core.base.utils.path_utils`** (×3 — `is_subpath`, `normalize_trailing_slash`) and
-  **`core.download.error_classify`** (×1). These are pure, dependency-free helpers, and
-  routing them through `services/` would invert the layering for no benefit. **Decision
-  needed, do not default to services/**: either keep a low-level `utils/` module that
-  both `database/` and `services/` may import, or inline the two path helpers into
-  `database/`. Whichever is chosen, write it into the move map so Stage C is not
-  rewriting prose in a file that is about to move again.
+- **`core.base.utils.path_utils`** (×3) — RESOLVED in Stage A: a top-level `utils/`
+  package now holds the pure, dependency-free helpers that both layers may import, so
+  these three stopped being violations (13 → 10). `core.download.error_classify` (×1)
+  is the same shape and should join `utils/` when `core/download/` moves, unless it
+  turns out to carry download-specific dependencies — check before moving it.
 
 Verification for this section: after Stage B, the unanchored audit script reports **0**
 imports from `database/` into `core|services|api|tasks`. That number is the exit
@@ -193,8 +195,16 @@ the dedicated spec commit above.
     running it, not by reading it.
   - `export_openapi.py`, `app_logger.py`, `frontend/router.py` — all anchored at the
     `backend/` root and none of them move; no change needed.
-  After every move, grep the moved package for `__file__` and re-derive each index by
-  hand. A green test suite does not prove an anchor is right.
+  - **Tests have them too**, and a moved test breaks at *collection*, taking the whole
+    run down with an error rather than a failure. `tests/services/test_filter_parity.py`
+    used `parents[3]` to find `tests/fixtures/filter-cases.json` and needed `parents[1]`
+    after moving up two levels. Still-correct ones that must not be "fixed":
+    `tests/scripts/test_*.py` use `parents[3]` for the repo root, and
+    `tests/test_phase5_filter_migration.py` / `tests/test_upgrade_gauntlet.py` use
+    `parents[1]` for `backend/` — all three sit at depths that do not change.
+  After every move, grep the moved package **and its tests** for `__file__` and
+  re-derive each index by hand. A green test suite does not prove an anchor is right —
+  but a collection error usually means you just broke one.
 - **Test collection order changes with every move, and the suite is not isolated.**
   Tests share one session-scoped database (`conftest.pytest_configure` → `init_db()`),
   so any test that assumes an autoincrement id breaks when a move reshuffles collection

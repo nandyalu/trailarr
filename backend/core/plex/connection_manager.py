@@ -12,7 +12,7 @@ from core.base.connection_manager import delete_trailers_for_removed_media
 from database.models.connection import ConnectionRead
 from database.models.event import EventCreate, EventSource, EventType
 from database.models.media import MediaCreate, MediaRead
-from core.base.utils.path_utils import (
+from utils.path_utils import (
     apply_path_mappings,
     is_subpath,
     reverse_path_mappings,

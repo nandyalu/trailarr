@@ -11,7 +11,7 @@ tests/core/plex/test_path_mapping.py.
 
 from types import SimpleNamespace
 
-from core.base.utils.path_utils import (
+from utils.path_utils import (
     apply_path_mappings,
     is_subpath,
     normalize_trailing_slash,
