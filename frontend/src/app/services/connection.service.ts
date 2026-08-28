@@ -2,6 +2,7 @@ import {HttpClient, httpResource} from '@angular/common/http';
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {catchError, Observable} from 'rxjs';
 import {ArrType, ConnectionCreate, ConnectionRead, ConnectionUpdate} from 'src/app/models/connection';
+import {DoctorReport, SuggestedMapping} from 'src/app/models/diagnostics';
 import {environment} from 'src/environment';
 import {handleError} from './utils';
 import {WebsocketService} from './websocket.service';
@@ -64,6 +65,34 @@ export class ConnectionService {
   deleteConnection(id: number): Observable<string> {
     var connectionIdUrl = this.connectionsUrl + id;
     return this.http.delete<string>(connectionIdUrl).pipe(catchError(handleError()));
+  }
+
+  /** Last Connection Doctor report per checked connection. The backend
+   * keeps these on disk, so they survive a restart. */
+  readonly doctorReportsResource = httpResource<DoctorReport[]>(() => ({url: this.connectionsUrl + 'doctor'}), {
+    defaultValue: [],
+  });
+
+  /** Run the doctor for a connection that is not saved yet, so the
+   * Add/Edit page can find the right path mappings before saving.
+   * Pass the id when editing, so the suggester can use synced media. */
+  previewDoctor(connection: ConnectionCreate, connectionId = 0): Observable<DoctorReport> {
+    return this.http
+      .post<DoctorReport>(`${this.connectionsUrl}doctor/preview?connection_id=${connectionId}`, connection)
+      .pipe(catchError(handleError()));
+  }
+
+  /** Run the doctor for every connection at once. */
+  runAllDoctors(): Observable<DoctorReport[]> {
+    return this.http.post<DoctorReport[]>(`${this.connectionsUrl}doctor/run-all`, {}).pipe(catchError(handleError()));
+  }
+
+  runDoctor(id: number): Observable<DoctorReport> {
+    return this.http.post<DoctorReport>(`${this.connectionsUrl}${id}/doctor`, {}).pipe(catchError(handleError()));
+  }
+
+  applyDoctorMapping(id: number, mapping: SuggestedMapping): Observable<DoctorReport> {
+    return this.http.post<DoctorReport>(`${this.connectionsUrl}${id}/doctor/mappings`, mapping).pipe(catchError(handleError()));
   }
 
   getRootFolders(connection: ConnectionCreate): Observable<string[] | string> {

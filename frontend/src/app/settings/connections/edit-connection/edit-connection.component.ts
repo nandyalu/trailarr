@@ -11,9 +11,11 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {applyEach, form, FormField, maxLength, minLength, pattern, readonly, required, schema, validate} from '@angular/forms/signals';
+import {applyEach, form, FormField, maxLength, minLength, pattern, readonly, required, schema} from '@angular/forms/signals';
 import {Router} from '@angular/router';
+import {firstValueFrom} from 'rxjs';
 import {ArrType, ConnectionCreate, PathMappingCreate} from 'src/app/models/connection';
+import {DoctorReport, SuggestedMapping} from 'src/app/models/diagnostics';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -76,6 +78,14 @@ export class EditConnectionComponent {
   isReadyToSubmit = signal(false);
   isSubmitting = signal(false);
   submitResult = signal<string>('');
+
+  // ----- Connection Doctor (before saving) -----
+  /** A connection Trailarr cannot reach is refused on save, so the
+   * doctor runs here too: the user finds the right folders BEFORE
+   * saving, instead of saving something broken and fixing it later. */
+  protected readonly doctorRunning = signal(false);
+  protected readonly doctorReport = signal<DoctorReport | null>(null);
+  protected readonly doctorMessage = signal<string>('');
 
   connectionForm = form(this.connectionCreate, (schema) => {
     required(schema.api_key, {message: 'API Key is required.'});
@@ -218,6 +228,88 @@ export class EditConnectionComponent {
     // this.connectionForm!.markAsDirty();
   }
 
+  // #endregion
+
+  // #region Connection Doctor
+  /** Compare two paths without caring about a trailing slash. */
+  private samePath(a: string, b: string): boolean {
+    return (a ?? '').replace(/[\\/]+$/, '') === (b ?? '').replace(/[\\/]+$/, '');
+  }
+
+  /** The suggestion for a row, or null when there is nothing to apply. */
+  protected suggestionFor(index: number): SuggestedMapping | null {
+    const mapping = this.connectionCreate().path_mappings[index];
+    if (!mapping) return null;
+    for (const probe of this.doctorReport()?.probes ?? []) {
+      const suggestion = probe.suggested_mapping;
+      if (!suggestion) continue;
+      if (!this.samePath(suggestion.path_from, mapping.path_from)) continue;
+      // Nothing to do when it already holds the suggested value.
+      return this.samePath(suggestion.path_to, mapping.path_to) ? null : suggestion;
+    }
+    return null;
+  }
+
+  /** True when the doctor could see this row's folder. */
+  protected mappingIsVisible(index: number): boolean {
+    const mapping = this.connectionCreate().path_mappings[index];
+    if (!mapping) return false;
+    return (this.doctorReport()?.probes ?? []).some(
+      (p) => p.kind === 'path_visibility' && p.status === 'ok' && this.samePath(p.name.replace(/^Folder:\s*/, ''), mapping.path_from),
+    );
+  }
+
+  protected applySuggestion(index: number): void {
+    const suggestion = this.suggestionFor(index);
+    if (!suggestion) return;
+    this.connectionForm.path_mappings[index].path_to().controlValue.set(suggestion.path_to);
+  }
+
+  /** Ask the backend to look for the real folders on disk, then fill in
+   * every empty Trailarr Path it found. A value the user already typed
+   * is never overwritten -- that row gets a button instead. */
+  protected async findFolders(): Promise<void> {
+    if (this.doctorRunning()) return;
+    this.doctorRunning.set(true);
+    this.doctorMessage.set('');
+    this.doctorReport.set(null);
+    try {
+      const id = this.isCreate() ? 0 : this.connectionId();
+      const report = await firstValueFrom(this.connectionService.previewDoctor(this.connectionCreate(), id));
+      this.doctorReport.set(report);
+      this.doctorMessage.set(this.fillEmptyPaths());
+    } catch (error) {
+      this.doctorMessage.set('Could not check the folders. ' + ((error as Error).message ?? ''));
+    } finally {
+      this.doctorRunning.set(false);
+    }
+  }
+
+  /** Fill empty Trailarr Paths from the report. Returns what happened. */
+  private fillEmptyPaths(): string {
+    const mappings = this.connectionCreate().path_mappings;
+    let filled = 0;
+    let offered = 0;
+    for (let i = 0; i < mappings.length; i++) {
+      const suggestion = this.suggestionFor(i);
+      if (!suggestion) continue;
+      if (!mappings[i].path_to?.trim()) {
+        this.connectionForm.path_mappings[i].path_to().controlValue.set(suggestion.path_to);
+        filled++;
+      } else {
+        offered++;
+      }
+    }
+    const visible = mappings.filter((_, i) => this.mappingIsVisible(i)).length;
+    const parts: string[] = [];
+    if (filled) parts.push(`Filled ${filled} folder path(s) found on disk.`);
+    if (offered) parts.push(`${offered} row(s) have a different suggestion — check the button next to them.`);
+    if (visible) parts.push(`${visible} folder(s) are already visible to Trailarr.`);
+    if (!parts.length) {
+      parts.push('No folders were found on disk for these paths. Set the Trailarr Path by hand.');
+    }
+    return parts.join(' ');
+  }
   // #endregion
 
   // #region Dialogs
