@@ -22,8 +22,8 @@ from database.models.connection import ArrType, Connection
 from database.models.media import MediaCreate
 from database.engine import write_session
 import database.manager.media as media_manager
-from core.plex.connection_manager import PlexConnectionManager
-from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
+from services.connections.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ def _build_manager(
             _pm(f"/plex/{prefix}/shows"),
         ],
     )
-    with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         mgr = PlexConnectionManager(connection)
     return mgr
@@ -189,7 +189,7 @@ class TestProcessItemChunkEdges:
         folder = f"/plex/{self._p}/movies/Film50"
 
         original_parse = __import__(
-            "core.plex.data_parser", fromlist=["parse_plex_item"]
+            "services.connections.plex.data_parser", fromlist=["parse_plex_item"]
         ).parse_plex_item
 
         def _parse_with_yt(*args, **kwargs):
@@ -198,7 +198,7 @@ class TestProcessItemChunkEdges:
             return mc
 
         chunk = [(item, self.section, True, folder)]
-        with patch("core.plex.connection_manager.parse_plex_item", side_effect=_parse_with_yt):
+        with patch("services.connections.plex.connection_manager.parse_plex_item", side_effect=_parse_with_yt):
             await self._run_chunk(chunk)
 
         assert self.mgr._stats_added == 1
@@ -370,13 +370,13 @@ class TestProcessSection:
             monitor_new_media=True,
             path_mappings=[pm_none],
         )
-        with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             mgr = PlexConnectionManager(connection)
 
         section = _section("3", "movie", f"/plex/{p}/movies", title="Test")
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             mgr._persist_section_keys(section)
             mock_update.assert_called_once_with(8888, "3")
@@ -404,7 +404,7 @@ class TestRefreshEdges:
             monitor_new_media=True,
             path_mappings=path_mappings,
         )
-        with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             return PlexConnectionManager(connection)
 
@@ -473,7 +473,7 @@ class TestTriggerItemScan:
             monitor_new_media=True,
             path_mappings=[_pm(f"/plex/{self._p}/movies")],
         )
-        with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             self.mgr = PlexConnectionManager(mgr_conn)
 

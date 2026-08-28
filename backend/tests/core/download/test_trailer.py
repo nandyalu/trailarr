@@ -655,7 +655,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_true_and_updates_db_when_trailer_found(
         self,
@@ -667,7 +667,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns True and saves plex_trailer=True when Plex has a trailer extra."""
         from database.models.connection import ArrType
-        from core.plex.models import PlexMediaExtra
+        from services.connections.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.PLEX
@@ -687,7 +687,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_and_updates_db_when_no_trailer(
         self,
@@ -699,7 +699,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False and saves plex_trailer=False when Plex has no trailer extra."""
         from database.models.connection import ArrType
-        from core.plex.models import PlexMediaExtra
+        from services.connections.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.PLEX
@@ -719,7 +719,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_when_connection_is_not_plex(
         self,
@@ -765,7 +765,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_ignores_local_file_trailers(
         self,
@@ -777,7 +777,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False when the only trailer extra has a file:// guid (local)."""
         from database.models.connection import ArrType
-        from core.plex.models import PlexMediaExtra
+        from services.connections.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.PLEX
@@ -797,7 +797,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_met_returns_true(
         self,
@@ -809,7 +809,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns True when a remote trailer meets the resolution threshold."""
         from database.models.connection import ArrType
-        from core.plex.models import PlexMediaExtra
+        from services.connections.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.PLEX
@@ -829,7 +829,7 @@ class TestCheckPlexTrailer:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
+    @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
     @patch("core.download.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_not_met_returns_false(
         self,
@@ -841,7 +841,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False when remote trailer resolution is below the threshold."""
         from database.models.connection import ArrType
-        from core.plex.models import PlexMediaExtra
+        from services.connections.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.PLEX
@@ -914,7 +914,7 @@ class TestNotifyPlex:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.connection_manager.PlexConnectionManager")
+    @patch("services.connections.plex.connection_manager.PlexConnectionManager")
     async def test_passes_rating_key_for_a_linked_item(
         self, mock_plex_manager_cls, mock_read_conn
     ):
@@ -939,7 +939,7 @@ class TestNotifyPlex:
 
     @pytest.mark.asyncio
     @patch("core.download.trailer.connection_manager.read")
-    @patch("core.plex.connection_manager.PlexConnectionManager")
+    @patch("services.connections.plex.connection_manager.PlexConnectionManager")
     async def test_unlinked_item_still_scans_without_a_rating_key(
         self, mock_plex_manager_cls, mock_read_conn
     ):

@@ -19,8 +19,8 @@ from database.models.connection import ArrType, Connection
 from database.models.event import EventType
 from database.models.media import Media
 from database.engine import write_session
-from core.plex.connection_manager import PlexConnectionManager
-from core.plex.models import PlexLibrarySection, PlexMediaItem
+from services.connections.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.models import PlexLibrarySection, PlexMediaItem
 
 
 @write_session
@@ -108,7 +108,7 @@ def _build_manager(conn_id: int, prefix: str) -> PlexConnectionManager:
         monitor_new_media=True,
         path_mappings=[_pm(f"/plex/{prefix}/movies")],
     )
-    with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         return PlexConnectionManager(connection)  # type: ignore
 

@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from core.plex.api_manager import PlexAPI
+from services.connections.plex.api_manager import PlexAPI
 from core.radarr.api_manager import RadarrManager
 from core.sonarr.api_manager import SonarrManager
 from database.models.connection import (

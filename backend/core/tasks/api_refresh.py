@@ -3,7 +3,7 @@ import threading
 from config.logging_context import with_logging_context
 import database.manager.connection as connection_manager
 from database.models.connection import ArrType, ConnectionRead
-from core.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.connection_manager import PlexConnectionManager
 from core.radarr.connection_manager import RadarrConnectionManager
 from core.sonarr.connection_manager import SonarrConnectionManager
 from app_logger import ModuleLogger

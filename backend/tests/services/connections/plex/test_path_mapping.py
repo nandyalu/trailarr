@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.connection_manager import PlexConnectionManager
 
 
 # ---------------------------------------------------------------------------
@@ -392,7 +392,7 @@ class TestPersistSectionKeys:
         section = _section(["/mnt/plex/movies/Film"], key="5")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_called_once_with(pm.id, "5")
@@ -404,7 +404,7 @@ class TestPersistSectionKeys:
         section = _section(["/mnt/plex/movies/Film"], key="5")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_not_called()
@@ -415,7 +415,7 @@ class TestPersistSectionKeys:
         section = _section(["/mnt/plex/movies/Film"], key="5")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_not_called()
@@ -427,7 +427,7 @@ class TestPersistSectionKeys:
         section = _section(["C:\\Plex\\Movies\\Film"], key="7")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_called_once_with(pm.id, "7")
@@ -439,7 +439,7 @@ class TestPersistSectionKeys:
         section = _section(["/mnt/plex/movies-archive/Film"], key="9")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_not_called()
@@ -454,7 +454,7 @@ class TestPersistSectionKeys:
         ], key="2")
 
         with patch(
-            "core.plex.connection_manager.connection_manager.update_path_mapping_section_key"
+            "services.connections.plex.connection_manager.connection_manager.update_path_mapping_section_key"
         ) as mock_update:
             PlexConnectionManager._persist_section_keys(mgr, section)
             mock_update.assert_called_once_with(pm.id, "2")

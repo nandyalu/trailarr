@@ -22,8 +22,8 @@ from database.models.connection import ArrType, Connection
 from database.models.event import Event, EventType
 from database.models.media import Media
 from database.engine import get_session, write_session
-from core.plex.connection_manager import PlexConnectionManager
-from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
+from services.connections.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +188,7 @@ class TestPlexLargeLibrarySync:
         mock_api.get_library_leaves = get_library_leaves
 
         with patch(
-            "core.plex.connection_manager.PlexAPI", return_value=mock_api
+            "services.connections.plex.connection_manager.PlexAPI", return_value=mock_api
         ):
             manager = PlexConnectionManager(conn)
             await manager.refresh()

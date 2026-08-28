@@ -4,7 +4,7 @@ import database.manager.connection as connection_manager
 import database.manager.media as media_manager
 from app_logger import ModuleLogger
 from database.models.connection import ArrType, ConnectionRead
-from core.plex.api_manager import PlexAPI
+from services.connections.plex.api_manager import PlexAPI
 
 logger = ModuleLogger("PlexTrailerRefreshTask")
 

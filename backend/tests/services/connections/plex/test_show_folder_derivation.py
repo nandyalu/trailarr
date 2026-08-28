@@ -27,8 +27,8 @@ import database.manager.media as media_manager
 from database.models.connection import ArrType, Connection
 from database.models.media import MediaCreate
 from database.engine import write_session
-from core.plex.connection_manager import PlexConnectionManager
-from core.plex.models import (
+from services.connections.plex.connection_manager import PlexConnectionManager
+from services.connections.plex.models import (
     PlexEpisodeLeaf,
     PlexLibrarySection,
     PlexMediaItem,
@@ -77,7 +77,7 @@ def _build_manager(conn_id: int, prefix: str) -> PlexConnectionManager:
             _pm(f"/plex/{prefix}/shows"),
         ],
     )
-    with patch("core.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         return PlexConnectionManager(connection)
 

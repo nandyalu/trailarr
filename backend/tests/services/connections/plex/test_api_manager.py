@@ -5,7 +5,7 @@ import pytest
 from aioresponses import aioresponses
 from unittest.mock import patch
 
-from core.plex.api_manager import PlexAPI
+from services.connections.plex.api_manager import PlexAPI
 
 
 PLEX_URL = "http://plex-test"
@@ -132,7 +132,7 @@ class TestIterPages:
 class TestGetLibraryMedia:
     @pytest.mark.asyncio
     async def test_yields_plex_media_items(self, api):
-        from core.plex.models import PlexMediaItem
+        from services.connections.plex.models import PlexMediaItem
 
         pattern = re.compile(r".*/library/sections/1/all.*")
         with aioresponses() as m:
@@ -186,7 +186,7 @@ class TestGetLibraryMedia:
 class TestGetLibraryLeaves:
     @pytest.mark.asyncio
     async def test_yields_plex_episode_leaves(self, api):
-        from core.plex.models import PlexEpisodeLeaf
+        from services.connections.plex.models import PlexEpisodeLeaf
 
         pattern = re.compile(r".*/library/sections/3/allLeaves.*")
         with aioresponses() as m:

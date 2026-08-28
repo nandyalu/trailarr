@@ -53,7 +53,7 @@ async def create(connection: ConnectionCreate) -> tuple[str, int]:
     db_connection.path_mappings = _path_mappings
     # For Plex connections, fetch and store the server machine identifier
     if connection.arr_type == ArrType.PLEX:
-        from core.plex.api_manager import PlexAPI
+        from services.connections.plex.api_manager import PlexAPI
         plex_api = PlexAPI(connection.url, connection.api_key, identifier="trailarr_1234")
         db_connection.machine_identifier = await plex_api.get_machine_identifier()
     # Pass the validated connection to the save function

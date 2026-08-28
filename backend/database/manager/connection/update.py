@@ -101,7 +101,7 @@ async def update(
     await base.validate_connection(db_connection)
     # For Plex connections, refresh the machine identifier in case the server changed
     if db_connection.arr_type == ArrType.PLEX:
-        from core.plex.api_manager import PlexAPI
+        from services.connections.plex.api_manager import PlexAPI
 
         _id = f"trailarr_{db_connection.id}"
         plex_api = PlexAPI(

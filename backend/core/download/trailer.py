@@ -49,7 +49,7 @@ async def _check_plex_trailer(
         conn = connection_manager.read(media.plex_connection_id)
         if conn.arr_type != ArrType.PLEX:
             return False
-        from core.plex.api_manager import PlexAPI
+        from services.connections.plex.api_manager import PlexAPI
 
         api = PlexAPI(
             server_url=conn.url,
@@ -106,7 +106,7 @@ async def _notify_plex(media: MediaRead) -> None:
         if conn.arr_type != ArrType.PLEX:
             return
         # Import here to avoid a circular import at module level
-        from core.plex.connection_manager import PlexConnectionManager
+        from services.connections.plex.connection_manager import PlexConnectionManager
 
         plex_manager = PlexConnectionManager(conn)
         await plex_manager.trigger_item_scan(

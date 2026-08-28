@@ -1,4 +1,4 @@
-from core.plex.connection_manager import _resolve_show_root
+from services.connections.plex.connection_manager import _resolve_show_root
 
 
 class TestResolveShowRoot:

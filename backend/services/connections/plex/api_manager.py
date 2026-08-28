@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from app_logger import ModuleLogger
-from core.plex.models import (
+from services.connections.plex.models import (
     PlexEpisodeLeaf,
     PlexLibrarySection,
     PlexMediaExtra,

@@ -17,9 +17,9 @@ from utils.path_utils import (
     is_subpath,
     reverse_path_mappings,
 )
-from core.plex.api_manager import PlexAPI
-from core.plex.data_parser import parse_plex_item
-from core.plex.models import PlexLibrarySection, PlexMediaItem
+from services.connections.plex.api_manager import PlexAPI
+from services.connections.plex.data_parser import parse_plex_item
+from services.connections.plex.models import PlexLibrarySection, PlexMediaItem
 
 logger = ModuleLogger("PlexConnectionManager")
 

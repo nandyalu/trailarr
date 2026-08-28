@@ -1,5 +1,5 @@
 from database.models.media import MediaCreate
-from core.plex.models import PlexMediaItem
+from services.connections.plex.models import PlexMediaItem
 
 
 def parse_plex_item(
