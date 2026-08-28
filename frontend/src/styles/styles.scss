@@ -630,6 +630,20 @@ dialog[open] {
   display: flex;
   flex-direction: column;
 
+  /* Anchor the dialog to the viewport with our own values. A modal dialog
+     goes to the top layer, and the browser then sizes it against the
+     viewport. If the browser instead keeps it inside an ancestor box, the
+     user-agent rule `max-height: calc(100% - 38px)` measures that box. A
+     short ancestor then gives the dialog a height of 0: the backdrop dims
+     the page and the dialog shows nothing. Issue #653 reports a box of
+     363 x 0 that starts at the left edge of the content area, not at the
+     centre of the window. These four lines keep the dialog in the middle
+     of the window, and keep its limits in viewport units. */
+  position: fixed;
+  inset: 0;
+  max-height: 90dvh;
+  max-width: 92vw;
+
   /* `display` is deliberately absent: it must apply the moment the dialog
      opens, not through a discrete transition. If an engine reveals a
      discrete `display` late (or not at all), the backdrop paints and the
