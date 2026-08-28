@@ -75,6 +75,7 @@ Standard checklist, in addition to each phase's listed pages:
 | v0.11.1 | — | Unplanned fixes (Plex-only removal cleanup, Windows install, yt-dlp/Deno) | ✅ shipped Aug 11, 2026 | — |
 | v0.11.2 | — | Unplanned fixes (Plex library-root folder match, local-timezone dates) + Create Missing Folders | ✅ shipped Aug 15, 2026 | — |
 | v0.11.3 | 6 | Downloads/files custom-filter family (views) + Plex metadata-refresh fix | ✅ shipped Aug 21, 2026 | ~2 weeks |
+| v0.11.4 | — | Onboarding track A+B (Connection Doctor, Health page, cookies) + Safari dialog fix | merged to dev Aug 28, 2026 | — |
 | v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Oct 2026 | ~3 weeks |
 | v0.13.0 | 8 | TMDB integration (media-videos candidates table) | Nov 2026 | ~3–4 weeks |
 | v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | Dec 2026 – Jan 2027 | ~3 weeks |
@@ -84,7 +85,9 @@ Standard checklist, in addition to each phase's listed pages:
 **Patch releases do not carry phases.** v0.11.1 and v0.11.2 are fix-only releases that
 came out of real-library bug reports, so Phase 6 moved from v0.11.1 to v0.11.3. Expect
 this to repeat: when a fix release takes the next patch number, the pending phase moves
-down the ladder instead of being folded into the fix release.
+down the ladder instead of being folded into the fix release. v0.11.4 carries no phase
+either: it ships the parallel Onboarding track (milestones A+B), which was never on the
+phase ladder.
 
 **Timeline reassessment (Aug 11, 2026):** Phase 5 shipped ~3 weeks ahead of its Sep 2026
 target, so every later phase pulls in by ~1 month against the July estimates. v1.0.0
@@ -92,9 +95,10 @@ moves from Mar–Apr 2027 to Mar 2027 — one month of the gain is deliberately 
 buffer for the December slowdown (Phase 9 spans Dec–Jan) rather than being spent.
 
 **Parallel track — Onboarding & Diagnostics** (`track-onboarding-diagnostics.md`):
-Connection Doctor + Health page + cookies UI ride the v0.11.3–v0.12.x releases; the
-first-run guided setup rides v0.13.x (post-reorg); the diagnostics bundle fits any
-release. Library-wide **preview mode** shipped with Phase 3 (v0.10.2).
+Connection Doctor + Health page + cookies UI (milestones A+B) are DONE — merged to `dev`
+Aug 28, 2026 (PR #658), shipping in v0.11.4. The first-run guided setup (C) rides v0.13.x
+(post-reorg); the diagnostics bundle (D) fits any release. Library-wide **preview mode**
+shipped with Phase 3 (v0.10.2).
 
 Rules of the ladder:
 
@@ -165,8 +169,9 @@ skip-safe too:
 - `phase-01-attribution.md` — DONE (v0.9.9); kept as reference for patterns/conventions.
 - `phase-02-downloads-engine.md` — DONE (v0.10.0, Jul 19 2026).
 - `track-apprise-notifications.md` — DONE (shipped with v0.10.0).
-- `track-onboarding-diagnostics.md` — parallel track: Connection Doctor, Health page,
-  cookies UI, first-run guided setup, diagnostics bundle (milestones A–D).
+- `track-onboarding-diagnostics.md` — parallel track: A+B (Connection Doctor, Health
+  page, cookies UI) DONE (v0.11.4); C (first-run guided setup) and D (diagnostics
+  bundle) not started.
 - `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
 - `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
