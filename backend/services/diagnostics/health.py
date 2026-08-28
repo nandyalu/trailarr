@@ -607,7 +607,7 @@ async def run_ytdlp_test() -> HealthCheckResult:
             detail="yt-dlp reached YouTube and read a test video.",
         )
     else:
-        from core.download.error_classify import classify_ytdlp_error
+        from utils.error_classify import classify_ytdlp_error
 
         classified = classify_ytdlp_error(text)
         last_line = text.splitlines()[-1] if text else "unknown error"

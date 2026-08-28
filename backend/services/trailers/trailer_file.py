@@ -7,8 +7,8 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
-from core.download import video_analysis
-from core.download.video_analysis import VideoInfo
+from services.trailers import video_analysis
+from services.trailers.video_analysis import VideoInfo
 from exceptions import (
     FileMoveFailedError,
     FolderNotFoundError,

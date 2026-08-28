@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, timezone
 
-from core.download.video_analysis import VideoInfo, StreamInfo
+from services.trailers.video_analysis import VideoInfo, StreamInfo
 from exceptions import DownloadFailedError
 
 
@@ -100,18 +100,18 @@ class TestDownloadTrailer:
     """Tests for download_trailer async function."""
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_successful_download(
@@ -134,7 +134,7 @@ class TestDownloadTrailer:
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/movies/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         result = await download_trailer(mock_media, mock_profile)
 
@@ -146,20 +146,20 @@ class TestDownloadTrailer:
         mock_record.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.event_manager.track_youtube_id_changed")
-    @patch("core.download.trailer.event_manager.track_monitor_changed")
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.event_manager.track_youtube_id_changed")
+    @patch("services.trailers.trailer.event_manager.track_monitor_changed")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_downloaded_event_logged_before_facts_write(
@@ -189,7 +189,7 @@ class TestDownloadTrailer:
         manager.attach_mock(mock_update_facts, "update_facts")
         manager.attach_mock(mock_track_download, "track_download")
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         result = await download_trailer(mock_media, mock_profile)
 
@@ -205,23 +205,23 @@ class TestDownloadTrailer:
         assert update.yt_id == "dQw4w9WgXcQ"
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
     async def test_raises_error_when_no_video_id(
         self, mock_get_video_id, mock_media, mock_profile
     ):
         """Raises DownloadFailedError when no trailer found."""
         mock_get_video_id.return_value = None
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(DownloadFailedError, match="No trailer found"):
             await download_trailer(mock_media, mock_profile)
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     async def test_retries_on_failure(
         self,
         mock_update_facts,
@@ -236,7 +236,7 @@ class TestDownloadTrailer:
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (False, None)
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(DownloadFailedError):
             await download_trailer(mock_media, mock_profile, retry_count=2)
@@ -245,18 +245,18 @@ class TestDownloadTrailer:
         assert mock_get_video_id.call_count == 3
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_excludes_existing_trailer_id(
@@ -281,7 +281,7 @@ class TestDownloadTrailer:
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         await download_trailer(mock_media, mock_profile)
 
@@ -290,18 +290,18 @@ class TestDownloadTrailer:
         assert "existing_id" in call_args[0][2]  # exclude list
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_always_search_ignores_existing_id(
@@ -326,7 +326,7 @@ class TestDownloadTrailer:
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         await download_trailer(mock_media, mock_profile)
 
@@ -334,20 +334,20 @@ class TestDownloadTrailer:
         mock_get_video_id.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.video_analysis.remove_silence_at_end")
-    @patch("core.download.trailer.video_analysis.get_media_info")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.video_analysis.remove_silence_at_end")
+    @patch("services.trailers.trailer.video_analysis.get_media_info")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_removes_silence_when_enabled(
@@ -375,7 +375,7 @@ class TestDownloadTrailer:
         mock_get_new_info.return_value = mock_video_info
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         await download_trailer(mock_media, mock_profile)
 
@@ -384,18 +384,18 @@ class TestDownloadTrailer:
         mock_get_new_info.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_passes_video_info_to_move_and_record(
@@ -418,7 +418,7 @@ class TestDownloadTrailer:
         mock_verify.return_value = (True, mock_video_info)
         mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         await download_trailer(mock_media, mock_profile)
 
@@ -442,9 +442,9 @@ class TestDownloadTrailerRetryBehavior:
     """Tests for download_trailer retry behavior."""
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     async def test_excludes_failed_video_id_on_retry(
         self,
         mock_update_facts,
@@ -457,7 +457,7 @@ class TestDownloadTrailerRetryBehavior:
         mock_get_video_id.side_effect = ["first_id", "second_id", "third_id"]
         mock_download.side_effect = DownloadFailedError("Download failed")
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(DownloadFailedError):
             await download_trailer(mock_media, mock_profile, retry_count=2)
@@ -477,10 +477,10 @@ class TestDownloadTrailerRetryBehavior:
         assert "second_id" in third_exclude
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     async def test_no_retry_when_retry_count_is_zero(
         self,
         mock_update_facts,
@@ -495,7 +495,7 @@ class TestDownloadTrailerRetryBehavior:
         mock_download.return_value = "/tmp/test.mp4"
         mock_verify.return_value = (False, None)
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(DownloadFailedError):
             await download_trailer(mock_media, mock_profile, retry_count=0)
@@ -508,18 +508,18 @@ class TestDownloadTrailerDownloadFacts:
     """Tests for the download-facts write during download."""
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.trailer_file.verify_download")
-    @patch("core.download.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
     @patch(
-        "core.download.trailer.record_new_trailer_download",
+        "services.trailers.trailer.record_new_trailer_download",
         new_callable=AsyncMock,
     )
-    @patch("core.download.trailer.event_manager.track_trailer_downloaded")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     @patch(
-        "core.download.trailer.websockets.ws_manager.broadcast",
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
         new_callable=AsyncMock,
     )
     async def test_downloading_is_runtime_only_facts_written_once(
@@ -539,8 +539,8 @@ class TestDownloadTrailerDownloadFacts:
         """Phase 3: DOWNLOADING is never written to the DB — only the
         download-facts write happens on success; the in-flight state
         lives in the registry and is broadcast over the websocket."""
-        from core.download.inflight import inflight_registry
-        from core.download.trailer import download_trailer
+        from services.trailers.inflight import inflight_registry
+        from services.trailers.trailer import download_trailer
 
         mock_get_video_id.return_value = "video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
@@ -569,9 +569,9 @@ class TestDownloadTrailerDownloadFacts:
         )
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.trailer_search.get_video_id")
-    @patch("core.download.trailer.download_video")
-    @patch("core.download.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
     async def test_no_media_write_on_final_failure(
         self,
         mock_update_facts,
@@ -585,7 +585,7 @@ class TestDownloadTrailerDownloadFacts:
         mock_get_video_id.return_value = "video_id"
         mock_download.side_effect = DownloadFailedError("Download failed")
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(DownloadFailedError):
             await download_trailer(mock_media, mock_profile, retry_count=0)
@@ -595,7 +595,7 @@ class TestDownloadTrailerDownloadFacts:
 
         # Failure must never leave an in-flight entry behind (W3: a crash or
         # failure can't produce a stuck DOWNLOADING state anywhere)
-        from core.download.inflight import inflight_registry
+        from services.trailers.inflight import inflight_registry
 
         assert inflight_registry.snapshot() == {}
 
@@ -626,7 +626,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False immediately when skip_if_plex_trailer is False."""
         mock_profile_plex.skip_if_plex_trailer = False
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
         assert result is False
@@ -637,7 +637,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False when media has no plex_connection_id."""
         mock_media_plex.plex_connection_id = None
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
         assert result is False
@@ -648,15 +648,15 @@ class TestCheckPlexTrailer:
     ):
         """Returns False when media has no plex_rating_key."""
         mock_media_plex.plex_rating_key = None
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
         assert result is False
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_returns_true_and_updates_db_when_trailer_found(
         self,
         mock_update_plex_trailer,
@@ -678,7 +678,7 @@ class TestCheckPlexTrailer:
         trailer_extra = PlexMediaExtra(subtype="trailer", title="Official Trailer")
         mock_get_extras.return_value = [trailer_extra]
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -686,9 +686,9 @@ class TestCheckPlexTrailer:
         mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, True)
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_and_updates_db_when_no_trailer(
         self,
         mock_update_plex_trailer,
@@ -710,7 +710,7 @@ class TestCheckPlexTrailer:
         featurette = PlexMediaExtra(subtype="featurette", title="Behind the Scenes")
         mock_get_extras.return_value = [featurette]
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -718,9 +718,9 @@ class TestCheckPlexTrailer:
         mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, False)
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_when_connection_is_not_plex(
         self,
         mock_update_plex_trailer,
@@ -736,7 +736,7 @@ class TestCheckPlexTrailer:
         mock_conn.arr_type = ArrType.RADARR
         mock_read_conn.return_value = mock_conn
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -745,8 +745,8 @@ class TestCheckPlexTrailer:
         mock_update_plex_trailer.assert_not_called()
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_returns_false_gracefully_on_exception(
         self,
         mock_update_plex_trailer,
@@ -756,7 +756,7 @@ class TestCheckPlexTrailer:
     ):
         """Returns False without raising when Plex API call fails."""
         mock_read_conn.side_effect = Exception("DB error")
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -764,9 +764,9 @@ class TestCheckPlexTrailer:
         mock_update_plex_trailer.assert_not_called()
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_ignores_local_file_trailers(
         self,
         mock_update_plex_trailer,
@@ -788,7 +788,7 @@ class TestCheckPlexTrailer:
         local_trailer = PlexMediaExtra(subtype="trailer", title="My Trailer", guid="file:///media/trailers/t.mkv")
         mock_get_extras.return_value = [local_trailer]
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -796,9 +796,9 @@ class TestCheckPlexTrailer:
         mock_update_plex_trailer.assert_called_once_with(mock_media_plex.id, False)
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_met_returns_true(
         self,
         mock_update_plex_trailer,
@@ -821,16 +821,16 @@ class TestCheckPlexTrailer:
         hd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/123", resolution=1080)
         mock_get_extras.return_value = [hd_trailer]
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
         assert result is True
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.api_manager.PlexAPI.get_library_item_extras", new_callable=AsyncMock)
-    @patch("core.download.trailer.media_manager.update_plex_trailer")
+    @patch("services.trailers.trailer.media_manager.update_plex_trailer")
     async def test_resolution_threshold_not_met_returns_false(
         self,
         mock_update_plex_trailer,
@@ -853,7 +853,7 @@ class TestCheckPlexTrailer:
         sd_trailer = PlexMediaExtra.model_construct(subtype="trailer", guid="iva://remote/456", resolution=480)
         mock_get_extras.return_value = [sd_trailer]
 
-        from core.download.trailer import _check_plex_trailer
+        from services.trailers.trailer import _check_plex_trailer
 
         result = await _check_plex_trailer(mock_media_plex, mock_profile_plex)
 
@@ -864,7 +864,7 @@ class TestDownloadTrailerPlexSkip:
     """Tests for plex trailer skip in download_trailer."""
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer._check_plex_trailer", new_callable=AsyncMock)
+    @patch("services.trailers.trailer._check_plex_trailer", new_callable=AsyncMock)
     async def test_skips_download_when_plex_has_trailer(
         self, mock_check_plex, mock_media, mock_profile
     ):
@@ -872,7 +872,7 @@ class TestDownloadTrailerPlexSkip:
         mock_check_plex.return_value = True
         mock_profile.skip_if_plex_trailer = True
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         result = await download_trailer(mock_media, mock_profile)
 
@@ -880,8 +880,8 @@ class TestDownloadTrailerPlexSkip:
         mock_check_plex.assert_called_once_with(mock_media, mock_profile)
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer._check_plex_trailer", new_callable=AsyncMock)
-    @patch("core.download.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer._check_plex_trailer", new_callable=AsyncMock)
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
     async def test_proceeds_when_plex_has_no_trailer(
         self, mock_get_video_id, mock_check_plex, mock_media, mock_profile
     ):
@@ -889,7 +889,7 @@ class TestDownloadTrailerPlexSkip:
         mock_check_plex.return_value = False
         mock_get_video_id.return_value = None  # stop after check
 
-        from core.download.trailer import download_trailer
+        from services.trailers.trailer import download_trailer
 
         with pytest.raises(Exception):
             await download_trailer(mock_media, mock_profile)
@@ -913,14 +913,14 @@ class TestNotifyPlex:
         )
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.connection_manager.PlexConnectionManager")
     async def test_passes_rating_key_for_a_linked_item(
         self, mock_plex_manager_cls, mock_read_conn
     ):
         from database.models.connection import ArrType
         from database.models.event import EventSource
-        from core.download.trailer import _notify_plex
+        from services.trailers.trailer import _notify_plex
 
         mock_read_conn.return_value.arr_type = ArrType.PLEX
         plex_manager = mock_plex_manager_cls.return_value
@@ -938,13 +938,13 @@ class TestNotifyPlex:
         )
 
     @pytest.mark.asyncio
-    @patch("core.download.trailer.connection_manager.read")
+    @patch("services.trailers.trailer.connection_manager.read")
     @patch("services.connections.plex.connection_manager.PlexConnectionManager")
     async def test_unlinked_item_still_scans_without_a_rating_key(
         self, mock_plex_manager_cls, mock_read_conn
     ):
         from database.models.connection import ArrType
-        from core.download.trailer import _notify_plex
+        from services.trailers.trailer import _notify_plex
 
         mock_read_conn.return_value.arr_type = ArrType.PLEX
         plex_manager = mock_plex_manager_cls.return_value

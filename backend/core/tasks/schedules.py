@@ -15,7 +15,7 @@ from database.models.task_config import (
 )
 import database.manager.connection as connection_manager
 from database.models.connection import ArrType
-from core.download.trailers.missing import download_missing_trailers
+from services.trailers.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh
 from core.tasks.cleanup import delete_old_logs, trailer_cleanup

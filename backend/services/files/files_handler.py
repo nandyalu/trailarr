@@ -13,8 +13,8 @@ import unicodedata
 
 from app_logger import ModuleLogger
 from database.manager import trailerprofile
-from core.download import video_analysis
-from core.download.trailer_file import get_folder_permissions
+from services.trailers import video_analysis
+from services.trailers.trailer_file import get_folder_permissions
 
 logger = ModuleLogger("FilesHandler")
 

@@ -16,7 +16,7 @@ import pytest
 from config.settings import app_settings
 from services.diagnostics import cookies, health
 from services.diagnostics.models import ProbeStatus
-from core.download.error_classify import (
+from utils.error_classify import (
     classified_error,
     classify_ytdlp_error,
 )

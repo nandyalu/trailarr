@@ -122,7 +122,7 @@ def _poster_attachment(
     media = _media_info(next(iter(media_ids)), media_cache)
     if media is None or not media.poster_path:
         return None
-    from core.download.image import _url_to_fs_path
+    from services.images.image import _url_to_fs_path
 
     poster = _url_to_fs_path(media.poster_path)
     return str(poster) if poster.is_file() else None

@@ -17,10 +17,10 @@ from database.models.event import EventSource
 from database.models.filefolderinfo import FileFolderInfoRead
 from database.models.download import DownloadRead
 from database.models.media import MediaRead
-from core.download import trailer_search
-from core.download.inflight import inflight_registry
-from core.download.trailers import utils as trailer_utils
-from core.download.trailers.pending import (
+from services.trailers import trailer_search
+from services.trailers.inflight import inflight_registry
+from services.trailers.trailers import utils as trailer_utils
+from services.trailers.trailers.pending import (
     MediaPendingView,
     PendingSummary,
     compute_library_pending,

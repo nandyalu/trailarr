@@ -4,7 +4,7 @@ from app_logger import ModuleLogger
 
 from config.settings import app_settings
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.video_analysis import StreamInfo, get_media_info
+from services.trailers.video_analysis import StreamInfo, get_media_info
 
 logger = ModuleLogger("VideoConversion")
 

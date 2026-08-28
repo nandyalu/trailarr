@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from database.models.customfilter import CustomFilterRead, FilterType
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.video_conversion import (
+from services.trailers.video_conversion import (
     _get_video_options_nvidia,
     _get_video_options_vaapi,
     _get_video_options,
@@ -109,7 +109,7 @@ class TestVideoConversionHardwareAcceleration:
 
     @patch.dict(os.environ, {}, clear=True)
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
     def test_vaapi_video_options_default_device(
@@ -144,10 +144,10 @@ class TestVideoConversionHardwareAcceleration:
         clear=True,
     )
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_vaapi_video_options_intel_device(
         self, mock_settings, _mock_platform, temp_input_file
     ):
@@ -183,10 +183,10 @@ class TestVideoConversionHardwareAcceleration:
         }, clear=True
     )
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_vaapi_video_options_amd_device(
         self, mock_settings, _mock_platform, temp_input_file
     ):
@@ -216,7 +216,7 @@ class TestVideoConversionHardwareAcceleration:
         ]
         assert options == expected_options
 
-    @patch("core.download.video_conversion._get_video_options_cpu")
+    @patch("services.trailers.video_conversion._get_video_options_cpu")
     def test_unsupported_codec_fallback_vaapi(self, mock_cpu, temp_test_file):
         """Test fallback to CPU when codec is not supported by VAAPI."""
         mock_cpu.return_value = ["-i", temp_test_file, "-c:v", "libvpx-vp9"]
@@ -242,7 +242,7 @@ class TestVideoConversionHardwareAcceleration:
         assert "h264_vaapi" not in options
 
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
     def test_video_options_priority_vaapi(
@@ -263,11 +263,11 @@ class TestVideoConversionHardwareAcceleration:
         assert "h264_vaapi" not in options
 
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
-    @patch("core.download.video_conversion.get_media_info")
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.get_media_info")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_ffmpeg_cmd_intel_gpu(
         self,
         mock_settings,
@@ -304,11 +304,11 @@ class TestVideoConversionHardwareAcceleration:
         assert "22" in cmd
 
     @patch(
-        "core.download.video_conversion.platform.system",
+        "services.trailers.video_conversion.platform.system",
         return_value="Linux",
     )
-    @patch("core.download.video_conversion.get_media_info")
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.get_media_info")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_ffmpeg_cmd_amd_gpu(
         self,
         mock_settings,
@@ -344,8 +344,8 @@ class TestVideoConversionHardwareAcceleration:
         assert "-qp" in cmd
         assert "22" in cmd
 
-    @patch("core.download.video_conversion.get_media_info")
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.get_media_info")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_ffmpeg_cmd_fallback_mode(
         self,
         mock_settings,
@@ -377,8 +377,8 @@ class TestVideoConversionHardwareAcceleration:
         assert "h264_nvenc" not in cmd
         assert "h264_vaapi" not in cmd
 
-    @patch("core.download.video_conversion.get_media_info")
-    @patch("core.download.video_conversion.app_settings")
+    @patch("services.trailers.video_conversion.get_media_info")
+    @patch("services.trailers.video_conversion.app_settings")
     def test_ffmpeg_cmd_hardware_acceleration_disabled(
         self,
         mock_settings,

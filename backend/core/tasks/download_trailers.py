@@ -7,8 +7,8 @@ from database.manager import trailerprofile
 import database.manager.media as media_manager
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.trailer import download_trailer
-from core.download.trailers.batch import batch_download_task
+from services.trailers.trailer import download_trailer
+from services.trailers.trailers.batch import batch_download_task
 from services.files.files_handler import FilesHandler
 from core.tasks import scheduler
 from exceptions import (

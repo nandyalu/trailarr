@@ -12,7 +12,7 @@ from database.manager import trailerprofile
 from database.models.event import EventSource
 from database.models.media import MediaRead
 from services.profiles import pick_profile_for_download
-from core.download.trailers.service import (
+from services.trailers.trailers.service import (
     compute_file_hash,
     reanalyze_trailer_download,
     record_new_trailer_download,

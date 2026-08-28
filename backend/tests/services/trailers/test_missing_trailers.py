@@ -4,7 +4,7 @@ import datetime
 import pytest
 from unittest.mock import MagicMock, patch
 from config.settings import app_settings
-from core.download.trailers.missing import download_missing_trailers
+from services.trailers.trailers.missing import download_missing_trailers
 from database.models.media import MediaRead
 
 
@@ -76,17 +76,17 @@ def mock_media_with_trailer():
 async def test_download_missing_trailers_prevents_infinite_loop():
     """Test that the same media item is not processed multiple times in one run."""
     with patch(
-        "core.download.trailers.missing.app_settings"
+        "services.trailers.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.downloads_ready", return_value=True
+        "services.trailers.trailers.missing.downloads_ready", return_value=True
     ), patch(
-        "core.download.trailers.missing.attempt_manager"
+        "services.trailers.trailers.missing.attempt_manager"
     ) as mock_attempts, patch(
-        "core.download.trailers.missing.media_manager.read_all_generator"
+        "services.trailers.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
-        "core.download.trailers.missing.trailerprofile"
+        "services.trailers.trailers.missing.trailerprofile"
     ) as mock_trailerprofile, patch(
-        "core.download.trailers.missing._process_single_media_item"
+        "services.trailers.trailers.missing._process_single_media_item"
     ) as mock_process:
 
         # Configure settings
@@ -155,9 +155,9 @@ async def test_download_missing_trailers_prevents_infinite_loop():
 async def test_download_missing_trailers_monitoring_disabled():
     """Test that function exits early when monitoring is disabled."""
     with patch(
-        "core.download.trailers.missing.app_settings"
+        "services.trailers.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.media_manager.read_all"
+        "services.trailers.trailers.missing.media_manager.read_all"
     ) as mock_db_manager_read_all:
 
         # Configure settings - monitoring disabled
@@ -174,15 +174,15 @@ async def test_download_missing_trailers_monitoring_disabled():
 async def test_download_missing_trailers_no_profiles():
     """Test that function exits when no trailer profiles exist."""
     with patch(
-        "core.download.trailers.missing.app_settings"
+        "services.trailers.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.downloads_ready", return_value=True
+        "services.trailers.trailers.missing.downloads_ready", return_value=True
     ), patch(
-        "core.download.trailers.missing.attempt_manager"
+        "services.trailers.trailers.missing.attempt_manager"
     ) as mock_attempts, patch(
-        "core.download.trailers.missing.media_manager.read_all_generator"
+        "services.trailers.trailers.missing.media_manager.read_all_generator"
     ) as mock_db_manager_read_all, patch(
-        "core.download.trailers.missing.trailerprofile"
+        "services.trailers.trailers.missing.trailerprofile"
     ) as mock_trailerprofile:
 
         # Configure settings
@@ -212,14 +212,14 @@ async def test_download_missing_trailers_preview_mode():
     from unittest.mock import AsyncMock
 
     with patch(
-        "core.download.trailers.missing.app_settings"
+        "services.trailers.trailers.missing.app_settings"
     ) as mock_settings, patch(
-        "core.download.trailers.missing.downloads_ready", return_value=True
+        "services.trailers.trailers.missing.downloads_ready", return_value=True
     ), patch(
-        "core.download.trailers.missing._run_preview_pass",
+        "services.trailers.trailers.missing._run_preview_pass",
         new_callable=AsyncMock,
     ) as mock_preview, patch(
-        "core.download.trailers.missing.media_manager.read_all_generator"
+        "services.trailers.trailers.missing.media_manager.read_all_generator"
     ) as mock_read_all:
         mock_settings.monitor_enabled = True
         mock_settings.downloads_enabled = False
@@ -235,8 +235,8 @@ async def test_preview_pass_publishes_would_download_list():
     """The preview pass logs/broadcasts the pending summary and never
     touches the downloader."""
     from unittest.mock import AsyncMock
-    from core.download.trailers.missing import _run_preview_pass
-    from core.download.trailers.pending import (
+    from services.trailers.trailers.missing import _run_preview_pass
+    from services.trailers.trailers.pending import (
         PendingSummary,
         PendingSummaryItem,
     )
@@ -260,7 +260,7 @@ async def test_preview_pass_publishes_would_download_list():
         offset=0,
     )
     with patch(
-        "core.download.trailers.pending.compute_library_pending",
+        "services.trailers.trailers.pending.compute_library_pending",
         return_value=summary,
     ) as mock_compute, patch(
         "api.v1.websockets.ws_manager.broadcast", new_callable=AsyncMock
@@ -286,17 +286,17 @@ class TestIsValidMediaStorageGuard:
     def test_folder_missing_storage_down_skips_as_unreachable(
         self, mock_media_no_trailer
     ):
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.is_disk_available",
+            "services.trailers.trailers.missing.is_disk_available",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is False
             skip_reason = mock_events.track_download_skipped.call_args.kwargs[
@@ -307,17 +307,17 @@ class TestIsValidMediaStorageGuard:
     def test_folder_missing_storage_up_skips_as_missing_folder(
         self, mock_media_no_trailer
     ):
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.is_disk_available",
+            "services.trailers.trailers.missing.is_disk_available",
             return_value=True,
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is False
             skip_reason = mock_events.track_download_skipped.call_args.kwargs[
@@ -330,24 +330,24 @@ class TestIsValidMediaStorageGuard:
     ):
         """Discussion #641: with 'Create Missing Folders' on, a genuinely
         missing folder is created instead of skipping the download."""
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.is_disk_available",
+            "services.trailers.trailers.missing.is_disk_available",
             return_value=True,
         ), patch(
-            "core.download.trailers.missing.FilesHandler.create_folder",
+            "services.trailers.trailers.missing.FilesHandler.create_folder",
             return_value=True,
         ) as mock_create, patch(
-            "core.download.trailers.missing.os.listdir", return_value=[]
+            "services.trailers.trailers.missing.os.listdir", return_value=[]
         ), patch.object(
             type(app_settings), "create_missing_folders", True
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is True
             mock_create.assert_called_once_with("/mnt/media/Test Movie")
@@ -358,21 +358,21 @@ class TestIsValidMediaStorageGuard:
     ):
         """The setting must not defeat the dead-mount guard: writing into
         a disconnected share would hide the real media."""
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.is_disk_available",
+            "services.trailers.trailers.missing.is_disk_available",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.FilesHandler.create_folder"
+            "services.trailers.trailers.missing.FilesHandler.create_folder"
         ) as mock_create, patch.object(
             type(app_settings), "create_missing_folders", True
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is False
             mock_create.assert_not_called()
@@ -386,22 +386,22 @@ class TestIsValidMediaStorageGuard:
     def test_failed_creation_skips_with_its_own_reason(
         self, mock_media_no_trailer
     ):
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=False,
         ), patch(
-            "core.download.trailers.missing.is_disk_available",
+            "services.trailers.trailers.missing.is_disk_available",
             return_value=True,
         ), patch(
-            "core.download.trailers.missing.FilesHandler.create_folder",
+            "services.trailers.trailers.missing.FilesHandler.create_folder",
             return_value=False,
         ), patch.object(
             type(app_settings), "create_missing_folders", True
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is False
             assert (
@@ -414,17 +414,17 @@ class TestIsValidMediaStorageGuard:
     def test_folder_exists_but_unreadable_skips_as_unreachable(
         self, mock_media_no_trailer
     ):
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=True,
         ), patch(
-            "core.download.trailers.missing.os.listdir",
+            "services.trailers.trailers.missing.os.listdir",
             side_effect=OSError(112, "Host is down"),
         ), patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             assert _is_valid_media(media) is False
             skip_reason = mock_events.track_download_skipped.call_args.kwargs[
@@ -433,19 +433,19 @@ class TestIsValidMediaStorageGuard:
             assert skip_reason == "Storage unreachable"
 
     def test_folder_exists_and_readable_passes(self, mock_media_no_trailer):
-        from core.download.trailers.missing import _is_valid_media
+        from services.trailers.trailers.missing import _is_valid_media
 
         media = self._media(mock_media_no_trailer)
         with patch(
-            "core.download.trailers.missing.FilesHandler.check_folder_exists",
+            "services.trailers.trailers.missing.FilesHandler.check_folder_exists",
             return_value=True,
         ), patch(
-            "core.download.trailers.missing.os.listdir",
+            "services.trailers.trailers.missing.os.listdir",
             return_value=[],
         ), patch(
-            "core.download.trailers.missing.app_settings"
+            "services.trailers.trailers.missing.app_settings"
         ) as mock_settings, patch(
-            "core.download.trailers.missing.event_manager"
+            "services.trailers.trailers.missing.event_manager"
         ) as mock_events:
             mock_settings.wait_for_media = False
             assert _is_valid_media(media) is True

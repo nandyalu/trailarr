@@ -3,7 +3,7 @@ import threading
 import database.manager.media as media_manager
 import database.manager.connection as connection_manager
 from database.models.helpers import MediaImage
-from core.download.image import refresh_media_images
+from services.images.image import refresh_media_images
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("ImageRefreshTasks")

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.download.trailers.utils import extract_youtube_id
+from services.trailers.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("VideoAnalysis")
 

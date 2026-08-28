@@ -10,8 +10,8 @@ from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.cli import cli_to_api
-from core.download.trailers.utils import extract_youtube_id
+from services.trailers.cli import cli_to_api
+from services.trailers.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("TrailersDownloader")
 

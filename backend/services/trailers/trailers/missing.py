@@ -16,9 +16,9 @@ from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
 from services.satisfaction import evaluate_satisfaction
-from core.download import trailer as trailer_downloader
-from core.download.inflight import inflight_registry
-from core.download.trailers import utils
+from services.trailers import trailer as trailer_downloader
+from services.trailers.inflight import inflight_registry
+from services.trailers.trailers import utils
 from services.files.files_handler import FilesHandler, is_disk_available
 from core.tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
@@ -196,7 +196,7 @@ async def _run_preview_pass() -> None:
     which itself reuses the task's exact satisfaction rule — the preview is
     the real work list, not an estimate."""
     from api.v1.websockets import ws_manager
-    from core.download.trailers.pending import compute_library_pending
+    from services.trailers.trailers.pending import compute_library_pending
 
     summary = compute_library_pending(limit=1000)
     would_download = [i for i in summary.items if i.reason == "pending"]

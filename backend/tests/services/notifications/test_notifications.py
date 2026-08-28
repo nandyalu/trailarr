@@ -323,7 +323,7 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("core.download.image._url_to_fs_path", return_value=poster),
+            patch("services.images.image._url_to_fs_path", return_value=poster),
         ):
             assert dispatcher._poster_attachment(notes, {}) == str(poster)
 
@@ -341,7 +341,7 @@ class TestEnrichedNotifications:
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
             patch(
-                "core.download.image._url_to_fs_path",
+                "services.images.image._url_to_fs_path",
                 return_value=tmp_path / "nope.jpg",
             ),
         ):
@@ -361,7 +361,7 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("core.download.image._url_to_fs_path", return_value=poster),
+            patch("services.images.image._url_to_fs_path", return_value=poster),
             patch.object(
                 dispatcher, "_send_sync", return_value=True
             ) as send,
@@ -402,7 +402,7 @@ class TestDiscordNative:
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
             patch(
-                "core.download.image._url_to_fs_path",
+                "services.images.image._url_to_fs_path",
                 return_value=poster_file,
             ),
         ):
@@ -443,7 +443,7 @@ class TestDiscordNative:
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
             patch(
-                "core.download.image._url_to_fs_path",
+                "services.images.image._url_to_fs_path",
                 return_value=poster_file,
             ),
         ):
@@ -486,7 +486,7 @@ class TestDiscordNative:
                 dispatcher.media_manager, "read", return_value=media
             ),
             patch(
-                "core.download.image._url_to_fs_path",
+                "services.images.image._url_to_fs_path",
                 return_value=poster_file,
             ),
         ):

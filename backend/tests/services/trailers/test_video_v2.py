@@ -7,7 +7,7 @@ import pytest
 
 from database.models.customfilter import CustomFilterRead, FilterType
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.video_v2 import (
+from services.trailers.video_v2 import (
     _cleanup_partial_downloads,
     _download_with_ytdlp,
     _get_ytdl_options,
@@ -78,7 +78,7 @@ class TestUserOptionOverrideWarning:
         self, trailer_profile
     ):
         trailer_profile.ytdlp_extra_options = "-f bestvideo+bestaudio"
-        with patch("core.download.video_v2.logger.warning") as mock_warn:
+        with patch("services.trailers.video_v2.logger.warning") as mock_warn:
             options = _get_ytdl_options(trailer_profile)
         assert mock_warn.called
         assert "'-f'" in mock_warn.call_args[0][0]
@@ -88,7 +88,7 @@ class TestUserOptionOverrideWarning:
 
     def test_long_form_alias_is_detected(self, trailer_profile):
         trailer_profile.ytdlp_extra_options = "--format=best"
-        with patch("core.download.video_v2.logger.warning") as mock_warn:
+        with patch("services.trailers.video_v2.logger.warning") as mock_warn:
             _get_ytdl_options(trailer_profile)
         assert mock_warn.called
         assert "'--format=best'" in mock_warn.call_args[0][0]
@@ -97,13 +97,13 @@ class TestUserOptionOverrideWarning:
         # -o is set by Trailarr outside _get_ytdl_options, but a user
         # -o would still override it
         trailer_profile.ytdlp_extra_options = "-o /tmp/other.mkv"
-        with patch("core.download.video_v2.logger.warning") as mock_warn:
+        with patch("services.trailers.video_v2.logger.warning") as mock_warn:
             _get_ytdl_options(trailer_profile)
         assert mock_warn.called
 
     def test_non_conflicting_option_does_not_warn(self, trailer_profile):
         trailer_profile.ytdlp_extra_options = "--socket-timeout 30"
-        with patch("core.download.video_v2.logger.warning") as mock_warn:
+        with patch("services.trailers.video_v2.logger.warning") as mock_warn:
             options = _get_ytdl_options(trailer_profile)
         assert not mock_warn.called
         assert options[-2:] == ["--socket-timeout", "30"]
@@ -165,7 +165,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x" * 100)
 
         with patch(
-            "core.download.video_v2.subprocess.run",
+            "services.trailers.video_v2.subprocess.run",
             side_effect=subprocess.TimeoutExpired(cmd="yt-dlp", timeout=900),
         ):
             with pytest.raises(DownloadFailedError, match="timed out"):
@@ -189,7 +189,7 @@ class TestDownloadFailureCleanup:
         out_file = tmp_path / "temp_311-trailer.mkv"
 
         with patch(
-            "core.download.video_v2.subprocess.run", return_value=result
+            "services.trailers.video_v2.subprocess.run", return_value=result
         ):
             with pytest.raises(
                 DownloadFailedError, match="livestream/premiere"
@@ -210,7 +210,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "core.download.video_v2.subprocess.run", return_value=result
+            "services.trailers.video_v2.subprocess.run", return_value=result
         ):
             with pytest.raises(DownloadFailedError, match="exit code 1"):
                 _download_with_ytdlp(
@@ -230,7 +230,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "core.download.video_v2.subprocess.run",
+            "services.trailers.video_v2.subprocess.run",
             side_effect=FileNotFoundError(2, "No such file or directory"),
         ):
             with pytest.raises(DownloadFailedError, match="YTDLP_PATH"):
@@ -246,7 +246,7 @@ class TestCleanupStaleTempDownloads:
         self, tmp_path, monkeypatch
     ):
         monkeypatch.setattr(
-            "core.download.video_v2.tempfile.gettempdir",
+            "services.trailers.video_v2.tempfile.gettempdir",
             lambda: str(tmp_path),
         )
         trailarr_dir = tmp_path / "trailarr"
@@ -263,7 +263,7 @@ class TestCleanupStaleTempDownloads:
 
     def test_missing_temp_dir_is_noop(self, tmp_path, monkeypatch):
         monkeypatch.setattr(
-            "core.download.video_v2.tempfile.gettempdir",
+            "services.trailers.video_v2.tempfile.gettempdir",
             lambda: str(tmp_path / "nope"),
         )
         cleanup_stale_temp_downloads()
@@ -271,7 +271,7 @@ class TestCleanupStaleTempDownloads:
     def test_temp_dir_being_a_file_is_noop(self, tmp_path, monkeypatch):
         # A file at the temp dir path must not break app startup
         monkeypatch.setattr(
-            "core.download.video_v2.tempfile.gettempdir",
+            "services.trailers.video_v2.tempfile.gettempdir",
             lambda: str(tmp_path),
         )
         (tmp_path / "trailarr").write_bytes(b"not a directory")

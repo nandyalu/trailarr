@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 from datetime import datetime, timezone
 
-from core.download.video_analysis import (
+from services.trailers.video_analysis import (
     verify_trailer_streams,
     VideoInfo,
     StreamInfo,
@@ -113,7 +113,7 @@ def mock_video_info_no_streams():
 class TestVerifyTrailerStreams:
     """Tests for verify_trailer_streams function."""
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_valid_trailer(self, mock_get_media_info, mock_video_info_valid):
         """Returns True for valid trailer with audio, video, and valid duration."""
         mock_get_media_info.return_value = mock_video_info_valid
@@ -123,7 +123,7 @@ class TestVerifyTrailerStreams:
         assert result is True
         mock_get_media_info.assert_called_once_with("/path/to/trailer.mp4")
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_empty_trailer_path(self, mock_get_media_info):
         """Returns None for empty trailer path."""
         result = verify_trailer_streams("")
@@ -131,7 +131,7 @@ class TestVerifyTrailerStreams:
         assert result is None
         mock_get_media_info.assert_not_called()
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_none_trailer_path(self, mock_get_media_info):
         """Returns None for None trailer path."""
         result = verify_trailer_streams(None)  # type: ignore
@@ -139,7 +139,7 @@ class TestVerifyTrailerStreams:
         assert result is None
         mock_get_media_info.assert_not_called()
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_media_info_not_found(self, mock_get_media_info):
         """Returns None when media info cannot be retrieved."""
         mock_get_media_info.return_value = None
@@ -149,7 +149,7 @@ class TestVerifyTrailerStreams:
         assert result is None
         mock_get_media_info.assert_called_once_with("/path/to/trailer.mp4")
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_zero_duration(self, mock_get_media_info):
         """Returns None when trailer duration is zero."""
         video_info = VideoInfo(
@@ -181,7 +181,7 @@ class TestVerifyTrailerStreams:
 
         assert result is None
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_duration_below_minimum(self, mock_get_media_info):
         """Returns False when trailer duration is below minimum."""
         video_info = VideoInfo(
@@ -215,7 +215,7 @@ class TestVerifyTrailerStreams:
 
         assert result is False
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_duration_above_maximum(self, mock_get_media_info):
         """Returns False when trailer duration exceeds maximum."""
         video_info = VideoInfo(
@@ -249,7 +249,7 @@ class TestVerifyTrailerStreams:
 
         assert result is False
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_no_streams(self, mock_get_media_info, mock_video_info_no_streams):
         """Returns False when trailer has no streams."""
         mock_get_media_info.return_value = mock_video_info_no_streams
@@ -258,7 +258,7 @@ class TestVerifyTrailerStreams:
 
         assert result is False
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_missing_audio_stream(
         self, mock_get_media_info, mock_video_info_no_audio
     ):
@@ -269,7 +269,7 @@ class TestVerifyTrailerStreams:
 
         assert result is False
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_missing_video_stream(
         self, mock_get_media_info, mock_video_info_no_video
     ):
@@ -280,7 +280,7 @@ class TestVerifyTrailerStreams:
 
         assert result is False
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_custom_duration_limits(self, mock_get_media_info):
         """Respects custom min and max duration parameters."""
         video_info = VideoInfo(
@@ -314,7 +314,7 @@ class TestVerifyTrailerStreams:
 
         assert result is True
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_edge_case_duration_at_minimum(self, mock_get_media_info):
         """Returns True when duration equals minimum threshold."""
         video_info = VideoInfo(
@@ -348,7 +348,7 @@ class TestVerifyTrailerStreams:
 
         assert result is True
 
-    @patch("core.download.video_analysis.get_media_info")
+    @patch("services.trailers.video_analysis.get_media_info")
     def test_edge_case_duration_at_maximum(self, mock_get_media_info):
         """Returns True when duration equals maximum threshold."""
         video_info = VideoInfo(

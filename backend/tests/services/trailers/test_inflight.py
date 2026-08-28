@@ -5,7 +5,7 @@ import threading
 
 import pytest
 
-from core.download.inflight import InflightRegistry, inflight_registry
+from services.trailers.inflight import InflightRegistry, inflight_registry
 
 
 @pytest.fixture(autouse=True)

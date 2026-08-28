@@ -9,7 +9,7 @@ from database.models.downloadattempt import (
     DownloadAttemptRead,
 )
 from database.engine import read_session, write_session
-from core.download.error_classify import classified_error
+from utils.error_classify import classified_error
 
 
 def _to_read(attempt: DownloadAttempt) -> DownloadAttemptRead:

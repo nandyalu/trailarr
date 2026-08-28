@@ -9,7 +9,7 @@ from app_logger import ModuleLogger
 
 from config.settings import app_settings
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.video_conversion import get_ffmpeg_cmd
+from services.trailers.video_conversion import get_ffmpeg_cmd
 from exceptions import (
     ConversionFailedError,
     DownloadFailedError,

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from core.download.trailers.pending import (
+from services.trailers.trailers.pending import (
     compute_library_pending,
     compute_media_pending,
 )
@@ -161,17 +161,17 @@ class TestComputeMediaPending:
 def _patch_managers(profiles, media_list, attempts=None):
     return (
         patch(
-            "core.download.trailers.pending.trailerprofile"
+            "services.trailers.trailers.pending.trailerprofile"
             ".get_trailerprofiles",
             return_value=profiles,
         ),
         patch(
-            "core.download.trailers.pending.media_manager"
+            "services.trailers.trailers.pending.media_manager"
             ".read_all_generator",
             return_value=iter(media_list),
         ),
         patch(
-            "core.download.trailers.pending.attempt_manager.read_all",
+            "services.trailers.trailers.pending.attempt_manager.read_all",
             return_value=attempts or [],
         ),
     )

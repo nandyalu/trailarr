@@ -14,11 +14,11 @@ from database.models.event import EventSource
 from database.models.helpers import MediaUpdateDC
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.inflight import inflight_registry
-from core.download.trailers.service import record_new_trailer_download
-from core.download.video_v2 import download_video
-from core.download import trailer_file, trailer_search, video_analysis
-from core.download.video_analysis import VideoInfo
+from services.trailers.inflight import inflight_registry
+from services.trailers.trailers.service import record_new_trailer_download
+from services.trailers.video_v2 import download_video
+from services.trailers import trailer_file, trailer_search, video_analysis
+from services.trailers.video_analysis import VideoInfo
 from exceptions import DownloadFailedError, StopEventSetError
 
 logger = ModuleLogger("TrailersDownloader")

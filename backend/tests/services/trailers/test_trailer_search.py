@@ -1,11 +1,11 @@
 import pytest
 from database.models.customfilter import CustomFilterRead, FilterType
 from database.models.trailerprofile import TrailerProfileRead
-from core.download.trailers.utils import extract_youtube_id
-from core.download.trailer_search import _yt_search_filter
-from core.download.trailer_search import __replace_media_options
-from core.download.trailer_search import __has_all_words
-from core.download.trailer_search import __has_any_words
+from services.trailers.trailers.utils import extract_youtube_id
+from services.trailers.trailer_search import _yt_search_filter
+from services.trailers.trailer_search import __replace_media_options
+from services.trailers.trailer_search import __has_all_words
+from services.trailers.trailer_search import __has_any_words
 
 
 @pytest.mark.parametrize(

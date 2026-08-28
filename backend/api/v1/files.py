@@ -7,8 +7,8 @@ from app_logger import ModuleLogger
 import database.manager.download as download_manager
 import database.manager.filefolderinfo as files_manager
 import database.manager.media as media_manager
-from core.download import video_analysis
-from core.download.trailers.service import rename_trailer_download
+from services.trailers import video_analysis
+from services.trailers.trailers.service import rename_trailer_download
 from services.files.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFilesAPI")

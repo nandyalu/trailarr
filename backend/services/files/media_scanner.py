@@ -13,7 +13,7 @@ from database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
 )
-from core.download import video_analysis
+from services.trailers import video_analysis
 
 logger = ModuleLogger("MediaScanner")
 

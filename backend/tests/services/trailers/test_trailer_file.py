@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timezone
 
-from core.download.trailer_file import (
+from services.trailers.trailer_file import (
     get_folder_permissions,
     normalize_filename,
     _extract_video_details,
@@ -14,7 +14,7 @@ from core.download.trailer_file import (
     move_trailer_to_folder,
     verify_download,
 )
-from core.download.video_analysis import VideoInfo, StreamInfo
+from services.trailers.video_analysis import VideoInfo, StreamInfo
 from exceptions import (
     FolderNotFoundError,
     FolderPathEmptyError,
@@ -359,7 +359,7 @@ class TestGetTrailerFilename:
 
         assert "series" in result
 
-    @patch("core.download.trailer_file.app_settings")
+    @patch("services.trailers.trailer_file.app_settings")
     def test_invalid_title_format_uses_default(
         self, mock_settings, mock_media, mock_profile
     ):
@@ -594,7 +594,7 @@ class TestVerifyDownload:
         assert info is None
 
     @patch(
-        "core.download.trailer_file.video_analysis.verify_and_analyze_trailer"
+        "services.trailers.trailer_file.video_analysis.verify_and_analyze_trailer"
     )
     def test_returns_valid_result_for_valid_trailer(
         self, mock_verify, tmp_path, mock_profile, mock_video_info
@@ -612,7 +612,7 @@ class TestVerifyDownload:
         assert info == mock_video_info
 
     @patch(
-        "core.download.trailer_file.video_analysis.verify_and_analyze_trailer"
+        "services.trailers.trailer_file.video_analysis.verify_and_analyze_trailer"
     )
     def test_deletes_file_on_verification_failure(
         self, mock_verify, tmp_path, mock_profile
@@ -631,7 +631,7 @@ class TestVerifyDownload:
         assert not test_file.exists()
 
     @patch(
-        "core.download.trailer_file.video_analysis.verify_and_analyze_trailer"
+        "services.trailers.trailer_file.video_analysis.verify_and_analyze_trailer"
     )
     def test_accepts_path_object(
         self, mock_verify, tmp_path, mock_profile, mock_video_info
@@ -648,7 +648,7 @@ class TestVerifyDownload:
         assert result is True
 
     @patch(
-        "core.download.trailer_file.video_analysis.verify_and_analyze_trailer"
+        "services.trailers.trailer_file.video_analysis.verify_and_analyze_trailer"
     )
     def test_handles_delete_exception_gracefully(
         self, mock_verify, tmp_path, mock_profile
