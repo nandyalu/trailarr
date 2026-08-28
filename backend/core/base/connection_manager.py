@@ -4,14 +4,14 @@ from typing import Any, AsyncGenerator, Callable, Protocol
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.event import EventSource
-from core.base.database.models.helpers import MediaReadDC
+import database.manager.event as event_manager
+import database.manager.media as media_manager
+from database.models.event import EventSource
+from database.models.helpers import MediaReadDC
 from core.base.utils.path_utils import apply_path_mappings
 from core.files_handler import FilesHandler
-from core.base.database.models.connection import ConnectionRead
-from core.base.database.models.media import (
+from database.models.connection import ConnectionRead
+from database.models.media import (
     MediaCreate,
     MediaRead,
 )

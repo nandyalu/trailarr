@@ -5,15 +5,15 @@ import threading
 
 from api.v1 import websockets
 from app_logger import ModuleLogger
-import core.base.database.manager.connection as connection_manager
-import core.base.database.manager.downloadattempt as attempt_manager
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import ArrType
-from core.base.database.models.event import EventSource
-from core.base.database.models.helpers import MediaUpdateDC
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+import database.manager.connection as connection_manager
+import database.manager.downloadattempt as attempt_manager
+import database.manager.event as event_manager
+import database.manager.media as media_manager
+from database.models.connection import ArrType
+from database.models.event import EventSource
+from database.models.helpers import MediaUpdateDC
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.inflight import inflight_registry
 from core.download.trailers.service import record_new_trailer_download
 from core.download.video_v2 import download_video

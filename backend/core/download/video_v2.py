@@ -8,7 +8,7 @@ from pathlib import Path
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.video_conversion import get_ffmpeg_cmd
 from exceptions import (
     ConversionFailedError,

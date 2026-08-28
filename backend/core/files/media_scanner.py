@@ -8,8 +8,8 @@ import zoneinfo
 import aiofiles.os
 
 from app_logger import ModuleLogger
-from core.base.database.manager import trailerprofile
-from core.base.database.models.filefolderinfo import (
+from database.manager import trailerprofile
+from database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
 )

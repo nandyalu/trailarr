@@ -1,5 +1,5 @@
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.filters import matches_filters
 
 # Media fields that change with download state rather than describing which

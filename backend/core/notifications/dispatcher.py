@@ -28,8 +28,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app_logger import ModuleLogger
-import core.base.database.manager.media as media_manager
-import core.base.database.manager.notificationchannel as channel_manager
+import database.manager.media as media_manager
+import database.manager.notificationchannel as channel_manager
 
 logger = ModuleLogger("Notifications")
 

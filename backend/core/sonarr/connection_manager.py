@@ -1,6 +1,6 @@
 from core.base.connection_manager import BaseConnectionManager
 from core.sonarr.data_parser import parse_series
-from core.base.database.models.connection import ConnectionRead
+from database.models.connection import ConnectionRead
 from core.sonarr.api_manager import SonarrManager
 
 

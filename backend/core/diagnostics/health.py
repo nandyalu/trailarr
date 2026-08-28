@@ -23,8 +23,8 @@ from datetime import datetime, timedelta, timezone
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-import core.base.database.manager.connection as connection_manager
-import core.base.database.manager.media as media_manager
+import database.manager.connection as connection_manager
+import database.manager.media as media_manager
 from core.diagnostics import connection_doctor
 from core.diagnostics.models import (
     HealthCheckResult,

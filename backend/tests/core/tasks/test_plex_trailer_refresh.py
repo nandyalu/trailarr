@@ -41,7 +41,7 @@ class TestRefreshPlexTrailerFlags:
     @pytest.mark.asyncio
     async def test_no_plex_connections_exits_early(self):
         """When no Plex connections exist, the media manager is never queried."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
 
         non_plex = SimpleNamespace(id=1, arr_type=ArrType.RADARR)
         with (
@@ -59,7 +59,7 @@ class TestRefreshPlexTrailerFlags:
     @pytest.mark.asyncio
     async def test_stop_event_terminates_promptly(self):
         """When the stop event is set before the first item, no Plex API calls or DB writes occur."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
 
         conn = SimpleNamespace(id=1, arr_type=ArrType.PLEX, url="http://plex.local", api_key="tok")
         stop = threading.Event()
@@ -89,7 +89,7 @@ class TestRefreshPlexTrailerFlags:
     @pytest.mark.asyncio
     async def test_per_item_errors_do_not_abort_run(self):
         """An API error on one item does not stop processing of subsequent items."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
 
         conn = SimpleNamespace(id=1, arr_type=ArrType.PLEX, url="http://plex.local", api_key="tok")
         media1 = _make_media(media_id=1, plex_rating_key="1")
@@ -125,7 +125,7 @@ class TestRefreshPlexTrailerFlags:
     @pytest.mark.asyncio
     async def test_plex_linked_items_get_db_update(self):
         """For valid items, update_plex_trailer_bulk is called with the correct flags."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
 
         conn = SimpleNamespace(id=1, arr_type=ArrType.PLEX, url="http://plex.local", api_key="tok")
         media_with_trailer = _make_media(media_id=10, plex_rating_key="10")

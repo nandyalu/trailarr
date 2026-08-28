@@ -3,7 +3,7 @@ download-ownership picking."""
 
 from types import SimpleNamespace
 
-from core.base.database.models.filter import FilterCondition, FilterRead
+from database.models.filter import FilterCondition, FilterRead
 from core.base.utils.profiles import (
     find_matching_profiles,
     pick_profile_for_download,

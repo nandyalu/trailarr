@@ -666,7 +666,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns True and saves plex_trailer=True when Plex has a trailer extra."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
@@ -698,7 +698,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns False and saves plex_trailer=False when Plex has no trailer extra."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
@@ -730,7 +730,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns False without calling Plex API when connection is not PLEX type."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
 
         mock_conn = MagicMock()
         mock_conn.arr_type = ArrType.RADARR
@@ -776,7 +776,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns False when the only trailer extra has a file:// guid (local)."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
@@ -808,7 +808,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns True when a remote trailer meets the resolution threshold."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
@@ -840,7 +840,7 @@ class TestCheckPlexTrailer:
         mock_profile_plex,
     ):
         """Returns False when remote trailer resolution is below the threshold."""
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.plex.models import PlexMediaExtra
 
         mock_conn = MagicMock()
@@ -918,8 +918,8 @@ class TestNotifyPlex:
     async def test_passes_rating_key_for_a_linked_item(
         self, mock_plex_manager_cls, mock_read_conn
     ):
-        from core.base.database.models.connection import ArrType
-        from core.base.database.models.event import EventSource
+        from database.models.connection import ArrType
+        from database.models.event import EventSource
         from core.download.trailer import _notify_plex
 
         mock_read_conn.return_value.arr_type = ArrType.PLEX
@@ -943,7 +943,7 @@ class TestNotifyPlex:
     async def test_unlinked_item_still_scans_without_a_rating_key(
         self, mock_plex_manager_cls, mock_read_conn
     ):
-        from core.base.database.models.connection import ArrType
+        from database.models.connection import ArrType
         from core.download.trailer import _notify_plex
 
         mock_read_conn.return_value.arr_type = ArrType.PLEX

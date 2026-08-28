@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import core.base.database.manager.notificationchannel as channel_manager
-from core.base.database.models.notificationchannel import (
+import database.manager.notificationchannel as channel_manager
+from database.models.notificationchannel import (
     NotificationChannelCreate,
     mask_apprise_url,
 )

@@ -3,8 +3,8 @@ from fastapi import APIRouter, HTTPException
 
 from api.v1.models import UpdateSetting
 from app_logger import ModuleLogger
-from core.base.database.manager import trailerprofile
-from core.base.database.models.trailerprofile import (
+from database.manager import trailerprofile
+from database.models.trailerprofile import (
     TrailerProfileCreate,
     TrailerProfileRead,
 )

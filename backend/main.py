@@ -14,15 +14,15 @@ from fastapi.openapi.utils import get_openapi
 
 from config.logs.db_utils import flush_logs_to_db
 from config.timing_middleware import setup_timing_middleware
-from core.base.database.utils import init_db  # noqa: F401
+from database import init_db  # noqa: F401
 from api.v1.authentication import validate_api_key_cookie
 from app_logger import ModuleLogger
 from api.utils import format_google_docstring
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
 from config.settings import app_settings
-from core.base.database.utils.engine import flush_records_to_db
-from core.base.database.utils.version_guard import (
+from database.engine import flush_records_to_db
+from database.version_guard import (
     ensure_db_not_from_newer_version,
 )
 from core.binaries import validate_binary_paths

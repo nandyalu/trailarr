@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from pydantic import BaseModel
 from quiv import Task, Job
-from core.base.database.manager.task_config import get_all_task_configs
-from core.base.database.models.task_config import (
+from database.manager.task_config import get_all_task_configs
+from database.models.task_config import (
     ScheduledTaskConfigRead,
     ScheduledTaskConfigUpdate,
 )

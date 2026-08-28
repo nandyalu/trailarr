@@ -1,4 +1,4 @@
-# from core.base.database.manager.base import MediaDatabaseManager
+# from database.manager.base import MediaDatabaseManager
 # from core.sonarr.models import (
 #     Series,
 #     SeriesCreate,

@@ -18,10 +18,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from sqlmodel import Session
 
-from core.base.database.models.connection import ArrType, Connection
-from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
-import core.base.database.manager.media as media_manager
+from database.models.connection import ArrType, Connection
+from database.models.media import MediaCreate
+from database.engine import write_session
+import database.manager.media as media_manager
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 

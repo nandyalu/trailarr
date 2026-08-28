@@ -13,14 +13,14 @@ from unittest.mock import patch
 import pytest
 from sqlmodel import Session
 
-from core.base.database.models.connection import (
+from database.models.connection import (
     ArrType,
     Connection,
     ConnectionCreate,
     PathMapping,
     PathMappingCRU,
 )
-from core.base.database.utils.engine import write_session
+from database.engine import write_session
 from core.diagnostics import connection_doctor
 from core.diagnostics.models import ProbeStatus
 
@@ -388,7 +388,7 @@ class TestSearchBasedSuggestions:
     async def test_apply_updates_the_existing_mapping_row(self):
         """Applying a suggestion for an already-mapped root updates that
         row's target — it never adds a duplicate mapping."""
-        import core.base.database.manager.connection as connection_manager
+        import database.manager.connection as connection_manager
 
         conn_id = _make_conn(
             f"UpdRow-{uuid.uuid4().hex[:8]}",

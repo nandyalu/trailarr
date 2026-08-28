@@ -8,16 +8,16 @@ from unittest.mock import call, patch
 import pytest
 from sqlmodel import Session
 
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.media as media_manager
-import core.base.database.manager.trailerprofile as trailerprofile_manager
-from core.base.database.models.connection import (
+import database.manager.download as download_manager
+import database.manager.media as media_manager
+import database.manager.trailerprofile as trailerprofile_manager
+from database.models.connection import (
     ArrType,
     Connection,
 )
-from core.base.database.models.download import DownloadCreate
-from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
+from database.models.download import DownloadCreate
+from database.models.media import MediaCreate
+from database.engine import write_session
 from core.tasks.download_attribution import (
     attribute_unattributed_downloads,
     count_tracked_media,
@@ -184,7 +184,7 @@ class TestAttributeUnattributedDownloads:
 
     @pytest.mark.asyncio
     async def test_download_stays_unattributed_when_nothing_matches(self):
-        from core.base.database.models.filter import (
+        from database.models.filter import (
             FilterCondition,
             FilterRead,
         )
@@ -320,12 +320,12 @@ def _make_default_like_profile(filter_name: str, is_movie: bool):
     filter. Phase 5 removed download-state filters from profiles, and
     Phase 6 rejects them outright — a profile that filters on its own
     downloads is circular — so a profile cannot carry has_downloads."""
-    from core.base.database.models.customfilter import CustomFilterCreate
-    from core.base.database.models.filter import (
+    from database.models.customfilter import CustomFilterCreate
+    from database.models.filter import (
         FilterCondition,
         FilterCreate,
     )
-    from core.base.database.models.trailerprofile import TrailerProfileCreate
+    from database.models.trailerprofile import TrailerProfileCreate
 
     return trailerprofile_manager.create_trailerprofile(
         TrailerProfileCreate(
@@ -445,7 +445,7 @@ class TestUnclaimedReasons:
 
     @pytest.mark.asyncio
     async def test_logs_no_match_reason_when_nothing_matches(self, caplog):
-        from core.base.database.models.filter import (
+        from database.models.filter import (
             FilterCondition,
             FilterRead,
         )

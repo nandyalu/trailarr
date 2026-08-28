@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
-from core.base.database.models.media import MediaRead
+from database.models.media import MediaRead
 
 
 @pytest.fixture

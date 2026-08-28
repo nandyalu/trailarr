@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 import unicodedata
 
 from app_logger import ModuleLogger
-from core.base.database.manager import trailerprofile
+from database.manager import trailerprofile
 from core.download import video_analysis
 from core.download.trailer_file import get_folder_permissions
 

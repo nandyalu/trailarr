@@ -4,17 +4,17 @@ from typing import Callable
 from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
 from config.settings import app_settings
-from core.base.database.manager.task_config import (
+from database.manager.task_config import (
     create_task_config,
     get_task_config,
     update_task_config,
 )
-from core.base.database.models.task_config import (
+from database.models.task_config import (
     ScheduledTaskConfig,
     ScheduledTaskConfigRead,
 )
-import core.base.database.manager.connection as connection_manager
-from core.base.database.models.connection import ArrType
+import database.manager.connection as connection_manager
+from database.models.connection import ArrType
 from core.download.trailers.missing import download_missing_trailers
 from core.tasks import scheduler
 from core.tasks.api_refresh import api_refresh

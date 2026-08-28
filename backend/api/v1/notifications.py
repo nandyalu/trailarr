@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
 from app_logger import ModuleLogger
-import core.base.database.manager.notificationchannel as channel_manager
-from core.base.database.models.notificationchannel import (
+import database.manager.notificationchannel as channel_manager
+from database.models.notificationchannel import (
     NotificationChannelCreate,
     NotificationChannelRead,
 )

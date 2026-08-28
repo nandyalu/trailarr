@@ -1,17 +1,17 @@
 from datetime import datetime
-from core.base.database.manager import filefolderinfo as files_manager
-from core.base.database.models.filefolderinfo import (
+from database.manager import filefolderinfo as files_manager
+from database.models.filefolderinfo import (
     FileFolderInfoRead,
     FileFolderType,
 )
-from core.base.database.models.filter import (
+from database.models.filter import (
     VIRTUAL_BOOL_COLS,
     VIRTUAL_DATE_COLS,
     VIRTUAL_INT_COLS,
     FilterCondition,
     FilterRead,
 )
-from core.base.database.models.media import MediaRead
+from database.models.media import MediaRead
 
 # Virtual fields evaluated from the media's download rows
 DOWNLOAD_COLS = frozenset(

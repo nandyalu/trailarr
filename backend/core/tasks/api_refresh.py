@@ -1,8 +1,8 @@
 import threading
 
 from config.logging_context import with_logging_context
-import core.base.database.manager.connection as connection_manager
-from core.base.database.models.connection import ArrType, ConnectionRead
+import database.manager.connection as connection_manager
+from database.models.connection import ArrType, ConnectionRead
 from core.plex.connection_manager import PlexConnectionManager
 from core.radarr.connection_manager import RadarrConnectionManager
 from core.sonarr.connection_manager import SonarrConnectionManager

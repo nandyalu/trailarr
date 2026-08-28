@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import AliasPath, BaseModel, Field, field_validator
 
-from core.base.database.models.media import MediaCreate
+from database.models.media import MediaCreate
 
 
 class SonarrDataParser(BaseModel):

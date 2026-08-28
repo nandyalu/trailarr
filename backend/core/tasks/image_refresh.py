@@ -1,8 +1,8 @@
 import threading
 
-import core.base.database.manager.media as media_manager
-import core.base.database.manager.connection as connection_manager
-from core.base.database.models.helpers import MediaImage
+import database.manager.media as media_manager
+import database.manager.connection as connection_manager
+from database.models.helpers import MediaImage
 from core.download.image import refresh_media_images
 from app_logger import ModuleLogger
 

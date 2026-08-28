@@ -1,9 +1,9 @@
 import threading
 
-import core.base.database.manager.connection as connection_manager
-import core.base.database.manager.media as media_manager
+import database.manager.connection as connection_manager
+import database.manager.media as media_manager
 from app_logger import ModuleLogger
-from core.base.database.models.connection import ArrType, ConnectionRead
+from database.models.connection import ArrType, ConnectionRead
 from core.plex.api_manager import PlexAPI
 
 logger = ModuleLogger("PlexTrailerRefreshTask")

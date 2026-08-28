@@ -4,13 +4,13 @@ import threading
 from datetime import datetime, timezone
 from app_logger import ModuleLogger
 from config.settings import app_settings
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.filefolderinfo as files_manager
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.manager import trailerprofile
-from core.base.database.models.event import EventSource
-from core.base.database.models.media import MediaRead
+import database.manager.event as event_manager
+import database.manager.filefolderinfo as files_manager
+import database.manager.download as download_manager
+import database.manager.media as media_manager
+from database.manager import trailerprofile
+from database.models.event import EventSource
+from database.models.media import MediaRead
 from core.base.utils.profiles import pick_profile_for_download
 from core.download.trailers.service import (
     compute_file_hash,

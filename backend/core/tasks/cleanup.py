@@ -4,10 +4,10 @@ import aiofiles.os
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from config.logs import manager as logs_manager
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.event import EventSource
+import database.manager.download as download_manager
+import database.manager.event as event_manager
+import database.manager.media as media_manager
+from database.models.event import EventSource
 from core.download import video_analysis
 from core.files_handler import FilesHandler
 

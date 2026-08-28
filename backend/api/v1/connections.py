@@ -5,8 +5,8 @@ from fastapi import APIRouter, HTTPException, status
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
 
-import core.base.database.manager.connection as connection_manager
-from core.base.database.models.connection import (
+import database.manager.connection as connection_manager
+from database.models.connection import (
     ArrType,
     ConnectionCreate,
     ConnectionRead,

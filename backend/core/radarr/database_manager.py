@@ -1,4 +1,4 @@
-# from core.base.database.manager.base import DatabaseManager
+# from database.manager.base import DatabaseManager
 # from core.radarr.models import Movie, MovieCreate, MovieRead, MovieUpdate
 
 

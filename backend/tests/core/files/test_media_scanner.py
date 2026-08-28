@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from core.base.database.models.filefolderinfo import (
+from database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
 )

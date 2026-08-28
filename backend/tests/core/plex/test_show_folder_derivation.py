@@ -23,10 +23,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlmodel import Session
 
-import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import ArrType, Connection
-from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
+import database.manager.media as media_manager
+from database.models.connection import ArrType, Connection
+from database.models.media import MediaCreate
+from database.engine import write_session
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import (
     PlexEpisodeLeaf,

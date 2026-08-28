@@ -6,11 +6,11 @@ import pytest
 
 from core.files_handler import FilesHandler
 import core.base.connection_manager as connection_manager_module
-from core.base.database.models.connection import (
+from database.models.connection import (
     ArrType,
     ConnectionRead,
 )
-from core.base.database.models.media import MediaRead
+from database.models.media import MediaRead
 
 
 @pytest.mark.asyncio

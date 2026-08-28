@@ -1,10 +1,10 @@
 from collections import defaultdict
 
 from app_logger import ModuleLogger
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.media as media_manager
-import core.base.database.manager.trailerprofile as trailerprofile_manager
-from core.base.database.models.download import DownloadRead
+import database.manager.download as download_manager
+import database.manager.media as media_manager
+import database.manager.trailerprofile as trailerprofile_manager
+from database.models.download import DownloadRead
 from core.base.utils.profiles import find_matching_profiles
 
 logger = ModuleLogger("DownloadAttribution")

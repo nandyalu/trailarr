@@ -148,10 +148,38 @@ the dedicated spec commit above.
 - **ModuleLogger labels** derive from names passed explicitly ("TrailersFilesScan") —
   unchanged. But log lines embed `module:file.py:line` — any doc examples referencing
   them are cosmetic; skip.
-- **Runtime path anchors:** `frontend/router.py` computes `parents[2]/frontend-build`
-  — moving it would break static serving (it stays). `scripts/launch.py`, Dockerfile
-  COPY/WORKDIR, `.vscode/tasks.json` cwd/env, `export_openapi.py`, healthcheck —
-  verify each still resolves; they mostly reference `backend/` root which is stable.
+- **Runtime path anchors — the sharpest edge in this phase.** A `Path(__file__).
+  parents[N]` anchor is silently wrong after a move: the module still imports, the app
+  still boots, and the feature is just dead. Stage A hit this immediately —
+  `version_guard.py` used `parents[4]` (correct at `core/base/database/utils/`) and had
+  to become `parents[1]` at `database/`; because the guard also fails open on an empty
+  revision set (see hygiene H12), nothing but its unit test would have noticed, and the
+  ladder's downgrade protection would have shipped disabled.
+  **Full inventory of app-owned anchors (checked Aug 28, 2026 — recheck before each
+  move):**
+  - `database/version_guard.py` → `parents[1]` — FIXED in the database move.
+  - `core/download/cli.py:9` — `sys.path.insert(0, dirname(dirname(abspath(__file__))))`.
+    Two levels up from `core/download/` is `core/`. **Recompute when `core/download/`
+    becomes `services/trailers/`** — two levels up then lands on `backend/`, which is
+    a different (and probably more correct) path. Verify the CLI entry point by
+    running it, not by reading it.
+  - `export_openapi.py`, `app_logger.py`, `frontend/router.py` — all anchored at the
+    `backend/` root and none of them move; no change needed.
+  After every move, grep the moved package for `__file__` and re-derive each index by
+  hand. A green test suite does not prove an anchor is right.
+- **Test collection order changes with every move, and the suite is not isolated.**
+  Tests share one session-scoped database (`conftest.pytest_configure` → `init_db()`),
+  so any test that assumes an autoincrement id breaks when a move reshuffles collection
+  order. The database move exposed exactly this: `test_connection.py` hardcoded
+  `CONN_ID_1 = 1`, and once it sorted after `tests/core/base/test_connection_manager_
+  monitor.py` that module took id 1 first. Fixed by using the id `create()` returns.
+  Expect one or two more of these per move; the fix is always "use the id the code gave
+  you", never "restore the old ordering". When a move produces failures, run the failing
+  file alone first — passing in isolation but failing in the suite is this bug, not the
+  move.
+- **`scripts/launch.py`, Dockerfile COPY/WORKDIR, `.vscode/tasks.json` cwd/env,
+  healthcheck** — verify each still resolves; they mostly reference `backend/` root
+  which is stable.
 - **`PYTHONPATH=backend` import style** stays (no src-layout change — one battle per
   release).
 - **conftest.py** temp-dir bootstrapping imports `core.base.database.utils.init_db` →
@@ -216,8 +244,15 @@ Zero user-facing behavior change → zero user-guide changes expected. The docs 
 contributor-facing:
 
 - `CLAUDE.md` Architecture section — same PR, non-negotiable (already in pitfalls).
-- `docs/references/contributing.md` — any backend path references (`core/…` →
-  `services/…`/`database/…`), dev-setup instructions still accurate post-move.
+  Note the backend subtree is written as bullets relative to `core/` (`base/database/
+  models/`), so a grep for `core/` finds only one line — rewrite the whole subtree.
+- `.github/instructions/backend.instructions.md` — **18 `core/…` path references**
+  (Copilot's architecture brief; the same trap as CLAUDE.md, and not in the original
+  plan). Rewrite in the same PR.
+- `.github/planned_tasks.md` — scratch planning doc with ~10 `core/…` hook-point paths.
+  Lower priority; refresh or delete if it is stale by then.
+- `docs/references/contributing.md` — **no `core/` path references** (checked Aug 28,
+  2026); only verify the dev-setup commands still work post-move.
 - `docs/references/api-docs/openapi.json` — no structural change is the invariant; the
   two permitted text diffs (documented 500s from Stage B, rewritten handler descriptions
   from Stage C) each regenerated in their own dedicated commit.

@@ -8,15 +8,15 @@ from api.v1.models import (
     SearchMedia,
 )
 from app_logger import ModuleLogger
-from core.base.database.manager import trailerprofile
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.filefolderinfo as files_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.event import EventSource
-from core.base.database.models.filefolderinfo import FileFolderInfoRead
-from core.base.database.models.download import DownloadRead
-from core.base.database.models.media import MediaRead
+from database.manager import trailerprofile
+import database.manager.download as download_manager
+import database.manager.event as event_manager
+import database.manager.filefolderinfo as files_manager
+import database.manager.media as media_manager
+from database.models.event import EventSource
+from database.models.filefolderinfo import FileFolderInfoRead
+from database.models.download import DownloadRead
+from database.models.media import MediaRead
 from core.download import trailer_search
 from core.download.inflight import inflight_registry
 from core.download.trailers import utils as trailer_utils

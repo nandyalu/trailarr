@@ -3,17 +3,17 @@ import threading
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.manager import trailerprofile
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.downloadattempt as attempt_manager
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.downloadattempt import (
+from database.manager import trailerprofile
+import database.manager.download as download_manager
+import database.manager.downloadattempt as attempt_manager
+import database.manager.event as event_manager
+import database.manager.media as media_manager
+from database.models.downloadattempt import (
     is_eligible,
     next_eligible_at,
 )
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.profiles import find_matching_profiles
 from core.base.utils.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader

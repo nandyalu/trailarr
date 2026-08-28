@@ -4,9 +4,9 @@ from pathlib import PurePath
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.filefolderinfo as files_manager
-import core.base.database.manager.media as media_manager
+import database.manager.download as download_manager
+import database.manager.filefolderinfo as files_manager
+import database.manager.media as media_manager
 from core.download import video_analysis
 from core.download.trailers.service import rename_trailer_download
 from core.files_handler import FilesHandler, FolderInfo

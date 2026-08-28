@@ -1,4 +1,4 @@
-from core.base.database.models.media import MediaCreate
+from database.models.media import MediaCreate
 from core.plex.models import PlexMediaItem
 
 

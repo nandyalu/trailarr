@@ -3,8 +3,8 @@ from fastapi import APIRouter
 from api.v1.models import Settings, UpdateLogin, UpdateSetting
 from api.v1 import authentication
 from config.settings import app_settings
-from core.base.database.manager.general import ServerStats
-from core.base.database.manager.general import get_stats as get_generic_stats
+from database.manager.general import ServerStats
+from database.manager.general import get_stats as get_generic_stats
 
 settings_router = APIRouter(prefix="/settings", tags=["Settings"])
 

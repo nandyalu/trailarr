@@ -1,6 +1,6 @@
 # from sqlmodel import Field
 
-# from core.base.database.models.media import (
+# from database.models.media import (
 #     MediaCreate,
 #     MediaDB,
 #     MediaRead,

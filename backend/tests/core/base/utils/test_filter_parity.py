@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from core.base.database.models.download import DownloadRead
-from core.base.database.models.filter import FilterCondition, FilterRead
-from core.base.database.models.media import MediaRead
+from database.models.download import DownloadRead
+from database.models.filter import FilterCondition, FilterRead
+from database.models.media import MediaRead
 from core.base.utils.filters import matches_filters
 
 FIXTURE_PATH = (
@@ -105,7 +105,7 @@ def test_fixture_covers_every_download_field():
 
     Stops a new field from shipping without parity coverage.
     """
-    from core.base.database.models.filter import (
+    from database.models.filter import (
         VIRTUAL_BOOL_COLS,
         VIRTUAL_DATE_COLS,
         VIRTUAL_INT_COLS,

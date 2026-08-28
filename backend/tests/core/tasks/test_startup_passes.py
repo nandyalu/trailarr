@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-import core.base.database.manager.startuppass as startuppass_manager
+import database.manager.startuppass as startuppass_manager
 from core.tasks import startup_passes
 from core.tasks.startup_passes import (
     DOWNLOADS_REQUIRED_PASSES,
@@ -21,8 +21,8 @@ def clean_registry_records():
     """Each test starts with no completion records (shared test DB)."""
     from sqlmodel import Session, delete
 
-    from core.base.database.models.startuppass import StartupPass
-    from core.base.database.utils.engine import engine
+    from database.models.startuppass import StartupPass
+    from database.engine import engine
 
     with Session(engine) as session:
         session.exec(delete(StartupPass))  # type: ignore[call-overload]

@@ -18,10 +18,10 @@ from unittest.mock import MagicMock, patch
 
 from sqlmodel import Session, select
 
-from core.base.database.models.connection import ArrType, Connection
-from core.base.database.models.event import Event, EventType
-from core.base.database.models.media import Media
-from core.base.database.utils.engine import get_session, write_session
+from database.models.connection import ArrType, Connection
+from database.models.event import Event, EventType
+from database.models.media import Media
+from database.engine import get_session, write_session
 from core.plex.connection_manager import PlexConnectionManager
 from core.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
 

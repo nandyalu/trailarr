@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from core.base.database.models.event import EventSource
+from database.models.event import EventSource
 from core.tasks.files_scan import (
     _ctime_matches_stored,
     _has_folder_changed,

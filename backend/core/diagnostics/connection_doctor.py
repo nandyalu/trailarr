@@ -28,9 +28,9 @@ from collections import deque
 from types import SimpleNamespace
 
 from app_logger import ModuleLogger
-import core.base.database.manager.connection as connection_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import (
+import database.manager.connection as connection_manager
+import database.manager.media as media_manager
+from database.models.connection import (
     ConnectionCreate,
     ConnectionRead,
 )

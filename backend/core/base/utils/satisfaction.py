@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 
 
 @dataclass

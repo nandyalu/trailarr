@@ -1,8 +1,8 @@
 import threading
 
 from app_logger import ModuleLogger
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.trailer import download_trailer
 from core.download.trailers import utils
 from exceptions import DownloadFailedError

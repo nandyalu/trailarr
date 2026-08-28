@@ -3,10 +3,10 @@ import threading
 from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
 from config.settings import app_settings
-from core.base.database.manager import trailerprofile
-import core.base.database.manager.media as media_manager
-from core.base.database.models.media import MediaRead
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.manager import trailerprofile
+import database.manager.media as media_manager
+from database.models.media import MediaRead
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.trailer import download_trailer
 from core.download.trailers.batch import batch_download_task
 from core.files_handler import FilesHandler

@@ -7,9 +7,9 @@ from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.base.database.models.media import MediaRead
-from core.base.database.models.helpers import language_names
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.media import MediaRead
+from database.models.helpers import language_names
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.cli import cli_to_api
 from core.download.trailers.utils import extract_youtube_id
 

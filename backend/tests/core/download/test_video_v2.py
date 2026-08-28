@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from core.base.database.models.customfilter import CustomFilterRead, FilterType
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.customfilter import CustomFilterRead, FilterType
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.video_v2 import (
     _cleanup_partial_downloads,
     _download_with_ytdlp,

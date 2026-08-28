@@ -7,13 +7,13 @@ from types import SimpleNamespace
 import pytest
 from sqlmodel import Session
 
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.media as media_manager
+import database.manager.event as event_manager
+import database.manager.media as media_manager
 from core.base.connection_manager import BaseConnectionManager
-from core.base.database.models.connection import ArrType, Connection
-from core.base.database.models.event import EventType
-from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
+from database.models.connection import ArrType, Connection
+from database.models.event import EventType
+from database.models.media import MediaCreate
+from database.engine import write_session
 
 
 @write_session

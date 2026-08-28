@@ -16,7 +16,7 @@ import threading
 from typing import Awaitable, Callable
 
 from app_logger import ModuleLogger
-import core.base.database.manager.startuppass as startuppass_manager
+import database.manager.startuppass as startuppass_manager
 from core.tasks.download_attribution import run_attribution_pass
 
 logger = ModuleLogger("StartupPasses")

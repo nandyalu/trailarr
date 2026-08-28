@@ -6,8 +6,8 @@ import tempfile
 import os
 from unittest.mock import patch
 
-from core.base.database.models.customfilter import CustomFilterRead, FilterType
-from core.base.database.models.trailerprofile import TrailerProfileRead
+from database.models.customfilter import CustomFilterRead, FilterType
+from database.models.trailerprofile import TrailerProfileRead
 from core.download.video_conversion import (
     _get_video_options_nvidia,
     _get_video_options_vaapi,
