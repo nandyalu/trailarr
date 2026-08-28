@@ -1,5 +1,9 @@
 Trailarr can be used with hardware acceleration to speed up video conversion using NVIDIA, Intel, and AMD GPUs. This guide explains how to set up Trailarr to leverage hardware acceleration from different GPU manufacturers.
 
+!!! tip "Check what was detected"
+    {{ version_badge("add", "0.11.4") }}
+    [Settings > Health](../../user-guide/settings/health.md) shows which GPUs Trailarr detected at startup and whether each is enabled — no need to dig through logs.
+
 !!! important
     Hardware acceleration is an advanced feature and requires additional setup on your host system. If you do not know/understand what hardware acceleration is, you can safely ignore this guide and use Trailarr without hardware acceleration.
 

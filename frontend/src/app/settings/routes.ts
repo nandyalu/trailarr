@@ -4,6 +4,7 @@ import {
   RouteAdd,
   RouteConnections,
   RouteGeneral,
+  RouteHealth,
   RouteNotifications,
   RouteParamConnectionId,
   RouteParamProfileId,
@@ -15,6 +16,7 @@ import {EditConnectionComponent} from './connections/edit-connection/edit-connec
 import {EditPlexConnectionComponent} from './connections/edit-plex-connection/edit-plex-connection.component';
 import {ShowConnectionsComponent} from './connections/show-connections/show-connections.component';
 import {GeneralComponent} from './general/general.component';
+import {HealthComponent} from './health/health.component';
 import {NotificationsComponent} from './notifications/notifications.component';
 import {EditProfileComponent} from './profiles/edit-profile/edit-profile.component';
 import {ShowProfilesComponent} from './profiles/show-profiles/show-profiles.component';
@@ -33,6 +35,7 @@ export default [
       {path: RouteProfiles, component: ShowProfilesComponent},
       {path: `${RouteProfiles}/:${RouteParamProfileId}`, component: EditProfileComponent},
       {path: RouteGeneral, component: GeneralComponent},
+      {path: RouteHealth, component: HealthComponent},
       {path: RouteNotifications, component: NotificationsComponent},
       {path: RouteAbout, component: AboutComponent},
       {path: '**', redirectTo: RouteGeneral, pathMatch: 'prefix'},
