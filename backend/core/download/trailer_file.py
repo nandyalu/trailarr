@@ -47,7 +47,7 @@ def _create_media_folder(folder_path: str) -> bool:
     Imported lazily: files_handler imports this module for
     get_folder_permissions, so a module-level import would be circular.
     """
-    from core.files_handler import FilesHandler
+    from services.files.files_handler import FilesHandler
 
     return FilesHandler.create_folder(folder_path)
 

@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.files_handler import FilesHandler
+from services.files.files_handler import FilesHandler
 import core.base.connection_manager as connection_manager_module
 from database.models.connection import (
     ArrType,
@@ -705,7 +705,7 @@ class TestCreateFolder:
 
         target = tmp_path / "dead-mount" / "Some Movie (2026)"
         with patch(
-            "core.files_handler.is_disk_available", return_value=False
+            "services.files.files_handler.is_disk_available", return_value=False
         ):
             assert FilesHandler.create_folder(str(target)) is False
         assert not target.exists()

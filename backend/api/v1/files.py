@@ -9,7 +9,7 @@ import database.manager.filefolderinfo as files_manager
 import database.manager.media as media_manager
 from core.download import video_analysis
 from core.download.trailers.service import rename_trailer_download
-from core.files_handler import FilesHandler, FolderInfo
+from services.files.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFilesAPI")
 

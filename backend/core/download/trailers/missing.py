@@ -19,7 +19,7 @@ from services.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader
 from core.download.inflight import inflight_registry
 from core.download.trailers import utils
-from core.files_handler import FilesHandler, is_disk_available
+from services.files.files_handler import FilesHandler, is_disk_available
 from core.tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
 

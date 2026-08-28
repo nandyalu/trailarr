@@ -18,8 +18,8 @@ from core.download.trailers.service import (
     record_new_trailer_download,
     rename_trailer_download,
 )
-from core.files.media_scanner import MediaScanner
-from core.files_handler import is_disk_available
+from services.files.media_scanner import MediaScanner
+from services.files.files_handler import is_disk_available
 
 logger = ModuleLogger("TrailersFilesScan")
 
@@ -70,7 +70,7 @@ def _handle_folder_gone(media: MediaRead) -> None:
         media_manager.update_media_exists(media.id, False)
 
 
-# Moved to core.files_handler so the download task can share it; the alias
+# Moved to services.files.files_handler so the download task can share it; the alias
 # keeps this module's historical import path and test patch targets working.
 _is_disk_available = is_disk_available
 

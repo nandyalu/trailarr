@@ -9,7 +9,7 @@ import database.manager.event as event_manager
 import database.manager.media as media_manager
 from database.models.event import EventSource
 from core.download import video_analysis
-from core.files_handler import FilesHandler
+from services.files.files_handler import FilesHandler
 
 logger = ModuleLogger("CleanupTasks")
 

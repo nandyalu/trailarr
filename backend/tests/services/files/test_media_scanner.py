@@ -10,7 +10,7 @@ from database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
 )
-from core.files.media_scanner import MediaScanner
+from services.files.media_scanner import MediaScanner
 
 MB = 1024 * 1024
 _NOW = datetime.now(timezone.utc)
@@ -65,7 +65,7 @@ def _video_info(duration_seconds: int) -> MagicMock:
 @pytest.fixture
 def scanner():
     with patch(
-        "core.files.media_scanner.trailerprofile.get_trailer_folders",
+        "services.files.media_scanner.trailerprofile.get_trailer_folders",
         return_value=set(),
     ):
         yield MediaScanner()
@@ -82,7 +82,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_ffprobe_returns_none(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=None,
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
@@ -90,7 +90,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_ffprobe_duration_zero(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(0),
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
@@ -98,7 +98,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_ffprobe_negative_duration(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(-1),
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
@@ -106,7 +106,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_duration_within_limit(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION - 1),
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is True
@@ -114,7 +114,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_duration_exactly_at_limit(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION),
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is True
@@ -122,7 +122,7 @@ class TestCheckLargeNameTrailer:
     @pytest.mark.asyncio
     async def test_duration_one_second_over_limit(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION + 1),
         ):
             assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
@@ -196,7 +196,7 @@ class TestIsTrailerFileFolderAuthoritative:
     @pytest.mark.asyncio
     async def test_custom_profile_folder_returns_true(self):
         with patch(
-            "core.files.media_scanner.trailerprofile.get_trailer_folders",
+            "services.files.media_scanner.trailerprofile.get_trailer_folders",
             return_value={"extras"},
         ):
             s = MediaScanner()
@@ -257,7 +257,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_exactly_at_threshold_short_duration_returns_true(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(120),
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is True
@@ -265,7 +265,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_at_threshold_duration_at_limit_returns_true(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION),
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is True
@@ -273,7 +273,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_at_threshold_duration_over_limit_returns_false(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION + 1),
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
@@ -281,7 +281,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_well_above_threshold_short_duration_returns_true(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(90),
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 500 * MB) is True
@@ -289,7 +289,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_ffprobe_returns_none_returns_false(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=None,
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
@@ -297,7 +297,7 @@ class TestIsTrailerFileLargeWithFfprobe:
     @pytest.mark.asyncio
     async def test_ffprobe_duration_zero_returns_false(self, scanner):
         with patch(
-            "core.files.media_scanner.video_analysis.get_media_info",
+            "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(0),
         ):
             assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
@@ -449,7 +449,7 @@ class TestGetTrailerFolders:
 
     def test_always_includes_trailer_and_trailers(self):
         with patch(
-            "core.files.media_scanner.trailerprofile.get_trailer_folders",
+            "services.files.media_scanner.trailerprofile.get_trailer_folders",
             return_value=set(),
         ):
             folders = MediaScanner.get_trailer_folders()
@@ -458,7 +458,7 @@ class TestGetTrailerFolders:
 
     def test_includes_custom_profile_folders(self):
         with patch(
-            "core.files.media_scanner.trailerprofile.get_trailer_folders",
+            "services.files.media_scanner.trailerprofile.get_trailer_folders",
             return_value={"Extras", "Behind the Scenes"},
         ):
             folders = MediaScanner.get_trailer_folders()
@@ -467,7 +467,7 @@ class TestGetTrailerFolders:
 
     def test_all_folders_are_lowercased(self):
         with patch(
-            "core.files.media_scanner.trailerprofile.get_trailer_folders",
+            "services.files.media_scanner.trailerprofile.get_trailer_folders",
             return_value={"FEATURETTES"},
         ):
             folders = MediaScanner.get_trailer_folders()
@@ -476,7 +476,7 @@ class TestGetTrailerFolders:
 
     def test_whitespace_stripped_from_folder_names(self):
         with patch(
-            "core.files.media_scanner.trailerprofile.get_trailer_folders",
+            "services.files.media_scanner.trailerprofile.get_trailer_folders",
             return_value={"  extras  "},
         ):
             folders = MediaScanner.get_trailer_folders()

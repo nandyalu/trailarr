@@ -47,7 +47,7 @@ from services.diagnostics.models import (
     ProbeStatus,
     SuggestedMapping,
 )
-from core.files_handler import is_disk_available
+from services.files.files_handler import is_disk_available
 
 logger = ModuleLogger("ConnectionDoctor")
 

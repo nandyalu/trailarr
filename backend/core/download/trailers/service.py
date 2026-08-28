@@ -6,7 +6,7 @@ import database.manager.download as download_manager
 from database.models.download import DownloadCreate, DownloadRead
 from database.models.media import MediaRead
 from core.download.video_analysis import VideoInfo, get_media_info
-from core.files_handler import FilesHandler
+from services.files.files_handler import FilesHandler
 
 logger = ModuleLogger("DownloadService")
 
