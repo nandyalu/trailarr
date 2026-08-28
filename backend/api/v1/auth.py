@@ -21,6 +21,10 @@ class LoginRequest(BaseModel):
 
 def _set_session_cookie(token: str, response: Response) -> None:
     """Helper function to set the session cookie in the response. \n
+    The cookie path is always the root path. \n
+    > **_Do not scope the cookie to `URL_BASE`_**. The browser then sends the
+    cookie only for requests below that prefix. The app is also available at
+    the root path, and the user gets a 401 error for every request there. \n
     > **_Modifies the response in-place_**
     Args:
         token (str): The session token to set in the cookie
@@ -31,7 +35,7 @@ def _set_session_cookie(token: str, response: Response) -> None:
     response.set_cookie(
         key="trailarr_session",
         value=token,
-        path=app_settings.url_base or "/",
+        path="/",
         samesite="lax",
         httponly=True,
     )
@@ -99,9 +103,8 @@ async def logout(
         dict: Status message"""
     if trailarr_session:
         delete_session(trailarr_session)
-    response.delete_cookie(
-        key="trailarr_session", path=app_settings.url_base or "/"
-    )
+    # Use the same path as `_set_session_cookie`, or the browser keeps the cookie.
+    response.delete_cookie(key="trailarr_session", path="/")
     return {"status": "ok"}
 
 

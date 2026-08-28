@@ -2,8 +2,9 @@
 
 # THIS SCRIPT WILL BE RUN AS THE NON-ROOT USER 'appuser' IN THE CONTAINER
 
-# Source the box_echo function
+# Source the box_echo and load_env_file functions
 source /app/scripts/box_echo.sh
+source /app/scripts/load_env.sh
 
 box_echo "Running application as user: $(whoami)"
 
@@ -47,9 +48,8 @@ box_echo "----------------------------------------------------------------------
 ENV_FILE="${APP_DATA_DIR}/.env"
 if [ -f "$ENV_FILE" ]; then
     box_echo "Loading environment variables from $ENV_FILE"
-    set -o allexport
-    source "$ENV_FILE"
-    set +o allexport
+    # A variable set for the container wins over the stored value.
+    load_env_file "$ENV_FILE"
     box_echo "Environment variables loaded successfully!"
     box_echo "--------------------------------------------------------------------------";
 else

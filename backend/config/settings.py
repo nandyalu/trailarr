@@ -3,6 +3,7 @@ import os
 import platform
 import secrets
 
+import bcrypt
 from dotenv import load_dotenv, set_key
 
 from config import app_logger_opts
@@ -149,6 +150,27 @@ def _start_slash_only(value: str) -> str:
     return value
 
 
+def _hashed_webui_password(value: str, default_hash: str) -> str:
+    """Return the password hash to store for the WebUI login. \n
+    - An empty value gives the default password ('trailarr'). Quotes and tabs
+      are removed first, so an improperly escaped value also resets it.
+    - A bcrypt hash is kept as it is.
+    - Any other value is plain text, and is hashed. A user can set a new
+      password with the `WEBUI_PASSWORD` environment variable. bcrypt cannot
+      compare a password against a value that is not a hash. \n
+    Args:
+        value (str): The stored or configured password value.
+        default_hash (str): The hash of the default password. \n
+    Returns:
+        str: A bcrypt hash to store."""
+    cleaned = value.replace('"', "").replace("'", "").replace("\t", "").strip()
+    if not cleaned:
+        return default_hash
+    if cleaned.startswith("$2"):
+        return cleaned
+    return bcrypt.hashpw(cleaned.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
 def get_ytdlp_version() -> str:
     """Get the version of yt-dlp. \n
     Returns:
@@ -246,12 +268,13 @@ class _Config:
         self.log_level = getenv_str("LOG_LEVEL", "INFO")
         # self.monitor_enabled = getenv_bool("MONITOR_ENABLED", True)
         self.wait_for_media = getenv_bool("WAIT_FOR_MEDIA", False)
-        # If the webui_password is empty, set it to the default
-        # Handle whitespace and empty strings (even improperly escaped quotes)
-        _webui_password = self.webui_password.replace('"', "").replace("'", "")
-        _webui_password = _webui_password.replace("\t", "").strip()
-        if not _webui_password:
-            self.webui_password = self._DEFAULT_WEBUI_PASSWORD
+        # Store a usable password hash for the WebUI login
+        _stored_password = self.webui_password
+        _webui_password = _hashed_webui_password(
+            _stored_password, self._DEFAULT_WEBUI_PASSWORD
+        )
+        if _webui_password != _stored_password:
+            self.webui_password = _webui_password
         self.yt_cookies_path = os.getenv("YT_COOKIES_PATH", "")
         self.trailer_max_duration = ""
 

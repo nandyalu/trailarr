@@ -13,7 +13,10 @@ def _mock_response() -> MagicMock:
 
 
 class TestSetSessionCookie:
-    def test_uses_url_base_as_path_when_set(self):
+    # A cookie scoped to URL_BASE is not sent for requests at the root path.
+    # The user then gets a 401 error for every API call, and cannot log in.
+    # See https://github.com/nandyalu/trailarr/issues/663
+    def test_uses_root_path_when_url_base_is_set(self):
         response = _mock_response()
         with patch("api.v1.auth.app_settings") as mock_settings:
             mock_settings.url_base = "/trailarr"
@@ -21,12 +24,12 @@ class TestSetSessionCookie:
         response.set_cookie.assert_called_once_with(
             key="trailarr_session",
             value="mytoken",
-            path="/trailarr",
+            path="/",
             samesite="lax",
             httponly=True,
         )
 
-    def test_falls_back_to_root_when_url_base_empty(self):
+    def test_uses_root_path_when_url_base_empty(self):
         response = _mock_response()
         with patch("api.v1.auth.app_settings") as mock_settings:
             mock_settings.url_base = ""
@@ -88,7 +91,8 @@ class TestLogout:
             patch("api.v1.auth.delete_session") as mock_delete,
             patch("api.v1.auth.app_settings") as mock_settings,
         ):
-            mock_settings.url_base = "/"
+            # The cookie path must match `_set_session_cookie`, not the URL base.
+            mock_settings.url_base = "/trailarr"
             result = await logout(response, trailarr_session="tok789")
         mock_delete.assert_called_once_with("tok789")
         response.delete_cookie.assert_called_once_with(
