@@ -49,9 +49,8 @@ backend/
                                 connection_doctor, health, cookies, store, models)
     updates/                  ← core/updates/
     binaries.py               ← core/binaries.py (startup binary-path checks)
-    profiles.py, filters.py,  ← core/base/utils/{profiles,filters,path_utils,
-      path_utils.py,             satisfaction}.py
-      satisfaction.py
+    profiles.py, filters.py,  ← core/base/utils/{profiles,filters,satisfaction}.py
+      satisfaction.py              (path_utils went to utils/, not here — see below)
   database/
     models/                   ← core/base/database/models/
     manager/                  ← core/base/database/manager/
@@ -59,9 +58,10 @@ backend/
   tasks/                      ← core/tasks/{__init__(scheduler), schedules.py, task_config wiring} ONLY —
                                 every task body becomes a thin `await services.x.run(...)`
   utils/                      ← pure, dependency-free helpers both database/ and
-    path_utils.py                services/ may import (← core/base/utils/path_utils.py).
-                                 DECIDED Aug 28, 2026. utils/ imports nothing from the
-                                 other layers; that rule is what keeps it honest.
+    path_utils.py                services/ may import (← core/base/utils/path_utils.py,
+    error_classify.py            ← core/download/error_classify.py, which has no imports
+                                 at all). DECIDED Aug 28, 2026. utils/ imports nothing
+                                 from the other layers; that rule is what keeps it honest.
   config/, exceptions.py, main.py, app_logger.py   (unchanged)
   frontend/                   (static serving — unchanged)
   alembic/                    (unchanged location; see pitfalls)
