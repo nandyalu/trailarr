@@ -5,7 +5,7 @@ import database.manager.download as download_manager
 import database.manager.media as media_manager
 import database.manager.trailerprofile as trailerprofile_manager
 from database.models.download import DownloadRead
-from core.base.utils.profiles import find_matching_profiles
+from services.profiles import find_matching_profiles
 
 logger = ModuleLogger("DownloadAttribution")
 

@@ -11,7 +11,7 @@ import database.manager.media as media_manager
 from database.manager import trailerprofile
 from database.models.event import EventSource
 from database.models.media import MediaRead
-from core.base.utils.profiles import pick_profile_for_download
+from services.profiles import pick_profile_for_download
 from core.download.trailers.service import (
     compute_file_hash,
     reanalyze_trailer_download,

@@ -17,7 +17,7 @@ import pytest
 from database.models.download import DownloadRead
 from database.models.filter import FilterCondition, FilterRead
 from database.models.media import MediaRead
-from core.base.utils.filters import matches_filters
+from services.filters import matches_filters
 
 FIXTURE_PATH = (
     Path(__file__).resolve().parents[3] / "fixtures" / "filter-cases.json"

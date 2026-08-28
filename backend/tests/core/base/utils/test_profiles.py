@@ -4,7 +4,7 @@ download-ownership picking."""
 from types import SimpleNamespace
 
 from database.models.filter import FilterCondition, FilterRead
-from core.base.utils.profiles import (
+from services.profiles import (
     find_matching_profiles,
     pick_profile_for_download,
 )

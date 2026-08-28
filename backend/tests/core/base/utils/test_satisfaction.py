@@ -5,7 +5,7 @@ ownership is purely per profile)."""
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
-from core.base.utils.satisfaction import evaluate_satisfaction
+from services.satisfaction import evaluate_satisfaction
 
 NOW = datetime.now(timezone.utc)
 

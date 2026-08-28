@@ -1,6 +1,6 @@
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
-from core.base.utils.filters import matches_filters
+from services.filters import matches_filters
 
 # Media fields that change with download state rather than describing which
 # media a profile is for. Filters on these fields say "when to download",

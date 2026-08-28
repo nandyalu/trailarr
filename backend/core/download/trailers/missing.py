@@ -14,8 +14,8 @@ from database.models.downloadattempt import (
 )
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
-from core.base.utils.profiles import find_matching_profiles
-from core.base.utils.satisfaction import evaluate_satisfaction
+from services.profiles import find_matching_profiles
+from services.satisfaction import evaluate_satisfaction
 from core.download import trailer as trailer_downloader
 from core.download.inflight import inflight_registry
 from core.download.trailers import utils
