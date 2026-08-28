@@ -3463,7 +3463,7 @@
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li>
-<p><strong>Modals show again in Safari</strong> — a dialog stayed hidden while the page behind it dimmed, because the dialog only became visible if its opening animation ran, and that animation does not run in Safari. A dialog now shows even when its animation does not run. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
+<p><strong>Modals show again in Safari</strong> — a dialog stayed hidden while the page behind it dimmed. A dialog now shows even when its opening animation does not run. Trailarr also sets the position and the size limits of a dialog against the window. Before this change, Safari could measure the dialog against a short parent element and give it a height of 0. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report and the console output! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
 </li>
 <li>
 <p><strong>Login works again behind a reverse proxy sub-directory</strong> — the login returned a <code>405 Method Not Allowed</code> error, or was successful and then gave a <code>401 Unauthorized</code> error for every request, which locked you out of the app; the session cookie now stays at the root path, the redirect after login keeps the URL base, and a new <code>URL Base</code> applies without a restart — see <a href="../../user-guide/reverse-proxy/#login-problems-in-a-sub-directory-setup">Reverse Proxy</a>. Thanks <a href="https://github.com/daviddavo">@daviddavo</a> for the detailed report and logs! (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>)</p>
