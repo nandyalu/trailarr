@@ -25,7 +25,7 @@ from database.engine import flush_records_to_db
 from database.version_guard import (
     ensure_db_not_from_newer_version,
 )
-from core.binaries import validate_binary_paths
+from services.binaries import validate_binary_paths
 from core.download.video_v2 import cleanup_stale_temp_downloads
 from services.notifications import dispatcher as notification_dispatcher
 from core.tasks import scheduler
