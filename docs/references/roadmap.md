@@ -111,16 +111,19 @@ The feedback is consistent: people who get Trailarr running love it — and the 
 struggle almost always hit the same first-hour walls (path mappings, permissions,
 YouTube cookies). So a **Setup & Health track** runs alongside the phases:
 
-- **Connection Doctor** *(~v0.11.3–v0.12.x)* — after you add a connection, Trailarr checks
+- **Connection Doctor** — `v0.11.4` ✅ — after you add a connection, Trailarr checks
   whether it can actually see and write to your media folders, and when it can't, tells
   you exactly why and offers the fix ("Radarr reports `/data/movies` but that's not
   visible here — suggested path mapping: `/data → /media` [Apply]"). Permission problems
-  report the exact PUID/PGID mismatch instead of failing three tasks later.
-- **Health page** *(~v0.11.3–v0.12.x)* — one place with live checks and fixes: ffmpeg & hardware
+  report the exact PUID/PGID mismatch instead of failing three tasks later. The doctor
+  also runs on the Add / Edit Connection page, so you can find your folders before you
+  save — see [Connection Doctor](../user-guide/settings/connections/index.md#connection-doctor).
+- **Health page** — `v0.11.4` ✅ — one place with live checks and fixes: ffmpeg & hardware
   acceleration status, yt-dlp version and a test download, YouTube cookies setup (a
   proper UI for it, with validity checking), connection reachability, disk access and
   space. When a download fails because YouTube wants a sign-in, Trailarr will say so —
-  and link the fix — instead of burying a stack trace in the logs.
+  and link the fix — instead of burying a stack trace in the logs. See
+  [Health](../user-guide/settings/health.md).
 - **Guided setup** *(~v0.13.x)* — a first-run wizard: add a connection (doctor runs
   inline), confirm sensible defaults, run the first sync, **preview** what would be
   downloaded, then enable downloads. Ten minutes from install to a working library,

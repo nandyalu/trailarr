@@ -1,7 +1,7 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestones A+B IMPLEMENTED — on branch `feat/connection-doctor`
-(Aug 14, 2026), target v0.11.4; C–D not started · **Releases:** incremental —
+**Status:** Milestones A+B DONE — merged to `dev` Aug 28, 2026 (PR #658),
+shipping in v0.11.4; C–D not started · **Releases:** incremental —
 C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
@@ -9,8 +9,11 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 - Code lives in `core/diagnostics/` per the pitfalls rule; add to the phase-07 move map
   (`services/diagnostics/`).
-- Reports are in-memory only (no DB table): a check re-runs in well under a second, and
-  chips show `NOT CHECKED` after a restart until a save or a manual run.
+- Reports were in-memory only at first. CHANGED Aug 27 (see the review notes below):
+  they persist to `diagnostics-reports.json` in `APP_DATA_DIR`. A restart used to empty
+  every chip to `NOT CHECKED` and ask the user to run the checks again, which is the
+  opposite of what this track is for. Still no DB table: the reports are diagnostics,
+  not user data, and a damaged file just means the doctor runs again.
 - A1 interpretation: suggestions are made per root and verified against media samples;
   a suggestion corroborated only by the folder-name match IS still offered, but labeled
   "based on the folder name only — check before you apply" (a hard 2-sample minimum
@@ -59,6 +62,42 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
   brackets. FAQ/docs wording matches (`docs/user-guide/settings/health.md`).
 - The plan's "update channel" for yt-dlp reports the existing `ytdlp_nightly` setting;
   switching channels from the UI is NOT included (deliberate scope cut).
+
+**Review changes before merge (Aug 27, 2026):** a maintainer review asked the same
+question of every part — where does the app still hand work back to the user? Eleven
+changes came out of it. They are recorded here because several revise decisions written
+above.
+
+- Doctor reports PERSIST (revises the in-memory note in the Milestone A notes).
+- Applying a suggested mapping now also starts a sync of that connection. A correct
+  mapping was only half the fix: the library stayed empty until the next scheduled sync.
+- The write test runs on EVERY accessible folder, not the first one. A writable movies
+  mount next to a read-only TV share used to report healthy.
+- `Check all` on the Connections page (`POST /connections/doctor/run-all`).
+- The Health `connections` check runs the doctor itself when no report is stored,
+  instead of telling the user to go and run it. It gets a 30s timeout (network I/O).
+- Health checks run concurrently (`asyncio.gather`). Sequentially, one hung mount cost
+  its own timeout plus everyone else's wait.
+- Disk space covers every distinct media mount (deduped by `st_dev`, config volume
+  excluded), warning under 5 GiB. A full media disk fails downloads with an error that
+  never mentions space. The 5 GiB threshold is a judgement call, not a measured one.
+- Error signatures added: nsig/player-response (the common breakage when YouTube changes
+  its player), age restriction, HTTP 410.
+- After saving cookies, the Health page offers `Test them now` — the click is the
+  confirmation, so B3 is satisfied without asking twice.
+- Background tasks are held in a module-level set; without a strong reference the loop
+  can collect a task mid-run, so the post-save check could silently never finish.
+- The yt-dlp live test reaps its process after a timeout.
+
+**Doctor on the Add/Edit Connection page (Aug 28, 2026):** the review surfaced that
+`POST /connections/` REFUSES a connection Trailarr cannot reach or read, so the doctor
+never got to diagnose the very mistake it explains best. `preview_doctor()` now runs the
+probes for a connection with no id (`POST /connections/doctor/preview`, with the id
+passed when editing so the suggester can corroborate against synced media). Nothing is
+stored — no id, no report to keep. On the form, `Find folders` fills in every empty
+Trailarr Path it finds; a value the user typed is NEVER overwritten and gets a
+suggestion button instead. This partly pre-builds Milestone C step 2 (Doctor inline in
+the wizard): the preview endpoint is the piece the wizard needs.
 
 ## Objective
 
@@ -203,8 +242,12 @@ write/refresh those pages in the same PR") is the driver; concretely:
 
 ## Exit criteria (per milestone)
 
-A: a wrong-volume docker-compose setup gets a one-click working mapping; permission
-mismatch names the uid/gid fix. B: health page green on a correct install; each red
-state names its fix; cookies configurable in UI. C: fresh scratch install → working,
-previewed, downloads-enabled library without touching docs. D: bundle attached to a
-test issue contains zero secrets (grep-verified in a test).
+A: MET — a wrong-volume docker-compose setup gets a one-click working mapping;
+permission mismatch names the uid/gid fix. Verified end-to-end in headless Chromium and
+against the maintainer's real library. The Add/Edit page goes further than the criterion
+asked: it fills the mapping in before the connection is saved.
+B: MET — health page green on a correct install; each red state names its fix; cookies
+configurable in UI. Verified end-to-end on a running app.
+C: fresh scratch install → working, previewed, downloads-enabled library without
+touching docs. D: bundle attached to a test issue contains zero secrets (grep-verified
+in a test).
