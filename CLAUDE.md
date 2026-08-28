@@ -109,18 +109,28 @@ Layered architecture:
 
 - `main.py` — FastAPI app entry point (`trailarr_api`)
 - `api/v1/` — Route handlers (media, tasks, connections, settings, events, logs, websockets, etc.)
-- `core/` — Business logic
-  - `base/database/models/` — SQLModel ORM models
-  - `base/database/manager/` — Database access managers (one per model type)
-  - `base/arr_manager/` — Base Radarr/Sonarr integration
-  - `base/connection_manager.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
-  - `radarr/`, `sonarr/` — App-specific logic
-  - `plex/` — Plex connection manager, API client, data parser, models
-  - `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
-  - `download/trailers/` — Trailer download orchestration via yt-dlp
-  - `files_handler.py` — File management
+- `services/` — Business logic
+  - `connections/base.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
+  - `connections/arr/` — Base Radarr/Sonarr integration, with `radarr/` and `sonarr/` subpackages
+  - `connections/plex/` — Plex connection manager, API client, data parser, models
+  - `trailers/` — Trailer download orchestration via yt-dlp
+  - `diagnostics/` — Connection Doctor, health checks, cookies status, report store
+  - `files/` — File management (`files_handler.py`) and the media scanner
+  - `images/`, `notifications/`, `updates/`, `binaries.py` — image download, Apprise dispatch, Docker update check, startup binary-path checks
+  - `profiles.py`, `filters.py`, `satisfaction.py` — profile and filter helpers
+- `database/` — Persistence layer
+  - `models/` — SQLModel ORM models
+  - `manager/` — Database access managers (one per model type)
+  - `engine.py`, `init_db.py`, `version_guard.py`
+- `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
+- `utils/` — Pure helpers with no dependency on the other layers (`path_utils.py`, `error_classify.py`). Both `database/` and `services/` may import these; `utils/` imports none of them.
 - `config/settings.py` — Environment-based configuration; settings persisted to `.env` in `APP_DATA_DIR`
-- `tests/` — pytest test suite
+- `tests/` — pytest test suite, mirroring the tree above
+
+**Layering rule:** `api/` → `services/` → `database/`, with `utils/` importable by
+anything and importing nothing. `database/` must not import from `services/`. Nine such
+imports remain (connection validation calling the Arr/Plex clients, plus one
+notification dispatch); Phase 7 Stage B removes them. Do not add more.
 
 **Key patterns:**
 - All endpoints and background tasks are async/await

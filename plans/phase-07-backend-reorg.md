@@ -1,7 +1,9 @@
 # Phase 7 — Backend Reorganization
 
-**Status:** pre-flight audit done (Aug 28, 2026 — see below); Stage A not started, held
-until v0.11.4 ships · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**Status:** **Stage A COMPLETE** (Aug 28, 2026) on branch `feat/phase7-backend-reorg`,
+13 move commits, 1089 tests green at every one, `openapi.json` byte-identical. Stage B
+and Stage C not started. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week
+bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
@@ -321,3 +323,43 @@ contributor-facing:
 Invariants 1–4 hold; Stages A, B and C complete; CLAUDE.md/docs/graphify updated;
 release notes describe the reorg as internal-only ("no functional changes; log messages
 are clearer; report anything that behaves differently").
+
+## Stage A completion record (Aug 28, 2026)
+
+13 move commits on `feat/phase7-backend-reorg`, branched from `dev` at `438fb594`.
+Final layout: `api/ services/ database/ tasks/ utils/` — `core/` is gone.
+
+Evidence, not assertions:
+
+- **1089 tests green after every commit** — identical to the pre-reorg baseline. Two
+  commits needed a real fix to get there (the `version_guard` anchor, the
+  collection-order id assumption); both are described in the pitfalls above.
+- **`openapi.json` byte-identical** to the pre-reorg spec (79 paths, 56 schemas,
+  `info.version` v0.11.4). This is the strongest proof the moves were pure — the whole
+  API surface regenerated to the same bytes from relocated code.
+- **Zero `from core` / `import core` anywhere** in `backend/`, including tests and
+  alembic.
+- **27 migrations apply to a fresh database** (14 tables, head `b30b7b2fd9b4`), then
+  VACUUM, with `alembic/env.py` importing `database.init_db`.
+- **Real boot, not just tests:** uvicorn started clean with **zero errors** in the log;
+  all 7 scheduled tasks registered; `Arr Data Refresh` and `Startup Passes` both ran and
+  recorded (`attribute-downloads-v0.9.9`, `full-scan-before-downloads-v0.10`). After
+  login, every reorganized layer answered 200: `/connections/`, `/customfilters/`,
+  `/events/`, `/settings/`, `/media/all_raw`, `/tasks/`, `/trailerprofiles/`,
+  `/connections/doctor`, `/health/checks`. The only warnings were environmental
+  (Docker binary paths absent in dev, empty database).
+- **`cli_to_api` called after the move** to prove the vendored yt-dlp helper still works.
+- **Layering violations 13 → 9.** The four shared-helper cases were resolved by the new
+  `utils/` layer; the remaining nine are the connection-validation and notification
+  calls that Stage B extracts.
+
+Not done in Stage A, deliberately: task bodies are still in `tasks/` rather than split
+into `services/scan/`, `services/attribution/` and `services/images/`. That is an
+extraction, not a move, so Stage B owns it. Note the map named
+`core/tasks/startup_fixes.py`, which no longer exists — hygiene H7 deleted it; the file
+to split is `startup_passes.py`.
+
+Still outstanding before the phase can ship: Stage B, Stage C, the frontend light touch,
+`.github/instructions/backend.instructions.md` (18 stale `core/…` paths),
+`.github/planned_tasks.md`, a `graphify update .` re-index, the Docker build, and the
+`config-dev` copy boot. `CLAUDE.md` is already updated.
