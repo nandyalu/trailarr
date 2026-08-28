@@ -73,6 +73,15 @@ export class ConnectionService {
     defaultValue: [],
   });
 
+  /** Run the doctor for a connection that is not saved yet, so the
+   * Add/Edit page can find the right path mappings before saving.
+   * Pass the id when editing, so the suggester can use synced media. */
+  previewDoctor(connection: ConnectionCreate, connectionId = 0): Observable<DoctorReport> {
+    return this.http
+      .post<DoctorReport>(`${this.connectionsUrl}doctor/preview?connection_id=${connectionId}`, connection)
+      .pipe(catchError(handleError()));
+  }
+
   /** Run the doctor for every connection at once. */
   runAllDoctors(): Observable<DoctorReport[]> {
     return this.http.post<DoctorReport[]>(`${this.connectionsUrl}doctor/run-all`, {}).pipe(catchError(handleError()));

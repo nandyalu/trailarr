@@ -16,7 +16,9 @@ from sqlmodel import Session
 from core.base.database.models.connection import (
     ArrType,
     Connection,
+    ConnectionCreate,
     PathMapping,
+    PathMappingCRU,
 )
 from core.base.database.utils.engine import write_session
 from core.diagnostics import connection_doctor
@@ -695,3 +697,84 @@ class TestPermissionsPerFolder:
             report = await connection_doctor.run_doctor(self.conn_id)
         probe = _probe(report, "permissions")
         assert probe.name == "Write permissions"
+
+
+class TestPreviewBeforeSaving:
+    """The Add/Edit page checks a connection that is not saved yet.
+
+    A connection Trailarr cannot reach is refused on save, so without
+    this the doctor never gets to diagnose the very mistake it explains
+    best.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.tmp = tmp_path
+        connection_doctor._reports = None
+
+    def _unsaved(self, mappings=None):
+        return ConnectionCreate(
+            name="Unsaved Radarr",
+            arr_type=ArrType.RADARR,
+            url="http://localhost:7878",
+            api_key="k" * 32,
+            monitor_new_media=True,
+            path_mappings=[
+                PathMappingCRU(path_from=f, path_to=t)
+                for f, t in mappings or []
+            ],
+        )
+
+    @pytest.mark.asyncio
+    async def test_preview_reports_without_saving_anything(self):
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        before = len(connection_doctor.get_all_reports())
+        p1, p2, p3, p4 = _patched([str(movies)])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.preview_doctor(self._unsaved())
+        assert report.status == "healthy"
+        assert report.connection_name == "Unsaved Radarr"
+        # Nothing is stored for a connection that has no id.
+        assert len(connection_doctor.get_all_reports()) == before
+        assert connection_doctor.get_report(0) is None
+
+    @pytest.mark.asyncio
+    async def test_preview_suggests_a_mapping_for_an_invisible_root(self):
+        """The whole point: fill in path_to before the connection exists."""
+        local = self.tmp / "mnt" / "movies"
+        (local / "Film A").mkdir(parents=True)
+        p1, p2, p3, p4 = _patched(
+            ["/data/movies"], bases=[str(self.tmp / "mnt")]
+        )
+        with p1, p2, p3, p4:
+            report = await connection_doctor.preview_doctor(self._unsaved())
+        probe = _probe(report, "path_visibility")
+        assert probe.status == ProbeStatus.ERROR
+        assert probe.suggested_mapping is not None
+        assert probe.suggested_mapping.path_from == "/data/movies/"
+        assert probe.suggested_mapping.path_to == str(local) + "/"
+
+    @pytest.mark.asyncio
+    async def test_preview_honours_mappings_typed_on_the_form(self):
+        local = self.tmp / "mnt" / "movies"
+        (local / "Film A").mkdir(parents=True)
+        p1, p2, p3, p4 = _patched(["/data/movies"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.preview_doctor(
+                self._unsaved([("/data/movies/", str(local) + "/")])
+            )
+        probe = _probe(report, "path_visibility")
+        assert probe.status == ProbeStatus.OK, probe.detail
+
+    @pytest.mark.asyncio
+    async def test_unreachable_connection_is_reported_not_raised(self):
+        """A wrong URL must produce a report, not an exception."""
+        with patch(
+            f"{PKG}.connection_manager.get_rootfolders",
+            side_effect=ConnectionError("Connection refused"),
+        ):
+            report = await connection_doctor.preview_doctor(self._unsaved())
+        probe = _probe(report, "reachability")
+        assert probe.status == ProbeStatus.ERROR
+        assert "URL and API key" in probe.remediation

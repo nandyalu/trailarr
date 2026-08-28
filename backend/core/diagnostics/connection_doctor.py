@@ -30,7 +30,10 @@ from types import SimpleNamespace
 from app_logger import ModuleLogger
 import core.base.database.manager.connection as connection_manager
 import core.base.database.manager.media as media_manager
-from core.base.database.models.connection import ConnectionRead
+from core.base.database.models.connection import (
+    ConnectionCreate,
+    ConnectionRead,
+)
 from core.base.utils.path_utils import (
     apply_path_mappings,
     is_subpath,
@@ -47,6 +50,11 @@ from core.diagnostics.models import (
 from core.files_handler import is_disk_available
 
 logger = ModuleLogger("ConnectionDoctor")
+
+# Either a saved connection or one the Add/Edit page has not saved yet.
+# Both carry the name, the API details, and the path mappings, which is
+# all the probes need.
+DoctorConnection = ConnectionCreate | ConnectionRead
 
 DOCS_BASE = "https://nandyalu.github.io/trailarr/"
 DOCS_PATH_MAPPINGS = (
@@ -139,8 +147,38 @@ def forget_report(connection_id: int) -> None:
 
 
 async def run_doctor(connection_id: int) -> DoctorReport:
-    """Run all probes for a connection and store the report."""
+    """Run all probes for a saved connection and store the report."""
     connection = connection_manager.read(connection_id)
+    return await run_probes(connection, connection_id, store_report=True)
+
+
+async def preview_doctor(
+    connection: DoctorConnection, connection_id: int = 0
+) -> DoctorReport:
+    """Run the probes for a connection that is not saved yet.
+
+    The Add/Edit Connection page uses this: the user can find the right
+    path mappings BEFORE saving, instead of saving a broken connection
+    and fixing it afterwards. Nothing is stored, because a connection
+    with no id has no report to keep.
+
+    Args:
+        connection: The connection as the form has it (url, api key,
+            arr type, and the path mappings entered so far).
+        connection_id: The id when an existing connection is edited.
+            Lets the suggester use the media folders already synced for
+            it; 0 for a new connection.
+    """
+    return await run_probes(connection, connection_id, store_report=False)
+
+
+async def run_probes(
+    connection: DoctorConnection,
+    connection_id: int,
+    *,
+    store_report: bool,
+) -> DoctorReport:
+    """Run all probes for a connection, saved or not."""
     report = DoctorReport(
         connection_id=connection_id, connection_name=connection.name
     )
@@ -151,7 +189,7 @@ async def run_doctor(connection_id: int) -> DoctorReport:
 
     # 2. Path visibility per reported root (+ mapping suggestions).
     # The filesystem walk for suggester bases runs once per report.
-    samples = _arr_side_media_samples(connection)
+    samples = _arr_side_media_samples(connection, connection_id)
     bases = _visible_bases(connection)
     # Prefix alignments derived this run: sibling roots usually live
     # under one alignment, so later roots try these before searching
@@ -187,8 +225,9 @@ async def run_doctor(connection_id: int) -> DoctorReport:
     report.probes.extend(_probe_permissions(checked_dirs))
 
     report.finalize()
-    _cache()[connection_id] = report
-    store.save(_cache())
+    if store_report:
+        _cache()[connection_id] = report
+        store.save(_cache())
     logger.info(
         f"Doctor for '{connection.name}' [{connection_id}]:"
         f" {report.status}"
@@ -204,7 +243,7 @@ async def run_doctor(connection_id: int) -> DoctorReport:
 
 
 async def _fetch_roots(
-    connection: ConnectionRead,
+    connection: DoctorConnection,
 ) -> tuple[list[str], ProbeResult]:
     """Fetch the reported root/library folders from the application."""
     try:
@@ -233,7 +272,7 @@ async def _fetch_roots(
 
 
 def _mark_existing(
-    suggestion: SuggestedMapping, connection: ConnectionRead
+    suggestion: SuggestedMapping, connection: DoctorConnection
 ) -> None:
     """Flag a suggestion that changes an existing mapping's target.
 
@@ -248,7 +287,7 @@ def _mark_existing(
 
 def _probe_root(
     root: str,
-    connection: ConnectionRead,
+    connection: DoctorConnection,
     samples: list[str],
     bases: list[str],
     known_prefixes: list[SimpleNamespace] | None = None,
@@ -486,14 +525,19 @@ def _permission_detail(folder: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _arr_side_media_samples(connection: ConnectionRead) -> list[str]:
+def _arr_side_media_samples(
+    connection: DoctorConnection, connection_id: int
+) -> list[str]:
     """Up to N stored media folders, translated back to the remote side.
 
     Used to corroborate a suggested mapping: a mapping that also makes
     known media folders resolve is almost certainly correct.
     """
+    if not connection_id:
+        # A new connection has no synced media to corroborate with.
+        return []
     try:
-        media = media_manager.read_all_by_connection(connection.id)
+        media = media_manager.read_all_by_connection(connection_id)
     except Exception:
         return []
     paths = [m.folder_path for m in media if m.folder_path]
@@ -504,7 +548,7 @@ def _arr_side_media_samples(connection: ConnectionRead) -> list[str]:
     return [reverse_path_mappings(p, connection.path_mappings) for p in paths]
 
 
-def _visible_bases(connection: ConnectionRead) -> list[str]:
+def _visible_bases(connection: DoctorConnection) -> list[str]:
     """Folders visible to Trailarr that could hold a media library.
 
     Walks the filesystem root plus one level below each candidate

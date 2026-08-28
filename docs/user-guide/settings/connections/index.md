@@ -38,6 +38,19 @@ This Yes/No toggle decides the **starting monitor state** for media added by thi
 
 Every connection card shows a **Connection Doctor** chip: `HEALTHY`, `ISSUES FOUND`, or `NOT CHECKED`. The doctor runs automatically after you save a connection. Click the chip to see the report or to run the check again, or use **Check all** to check every connection at once. Trailarr keeps the last report of each connection, so the results are still there after a restart.
 
+### Find your folders while you add a connection
+
+{{ version_badge("add", "0.11.4") }}
+
+The doctor also runs on the **Add / Edit Connection** page, before the connection is saved. After you test the connection and Trailarr lists the root folders, click **Find folders**: Trailarr looks on disk for the folders your application reports, and fills in the **Trailarr Path** of every mapping it finds.
+
+This matters because Trailarr refuses to save a connection it cannot reach or read. Without this button you would have to know your mount layout in advance. Now the app finds it for you.
+
+Two rules keep it safe:
+
+- A **Trailarr Path you typed is never overwritten**. When the doctor finds a different folder for that row, it offers it as a button next to the field, and you decide.
+- Each suggestion says how sure it is. `2 folders confirm this` means the mapping also resolves other media folders that Trailarr already tracks. `name match only — check it` means the folder name matched and nothing more, so look at the contents first.
+
 The doctor runs these checks:
 
 - **API reachability** — Trailarr asks the application for its root folders (Plex: library folders). A wrong URL or API key shows up here.

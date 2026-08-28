@@ -71,6 +71,38 @@ async def get_doctor_reports() -> list[DoctorReport]:
     return connection_doctor.get_all_reports()
 
 
+@connections_router.post(
+    "/doctor/preview",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "model": ErrorResponse,
+            "description": "Could not check the connection",
+        },
+    },
+)
+async def preview_connection_doctor(
+    connection: ConnectionCreate, connection_id: int = 0
+) -> DoctorReport:
+    """Run the Connection Doctor for a connection that is not saved yet.
+
+    The Add/Edit Connection page calls this, so the user can find the
+    right path mappings before saving. Nothing is stored.
+
+    Args:
+        connection: The connection as entered on the form.
+        connection_id: The id when an existing connection is edited, so
+            the suggester can use its already synced media folders.
+    """
+    try:
+        return await connection_doctor.preview_doctor(
+            connection, connection_id
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
+
+
 @connections_router.post("/doctor/run-all")
 async def run_all_connection_doctors() -> list[DoctorReport]:
     """Run the Connection Doctor for every connection, all at once.
