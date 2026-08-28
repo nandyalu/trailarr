@@ -1,6 +1,6 @@
 from typing import Any
 from exceptions import InvalidResponseError
-from core.base.arr_manager.base import AsyncBaseArrManager
+from services.connections.arr.base import AsyncBaseArrManager
 
 
 class RadarrManager(AsyncBaseArrManager):

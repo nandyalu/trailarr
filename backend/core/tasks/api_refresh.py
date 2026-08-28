@@ -4,8 +4,8 @@ from config.logging_context import with_logging_context
 import database.manager.connection as connection_manager
 from database.models.connection import ArrType, ConnectionRead
 from services.connections.plex.connection_manager import PlexConnectionManager
-from core.radarr.connection_manager import RadarrConnectionManager
-from core.sonarr.connection_manager import SonarrConnectionManager
+from services.connections.arr.radarr.connection_manager import RadarrConnectionManager
+from services.connections.arr.sonarr.connection_manager import SonarrConnectionManager
 from app_logger import ModuleLogger
 from api.v1.websockets import ws_manager
 from core.tasks.image_refresh import refresh_images

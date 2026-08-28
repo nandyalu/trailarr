@@ -97,7 +97,7 @@ def parse_series(
 
 # from typing import Any
 
-# from core.sonarr.models import SeriesCreate
+# from services.connections.arr.sonarr.models import SeriesCreate
 
 
 # def parse_series(connection_id: int, series_data: dict[str, Any]) -> SeriesCreate:

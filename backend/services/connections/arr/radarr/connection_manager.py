@@ -1,7 +1,7 @@
 from core.base.connection_manager import BaseConnectionManager
-from core.radarr.data_parser import parse_movie
+from services.connections.arr.radarr.data_parser import parse_movie
 from database.models.connection import ConnectionRead
-from core.radarr.api_manager import RadarrManager
+from services.connections.arr.radarr.api_manager import RadarrManager
 
 
 class RadarrConnectionManager(BaseConnectionManager):

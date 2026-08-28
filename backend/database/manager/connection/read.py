@@ -2,8 +2,8 @@ from sqlmodel import Session, select
 
 from . import base
 from services.connections.plex.api_manager import PlexAPI
-from core.radarr.api_manager import RadarrManager
-from core.sonarr.api_manager import SonarrManager
+from services.connections.arr.radarr.api_manager import RadarrManager
+from services.connections.arr.sonarr.api_manager import SonarrManager
 from exceptions import ItemNotFoundError
 from database.models.connection import (
     ArrType,

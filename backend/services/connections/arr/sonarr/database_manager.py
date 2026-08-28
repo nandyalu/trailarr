@@ -1,5 +1,5 @@
 # from database.manager.base import MediaDatabaseManager
-# from core.sonarr.models import (
+# from services.connections.arr.sonarr.models import (
 #     Series,
 #     SeriesCreate,
 #     SeriesRead,

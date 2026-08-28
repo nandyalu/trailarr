@@ -1,7 +1,7 @@
 from core.base.connection_manager import BaseConnectionManager
-from core.sonarr.data_parser import parse_series
+from services.connections.arr.sonarr.data_parser import parse_series
 from database.models.connection import ConnectionRead
-from core.sonarr.api_manager import SonarrManager
+from services.connections.arr.sonarr.api_manager import SonarrManager
 
 
 class SonarrConnectionManager(BaseConnectionManager):

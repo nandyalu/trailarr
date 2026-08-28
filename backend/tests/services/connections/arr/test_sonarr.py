@@ -1,6 +1,6 @@
 import pytest
 from exceptions import InvalidResponseError
-from core.sonarr.api_manager import SonarrManager
+from services.connections.arr.sonarr.api_manager import SonarrManager
 from tests import conftest
 
 

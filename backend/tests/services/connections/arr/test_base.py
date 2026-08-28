@@ -1,6 +1,6 @@
 import pytest
 from exceptions import InvalidResponseError
-from core.base.arr_manager.base import AsyncBaseArrManager
+from services.connections.arr.base import AsyncBaseArrManager
 from tests import conftest
 
 

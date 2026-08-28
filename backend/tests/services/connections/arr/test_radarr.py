@@ -1,6 +1,6 @@
 import pytest
 from exceptions import InvalidResponseError
-from core.radarr.api_manager import RadarrManager
+from services.connections.arr.radarr.api_manager import RadarrManager
 from tests import conftest
 
 

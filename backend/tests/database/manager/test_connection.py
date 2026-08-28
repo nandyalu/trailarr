@@ -10,8 +10,8 @@ from database.models.connection import (
     ConnectionUpdate,
 )
 from exceptions import InvalidResponseError, ItemNotFoundError
-from core.radarr.api_manager import RadarrManager
-from core.sonarr.api_manager import SonarrManager
+from services.connections.arr.radarr.api_manager import RadarrManager
+from services.connections.arr.sonarr.api_manager import SonarrManager
 
 # Copied from backend/database/crud/connection.py
 CREATE_SUCCESS_MSG = "Connection createded successfully! {}"
