@@ -3144,7 +3144,7 @@
 <p>Make sure to set the <code>URL Base</code> in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at <code>https://mydomain.com/trailarr/</code>, set the <code>URL Base</code> to <code>/trailarr</code>.</p>
 </li>
 <li>
-<p>You can also set the <code>URL_BASE</code> environment variable instead. Trailarr reads it at startup, and shows the value in the General Settings.</p>
+<p>You can set the <code>URL_BASE</code> environment variable instead. Trailarr reads it at startup, and shows the value in the General Settings.</p>
 </li>
 </ul>
 <div class="admonition info">
@@ -3156,7 +3156,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 <p class="admonition-title">How to remove the URL Base</p>
 <p>The application does not accept an empty value for a setting, so you cannot remove the <code>URL Base</code> in the WebUI. Use one of these two methods:</p>
 <ul>
-<li><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a> Set <code>URL_BASE=</code> (empty) in your <code>docker-compose.yml</code> and restart the container. From v0.11.4, a variable set for the container wins over the stored value.</li>
+<li><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a> Set <code>URL_BASE=</code> (empty) in your <code>docker-compose.yml</code>. Then restart the container. From v0.11.4, a variable set for the container has priority over the stored value.</li>
 <li>Open the <code>.env</code> file in your <code>config/</code> folder, remove the value set for <code>URL_BASE</code>, and restart the application.</li>
 </ul>
 </div>
@@ -3199,7 +3199,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 </tr>
 </tbody>
 </table>
-<p>Trailarr uses <code>X-Forwarded-Prefix</code> to select the correct frontend when the proxy <strong>removes</strong> the sub-directory prefix before it sends the request (the Apache and Traefik examples below). A proxy that <strong>keeps</strong> the prefix (the Nginx and Caddy examples below) does not need the header, but it does no harm. Set it in both cases if you are not sure.</p>
+<p>Trailarr uses <code>X-Forwarded-Prefix</code> to select the correct frontend when the proxy <strong>removes</strong> the sub-directory prefix before it sends the request (the Apache and Traefik examples below). A proxy that <strong>keeps</strong> the prefix (the Nginx and Caddy examples below) does not need the header, but the header does no harm. If you are not sure, set the header in both cases.</p>
 </div>
 <h3 id="nginx">Nginx</h3>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sub-Domain</label><label for="__tabbed_1_2">Sub-Directory</label></div>
@@ -3356,7 +3356,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 <ul>
 <li>Keeps the root <code>index.html</code> with <code>&lt;base href="/"&gt;</code> so the app remains accessible at the local IP and port (<code>http://your-ip:7889/</code>).</li>
 <li>Creates a <code>/{url_base}/</code> subfolder inside the frontend build directory containing a separate <code>index.html</code> patched with <code>&lt;base href="/{url_base}/"&gt;</code>. This makes the app also accessible at <code>http://your-ip:7889/{url_base}/</code> and via the reverse proxy sub-directory URL.</li>
-<li>Removes the <code>/{url_base}</code> prefix from API, WebSocket, health and image requests that arrive with the prefix. This covers direct local access at <code>http://your-ip:7889/{url_base}/api/...</code> and a reverse proxy that keeps the prefix. No proxy stripping is needed.</li>
+<li>Removes the <code>/{url_base}</code> prefix from API, WebSocket, health and image requests that arrive with the prefix. This applies to direct local access at <code>http://your-ip:7889/{url_base}/api/...</code>, and to a reverse proxy that keeps the prefix. The proxy does not have to remove the prefix.</li>
 <li>Reads the <code>X-Forwarded-Prefix</code> header (sent by the reverse proxy) to decide which <code>index.html</code> to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.</li>
 <li>Keeps the login session cookie at the root path (<code>/</code>), so the same session works at the local URL and at the sub-directory URL.</li>
 </ul>
@@ -3369,7 +3369,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 <li><strong>The login is successful, but every page shows a <code>401 Unauthorized</code> error.</strong> The session cookie was limited to the <code>URL Base</code> path, so the browser did not send it for other paths.</li>
 <li><strong>The app goes to the root URL after login, and the sub-directory prefix is lost.</strong> The redirect used an absolute path and did not include the base path.</li>
 </ul>
-<p>If you are locked out and cannot open the Settings page, remove the value set for <code>URL_BASE</code> in the <code>.env</code> file in your <code>config/</code> folder, then restart the application. This gives you access at the root URL again.</p>
+<p>If you cannot sign in and cannot open the Settings page, open the <code>.env</code> file in your <code>config/</code> folder. Remove the value set for <code>URL_BASE</code>. Then restart the application. Trailarr is available at the root URL again.</p>
 <h2 id="bypassing-authentication-via-reverse-proxy">Bypassing Authentication via Reverse Proxy</h2>
 <p>If your reverse proxy already handles authentication (e.g. SSO, OAuth, basic auth at the proxy level) and you want Trailarr to skip its own login screen, configure the proxy to inject the <code>X-API-KEY</code> header with your Trailarr API key on every forwarded request. Trailarr will accept the key, issue a session automatically, and the login page will not be shown.</p>
 <div class="admonition info">
@@ -3382,7 +3382,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Set the header on all forwarded requests</p>
-<p>The browser cannot add a header to the WebSocket connection that gives you live task and download updates. Trailarr solves this with the session that the API key creates: the first request with the key gets a session cookie, and the WebSocket then uses that cookie. Set the header for the full location block, not only for the page URL.</p>
+<p>The WebSocket connection gives you live task and download updates. The browser cannot add a header to that connection. Trailarr solves this with a session: the first request with the key gets a session cookie. The WebSocket then uses that cookie. Set the header for the full location block, and not only for the page URL.</p>
 </div>
 <p>Add the following to your existing reverse proxy configuration (in addition to any other headers already set):</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="5:4"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><input id="__tabbed_5_3" name="__tabbed_5" type="radio" /><input id="__tabbed_5_4" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Nginx</label><label for="__tabbed_5_2">Apache</label><label for="__tabbed_5_3">Caddy</label><label for="__tabbed_5_4">Traefik</label></div>

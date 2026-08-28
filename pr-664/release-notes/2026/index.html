@@ -3430,13 +3430,13 @@
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li>
-<p><strong>Connection Doctor</strong> — every connection card now shows a health chip; the doctor checks that Trailarr can reach the application, see each reported media folder, and write to it — and when a folder is not visible, it suggests the exact path mapping to fix it, with a one-click <strong>Apply</strong> — see <a href="../../user-guide/settings/connections/#connection-doctor">Connection Doctor</a>.</p>
+<p><strong>Connection Doctor</strong> — every connection card now shows a health chip. The doctor checks that Trailarr can reach the application, see each reported media folder, and write to it. If a folder is not visible, the doctor suggests the exact path mapping that fixes it, and one click on <strong>Apply</strong> makes the change — see <a href="../../user-guide/settings/connections/#connection-doctor">Connection Doctor</a>.</p>
 </li>
 <li>
-<p><strong>Permission problems now name the exact fix</strong> — a failed write test reports the folder's owner (uid/gid) against the user Trailarr runs as, so PUID/PGID mismatches are caught at setup time instead of failing three tasks later.</p>
+<p><strong>Permission problems now name the exact fix</strong> — a failed write test reports the owner of the folder (uid/gid) and the user that Trailarr runs as. You see a PUID/PGID mismatch at setup time, and not after three tasks fail.</p>
 </li>
 <li>
-<p><strong>Dead network mounts are flagged, not passed</strong> — a media folder that is reachable but empty is reported as a warning ("your mount may be down") instead of counting as healthy.</p>
+<p><strong>Trailarr now warns about an empty media folder</strong> — Trailarr can reach the folder, but the folder holds no files. Trailarr shows the warning "your mount may be down" instead of a healthy state.</p>
 </li>
 <li>
 <p><strong>Applying a path mapping also syncs the connection</strong> — the library fills in right away instead of staying broken until the next scheduled sync.</p>
@@ -3445,49 +3445,49 @@
 <p><strong>Check every connection at once</strong> — a <strong>Check all</strong> button on the Connections page runs the doctor for all connections, instead of one dialog each.</p>
 </li>
 <li>
-<p><strong>Find your media folders while you add a connection</strong> — the doctor now runs on the Add / Edit Connection page too. Click <strong>Find folders</strong> and Trailarr looks on disk for the folders your Arr reports, then fills in each Trailarr Path it finds. A path you typed yourself is never overwritten — you get a button instead. This matters because Trailarr refuses to save a connection it cannot read, so before this you had to know your mount layout in advance — see <a href="../../user-guide/settings/connections/#find-your-folders-while-you-add-a-connection">Connection Doctor</a>.</p>
+<p><strong>Find your media folders while you add a connection</strong> — the doctor now also runs on the Add / Edit Connection page. Click <strong>Find folders</strong>, and Trailarr looks on disk for the folders that your Arr reports. Trailarr fills in each Trailarr Path that it finds. It does not replace a path that you typed. Instead, it shows a button to accept the folder that it found. Before this change, you had to know your mount layout, because Trailarr does not save a connection that it cannot read — see <a href="../../user-guide/settings/connections/#find-your-folders-while-you-add-a-connection">Connection Doctor</a>.</p>
 </li>
 <li>
-<p><strong>A full media disk is now reported</strong> — the Disk space check warns for every media disk below 5 GB, not only the config volume, and reports each disk of a split library.</p>
+<p><strong>Trailarr now warns about a full media disk</strong> — the Disk space check reports every media disk with less than 5 GB free, and not only the config volume. The check reports each disk of a split library.</p>
 </li>
 <li>
-<p><strong>New Settings &gt; Health page</strong> — live checks of FFmpeg, hardware acceleration (finally visible!), yt-dlp, cookies, connections, the image cache, and disk space; every red state names its fix — see <a href="../../user-guide/settings/health/">Health</a>.</p>
+<p><strong>New Settings &gt; Health page</strong> — the page shows live checks of FFmpeg, hardware acceleration (finally visible!), yt-dlp, cookies, connections, the image cache, and disk space. Each check that fails names its fix — see <a href="../../user-guide/settings/health/">Health</a>.</p>
 </li>
 <li>
-<p><strong>Set up YouTube cookies from the UI</strong> — upload or paste your cookies.txt on the Health page; Trailarr stores it with safe permissions, shows whether the cookies are valid or expired, and never displays the content again — see <a href="../../user-guide/settings/health/#youtube-cookies">YouTube cookies</a>.</p>
+<p><strong>Set up YouTube cookies from the UI</strong> — upload or paste your cookies.txt on the Health page. Trailarr stores the file with safe permissions, and shows whether the cookies are valid or expired. Trailarr never shows the content again — see <a href="../../user-guide/settings/health/#youtube-cookies">YouTube cookies</a>.</p>
 </li>
 <li>
-<p><strong>Test YouTube downloads with one click</strong> — the Health page can run a yt-dlp test against a known video (with your confirmation — it contacts YouTube once) and reports the result in plain language.</p>
+<p><strong>Test YouTube downloads with one click</strong> — the Health page can run a yt-dlp test on a known video and report the result in plain language. Trailarr asks you to confirm first, because the test contacts YouTube once.</p>
 </li>
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li>
-<p><strong>Modals show again in Safari</strong> — a dialog stayed hidden while the page behind it dimmed, because the dialog only became visible if its opening animation ran, and that animation does not run in Safari. A dialog now shows even when its animation does not run (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>).</p>
+<p><strong>Modals show again in Safari</strong> — a dialog stayed hidden while the page behind it dimmed, because the dialog only became visible if its opening animation ran, and that animation does not run in Safari. A dialog now shows even when its animation does not run. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
 </li>
 <li>
-<p><strong>Login works again behind a reverse proxy sub-directory</strong> — the login returned a <code>405 Method Not Allowed</code> error, or was successful and then gave a <code>401 Unauthorized</code> error for every request, which locked you out of the app; the session cookie now stays at the root path, the redirect after login keeps the URL base, and a new <code>URL Base</code> applies without a restart — see <a href="../../user-guide/reverse-proxy/#login-problems-in-a-sub-directory-setup">Reverse Proxy</a> (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>).</p>
+<p><strong>Login works again behind a reverse proxy sub-directory</strong> — the login returned a <code>405 Method Not Allowed</code> error, or was successful and then gave a <code>401 Unauthorized</code> error for every request, which locked you out of the app; the session cookie now stays at the root path, the redirect after login keeps the URL base, and a new <code>URL Base</code> applies without a restart — see <a href="../../user-guide/reverse-proxy/#login-problems-in-a-sub-directory-setup">Reverse Proxy</a>. Thanks <a href="https://github.com/daviddavo">@daviddavo</a> for the detailed report and logs! (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>)</p>
 </li>
 <li>
-<p><strong>Your environment variables are used again</strong> — a setting stored in the <code>.env</code> file replaced the variable you set in <code>docker-compose.yml</code>, so <code>URL_BASE=</code> and <code>WEBUI_PASSWORD=</code> did nothing and you could not correct a setting that locked you out; a variable set for the container now wins — see <a href="../../getting-started/01-first-things/environment-variables/">Environment Variables</a> (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>).</p>
+<p><strong>Trailarr uses your environment variables again</strong> — a setting stored in the <code>.env</code> file replaced the variable that you set in <code>docker-compose.yml</code>. So <code>URL_BASE=</code> and <code>WEBUI_PASSWORD=</code> did nothing, and you could not correct a setting that locked you out. A variable that you set for the container now has priority — see <a href="../../getting-started/01-first-things/environment-variables/">Environment Variables</a> (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>).</p>
 </li>
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
 <li>
-<p><code>WEBUI_PASSWORD</code> with a value that is not empty now sets that password (Trailarr stores only its hash) instead of breaking the login, and an empty value still resets the password to <code>trailarr</code> — see <a href="../../getting-started/01-first-things/environment-variables/#webui_password">WEBUI_PASSWORD</a>.</p>
+<p><code>WEBUI_PASSWORD</code> with a value that is not empty now sets that password, and Trailarr stores only its hash. Before this change, such a value broke the login. An empty value still resets the password to <code>trailarr</code> — see <a href="../../getting-started/01-first-things/environment-variables/#webui_password">WEBUI_PASSWORD</a>.</p>
 </li>
 <li>
-<p>Known yt-dlp failures are now recorded as a plain-language reason with the fix (for example, "YouTube requires a sign-in for this download. Set up a cookies file on Settings &gt; Health.") instead of a raw traceback — see <a href="../../user-guide/settings/health/#classified-download-errors">Classified download errors</a>.</p>
+<p>Trailarr now records a known yt-dlp failure as a plain-language reason with the fix (for example, "YouTube requires a sign-in for this download. Set up a cookies file on Settings &gt; Health.") instead of a raw traceback — see <a href="../../user-guide/settings/health/#classified-download-errors">Classified download errors</a>.</p>
 </li>
 <li>
-<p>Health check results are kept when Trailarr restarts, so connection chips and the Health page no longer reset to "not checked" after every container update.</p>
+<p>Trailarr keeps health check results when it restarts, so connection chips and the Health page no longer reset to "not checked" after every container update.</p>
 </li>
 <li>
 <p>The Health page runs its checks together instead of one after another, so a hung mount delays only its own check.</p>
 </li>
 <li>
-<p>The Connections health check runs the Connection Doctor itself when nothing was checked yet, instead of asking you to go and run it.</p>
+<p>The Connections health check now runs the Connection Doctor when no report exists yet, instead of asking you to run the doctor.</p>
 </li>
 </ul>
 <hr />

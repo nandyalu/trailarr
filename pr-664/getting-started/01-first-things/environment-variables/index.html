@@ -3037,10 +3037,10 @@
 
 <p><strong>Environment variables are OPTIONAL.</strong></p>
 <div class="admonition info">
-<p class="admonition-title">An environment variable wins over a stored setting</p>
+<p class="admonition-title">An environment variable overrides a stored setting</p>
 <p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a>
-Trailarr saves the settings you change in the WebUI to a <code>.env</code> file in your data directory. At startup, a variable that you set for the container (or for the service) wins over the value in that file. Use this to correct a setting that keeps you out of the WebUI, for example <code>URL_BASE</code> or <code>WEBUI_PASSWORD</code>. Before v0.11.4, the stored value replaced the variable, and your change did nothing.</p>
-<p>Remember to remove the variable again if you want to change the setting in the WebUI later. While the variable is set, the WebUI shows your change, but the variable wins again at the next start.</p>
+Trailarr saves the settings you change in the WebUI to a <code>.env</code> file in your data directory. At startup, a variable that you set for the container (or for the service) overrides the value in that file. Use this to correct a setting that blocks your access to the WebUI, for example <code>URL_BASE</code> or <code>WEBUI_PASSWORD</code>. Before v0.11.4, the stored value replaced the variable, and your change did nothing.</p>
+<p>If you want to change the setting in the WebUI later, remove the variable first. While the variable is set, the WebUI shows your change, but the variable overrides your change at the next start.</p>
 </div>
 <p>Here are the optional environment variables you can set:</p>
 <h3 id="app_data_dir"><code>APP_DATA_DIR</code></h3>
@@ -3125,7 +3125,7 @@ When auth is disabled, the web UI hides the logout button — there is no sessio
 <div class="admonition info">
 <p class="admonition-title">You can also set a new password here</p>
 <p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a>
-A value that is not empty becomes your new password. Trailarr hashes it at startup and stores only the hash — the app never keeps your password as plain text. Remove the variable again after the first start, or it sets the same password at every start and you cannot change the password in the WebUI.</p>
+A value that is not empty becomes your new password. Trailarr hashes it at startup and stores only the hash — the app never keeps your password as plain text. Remove the variable after the first start. If you keep the variable, Trailarr sets the same password at every start, and you cannot change the password in the WebUI.</p>
 </div>
 <p>To change the password, go to <code>Settings &gt; About &gt; Password</code> in web interface. </p>
 <div class="admonition info">
