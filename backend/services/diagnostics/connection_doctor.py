@@ -40,8 +40,8 @@ from core.base.utils.path_utils import (
     normalize_trailing_slash,
     reverse_path_mappings,
 )
-from core.diagnostics import store
-from core.diagnostics.models import (
+from services.diagnostics import store
+from services.diagnostics.models import (
     DoctorReport,
     ProbeResult,
     ProbeStatus,

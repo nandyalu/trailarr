@@ -25,8 +25,8 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 import database.manager.connection as connection_manager
 import database.manager.media as media_manager
-from core.diagnostics import connection_doctor
-from core.diagnostics.models import (
+from services.diagnostics import connection_doctor
+from services.diagnostics.models import (
     HealthCheckResult,
     HealthReport,
     ProbeStatus,
@@ -296,7 +296,7 @@ async def _check_cookies() -> HealthCheckResult:
             ),
             docs_url=DOCS_COOKIES,
         )
-    from core.diagnostics.cookies import _file_stats
+    from services.diagnostics.cookies import _file_stats
 
     youtube, expired = _file_stats(path)
     if youtube == 0:

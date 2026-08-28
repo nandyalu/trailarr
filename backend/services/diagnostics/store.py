@@ -19,7 +19,7 @@ import os
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.diagnostics.models import DoctorReport
+from services.diagnostics.models import DoctorReport
 
 logger = ModuleLogger("DiagnosticsStore")
 

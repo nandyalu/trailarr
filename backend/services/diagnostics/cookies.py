@@ -15,7 +15,7 @@ import time
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
-from core.diagnostics.models import CookiesStatus
+from services.diagnostics.models import CookiesStatus
 
 logger = ModuleLogger("Cookies")
 

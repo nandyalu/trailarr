@@ -14,14 +14,14 @@ from unittest.mock import patch
 import pytest
 
 from config.settings import app_settings
-from core.diagnostics import cookies, health
-from core.diagnostics.models import ProbeStatus
+from services.diagnostics import cookies, health
+from services.diagnostics.models import ProbeStatus
 from core.download.error_classify import (
     classified_error,
     classify_ytdlp_error,
 )
 
-PKG = "core.diagnostics.health"
+PKG = "services.diagnostics.health"
 
 # One valid Netscape cookie row (tab-separated, 7 fields)
 _FUTURE = "9999999999"
@@ -208,7 +208,7 @@ class TestErrorClassification:
         import database.manager.downloadattempt as attempt_manager
         import database.manager.media as media_manager
         from database.models.media import MediaCreate
-        from tests.core.diagnostics.test_connection_doctor import _make_conn
+        from tests.services.diagnostics.test_connection_doctor import _make_conn
 
         conn_id = _make_conn(f"Cls-{uuid.uuid4().hex[:8]}")
         media = media_manager.create(

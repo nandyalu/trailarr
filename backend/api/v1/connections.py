@@ -12,8 +12,8 @@ from database.models.connection import (
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.diagnostics import connection_doctor
-from core.diagnostics.models import DoctorReport, SuggestedMapping
+from services.diagnostics import connection_doctor
+from services.diagnostics.models import DoctorReport, SuggestedMapping
 from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
 from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
 

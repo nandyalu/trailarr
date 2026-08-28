@@ -21,10 +21,10 @@ from database.models.connection import (
     PathMappingCRU,
 )
 from database.engine import write_session
-from core.diagnostics import connection_doctor
-from core.diagnostics.models import ProbeStatus
+from services.diagnostics import connection_doctor
+from services.diagnostics.models import ProbeStatus
 
-PKG = "core.diagnostics.connection_doctor"
+PKG = "services.diagnostics.connection_doctor"
 
 
 @write_session
@@ -641,7 +641,7 @@ class TestReportsSurviveRestart:
         assert connection_doctor.get_report(self.conn_id) is None
 
     def test_a_damaged_store_file_is_not_fatal(self, tmp_path):
-        from core.diagnostics import store
+        from services.diagnostics import store
 
         with patch.object(
             store, "_path", return_value=str(tmp_path / "x.json")
