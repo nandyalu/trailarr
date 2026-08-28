@@ -75,15 +75,22 @@ def _get_console():
 
 
 def _load_env(env_path: Path) -> dict[str, str]:
+    """Load the stored settings, and return the environment the app runs with.
+
+    A variable that is already set in the environment wins. The stored value is
+    used only when that variable is not set. This matches the Docker behaviour
+    (see scripts/load_env.sh), and lets a service unit correct a bad setting.
+    """
     # Use dotenv's own parser so it correctly handles whatever quoting set_key writes.
     from dotenv import dotenv_values
 
-    result: dict[str, str] = {
+    stored: dict[str, str] = {
         k: v for k, v in dotenv_values(env_path).items() if v is not None
     }
     # Merge into os.environ so subprocess calls inherit them
-    os.environ.update(result)
-    return result
+    for key, value in stored.items():
+        os.environ.setdefault(key, value)
+    return dict(os.environ)
 
 
 def _update_env_var(env_path: Path, key: str, value: str) -> None:

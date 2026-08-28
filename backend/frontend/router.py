@@ -23,6 +23,28 @@ def _resolve_frontend_dir() -> Path:
     return candidate.resolve()
 
 
+# Cache of the index.html created for each URL base, to keep the catch-all
+# route off the disk on every request.
+_sub_index_cache: dict[str, Path] = {}
+
+
+def _url_base_name() -> str:
+    """Return the current URL base as a folder name, e.g. 'trailarr'."""
+    return app_settings.url_base.strip("/")
+
+
+def _ensure_sub_index(frontend_dir: Path, url_base_name: str) -> Path:
+    """Return the index.html for the given URL base, and create it if missing."""
+    cached = _sub_index_cache.get(url_base_name)
+    if cached is not None and cached.is_file():
+        return cached
+    subfolder = setup_url_base_folder(frontend_dir, url_base_name)
+    sub_index = subfolder / "index.html"
+    _sub_index_cache[url_base_name] = sub_index
+    logging.debug(f"URL_BASE folder ready at '{subfolder}'")
+    return sub_index
+
+
 def _sanitize_path(base_dir: Path, messy_path: str) -> Path | None:
     """Return a resolved path only if it is safely inside base_dir."""
     if not messy_path or not messy_path.strip():
@@ -50,24 +72,23 @@ def setup_frontend(app: FastAPI) -> None:
     does not shadow any API endpoints.
     """
     frontend_dir = _resolve_frontend_dir()
-    url_base = app_settings.url_base        # e.g. "/trailarr" or ""
-    url_base_name = url_base.strip("/")     # e.g. "trailarr" or ""
 
     # Always ensure root index.html has <base href="/"> so local / access works.
     root_index = frontend_dir / "index.html"
     if root_index.is_file():
         update_base_href(root_index, "/")
 
-    # When URL_BASE is set, create the subfolder with the prefixed index.html
-    # and register the middleware that strips the prefix for server-side routes.
-    subfolder: Path | None = None
-    sub_index: Path | None = None
+    # Register the middleware always. The user can change the URL base while
+    # the app runs. The middleware reads the setting for each request, so the
+    # API stays reachable at /{url_base}/api/... without an app restart.
+    _sub_index_cache.clear()
+    app.add_middleware(URLBasePrefixMiddleware)
+    logging.debug("URLBasePrefixMiddleware registered")
+
+    # When URL_BASE is set, create the subfolder with the prefixed index.html.
+    url_base_name = _url_base_name()     # e.g. "trailarr" or ""
     if url_base_name:
-        subfolder = setup_url_base_folder(frontend_dir, url_base_name)
-        sub_index = subfolder / "index.html"
-        logging.debug(f"URL_BASE folder ready at '{subfolder}'")
-        app.add_middleware(URLBasePrefixMiddleware, url_base=url_base)
-        logging.debug(f"URLBasePrefixMiddleware registered for '{url_base}'")
+        _ensure_sub_index(frontend_dir, url_base_name)
 
     # Mount /images — must come before the catch-all route.
     images_dir = Path(app_settings.app_data_dir, "web", "images")
@@ -76,18 +97,12 @@ def setup_frontend(app: FastAPI) -> None:
     logging.debug(f"Mounted /images from '{images_dir}'")
 
     # Build and include the frontend router.
-    router = _build_router(frontend_dir, root_index, subfolder, sub_index, url_base_name)
+    router = _build_router(frontend_dir, root_index)
     app.include_router(router)
     logging.debug("Frontend router registered")
 
 
-def _build_router(
-    frontend_dir: Path,
-    root_index: Path,
-    subfolder: Path | None,
-    sub_index: Path | None,
-    url_base_name: str,
-) -> APIRouter:
+def _build_router(frontend_dir: Path, root_index: Path) -> APIRouter:
     router = APIRouter(include_in_schema=False)
 
     @router.get("/assets/manifest.json", response_model=None)
@@ -101,6 +116,10 @@ def _build_router(
     async def serve_frontend(
         request: Request, rest_of_path: str = ""
     ) -> Response:
+        # Read the URL base for each request — the user can change the setting
+        # while the app runs.
+        url_base_name = _url_base_name()
+
         # ── Local access at /{url_base}/* ────────────────────────────────────
         # The browser loaded the app at http://localhost:7889/{url_base}/ and
         # Angular resolves assets/routes relative to <base href="/{url_base}/">.
@@ -108,6 +127,7 @@ def _build_router(
             rest_of_path == url_base_name
             or rest_of_path.startswith(url_base_name + "/")
         ):
+            sub_index = _ensure_sub_index(frontend_dir, url_base_name)
             sub_path = rest_of_path[len(url_base_name):].lstrip("/")
             if not sub_path:
                 return FileResponse(sub_index)
@@ -123,6 +143,7 @@ def _build_router(
         if url_base_name:
             fwd_prefix = request.headers.get("X-Forwarded-Prefix", "").strip("/")
             if fwd_prefix == url_base_name:
+                sub_index = _ensure_sub_index(frontend_dir, url_base_name)
                 if not rest_of_path:
                     return FileResponse(sub_index)
                 file_path = _sanitize_path(frontend_dir, rest_of_path)

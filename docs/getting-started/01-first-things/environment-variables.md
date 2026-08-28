@@ -1,5 +1,11 @@
 **Environment variables are OPTIONAL.**
 
+!!! info "An environment variable wins over a stored setting"
+    {{ version_badge("upd", "0.11.4") }}
+    Trailarr saves the settings you change in the WebUI to a `.env` file in your data directory. At startup, a variable that you set for the container (or for the service) wins over the value in that file. Use this to correct a setting that keeps you out of the WebUI, for example `URL_BASE` or `WEBUI_PASSWORD`. Before v0.11.4, the stored value replaced the variable, and your change did nothing.
+
+    Remember to remove the variable again if you want to change the setting in the WebUI later. While the variable is set, the WebUI shows your change, but the variable wins again at the next start.
+
 Here are the optional environment variables you can set:
 
 ### `APP_DATA_DIR`
@@ -105,6 +111,10 @@ If you forget your password, set this environment variable to `' '` (empty strin
 
 !!! tip ""
     App tries to parse the improperly escaped quotes to try and reset the password, but if it's not working, try setting it to a space like `WEBUI_PASSWORD=' '`.
+
+!!! info "You can also set a new password here"
+    {{ version_badge("upd", "0.11.4") }}
+    A value that is not empty becomes your new password. Trailarr hashes it at startup and stores only the hash — the app never keeps your password as plain text. Remove the variable again after the first start, or it sets the same password at every start and you cannot change the password in the WebUI.
 
 To change the password, go to `Settings > About > Password` in web interface. 
 

@@ -1,3 +1,4 @@
+import {Location} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
@@ -11,6 +12,7 @@ import {AuthService} from '../../services/auth.service';
 export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   protected username = signal('');
   protected password = signal('');
@@ -41,7 +43,9 @@ export class LoginComponent implements OnInit {
       next: () => {
         const params = new URLSearchParams(window.location.search);
         const returnUrl = params.get('returnUrl') || '/home';
-        window.location.href = returnUrl;
+        // prepareExternalUrl adds the base href. Without it the app goes to the
+        // server root, and a URL base (reverse proxy setup) is lost.
+        window.location.href = this.location.prepareExternalUrl(returnUrl);
       },
       error: () => {
         this.isLoading.set(false);
