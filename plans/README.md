@@ -177,7 +177,10 @@ skip-safe too:
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
   — watch for filter-migration and has_downloads reports before starting Phase 6.
 - `phase-06-view-filters.md` — DONE (v0.11.3, Aug 21 2026).
-- `phase-07-backend-reorg.md`
+- `phase-07-backend-reorg.md` — NEXT. Pre-flight audit done Aug 28, 2026 (move map
+  reconciled with the tree; alembic and circular-import pitfalls cleared). Stage A moves
+  held until v0.11.4 ships, per the "in-flight PRs die" pitfall. Now three stages:
+  A (pure moves) → B (thin the API layer) → C (STE100 sweep of logs/comments/docstrings).
 - `phase-08-tmdb.md`
 - `phase-09-video-types.md`
 - `phase-10-media-types-seasons.md`
