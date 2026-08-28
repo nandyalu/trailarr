@@ -65,7 +65,7 @@ def record_failure(
     attempt.attempt_count += 1
     attempt.last_attempt_at = datetime.now(timezone.utc)
     # Known yt-dlp failures are stored as a plain-language reason with
-    # the fix (e.g. "YouTube requires a sign-in... Set up a cookies
+    # the fix (for example, "YouTube requires a sign-in... Set up a cookies
     # file"), with the raw error line kept in brackets for bug reports.
     if error:
         error = classified_error(error)

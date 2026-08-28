@@ -23,8 +23,8 @@
 <hr />
 
 <p class="page-description">
-  Live checks of the pieces Trailarr depends on — FFmpeg, yt-dlp, your connections, folders, and disk space. Every red or yellow state names
-  its fix.
+  Trailarr checks the parts it needs to work: FFmpeg, yt-dlp, your connections, folders, and disk space. Each warning and error tells you
+  how to fix it.
 </p>
 
 @if (message(); as msg) {
@@ -92,9 +92,9 @@
       <p class="cookies-status">{{ cookies.detail }}</p>
     }
     <p>
-      Cookies are needed only when downloads fail with a sign-in or bot check. Export cookies from your browser while signed in to
+      You need cookies only when downloads fail with a sign-in or bot check. Export cookies from your browser while signed in to
       youtube.com (with an extension like "Get cookies.txt"), then upload or paste the file here. Trailarr stores it in the config folder,
-      readable only by the Trailarr user, and never shows its content again.
+      where only the Trailarr user can read it. Trailarr never shows the file content again.
     </p>
     <div class="cookies-actions">
       <label class="btn secondary cookies-file-label">
@@ -125,7 +125,7 @@
       <h2 class="app-dialog-title">Test YouTube download?</h2>
     </div>
     <div class="app-dialog-body">
-      <p>This contacts YouTube once to read a known test video. Nothing is downloaded.</p>
+      <p>Trailarr contacts YouTube once and reads a known test video. It does not download the video.</p>
     </div>
     <div class="app-dialog-footer">
       <button class="btn tertiary" (click)="closeYtdlpConfirm()">Cancel</button>

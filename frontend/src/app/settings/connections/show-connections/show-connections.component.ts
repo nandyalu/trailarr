@@ -63,7 +63,7 @@ export class ShowConnectionsComponent {
       this.resultMessage.set(
         issues === 0
           ? `Checked ${reports.length} connection(s) — all healthy.`
-          : `Checked ${reports.length} connection(s) — ${issues} with issues. Open the chip to see the fix.`,
+          : `Checked ${reports.length} connection(s) — ${issues} with issues. Click ISSUES FOUND on a connection to see the fix.`,
       );
       this.resultType.set(issues === 0 ? 'success' : 'error');
     } catch (error) {

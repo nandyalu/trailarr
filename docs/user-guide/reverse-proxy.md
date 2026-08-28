@@ -28,7 +28,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
 
 - Make sure to set the `URL Base` in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at `https://mydomain.com/trailarr/`, set the `URL Base` to `/trailarr`.
 
-- You can also set the `URL_BASE` environment variable instead. Trailarr reads it at startup, and shows the value in the General Settings.
+- You can set the `URL_BASE` environment variable instead. Trailarr reads it at startup, and shows the value in the General Settings.
 
 !!! info "The new value applies immediately"
     {{ version_badge("upd", "0.11.4") }}
@@ -37,7 +37,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
 !!! warning "How to remove the URL Base"
     The application does not accept an empty value for a setting, so you cannot remove the `URL Base` in the WebUI. Use one of these two methods:
 
-    - {{ version_badge("upd", "0.11.4") }} Set `URL_BASE=` (empty) in your `docker-compose.yml` and restart the container. From v0.11.4, a variable set for the container wins over the stored value.
+    - {{ version_badge("upd", "0.11.4") }} Set `URL_BASE=` (empty) in your `docker-compose.yml`. Then restart the container. From v0.11.4, a variable set for the container has priority over the stored value.
     - Open the `.env` file in your `config/` folder, remove the value set for `URL_BASE`, and restart the application.
 
 
@@ -60,7 +60,7 @@ When hosting the application behind a reverse proxy in a sub-directory (e.g., `h
     | `X-Forwarded-Host` | Original host name (`mysuperapp.com`) |
     | `X-Forwarded-Prefix` | Sub-directory prefix (`/trailarr`) — see the note below |
 
-    Trailarr uses `X-Forwarded-Prefix` to select the correct frontend when the proxy **removes** the sub-directory prefix before it sends the request (the Apache and Traefik examples below). A proxy that **keeps** the prefix (the Nginx and Caddy examples below) does not need the header, but it does no harm. Set it in both cases if you are not sure.
+    Trailarr uses `X-Forwarded-Prefix` to select the correct frontend when the proxy **removes** the sub-directory prefix before it sends the request (the Apache and Traefik examples below). A proxy that **keeps** the prefix (the Nginx and Caddy examples below) does not need the header, but the header does no harm. If you are not sure, set the header in both cases.
 
 ### Nginx
 
@@ -214,7 +214,7 @@ When `URL Base` is set, Trailarr does the following:
 
 - Keeps the root `index.html` with `<base href="/">` so the app remains accessible at the local IP and port (`http://your-ip:7889/`).
 - Creates a `/{url_base}/` subfolder inside the frontend build directory containing a separate `index.html` patched with `<base href="/{url_base}/">`. This makes the app also accessible at `http://your-ip:7889/{url_base}/` and via the reverse proxy sub-directory URL.
-- Removes the `/{url_base}` prefix from API, WebSocket, health and image requests that arrive with the prefix. This covers direct local access at `http://your-ip:7889/{url_base}/api/...` and a reverse proxy that keeps the prefix. No proxy stripping is needed.
+- Removes the `/{url_base}` prefix from API, WebSocket, health and image requests that arrive with the prefix. This applies to direct local access at `http://your-ip:7889/{url_base}/api/...`, and to a reverse proxy that keeps the prefix. The proxy does not have to remove the prefix.
 - Reads the `X-Forwarded-Prefix` header (sent by the reverse proxy) to decide which `index.html` to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.
 - Keeps the login session cookie at the root path (`/`), so the same session works at the local URL and at the sub-directory URL.
 
@@ -231,7 +231,7 @@ Versions before v0.11.4 had three problems with a sub-directory setup ([#663](ht
 - **The login is successful, but every page shows a `401 Unauthorized` error.** The session cookie was limited to the `URL Base` path, so the browser did not send it for other paths.
 - **The app goes to the root URL after login, and the sub-directory prefix is lost.** The redirect used an absolute path and did not include the base path.
 
-If you are locked out and cannot open the Settings page, remove the value set for `URL_BASE` in the `.env` file in your `config/` folder, then restart the application. This gives you access at the root URL again.
+If you cannot sign in and cannot open the Settings page, open the `.env` file in your `config/` folder. Remove the value set for `URL_BASE`. Then restart the application. Trailarr is available at the root URL again.
 
 ## Bypassing Authentication via Reverse Proxy
 
@@ -244,7 +244,7 @@ If your reverse proxy already handles authentication (e.g. SSO, OAuth, basic aut
     Anyone who can send an `X-API-KEY` header directly to Trailarr will bypass authentication. Make sure Trailarr's port is **not** accessible from outside your network — only the reverse proxy should be able to reach it.
 
 !!! tip "Set the header on all forwarded requests"
-    The browser cannot add a header to the WebSocket connection that gives you live task and download updates. Trailarr solves this with the session that the API key creates: the first request with the key gets a session cookie, and the WebSocket then uses that cookie. Set the header for the full location block, not only for the page URL.
+    The WebSocket connection gives you live task and download updates. The browser cannot add a header to that connection. Trailarr solves this with a session: the first request with the key gets a session cookie. The WebSocket then uses that cookie. Set the header for the full location block, and not only for the page URL.
 
 Add the following to your existing reverse proxy configuration (in addition to any other headers already set):
 

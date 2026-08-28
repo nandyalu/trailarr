@@ -2,7 +2,7 @@
 
 # Load the settings that Trailarr stored in a .env file.
 #
-# A variable that is already set in the environment wins. For example, a
+# A variable already set in the environment has priority. For example, a
 # variable set in `docker-compose.yml` keeps its value, and the stored value is
 # used only when that variable is not set. This lets you correct a bad setting
 # (URL_BASE, WEBUI_PASSWORD, ...) from your compose file when the WebUI is not

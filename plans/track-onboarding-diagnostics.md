@@ -27,7 +27,7 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
   paths. Fixes two failures of the shallow heuristic on the maintainer's machine: a
   library 3 levels deep got no suggestion at all, and a folder-name coincidence
   (`/media/movies/all` tail-matching a dir named `all`) produced a wrong one. Spread
-  media sampling doubles as union-mount disambiguation: a candidate on one physical
+  media sampling also identifies the correct union mount: a candidate on one physical
   drive fails some samples while the union mount passes all. Sibling roots reuse the
   first derived mapping without re-searching. The tail heuristic remains as the
   fallback for fresh connections with no synced media.
@@ -41,7 +41,7 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
   (`add_path_mapping` upserts by `path_from`) — no duplicates.
 - Wargames A1–A6 each have a test in `tests/core/diagnostics/`; exit criterion verified
   end-to-end in headless Chromium: a wrong-volume setup (Arr reports `/data/*`, library
-  elsewhere) got a one-click Apply that flipped the chip to HEALTHY.
+  elsewhere) got a one-click Apply that changed the chip to HEALTHY.
 
 **Milestone B execution notes (Aug 14, 2026):**
 
@@ -65,7 +65,7 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 **Review changes before merge (Aug 27, 2026):** a maintainer review asked the same
 question of every part — where does the app still hand work back to the user? Eleven
-changes came out of it. They are recorded here because several revise decisions written
+changes came out of it. They are recorded here because several of them revise decisions
 above.
 
 - Doctor reports PERSIST (revises the in-memory note in the Milestone A notes).
@@ -80,16 +80,16 @@ above.
   its own timeout plus everyone else's wait.
 - Disk space covers every distinct media mount (deduped by `st_dev`, config volume
   excluded), warning under 5 GiB. A full media disk fails downloads with an error that
-  never mentions space. The 5 GiB threshold is a judgement call, not a measured one.
+  never mentions space. The 5 GiB threshold is a judgment call, not a measured one.
 - Error signatures added: nsig/player-response (the common breakage when YouTube changes
   its player), age restriction, HTTP 410.
 - After saving cookies, the Health page offers `Test them now` — the click is the
   confirmation, so B3 is satisfied without asking twice.
 - Background tasks are held in a module-level set; without a strong reference the loop
-  can collect a task mid-run, so the post-save check could silently never finish.
+  can collect a task mid-run, so the post-save check could stop with no error message.
 - The yt-dlp live test reaps its process after a timeout.
 
-**Doctor on the Add/Edit Connection page (Aug 28, 2026):** the review surfaced that
+**Doctor on the Add/Edit Connection page (Aug 28, 2026):** the review showed that
 `POST /connections/` REFUSES a connection Trailarr cannot reach or read, so the doctor
 never got to diagnose the very mistake it explains best. `preview_doctor()` now runs the
 probes for a connection with no id (`POST /connections/doctor/preview`, with the id

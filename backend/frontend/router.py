@@ -24,7 +24,7 @@ def _resolve_frontend_dir() -> Path:
 
 
 # Cache of the index.html created for each URL base, to keep the catch-all
-# route off the disk on every request.
+# route from reading the disk on every request.
 _sub_index_cache: dict[str, Path] = {}
 
 

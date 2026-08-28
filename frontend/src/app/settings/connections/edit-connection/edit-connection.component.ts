@@ -302,11 +302,11 @@ export class EditConnectionComponent {
     }
     const visible = mappings.filter((_, i) => this.mappingIsVisible(i)).length;
     const parts: string[] = [];
-    if (filled) parts.push(`Filled ${filled} folder path(s) found on disk.`);
-    if (offered) parts.push(`${offered} row(s) have a different suggestion — check the button next to them.`);
+    if (filled) parts.push(`Trailarr found ${filled} folder(s) on disk and filled in the Trailarr Path.`);
+    if (offered) parts.push(`${offered} row(s) have a different suggestion. Use the button next to them to apply it.`);
     if (visible) parts.push(`${visible} folder(s) are already visible to Trailarr.`);
     if (!parts.length) {
-      parts.push('No folders were found on disk for these paths. Set the Trailarr Path by hand.');
+      parts.push('Trailarr found no folders on disk for these paths. Set the Trailarr Path by hand.');
     }
     return parts.join(' ');
   }

@@ -395,7 +395,7 @@ def _probe_root(
     )
     remediation = (
         "Map this path to the folder where Trailarr sees the same"
-        " files, on the connection's Path Mappings."
+        " files. Add the mapping in the connection's Path Mappings section."
     )
     if suggestion:
         _mark_existing(suggestion, connection)
@@ -403,7 +403,7 @@ def _probe_root(
             f" {suggestion.corroborations} probed path(s) confirm it."
             if suggestion.corroborations > 1
             else (
-                " The match is based on the folder name only — check"
+                " The match uses the folder name only. Check"
                 " the contents before you apply it."
             )
         )

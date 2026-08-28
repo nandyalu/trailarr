@@ -42,7 +42,7 @@ def add_path_mapping(
     """Add one path mapping row to a connection.
 
     Used by the Connection Doctor's one-click "Apply" for a suggested
-    mapping. Skips silently when the same path_from already exists on
+    mapping. It updates path_to when the same path_from is already on
     the connection (the user applied it twice).
     """
     path_from = normalize_trailing_slash(path_from)

@@ -40,7 +40,7 @@ _SIGNATURES: list[tuple[tuple[str, ...], str]] = [
         ),
         (
             "YouTube changed its player and this yt-dlp version cannot read"
-            " it. Update yt-dlp, and make sure a JavaScript runtime (Deno)"
+            " it. Update yt-dlp. Check that a JavaScript runtime (Deno)"
             " is available."
         ),
     ),

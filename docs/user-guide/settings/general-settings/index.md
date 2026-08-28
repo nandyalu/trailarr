@@ -113,7 +113,7 @@ See [Export YouTube Cookies.txt file](../../../troubleshooting/common-issues.md#
 
 !!! tip "Set this up from the Health page instead"
     {{ version_badge("add", "0.11.4") }}
-    [Settings > Health](../health.md#youtube-cookies) can upload or paste the cookies file for you: it stores the file in the config folder with safe permissions, sets this path, and shows whether the cookies are valid or expired.
+    On [Settings > Health](../health.md#youtube-cookies) you can upload the cookies file, or paste its content. Trailarr stores the file in the config folder with safe permissions, sets this path, and shows whether the cookies are valid or expired.
 
 !!! tip
     Use the `📁` (folder) icon to open a dialog that shows the container folders and files. Navigate to your `cookies.txt` file and confirm.

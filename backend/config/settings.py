@@ -153,8 +153,8 @@ def _start_slash_only(value: str) -> str:
 def _hashed_webui_password(value: str, default_hash: str) -> str:
     """Return the password hash to store for the WebUI login. \n
     - An empty value gives the default password ('trailarr'). Quotes and tabs
-      are removed first, so an improperly escaped value also resets it.
-    - A bcrypt hash is kept as it is.
+      are removed first, so a badly escaped value also gives the default.
+    - A bcrypt hash stays unchanged.
     - Any other value is plain text, and is hashed. A user can set a new
       password with the `WEBUI_PASSWORD` environment variable. bcrypt cannot
       compare a password against a value that is not a hash. \n

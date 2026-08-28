@@ -57,7 +57,7 @@ def get_status() -> CookiesStatus:
     if not path:
         return CookiesStatus(
             detail=(
-                "No cookies file is set up. Cookies are needed only when"
+                "No cookies file is set up. You need cookies only when"
                 " YouTube asks for a sign-in or rate-limits downloads."
             )
         )
