@@ -42,27 +42,27 @@ Every connection card shows a **Connection Doctor** chip: `HEALTHY`, `ISSUES FOU
 
 {{ version_badge("add", "0.11.4") }}
 
-The doctor also runs on the **Add / Edit Connection** page, before the connection is saved. After you test the connection and Trailarr lists the root folders, click **Find folders**: Trailarr looks on disk for the folders your application reports, and fills in the **Trailarr Path** of every mapping it finds.
+The doctor also runs on the **Add / Edit Connection** page, before you save the connection. First test the connection and let Trailarr list the root folders. Then click **Find folders**. Trailarr looks on disk for the folders that your application reports. It fills in the **Trailarr Path** of every mapping that it finds.
 
-This matters because Trailarr refuses to save a connection it cannot reach or read. Without this button you would have to know your mount layout in advance. Now the app finds it for you.
+Trailarr refuses to save a connection that it cannot reach or read. Without this button, you must know the layout of your mounts in advance. With it, Trailarr finds the layout for you.
 
 Two rules keep it safe:
 
 - A **Trailarr Path you typed is never overwritten**. When the doctor finds a different folder for that row, it offers it as a button next to the field, and you decide.
-- Each suggestion says how sure it is. `2 folders confirm this` means the mapping also resolves other media folders that Trailarr already tracks. `name match only — check it` means the folder name matched and nothing more, so look at the contents first.
+- Each suggestion shows how strong the evidence is. `2 folders confirm this` means the mapping also resolves other media folders that Trailarr already tracks. `name match only — check it` means that only the folder name matches. Look at the folder contents first.
 
 The doctor runs these checks:
 
-- **API reachability** — Trailarr asks the application for its root folders (Plex: library folders). A wrong URL or API key shows up here.
-- **Path visibility** — each reported folder must exist and list from inside Trailarr, after your path mappings are applied. A folder that is reachable but empty is flagged as a warning: some network mounts present an empty folder when they are down — see [Network Drives](../../../getting-started/01-first-things/network-drives.md).
-- **Mapping suggestions** — when a reported folder is not visible, the doctor does the work of finding it: it searches the disk for media folders it already tracks, by their distinctive names (for example, `Show Name (2015) {tvdb-281662}`), and derives the path mapping from where it finds them — verified against several media folders spread across the library. Each suggestion maps one reported root folder exactly (for example, `/media/tv → /media/all/Media/tv`), so mappings line up one-to-one with the root folders the application reports. Click **Apply** to add the mapping and re-run the check; when the root already has a mapping, the button says **Update mapping** and changes that mapping's target instead of adding a second one. When the check passes, Trailarr also starts a sync of that connection right away, so the library fills in instead of waiting for the next scheduled sync. For a fresh connection with no synced media yet, the doctor falls back to comparing the remote path against the visible folders; a suggestion confirmed by only a folder-name match says so — check the folder contents before you apply it.
-- **Write permissions** — the doctor creates and deletes a `.trailarr-write-test` file in **every** accessible folder, because one writable folder does not make the others writable: a read-only TV share next to a writable movies mount is reported. On failure it reports the folder's owner (uid/gid) against the user Trailarr runs as, which is the PUID/PGID fix — see [Environment Variables](../../../getting-started/01-first-things/environment-variables.md).
+- **API reachability** — Trailarr asks the application for its root folders (Plex: library folders). This check reports a wrong URL or a wrong API key.
+- **Path visibility** — each reported folder must exist, and Trailarr must be able to list its contents after it applies your path mappings. Trailarr gives a warning for a folder that it can reach but that is empty. Some network mounts show an empty folder when the mount is not available — see [Network Drives](../../../getting-started/01-first-things/network-drives.md).
+- **Mapping suggestions** — when a reported folder is not visible, the doctor finds it for you. It searches the disk for media folders that Trailarr already tracks, by their distinctive names (for example, `Show Name (2015) {tvdb-281662}`). It then derives the path mapping from the place where it finds them. It confirms the mapping against several media folders from different parts of the library. Each suggestion maps one reported root folder (for example, `/media/tv → /media/all/Media/tv`), so there is one mapping for each root folder the application reports. Click **Apply** to add the mapping and to run the check again. When the root folder already has a mapping, the button says **Update mapping** and changes the target of that mapping. It does not add a second mapping. When the check passes, Trailarr also starts a sync of that connection immediately. Trailarr then adds the media to your library before the next scheduled sync. For a new connection with no synced media, the doctor compares the remote path against the visible folders instead. A suggestion that matches only a folder name says so. Look at the folder contents before you apply that suggestion.
+- **Write permissions** — the doctor creates a `.trailarr-write-test` file in **every** accessible folder, then deletes it. One writable folder does not make the other folders writable. For example, the doctor reports a read-only TV share next to a writable movies mount. When the test fails, the doctor shows the owner (uid/gid) of the folder and the user that Trailarr runs as. Compare the two values, then set the correct PUID and PGID — see [Environment Variables](../../../getting-started/01-first-things/environment-variables.md).
 
 !!! note "The checks are read-only"
     The write-test file is the only thing the doctor ever creates, and it deletes it right away. Media files are never touched.
 
-!!! note "Reports do not survive a restart"
-    Reports are kept in memory. After a restart, the chips show `NOT CHECKED` until you save a connection or click the chip and run the check.
+!!! note "Reports stay after a restart"
+    Trailarr saves the reports to a file in the config folder. After a restart, each chip shows the result of its last check. A connection that was never checked shows `NOT CHECKED`.
 
 ---
 

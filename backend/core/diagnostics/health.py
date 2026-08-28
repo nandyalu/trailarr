@@ -172,7 +172,7 @@ async def _check_ffmpeg() -> HealthCheckResult:
 
 
 async def _check_hardware() -> HealthCheckResult:
-    """Surface the GPU detection that is otherwise invisible."""
+    """Show the GPU detection result, which is otherwise invisible."""
     vendors = [
         (
             "NVIDIA",
@@ -208,7 +208,7 @@ async def _check_hardware() -> HealthCheckResult:
             " is slower."
         ),
         remediation=(
-            "To use a GPU, pass the device to the container and check"
+            "To use a GPU, pass the device to the container. Read"
             " the hardware acceleration guide."
         ),
         docs_url=DOCS_HW_ACCEL,
@@ -239,7 +239,7 @@ async def _check_ytdlp() -> HealthCheckResult:
                 " version is available."
             ),
             remediation=(
-                "YouTube changes often break old versions. Update the"
+                "Changes on YouTube often break old versions. Update the"
                 " Trailarr image (Docker) or run the updater (bare"
                 " metal) to get the newest yt-dlp."
             ),
@@ -278,7 +278,7 @@ async def _check_cookies() -> HealthCheckResult:
             name="YouTube cookies",
             status=ProbeStatus.SKIPPED,
             detail=(
-                "No cookies file is set up. Cookies are needed only"
+                "No cookies file is set up. You need cookies only"
                 " when YouTube asks for a sign-in or rate-limits"
                 " downloads."
             ),
@@ -362,7 +362,7 @@ async def _run_doctor_for_all() -> list:
 async def _check_connections() -> HealthCheckResult:
     reports = connection_doctor.get_all_reports()
     if not reports:
-        # Never tell the user to go and collect this themselves -- the
+        # Never tell the user to go and collect this data. The
         # doctor is one call away, so run it for every connection.
         reports = await _run_doctor_for_all()
     if not reports:
@@ -411,7 +411,7 @@ async def _check_images() -> HealthCheckResult:
             status=ProbeStatus.WARNING,
             detail=f"The images folder '{images_dir}' does not exist yet.",
             remediation=(
-                "It is created on the first image refresh. Run the"
+                "Trailarr creates it on the first image refresh. Run the"
                 " Image Refresh task if posters do not show."
             ),
         )
@@ -451,7 +451,7 @@ def _format_size(size: float) -> str:
 async def _check_disk_space() -> HealthCheckResult:
     """Free space on the config volume and on every media mount.
 
-    A full media disk is the painful one: downloads fail with a raw
+    A full media disk is hard to diagnose. Downloads fail with a raw
     FFmpeg or yt-dlp error and nothing says the disk is full. Each
     distinct mount is reported once, and a low one is a warning.
     """
@@ -492,7 +492,7 @@ async def _check_disk_space() -> HealthCheckResult:
         remediations.append(
             "Free up space on "
             + ", ".join(f"'{m}'" for m in low_mounts)
-            + ". Trailers cannot be saved on a full disk."
+            + ". Trailarr cannot save trailers to a full disk."
         )
 
     return HealthCheckResult(
@@ -519,7 +519,7 @@ def _media_mounts() -> list[str]:
     one, TV on another). Reporting only the first one hides a full
     second disk, so every distinct device gets its own entry. Folders
     checked by the Connection Doctor come first, because those are the
-    library roots; recent media folders fill in the rest.
+    library roots. Recent media folders complete the list.
     """
     candidates: list[str] = []
     for report in connection_doctor.get_all_reports():
@@ -576,7 +576,7 @@ def get_ytdlp_test_result() -> HealthCheckResult | None:
 async def run_ytdlp_test() -> HealthCheckResult:
     """Contact YouTube once with yt-dlp and report whether it works.
 
-    Uses --simulate: it exercises the extraction path (the part that
+    The --simulate option runs the extraction code (the part that
     fails with sign-in and bot checks) and downloads nothing.
     """
     global _ytdlp_test_result
@@ -617,8 +617,8 @@ async def run_ytdlp_test() -> HealthCheckResult:
             status=ProbeStatus.ERROR,
             detail=classified or f"The test failed: {last_line}",
             remediation=(
-                "Set up a cookies file on this page if YouTube asks for"
-                " a sign-in. Update yt-dlp if it is outdated."
+                "If YouTube asks for a sign-in, set up a cookies file"
+                " on this page. If yt-dlp is outdated, update it."
             ),
             docs_url=DOCS_COOKIES,
         )

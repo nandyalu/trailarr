@@ -1,7 +1,7 @@
 """Report models for the Connection Doctor.
 
 These are API/response models only — reports are not stored in the
-database. The last report per connection lives in memory and is rebuilt
+database. Trailarr keeps the last report per connection and rebuilds it
 on demand (a check takes well under a second for local folders).
 """
 
@@ -27,10 +27,10 @@ class SuggestedMapping(BaseModel):
     """The equivalent folder as Trailarr sees it."""
     corroborations: int = 1
     """Number of probed paths that resolve under this mapping. 1 means
-    the match is based on the folder name only — check before applying."""
+    the match uses the folder name only. Check it before you apply it."""
     updates_existing: bool = False
     """True when the connection already has a mapping for this root —
-    applying changes that mapping's target instead of adding a row."""
+    applying it changes that mapping's target instead of adding a row."""
 
 
 class ProbeResult(BaseModel):

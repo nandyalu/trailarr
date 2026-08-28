@@ -35,8 +35,15 @@ No step in this skill includes a Claude Code / `Co-Authored-By` footer in any co
 ## 2. Release notes (`docs/release-notes/2026.md`)
 
 - Replace the version's `_TBD_` date with the real release date: `## **vX.Y.Z** - _Month D, YYYY_`.
-- Sections, in order, only if non-empty: `**What's New:** ✨`, `**Bug Fixes:** 🐛`, `**Other Changes:** 🔧`.
-- Bullet shape: `- **Bold hook, present tense, states the user-facing win** — explanation sentence(s).` Optional trailing `see [Label](relative/path.md#anchor)`, issue refs `([#123](https://github.com/.../issues/123))`, and blockquote warnings `> ⚠️ **Heading.** explanation.` for breaking changes/deprecations.
+- Sections, in order, only if non-empty: `**What's New:** ✨`, `**Bug Fixes:** 🐛`, `**Other Changes:** ⚙️`.
+- Bullet shape: `- **Bold hook, present tense, states the user-facing win** — explanation sentence(s).` Optional trailing `see [Label](relative/path.md#anchor)`, and blockquote warnings `> ⚠️ **Heading.** explanation.` for breaking changes/deprecations.
+- **Link what the entry closes.** If a change or a bug fix closes an issue, put the reference at the end of that bullet: `...does not run ([#653](https://github.com/nandyalu/trailarr/issues/653)).` Use `/pull/N` when a pull request delivered the change, and `/discussions/N` for a discussion. Write the markdown link only. Do not write `Fixes`, `Closes`, or `{_target="_blank"}` in a new entry — those forms are from older versions in the same file. A `Closes #N` line goes in the PR body only (sections 4 and 7), so the entry itself must carry the link. To find the references: run `git log origin/main..dev --oneline` and read each subject and body for an issue number, then run `gh pr list --state merged --search "merged:>=<date of the last release>" --json number,author,title,url` and open each result with `gh pr view <n>`.
+- **Credit every contributor who is not the owner.** List the candidates with `git log origin/main..dev --format='%an | %s'` and the `gh pr list` command above. Ignore `dependabot[bot]` and `github-actions[bot]`. Ignore the owner, who commits as both `nandyalu` and `Uma Nandyala`. Take the handle from the pull request `author.login` field, because `git log` gives a display name (`Luis Miranda`), not a handle. Do not filter the PR list by base branch: an outside contributor opens the pull request against `main` or against `dev` (compare [#620](https://github.com/nandyalu/trailarr/pull/620) with [#652](https://github.com/nandyalu/trailarr/pull/652)). Put the thanks at the end of that person's entry, in front of the reference:
+    - Contributed the fix, and the reason is clear: `Thanks [@lems111](https://github.com/lems111) for finding the cause and the fix! ([#652](https://github.com/nandyalu/trailarr/pull/652))`
+    - Contributed the fix, and the reason is not clear: `Thanks [@d4rk22](https://github.com/d4rk22)! ([#620](https://github.com/nandyalu/trailarr/pull/620))`
+    - Only reported the problem: `Thanks [@kevin2xk](https://github.com/kevin2xk) for the detailed report! ([#626](https://github.com/nandyalu/trailarr/issues/626))` — get that name with `gh issue view <n> --json author`.
+
+    Sections 4 and 7 copy the entry word for word, so one thanks reaches the release notes page, the pull request, and the GitHub release.
 - Write and rewrite entries per the project's ASD-STE100 Simplified Technical English convention (see `CLAUDE.md`): short sentences, one idea per sentence, active voice, simple vocabulary.
 - Versions are separated by a `---` line.
 
@@ -48,6 +55,7 @@ Commit the dependency/version/badge/notes changes on `dev` with a plain message 
 
 - **Title**: `vA.B.C - Short title for release` (e.g. `v0.10.1 - Reject live videos download & tmp folder cleanup`).
 - **Body**: the *entire* release-notes section for that version, verbatim, **including** the `## **vX.Y.Z** - _date_` heading line, excluding the trailing `---` separator. No "Summary"/"Test plan" scaffolding, no footer — this is not the generic `gh pr create` template.
+- **Closing lines**: append one `Closes #N` line for each issue the release closes, after the notes. GitHub closes those issues when the PR merges. Section 7 removes these lines again for the GitHub release.
 - Base `main`, head `dev`.
 
 ## 5. Merge

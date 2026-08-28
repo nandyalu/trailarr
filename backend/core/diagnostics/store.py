@@ -2,13 +2,13 @@
 
 Reports were in memory only at first. Docker users restart the
 container on every image update, and each restart threw the reports
-away: every connection chip fell back to "Not checked", and the Health
-page asked the user to go and run the checks again. The app must not
+away. Every connection chip then showed "Not checked", and the Health
+page asked the user to run the checks again. The app must not
 ask the user for data it can keep.
 
 The reports are diagnostics, not user data: a small JSON file in
 APP_DATA_DIR holds them. A missing or damaged file is not an error --
-the doctor simply runs again.
+the doctor runs again.
 
 NOTE (phase-07 move map): this package moves to `services/diagnostics/`
 in the backend reorganization.

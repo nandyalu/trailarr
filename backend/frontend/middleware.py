@@ -19,7 +19,7 @@ class URLBasePrefixMiddleware:
     The prefix can also occur more than once. The app starts with
     `uvicorn --root-path {url_base}`, and uvicorn adds the root path to the
     request path. A reverse proxy that keeps the prefix then sends, for example,
-    `/trailarr/trailarr/api/v1/...`. All copies of the prefix are removed.
+    `/trailarr/trailarr/api/v1/...`. The middleware removes every copy of the prefix.
 
     The URL base is read for each request. The user can change the setting
     while the app runs, and the new value applies without a restart.

@@ -19,7 +19,7 @@ from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
 # Strong references to running background tasks. The event loop only
 # keeps a weak reference, so a task without one can be garbage
-# collected mid-run and the check would silently never finish.
+# collected while it runs, and the check never finishes.
 _background_tasks: set[asyncio.Task] = set()
 
 
@@ -27,7 +27,7 @@ def _schedule_doctor(connection_id: int) -> None:
     """Run the Connection Doctor in the background after a save.
 
     A failed check must never fail the save — errors show up in the
-    report itself, or only in the log for unexpected ones.
+    report itself. An unexpected error goes only to the log.
     """
 
     async def _run() -> None:
@@ -47,7 +47,7 @@ def _schedule_refresh(connection_id: int) -> None:
     """Sync a connection after its path mapping is fixed.
 
     `api_refresh_by_id_job` only registers the task with the scheduler
-    and returns at once, so this does not hold up the response.
+    and returns at once, so this does not delay the response.
     """
     try:
         api_refresh_by_id_job(connection_id)
@@ -65,8 +65,8 @@ connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 async def get_doctor_reports() -> list[DoctorReport]:
     """Last Connection Doctor report of every checked connection.
 
-    Reports live in memory: after a restart the list is empty until a
-    connection is saved or a check is run.
+    Trailarr stores the reports on disk, so a report stays after a
+    restart. A connection that was never checked has no report.
     """
     return connection_doctor.get_all_reports()
 
@@ -161,7 +161,7 @@ async def apply_doctor_mapping(
     Creates the PathMapping row on the connection (or updates the row
     with the same `path_from`) and returns the fresh report.
 
-    A correct mapping is only half the fix: until the next sync runs,
+    A correct mapping is not sufficient. Until the next sync runs,
     the media still points at paths Trailarr cannot see. The refresh
     starts right away, so the library fills in instead of staying
     broken until the next scheduled sync.

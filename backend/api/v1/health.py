@@ -17,7 +17,7 @@ async def get_health_checks() -> HealthReport:
     """The system health report.
 
     Returns the cached report when it is under 24 hours old, else runs
-    the checks. Checks never run at startup — only from here.
+    the checks. The checks never run at startup. They run only from here.
     """
     cached = health.get_cached_report()
     if cached is not None:
@@ -36,7 +36,7 @@ async def run_ytdlp_test(force: bool = False) -> HealthCheckResult:
     """Test that yt-dlp can read a video from YouTube.
 
     Contacts YouTube once, so the UI asks for confirmation first. The
-    result is cached for 24 hours; pass ``force=true`` to re-run early.
+    result is cached for 24 hours. Pass ``force=true`` to re-run early.
     """
     if not force:
         cached = health.get_ytdlp_test_result()

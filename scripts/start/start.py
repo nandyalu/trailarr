@@ -77,8 +77,8 @@ def _get_console():
 def _load_env(env_path: Path) -> dict[str, str]:
     """Load the stored settings, and return the environment the app runs with.
 
-    A variable that is already set in the environment wins. The stored value is
-    used only when that variable is not set. This matches the Docker behaviour
+    A variable already set in the environment has priority. The stored value is
+    used only when that variable is not set. This matches the Docker behavior
     (see scripts/load_env.sh), and lets a service unit correct a bad setting.
     """
     # Use dotenv's own parser so it correctly handles whatever quoting set_key writes.

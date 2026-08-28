@@ -134,7 +134,7 @@ skip-safe too:
    **Add a fixture when a release changes the SCHEMA or introduces a new DATA SHAPE** —
    not on every release number. Two fixtures with the same Alembic head test the same
    migration path twice and only slow the gauntlet. v0.11.2 added no migration and no
-   new row shape, so it has no fixture; v0.11.3 has one because Phase 6 introduced
+   new row shape, so it has no fixture. v0.11.3 has one because Phase 6 introduced
    saved filters whose `filter_by` names a virtual field with no matching media column
    (`v0_11_3_download_filters.sql`).
 5. **Downgrade guard:** on boot, if the DB's Alembic revision is unknown to (ahead of)
