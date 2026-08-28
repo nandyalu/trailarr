@@ -23,7 +23,7 @@ from core.tasks.files_scan import scan_all_media_folders
 from core.tasks.startup_passes import run_startup_passes
 from core.tasks.image_refresh import refresh_images
 from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
-from core.updates.docker_check import check_for_updates
+from services.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")
 
