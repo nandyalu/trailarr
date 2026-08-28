@@ -16,13 +16,13 @@ from database.models.task_config import (
 import database.manager.connection as connection_manager
 from database.models.connection import ArrType
 from services.trailers.trailers.missing import download_missing_trailers
-from core.tasks import scheduler
-from core.tasks.api_refresh import api_refresh
-from core.tasks.cleanup import delete_old_logs, trailer_cleanup
-from core.tasks.files_scan import scan_all_media_folders
-from core.tasks.startup_passes import run_startup_passes
-from core.tasks.image_refresh import refresh_images
-from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
+from tasks import scheduler
+from tasks.api_refresh import api_refresh
+from tasks.cleanup import delete_old_logs, trailer_cleanup
+from tasks.files_scan import scan_all_media_folders
+from tasks.startup_passes import run_startup_passes
+from tasks.image_refresh import refresh_images
+from tasks.plex_trailer_refresh import refresh_plex_trailer_flags
 from services.updates.docker_check import check_for_updates
 
 logger = ModuleLogger("BackgroundTasks")

@@ -8,8 +8,8 @@ from services.connections.arr.radarr.connection_manager import RadarrConnectionM
 from services.connections.arr.sonarr.connection_manager import SonarrConnectionManager
 from app_logger import ModuleLogger
 from api.v1.websockets import ws_manager
-from core.tasks.image_refresh import refresh_images
-from core.tasks import scheduler
+from tasks.image_refresh import refresh_images
+from tasks import scheduler
 
 logger = ModuleLogger("APIRefreshTasks")
 

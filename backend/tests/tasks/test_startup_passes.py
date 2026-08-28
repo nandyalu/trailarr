@@ -6,14 +6,14 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 import database.manager.startuppass as startuppass_manager
-from core.tasks import startup_passes
-from core.tasks.startup_passes import (
+from tasks import startup_passes
+from tasks.startup_passes import (
     DOWNLOADS_REQUIRED_PASSES,
     downloads_ready,
     run_startup_passes,
 )
 
-PKG = "core.tasks.startup_passes"
+PKG = "tasks.startup_passes"
 
 
 @pytest.fixture(autouse=True)
@@ -136,7 +136,7 @@ class TestFullScanGuardPass:
         unconditionally (a fresh install has no media, so the scan is a
         no-op there; the "once" policy keeps it from repeating)."""
         with patch(
-            "core.tasks.files_scan.scan_all_media_folders",
+            "tasks.files_scan.scan_all_media_folders",
             new=AsyncMock(),
         ) as mock_scan:
             await startup_passes._pass_full_scan_guard()

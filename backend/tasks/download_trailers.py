@@ -10,7 +10,7 @@ from database.models.trailerprofile import TrailerProfileRead
 from services.trailers.trailer import download_trailer
 from services.trailers.trailers.batch import batch_download_task
 from services.files.files_handler import FilesHandler
-from core.tasks import scheduler
+from tasks import scheduler
 from exceptions import (
     FolderNotFoundError,
     FolderPathEmptyError,

@@ -18,7 +18,7 @@ from database.models.connection import (
 from database.models.download import DownloadCreate
 from database.models.media import MediaCreate
 from database.engine import write_session
-from core.tasks.download_attribution import (
+from tasks.download_attribution import (
     attribute_unattributed_downloads,
     count_tracked_media,
 )
@@ -66,7 +66,7 @@ def make_media(
     )
 
 
-PKG = "core.tasks.download_attribution"
+PKG = "tasks.download_attribution"
 
 
 class TestAttributeUnattributedDownloads:

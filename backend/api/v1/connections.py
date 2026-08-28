@@ -14,8 +14,8 @@ from database.models.connection import (
 )
 from services.diagnostics import connection_doctor
 from services.diagnostics.models import DoctorReport, SuggestedMapping
-from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
-from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
+from tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
+from tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
 # Strong references to running background tasks. The event loop only
 # keeps a weak reference, so a task without one can be garbage

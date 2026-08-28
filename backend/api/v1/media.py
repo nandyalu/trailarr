@@ -27,8 +27,8 @@ from services.trailers.trailers.pending import (
     compute_media_pending,
 )
 from services.files.files_handler import FilesHandler
-from core.tasks.files_scan import scan_media_folder
-from core.tasks.download_trailers import (
+from tasks.files_scan import scan_media_folder
+from tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
 )

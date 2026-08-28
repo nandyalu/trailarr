@@ -17,7 +17,7 @@ from typing import Awaitable, Callable
 
 from app_logger import ModuleLogger
 import database.manager.startuppass as startuppass_manager
-from core.tasks.download_attribution import run_attribution_pass
+from tasks.download_attribution import run_attribution_pass
 
 logger = ModuleLogger("StartupPasses")
 
@@ -60,7 +60,7 @@ async def _pass_full_scan_guard() -> None:
         " The scan records trailers that are already on disk as downloads."
     )
     # Import here to avoid a circular import (files_scan → profiles utils)
-    from core.tasks.files_scan import scan_all_media_folders
+    from tasks.files_scan import scan_all_media_folders
 
     await scan_all_media_folders()
 

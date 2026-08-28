@@ -28,8 +28,8 @@ from database.version_guard import (
 from services.binaries import validate_binary_paths
 from services.trailers.video_v2 import cleanup_stale_temp_downloads
 from services.notifications import dispatcher as notification_dispatcher
-from core.tasks import scheduler
-from core.tasks.schedules import schedule_all_tasks
+from tasks import scheduler
+from tasks.schedules import schedule_all_tasks
 from frontend import setup_frontend
 
 logging = ModuleLogger("Main")

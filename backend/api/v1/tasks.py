@@ -7,8 +7,8 @@ from database.models.task_config import (
     ScheduledTaskConfigRead,
     ScheduledTaskConfigUpdate,
 )
-from core.tasks import scheduler
-from core.tasks import schedules
+from tasks import scheduler
+from tasks import schedules
 
 tasks_router = APIRouter(tags=["Tasks", "Jobs"])
 

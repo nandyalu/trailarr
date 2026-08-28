@@ -20,7 +20,7 @@ from services.trailers import trailer as trailer_downloader
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils
 from services.files.files_handler import FilesHandler, is_disk_available
-from core.tasks.startup_passes import downloads_ready
+from tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError
 
 logger = ModuleLogger("TrailerDownloadTasks")

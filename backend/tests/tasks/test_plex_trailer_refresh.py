@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from core.tasks.plex_trailer_refresh import refresh_plex_trailer_flags
+from tasks.plex_trailer_refresh import refresh_plex_trailer_flags
 
 
 def _make_connection(conn_id: int = 1) -> SimpleNamespace:
@@ -46,11 +46,11 @@ class TestRefreshPlexTrailerFlags:
         non_plex = SimpleNamespace(id=1, arr_type=ArrType.RADARR)
         with (
             patch(
-                "core.tasks.plex_trailer_refresh.connection_manager.read_all",
+                "tasks.plex_trailer_refresh.connection_manager.read_all",
                 return_value=[non_plex],
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.read_all_generator"
+                "tasks.plex_trailer_refresh.media_manager.read_all_generator"
             ) as mock_gen,
         ):
             await refresh_plex_trailer_flags()
@@ -69,17 +69,17 @@ class TestRefreshPlexTrailerFlags:
 
         with (
             patch(
-                "core.tasks.plex_trailer_refresh.connection_manager.read_all",
+                "tasks.plex_trailer_refresh.connection_manager.read_all",
                 return_value=[conn],
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.read_all_generator",
+                "tasks.plex_trailer_refresh.media_manager.read_all_generator",
                 return_value=iter([_make_media()]),
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
+                "tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
             ) as mock_bulk,
-            patch("core.tasks.plex_trailer_refresh.PlexAPI", return_value=mock_api),
+            patch("tasks.plex_trailer_refresh.PlexAPI", return_value=mock_api),
         ):
             await refresh_plex_trailer_flags(_stop_event=stop)
             # Cache is built upfront, but no item-level API calls or DB writes should occur.
@@ -103,18 +103,18 @@ class TestRefreshPlexTrailerFlags:
 
         with (
             patch(
-                "core.tasks.plex_trailer_refresh.connection_manager.read_all",
+                "tasks.plex_trailer_refresh.connection_manager.read_all",
                 return_value=[conn],
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.read_all_generator",
+                "tasks.plex_trailer_refresh.media_manager.read_all_generator",
                 return_value=iter([media1, media2]),
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
+                "tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
             ) as mock_bulk,
             patch(
-                "core.tasks.plex_trailer_refresh.PlexAPI",
+                "tasks.plex_trailer_refresh.PlexAPI",
                 return_value=mock_api,
             ),
         ):
@@ -139,18 +139,18 @@ class TestRefreshPlexTrailerFlags:
 
         with (
             patch(
-                "core.tasks.plex_trailer_refresh.connection_manager.read_all",
+                "tasks.plex_trailer_refresh.connection_manager.read_all",
                 return_value=[conn],
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.read_all_generator",
+                "tasks.plex_trailer_refresh.media_manager.read_all_generator",
                 return_value=iter([media_with_trailer, media_no_trailer]),
             ),
             patch(
-                "core.tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
+                "tasks.plex_trailer_refresh.media_manager.update_plex_trailer_bulk"
             ) as mock_bulk,
             patch(
-                "core.tasks.plex_trailer_refresh.PlexAPI",
+                "tasks.plex_trailer_refresh.PlexAPI",
                 return_value=mock_api,
             ),
         ):

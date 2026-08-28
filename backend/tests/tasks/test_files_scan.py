@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from database.models.event import EventSource
-from core.tasks.files_scan import (
+from tasks.files_scan import (
     _ctime_matches_stored,
     _has_folder_changed,
     _is_disk_available,
@@ -69,7 +69,7 @@ class TestHasFolderChanged:
         folder.mkdir()
 
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value={},
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is True
@@ -80,7 +80,7 @@ class TestHasFolderChanged:
 
         stored_dt = datetime.fromtimestamp(folder.stat().st_ctime, tz=timezone.utc)
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value={str(folder): stored_dt},
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is False
@@ -93,7 +93,7 @@ class TestHasFolderChanged:
             folder.stat().st_ctime - 120, tz=timezone.utc
         )
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value={str(folder): old_dt},
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is True
@@ -103,7 +103,7 @@ class TestHasFolderChanged:
         folder.mkdir()
 
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value={"/some/other/path": datetime.now(tz=timezone.utc)},
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is True
@@ -123,7 +123,7 @@ class TestHasFolderChanged:
             ),
         }
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value=stored,
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is False
@@ -143,7 +143,7 @@ class TestHasFolderChanged:
             ),
         }
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value=stored,
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is True
@@ -161,14 +161,14 @@ class TestHasFolderChanged:
             ),
         }
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value=stored,
         ):
             assert _has_folder_changed(str(folder), 1, self.TZ) is True
 
     def test_oserror_triggers_scan(self):
         with patch(
-            "core.tasks.files_scan.files_manager.get_folder_modified_times",
+            "tasks.files_scan.files_manager.get_folder_modified_times",
             return_value={"/nonexistent": datetime.now(tz=timezone.utc)},
         ):
             assert _has_folder_changed("/nonexistent", 1, timezone.utc) is True
@@ -193,7 +193,7 @@ class TestIsDiskAvailable:
         folder = tmp_path / "Movie (2025)"
         folder.mkdir()
         with patch(
-            "core.tasks.files_scan.os.listdir",
+            "tasks.files_scan.os.listdir",
             side_effect=OSError("Stale file handle"),
         ):
             assert _is_disk_available(str(folder)) is False
@@ -213,7 +213,7 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan._has_folder_changed", return_value=False
+            "tasks.files_scan._has_folder_changed", return_value=False
         ) as mock_changed:
             new, missing, renamed, modified, unavailable = await scan_media_folder(
                 media, scanner=mock_scanner, user_initiated=False
@@ -231,7 +231,7 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan._has_folder_changed", return_value=True
+            "tasks.files_scan._has_folder_changed", return_value=True
         ):
             await scan_media_folder(media, scanner=mock_scanner, user_initiated=False)
 
@@ -247,7 +247,7 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan._has_folder_changed"
+            "tasks.files_scan._has_folder_changed"
         ) as mock_changed:
             await scan_media_folder(media, scanner=mock_scanner, user_initiated=True)
 
@@ -264,7 +264,7 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan.media_manager.update_media_exists"
+            "tasks.files_scan.media_manager.update_media_exists"
         ) as mock_update:
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -279,7 +279,7 @@ class TestScanMediaFolder:
         mock_scanner.get_folder_files = AsyncMock(return_value=None)
 
         with patch(
-            "core.tasks.files_scan.media_manager.update_media_exists"
+            "tasks.files_scan.media_manager.update_media_exists"
         ) as mock_update:
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -296,9 +296,9 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.files_manager.update"),
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -315,9 +315,9 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.files_manager.update"),
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -334,9 +334,9 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.files_manager.update"),
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_update,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -356,10 +356,10 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -382,12 +382,12 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value={trailer_path})
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
-            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -414,16 +414,16 @@ class TestScanMediaFolder:
         mock_scanner.get_trailer_paths = MagicMock(return_value=set())
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan._is_disk_available", return_value=True
+                "tasks.files_scan._is_disk_available", return_value=True
             ),
             patch(
-                "core.tasks.files_scan.download_manager.mark_as_deleted"
+                "tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
             patch(
-                "core.tasks.files_scan.event_manager.track_trailer_deleted"
+                "tasks.files_scan.event_manager.track_trailer_deleted"
             ) as mock_track,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -462,21 +462,21 @@ class TestRenameAndHashDetection:
         mock_scanner.get_trailer_paths = MagicMock(return_value={new_path})
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan.compute_file_hash",
+                "tasks.files_scan.compute_file_hash",
                 return_value="abc123",
             ),
             patch(
-                "core.tasks.files_scan.rename_trailer_download",
+                "tasks.files_scan.rename_trailer_download",
                 new=AsyncMock(return_value=True),
             ) as mock_rename,
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
             patch(
-                "core.tasks.files_scan.event_manager.track_trailer_renamed"
+                "tasks.files_scan.event_manager.track_trailer_renamed"
             ) as mock_track,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -513,23 +513,23 @@ class TestRenameAndHashDetection:
         mock_scanner.get_trailer_paths = MagicMock(return_value={new_path})
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan.compute_file_hash",
+                "tasks.files_scan.compute_file_hash",
                 return_value="different_hash",
             ),
             patch(
-                "core.tasks.files_scan.rename_trailer_download"
+                "tasks.files_scan.rename_trailer_download"
             ) as mock_rename,
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
             patch(
-                "core.tasks.files_scan.download_manager.mark_as_deleted"
+                "tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
-            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
-            patch("core.tasks.files_scan.event_manager.track_trailer_deleted"),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.event_manager.track_trailer_deleted"),
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
 
@@ -562,19 +562,19 @@ class TestRenameAndHashDetection:
         fake_stat = SimpleNamespace(st_ctime=old_updated_at.timestamp() + 500)
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.os.stat", return_value=fake_stat),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.os.stat", return_value=fake_stat),
             patch(
-                "core.tasks.files_scan.compute_file_hash",
+                "tasks.files_scan.compute_file_hash",
                 return_value="new_hash",
             ),
             patch(
-                "core.tasks.files_scan.reanalyze_trailer_download",
+                "tasks.files_scan.reanalyze_trailer_download",
                 new=AsyncMock(return_value=True),
             ) as mock_reanalyze,
             patch(
-                "core.tasks.files_scan.event_manager.track_trailer_modified"
+                "tasks.files_scan.event_manager.track_trailer_modified"
             ) as mock_track,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -611,12 +611,12 @@ class TestRenameAndHashDetection:
         fake_stat = SimpleNamespace(st_ctime=stored_updated_at.timestamp())
 
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.os.stat", return_value=fake_stat),
-            patch("core.tasks.files_scan.compute_file_hash") as mock_hash,
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.os.stat", return_value=fake_stat),
+            patch("tasks.files_scan.compute_file_hash") as mock_hash,
             patch(
-                "core.tasks.files_scan.reanalyze_trailer_download"
+                "tasks.files_scan.reanalyze_trailer_download"
             ) as mock_reanalyze,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -652,14 +652,14 @@ class TestDiskUnavailable:
 
         with (
             patch(
-                "core.tasks.files_scan._is_disk_available", return_value=False
+                "tasks.files_scan._is_disk_available", return_value=False
             ) as mock_available,
-            patch("core.tasks.files_scan.files_manager.update") as mock_files_update,
+            patch("tasks.files_scan.files_manager.update") as mock_files_update,
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_media_update,
             patch(
-                "core.tasks.files_scan.download_manager.mark_as_deleted"
+                "tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
         ):
             result = await scan_media_folder(media, scanner=mock_scanner)
@@ -691,12 +691,12 @@ class TestDiskUnavailable:
 
         with (
             patch(
-                "core.tasks.files_scan._is_disk_available", return_value=True
+                "tasks.files_scan._is_disk_available", return_value=True
             ),
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
             patch(
-                "core.tasks.files_scan.download_manager.mark_as_deleted"
+                "tasks.files_scan.download_manager.mark_as_deleted"
             ) as mock_delete,
         ):
             new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
@@ -725,10 +725,10 @@ class TestDiskUnavailable:
 
         with (
             patch(
-                "core.tasks.files_scan._is_disk_available", return_value=False
+                "tasks.files_scan._is_disk_available", return_value=False
             ),
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_media_update,
         ):
             result = await scan_media_folder(media, scanner=mock_scanner)
@@ -747,10 +747,10 @@ class TestDiskUnavailable:
 
         with (
             patch(
-                "core.tasks.files_scan._is_disk_available"
+                "tasks.files_scan._is_disk_available"
             ) as mock_available,
             patch(
-                "core.tasks.files_scan.media_manager.update_media_exists"
+                "tasks.files_scan.media_manager.update_media_exists"
             ) as mock_media_update,
         ):
             result = await scan_media_folder(media, scanner=mock_scanner)
@@ -785,15 +785,15 @@ class TestNewTrailerAttribution:
 
         profile = self._make_profile(5)
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
             patch(
-                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                "tasks.files_scan.trailerprofile.get_trailerprofiles",
                 return_value=[profile],
             ),
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -824,17 +824,17 @@ class TestNewTrailerAttribution:
 
         profile = self._make_profile(5)
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
             patch(
-                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                "tasks.files_scan.trailerprofile.get_trailerprofiles",
                 return_value=[profile],
             ),
             # existing file "exists" so its download is not treated as stale
-            patch("core.tasks.files_scan.os.path.exists", return_value=True),
+            patch("tasks.files_scan.os.path.exists", return_value=True),
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
         ):
             await scan_media_folder(media, scanner=mock_scanner)
@@ -863,23 +863,23 @@ class TestNewTrailerAttribution:
 
         profile = self._make_profile(5)
         with (
-            patch("core.tasks.files_scan.files_manager.update"),
-            patch("core.tasks.files_scan.media_manager.update_media_exists"),
-            patch("core.tasks.files_scan.event_manager.track_trailer_detected"),
-            patch("core.tasks.files_scan.event_manager.track_trailer_deleted"),
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.event_manager.track_trailer_deleted"),
             patch(
-                "core.tasks.files_scan.trailerprofile.get_trailerprofiles",
+                "tasks.files_scan.trailerprofile.get_trailerprofiles",
                 return_value=[profile],
             ),
             # hashes differ → not a rename; old file is gone → stale
             patch(
-                "core.tasks.files_scan.compute_file_hash",
+                "tasks.files_scan.compute_file_hash",
                 return_value="different",
             ),
-            patch("core.tasks.files_scan.os.path.exists", return_value=False),
-            patch("core.tasks.files_scan.download_manager.mark_as_deleted"),
+            patch("tasks.files_scan.os.path.exists", return_value=False),
+            patch("tasks.files_scan.download_manager.mark_as_deleted"),
             patch(
-                "core.tasks.files_scan.record_new_trailer_download"
+                "tasks.files_scan.record_new_trailer_download"
             ) as mock_record,
         ):
             await scan_media_folder(media, scanner=mock_scanner)

@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from core.tasks.cleanup import trailer_cleanup, delete_trailer
+from tasks.cleanup import trailer_cleanup, delete_trailer
 
 
 def create_mock_download(
@@ -45,11 +45,11 @@ class TestDeleteTrailer:
 
         with (
             patch(
-                "core.tasks.cleanup.FilesHandler.delete_file",
+                "tasks.cleanup.FilesHandler.delete_file",
                 new_callable=AsyncMock,
             ) as mock_delete,
             patch(
-                "core.tasks.cleanup.download_manager.mark_as_deleted"
+                "tasks.cleanup.download_manager.mark_as_deleted"
             ) as mock_mark_deleted,
         ):
             result = await delete_trailer(trailer_path, download_id)
@@ -70,11 +70,11 @@ class TestDeleteTrailer:
         for trailer_path, download_id in test_cases:
             with (
                 patch(
-                    "core.tasks.cleanup.FilesHandler.delete_file",
+                    "tasks.cleanup.FilesHandler.delete_file",
                     new_callable=AsyncMock,
                 ) as mock_delete,
                 patch(
-                    "core.tasks.cleanup.download_manager.mark_as_deleted"
+                    "tasks.cleanup.download_manager.mark_as_deleted"
                 ) as mock_mark_deleted,
             ):
                 await delete_trailer(trailer_path, download_id)
@@ -90,7 +90,7 @@ class TestTrailerCleanup:
     async def test_cleanup_empty_media_list(self):
         """Test cleanup when no media items exist."""
         with patch(
-            "core.tasks.cleanup.media_manager.read_all_generator"
+            "tasks.cleanup.media_manager.read_all_generator"
         ) as mock_read:
             mock_read.return_value = iter([])
 
@@ -108,7 +108,7 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
         ):
             mock_read.return_value = iter([media])
@@ -133,10 +133,10 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
-            patch("core.tasks.cleanup.aiofiles.os.path.exists") as mock_exists,
-            patch("core.tasks.cleanup.video_analysis") as mock_video,
+            patch("tasks.cleanup.aiofiles.os.path.exists") as mock_exists,
+            patch("tasks.cleanup.video_analysis") as mock_video,
         ):
             mock_read.return_value = iter([media])
 
@@ -162,15 +162,15 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=False,
             ),
             patch(
-                "core.tasks.cleanup.download_manager.mark_as_deleted"
+                "tasks.cleanup.download_manager.mark_as_deleted"
             ) as mock_mark_deleted,
         ):
             mock_read.return_value = iter([media])
@@ -197,10 +197,10 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.download_manager.mark_as_deleted"
+                "tasks.cleanup.download_manager.mark_as_deleted"
             ) as mock_mark_deleted,
         ):
             mock_read.return_value = iter([media])
@@ -226,19 +226,19 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=None,
             ),
             patch(
-                "core.tasks.cleanup.delete_trailer",
+                "tasks.cleanup.delete_trailer",
                 new_callable=AsyncMock,
             ) as mock_delete_trailer,
         ):
@@ -265,20 +265,20 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=False,
             ),
-            patch("core.tasks.cleanup.app_settings") as mock_settings,
+            patch("tasks.cleanup.app_settings") as mock_settings,
             patch(
-                "core.tasks.cleanup.delete_trailer",
+                "tasks.cleanup.delete_trailer",
                 new_callable=AsyncMock,
             ) as mock_delete_trailer,
         ):
@@ -309,20 +309,20 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=False,
             ),
-            patch("core.tasks.cleanup.app_settings") as mock_settings,
+            patch("tasks.cleanup.app_settings") as mock_settings,
             patch(
-                "core.tasks.cleanup.delete_trailer",
+                "tasks.cleanup.delete_trailer",
                 new_callable=AsyncMock,
             ) as mock_delete_trailer,
         ):
@@ -351,23 +351,23 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.delete_trailer",
+                "tasks.cleanup.delete_trailer",
                 new_callable=AsyncMock,
             ) as mock_delete_trailer,
             patch(
-                "core.tasks.cleanup.download_manager.mark_as_deleted"
+                "tasks.cleanup.download_manager.mark_as_deleted"
             ) as mock_mark_deleted,
         ):
             mock_read.return_value = iter([media])
@@ -398,15 +398,15 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=True,
             ),
         ):
@@ -453,23 +453,23 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 side_effect=mock_exists,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 side_effect=mock_verify,
             ),
-            patch("core.tasks.cleanup.app_settings") as mock_settings,
+            patch("tasks.cleanup.app_settings") as mock_settings,
             patch(
-                "core.tasks.cleanup.delete_trailer",
+                "tasks.cleanup.delete_trailer",
                 new_callable=AsyncMock,
             ) as mock_delete_trailer,
             patch(
-                "core.tasks.cleanup.download_manager.mark_as_deleted"
+                "tasks.cleanup.download_manager.mark_as_deleted"
             ) as mock_mark_deleted,
         ):
             mock_settings.delete_corrupted_trailers = True
@@ -513,15 +513,15 @@ class TestTrailerCleanup:
 
         with (
             patch(
-                "core.tasks.cleanup.media_manager.read_all_generator"
+                "tasks.cleanup.media_manager.read_all_generator"
             ) as mock_read,
             patch(
-                "core.tasks.cleanup.aiofiles.os.path.exists",
+                "tasks.cleanup.aiofiles.os.path.exists",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
             patch(
-                "core.tasks.cleanup.video_analysis.verify_trailer_streams",
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
                 return_value=True,
             ),
         ):
