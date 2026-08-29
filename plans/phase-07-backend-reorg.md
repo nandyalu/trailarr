@@ -4,8 +4,10 @@
 **Stage A COMPLETE** — 13 move commits, `core/` retired, `openapi.json` byte-identical.
 **Stage B layering COMPLETE** — 9 → 0 `database/`→business-logic imports, guarded by
 `tests/test_layering.py`.
-**Remaining:** Stage B API thinning (the `api/v1` routers), then Stage C.
-1109 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**Stage B API thinning IN PROGRESS** — 5 routers done (settings, logs, files,
+connections, media's heaviest three), `api/v1` 2946 -> 2589 lines.
+**Remaining:** the media batch path, hygiene H1 (the one permitted spec diff), then
+Stage C. 1177 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
@@ -141,6 +143,39 @@ Verification for this section: `tests/test_layering.py` reports **0** imports fr
 `database/` into `api|services|tasks`. It parses with `ast`, not grep — during this
 phase grep gave the wrong answer twice (line-anchored patterns miss function-local
 imports, and a comment mentioning a layer counts as a hit).
+
+### Stage B API thinning — progress (Aug 28, 2026)
+
+| Router | Before | After | What moved |
+|---|---|---|---|
+| `settings.py` | 65 | 33 | `services/settings.py` — setting validation, the login change tree |
+| `logs.py` | 136 | 50 | `services/logs.py` — file reading and line parsing |
+| `files.py` | 294 | 233 | `services/files/service.py` — path/type guards, range reads, rename and delete |
+| `connections.py` | 365 | 324 | doctor orchestration into `services/diagnostics/connection_doctor.py` |
+| `media.py` | 739 | 683 | `services/media.py` — delete trailers, set YouTube id, set monitoring |
+
+**Needed no work** (already a service call plus HTTP mapping): `notifications.py`,
+`customfilters.py`, `routes.py`, `trailerprofiles.py`, `tasks.py`, `events.py`,
+`health.py`. Measure before rewriting — statements-per-handler found these quickly.
+
+**A service must not build an API response model.** `logs.py` parsed lines straight
+into `api/v1/models.Log`; the service returns plain dicts and the handler does
+`Log(**record)`. Same for anything else in `api/v1/models.py`.
+
+**Validation stays in the handler.** The plan lists validation as a handler
+responsibility, so `files.py` keeps its `is_path_safe` / file-type checks and the 400s
+they raise — the service owns the *rule*, the handler owns the *status*.
+
+**Newly covered by tests, having had none:** `is_path_safe` (every request path goes
+through it, and every prior test patched it to True), the log line parser, the settings
+update tree, and the three media actions.
+
+**Still open in Stage B:** `batch_update_media` calls the `delete_media_trailer`
+handler in a loop, which is how each item gets its own broadcast; routing it through the
+service would drop those messages. `_schedule_refresh` stays in `api/` on purpose —
+it registers a scheduler job, and a service reaching into `tasks/` would invert the
+layering. Hygiene H1 (documented 500s) is still to do, in its own commit, as the one
+permitted spec diff.
 
 ## Stage C: Simplified Technical English sweep (prose only)
 
