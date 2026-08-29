@@ -4,10 +4,10 @@
 **Stage A COMPLETE** — 13 move commits, `core/` retired, `openapi.json` byte-identical.
 **Stage B layering COMPLETE** — 9 → 0 `database/`→business-logic imports, guarded by
 `tests/test_layering.py`.
-**Stage B API thinning IN PROGRESS** — 5 routers done (settings, logs, files,
-connections, media's heaviest three), `api/v1` 2946 -> 2589 lines.
-**Remaining:** the media batch path, hygiene H1 (the one permitted spec diff), then
-Stage C. 1177 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**Stage B COMPLETE** — 5 routers thinned (settings, logs, files, connections, media),
+the media batch path routed through the service, and hygiene H1 done with its permitted
+spec diff (18 added 500s + 2 previously-undocumented 404s).
+**Remaining:** Stage C. 1234 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 

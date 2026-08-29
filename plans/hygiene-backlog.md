@@ -3,10 +3,26 @@
 Small, non-blocking cleanups. Fold each into whichever release touches the area anyway;
 none justify their own release. Check items off with the release that shipped them.
 
-- [ ] **H1 — API error-handling standardization**: all `api/v1` handlers use the
-  pattern from `update_download_profile` (ItemNotFoundError→404, unexpected→logged 500
-  with generic detail — no `str(e)` leaks, no blanket 404s). Scheduled: Phase 7 Stage B
-  (touches every handler anyway).
+- [x] **H1 — API error-handling standardization** — DONE (Phase 7 Stage B, ships in
+  v0.12.0). Eighteen handlers caught every exception and answered 404 with `str(e)`.
+  `api/v1/errors.py` now holds the mapping: a missing item is a 404, an exception whose
+  message is written for the user keeps it (ConnectionError, ConnectionTimeoutError,
+  InvalidResponseError, ItemExistsError, FolderNotFoundError, FolderPathEmptyError,
+  ValueError), and anything else is logged with its traceback and answered with a line
+  naming only the action. The spec documents the new 500s in its own commit — 18 added
+  500s plus 2 previously-undocumented 404s, no removals.
+
+  Two things worth keeping: "Connection refused" is the *answer* for Test Connection and
+  the Connection Doctor, so those keep their message and their 400 — a blanket
+  genericization would have broken the feature. And `except Exception` catches
+  HTTPException too, so the mapper returns a deliberate one untouched; without that the
+  406 from `update_yt_id` would have become a 500.
+
+  The first attempt shipped a NameError: `connections.py` had no module-level logger,
+  so every failing connection request returned a blank 500 and logged nothing — and the
+  full suite passed, because no test walks those error paths. Found by driving the
+  running app. `tests/api/test_error_wiring.py` now parses each module and checks that
+  every name passed to the mapper resolves.
 - [x] **H2 — Decorative SVG accessibility sweep** — DONE (ships in v0.11.0): 159
   decorative inline SVGs got `aria-hidden="true" focusable="false"`; three icon-only
   buttons gained aria-labels; two stale "Trailer Exists" labels renamed "Downloaded".
