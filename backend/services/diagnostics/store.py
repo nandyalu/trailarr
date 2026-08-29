@@ -39,7 +39,10 @@ def load() -> dict[int, DoctorReport]:
         with open(path, "r", encoding="utf-8") as f:
             raw = json.load(f)
     except (OSError, ValueError) as e:
-        logger.warning(f"Could not read '{path}': {e}. Starting empty.")
+        logger.warning(
+            f"Trailarr could not read '{path}': {e}. It starts with no"
+            " stored reports."
+        )
         return {}
     reports: dict[int, DoctorReport] = {}
     for item in raw if isinstance(raw, list) else []:
@@ -63,7 +66,10 @@ def save(reports: dict[int, DoctorReport]) -> None:
             json.dump(payload, f)
         os.replace(tmp_path, path)
     except OSError as e:
-        logger.warning(f"Could not save the doctor reports to '{path}': {e}")
+        logger.warning(
+            f"Trailarr could not save the Connection Doctor reports to"
+            f" '{path}': {e}"
+        )
         try:
             os.remove(tmp_path)
         except OSError:

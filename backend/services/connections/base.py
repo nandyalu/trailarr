@@ -159,7 +159,9 @@ class BaseConnectionManager(ABC):
                 )
             return final_rootfolders
         except Exception:
-            logger.error("Failed to get root folders from Arr application.")
+            logger.error(
+                "Trailarr could not read the root folders from the application."
+            )
             return []
 
     async def get_media_data(self) -> list[dict[str, Any]]:
@@ -170,7 +172,9 @@ class BaseConnectionManager(ABC):
         try:
             return await self.arr_manager.get_all_media()
         except Exception:
-            logger.error("Failed to get media data from Arr application.")
+            logger.error(
+                "Trailarr could not read the media data from the application."
+            )
             return []
 
     async def _parse_data(self) -> AsyncGenerator[list[MediaCreate], None]:
@@ -181,7 +185,9 @@ class BaseConnectionManager(ABC):
         media_data = await self.get_media_data()
         logger.debug(f"Media data received: {len(media_data)} items")
         if not media_data:
-            logger.warning("No media data received from Arr application")
+            logger.warning(
+                "The application returned no media data."
+            )
             return
         # Parse the media data to MediaCreate objects in chunks of 100
         for chunk in batched(media_data, 100):

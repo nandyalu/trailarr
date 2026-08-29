@@ -39,7 +39,7 @@ def create_trailerprofile(
     _session.commit()
     _session.refresh(db_trailerprofile)
     logger.info(
-        "Created trailer profile:"
-        f" {db_trailerprofile.customfilter.filter_name}"
+        "Trailarr created the trailer profile"
+        f" '{db_trailerprofile.customfilter.filter_name}'."
     )
     return convert_to_read_item(db_trailerprofile)

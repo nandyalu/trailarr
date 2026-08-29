@@ -60,8 +60,8 @@ def update_trailerprofile(
     _session.commit()
     _session.refresh(trailerprofile_db)
     logger.info(
-        "Updated trailer profile:"
-        f" {trailerprofile_db.customfilter.filter_name}"
+        "Trailarr updated the trailer profile"
+        f" '{trailerprofile_db.customfilter.filter_name}'."
     )
     return convert_to_read_item(trailerprofile_db)
 
@@ -111,7 +111,8 @@ def update_trailerprofile_setting(
     _session.commit()
     _session.refresh(trailerprofile_db)
     logger.info(
-        "Updated trailer profile setting:"
-        f" {trailerprofile_db.customfilter.filter_name} - {setting}: {value}"
+        "Trailarr updated the trailer profile"
+        f" '{trailerprofile_db.customfilter.filter_name}'. It set"
+        f" {setting} to {value}."
     )
     return convert_to_read_item(trailerprofile_db)

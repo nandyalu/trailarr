@@ -23,7 +23,10 @@ async def get_latest_image_version(image_name: str) -> str | None:
                 release_data = await response.json()
                 return release_data["tag_name"]
     except Exception as e:
-        logger.error(f"Error fetching release info from Github API: {e}")
+        logger.error(
+            f"Trailarr could not read the release information from GitHub:"
+            f" {e}"
+        )
         return None
 
 
@@ -52,7 +55,9 @@ async def check_for_update(check_app: bool = True) -> None:
         )
     _app = "Trailarr" if check_app else "yt-dlp"
     current_version = get_current_image_version(check_app)
-    logger.info(f"Current version of {_app}: {current_version}")
+    logger.info(
+        f"The current version of {_app} is {current_version}."
+    )
     latest_version = await get_latest_image_version(image_name)
 
     if not latest_version:
@@ -60,8 +65,8 @@ async def check_for_update(check_app: bool = True) -> None:
 
     if current_version != latest_version:
         logger.info(
-            f"A newer version ({latest_version}) of {_app} is available."
-            " Please update!"
+            f"A newer version of {_app} is available: {latest_version}."
+            " Update when you can."
         )
         if check_app:
             app_settings.update_available = True
@@ -69,7 +74,7 @@ async def check_for_update(check_app: bool = True) -> None:
             app_settings.update_available_ytdlp = True
     else:
         logger.info(
-            f"You are using the latest version ({latest_version}) of {_app}."
+            f"{_app} is up to date at version {latest_version}."
         )
 
 

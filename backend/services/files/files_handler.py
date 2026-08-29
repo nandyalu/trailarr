@@ -228,10 +228,14 @@ class FilesHandler:
                 os.chmod(path, permissions)
             else:
                 os.makedirs(path, exist_ok=True)
-            logger.info(f"Created missing folder: '{path}'")
+            logger.info(
+                f"Trailarr created the missing folder '{path}'."
+            )
             return True
         except OSError as e:
-            logger.error(f"Failed to create folder '{path}': {e}")
+            logger.error(
+                f"Trailarr could not create the folder '{path}': {e}"
+            )
             return False
 
     @staticmethod
@@ -500,17 +504,23 @@ class FilesHandler:
             bool: True if the file is deleted successfully, False otherwise."""
         # Make sure the path is at least 2 levels deep from the root
         if file_path.count("/") < 3:
-            logger.error(f"Cannot delete top level file: {file_path}")
+            logger.error(
+                f"Trailarr does not delete a top level file: '{file_path}'."
+            )
             return False
         try:
             await aiofiles.os.remove(file_path)
             logger.debug(f"File deleted: {file_path}")
             return True
         except FileNotFoundError:
-            logger.error(f"File not found: {file_path}")
+            logger.error(
+                f"Trailarr cannot find the file '{file_path}'."
+            )
             return False
         except Exception as e:
-            logger.error(f"Failed to delete file: {file_path}. Exception: {e}")
+            logger.error(
+                f"Trailarr could not delete the file '{file_path}': {e}"
+            )
             return False
 
     @staticmethod
@@ -527,22 +537,28 @@ class FilesHandler:
             or folder_path == ""
             or folder_path.count("/") < 3
         ):
-            logger.error(f"Cannot delete root folder: {folder_path}")
+            logger.error(
+                f"Trailarr does not delete a root folder: '{folder_path}'."
+            )
             return False
         # Make sure the path is at least 3 levels deep from the root
         if folder_path.count("/") < 3:
-            logger.error(f"Cannot delete top level folder: {folder_path}")
+            logger.error(
+                f"Trailarr does not delete a top level folder: '{folder_path}'."
+            )
             return False
         try:
             shutil.rmtree(folder_path)
             logger.debug(f"Folder deleted: {folder_path}")
             return True
         except FileNotFoundError:
-            logger.error(f"Folder not found: {folder_path}")
+            logger.error(
+                f"Trailarr cannot find the folder '{folder_path}'."
+            )
             return False
         except Exception as e:
             logger.error(
-                f"Failed to delete folder: {folder_path}. Exception: {e}"
+                f"Trailarr could not delete the folder '{folder_path}': {e}"
             )
             return False
 
@@ -579,11 +595,13 @@ class FilesHandler:
             logger.debug(f"File/Folder renamed: {old_path} -> {new_path}")
             return True
         except FileNotFoundError:
-            logger.error(f"File/Folder not found: {old_path}")
+            logger.error(
+                f"Trailarr cannot find '{old_path}'."
+            )
             return False
         except Exception as e:
             logger.error(
-                f"Failed to rename file/folder: {old_path}. Exception: {e}"
+                f"Trailarr could not rename '{old_path}': {e}"
             )
             return False
 
@@ -653,7 +671,10 @@ def is_disk_available(folder_path: str) -> bool:
                 os.listdir(path)
                 return True
             except OSError as e:
-                logger.error(f"Disk unavailable: cannot list '{path}': {e}")
+                logger.error(
+                    f"Trailarr cannot list '{path}'. The storage is unreachable:"
+                    f" {e}"
+                )
                 return False
         parent = os.path.dirname(path)
         if parent == path:

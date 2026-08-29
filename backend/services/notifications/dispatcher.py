@@ -421,7 +421,9 @@ async def _dispatch_pending(force: bool = False) -> None:
                 note.event_type, is_user_event=(note.source == "USER")
             )
         except Exception as e:
-            logger.warning(f"Failed to resolve channel subscriptions: {e}")
+            logger.warning(
+                f"Trailarr could not read the channel subscriptions: {e}"
+            )
             return
         for channel_id, url in subscribed:
             per_channel.setdefault(channel_id, (url, []))[1].append(note)
@@ -445,13 +447,14 @@ async def _dispatch_pending(force: bool = False) -> None:
                 )
             if not ok:
                 logger.warning(
-                    f"Notification send failed for channel [{channel_id}]"
-                    " — check its Apprise URL (Test button in Settings)."
+                    f"Trailarr could not send a notification to channel"
+                    f" {channel_id}. Check its Apprise URL with the Test button in"
+                    " Settings."
                 )
         except Exception as e:
             logger.warning(
-                f"Notification send error for channel [{channel_id}]:"
-                f" {type(e).__name__}"
+                f"Trailarr could not send a notification to channel"
+                f" {channel_id}: {type(e).__name__}"
             )
 
 
@@ -467,7 +470,9 @@ async def _dispatch_loop() -> None:
         try:
             await _dispatch_pending()
         except Exception as e:  # never let the loop die
-            logger.warning(f"Notification dispatch cycle failed: {e}")
+            logger.warning(
+                f"Trailarr could not send the notifications: {e}"
+            )
 
 
 def start() -> None:
@@ -505,7 +510,10 @@ async def stop() -> None:
     try:
         await _dispatch_pending(force=True)
     except Exception as e:  # best-effort — never block shutdown
-        logger.warning(f"Final notification flush failed: {type(e).__name__}")
+        logger.warning(
+            f"Trailarr could not send the last notifications:"
+            f" {type(e).__name__}"
+        )
     logger.debug("Notification dispatcher stopped")
 
 

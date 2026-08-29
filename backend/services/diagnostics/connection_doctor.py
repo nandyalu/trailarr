@@ -172,7 +172,10 @@ async def run_doctor_for_all() -> list[DoctorReport]:
     reports: list[DoctorReport] = []
     for connection, result in zip(connections, results):
         if isinstance(result, BaseException):
-            logger.error(f"Doctor failed for '{connection.name}': {result}")
+            logger.error(
+                f"The Connection Doctor could not check '{connection.name}':"
+                f" {result}"
+            )
             continue
         reports.append(result)
     return reports
@@ -216,7 +219,8 @@ def schedule_doctor(connection_id: int) -> None:
             await run_doctor(connection_id)
         except Exception as e:
             logger.error(
-                f"Doctor run failed for connection {connection_id}: {e}"
+                f"The Connection Doctor could not check connection"
+                f" {connection_id}: {e}"
             )
 
     task = asyncio.create_task(_run())
@@ -301,10 +305,10 @@ async def run_probes(
         _cache()[connection_id] = report
         store.save(_cache())
     logger.info(
-        f"Doctor for '{connection.name}' [{connection_id}]:"
-        f" {report.status}"
+        f"The Connection Doctor checked '{connection.name}'"
+        f" (id={connection_id}). Result: {report.status}"
         f" ({sum(1 for p in report.probes if p.status == ProbeStatus.ERROR)}"
-        " error(s))"
+        " checks failed)."
     )
     return report
 

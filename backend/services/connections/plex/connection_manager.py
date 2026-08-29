@@ -413,8 +413,8 @@ class PlexConnectionManager:
         """Dispatch to the correct section processor based on library type."""
         if not self._section_is_tracked(section):
             logger.info(
-                f"Plex section '{section.title}' [{section.key}] has no"
-                " configured path mappings — skipping."
+                f"The Plex section '{section.title}' (key={section.key}) has no"
+                " path mappings. Trailarr skips it."
             )
             return
         self._persist_section_keys(section)
@@ -529,19 +529,20 @@ class PlexConnectionManager:
         self._sections_failed = 0
         self.media_ids = []
         logger.info(
-            f"Starting Plex refresh for connection '{self.connection_name}'"
+            f"Trailarr refreshes the Plex connection"
+            f" '{self.connection_name}'."
         )
         if not self.all_path_mappings:
             logger.warning(
-                f"Plex connection '{self.connection_name}' has no library"
-                " folders configured — skipping refresh (no media will be"
-                " added)."
+                f"The Plex connection '{self.connection_name}' has no"
+                " library folders. Trailarr skips the refresh and adds no"
+                " media."
             )
             return
         sections = await self.api.get_libraries()
         logger.info(
-            f"Found {len(sections)} library sections in"
-            f" '{self.connection_name}'"
+            f"Trailarr found {len(sections)} library sections in"
+            f" '{self.connection_name}'."
         )
         for section in sections:
             try:
@@ -549,7 +550,8 @@ class PlexConnectionManager:
             except Exception as e:
                 self._sections_failed += 1
                 logger.error(
-                    f"Error processing section '{section.title}': {e}"
+                    f"Trailarr could not process the section '{section.title}':"
+                    f" {e}"
                 )
         # Remove media that disappeared from the Plex library. Skipped
         # when any section failed — a partial sync must not delete media.

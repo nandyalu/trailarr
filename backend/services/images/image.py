@@ -41,7 +41,9 @@ async def get_base_path(is_movie: bool, is_poster: bool) -> Path:
     try:
         await aiofiles.os.makedirs(base_path, exist_ok=True)
     except Exception:
-        logger.error(f"Unable to create images folder: '{base_path}'")
+        logger.error(
+            f"Trailarr could not create the images folder '{base_path}'."
+        )
     return base_path
 
 
@@ -63,7 +65,9 @@ async def delete_image(image_path: str):
         else:
             logger.debug(f"Image not found: '{image_path}'")
     except Exception:
-        logger.error(f"Unable to delete image: '{image_path}'")
+        logger.error(
+            f"Trailarr could not delete the image '{image_path}'."
+        )
     return
 
 
@@ -186,7 +190,9 @@ async def refresh_media_images(
 
     async def download(media_image: MediaImage):
         if _stop_event and _stop_event.is_set():
-            logger.info("Image refresh stopped due to stop event.")
+            logger.info(
+                "Trailarr stopped the image refresh. A stop was requested."
+            )
             return
         async with sem:  # Wait for a free slot in the semaphore
             updated = await process_image(is_movie, media_image)

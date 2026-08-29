@@ -34,13 +34,16 @@ def delete_trailerprofile(
         # Delete the custom filter associated with the trailer profile
         _session.delete(db_trailerprofile.customfilter)
     except Exception as e:
-        logger.error(f"Error deleting filters for trailer profile {id}: {e}")
+        logger.error(
+            f"Trailarr could not delete the filters of trailer profile"
+            f" {id}: {e}"
+        )
 
     # Delete the trailer profile
     _session.delete(db_trailerprofile)
     _session.commit()
     logger.info(
-        "Deleted trailer profile:"
-        f" {db_trailerprofile.customfilter.filter_name}"
+        "Trailarr deleted the trailer profile"
+        f" '{db_trailerprofile.customfilter.filter_name}'."
     )
     return True

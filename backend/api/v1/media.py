@@ -518,7 +518,10 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     Returns:
         str: Monitoring message.
     """
-    logger.info(f"Monitoring media with ID: {media_id}")
+    logger.info(
+        f"Trailarr changes the monitor status of this media item.",
+        **logger.media(media_id),
+    )
     try:
         result = media_service.set_monitoring(media_id, monitor)
         await websockets.ws_manager.broadcast(
@@ -563,7 +566,10 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
     Returns:
         str: Updating YouTube ID message.
     """
-    logger.info(f"Updating YouTube ID for media with ID: {media_id}")
+    logger.info(
+        f"Trailarr updates the YouTube ID of this media item.",
+        **logger.media(media_id),
+    )
     # Check if yt_id is a URL and extract the ID
     if yt_id and yt_id.startswith("http"):
         _yt_id = trailer_utils.extract_youtube_id(yt_id)
@@ -610,7 +616,10 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     Returns:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
-    logger.info(f"Searching for trailer for media with ID: {media_id}")
+    logger.info(
+        f"Trailarr searches for a trailer for this media item.",
+        **logger.media(media_id),
+    )
     media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
 
@@ -643,7 +652,10 @@ async def _delete_trailer_and_report(media_id: int) -> str:
     per item. It is a plain function rather than the endpoint itself: a
     route handler calling another route handler hides where the work is.
     """
-    logger.info(f"Deleting trailer for media with ID: {media_id}")
+    logger.info(
+        f"Trailarr deletes the trailers of this media item.",
+        **logger.media(media_id),
+    )
     try:
         result = await media_service.delete_trailers(media_id)
         await websockets.ws_manager.broadcast(
@@ -710,7 +722,9 @@ async def batch_update_media(update: BatchUpdate) -> None:
     Returns:
         str: Monitoring message.
     """
-    logger.info(f"Monitoring media with IDs: {update.media_ids}")
+    logger.info(
+        f"Trailarr updates {len(update.media_ids)} media items."
+    )
     try:
         msg = ""
         if update.action == "monitor":

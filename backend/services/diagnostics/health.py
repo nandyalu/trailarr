@@ -93,7 +93,9 @@ async def run_health_checks() -> HealthReport:
         report.checks.append(_ytdlp_test_result)
     report.finalize()
     _report = report
-    logger.info(f"Health checks complete: {report.status}")
+    logger.info(
+        f"Trailarr finished the health checks. Result: {report.status}."
+    )
     return report
 
 
@@ -114,7 +116,9 @@ async def _run_guarded(check) -> HealthCheckResult:
             ),
         )
     except Exception as e:
-        logger.error(f"Health check '{key}' failed: {e}")
+        logger.error(
+            f"The health check '{key}' failed: {e}"
+        )
         return HealthCheckResult(
             key=key,
             name=key.replace("_", " ").title(),
@@ -342,7 +346,9 @@ async def _run_doctor_for_all() -> list:
     try:
         connections = connection_manager.read_all()
     except Exception as e:
-        logger.error(f"Could not read the connections: {e}")
+        logger.error(
+            f"Trailarr could not read the connections: {e}"
+        )
         return []
     if not connections:
         return []

@@ -61,7 +61,8 @@ def track_media_added(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track media_added event for [{media_id}]: {e}"
+            f"Trailarr could not record the media added event: {e}",
+            **logger.media(media_id),
         )
 
     # 2. Create youtube_id_changed event if youtube_id exists
@@ -78,8 +79,8 @@ def track_media_added(
             create_event(event_create)
         except Exception as e:
             logger.warning(
-                "Failed to track youtube_id_changed event for"
-                f" [{media_id}]: {e}"
+                f"Trailarr could not record the youtube id changed event: {e}",
+                **logger.media(media_id),
             )
 
 
@@ -113,7 +114,8 @@ def track_monitor_changed(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track monitor_changed event for [{media_id}]: {e}"
+            f"Trailarr could not record the monitor changed event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -149,7 +151,8 @@ def track_youtube_id_changed(
         create_event(event_create, _session=session)  # type: ignore
     except Exception as e:
         logger.warning(
-            f"Failed to track youtube_id_changed event for [{media_id}]: {e}"
+            f"Trailarr could not record the youtube id changed event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -177,7 +180,8 @@ def track_trailer_downloaded(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track trailer_downloaded event for [{media_id}]: {e}"
+            f"Trailarr could not record the trailer downloaded event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -206,7 +210,8 @@ def track_trailer_deleted(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track trailer_deleted event for [{media_id}]: {e}"
+            f"Trailarr could not record the trailer deleted event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -233,7 +238,8 @@ def track_trailer_detected(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track trailer_detected event for [{media_id}]: {e}"
+            f"Trailarr could not record the trailer detected event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -267,7 +273,8 @@ def track_trailer_renamed(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track trailer_renamed event for [{media_id}]: {e}"
+            f"Trailarr could not record the trailer renamed event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -301,7 +308,8 @@ def track_trailer_modified(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track trailer_modified event for [{media_id}]: {e}"
+            f"Trailarr could not record the trailer modified event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -336,7 +344,8 @@ def track_plex_linked(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track plex_linked event for [{media_id}]: {e}"
+            f"Trailarr could not record the plex linked event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -371,7 +380,8 @@ def track_plex_unlinked(
         create_event(event_create, _session=_session)  # type: ignore
     except Exception as e:
         logger.warning(
-            f"Failed to track plex_unlinked event for [{media_id}]: {e}"
+            f"Trailarr could not record the plex unlinked event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -400,7 +410,8 @@ def track_plex_scan_triggered(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track plex_scan_triggered event for [{media_id}]: {e}"
+            f"Trailarr could not record the plex scan triggered event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -432,7 +443,8 @@ def track_arr_linked(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track arr_linked event for [{media_id}]: {e}"
+            f"Trailarr could not record the arr linked event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -464,7 +476,8 @@ def track_arr_unlinked(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track arr_unlinked event for [{media_id}]: {e}"
+            f"Trailarr could not record the arr unlinked event: {e}",
+            **logger.media(media_id),
         )
 
 
@@ -494,7 +507,8 @@ def track_download_skipped(
         return created
     except Exception as e:
         logger.warning(
-            f"Failed to track download_skipped event for [{media_id}]: {e}"
+            f"Trailarr could not record the download skipped event: {e}",
+            **logger.media(media_id),
         )
         return False
 
@@ -528,5 +542,6 @@ def track_download_attributed(
         create_event(event_create)
     except Exception as e:
         logger.warning(
-            f"Failed to track download_attributed event for [{media_id}]: {e}"
+            f"Trailarr could not record the download attributed event: {e}",
+            **logger.media(media_id),
         )
