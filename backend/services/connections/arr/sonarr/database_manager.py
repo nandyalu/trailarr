@@ -1,3 +1,5 @@
+"""Database helpers for the Sonarr connection."""
+
 # from database.manager.base import MediaDatabaseManager
 # from services.connections.arr.sonarr.models import (
 #     Series,

@@ -1,3 +1,10 @@
+"""Decide whether a profile already has the trailer it wants.
+
+A profile is satisfied when a download for it exists and its file is still
+on disk. An existing download with no profile can be claimed by a profile
+that matches, so Trailarr does not download the same trailer again.
+"""
+
 from dataclasses import dataclass, field
 
 from database.models.media import MediaRead

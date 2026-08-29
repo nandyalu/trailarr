@@ -1,3 +1,10 @@
+"""Download one trailer, from the search to the file in the media folder.
+
+The steps are: find a video, download it, convert it, and move it into
+place. A failure at any step is recorded as a failed attempt, which puts
+that media and profile pair into backoff.
+"""
+
 from datetime import datetime, timezone
 from pathlib import Path
 import tempfile

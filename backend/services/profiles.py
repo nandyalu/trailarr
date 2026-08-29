@@ -1,3 +1,9 @@
+"""Match a media item to the trailer profiles that want it.
+
+A profile carries a filter. A media item can match several profiles, and
+each match is a trailer the profile expects to exist.
+"""
+
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.filters import matches_filters

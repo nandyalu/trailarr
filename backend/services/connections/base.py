@@ -1,3 +1,13 @@
+"""What every connection does when it refreshes.
+
+A refresh reads the media from the server, writes the new and changed rows,
+and decides what to do with a row the server no longer reports.
+
+A media item that leaves an Arr server but is still in Plex is demoted to
+Plex-only, not deleted. Trailarr deletes a trailer file only when the media
+is gone from every connection.
+"""
+
 from abc import ABC
 from itertools import batched
 from typing import Any, AsyncGenerator, Callable, Protocol

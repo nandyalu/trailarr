@@ -1,3 +1,10 @@
+"""Ask ffprobe what is inside a video file.
+
+The answer says whether a download is a usable trailer: it has video, it
+has audio, and its length is inside the range the profile asks for. The
+module also finds and cuts silence at the end of a video.
+"""
+
 from datetime import datetime, timezone
 from pathlib import Path
 import re

@@ -1,3 +1,10 @@
+"""Download and store the poster and the fanart of a media item.
+
+Images are stored under the config folder, named by a hash of the source
+URL, so the same image is downloaded once. The media row keeps the path
+that the web UI asks for.
+"""
+
 import asyncio
 import hashlib
 from io import BytesIO

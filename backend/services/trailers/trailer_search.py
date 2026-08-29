@@ -1,3 +1,10 @@
+"""Find a trailer to download.
+
+A profile can name a YouTube id. Without one, Trailarr searches YouTube
+with a query built from the title and the year, and takes the first result
+that matches the length the profile asks for.
+"""
+
 from functools import partial
 import os
 import re

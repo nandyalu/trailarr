@@ -1,3 +1,10 @@
+"""Work out where a trailer file goes, and put it there.
+
+The name and the folder come from the trailer profile. The file is written
+to a temporary folder first and moved when it is complete, so a partial
+download is never seen as a trailer.
+"""
+
 from pathlib import Path
 import re
 import shutil

@@ -1,3 +1,14 @@
+"""Find the media items that still need a trailer, and download them.
+
+For each media item, this module works out which profiles match, which of
+those are already satisfied, and which are in backoff after a failure. What
+is left is downloaded.
+
+A media item whose storage is unreachable is skipped rather than failed. A
+failure would count as an attempt and push the item into backoff for a
+problem that is not its own.
+"""
+
 import os
 import threading
 

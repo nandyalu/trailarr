@@ -1,3 +1,5 @@
+"""Check whether a newer Trailarr image is published."""
+
 import aiohttp
 
 from app_logger import ModuleLogger

@@ -1,3 +1,10 @@
+"""Daily cleanup: old log entries, and trailers that are gone or broken.
+
+The trailer part reads what is on disk. A file that no longer exists is
+marked deleted. A file with no audio or no video is deleted, but only when
+the user turned that on.
+"""
+
 import threading
 
 import aiofiles.os

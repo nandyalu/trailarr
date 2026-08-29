@@ -1,3 +1,5 @@
+"""Turn a Radarr movie into the media row Trailarr stores."""
+
 from typing import Any
 
 from pydantic import AliasPath, BaseModel, Field, field_validator

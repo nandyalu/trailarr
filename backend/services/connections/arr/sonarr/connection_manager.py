@@ -1,3 +1,5 @@
+"""Read series from Sonarr and write them to the database."""
+
 from services.connections.base import BaseConnectionManager
 from services.connections.arr.sonarr.data_parser import parse_series
 from database.models.connection import ConnectionRead

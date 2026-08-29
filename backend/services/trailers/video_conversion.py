@@ -1,3 +1,10 @@
+"""Build the ffmpeg command that converts a download.
+
+The command depends on the codecs the profile asks for and on the hardware
+encoder that is available. A codec the encoder does not support falls back
+to the CPU rather than failing.
+"""
+
 import os
 import platform
 from app_logger import ModuleLogger

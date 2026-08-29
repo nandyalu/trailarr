@@ -1,3 +1,5 @@
+"""The shape of a Sonarr API response."""
+
 # from sqlmodel import Field
 
 # from database.models.media import (

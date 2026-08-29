@@ -1,3 +1,10 @@
+"""Read libraries from Plex and write their media to the database.
+
+Plex reports a path per episode rather than per show, so the manager works
+out one folder for a show from the folders of its episodes. A folder at or
+above a library root is refused: it would claim every title under it.
+"""
+
 import os
 import re
 from collections import Counter

@@ -1,3 +1,10 @@
+"""Run yt-dlp and ffmpeg, and report what they did.
+
+Both tools run as a subprocess with a timeout. Their output is logged
+behind a marker that the log handler moves into the traceback column, so a
+wall of tool output does not fill the Logs page.
+"""
+
 import shlex
 import subprocess
 import tempfile

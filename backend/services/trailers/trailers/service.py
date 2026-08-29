@@ -1,3 +1,9 @@
+"""Record what happened to a trailer file in the downloads table.
+
+A download row is the record that a trailer exists: its path, its size, its
+resolution and its hash. The scan and the download flow both write here.
+"""
+
 import os
 from datetime import datetime, timezone
 

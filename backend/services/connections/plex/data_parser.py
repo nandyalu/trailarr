@@ -1,3 +1,5 @@
+"""Turn a Plex library item into the media row Trailarr stores."""
+
 from database.models.media import MediaCreate
 from services.connections.plex.models import PlexMediaItem
 

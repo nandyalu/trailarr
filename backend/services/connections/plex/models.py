@@ -1,3 +1,5 @@
+"""The shape of a Plex API response."""
+
 from pathlib import Path
 
 from pydantic import (

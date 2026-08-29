@@ -1,3 +1,10 @@
+"""Register the background tasks with the scheduler.
+
+Every task has an interval and a first-run delay. The delays are staggered
+so that a restart does not run everything at once: the attribution pass
+runs at 60 seconds, the disk scan at 480, the download run at 900.
+"""
+
 import threading
 from typing import Callable
 

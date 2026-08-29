@@ -1,3 +1,5 @@
+"""Download trailers for a list of media items, one after another."""
+
 import threading
 
 from app_logger import ModuleLogger

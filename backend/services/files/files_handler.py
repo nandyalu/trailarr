@@ -1,3 +1,10 @@
+"""Read, move and delete files and folders.
+
+Every function that touches storage checks first that the storage answers.
+A disconnected network drive looks like an empty folder, and acting on that
+would delete rows for trailers that are still there.
+"""
+
 import asyncio
 from datetime import datetime as dt
 import hashlib

@@ -1,3 +1,14 @@
+"""Scan the media folders on disk and record what changed.
+
+The scan finds new trailer files, files that were renamed, files that are
+gone, and files whose content changed. It writes each change to the
+downloads table and tracks an event.
+
+A folder whose storage is unreachable is skipped, never treated as empty:
+marking existing trailers as missing because a network drive is down would
+make Trailarr download them all again.
+"""
+
 import asyncio
 import os
 import threading

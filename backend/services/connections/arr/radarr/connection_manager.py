@@ -1,3 +1,5 @@
+"""Read movies from Radarr and write them to the database."""
+
 from services.connections.base import BaseConnectionManager
 from services.connections.arr.radarr.data_parser import parse_movie
 from database.models.connection import ConnectionRead

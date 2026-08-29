@@ -1,3 +1,10 @@
+"""Decide whether a media item matches a filter.
+
+A custom filter is a list of conditions on the fields of a media row. The
+same matching runs for a saved view and for the filters of a trailer
+profile.
+"""
+
 from datetime import datetime
 from database.manager import filefolderinfo as files_manager
 from database.models.filefolderinfo import (

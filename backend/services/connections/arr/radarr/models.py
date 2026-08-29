@@ -1,3 +1,5 @@
+"""The shape of a Radarr API response."""
+
 # from sqlmodel import Field
 
 # from database.models.media import (

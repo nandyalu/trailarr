@@ -1,3 +1,10 @@
+"""One async HTTP client for every Arr request.
+
+It turns a failure into the exception the caller expects: a refused
+connection, a timeout, or a response that is not valid JSON. Callers never
+see an aiohttp error.
+"""
+
 from typing import Any
 from urllib.parse import urlparse, urlunparse
 import aiohttp

@@ -1,3 +1,5 @@
+"""The Radarr API client."""
+
 from typing import Any
 from exceptions import InvalidResponseError
 from services.connections.arr.base import AsyncBaseArrManager

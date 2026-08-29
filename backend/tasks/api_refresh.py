@@ -1,3 +1,10 @@
+"""Read media from the Arr and Plex servers, and write it to the database.
+
+The scheduled task refreshes every connection. The by-id functions run one
+connection, and the delete job removes a connection in the background so a
+slow delete does not hold up the request.
+"""
+
 import threading
 
 from config.logging_context import with_logging_context

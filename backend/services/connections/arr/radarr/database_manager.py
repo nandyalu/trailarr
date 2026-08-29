@@ -1,3 +1,5 @@
+"""Database helpers for the Radarr connection."""
+
 # from database.manager.base import DatabaseManager
 # from services.connections.arr.radarr.models import Movie, MovieCreate, MovieRead, MovieUpdate
 

@@ -1,3 +1,10 @@
+"""The Plex API client.
+
+Plex answers XML, and its ids are per-server, so the responses need more
+work than an Arr server's. This client also asks Plex to rescan a folder
+after Trailarr writes a trailer into it.
+"""
+
 from collections.abc import AsyncGenerator
 from typing import Any
 from urllib.parse import urlencode

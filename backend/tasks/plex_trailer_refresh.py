@@ -1,3 +1,9 @@
+"""Ask Plex which media items already have a trailer.
+
+Plex can hold a trailer that Trailarr did not download. The flag this task
+writes lets a trailer profile skip a media item that Plex already covers.
+"""
+
 import threading
 
 import database.manager.connection as connection_manager

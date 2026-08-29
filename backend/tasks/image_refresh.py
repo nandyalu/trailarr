@@ -1,3 +1,9 @@
+"""Download the poster and the fanart of every media item.
+
+Images come from the Arr server or from TMDB. The task stores them under
+the config folder and records the path on the media row.
+"""
+
 import threading
 
 import database.manager.media as media_manager

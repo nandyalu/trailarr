@@ -1,3 +1,10 @@
+"""The HTTP calls that Radarr and Sonarr share.
+
+Both servers answer the same shape of request for the system status, the
+root folders and the media list, so one class makes those calls and the
+Radarr and Sonarr managers add what differs.
+"""
+
 from typing import Any
 from exceptions import InvalidResponseError
 from services.connections.arr.request_manager import AsyncRequestManager

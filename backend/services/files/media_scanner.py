@@ -1,3 +1,10 @@
+"""Find the trailer files inside a media folder.
+
+A trailer is a video file in a folder named for trailers, or a file whose
+name marks it as one. The scanner reports what it finds; the scan task
+decides what changed.
+"""
+
 import asyncio
 from datetime import datetime as dt
 import os

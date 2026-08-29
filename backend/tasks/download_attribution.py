@@ -1,3 +1,10 @@
+"""Give a trailer profile to a download that has none.
+
+A download recorded before profiles existed, or found on disk by the
+scanner, has no profile. This pass matches each one against the profiles
+whose filters the media satisfies, and reports the ones it cannot place.
+"""
+
 from collections import defaultdict
 
 from app_logger import ModuleLogger

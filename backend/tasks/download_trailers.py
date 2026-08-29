@@ -1,3 +1,10 @@
+"""Download a trailer for one media item, or for a list of them.
+
+The scheduled hunt for missing trailers lives in
+services/trailers/trailers/missing.py. This module is the entry point the
+API uses when a user asks for a download.
+"""
+
 import threading
 
 from app_logger import ModuleLogger
