@@ -1,9 +1,11 @@
 # Phase 7 — Backend Reorganization
 
-**Status:** **Stage A COMPLETE** (Aug 28, 2026) on branch `feat/phase7-backend-reorg`,
-13 move commits, 1089 tests green at every one, `openapi.json` byte-identical. Stage B
-and Stage C not started. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week
-bake)
+**Status** (Aug 28, 2026, branch `feat/phase7-backend-reorg`):
+**Stage A COMPLETE** — 13 move commits, `core/` retired, `openapi.json` byte-identical.
+**Stage B layering COMPLETE** — 9 → 0 `database/`→business-logic imports, guarded by
+`tests/test_layering.py`.
+**Remaining:** Stage B API thinning (the `api/v1` routers), then Stage C.
+1109 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
@@ -87,7 +89,33 @@ do it for all routers in one dedicated commit so the spec diff is reviewable).
 Do not rewrite handler docstrings while extracting — Stage C owns that, and mixing the
 two makes the spec diff unreviewable. Move the docstring with the code, unchanged.
 
-### Stage B: the database layer is not standalone (13 call sites)
+### Stage B: the database layer is not standalone — DONE (Aug 28, 2026)
+
+**Resolved: 9 → 0.** `tests/test_layering.py` now enforces it by parsing imports
+with `ast`, so this cannot regress. Two commits:
+
+- **Connection probing** (`services/connections/probe.py` + `service.py`). The managers
+  called Radarr, Sonarr and Plex from inside `database/`, and `update()` made those
+  calls **inside an open write transaction** — a hanging server held a write lock for
+  the length of an HTTP request. The service now probes first and writes after. Same
+  observable behavior (nothing commits when validation fails), better transaction shape.
+- **Event notifications** — inverted instead of moved. The plan's "move the notify call
+  up to the callers" does not survive contact: the `track_*` helpers live in
+  `database/`, and `connection/delete.py` and `media/create.py` call them, so "up" meant
+  restructuring two managers. `database/manager/event/` now publishes to registered
+  listeners and the dispatcher subscribes on import. Zero call sites touched.
+
+Two traps found here, both worth remembering:
+
+1. `import database.manager.event.create` returns the create **function**, not the
+   module — the package `__init__` re-exports the name and shadows the submodule. Export
+   what you need from the package, or use `importlib.import_module`.
+2. Listener wiring fails **silently**: nothing raises, notifications just stop. It is
+   covered by an explicit test rather than left to trust.
+
+The original analysis, kept for context:
+
+### (original) the database layer is not standalone (13 call sites)
 
 The objective calls `database/` a "standalone top layer". It is not one today, and
 Stage A deliberately does not fix that (moves stay mechanical). Stage B must, or the
@@ -109,9 +137,10 @@ they do **not** all get the same treatment:
   is the same shape and should join `utils/` when `core/download/` moves, unless it
   turns out to carry download-specific dependencies — check before moving it.
 
-Verification for this section: after Stage B, the unanchored audit script reports **0**
-imports from `database/` into `core|services|api|tasks`. That number is the exit
-criterion — a green suite does not prove the layering holds.
+Verification for this section: `tests/test_layering.py` reports **0** imports from
+`database/` into `api|services|tasks`. It parses with `ast`, not grep — during this
+phase grep gave the wrong answer twice (line-anchored patterns miss function-local
+imports, and a comment mentioning a layer counts as a hit).
 
 ## Stage C: Simplified Technical English sweep (prose only)
 
