@@ -208,6 +208,10 @@ async def search_media(query: str) -> list[SearchMedia]:
     "/{media_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -235,6 +239,10 @@ async def get_media_by_id(media_id: int) -> MediaRead:
     "/{media_id}/downloads",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -274,6 +282,10 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
     "/{media_id}/pending",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -383,6 +395,10 @@ async def update_download_profile(
     "/{media_id}/files",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -413,7 +429,20 @@ async def get_media_files(media_id: int) -> FileFolderInfoRead:
         )
 
 
-@media_router.post("/{media_id}/rescan_files", status_code=status.HTTP_200_OK)
+@media_router.post(
+    "/{media_id}/rescan_files",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
+    },
+)
 async def rescan_media_files(media_id: int) -> str:
     """Rescan media files by ID. \n
     Args:
@@ -469,6 +498,10 @@ async def download_media_trailer(
     "/{media_id}/monitor",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -506,6 +539,10 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     "/{media_id}/update",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -649,6 +686,10 @@ async def delete_media_trailer(media_id: int) -> str:
     "/batch_update",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",

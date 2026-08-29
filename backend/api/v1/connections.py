@@ -50,6 +50,10 @@ async def get_doctor_reports() -> list[DoctorReport]:
 @connections_router.post(
     "/doctor/preview",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,
             "description": "Could not check the connection",
@@ -92,6 +96,10 @@ async def run_all_connection_doctors() -> list[DoctorReport]:
 @connections_router.post(
     "/{connection_id}/doctor",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -112,6 +120,10 @@ async def run_connection_doctor(connection_id: int) -> DoctorReport:
 @connections_router.post(
     "/{connection_id}/doctor/mappings",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -155,6 +167,10 @@ async def get_connections() -> list[ConnectionRead]:
     "/test",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Radarr Connection Successful Version: 3.x.x.x",
         },
@@ -179,6 +195,10 @@ async def test_connection(connection: ConnectionCreate) -> str:
     "/rootfolders",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Root Folders Retrieved Successfully!",
         },
@@ -203,6 +223,10 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     "/",
     status_code=status.HTTP_201_CREATED,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_201_CREATED: {
             "description": (
                 "Connection Created Successfully! "
@@ -241,6 +265,10 @@ async def create_connection(connection: ConnectionCreate) -> str:
     "/{connection_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -262,6 +290,10 @@ async def get_connection(connection_id: int) -> ConnectionRead:
     "/{connection_id}",
     status_code=status.HTTP_201_CREATED,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_201_CREATED: {
             "description": "Connection Updated Successfully!",
         },
@@ -299,6 +331,10 @@ async def update_connection(
     "/{connection_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Connection deletion scheduled.",
         },

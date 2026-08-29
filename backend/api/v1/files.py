@@ -2,6 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from api.v1 import errors
+from api.v1.models import ErrorResponse
 from app_logger import ModuleLogger
 import database.manager.filefolderinfo as files_manager
 from services.trailers import video_analysis
@@ -23,7 +24,19 @@ async def get_all_media_files_raw() -> list[dict]:
     return files_info
 
 
-@files_router.get("/files_simple")
+@files_router.get(
+    "/files_simple",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Folder Not Found",
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
+    },
+)
 async def get_files_simple(path: str) -> list[FolderInfo]:
     """Get files in a directory in a simple format.\n
     Args:
