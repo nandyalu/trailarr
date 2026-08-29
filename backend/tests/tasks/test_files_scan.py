@@ -1,4 +1,4 @@
-"""Tests for core/tasks/files_scan.py — folder-change detection and scan_media_folder."""
+"""Tests for tasks/files_scan.py — folder-change detection and scan_media_folder."""
 
 from datetime import datetime, timezone
 from types import SimpleNamespace

@@ -203,7 +203,7 @@ def schedule_all_tasks() -> None:
         )
         logger.info("Trailarr scheduled the task 'Refresh Plex Trailer Flags'.")
 
-    # Startup passes (registry in core/tasks/startup_passes.py): attribution
+    # Startup passes (registry in tasks/startup_passes.py): attribution
     # + flag healing, and the pre-download full-scan upgrade guard. Ordered,
     # completion-recorded per database, and the download task refuses to run
     # until the required passes are recorded — this is what makes

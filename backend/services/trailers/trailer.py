@@ -130,7 +130,7 @@ def __record_download_facts(media: MediaRead):
     """Record the facts a successful download owns: downloaded_at and the
     YouTube id that was used.
 
-    Phase 3: DOWNLOADING is runtime-only (see core/download/inflight.py) and
+    Phase 3: DOWNLOADING is runtime-only (see services/trailers/inflight.py) and
     is never written to the database.
     Phase 4: downloads never write `monitor` — it is user intent (invariant
     #6). No MONITOR_CHANGED events can originate from downloads anymore.

@@ -6,7 +6,7 @@ with different path styles.
 
 Unit tests for the underlying path utilities (is_subpath, apply_path_mappings,
 reverse_path_mappings, normalize_trailing_slash) live in
-tests/core/base/utils/test_path_utils.py.
+tests/services/test_path_utils.py.
 """
 
 from types import SimpleNamespace

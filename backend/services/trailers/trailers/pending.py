@@ -3,7 +3,7 @@
 THE single source of truth shared by the download task and the UI: which
 profiles match a media item, which are satisfied by which download, which
 are pending, and which are backing off. It reuses the exact Phase-2
-satisfaction helper (core/base/utils/satisfaction.py) — never a parallel
+satisfaction helper (services/satisfaction.py) — never a parallel
 reimplementation — and performs no writes: claims the task would apply are
 reported as satisfied-via-claim, not persisted.
 """

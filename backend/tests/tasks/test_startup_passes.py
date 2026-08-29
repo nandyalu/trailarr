@@ -1,4 +1,4 @@
-"""Tests for the startup-pass registry (core/tasks/startup_passes.py) —
+"""Tests for the startup-pass registry (tasks/startup_passes.py) —
 plans/README.md "Upgrade-safety rules"."""
 
 from unittest.mock import AsyncMock, patch

@@ -1,4 +1,4 @@
-"""Tests for the trailer_cleanup function in core/tasks/cleanup.py"""
+"""Tests for the trailer_cleanup function in tasks/cleanup.py"""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch

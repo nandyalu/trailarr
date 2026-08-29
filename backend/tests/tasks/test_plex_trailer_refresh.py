@@ -1,4 +1,4 @@
-"""Tests for refresh_plex_trailer_flags in core/tasks/plex_trailer_refresh.py"""
+"""Tests for refresh_plex_trailer_flags in tasks/plex_trailer_refresh.py"""
 
 import threading
 from types import SimpleNamespace

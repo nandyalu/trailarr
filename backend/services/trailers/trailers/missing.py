@@ -234,7 +234,7 @@ async def download_missing_trailers(
     """Download missing trailers for monitored media items.
 
     Phase 2 engine: downloads are decided per profile from download records
-    (see core/base/utils/satisfaction.py), never from the legacy mirror
+    (see services/satisfaction.py), never from the legacy mirror
     flags (removed in Phase 5). Failed downloads back off exponentially per (media, profile).
     """
     # Exit if monitoring is disabled

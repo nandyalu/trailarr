@@ -1,4 +1,4 @@
-"""Tests for core/tasks/download_attribution.py — the startup pass that
+"""Tests for tasks/download_attribution.py — the startup pass that
 attributes unattributed downloads (profile_id=0) to matching profiles."""
 
 from datetime import datetime, timezone

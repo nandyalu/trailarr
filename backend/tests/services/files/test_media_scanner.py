@@ -1,4 +1,4 @@
-"""Tests for core/files/media_scanner.py — trailer detection edge cases."""
+"""Tests for services/files/media_scanner.py — trailer detection edge cases."""
 
 import os
 from datetime import datetime, timezone

@@ -1,4 +1,4 @@
-"""Tests for core/base/utils/profiles.py — profile matching and
+"""Tests for services/profiles.py — profile matching and
 download-ownership picking."""
 
 from types import SimpleNamespace

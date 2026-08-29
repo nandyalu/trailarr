@@ -1,4 +1,4 @@
-"""Unit tests for core/base/utils/path_utils.py.
+"""Unit tests for utils/path_utils.py.
 
 Tests every exported function (is_subpath, apply_path_mappings,
 reverse_path_mappings, normalize_trailing_slash) across all OS path-style
@@ -6,7 +6,7 @@ combinations: Linux, macOS, Windows-backslash, Windows-forward-slash, and
 mixed separators.
 
 PlexConnectionManager integration tests live in
-tests/core/plex/test_path_mapping.py.
+tests/services/connections/plex/test_path_mapping.py.
 """
 
 from types import SimpleNamespace
