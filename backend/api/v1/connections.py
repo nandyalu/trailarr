@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import errors
+from app_logger import ModuleLogger
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
 
@@ -33,6 +34,8 @@ def _schedule_refresh(connection_id: int) -> None:
             f" {connection_id}: {e}"
         )
 
+
+logger = ModuleLogger("ConnectionsAPI")
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
