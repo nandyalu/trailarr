@@ -7,7 +7,10 @@
 **Stage B COMPLETE** — 5 routers thinned (settings, logs, files, connections, media),
 the media batch path routed through the service, and hygiene H1 done with its permitted
 spec diff (18 added 500s + 2 previously-undocumented 404s).
-**Remaining:** Stage C. 1234 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**Stage C: log messages DONE** — every message swept to one house style, the media
+link decoupled from the wording, and both permitted spec diffs spent.
+**Remaining:** comments and docstrings outside `api/v1`, the frontend light touch, the
+contributor docs, graphify re-index and the Docker build. 1419 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
@@ -253,6 +256,37 @@ One style, applied to every line that is touched:
 is still read as the media id by the database handler's fallback, so a line that says
 "profile [7]" will link the log entry to media 7. Pass the id and keep brackets out of
 the message.
+
+### Stage C: what the log sweep found (Aug 29, 2026)
+
+**The media link was never decoupled from the wording.** `db_handler.py` searches the
+message for the first `[123]` and stores it in `mediaid`; the Logs page reads that
+column. The column did not replace the convention, it is *fed* by it. Seven lines
+bracketed something that is not a media id — a profile, a download, a Plex section key,
+a connection, a channel — and each linked its log entry to whatever media holds that
+number. All seven are fixed.
+
+**Passing the id was impossible before this.** `ModuleLogger` is a `LoggerAdapter`, and
+the default `process()` replaces `kwargs["extra"]` with the adapter's own, which is
+`None`. `extra={"mediaid": 42}` was discarded silently. `process()` now keeps it and
+`logger.media(id)` builds it, so a message needs no brackets at all.
+
+**Rewriting f-strings broke two lines, and the suite passed both times.** A log message
+only runs when its line runs, so `ProbeStatus.FAIL` (no such member) and
+`attempt.next_eligible_at` (a module function, not an attribute) sat there green.
+`tests/test_log_message_safety.py` now reads the calls instead of running them: it
+checks that an enum member named in a message exists, and that no message brackets a
+non-media id.
+
+**Strings that must not be reworded**, all confirmed by reading their consumer:
+
+- `"YT-DLP Output::"` and `"FFMPEG Output::"` — `db_handler.py` matches these to move
+  tool output into the traceback column and replace the message.
+- The yt-dlp and FFmpeg failure text in `video_v2.py` — fed to `classify_ytdlp_error`,
+  which matches fragments such as `"please sign in"`. A reword could start matching a
+  signature it does not match today.
+- `exceptions.py` messages — `ItemNotFoundError` text is returned as the 404 detail and
+  asserted in tests.
 
 **Order:** one commit per package, same order as Stage A, so the diff for each package
 is reviewable as prose. Route-handler docstrings are pulled out of those commits into
