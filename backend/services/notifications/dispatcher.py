@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app_logger import ModuleLogger
+import database.manager.event as event_manager
 import database.manager.media as media_manager
 import database.manager.notificationchannel as channel_manager
 
@@ -67,6 +68,25 @@ def enqueue(
         _queue.append(EventNote(event_type, source, media_id, detail))
     except Exception:  # pragma: no cover — deque.append shouldn't fail
         pass
+
+
+def on_event(event) -> None:
+    """Queue a stored event for dispatch.
+
+    The event manager calls this for every event it stores. The database
+    layer must not import services, so the dispatcher registers this
+    function instead of being called by name. See the subscribe call at the
+    end of this module.
+
+    Args:
+        event: The event that was just stored.
+    """
+    enqueue(
+        event_type=event.event_type.name,
+        source=event.source.name,
+        media_id=event.media_id,
+        detail=event.new_value or "",
+    )
 
 
 def _event_label(event_type: str) -> str:
@@ -487,3 +507,11 @@ async def stop() -> None:
     except Exception as e:  # best-effort — never block shutdown
         logger.warning(f"Final notification flush failed: {type(e).__name__}")
     logger.debug("Notification dispatcher stopped")
+
+
+# Listen for stored events as soon as this module loads. main.py imports the
+# dispatcher during startup, before anything can store an event, so no event
+# is missed. Registering here (rather than in start()) keeps the behavior the
+# lazy import used to give: events queue up even before the loop runs, and
+# start() then drains them.
+event_manager.subscribe(on_event)

@@ -3,6 +3,7 @@ from .create import (
     create_bulk,
     create_if_not_exists,
     create_skip_event_if_not_exists,
+    subscribe,
 )
 from .read import (
     has_skip_event,
@@ -37,6 +38,7 @@ __all__ = [
     "create_bulk",
     "create_if_not_exists",
     "create_skip_event_if_not_exists",
+    "subscribe",
     "delete_by_media_id",
     "delete_old_events",
     "has_skip_event",

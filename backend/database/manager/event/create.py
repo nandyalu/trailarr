@@ -1,3 +1,5 @@
+from typing import Callable
+
 from sqlmodel import Session, desc, select, or_
 
 from database.models.event import (
@@ -10,26 +12,34 @@ from database.models.event import (
 from database.engine import write_session
 
 
-def _notify(event: EventRead | EventCreate) -> None:
-    """Queue the event for Apprise notification dispatch. Fire-and-forget:
-    lazy import (avoids manager↔dispatcher cycles) and never raises.
+EventListener = Callable[[EventRead | EventCreate], None]
 
-    TODO (Phase 7 Stage B): this is the one place where database/ reaches up
-    into services/, which the layering forbids. The lazy import keeps it
-    working. Move the notify call up to the callers so the database layer
-    only stores events, and delete this function.
+# Functions to call after an event is stored. The database layer must not
+# import from services/, so services register themselves here at startup
+# instead. See services/notifications/dispatcher.py and main.py.
+_listeners: list[EventListener] = []
+
+
+def subscribe(listener: EventListener) -> None:
+    """Ask to be called each time an event is stored.
+
+    Registering the same function twice has no effect.
+
+    Args:
+        listener (EventListener): The function to call with the new event.
     """
-    try:
-        from services.notifications.dispatcher import enqueue
+    if listener not in _listeners:
+        _listeners.append(listener)
 
-        enqueue(
-            event_type=event.event_type.name,
-            source=event.source.name,
-            media_id=event.media_id,
-            detail=event.new_value or "",
-        )
-    except Exception:
-        pass
+
+def _notify(event: EventRead | EventCreate) -> None:
+    """Give the new event to every listener. Fire-and-forget: a listener
+    that raises must not stop the event from being stored."""
+    for listener in _listeners:
+        try:
+            listener(event)
+        except Exception:
+            pass
 
 
 @write_session
