@@ -1,6 +1,7 @@
 import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
+from api.v1 import errors
 from app_logger import ModuleLogger
 import database.manager.filefolderinfo as files_manager
 from services.trailers import video_analysis
@@ -35,8 +36,9 @@ async def get_files_simple(path: str) -> list[FolderInfo]:
         files_handler = FilesHandler()
         return await files_handler.get_folder_files_simple(path)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the folder",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 

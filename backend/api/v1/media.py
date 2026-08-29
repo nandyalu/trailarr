@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
+from api.v1 import errors
 from api.v1.models import (
     BatchUpdate,
     ErrorResponse,
@@ -223,8 +224,9 @@ async def get_media_by_id(media_id: int) -> MediaRead:
     try:
         media = media_manager.read(media_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     return media
 
@@ -262,8 +264,9 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the downloads of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -292,8 +295,9 @@ async def get_media_pending(media_id: int) -> MediaPendingView:
     try:
         media = media_manager.read(media_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the pending trailers of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     profiles = trailerprofile.get_trailerprofiles()
     return compute_media_pending(media, profiles)
@@ -403,8 +407,9 @@ async def get_media_files(media_id: int) -> FileFolderInfoRead:
             raise Exception("No files found in media folder!")
         return files
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the files of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -426,8 +431,9 @@ async def rescan_media_files(media_id: int) -> str:
         await websockets.ws_manager.broadcast(msg, "Success", reload="files")
         return msg
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Rescan the media files",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -490,8 +496,9 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
         await websockets.ws_manager.broadcast(
             "Error changing Monitor status!", "Error", reload="media"
         )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Change the monitor status",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -540,8 +547,9 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return msg
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update the YouTube ID",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -686,6 +694,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
             f"Error updating Media! {e}", "Error", reload="media"
         )
         logger.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )

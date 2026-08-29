@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter, HTTPException, status
 
+from api.v1 import errors
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
 
@@ -73,8 +74,9 @@ async def preview_connection_doctor(
             connection, connection_id
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Check the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -101,8 +103,9 @@ async def run_connection_doctor(connection_id: int) -> DoctorReport:
     try:
         return await connection_doctor.run_doctor(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Run the Connection Doctor",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -133,8 +136,9 @@ async def apply_doctor_mapping(
             connection_id, mapping.path_from, mapping.path_to
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Apply the path mapping",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     if report.status == "healthy":
         _schedule_refresh(connection_id)
@@ -164,8 +168,9 @@ async def test_connection(connection: ConnectionCreate) -> str:
     try:
         result = await connection_probe.validate_connection(connection)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Test the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     return result
 
@@ -187,8 +192,9 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     try:
         result = await connection_probe.get_rootfolders(connection)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the root folders",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     return result
 
@@ -221,8 +227,9 @@ async def create_connection(connection: ConnectionCreate) -> str:
         await websockets.ws_manager.broadcast(
             "Failed to add Connection!", "Error"
         )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Create the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     await websockets.ws_manager.broadcast(
         "Connection Created Successfully!", "Success", reload="connections"
@@ -244,8 +251,9 @@ async def get_connection(connection_id: int) -> ConnectionRead:
     try:
         connection = connection_manager.read(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     return connection
 
@@ -277,8 +285,9 @@ async def update_connection(
         await websockets.ws_manager.broadcast(
             "Failed to update Connection!", "Error"
         )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     await websockets.ws_manager.broadcast(
         "Connection Updated Successfully!", "Success", reload="connections"
@@ -303,8 +312,9 @@ async def delete_connection(connection_id: int) -> str:
     try:
         msg = delete_connection_job(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Delete the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     connection_doctor.forget_report(connection_id)
     return msg
