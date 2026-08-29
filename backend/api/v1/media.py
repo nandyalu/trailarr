@@ -219,11 +219,11 @@ async def search_media(query: str) -> list[SearchMedia]:
     },
 )
 async def get_media_by_id(media_id: int) -> MediaRead:
-    """Get media by ID. \n
+    """Read one media item. \n
     Args:
         media_id (int): ID of the media item. \n
     Returns:
-        MediaRead: Media object. \n
+        MediaRead: The media item. \n
     """
     try:
         media = media_manager.read(media_id)
@@ -511,12 +511,12 @@ async def download_media_trailer(
     },
 )
 async def monitor_media(media_id: int, monitor: bool = True) -> str:
-    """Monitor media by ID. \n
+    """Turn monitoring on or off for one media item. \n
     Args:
         media_id (int): ID of the media item.
-        monitor (bool, Optional=True): Monitor status. \n
+        monitor (bool, Optional=True): True to monitor it, False to stop. \n
     Returns:
-        str: Monitoring message.
+        str: A line that says what changed.
     """
     logger.info(
         f"Trailarr changes the monitor status of this media item.",
@@ -559,12 +559,12 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     },
 )
 async def update_yt_id(media_id: int, yt_id: str) -> str:
-    """Update YouTube ID for media by ID. \n
+    """Set the YouTube ID of the trailer for one media item. \n
     Args:
         media_id (int): ID of the media item.
-        yt_id (str): YouTube ID of the trailer. \n
+        yt_id (str): The YouTube ID, or a YouTube URL to read it from. \n
     Returns:
-        str: Updating YouTube ID message.
+        str: A line that says what changed.
     """
     logger.info(
         f"Trailarr updates the YouTube ID of this media item.",
