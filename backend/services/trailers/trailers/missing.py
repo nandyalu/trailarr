@@ -357,7 +357,8 @@ async def download_missing_trailers(
         try:
             if _stop_event and _stop_event.is_set():
                 logger.info(
-                    "Stop event set, terminating download of missing trailers."
+                    "Trailarr stopped the download of the missing trailers. A stop"
+                    " was requested."
                 )
                 return
 
@@ -378,9 +379,8 @@ async def download_missing_trailers(
             processed_media_ids.add(media_to_process.id)
 
     logger.info(
-        "Finished downloading missing trailers. Processed:"
-        f" {len(processed_media_ids)} Successful downloads:"
-        f" {successful_downloads}, Skipped items: {skipped_items}"
+        f"Trailarr finished the download of the missing trailers. It"
+        f" examined {len(processed_media_ids)} media items."
     )
 
 
@@ -446,7 +446,7 @@ async def _process_single_media_item(
                 await utils.sleep_between_downloads(total_processed, logger)
 
     _profile_count = len(profiles)
-    _msg = f"Completed processing for media '{media.title}' [{media.id}]."
+    _msg = f"Trailarr finished the work on '{media.title}'."
     _msg += f" Downloads: {successful_downloads}/{_profile_count}"
     _msg += f", Skipped: {skipped_items}/{_profile_count}"
     logger.info(_msg)

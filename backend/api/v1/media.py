@@ -457,7 +457,7 @@ async def rescan_media_files(media_id: int) -> str:
         if not media.folder_path:
             raise Exception("Media has no folder path!")
         await scan_media_folder(media)
-        msg = f"Rescanned files for media with ID: {media_id}"
+        msg = "Trailarr scanned the files of this media item again."
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success", reload="files")
         return msg
@@ -489,7 +489,7 @@ async def download_media_trailer(
     Returns:
         str: Downloading trailer message.
     """
-    msg = f"Downloading trailer for media with ID: [{media_id}]"
+    msg = "Trailarr downloads the trailer for this media item."
     if yt_id:
         msg += f" from ({yt_id})"
     logger.info(msg)
@@ -639,7 +639,7 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return yt_id
-    msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
+    msg = f"Trailarr found no trailer for '{media.title}'."
     logger.info(msg)
     await websockets.ws_manager.broadcast(msg, "Error", reload="media")
     return ""

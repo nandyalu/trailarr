@@ -101,7 +101,9 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         )
         # Return None if command failed
         if result.returncode != 0:
-            logger.error(f"Error: {result.stderr}")
+            logger.error(
+                f"ffprobe reported an error: {result.stderr}"
+            )
             return None
 
         # If command ran successfully, parse the output
@@ -182,7 +184,9 @@ def get_media_info(file_path: str) -> VideoInfo | None:
                 " executable."
             )
         else:
-            logger.exception(f"Error extracting video info: {str(e)}")
+            logger.exception(
+                f"Trailarr could not read the video information: {str(e)}"
+            )
     except Exception as e:
         logger.exception(f"Error extracting video info: {str(e)}")
     return None
@@ -396,7 +400,7 @@ def get_silence_timestamps(
         return silence_start, silence_end
     except Exception as e:
         logger.exception(
-            f"Exception while detecting silence in video: {str(e)}"
+            f"Trailarr could not look for silence in the video: {str(e)}"
         )
     return None, None
 
@@ -501,7 +505,8 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
     except Exception as e:
         # Log error with traceback but return original file to continue processing
         logger.exception(
-            f"Exception while removing silence from video: {str(e)}"
+            f"Trailarr could not remove the silence from the video:"
+            f" {str(e)}"
         )
         return file_path, False
     silence_time = silence_end - silence_start

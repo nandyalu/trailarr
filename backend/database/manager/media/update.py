@@ -97,7 +97,7 @@ def update_monitoring(
     db_media = base._get_db_item(media_id, _session)
     # Check if the monitor status is already set to the same value
     if db_media.monitor == monitor:
-        msg = f"Media '{db_media.title}' [{db_media.id}] is already"
+        msg = f"'{db_media.title}' is already"
         msg += " monitored!" if monitor else " not monitored!"
         return msg, False
     # Phase 4: monitor is pure user intent — a plain flag write with no
@@ -109,7 +109,7 @@ def update_monitoring(
     if _commit:
         _session.commit()
     if monitor:
-        msg = f"Media '{db_media.title}' [{db_media.id}] is now monitored"
+        msg = f"Trailarr now monitors '{db_media.title}'."
     else:
         msg = (
             f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"

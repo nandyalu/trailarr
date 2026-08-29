@@ -54,7 +54,7 @@ class TestDeleteTrailers:
             result = await media_service.delete_trailers(42)
 
         assert result.ok is False
-        assert "No trailer files found" in result.message
+        assert "found no trailer files" in result.message
         mock_delete.assert_not_called()
 
     @pytest.mark.asyncio
@@ -99,7 +99,7 @@ class TestSetYoutubeId:
 
         mock_update.assert_called_once_with(42, "newvalue123")
         assert mock_event.call_count == 1
-        assert "has been updated" in msg
+        assert "updated the YouTube ID" in msg
 
     def test_the_same_id_is_stored_but_not_tracked(self):
         """Re-saving the same id is not a change worth an event."""
@@ -154,19 +154,19 @@ class TestSetMonitoringBulk:
             msg = media_service.set_monitoring_bulk([1, 2, 3], True)
 
         mock_bulk.assert_called_once_with([1, 2, 3], True)
-        assert msg == "3 Media are now monitored"
+        assert msg == "Trailarr set 3 media items to monitored."
 
     def test_unmonitoring_many_reports_the_count(self):
         with patch(f"{PKG}.media_manager.update_monitoring_bulk") as mock_bulk:
             msg = media_service.set_monitoring_bulk([1, 2], False)
 
         mock_bulk.assert_called_once_with([1, 2], False)
-        assert msg == "2 Media are now unmonitored"
+        assert msg == "Trailarr set 2 media items to unmonitored."
 
     def test_an_empty_list_still_answers(self):
         with patch(f"{PKG}.media_manager.update_monitoring_bulk"):
             assert media_service.set_monitoring_bulk([], True) == (
-                "0 Media are now monitored"
+                "Trailarr set 0 media items to monitored."
             )
 
     def test_no_event_is_tracked_for_a_bulk_change(self):

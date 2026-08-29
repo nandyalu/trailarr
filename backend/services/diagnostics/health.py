@@ -359,7 +359,10 @@ async def _run_doctor_for_all() -> list:
     reports = []
     for connection, result in zip(connections, results):
         if isinstance(result, BaseException):
-            logger.error(f"Doctor failed for '{connection.name}': {result}")
+            logger.error(
+                f"The Connection Doctor could not check '{connection.name}':"
+                f" {result}"
+            )
             continue
         reports.append(result)
     return reports

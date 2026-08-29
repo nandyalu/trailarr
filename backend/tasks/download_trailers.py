@@ -65,7 +65,7 @@ def download_trailer_by_id(
     )
 
     if not media.folder_path:
-        msg = f"{_type} '{media.title}' [{media.id}] has no folder path"
+        msg = f"{_type} '{media.title}' has no folder path."
         raise FolderPathEmptyError(msg)
 
     if not FilesHandler.check_folder_exists(media.folder_path):
@@ -89,7 +89,7 @@ def download_trailer_by_id(
         run_once=True,
         args=(media, profile, retry_count),
     )
-    msg = "Trailer download started in background for "
+    msg = "Trailarr started the trailer download in the background for "
     msg += f"{_type}: '{media.title}' [{media_id}]"
     if yt_id:
         msg += f" from ({yt_id})"

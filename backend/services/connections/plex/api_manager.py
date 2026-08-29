@@ -276,7 +276,8 @@ class PlexAPI:
             return True
         except Exception as e:
             logger.error(
-                f"Failed to add extra '{title}' to item {rating_key}: {e}"
+                f"Trailarr could not add the extra '{title}' to Plex item"
+                f" {rating_key}: {e}"
             )
             return False
 
@@ -290,7 +291,9 @@ class PlexAPI:
             logger.debug(f"Triggered refresh for item {rating_key}")
             return True
         except Exception as e:
-            logger.error(f"Failed to refresh item {rating_key}: {e}")
+            logger.error(
+                f"Trailarr could not refresh the Plex item {rating_key}: {e}"
+            )
             return False
 
     async def refresh_section(self, section_key: str | int) -> bool:
@@ -301,7 +304,10 @@ class PlexAPI:
             logger.debug(f"Triggered refresh for section {section_key}")
             return True
         except Exception as e:
-            logger.error(f"Failed to refresh section {section_key}: {e}")
+            logger.error(
+                f"Trailarr could not refresh the Plex section {section_key}:"
+                f" {e}"
+            )
             return False
 
     async def scan_section_path(
@@ -330,6 +336,7 @@ class PlexAPI:
             return True
         except Exception as e:
             logger.error(
-                f"Failed to scan path '{path}' in section {section_key}: {e}"
+                f"Trailarr could not scan the path '{path}' in the Plex section"
+                f" {section_key}: {e}"
             )
             return False

@@ -157,10 +157,9 @@ class PlexConnectionManager:
             return ""
         best, count = candidates.most_common(1)[0]
         logger.warning(
-            f"Show '{title}': episode folders do not share one show root"
-            f" (common path '{common}' is at or above the library root)."
-            f" Selected '{best}' ({count}/{len(paths)} episodes). Check the"
-            " show for stray or duplicate folders in Plex."
+            f"The episode folders of the show '{title}' do not share one"
+            f" folder. The common path '{common}' is at or above a library"
+            " root."
         )
         return best
 
@@ -225,9 +224,8 @@ class PlexConnectionManager:
             # their files and trailers.
             if plex_folder and self._is_at_or_above_library_root(plex_folder):
                 logger.warning(
-                    f"Skipping '{item.title}': derived folder '{plex_folder}'"
-                    " is at or above a library root. Cannot track this item"
-                    " safely."
+                    f"Trailarr skips '{item.title}'. Its folder '{plex_folder}' is"
+                    " at or above a library root, so Trailarr cannot use it."
                 )
                 continue
             folder_path = (
@@ -392,8 +390,8 @@ class PlexConnectionManager:
                 plex_folder = self._derive_show_folder(paths, item.title)
                 if not plex_folder:
                     logger.warning(
-                        f"Skipping show '{item.title}': no safe show folder"
-                        " can be derived from its episode folders."
+                        f"Trailarr skips the show '{item.title}'. It cannot work out a"
+                        " safe folder from the episode folders."
                     )
                     continue
             else:
@@ -488,9 +486,9 @@ class PlexConnectionManager:
         """
         if self._sections_failed:
             logger.warning(
-                f"Plex connection '{self.connection_name}':"
-                f" {self._sections_failed} section(s) failed to process —"
-                " skipping removal of missing media this run."
+                f"The Plex connection '{self.connection_name}' had"
+                f" {self._sections_failed} sections that Trailarr could not"
+                " process."
             )
             return
         if len(self.media_ids) == 0:
@@ -557,8 +555,7 @@ class PlexConnectionManager:
         # when any section failed — a partial sync must not delete media.
         await self._remove_media_deleted_in_plex()
         logger.info(
-            f"Plex refresh complete for '{self.connection_name}':"
-            f" {self._stats_sections_scanned}/{len(sections)} sections"
-            f" scanned, {self._stats_added} added, {self._stats_updated}"
-            f" updated, {self._stats_linked} newly linked."
+            f"Trailarr refreshed the Plex connection"
+            f" '{self.connection_name}'. It scanned"
+            f" {self._stats_sections_scanned} of {len(sections)} sections."
         )

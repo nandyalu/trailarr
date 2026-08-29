@@ -47,13 +47,15 @@ async def delete_trailers_for_removed_media(
         if await FilesHandler.delete_file(download.path):
             _deleted = True
             logger.info(
-                f"Media '{media.title}' removed from {removed_from}."
-                f" Deleted trailer file '{download.path}'"
+                f"'{media.title}' is no longer in {removed_from}. Trailarr"
+                f" deleted its trailer file '{download.path}'.",
+                **logger.media(media.id),
             )
         else:
             logger.warning(
-                f"Media '{media.title}' removed from {removed_from}."
-                f" Failed to delete trailer file '{download.path}'"
+                f"'{media.title}' is no longer in {removed_from}. Trailarr could"
+                f" not delete its trailer file '{download.path}'.",
+                **logger.media(media.id),
             )
     if not media.folder_path:
         return _deleted
@@ -342,8 +344,8 @@ class BaseConnectionManager(ABC):
             await self._process_media_list(parsed_media)
         media_type = "Movies" if self.is_movie else "Series"
         logger.info(
-            f"{media_type}: {self.created_count} created,"
-            f" {self.updated_count} updated."
+            f"Trailarr added {self.created_count} {media_type} and updated"
+            f" {self.updated_count}."
         )
 
         # Delete any trailer content for media removed from Arr

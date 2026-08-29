@@ -169,7 +169,10 @@ async def record_new_trailer_download(
         if not media_info:
             media_info = get_media_info(file_path)
         if not media_info:
-            logger.error(f"Failed to get media info for {file_path}")
+            logger.error(
+                f"Trailarr could not read the video information of"
+                f" '{file_path}'."
+            )
             return
 
         # Get file timestamps from the actual final path (may differ from original)

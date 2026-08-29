@@ -51,7 +51,7 @@ async def delete_trailers(media_id: int) -> ActionResult:
     media = media_manager.read(media_id)
     if not media.folder_path:
         return ActionResult(
-            f"Media '{media.title}' [{media.id}] has no folder path",
+            f"'{media.title}' has no folder path.",
             ok=False,
         )
     # Use download records as the authoritative source for trailer files
@@ -59,7 +59,7 @@ async def delete_trailers(media_id: int) -> ActionResult:
     live = [d for d in downloads if d.file_exists]
     if not live:
         return ActionResult(
-            f"No trailer files found for media '{media.title}' [{media.id}]",
+            f"Trailarr found no trailer files for '{media.title}'.",
             ok=False,
         )
 
@@ -74,7 +74,7 @@ async def delete_trailers(media_id: int) -> ActionResult:
         source=EventSource.USER,
     )
 
-    msg = f"Trailer for media '{media.title}' [{media.id}] has been deleted."
+    msg = f"Trailarr deleted the trailer for '{media.title}'."
     logger.info(msg)
     return ActionResult(msg, ok=True, reload="media")
 
@@ -108,7 +108,7 @@ def set_youtube_id(media_id: int, yt_id: str) -> str:
             source_detail="UserInput",
         )
 
-    msg = f"YouTube ID for media with ID: {media_id} has been updated."
+    msg = "Trailarr updated the YouTube ID of this media item."
     logger.info(msg)
     return msg
 
@@ -129,7 +129,7 @@ def set_monitoring_bulk(media_ids: list[int], monitor: bool) -> str:
     """
     media_manager.update_monitoring_bulk(media_ids, monitor)
     state = "monitored" if monitor else "unmonitored"
-    return f"{len(media_ids)} Media are now {state}"
+    return f"Trailarr set {len(media_ids)} media items to {state}."
 
 
 def set_monitoring(media_id: int, monitor: bool) -> ActionResult:

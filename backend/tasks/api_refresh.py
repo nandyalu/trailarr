@@ -86,12 +86,12 @@ def api_refresh_by_id_job(connection_id: int):
     try:
         connection = connection_manager.read(connection_id)
     except Exception as e:
-        msg = f"Failed to get connection with ID: {connection_id}"
+        msg = f"Trailarr could not read the connection {connection_id}."
         logger.error(f"{msg}. Error: {e}")
         return msg
 
     # Refresh data from API for the connection
-    msg = f"Refreshing data from API for connection: {connection.name}"
+    msg = f"Trailarr refreshes the data from '{connection.name}'."
     logger.info(msg)
     scheduler.add_task(
         task_name=f"Arr Data Refresh for {connection.name}",
