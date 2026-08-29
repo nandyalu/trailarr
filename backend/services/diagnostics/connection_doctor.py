@@ -40,6 +40,7 @@ from utils.path_utils import (
     normalize_trailing_slash,
     reverse_path_mappings,
 )
+from services.connections import probe
 from services.diagnostics import store
 from services.diagnostics.models import (
     DoctorReport,
@@ -247,7 +248,7 @@ async def _fetch_roots(
 ) -> tuple[list[str], ProbeResult]:
     """Fetch the reported root/library folders from the application."""
     try:
-        roots = await connection_manager.get_rootfolders(connection)
+        roots = await probe.get_rootfolders(connection)
     except Exception as e:
         return [], ProbeResult(
             kind="reachability",

@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from . import base
-from database.models.connection import ArrType, ConnectionCreate, Connection
+from database.models.connection import ConnectionCreate, Connection
 from database.engine import write_session
 
 
@@ -26,21 +26,24 @@ def _save_validated_connection(
     return connection.id
 
 
-async def create(connection: ConnectionCreate) -> tuple[str, int]:
-    """Create a new connection in the database \n
+def create(
+    connection: ConnectionCreate,
+    *,
+    machine_identifier: str | None = None,
+) -> int:
+    """Save a new connection to the database.
+
+    The caller validates the connection against the server first. This
+    function only writes the row. See `services/connections/service.py`.
+
     Args:
-        connection (Connection): The connection to create
+        connection (ConnectionCreate): The connection to save.
+        machine_identifier (str | None): The Plex server identifier, when
+            the caller read one.
+
     Returns:
-        tuple(str, int): The status message of the connection with version if created. \
-            and the id of the created connection. \n
-    Raises:
-        ConnectionError: If the connection is refused / response is not 200
-        ConnectionTimeoutError: If the connection times out
-        InvalidResponseError: If API response is invalid
-        ValidationError: If the connection is invalid
+        int: The id of the created connection.
     """
-    # Validate the connection details, will raise an error if invalid
-    status = await base.validate_connection(connection)
     # Convert path mappings to database objects
     # Calling Connection.model_validate(connection) will raise an error \
     # with the current implementation of PathMappingCRU
@@ -51,12 +54,7 @@ async def create(connection: ConnectionCreate) -> tuple[str, int]:
     db_connection = Connection.model_validate(connection)
     # Add path mappings to database connection
     db_connection.path_mappings = _path_mappings
-    # For Plex connections, fetch and store the server machine identifier
-    if connection.arr_type == ArrType.PLEX:
-        from services.connections.plex.api_manager import PlexAPI
-        plex_api = PlexAPI(connection.url, connection.api_key, identifier="trailarr_1234")
-        db_connection.machine_identifier = await plex_api.get_machine_identifier()
+    db_connection.machine_identifier = machine_identifier
     # Pass the validated connection to the save function
     # to add to the database and return the id of the new connection
-    _id = _save_validated_connection(db_connection)
-    return status, _id
+    return _save_validated_connection(db_connection)

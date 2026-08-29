@@ -2,7 +2,6 @@ from sqlmodel import Session, select
 
 from . import base
 from database.models.connection import (
-    ArrType,
     ConnectionRead,
     ConnectionUpdate,
     PathMapping,
@@ -68,24 +67,30 @@ def add_path_mapping(
 
 
 @write_session
-async def update(
+def update(
     connection_id: int,
     connection_update: ConnectionUpdate,
     *,
+    machine_identifier: str | None = None,
     _session: Session = None,  # type: ignore
 ) -> ConnectionRead:
-    """Update an existing connection in the database\n
+    """Write the changed fields of a connection to the database.
+
+    The caller validates the connection against the server first. This
+    function only writes the row. See `services/connections/service.py`.
+
     Args:
-        connection_id (int): The id of the connection to update
-        connection (Connection): The connection to update
+        connection_id (int): The id of the connection to update.
+        connection_update (ConnectionUpdate): The fields to change.
+        machine_identifier (str | None): The Plex server identifier, when
+            the caller read one. `None` leaves the stored value alone.
         _session (optional): A session to use for the database connection. \
             Defaults to None, in which case a new session is created. \n
+
     Returns:
         ConnectionRead: The updated read-only connection object. \n
+
     Raises:
-        ConnectionError: If the connection is refused / response is not 200
-        ConnectionTimeoutError: If the connection times out
-        InvalidResponseError: If API response is invalid
         ItemNotFoundError: If a connection with provided id does not exist
     """
     # Get the connection from the database
@@ -97,19 +102,9 @@ async def update(
     base._update_path_mappings(
         db_connection, connection_update, _session=_session
     )
-    # Validate the connection details
-    await base.validate_connection(db_connection)
-    # For Plex connections, refresh the machine identifier in case the server changed
-    if db_connection.arr_type == ArrType.PLEX:
-        from services.connections.plex.api_manager import PlexAPI
-
-        _id = f"trailarr_{db_connection.id}"
-        plex_api = PlexAPI(
-            db_connection.url, db_connection.api_key, identifier=_id
-        )
-        db_connection.machine_identifier = (
-            await plex_api.get_machine_identifier()
-        )
+    # Store the Plex machine identifier the caller read, if there is one
+    if machine_identifier is not None:
+        db_connection.machine_identifier = machine_identifier
     # Commit the changes to the database
     _session.add(db_connection)
     _session.commit()

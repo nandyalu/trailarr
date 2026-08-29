@@ -62,7 +62,7 @@ def _patched(roots, samples=None, bases=None, search_roots=None):
     """
     return (
         patch(
-            f"{PKG}.connection_manager.get_rootfolders",
+            f"{PKG}.probe.get_rootfolders",
             return_value=roots,
         ),
         patch(
@@ -544,7 +544,7 @@ class TestReachabilityAndReports:
     async def test_unreachable_api_is_reported_not_raised(self):
         with (
             patch(
-                f"{PKG}.connection_manager.get_rootfolders",
+                f"{PKG}.probe.get_rootfolders",
                 side_effect=ConnectionError("connection refused"),
             ),
             patch(f"{PKG}._arr_side_media_samples", return_value=[]),
@@ -771,7 +771,7 @@ class TestPreviewBeforeSaving:
     async def test_unreachable_connection_is_reported_not_raised(self):
         """A wrong URL must produce a report, not an exception."""
         with patch(
-            f"{PKG}.connection_manager.get_rootfolders",
+            f"{PKG}.probe.get_rootfolders",
             side_effect=ConnectionError("Connection refused"),
         ):
             report = await connection_doctor.preview_doctor(self._unsaved())

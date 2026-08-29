@@ -1,11 +1,6 @@
 from sqlmodel import Session
-from services.connections.plex.api_manager import PlexAPI
-from services.connections.arr.radarr.api_manager import RadarrManager
-from services.connections.arr.sonarr.api_manager import SonarrManager
 from database.models.connection import (
-    ArrType,
     Connection,
-    ConnectionBase,
     ConnectionCreate,
     ConnectionUpdate,
     PathMapping,
@@ -31,40 +26,6 @@ def exists(
     """
     connection = _session.get(Connection, connection_id)
     return bool(connection)
-
-
-async def validate_connection(connection: ConnectionBase) -> str:
-    """Validate the connection details and test the connection to the server \n
-    Args:
-        connection (ConnectionBase): The connection to validate \n
-    Returns:
-        str: The status message of the connection with version if valid. \n
-    Raises:
-        ConnectionError: If the connection is refused / response is not 200
-        ConnectionTimeoutError: If the connection times out
-        InvalidResponseError: If API response is invalid
-        ItemNotFoundError: If a connection object is not provided as input
-    """
-    if not connection:
-        raise ItemNotFoundError("Connection", 0)
-
-    # Test connectivity to server
-    status_message = ""
-    if connection.arr_type == ArrType.RADARR:
-        arr_connection = RadarrManager(connection.url, connection.api_key)
-        status_message = await arr_connection.get_system_status()
-    elif connection.arr_type == ArrType.SONARR:
-        arr_connection = SonarrManager(connection.url, connection.api_key)
-        status_message = await arr_connection.get_system_status()
-    elif connection.arr_type == ArrType.PLEX:
-        plex_connection = PlexAPI(
-            connection.url,
-            connection.api_key,
-            identifier="trailarr_1234",
-        )
-        status_message = await plex_connection.get_system_status()
-
-    return status_message
 
 
 def _convert_path_mappings(

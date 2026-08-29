@@ -1,13 +1,7 @@
 from sqlmodel import Session, select
 
 from . import base
-from services.connections.plex.api_manager import PlexAPI
-from services.connections.arr.radarr.api_manager import RadarrManager
-from services.connections.arr.sonarr.api_manager import SonarrManager
-from exceptions import ItemNotFoundError
 from database.models.connection import (
-    ArrType,
-    ConnectionBase,
     ConnectionRead,
     Connection,
 )
@@ -55,33 +49,3 @@ def read_all(
     ]
 
 
-async def get_rootfolders(connection: ConnectionBase) -> list[str]:
-    """Get the root folders of a connection \n
-    Args:
-        connection (ConnectionBase): The connection to get root folders from \n
-    Raises:
-        ConnectionError: If the connection is refused / response is not 200
-        ConnectionTimeoutError: If the connection times out
-        InvalidResponseError: If the API response is invalid \n
-    Returns:
-        list[str]: The list of root folders
-    """
-    if not connection:
-        raise ItemNotFoundError("Connection", 0)
-
-    root_folders: list[str] = []
-    if connection.arr_type == ArrType.RADARR:
-        arr_connection = RadarrManager(connection.url, connection.api_key)
-        root_folders = await arr_connection.get_rootfolders()
-    elif connection.arr_type == ArrType.SONARR:
-        arr_connection = SonarrManager(connection.url, connection.api_key)
-        root_folders = await arr_connection.get_rootfolders()
-    elif connection.arr_type == ArrType.PLEX:
-        plex_connection = PlexAPI(
-            connection.url,
-            connection.api_key,
-            identifier="trailarr_1234",
-        )
-        root_folders = await plex_connection.get_library_folders()
-
-    return root_folders

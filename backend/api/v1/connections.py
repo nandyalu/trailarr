@@ -6,6 +6,8 @@ from api.v1.models import ErrorResponse
 from api.v1 import websockets
 
 import database.manager.connection as connection_manager
+from services.connections import probe as connection_probe
+from services.connections import service as connection_service
 from database.models.connection import (
     ArrType,
     ConnectionCreate,
@@ -201,7 +203,7 @@ async def get_connections() -> list[ConnectionRead]:
 )
 async def test_connection(connection: ConnectionCreate) -> str:
     try:
-        result = await connection_manager.validate_connection(connection)
+        result = await connection_probe.validate_connection(connection)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
@@ -224,7 +226,7 @@ async def test_connection(connection: ConnectionCreate) -> str:
 )
 async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     try:
-        result = await connection_manager.get_rootfolders(connection)
+        result = await connection_probe.get_rootfolders(connection)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
@@ -250,7 +252,7 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
 )
 async def create_connection(connection: ConnectionCreate) -> str:
     try:
-        result, connection_id = await connection_manager.create(connection)
+        result, connection_id = await connection_service.create(connection)
         await refresh_connection(connection_id)
         if connection.arr_type == ArrType.PLEX:
             ensure_plex_trailer_refresh_scheduled(delay_seconds=180.0)
@@ -307,7 +309,7 @@ async def update_connection(
 ) -> str:
     try:
         # Update the connection in the database
-        await connection_manager.update(connection_id, connection)
+        await connection_service.update(connection_id, connection)
         # Refresh data from API for the connection
         await refresh_connection(connection_id)
         # Check folder visibility and permissions in the background
