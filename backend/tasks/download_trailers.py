@@ -59,7 +59,10 @@ def download_trailer_by_id(
     # Check if trailer profile with the given ID exists
     profile = trailerprofile.get_trailerprofile(profile_id)
 
-    logger.info(f"Downloading trailer for {media.title} [{media_id}]")
+    logger.info(
+        f"Trailarr downloads the trailer for '{media.title}'.",
+        **logger.media(media_id),
+    )
 
     if not media.folder_path:
         msg = f"{_type} '{media.title}' [{media.id}] has no folder path"
@@ -185,7 +188,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
 
     # Return if no media to download
     if not media_trailer_list:
-        logger.info("No missing trailers to download")
+        logger.info("Every monitored media item has its trailer.")
         return
     # Add Task to scheduler to download trailers
     scheduler.add_task(

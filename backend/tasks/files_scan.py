@@ -131,8 +131,10 @@ async def _process_trailer_changes(
                 renamed_count += 1
                 claimed_ids.add(match.id)
                 logger.info(
-                    f"Trailer file renamed: '{match.path}' -> '{t_path}' for"
-                    f" '{media.title}' [{media.id}]"
+                    f"The trailer file for '{media.title}' has a new name."
+                    f" Trailarr recorded the change. Old path:"
+                    f" '{match.path}'. New path: '{t_path}'.",
+                    **logger.media(media.id),
                 )
                 event_manager.track_trailer_renamed(
                     media_id=media.id,
@@ -171,8 +173,9 @@ async def _process_trailer_changes(
         if _profile_id:
             _used_profile_ids.add(_profile_id)
         logger.info(
-            f"Found new trailer file: '{t_path}' for '{media.title}'"
-            f" [{media.id}]"
+            f"Trailarr found a new trailer file for '{media.title}'."
+            f" Path: '{t_path}'.",
+            **logger.media(media.id),
         )
         await record_new_trailer_download(media, _profile_id, t_path)
         event_manager.track_trailer_detected(
@@ -189,8 +192,9 @@ async def _process_trailer_changes(
         if not os.path.exists(download.path):
             missing_count += 1
             logger.info(
-                f"Trailer file deleted for download: '{download.path}' for"
-                f" '{media.title}' [{media.id}]"
+                f"The trailer file for '{media.title}' is gone from disk."
+                f" Trailarr recorded the deletion. Path: '{download.path}'.",
+                **logger.media(media.id),
             )
             download_manager.mark_as_deleted(download.id)
             event_manager.track_trailer_deleted(
@@ -219,8 +223,9 @@ async def _process_trailer_changes(
             if await reanalyze_trailer_download(download, t_path):
                 modified_count += 1
                 logger.info(
-                    f"Trailer file content changed: '{t_path}' for"
-                    f" '{media.title}' [{media.id}]"
+                    f"The trailer file for '{media.title}' changed on disk."
+                    f" Trailarr recorded the change. Path: '{t_path}'.",
+                    **logger.media(media.id),
                 )
                 event_manager.track_trailer_modified(
                     media_id=media.id,
@@ -277,11 +282,12 @@ async def scan_media_folder(
         # TODO: once the planned "Issues" section exists, raise an issue
         # here to surface this to the user instead of only logging it.
         logger.error(
-            f"Disk unavailable — cannot reach storage for '{media.title}' "
-            f"[{media.id}] at '{media.folder_path}'. Skipping this scan to "
-            "avoid marking existing trailers as missing; will retry on the "
-            "next scheduled run. If this is a network drive, check the "
-            "connection."
+            f"Trailarr cannot reach the storage of '{media.title}' at "
+            f"'{media.folder_path}'. Trailarr skips this scan, so that it "
+            "does not mark the trailers as missing. It tries again at the "
+            "next scan. If this is a network drive, check the "
+            "connection.",
+            **logger.media(media.id),
         )
         return 0, 0, 0, 0, 1
 
@@ -307,13 +313,13 @@ async def scan_all_media_folders(
 ) -> None:
     """Scan the disk for all media folders to find media files and trailers \
         and update the database with download records."""
-    logger.info("Scanning disk for files and trailers.")
+    logger.info("Trailarr scans the disk for media files and trailers.")
 
     force_full_scan = app_settings.files_full_scan
     if force_full_scan:
         logger.info(
-            "FILES_FULL_SCAN is enabled — running full scan,"
-            " bypassing folder-change check."
+            "FILES_FULL_SCAN is on. Trailarr scans every folder, and does"
+            " not check first whether a folder changed."
         )
 
     # Get all media items
@@ -331,7 +337,7 @@ async def scan_all_media_folders(
     unavailable_count = 0
     for media in all_media():
         if _stop_event and _stop_event.is_set():
-            logger.info("Stop event set, terminating scan of media folders.")
+            logger.info("Trailarr stopped the disk scan. A stop was requested.")
             return
 
         try:
@@ -346,18 +352,18 @@ async def scan_all_media_folders(
             unavailable_count += unavailable
         except Exception as e:
             logger.error(
-                f"Error scanning media folder for '{media.title}'"
-                f" [{media.id}]: {e}"
+                f"Trailarr could not scan the folder of '{media.title}': {e}",
+                **logger.media(media.id),
             )
 
     # Auto-reset so the optimisation resumes on future scans
     if force_full_scan:
         app_settings.files_full_scan = False
-        logger.info("FILES_FULL_SCAN reset to False after full scan.")
+        logger.info("Trailarr set FILES_FULL_SCAN back to off. The full scan is done.")
 
     logger.info(
-        "Completed scanning disk for files and trailers. "
-        f"Total media scanned: {media_count}. "
+        "Trailarr finished the disk scan. "
+        f"It scanned {media_count} media items. "
         f"New trailers found: {new_trailers}. "
         f"Missing trailers: {missing_trailers}. "
         f"Renamed trailers: {renamed_trailers}. "
@@ -368,8 +374,8 @@ async def scan_all_media_folders(
         # TODO: once the planned "Issues" section exists, raise an issue
         # here to surface this to the user instead of only logging it.
         logger.warning(
-            f"{unavailable_count} media item(s) were skipped this run "
-            "because their storage looked unreachable (e.g. a disconnected "
-            "network drive) — see earlier errors for which ones. No "
-            "existing trailers were marked missing for them."
+            f"Trailarr skipped {unavailable_count} media items, because it "
+            "could not reach their storage. A disconnected network drive is "
+            "the usual cause. The errors above say which items. Trailarr did "
+            "not mark any of their trailers as missing."
         )

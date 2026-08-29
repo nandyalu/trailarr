@@ -15,26 +15,26 @@ logger = ModuleLogger("APIRefreshTasks")
 
 
 async def api_refresh(_stop_event: threading.Event | None = None) -> None:
-    logger.info("Refreshing data from APIs")
+    logger.info("Trailarr refreshes the data from every connection.")
     # Get all connections from database
     connections = connection_manager.read_all()
     if len(connections) == 0:
-        logger.warning("No connections found in the database")
+        logger.warning("There are no connections to refresh.")
         return
 
     # Refresh data from API for each connection
     for connection in connections:
         if _stop_event and _stop_event.is_set():
-            logger.info("API Refresh stopped due to stop event.")
+            logger.info("Trailarr stopped the refresh. A stop was requested.")
             return
         await api_refresh_by_id(connection, image_refresh=False)
 
     # Refresh images after API refresh to download/update images for new media
     if _stop_event and _stop_event.is_set():
-        logger.info("API Refresh stopped due to stop event.")
+        logger.info("Trailarr stopped the refresh. A stop was requested.")
         return
     await refresh_images(recent_only=True, _stop_event=_stop_event)
-    logger.info("API Refresh completed!")
+    logger.info("Trailarr refreshed the data from every connection.")
 
 
 async def api_refresh_by_id(
@@ -42,7 +42,7 @@ async def api_refresh_by_id(
     image_refresh=True,
     _stop_event: threading.Event | None = None,
 ) -> None:
-    logger.info(f"Refreshing data from API for connection: {connection.name}")
+    logger.info(f"Trailarr refreshes the data from '{connection.name}'.")
     # Get connection manager based on connection type
     if connection.arr_type == ArrType.SONARR:
         connection_db_manager = SonarrConnectionManager(connection)
@@ -52,20 +52,20 @@ async def api_refresh_by_id(
         connection_db_manager = PlexConnectionManager(connection)
     else:
         logger.warning(
-            f"Invalid connection type: {connection.arr_type} for connection:"
-            f" {connection}"
+            f"Trailarr cannot refresh '{connection.name}'. The connection"
+            f" type '{connection.arr_type}' is not valid."
         )
         return
 
     # Refresh data from API
     await connection_db_manager.refresh()
-    logger.info(f"Data refreshed for connection: {connection.name}")
+    logger.info(f"Trailarr refreshed the data from '{connection.name}'.")
 
     # Refresh images after API refresh to download/update images for new media
     if image_refresh:
         await refresh_images(recent_only=True, _stop_event=_stop_event)
-        logger.info("Images refreshed")
-        logger.info("API Refresh completed!")
+        logger.info("Trailarr refreshed the images.")
+        logger.info("Trailarr refreshed the data from every connection.")
 
 
 @with_logging_context
@@ -81,7 +81,7 @@ async def _api_refresh_by_id_job(
 
 def api_refresh_by_id_job(connection_id: int):
 
-    logger.info(f"Refreshing data from API for connection ID: {connection_id}")
+    logger.info(f"Trailarr refreshes the data from connection {connection_id}.")
     # Get connection from database
     try:
         connection = connection_manager.read(connection_id)
@@ -114,12 +114,14 @@ async def _delete_connection_job(
 ) -> None:
     """Background task: delete a connection and all its cascaded data."""
     logger.info(
-        f"Deleting connection '{connection_name}' (id={connection_id})"
+        f"Trailarr deletes the connection '{connection_name}'"
+        f" (id={connection_id})."
     )
     try:
         connection_manager.delete(connection_id)
         logger.info(
-            f"Connection '{connection_name}' (id={connection_id}) deleted"
+            f"Trailarr deleted the connection '{connection_name}'"
+            f" (id={connection_id})."
         )
         await ws_manager.broadcast(
             f"Connection '{connection_name}' deleted successfully!",
@@ -128,7 +130,7 @@ async def _delete_connection_job(
         )
     except Exception as e:
         logger.error(
-            f"Failed to delete connection '{connection_name}'"
+            f"Trailarr could not delete the connection '{connection_name}'"
             f" (id={connection_id}): {e}"
         )
         await ws_manager.broadcast(
@@ -146,8 +148,8 @@ def delete_connection_job(connection_id: int) -> str:
     connection = connection_manager.read(connection_id)  # raises if not found
     task_name = f"Delete Connection '{connection.name}'"
     logger.info(
-        f"Scheduling deletion for connection '{connection.name}'"
-        f" (id={connection_id})"
+        f"Trailarr will delete the connection '{connection.name}'"
+        f" (id={connection_id}) in the background."
     )
     scheduler.add_task(
         task_name=task_name,

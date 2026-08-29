@@ -56,8 +56,8 @@ async def _pass_full_scan_guard() -> None:
     scans keep reconciling the remainder.
     """
     logger.info(
-        "Running one full disk scan before the first download run."
-        " The scan records trailers that are already on disk as downloads."
+        "Trailarr runs one full disk scan before the first download."
+        " The scan records the trailers that are already on disk."
     )
     # Import here to avoid a circular import (files_scan → profiles utils)
     from tasks.files_scan import scan_all_media_folders
@@ -84,23 +84,23 @@ async def run_startup_passes(
     completed = startuppass_manager.completed_names()
     for name, func, policy in REGISTRY:
         if _stop_event and _stop_event.is_set():
-            logger.info("Stop event set, aborting startup passes.")
+            logger.info("Trailarr stopped the startup passes. A stop was requested.")
             return
         recorded = name in completed
         if recorded and policy == "once":
             continue
-        logger.info(f"Running startup pass '{name}'...")
+        logger.info(f"Trailarr runs the startup pass '{name}'.")
         try:
             await func()
         except Exception as e:
             logger.exception(
-                f"Startup pass '{name}' failed: {e} — remaining passes"
-                " skipped; they will retry on next startup."
+                f"The startup pass '{name}' failed: {e}. Trailarr skipped"
+                " the passes after it. They run again at the next start."
             )
             return
         if not recorded:
             startuppass_manager.mark_completed(name)
-            logger.info(f"Startup pass '{name}' completed and recorded.")
+            logger.info(f"Trailarr completed the startup pass '{name}' and recorded it.")
 
 
 def downloads_ready() -> bool:

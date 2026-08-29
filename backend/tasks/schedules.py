@@ -172,7 +172,7 @@ def schedule_all_tasks() -> None:
     Falls back to hard-coded defaults and seeds the DB for any task
     that has no persisted configuration yet.
     """
-    logger.info("Scheduling all background tasks!")
+    logger.info("Trailarr schedules the background tasks.")
     for defaults in _build_defaults():
         task_key: str = defaults["task_key"]  # type: ignore
         config = _get_or_create_config(task_key, defaults)
@@ -201,7 +201,7 @@ def schedule_all_tasks() -> None:
             delay=config.delay_seconds,
             run_once=False,
         )
-        logger.info("Scheduled 'Refresh Plex Trailer Flags' task.")
+        logger.info("Trailarr scheduled the task 'Refresh Plex Trailer Flags'.")
 
     # Startup passes (registry in core/tasks/startup_passes.py): attribution
     # + flag healing, and the pre-download full-scan upgrade guard. Ordered,
@@ -217,7 +217,7 @@ def schedule_all_tasks() -> None:
         run_once=True,
     )
 
-    logger.info("All tasks scheduled!")
+    logger.info("Trailarr scheduled every background task.")
 
 
 def ensure_plex_trailer_refresh_scheduled(
@@ -244,8 +244,8 @@ def ensure_plex_trailer_refresh_scheduled(
             run_once=False,
         )
         logger.info(
-            "Registered 'Refresh Plex Trailer Flags' task (first run in"
-            f" {delay_seconds}s)."
+            "Trailarr registered the task 'Refresh Plex Trailer Flags'."
+            f" It runs first in {delay_seconds} seconds."
         )
     else:
         scheduler.add_task(
@@ -256,8 +256,8 @@ def ensure_plex_trailer_refresh_scheduled(
             run_once=True,
         )
         logger.info(
-            "Triggered one-shot 'Refresh Plex Trailer Flags' run in"
-            f" {delay_seconds}s."
+            "Trailarr will run 'Refresh Plex Trailer Flags' once in"
+            f" {delay_seconds} seconds."
         )
 
 
@@ -295,8 +295,8 @@ def reschedule_task(
         run_once=False,
     )
     logger.info(
-        f"Task '{old_name}' rescheduled as '{updated.task_name}'"
-        f" (key={task_key!r})"
+        f"Trailarr scheduled the task '{old_name}' again with the name"
+        f" '{updated.task_name}' (key={task_key!r})."
     )
     return updated
 

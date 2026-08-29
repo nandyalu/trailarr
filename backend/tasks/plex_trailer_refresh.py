@@ -38,7 +38,9 @@ async def _refresh_media_item(
         return has_trailer, False
     except Exception as e:
         logger.warning(
-            f"Failed to refresh plex_trailer for '{media.title}' [{media.id}]: {e}"
+            f"Trailarr could not refresh the Plex trailer flag for"
+            f" '{media.title}': {e}",
+            **logger.media(media.id),
         )
         return False, True
 
@@ -56,12 +58,14 @@ async def refresh_plex_trailer_flags(
 
     if not api_cache:
         logger.warning(
-            "No Plex connections found, skipping Plex trailer refresh"
+            "There are no Plex connections. Trailarr skips the refresh of"
+            " the Plex trailer flags."
         )
         return
 
     logger.info(
-        f"Refreshing Plex trailer flags for {len(api_cache)} Plex connection(s)"
+        f"Trailarr refreshes the Plex trailer flags for {len(api_cache)}"
+        " Plex connections."
     )
 
     seen_ids: set[int] = set()
@@ -72,7 +76,8 @@ async def refresh_plex_trailer_flags(
     for media in media_manager.read_all_generator(plex_linked_only=True):
         if _stop_event and _stop_event.is_set():
             logger.info(
-                "Stop event set, terminating Plex trailer flag refresh."
+                "Trailarr stopped the refresh of the Plex trailer flags."
+                " A stop was requested."
             )
             break
         if media.id in seen_ids:
@@ -106,6 +111,6 @@ async def refresh_plex_trailer_flags(
         total_updated += len(pending_updates)
 
     logger.info(
-        "Plex trailer flag refresh complete."
-        f" Updated: {total_updated}, Errors: {errors}"
+        f"Trailarr refreshed the Plex trailer flags. It changed"
+        f" {total_updated} media items. {errors} failed."
     )

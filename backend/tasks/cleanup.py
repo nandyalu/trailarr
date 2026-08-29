@@ -19,11 +19,11 @@ async def delete_old_logs():  # pragma: no cover
     Delete old log files from the '/config/logs' directory.
     This function is intended to be run periodically to keep the log directory clean.
     """
-    logger.info("Running old logs cleanup task...")
+    logger.info("Trailarr removes the old log entries.")
     deleted_count = await logs_manager.delete_old_logs(30)
     logger.info(
-        f"Old logs cleanup task completed. Deleted {deleted_count} logs older"
-        " than 30 days."
+        f"Trailarr removed {deleted_count} log entries that were more than"
+        " 30 days old."
     )
     return None
 
@@ -47,12 +47,12 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
     Also cleanup any residual files left in '/tmp' directory.
     """
-    logger.info("Running trailer cleanup task...")
+    logger.info("Trailarr checks the trailer files on disk.")
     # Get all media from the database that are downloaded
     media_with_trailers = media_manager.read_all_generator(
         downloaded_only=True
     )
-    logger.info("Analyzing media items with trailers.")
+    logger.info("Trailarr examines every media item that has a trailer.")
     # Analyze the trailer files and remove the ones without audio
     analyzed_count = 0
     file_missing_count = 0
@@ -61,11 +61,15 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
         # Skip media with no downloads
         if not media.downloads:
             continue
-        logger.debug(f"Analyzing trailers for {media.title}")
+        logger.debug(
+                f"Trailarr examines the trailers of '{media.title}'.",
+                **logger.media(media.id),
+            )
         for download in media.downloads:
             if _stop_event and _stop_event.is_set():
                 logger.info(
-                    "Stop event set, terminating trailer cleanup task."
+                    "Trailarr stopped the trailer check. A stop was"
+                    " requested."
                 )
                 return
 
@@ -78,8 +82,9 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
             if not _path or not await aiofiles.os.path.exists(_path):
                 file_missing_count += 1
                 logger.info(
-                    f"Trailer file '{_path}' does not exist on disk for"
-                    f" '{media.title}' [{media.id}]. Marking as deleted."
+                    f"The trailer file for '{media.title}' is not on disk."
+                    f" Trailarr marks it as deleted. Path: '{_path}'.",
+                    **logger.media(media.id),
                 )
                 download.file_exists = False
                 download_manager.mark_as_deleted(download.id)
@@ -97,16 +102,19 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
             verified = video_analysis.verify_trailer_streams(_path)
             if verified is None:
                 logger.info(
-                    f"Could not analyze trailer for {media.title} [{media.id}]"
-                    f" at path '{_path}'. Skipping deletion."
+                    f"Trailarr could not examine the trailer for"
+                    f" '{media.title}'. Trailarr keeps the file."
+                    f" Path: '{_path}'.",
+                    **logger.media(media.id),
                 )
                 continue
             elif verified is False:
                 verification_failed_count += 1
                 if app_settings.delete_corrupted_trailers:
                     logger.info(
-                        "Deleting trailer with missing audio/video for"
-                        f" {media.title} [{media.id}] at path '{_path}'."
+                        f"The trailer for '{media.title}' has no audio or no"
+                        f" video. Trailarr deletes it. Path: '{_path}'.",
+                        **logger.media(media.id),
                     )
                     await delete_trailer(_path, download.id)
                     download.file_exists = False
@@ -119,13 +127,15 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
                     )
                 else:
                     logger.warning(
-                        "Corrupted trailer found (missing audio/video) for"
-                        f" {media.title} [{media.id}] at path '{_path}',"
-                        " but deletion is disabled. Please check manually."
+                        f"The trailer for '{media.title}' has no audio or"
+                        f" no video. Trailarr keeps it, because the deletion"
+                        f" of bad trailers is off. Examine the file"
+                        f" yourself. Path: '{_path}'.",
+                        **logger.media(media.id),
                     )
     logger.info(
-        f"Trailer cleanup task completed. Analyzed {analyzed_count} trailers."
-        f" Missing files: {file_missing_count}."
-        f" Verification failed: {verification_failed_count}."
+        f"Trailarr examined {analyzed_count} trailers."
+        f" {file_missing_count} files were not on disk."
+        f" {verification_failed_count} files did not pass the check."
     )
     return None

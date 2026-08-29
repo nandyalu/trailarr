@@ -16,7 +16,7 @@ async def refresh_images(
         needed. This task should be run periodically to ensure that \
         images are up-to-date.
     """
-    logger.info("Refreshing images in the system")
+    logger.info("Trailarr refreshes the images.")
 
     await refresh_and_save_media_images(
         is_movie=True, recent_only=recent_only, _stop_event=_stop_event
@@ -26,7 +26,7 @@ async def refresh_images(
         is_movie=False, recent_only=recent_only, _stop_event=_stop_event
     )
 
-    logger.info("Image refresh complete!")
+    logger.info("Trailarr refreshed the images.")
     return
 
 
@@ -49,7 +49,7 @@ async def refresh_and_save_media_images(
     # Create MediaImage objects for each movie/series
     for db_media in db_media_list:
         if _stop_event and _stop_event.is_set():
-            logger.info("Image refresh stopped due to stop event.")
+            logger.info("Trailarr stopped the image refresh. A stop was requested.")
             return
         # Build extra headers for Plex-hosted images
         plex_headers: dict | None = None
@@ -84,7 +84,7 @@ async def refresh_and_save_media_images(
     # refresh_media_images modifies the MediaImage objects in place
     await refresh_media_images(is_movie, media_image_list, _stop_event)
     if _stop_event and _stop_event.is_set():
-        logger.info("Image refresh stopped due to stop event.")
+        logger.info("Trailarr stopped the image refresh. A stop was requested.")
         return
     logger.debug(
         f"Finished refreshing images for {'movies' if is_movie else 'series'}"

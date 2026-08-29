@@ -25,14 +25,14 @@ async def attribute_unattributed_downloads() -> None:
     """
     unattributed = download_manager.read_unattributed()
     if not unattributed:
-        logger.info("No unattributed trailer downloads found.")
+        logger.info("Every trailer download has a profile.")
         return
 
     profiles = trailerprofile_manager.get_trailerprofiles()
     if not profiles:
         logger.warning(
-            f"Found {len(unattributed)} unattributed trailer download(s),"
-            " but no trailer profiles exist to claim them."
+            f"{len(unattributed)} trailer downloads have no profile, and"
+            " there are no trailer profiles to give them."
         )
         return
 
@@ -47,7 +47,9 @@ async def attribute_unattributed_downloads() -> None:
             media = media_manager.read(media_id)
         except Exception as e:
             logger.warning(
-                f"Skipping attribution for media [{media_id}]: {e}"
+                f"Trailarr could not give a profile to the downloads of"
+                f" this media item: {e}",
+                **logger.media(media_id),
             )
             unclaimed_count += len(downloads)
             continue
@@ -80,23 +82,25 @@ async def attribute_unattributed_downloads() -> None:
                     reason = "no profile filters match this media"
                 logger.info(
                     f"Download '{download.file_name}' of '{media.title}'"
-                    f" [{media_id}] left unattributed: {reason}. Assign a"
-                    " profile manually from Media Details if needed."
+                    f" has no profile: {reason}. You can set a profile on"
+                    " the Media Details page.",
+                    **logger.media(media_id),
                 )
                 continue
             profile = available_profiles.pop(0)
             download_manager.update_profile_id(download.id, profile.id)
             claimed_count += 1
             logger.info(
-                f"Attributed download '{download.file_name}' of"
-                f" '{media.title}' [{media_id}] to profile"
-                f" '{profile.customfilter.filter_name}' [{profile.id}]"
+                f"Trailarr gave the download '{download.file_name}' of"
+                f" '{media.title}' to the trailer profile"
+                f" '{profile.customfilter.filter_name}'.",
+                **logger.media(media_id),
             )
 
     logger.info(
-        f"Download attribution complete: {claimed_count} download(s)"
-        f" attributed, {unclaimed_count} left unattributed (see log lines"
-        " above for per-download reasons)."
+        f"Trailarr gave a profile to {claimed_count} downloads."
+        f" {unclaimed_count} downloads still have none. The lines above say"
+        " why for each one."
     )
 
 
