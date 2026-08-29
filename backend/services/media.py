@@ -113,6 +113,25 @@ def set_youtube_id(media_id: int, yt_id: str) -> str:
     return msg
 
 
+def set_monitoring_bulk(media_ids: list[int], monitor: bool) -> str:
+    """Turn monitoring on or off for several media items at once.
+
+    No event is tracked here. The single-item path tracks one because it
+    knows the value before the change; a bulk update does not read each row
+    first, and doing so would cost one query per item.
+
+    Args:
+        media_ids (list[int]): The media items to change.
+        monitor (bool): True to monitor them, False to stop.
+
+    Returns:
+        str: A line that says how many changed.
+    """
+    media_manager.update_monitoring_bulk(media_ids, monitor)
+    state = "monitored" if monitor else "unmonitored"
+    return f"{len(media_ids)} Media are now {state}"
+
+
 def set_monitoring(media_id: int, monitor: bool) -> ActionResult:
     """Turn monitoring on or off for one media item.
 

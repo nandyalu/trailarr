@@ -589,6 +589,31 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     return ""
 
 
+async def _delete_trailer_and_report(media_id: int) -> str:
+    """Delete the trailers of one media item and tell the user.
+
+    The batch action shares this, so a batch delete still sends one message
+    per item. It is a plain function rather than the endpoint itself: a
+    route handler calling another route handler hides where the work is.
+    """
+    logger.info(f"Deleting trailer for media with ID: {media_id}")
+    try:
+        result = await media_service.delete_trailers(media_id)
+        await websockets.ws_manager.broadcast(
+            result.message,
+            "Success" if result.ok else "Error",
+            reload=result.reload,
+        )
+        return result.message
+    except Exception as e:
+        await websockets.ws_manager.broadcast(
+            "Error deleting trailer!", "Error", reload="media"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
+
+
 @media_router.delete(
     "/{media_id}/trailer",
     status_code=status.HTTP_200_OK,
@@ -609,22 +634,7 @@ async def delete_media_trailer(media_id: int) -> str:
     Returns:
         str: Deleting trailer message.
     """
-    logger.info(f"Deleting trailer for media with ID: {media_id}")
-    try:
-        result = await media_service.delete_trailers(media_id)
-        await websockets.ws_manager.broadcast(
-            result.message,
-            "Success" if result.ok else "Error",
-            reload=result.reload,
-        )
-        return result.message
-    except Exception as e:
-        await websockets.ws_manager.broadcast(
-            "Error deleting trailer!", "Error", reload="media"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-        )
+    return await _delete_trailer_and_report(media_id)
 
 
 @media_router.post(
@@ -653,14 +663,12 @@ async def batch_update_media(update: BatchUpdate) -> None:
     try:
         msg = ""
         if update.action == "monitor":
-            media_manager.update_monitoring_bulk(update.media_ids, True)
-            msg = f"{len(update.media_ids)} Media are now monitored"
+            msg = media_service.set_monitoring_bulk(update.media_ids, True)
         elif update.action == "unmonitor":
-            media_manager.update_monitoring_bulk(update.media_ids, False)
-            msg = f"{len(update.media_ids)} Media are now unmonitored"
+            msg = media_service.set_monitoring_bulk(update.media_ids, False)
         elif update.action == "delete":
             for media_id in update.media_ids:
-                await delete_media_trailer(media_id)
+                await _delete_trailer_and_report(media_id)
         elif update.action == "download":
             if not update.profile_id or update.profile_id <= 0:
                 msg = "No trailer profile ID provided!"

@@ -145,3 +145,37 @@ class TestSetMonitoring:
 
         assert result.ok is False
         mock_event.assert_not_called()
+
+
+class TestSetMonitoringBulk:
+
+    def test_monitoring_many_reports_the_count(self):
+        with patch(f"{PKG}.media_manager.update_monitoring_bulk") as mock_bulk:
+            msg = media_service.set_monitoring_bulk([1, 2, 3], True)
+
+        mock_bulk.assert_called_once_with([1, 2, 3], True)
+        assert msg == "3 Media are now monitored"
+
+    def test_unmonitoring_many_reports_the_count(self):
+        with patch(f"{PKG}.media_manager.update_monitoring_bulk") as mock_bulk:
+            msg = media_service.set_monitoring_bulk([1, 2], False)
+
+        mock_bulk.assert_called_once_with([1, 2], False)
+        assert msg == "2 Media are now unmonitored"
+
+    def test_an_empty_list_still_answers(self):
+        with patch(f"{PKG}.media_manager.update_monitoring_bulk"):
+            assert media_service.set_monitoring_bulk([], True) == (
+                "0 Media are now monitored"
+            )
+
+    def test_no_event_is_tracked_for_a_bulk_change(self):
+        """The single-item path tracks one; a bulk update does not read each
+        row first, so it cannot know what changed."""
+        with (
+            patch(f"{PKG}.media_manager.update_monitoring_bulk"),
+            patch(f"{PKG}.event_manager.track_monitor_changed") as mock_event,
+        ):
+            media_service.set_monitoring_bulk([1, 2, 3], True)
+
+        mock_event.assert_not_called()
