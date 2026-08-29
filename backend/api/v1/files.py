@@ -1,4 +1,6 @@
 import os
+from pathlib import PurePath
+
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
@@ -15,8 +17,10 @@ files_router = APIRouter(prefix="/files", tags=["Files"])
 
 CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
 
+# System folders that a request path must never point into. These are the
+# Linux ones. Windows keeps its system folders under a drive letter, which
+# is not fixed, so those are matched by name in UNSAFE_WINDOWS_ROOT_NAMES.
 UNSAFE_PATHS = [
-    ".",
     "/app",
     "/bin",
     "/boot",
@@ -27,6 +31,14 @@ UNSAFE_PATHS = [
     "/var",
 ]
 
+# Folder names directly under a Windows drive that hold the system.
+UNSAFE_WINDOWS_ROOT_NAMES = frozenset(
+    {"windows", "program files", "program files (x86)", "programdata"}
+)
+
+# The shortest path a media file can have: a root, a folder, and the file.
+MIN_PATH_PARTS = 4
+
 
 def _is_path_safe(path: str) -> bool:
     """Check if the path is safe.\n
@@ -34,14 +46,29 @@ def _is_path_safe(path: str) -> bool:
         path (str): Path to check.
     Returns:
         bool: True if the path is safe, False otherwise."""
-    norm_path = os.path.normpath(path)
-    abs_path = os.path.abspath(norm_path)
-    # Check if path is in unsafe paths
+    if not path:
+        return False
+    # normpath resolves any '..' in the path before it is checked
+    pure_path = PurePath(os.path.normpath(path))
+    # A relative path would be resolved against the working directory, which
+    # the caller does not choose. Refuse it instead of guessing.
+    if not pure_path.is_absolute():
+        return False
+    # Compare whole folder names. A plain string prefix would also refuse a
+    # real library at /variable/media, for starting with '/var'.
     for unsafe_path in UNSAFE_PATHS:
-        if abs_path.startswith(unsafe_path):
+        unsafe = PurePath(unsafe_path)
+        if pure_path == unsafe or unsafe in pure_path.parents:
             return False
-    # Check if path is atleast 3 levels deep
-    if abs_path.count("/") < 3:
+    # On Windows the system folders sit under a drive letter
+    if (
+        len(pure_path.parts) > 1
+        and pure_path.parts[1].lower() in UNSAFE_WINDOWS_ROOT_NAMES
+    ):
+        return False
+    # Check the path is deep enough. Count folders, not '/' characters:
+    # a Windows path is separated by backslashes and has no '/' at all.
+    if len(pure_path.parts) < MIN_PATH_PARTS:
         return False
     return True
 

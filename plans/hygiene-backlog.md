@@ -40,6 +40,33 @@ none justify their own release. Check items off with the release that shipped th
   misattributed trailer). The harness now takes per-fixture media counts and probes
   that a library-root row never captures media under it — verified to fail when the
   guard is removed.
+- [ ] **H13 — `_is_path_safe` should use an allowlist** (`api/v1/files.py`). The
+  cross-platform bugs are FIXED in v0.11.4; the design point is still open.
+
+  Fixed in v0.11.4: the guard refused **every** path on Windows, because its depth
+  check counted `/` characters and a Windows path has none — so a Windows direct
+  install (shipped v0.11.1) could list a folder but could not play, read, rename or
+  delete a trailer. The prefix match also refused real libraries at `/variable/media`
+  or `/usr-data/media` for merely starting with an unsafe string, and a relative path
+  was judged by wherever the process happened to be running. It now compares whole
+  path components with `PurePath`, matches Windows system folders by name under the
+  drive, counts components rather than slashes, and refuses relative paths outright.
+  Covered by `tests/api/test_files_path_safety.py` (34 tests), which fail against the
+  old implementation in 8 places.
+
+  Still open: it remains a **denylist** of system folders. An allowlist built from the
+  connection root folders (plus the log folder, which `/files/read` needs) would be
+  stronger — Trailarr already knows where its media lives. `Path.resolve()` with
+  `Path.is_relative_to()` is the tool. Kept out of the v0.11.4 patch on purpose: an
+  allowlist can refuse a path that works today, which is not a change to make inside a
+  release that is already in its PR.
+
+  Also still open: `get_files_simple(path)` takes a caller path and lists it with **no
+  check at all**. Applying the current guard there would break the folder browser,
+  which legitimately lists shallow paths such as `/media/movies` that the depth
+  heuristic refuses. Fix it together with the allowlist, which does not need a depth
+  heuristic.
+
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
   autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at
