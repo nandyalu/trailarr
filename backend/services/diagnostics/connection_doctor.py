@@ -22,6 +22,7 @@ NOTE (phase-07 move map): this package moves to `services/diagnostics/`
 in the backend reorganization.
 """
 
+import asyncio
 import os
 import re
 from collections import deque
@@ -151,6 +152,76 @@ async def run_doctor(connection_id: int) -> DoctorReport:
     """Run all probes for a saved connection and store the report."""
     connection = connection_manager.read(connection_id)
     return await run_probes(connection, connection_id, store_report=True)
+
+
+async def run_doctor_for_all() -> list[DoctorReport]:
+    """Run the Connection Doctor for every connection, all at once.
+
+    Saves the user from opening one dialog per connection. A connection
+    whose check fails is logged and left out of the list, so one bad
+    connection does not hide the reports for the others.
+
+    Returns:
+        list[DoctorReport]: One report per connection that was checked.
+    """
+    connections = connection_manager.read_all()
+    results = await asyncio.gather(
+        *(run_doctor(c.id) for c in connections),
+        return_exceptions=True,
+    )
+    reports: list[DoctorReport] = []
+    for connection, result in zip(connections, results):
+        if isinstance(result, BaseException):
+            logger.error(f"Doctor failed for '{connection.name}': {result}")
+            continue
+        reports.append(result)
+    return reports
+
+
+async def apply_mapping_and_recheck(
+    connection_id: int, path_from: str, path_to: str
+) -> DoctorReport:
+    """Save a suggested path mapping and check the connection again.
+
+    Adds the PathMapping row, or updates the row that already has the same
+    `path_from`, then gives back a fresh report.
+
+    Args:
+        connection_id (int): The connection to change.
+        path_from (str): The path as the Arr or Plex server sees it.
+        path_to (str): The path as Trailarr sees it.
+
+    Returns:
+        DoctorReport: The report from after the change.
+    """
+    connection_manager.add_path_mapping(connection_id, path_from, path_to)
+    return await run_doctor(connection_id)
+
+
+# Strong references to running background tasks. The event loop only
+# keeps a weak reference, so a task without one can be garbage
+# collected while it runs, and the check never finishes.
+_background_tasks: set[asyncio.Task] = set()
+
+
+def schedule_doctor(connection_id: int) -> None:
+    """Run the Connection Doctor in the background after a save.
+
+    A failed check must never fail the save — errors show up in the
+    report itself. An unexpected error goes only to the log.
+    """
+
+    async def _run() -> None:
+        try:
+            await run_doctor(connection_id)
+        except Exception as e:
+            logger.error(
+                f"Doctor run failed for connection {connection_id}: {e}"
+            )
+
+    task = asyncio.create_task(_run())
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
 
 async def preview_doctor(
