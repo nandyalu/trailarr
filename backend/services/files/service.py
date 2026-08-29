@@ -37,7 +37,16 @@ def is_path_safe(path: str) -> bool:
     Args:
         path (str): Path to check.
     Returns:
-        bool: True if the path is safe, False otherwise."""
+        bool: True if the path is safe, False otherwise.
+
+    TODO (hygiene H13): this refuses every path on Windows. The last check
+    counts forward slashes, and Windows paths have none, so a direct install
+    there cannot play, rename or delete a trailer. The list of unsafe
+    folders is POSIX-only for the same reason, the prefix match also blocks
+    real paths such as /variable/media, and a relative path is judged by
+    where the process happens to be running. The fix is an allowlist built
+    from the connection root folders, not this denylist. Do not extend the
+    list below — replace the approach. See plans/hygiene-backlog.md."""
     norm_path = os.path.normpath(path)
     abs_path = os.path.abspath(norm_path)
     # Check if path is in unsafe paths

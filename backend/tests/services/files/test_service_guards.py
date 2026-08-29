@@ -78,6 +78,64 @@ class TestIsPathSafe:
         assert files_service.is_path_safe("/app/clip.mkv") is False
 
 
+class TestWindowsPathsAreRefused:
+    """Records hygiene H13: the guard refuses every Windows path.
+
+    The depth check counts forward slashes. On Windows os.path is ntpath, so
+    normpath gives back backslashes and the count is zero. A direct install
+    on Windows therefore cannot play, rename or delete a trailer.
+
+    These tests assert the behavior as it is today so the bug is visible in
+    the suite. When H13 is fixed they must be inverted, not deleted.
+    """
+
+    @staticmethod
+    def _is_path_safe_on_windows(path: str) -> bool:
+        """Run the same rules with ntpath, which is what os.path is on Windows."""
+        import ntpath
+
+        norm_path = ntpath.normpath(path)
+        for unsafe_path in files_service.UNSAFE_PATHS:
+            if norm_path.startswith(unsafe_path):
+                return False
+        if norm_path.count("/") < 3:
+            return False
+        return True
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            r"C:\Media\Movies\Film (2025)\film.mkv",
+            r"C:\Users\kr\Videos\Film\film.mkv",
+            "C:/Media/Movies/Film/film.mkv",
+        ],
+    )
+    def test_a_real_windows_media_path_is_refused_today(self, path):
+        assert self._is_path_safe_on_windows(path) is False
+
+
+class TestOverBlockedPaths:
+    """Records hygiene H13: the prefix match is not path-aware.
+
+    A library that merely starts with one of the unsafe strings is refused.
+    These are real paths a user could have. Invert when H13 is fixed.
+    """
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/variable/media/movies/film.mkv",
+            "/etcetera/media/movies/film.mkv",
+            "/usr-data/media/movies/film.mkv",
+            "/libraries/media/movies/film.mkv",
+        ],
+    )
+    def test_a_path_that_only_starts_with_an_unsafe_name_is_refused_today(
+        self, path
+    ):
+        assert files_service.is_path_safe(path) is False
+
+
 class TestFileTypeGuards:
 
     @pytest.mark.parametrize(
