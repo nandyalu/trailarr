@@ -226,6 +226,34 @@ to the files v0.11.4 changed — `core/diagnostics/*`, `api/v1/{connections,heal
 `config/settings.py`, `frontend/{middleware,router}.py`, two managers, and
 `core/download/error_classify.py`. Skip those unless the reorg reopens them.
 
+### Log message house style (decided Aug 28, 2026)
+
+413 log calls, 269 of them at INFO or above, which is what a user reads on the Logs
+page. They were written over years and do not agree with each other: 297 of 396 have no
+end punctuation, 49 open with a gerund, 12 trail off in "...", 10 shout with "!".
+
+One style, applied to every line that is touched:
+
+1. **A whole sentence, ending in a period.** Not a fragment, not a label.
+2. **Active voice, and name the actor.** "Trailarr deleted the trailer." Not "Trailer
+   was deleted."
+3. **Present tense for work that is starting, past for work that finished.**
+   "Trailarr downloads the trailer." → "Trailarr downloaded the trailer."
+4. **One idea, at most 25 words.** Split anything longer.
+5. **No "!" and no "...".** A log line is a statement, not an exclamation, and
+   "Searching..." should say what it is searching for.
+6. **Say the title, not the id.** `logger.media(media.id)` carries the id now, so the
+   text can read "Trailarr downloaded the trailer for 'Inception'."
+7. **Name a thing the same way everywhere.** "trailer profile", not "profile" in one
+   line and "trailerprofile" in the next.
+8. **A DEBUG line may stay terse**, but still follows 1–3. Developers read it, and the
+   effort is better spent on the 269 lines a user sees.
+
+**The id belongs in `logger.media()`, never in the prose.** A number in square brackets
+is still read as the media id by the database handler's fallback, so a line that says
+"profile [7]" will link the log entry to media 7. Pass the id and keep brackets out of
+the message.
+
 **Order:** one commit per package, same order as Stage A, so the diff for each package
 is reviewable as prose. Route-handler docstrings are pulled out of those commits into
 the dedicated spec commit above.
