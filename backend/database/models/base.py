@@ -1,3 +1,5 @@
+"""The base every stored model builds on."""
+
 from datetime import datetime, timezone
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel

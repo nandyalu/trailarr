@@ -1,3 +1,5 @@
+"""Remove an event in the history from the database."""
+
 from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, col, select

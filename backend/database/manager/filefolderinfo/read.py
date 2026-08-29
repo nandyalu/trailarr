@@ -1,3 +1,5 @@
+"""Read a file or folder that belongs to a media item from the database."""
+
 from datetime import datetime
 from . import base
 from sqlmodel import select, Session, text

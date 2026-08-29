@@ -1,3 +1,5 @@
+"""Add an event in the history to the database."""
+
 from typing import Callable
 
 from sqlmodel import Session, desc, select, or_

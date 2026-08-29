@@ -1,3 +1,5 @@
+"""Shared helpers for reading and writing a saved filter."""
+
 from typing import Sequence
 from database.models.customfilter import (
     CustomFilter,

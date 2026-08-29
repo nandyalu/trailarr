@@ -1,3 +1,5 @@
+"""Change a saved filter that is already stored."""
+
 from sqlmodel import Session
 from database.manager.customfilter.base import convert_to_read_item
 from database.models.customfilter import (

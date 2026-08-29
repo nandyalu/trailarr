@@ -1,3 +1,5 @@
+"""Add a trailer download to the database."""
+
 from sqlmodel import Session
 
 from . import base

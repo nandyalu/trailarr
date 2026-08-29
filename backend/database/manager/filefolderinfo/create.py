@@ -1,3 +1,5 @@
+"""Add a file or folder that belongs to a media item to the database."""
+
 from sqlmodel import Session
 
 from . import base

@@ -1,3 +1,5 @@
+"""Read a saved filter from the database."""
+
 from sqlmodel import Session, select
 from database.manager.customfilter.base import convert_to_read_list
 from database.models.customfilter import (

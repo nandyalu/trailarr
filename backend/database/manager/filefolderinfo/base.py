@@ -1,3 +1,6 @@
+"""Shared helpers for reading and writing the file and folder rows
+of a media item."""
+
 from typing import Sequence
 
 from sqlmodel import Session

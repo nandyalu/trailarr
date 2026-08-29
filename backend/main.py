@@ -1,3 +1,10 @@
+"""Start the application.
+
+The lifespan does the work in order: bring the database up to date, check
+the binary paths, start the notification dispatcher, then schedule the
+background tasks.
+"""
+
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 import shutil

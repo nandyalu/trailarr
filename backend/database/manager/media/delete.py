@@ -1,3 +1,5 @@
+"""Remove a media item from the database."""
+
 from sqlmodel import Session, col, select
 
 from database.models.media import Media

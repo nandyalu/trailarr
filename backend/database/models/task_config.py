@@ -1,3 +1,5 @@
+"""The interval and the on/off state a user set for a task."""
+
 from sqlmodel import Field
 
 from database.models.base import AppSQLModel

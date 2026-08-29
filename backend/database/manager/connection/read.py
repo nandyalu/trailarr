@@ -1,3 +1,5 @@
+"""Read a connection to a Radarr, Sonarr or Plex server from the database."""
+
 from sqlmodel import Session, select
 
 from . import base

@@ -1,3 +1,5 @@
+"""One condition inside a saved filter."""
+
 from enum import Enum
 from typing import Any, Self
 

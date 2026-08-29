@@ -1,3 +1,5 @@
+"""Search for a media item."""
+
 import re
 from sqlmodel import Session, col, desc, select
 from sqlmodel.sql.expression import SelectOfScalar

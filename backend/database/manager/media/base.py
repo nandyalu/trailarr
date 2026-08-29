@@ -1,3 +1,5 @@
+"""Shared helpers for reading and writing a media item."""
+
 from typing import Sequence
 from sqlmodel import Session, select
 

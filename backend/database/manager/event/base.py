@@ -1,3 +1,5 @@
+"""Shared helpers for reading and writing an event in the history."""
+
 from sqlmodel import Session, select
 
 from database.models.event import Event

@@ -3,6 +3,12 @@
 
 
 # Allow direct execution
+"""Turn yt-dlp command-line options into the API options it takes.
+
+Copied from yt-dlp's own devscripts/cli_to_api.py, so it keeps their
+copyright and their style. Change it only to follow that file upstream.
+"""
+
 import os
 import sys
 

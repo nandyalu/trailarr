@@ -1,3 +1,5 @@
+"""A trailer download: where the file is, and which profile owns it."""
+
 from datetime import datetime, timezone
 
 from pydantic import field_validator

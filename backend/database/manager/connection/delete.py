@@ -1,3 +1,5 @@
+"""Remove a connection to a Radarr, Sonarr or Plex server from the database."""
+
 from sqlmodel import Session
 
 from . import base

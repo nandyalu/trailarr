@@ -1,3 +1,5 @@
+"""A notification channel and the events it subscribes to."""
+
 from datetime import datetime, timezone
 
 from pydantic import field_validator

@@ -1,3 +1,5 @@
+"""Read a trailer profile from the database."""
+
 from sqlmodel import Session, select
 from database.manager.trailerprofile.base import (
     convert_to_read_item,

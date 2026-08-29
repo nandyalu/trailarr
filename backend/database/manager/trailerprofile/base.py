@@ -1,3 +1,5 @@
+"""Shared helpers for reading and writing a trailer profile."""
+
 from typing import Sequence
 
 from database.models.trailerprofile import (

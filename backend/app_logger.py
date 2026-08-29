@@ -1,3 +1,10 @@
+"""Set up logging, and give each module a logger with its own name.
+
+`ModuleLogger` also carries the media id a log line is about. Use
+`logger.info(msg, **logger.media(media.id))`: the Logs page links a line to
+a title from that field, and the message itself needs no id in it.
+"""
+
 import atexit
 import json
 import logging

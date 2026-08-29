@@ -1,3 +1,5 @@
+"""A trailer profile: what to download, and for which media."""
+
 from typing import Any
 from pydantic import field_validator, model_validator
 from sqlalchemy import Boolean, Integer

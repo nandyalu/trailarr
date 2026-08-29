@@ -1,3 +1,5 @@
+"""Remove a trailer profile from the database."""
+
 from sqlmodel import Session
 
 from app_logger import ModuleLogger

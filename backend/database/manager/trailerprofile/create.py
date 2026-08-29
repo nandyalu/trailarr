@@ -1,3 +1,5 @@
+"""Add a trailer profile to the database."""
+
 from sqlmodel import Session
 
 from app_logger import ModuleLogger

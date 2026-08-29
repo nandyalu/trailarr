@@ -1,3 +1,5 @@
+"""Add a saved filter to the database."""
+
 from sqlmodel import Session
 from database.manager.customfilter.base import convert_to_read_item
 from database.models.customfilter import (

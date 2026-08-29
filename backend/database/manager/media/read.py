@@ -1,3 +1,5 @@
+"""Read a media item from the database."""
+
 from datetime import datetime, timedelta, timezone
 from typing import Generator
 from sqlalchemy import func

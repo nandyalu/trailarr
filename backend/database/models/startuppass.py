@@ -1,3 +1,5 @@
+"""The record that a startup pass has run on this database."""
+
 from datetime import datetime, timezone
 
 from sqlmodel import Field

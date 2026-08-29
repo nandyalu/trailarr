@@ -1,3 +1,5 @@
+"""Change a trailer profile that is already stored."""
+
 from sqlmodel import Session
 
 from app_logger import ModuleLogger

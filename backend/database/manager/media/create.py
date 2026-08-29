@@ -1,3 +1,5 @@
+"""Add a media item to the database."""
+
 from datetime import datetime, timezone
 from sqlmodel import Session, col, select
 

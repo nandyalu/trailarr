@@ -1,3 +1,5 @@
+"""Read a trailer download from the database."""
+
 from sqlmodel import Session, col, desc, select, text
 from . import base
 from database.models.download import (

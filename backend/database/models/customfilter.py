@@ -1,3 +1,5 @@
+"""A saved filter: the conditions, and what it is used for."""
+
 from enum import Enum
 from typing import Any
 from sqlmodel import Field, Relationship

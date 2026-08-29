@@ -1,3 +1,5 @@
+"""A failed download attempt, and the backoff it causes."""
+
 from datetime import datetime, timedelta, timezone
 
 from pydantic import field_validator

@@ -1,3 +1,5 @@
+"""Change a stored connection to a Radarr, Sonarr or Plex server."""
+
 from sqlmodel import Session, select
 
 from . import base

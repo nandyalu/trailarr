@@ -1,3 +1,5 @@
+"""A media item, from an Arr server or from Plex, or from both."""
+
 from datetime import datetime, timezone
 from pydantic import field_validator
 from sqlalchemy import Boolean, Column, String, text

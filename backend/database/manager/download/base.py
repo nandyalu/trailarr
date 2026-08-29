@@ -1,3 +1,5 @@
+"""Shared helpers for reading and writing a trailer download."""
+
 from typing import Sequence
 
 from sqlmodel import Session

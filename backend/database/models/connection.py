@@ -1,3 +1,5 @@
+"""A connection to a Radarr, Sonarr or Plex server, and its path mappings."""
+
 from datetime import datetime, timezone
 from enum import Enum
 

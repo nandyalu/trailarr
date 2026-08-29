@@ -1,4 +1,5 @@
-"""Saved filters: the views on the media list, and the filters a trailer profile uses."""
+"""Saved filters: the views on the media list, and the filters a
+trailer profile uses."""
 
 import functools
 

@@ -1,3 +1,6 @@
+"""Shared helpers for reading and writing a connection to a Radarr,
+Sonarr or Plex server."""
+
 from sqlmodel import Session
 from database.models.connection import (
     Connection,

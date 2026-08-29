@@ -1,3 +1,5 @@
+"""An event in the history. Events are a permanent record."""
+
 from datetime import datetime, timezone
 from enum import Enum
 

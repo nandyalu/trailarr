@@ -1,3 +1,5 @@
+"""Read an event in the history from the database."""
+
 from sqlmodel import Session, col, desc, select
 
 from . import base

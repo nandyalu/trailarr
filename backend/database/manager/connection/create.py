@@ -1,3 +1,5 @@
+"""Add a connection to a Radarr, Sonarr or Plex server to the database."""
+
 from sqlmodel import Session
 
 from . import base

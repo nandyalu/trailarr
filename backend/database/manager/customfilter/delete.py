@@ -1,3 +1,5 @@
+"""Remove a saved filter from the database."""
+
 from sqlmodel import Session
 
 from database.models.customfilter import CustomFilter

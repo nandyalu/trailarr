@@ -1,3 +1,5 @@
+"""Small shapes the managers pass around, such as MediaImage."""
+
 from dataclasses import dataclass
 from datetime import datetime
 

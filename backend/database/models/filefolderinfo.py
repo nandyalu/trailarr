@@ -1,3 +1,5 @@
+"""A file or folder found inside a media folder."""
+
 from datetime import datetime, timezone
 from enum import Enum
 

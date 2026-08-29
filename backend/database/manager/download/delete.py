@@ -1,3 +1,5 @@
+"""Remove a trailer download from the database."""
+
 from sqlmodel import Session, select
 
 from . import base
