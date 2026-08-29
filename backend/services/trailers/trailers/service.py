@@ -161,7 +161,8 @@ async def record_new_trailer_download(
             redundant ffprobe calls. If None, will analyze the file.
     """
     logger.debug(
-        f"Recording new trailer download for media {media.title} [{media.id}]"
+        f"Trailarr records a new trailer download for '{media.title}'.",
+        **logger.media(media.id),
     )
     try:
         # Use provided video info or analyze the file

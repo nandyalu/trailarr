@@ -98,7 +98,7 @@ async def _notify_plex(media: MediaRead) -> None:
         and media.folder_path
     ):
         logger.debug(
-            f"Skipping Plex scan notify for '{media.title}' [{media.id}]:"
+            f"Trailarr does not tell Plex about '{media.title}':"
             " missing plex_connection_id, plex_section_key, or folder_path"
         )
         return
@@ -295,7 +295,7 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailer downloaded successfully for {media.title} [{media.id}]"
+            f"Trailarr downloaded the trailer for '{media.title}'."
             f" from ({video_id})"
         )
         logger.info(msg)

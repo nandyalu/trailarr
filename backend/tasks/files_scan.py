@@ -262,7 +262,8 @@ async def scan_media_folder(
     ):
         return 0, 0, 0, 0, 0
     logger.debug(
-        f"Scanning files for '{media.title}' [{media.id}] — folder changed"
+        f"Trailarr scans the files of '{media.title}'. Its folder changed.",
+        **logger.media(media.id),
     )
 
     all_downloads = [d for d in media.downloads if d.file_exists]

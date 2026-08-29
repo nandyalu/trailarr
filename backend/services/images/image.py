@@ -89,8 +89,9 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
         # Check if the existing path matches with new path
         if media.image_path != url_path:
             logger.debug(
-                f"Image updated for media id: [{media.id}], deleting old"
-                f" image! Path: '{media.image_path}'"
+                f"The image for this media item changed. Trailarr deletes"
+                f" the old file '{media.image_path}'.",
+                **logger.media(media.id),
             )
             await delete_image(str(_url_to_fs_path(media.image_path)))
     # Update the image path
@@ -149,16 +150,18 @@ async def process_image(
             progressive=True,
         )
         logger.debug(
-            f"Image downloaded for media id: [{media.id}], "
-            f"URL: '{media.image_url}', path: '{media.image_path}'"
+            f"Trailarr downloaded an image from '{media.image_url}' to"
+            f" '{media.image_path}'.",
+            **logger.media(media.id),
         )
     except Exception:
         if retries > 0:
             return await process_image(is_movie, media, retries - 1)
         else:
             logger.debug(
-                f"Failed to download image for media id: [{media.id}], "
-                f"URL: '{media.image_url}'"
+                f"Trailarr could not download an image from"
+                f" '{media.image_url}'.",
+                **logger.media(media.id),
             )
             return False
     return True

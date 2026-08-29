@@ -632,10 +632,7 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             source=EventSource.USER,
             source_detail="UserSearch",
         )
-        msg = (
-            f"Trailer found for media '{media.title}' [{media.id}] as"
-            f" ({yt_id})"
-        )
+        msg = f"Trailarr found a trailer for '{media.title}': {yt_id}."
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return yt_id

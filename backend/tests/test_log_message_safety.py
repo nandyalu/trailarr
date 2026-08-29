@@ -102,6 +102,57 @@ def test_enum_members_named_in_log_messages_exist(path):
     )
 
 
+@pytest.mark.parametrize(
+    "path", sorted(_python_files()), ids=lambda p: str(p.relative_to(BACKEND))
+)
+def test_attributes_read_from_an_annotated_argument_exist(path):
+    """`media.title` where `media: MediaImage` has no title.
+
+    A log message reaches for a field of one of its function's arguments.
+    When the argument carries a type annotation, that type has to have the
+    field, or the line raises AttributeError when it runs.
+
+    This is the mistake the Stage C sweep made three times: MediaImage has
+    id, is_poster, image_url, image_path and headers, but no title, so
+    every image download would have raised.
+    """
+    source = path.read_text()
+    tree = ast.parse(source)
+    module = None
+    bad = []
+    for func in ast.walk(tree):
+        if not isinstance(func, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        # argument name -> annotation name, for simple annotations only
+        annotated = {}
+        for arg in list(func.args.args) + list(func.args.kwonlyargs):
+            ann = arg.annotation
+            if isinstance(ann, ast.Name):
+                annotated[arg.arg] = ann.id
+        if not annotated:
+            continue
+        for call in _log_calls(func):
+            for owner, attr in _attribute_chains(call):
+                if owner not in annotated:
+                    continue
+                type_name = annotated[owner]
+                if module is None:
+                    rel = path.relative_to(BACKEND).with_suffix("")
+                    module = importlib.import_module(".".join(rel.parts))
+                cls = getattr(module, type_name, None)
+                if cls is None or not isinstance(cls, type):
+                    continue
+                fields = set(dir(cls)) | set(
+                    getattr(cls, "__annotations__", {})
+                ) | set(getattr(cls, "model_fields", {}))
+                if attr not in fields:
+                    bad.append(f"{owner}.{attr} ({type_name} has no {attr})")
+    assert bad == [], (
+        f"{path.relative_to(BACKEND)} logs a field that does not exist:"
+        f" {bad}. The line would raise when it runs."
+    )
+
+
 def test_no_log_message_puts_a_non_media_id_in_brackets():
     """A `[123]` in a log message is read as the media id.
 
