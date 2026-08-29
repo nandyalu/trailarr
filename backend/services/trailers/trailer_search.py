@@ -204,8 +204,8 @@ def add_extra_options(
     for key, value in extra_options.items():
         if key in current_options:
             logger.warning(
-                f"Cannot override default YT-DLP option '{key}' provided in"
-                " Profile"
+                f"The trailer profile sets the yt-dlp option '{key}', which"
+                " Trailarr controls. Trailarr keeps its own value."
             )
         else:
             current_options[key] = value
@@ -307,9 +307,9 @@ def get_video_id(
     if not video_id:
         if search_length >= 30:
             logger.warning(
-                f"No trailer found for '{media.title}' with profile"
-                f" '{profile.customfilter.filter_name}'. Giving up after"
-                f" {search_length} search results."
+                f"Trailarr found no trailer for '{media.title}' with the profile"
+                f" '{profile.customfilter.filter_name}'.",
+                **logger.media(media.id),
             )
             return None
         logger.debug(

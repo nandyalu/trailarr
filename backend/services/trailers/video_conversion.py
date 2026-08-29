@@ -115,8 +115,8 @@ def _get_video_options_cpu(
     ffmpeg_cmd: list[str] = ["-i", input_file, "-c:v"]
     if vcodec not in _VIDEO_CODECS:
         logger.error(
-            f"Video codec '{vcodec}' not implemented in Trailer, using h265"
-            " codec"
+            f"Trailarr does not support the video codec '{vcodec}'. It uses"
+            " the h265 codec."
         )
         vcodec = _VCODEC_FALLBACK
     _vencoder = _VIDEO_CODECS[vcodec]
@@ -165,8 +165,8 @@ def _get_video_options_nvidia(
         list[str]: FFMPEG command list."""
     if vcodec not in _VIDEO_CODECS_NVIDIA:
         logger.warning(
-            f"Video codec '{vcodec}' not supported by NVIDIA hardware encoder,"
-            " using CPU"
+            f"The NVIDIA hardware encoder does not support the video codec"
+            f" '{vcodec}'. Trailarr uses the CPU."
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
@@ -234,7 +234,8 @@ def _get_video_options_videotoolbox(
     """Generate ffmpeg video options for Apple VideoToolbox (macOS)."""
     if vcodec not in _VIDEO_CODECS_VIDEOTOOLBOX:
         logger.warning(
-            f"Video codec '{vcodec}' not supported by VideoToolbox, using CPU"
+            f"VideoToolbox does not support the video codec '{vcodec}'."
+            " Trailarr uses the CPU."
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
@@ -259,7 +260,8 @@ def _get_video_options_qsv(
     """Generate ffmpeg video options for Intel QSV (Windows)."""
     if vcodec not in _VIDEO_CODECS_QSV:
         logger.warning(
-            f"Video codec '{vcodec}' not supported by Intel QSV, using CPU"
+            f"Intel QSV does not support the video codec '{vcodec}'."
+            " Trailarr uses the CPU."
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
@@ -286,7 +288,8 @@ def _get_video_options_amf(
     """Generate ffmpeg video options for AMD AMF (Windows)."""
     if vcodec not in _VIDEO_CODECS_AMF:
         logger.warning(
-            f"Video codec '{vcodec}' not supported by AMD AMF, using CPU"
+            f"AMD AMF does not support the video codec '{vcodec}'. Trailarr"
+            " uses the CPU."
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
@@ -329,8 +332,8 @@ def _get_video_options_vaapi(
 
     if vcodec not in _VIDEO_CODECS_VAAPI:
         logger.warning(
-            f"Video codec '{vcodec}' not supported by VAAPI hardware encoder,"
-            " using CPU"
+            f"The VAAPI hardware encoder does not support the video codec"
+            f" '{vcodec}'. Trailarr uses the CPU."
         )
         return _get_video_options_cpu(vcodec, input_file, video_stream)
 
@@ -436,8 +439,8 @@ def _get_audio_options(
     # Resolve the audio codec
     if acodec not in _AUDIO_CODECS:
         logger.error(
-            f"Audio codec '{acodec}' not implemented, using"
-            f" {_ACODEC_FALLBACK} codec"
+            f"Trailarr does not support the audio codec '{acodec}'. It uses"
+            f" the {_ACODEC_FALLBACK} codec."
         )
         acodec = _ACODEC_FALLBACK
     _aencoder = _AUDIO_CODECS[acodec]

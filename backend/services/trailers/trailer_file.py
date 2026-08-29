@@ -113,7 +113,8 @@ def get_trailer_filename(
     title_format = profile.file_name
     if title_format.count("{") != title_format.count("}"):
         logger.error(
-            "Invalid title format, setting to default file name format"
+            "The title format is not valid. Trailarr uses the default file"
+            " name format."
         )
         title_format = app_settings._DEFAULT_FILE_NAME
     # Convert media object to dictionary for formatting
@@ -387,7 +388,9 @@ def verify_download(
         try:
             file_path_obj.unlink()
         except Exception as e:
-            logger.exception(f"Failed to delete trailer file: {e}")
+            logger.exception(
+                f"Trailarr could not delete the trailer file: {e}"
+            )
         return is_valid, None
 
     return is_valid, media_info

@@ -176,10 +176,10 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         # not raise — ffprobe returns a non-zero exit code instead.
         if e.filename == app_settings.ffprobe_path:
             logger.error(
-                "ffprobe executable not found at"
-                f" '{app_settings.ffprobe_path}'. Set FFPROBE_PATH in the"
-                " .env file in APP_DATA_DIR to the full path of the"
-                " ffprobe executable."
+                "Trailarr cannot find ffprobe at"
+                f" '{app_settings.ffprobe_path}'. Set FFPROBE_PATH in the .env"
+                " file in APP_DATA_DIR to the full path of the ffprobe"
+                " executable."
             )
         else:
             logger.exception(f"Error extracting video info: {str(e)}")
@@ -477,11 +477,15 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
             - Path to the trimmed video file
             - flag indicating if trimming was successful.
     """
-    logger.info(f"Detecting silence at end of video: {file_path}")
+    logger.info(
+        f"Trailarr looks for silence at the end of '{file_path}'."
+    )
     # Get silence timestamps
     silence_start, silence_end = get_silence_timestamps(file_path)
     if silence_start is None or silence_end is None:
-        logger.info("No silence detected at end of video")
+        logger.info(
+            "There is no silence at the end of the video."
+        )
         return file_path, False
     # Remove silence from the end of the video
     file_path_obj = Path(file_path)
@@ -490,8 +494,8 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
     output_file = str(tmp_dir / f"trimmed_{file_path_obj.name}")
     try:
         logger.info(
-            "Silence detected at end of video. Trimming video at"
-            f" {silence_start}"
+            "Trailarr found silence at the end of the video. It cuts the"
+            f" video at {silence_start}."
         )
         trim_video(file_path, output_file, 0, silence_start)
     except Exception as e:
@@ -502,7 +506,8 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
         return file_path, False
     silence_time = silence_end - silence_start
     logger.info(
-        f"Silence removed ({silence_time:.2f}s) from end of video: {file_path}"
+        f"Trailarr removed {silence_time:.2f} seconds of silence from the"
+        f" end of '{file_path}'."
     )
     return output_file, True
 

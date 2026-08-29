@@ -73,8 +73,9 @@ async def _check_plex_trailer(
         return has_trailer
     except Exception as e:
         logger.warning(
-            f"Failed to check Plex trailer for '{media.title}'"
-            f" [{media.id}]: {e}"
+            f"Trailarr could not check whether Plex has a trailer for"
+            f" '{media.title}': {e}",
+            **logger.media(media.id),
         )
         return False
 
@@ -119,7 +120,9 @@ async def _notify_plex(media: MediaRead) -> None:
         )
     except Exception as e:
         logger.warning(
-            f"Failed to notify Plex for '{media.title}' [{media.id}]: {e}"
+            f"Trailarr could not tell Plex about the new trailer for"
+            f" '{media.title}': {e}",
+            **logger.media(media.id),
         )
 
 
@@ -157,8 +160,9 @@ def __download_and_verify_trailer(
     """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
-        f"Downloading trailer for {media.title} [{media.id}] from"
-        f" {trailer_url}"
+        f"Trailarr downloads the trailer for '{media.title}' from"
+        f" {trailer_url}.",
+        **logger.media(media.id),
     )
     # Use system temp directory for cross-platform compatibility
     tmp_dir = Path(tempfile.gettempdir()) / "trailarr"
@@ -207,7 +211,10 @@ async def download_trailer(
     Raises:
         DownloadFailedError: If trailer download fails.
     """
-    logger.info(f"Downloading trailer for {media.title} [{media.id}]")
+    logger.info(
+        f"Trailarr downloads the trailer for '{media.title}'.",
+        **logger.media(media.id),
+    )
     if not exclude:
         exclude = []
 
@@ -224,8 +231,10 @@ async def download_trailer(
     # Skip download if Plex already has a trailer and profile says to
     if await _check_plex_trailer(media, profile):
         logger.info(
-            f"Plex already has a trailer for '{media.title}' [{media.id}],"
-            " skipping download (skip_if_plex_trailer=True)"
+            f"Plex already has a trailer for '{media.title}'. Trailarr does"
+            " not download another one, because Skip If Plex Has A Trailer"
+            " is on.",
+            **logger.media(media.id),
         )
         return False
 
@@ -238,7 +247,10 @@ async def download_trailer(
 
     # Stop if stop event is set
     if _stop_event and _stop_event.is_set():
-        logger.info(f"Download stopped for {media.title} [{media.id}]")
+        logger.info(
+            f"Trailarr stopped the download for '{media.title}'.",
+            **logger.media(media.id),
+        )
         return False
 
     # Runtime in-flight state — replaces the old DOWNLOADING status write.
@@ -296,16 +308,21 @@ async def download_trailer(
         )
         return True
     except Exception as e:
-        logger.exception(f"Failed to download trailer: {e}")
+        logger.exception(
+            f"Trailarr could not download the trailer: {e}"
+        )
         if _stop_event and _stop_event.is_set():
             logger.info(
-                f"Download stopped for {media.title} [{media.id}] due to stop"
-                " event."
+                f"Trailarr stopped the download for '{media.title}'. A stop was"
+                " requested.",
+                **logger.media(media.id),
             )
             return False
         if retry_count > 0:
             logger.info(
-                f"Retrying download for {media.title}... ({3 - retry_count}/3)"
+                f"Trailarr tries the download for '{media.title}' again."
+                f" Attempt {3 - retry_count} of 3.",
+                **logger.media(media.id),
             )
             media.youtube_trailer_id = None
             if video_id:

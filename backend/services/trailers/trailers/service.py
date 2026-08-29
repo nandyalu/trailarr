@@ -65,7 +65,9 @@ def compute_file_hash(file_path: str) -> str:
     try:
         return FilesHandler.compute_file_hash(file_path)
     except Exception as e:
-        logger.error(f"Error computing file hash for {file_path}: {e}")
+        logger.error(
+            f"Trailarr could not compute the hash of '{file_path}': {e}"
+        )
         return ""
 
 
@@ -209,8 +211,9 @@ async def record_new_trailer_download(
 
     except Exception as e:
         logger.error(
-            "Failed to record new trailer download for media"
-            f" {media.title} [{media.id}]: {e}"
+            f"Trailarr could not record the new trailer download for"
+            f" '{media.title}': {e}",
+            **logger.media(media.id),
         )
 
 
@@ -233,7 +236,7 @@ async def rename_trailer_download(download: DownloadRead, new_path: str) -> bool
         return True
     except Exception as e:
         logger.error(
-            f"Failed to update renamed download {download.id} to"
+            f"Trailarr could not move the download {download.id} to"
             f" '{new_path}': {e}"
         )
         return False
@@ -272,7 +275,7 @@ async def reanalyze_trailer_download(
         return True
     except Exception as e:
         logger.error(
-            f"Failed to re-analyze download {download.id} at"
+            f"Trailarr could not examine the download {download.id} at"
             f" '{file_path}': {e}"
         )
         return False

@@ -34,8 +34,8 @@ def _is_valid_media(
     if check_folder:
         if db_media.folder_path is None:
             logger.info(
-                f"Media '{db_media.title}' [{db_media.id}] skipped: missing"
-                " folder path."
+                f"Trailarr skips '{db_media.title}'. It has no folder path.",
+                **logger.media(db_media.id),
             )
             event_manager.track_download_skipped(
                 media_id=db_media.id,
@@ -51,8 +51,9 @@ def _is_valid_media(
             # folder, and must never lead to writes into a dead mount.
             if not is_disk_available(db_media.folder_path):
                 logger.info(
-                    f"Media '{db_media.title}' [{db_media.id}] skipped:"
-                    " storage backing the media folder is unreachable."
+                    f"Trailarr skips '{db_media.title}'. It cannot reach the storage"
+                    " of the media folder.",
+                    **logger.media(db_media.id),
                 )
                 event_manager.track_download_skipped(
                     media_id=db_media.id,
@@ -66,14 +67,15 @@ def _is_valid_media(
             if app_settings.create_missing_folders:
                 if FilesHandler.create_folder(db_media.folder_path):
                     logger.info(
-                        f"Media '{db_media.title}' [{db_media.id}]:"
-                        f" created missing folder"
-                        f" '{db_media.folder_path}'."
+                        f"Trailarr created the missing folder for '{db_media.title}':"
+                        f" '{db_media.folder_path}'.",
+                        **logger.media(db_media.id),
                     )
                     return True
                 logger.info(
-                    f"Media '{db_media.title}' [{db_media.id}] skipped:"
-                    " could not create the missing folder."
+                    f"Trailarr skips '{db_media.title}'. It could not create the"
+                    " missing folder.",
+                    **logger.media(db_media.id),
                 )
                 event_manager.track_download_skipped(
                     media_id=db_media.id,
@@ -82,8 +84,8 @@ def _is_valid_media(
                 )
                 return False
             logger.info(
-                f"Media '{db_media.title}' [{db_media.id}] skipped: folder"
-                " does not exist."
+                f"Trailarr skips '{db_media.title}'. Its folder does not exist.",
+                **logger.media(db_media.id),
             )
             event_manager.track_download_skipped(
                 media_id=db_media.id,
@@ -101,8 +103,9 @@ def _is_valid_media(
             os.listdir(db_media.folder_path)
         except OSError as exc:
             logger.info(
-                f"Media '{db_media.title}' [{db_media.id}] skipped: media"
-                f" folder is not readable ({exc}); storage may be offline."
+                f"Trailarr skips '{db_media.title}'. It cannot read the media"
+                f" folder ({exc}). The storage may be down.",
+                **logger.media(db_media.id),
             )
             event_manager.track_download_skipped(
                 media_id=db_media.id,
@@ -116,8 +119,8 @@ def _is_valid_media(
 
     if not db_media.folder_path:
         logger.info(
-            f"Media '{db_media.title}' [{db_media.id}] skipped: missing folder"
-            " path."
+            f"Trailarr skips '{db_media.title}'. It has no folder path.",
+            **logger.media(db_media.id),
         )
         event_manager.track_download_skipped(
             media_id=db_media.id,
@@ -128,8 +131,9 @@ def _is_valid_media(
 
     if not FilesHandler.check_media_exists(db_media.folder_path):
         logger.info(
-            f"Media '{db_media.title}' [{db_media.id}] skipped: media file"
-            " does not exist."
+            f"Trailarr skips '{db_media.title}'. Its media file does not"
+            " exist.",
+            **logger.media(db_media.id),
         )
         event_manager.track_download_skipped(
             media_id=db_media.id,
@@ -180,9 +184,11 @@ def _filter_backoff_eligible(
         else:
             assert attempt is not None
             logger.debug(
-                f"Backoff: skipping '{media.title}' [{media.id}] for profile"
-                f" [{profile.id}] — {attempt.attempt_count} failed"
-                f" attempt(s), next eligible {next_eligible_at(attempt)}"
+                f"Trailarr waits before it tries '{media.title}' again with the"
+                f" profile {profile.id}. {attempt.attempt_count} attempts have"
+                f" failed. The next attempt is at"
+                f" {next_eligible_at(attempt)}.",
+                **logger.media(media.id),
             )
     return eligible
 
@@ -203,13 +209,14 @@ async def _run_preview_pass() -> None:
     would_download = [i for i in summary.items if i.reason == "pending"]
     for item in would_download[:_PREVIEW_LOG_LIMIT]:
         logger.info(
-            f"PREVIEW would download: '{item.title}' [{item.media_id}]"
-            f" with profile '{item.profile_name}'"
+            f"Preview: Trailarr would download '{item.title}' with the"
+            f" profile '{item.profile_name}'.",
+            **logger.media(item.media_id),
         )
     if len(would_download) > _PREVIEW_LOG_LIMIT:
         logger.info(
-            f"PREVIEW … and {len(would_download) - _PREVIEW_LOG_LIMIT} more"
-            " (see the pending downloads view for the full list)."
+            f"Preview: and {len(would_download) - _PREVIEW_LOG_LIMIT} more."
+            " The pending downloads view lists them all."
         )
     msg = (
         f"Preview mode: {summary.pending_pairs} trailer(s) across"
@@ -232,7 +239,9 @@ async def download_missing_trailers(
     """
     # Exit if monitoring is disabled
     if not app_settings.monitor_enabled:
-        logger.warning("Monitoring is disabled, skipping trailers download")
+        logger.warning(
+            "Monitoring is off. Trailarr does not download any trailer."
+        )
         return
 
     # Upgrade guard: required startup passes (attribution, full-scan check)
@@ -240,9 +249,8 @@ async def download_missing_trailers(
     # protects version-skipping upgrades from mass re-downloads.
     if not downloads_ready():
         logger.warning(
-            "Startup passes have not completed yet on this database —"
-            " skipping this download run. It will proceed on a later run"
-            " once the passes finish (usually within minutes of startup)."
+            "The startup passes are not complete. Trailarr does not download"
+            " now. It downloads after the passes finish."
         )
         return
 
@@ -264,8 +272,8 @@ async def download_missing_trailers(
     pruned = attempt_manager.prune_for_missing_profiles(valid_ids)
     if pruned:
         logger.info(
-            f"Pruned {pruned} download attempt record(s) for deleted"
-            " profiles."
+            f"Trailarr removed {pruned} download attempt records. Their"
+            " profiles no longer exist."
         )
 
     successful_downloads = 0
@@ -275,7 +283,8 @@ async def download_missing_trailers(
     while True:
         if _stop_event and _stop_event.is_set():
             logger.info(
-                "Stop event set, terminating download of missing trailers."
+                "Trailarr stopped the download of the missing trailers. A stop"
+                " was requested."
             )
             return
 
@@ -284,7 +293,8 @@ async def download_missing_trailers(
 
         if not trailer_profiles:
             logger.warning(
-                "No TrailerProfiles found, skipping download trailers"
+                "There are no trailer profiles. Trailarr does not download any"
+                " trailer."
             )
             return
 
@@ -292,7 +302,8 @@ async def download_missing_trailers(
 
         if not enabled_profiles:
             logger.warning(
-                "No enabled TrailerProfiles found, skipping download"
+                "No trailer profile is enabled. Trailarr does not download any"
+                " trailer."
             )
             return
 
@@ -331,7 +342,9 @@ async def download_missing_trailers(
             break  # Found a media item to process
 
         if not media_to_process:
-            logger.info("No more media items to process.")
+            logger.info(
+                "There are no more media items to examine."
+            )
             break
 
         # Clear the lists to free up memory before processing
@@ -358,8 +371,8 @@ async def download_missing_trailers(
             skipped_items += skips
         except Exception as e:
             logger.exception(
-                "Unexpected error processing media"
-                f" '{media_to_process.title}' [{media_to_process.id}]: {e}"
+                f"Trailarr could not process '{media_to_process.title}': {e}",
+                **logger.media(media_to_process.id),
             )
         finally:
             processed_media_ids.add(media_to_process.id)
@@ -380,7 +393,8 @@ async def _process_single_media_item(
     """Download trailers for a media item's unsatisfied, backoff-eligible
     profiles. Successes clear the attempt record; hard failures record one."""
     logger.info(
-        f"Processing media '{media.title}' [{media.id}] for trailer downloads."
+        f"Trailarr examines '{media.title}' for trailer downloads.",
+        **logger.media(media.id),
     )
     successful_downloads = 0
     skipped_items = 0
@@ -388,7 +402,7 @@ async def _process_single_media_item(
     for profile in profiles:
         if _stop_event and _stop_event.is_set():
             logger.info(
-                "Stop event set, terminating processing of single media item."
+                "Trailarr stopped work on this media item. A stop was requested."
             )
             return successful_downloads, skipped_items
 
@@ -401,8 +415,9 @@ async def _process_single_media_item(
         download_attempted = False
         try:
             logger.info(
-                f"Processing download for {media.title} [{media.id}]"
-                f" using profile: {_profile_name}"
+                f"Trailarr downloads a trailer for '{media.title}' with the"
+                f" profile '{_profile_name}'.",
+                **logger.media(media.id),
             )
             download_successful = await trailer_downloader.download_trailer(
                 media, profile, profile.retry_count, _stop_event=_stop_event
@@ -419,10 +434,10 @@ async def _process_single_media_item(
                 media.id, profile.id, str(e) or type(e).__name__
             )
             logger.warning(
-                f"Failed to download trailer for {media.title} with profile:"
-                f" {_profile_name} (attempt {attempt.attempt_count}, next"
-                f" retry after {next_eligible_at(attempt):%Y-%m-%d %H:%M})."
-                " Continuing to next profile."
+                f"Trailarr could not download a trailer for '{media.title}' with"
+                f" the profile '{_profile_name}'. Attempt"
+                f" {attempt.attempt_count}.",
+                **logger.media(media.id),
             )
             skipped_items += 1
         finally:

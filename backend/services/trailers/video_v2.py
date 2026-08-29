@@ -240,11 +240,14 @@ def cleanup_stale_temp_downloads() -> None:
             file.unlink()
             removed += 1
         except OSError as e:
-            logger.warning(f"Failed to remove stale temp file '{file}': {e}")
+            logger.warning(
+                f"Trailarr could not remove the old temporary file '{file}':"
+                f" {e}"
+            )
     if removed:
         logger.info(
-            f"Removed {removed} stale temp download file(s), freed"
-            f" {freed / 2**20:.1f} MB"
+            f"Trailarr removed {removed} old temporary download files and"
+            f" freed {freed / 2**20:.1f} MB."
         )
 
 
@@ -272,9 +275,13 @@ def _cleanup_partial_downloads(file_path: str | Path) -> None:
             continue
         try:
             file.unlink()
-            logger.info(f"Removed partial download file: {file}")
+            logger.info(
+                f"Trailarr removed the incomplete download file '{file}'."
+            )
         except OSError as e:
-            logger.warning(f"Failed to remove partial file '{file}': {e}")
+            logger.warning(
+                f"Trailarr could not remove the incomplete file '{file}': {e}"
+            )
 
 
 def _download_with_ytdlp(
@@ -369,7 +376,9 @@ def _download_with_ytdlp(
         msg = f"Error running yt-dlp process: {str(e)}"
         raise DownloadFailedError(msg)
 
-    logger.info("Video downloaded successfully")
+    logger.info(
+        "Trailarr downloaded the video."
+    )
     return downloaded_file
 
 
@@ -416,9 +425,9 @@ def _convert_video(
             # If the conversion fails, retry without hardware acceleration
             if retry:
                 logger.warning(
-                    "FFmpeg conversion failed with exit code"
-                    f" {result.returncode}, retrying without hardware"
-                    " acceleration (if enabled)"
+                    "The conversion with FFmpeg failed with exit code"
+                    f" {result.returncode}. Trailarr tries again without hardware"
+                    " acceleration."
                 )
                 if combined_output:
                     logger.warning(f"FFMPEG Output::\n{combined_output}")
@@ -451,7 +460,9 @@ def _convert_video(
         msg = f"Error running FFmpeg process: {str(e)}"
         raise ConversionFailedError(msg)
 
-    logger.info("Video converted successfully")
+    logger.info(
+        "Trailarr converted the video."
+    )
     return "Video converted successfully"
 
 
@@ -486,7 +497,9 @@ def download_video(
 
     # Stop if stop event is set
     if _stop_event and _stop_event.is_set():
-        logger.info(f"Stop Event set, stopping download for {url}")
+        logger.info(
+            f"Trailarr stopped the download of {url}. A stop was requested."
+        )
         raise StopEventSetError("Stop event set during video download")
 
     # Add the file extension from download file to the output file
@@ -498,5 +511,7 @@ def download_video(
     _convert_video(profile, download_file_path, converted_file_path)
     logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
     Path(download_file_path).unlink()
-    logger.info("Video download and conversion completed successfully")
+    logger.info(
+        "Trailarr downloaded and converted the video."
+    )
     return converted_file_path

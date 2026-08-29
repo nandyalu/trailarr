@@ -44,5 +44,7 @@ async def sleep_between_downloads(
         _sleep_for += 540
     elif downloading_count < 1000:
         _sleep_for += 600
-    logger.info(f"Sleeping for {_sleep_for} seconds before next download...")
+    logger.info(
+        f"Trailarr waits {_sleep_for} seconds before the next download."
+    )
     await asyncio.sleep(_sleep_for)

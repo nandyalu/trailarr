@@ -34,7 +34,8 @@ async def batch_download_task(
         download_count = len(media_list)
     for media in media_list:
         logger.info(
-            f"Downloading trailer {downloading_count}/{download_count}"
+            f"Trailarr downloads trailer {downloading_count} of"
+            f" {download_count}."
         )
         try:
             await download_trailer(
@@ -44,13 +45,16 @@ async def batch_download_task(
             logger.exception(e)
         except Exception as e:
             logger.exception(
-                "Unexpected error downloading trailer for media"
-                f" '{media.title}' [{media.id}]: {e}"
+                f"Trailarr could not download the trailer for '{media.title}':"
+                f" {e}",
+                **logger.media(media.id),
             )
         finally:
             downloading_count += 1
         if _stop_event and _stop_event.is_set():
-            logger.info("Batch downloads stopped due to stop event.")
+            logger.info(
+                "Trailarr stopped the downloads. A stop was requested."
+            )
             return None
         # Sleep for a random time if more downloads are pending
         if downloading_count >= download_count:
