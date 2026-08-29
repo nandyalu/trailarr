@@ -8,10 +8,9 @@
 the media batch path routed through the service, and hygiene H1 done with its permitted
 spec diff (18 added 500s + 2 previously-undocumented 404s).
 **Stage C DONE** — every log message swept to one house style, the media link decoupled
-from the wording, both permitted spec diffs spent, the frontend light touch done, the
-contributor docs and graphify updated, and the full verification protocol run.
-**Remaining:** a pass over the comments and docstrings that the log sweep did not
-touch. 1594 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+from the wording, both permitted spec diffs spent, every module documented (23 -> 153),
+the frontend light touch done, the contributor docs and graphify updated.
+**PHASE COMPLETE.** 1594 tests green, ready for the v0.12.0 PR. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
