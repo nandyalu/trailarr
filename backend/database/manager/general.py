@@ -1,3 +1,5 @@
+"""Counts and totals for the statistics the web UI shows."""
+
 from pydantic import BaseModel
 from sqlmodel import Session, col, select
 

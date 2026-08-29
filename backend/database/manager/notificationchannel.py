@@ -1,3 +1,5 @@
+"""Notification channels and the event types each one subscribes to."""
+
 from datetime import datetime, timezone
 
 from sqlmodel import Session, select

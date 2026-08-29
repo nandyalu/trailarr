@@ -1,3 +1,5 @@
+"""The event history. Events are a permanent record and are never pruned."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse

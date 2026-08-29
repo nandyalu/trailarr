@@ -1,3 +1,5 @@
+"""Log in, log out, and report whether a session is still valid."""
+
 from typing import Annotated
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from pydantic import BaseModel

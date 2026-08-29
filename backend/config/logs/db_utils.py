@@ -1,3 +1,9 @@
+"""The engine and the sessions for the log database.
+
+Logs live in their own SQLite file. A slow or locked log write must never
+hold up the application database.
+"""
+
 from contextlib import asynccontextmanager, contextmanager
 from sqlalchemy import text as sa_text
 from sqlmodel import Session, create_engine

@@ -1,3 +1,5 @@
+"""Trailer profiles: what to download, and for which media."""
+
 import functools
 from fastapi import APIRouter, HTTPException
 

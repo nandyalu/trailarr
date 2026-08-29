@@ -1,3 +1,5 @@
+"""The websocket that pushes task and event updates to the web UI."""
+
 import asyncio
 from fastapi import WebSocket
 

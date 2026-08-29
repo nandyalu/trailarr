@@ -1,3 +1,5 @@
+"""The interval and the on/off state a user set for a background task."""
+
 from sqlmodel import Session, select
 
 from database.models.task_config import (

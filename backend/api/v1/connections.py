@@ -1,3 +1,5 @@
+"""Connections to Radarr, Sonarr and Plex, and the Connection Doctor."""
+
 
 from fastapi import APIRouter, HTTPException, status
 

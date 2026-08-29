@@ -1,3 +1,5 @@
+"""The record of which startup passes have run on this database."""
+
 from sqlmodel import Session, select
 
 from config.settings import app_settings

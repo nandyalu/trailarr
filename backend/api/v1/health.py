@@ -1,3 +1,5 @@
+"""The Health page: the checks, and the YouTube cookies file."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse

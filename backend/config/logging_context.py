@@ -1,3 +1,5 @@
+"""Carry the name of the running task into every log line it writes."""
+
 import asyncio
 from contextvars import ContextVar, Token
 from functools import wraps

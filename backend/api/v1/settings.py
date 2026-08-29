@@ -1,3 +1,5 @@
+"""Application settings and the web UI login."""
+
 from fastapi import APIRouter
 
 from api.v1.models import Settings, UpdateLogin, UpdateSetting

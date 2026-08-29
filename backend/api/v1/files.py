@@ -1,3 +1,9 @@
+"""Read, stream, rename and delete the files in a media folder.
+
+Every path here arrives from the caller, so every handler checks it first.
+See `services/files/service.py` for the rule it checks against.
+"""
+
 import os
 from fastapi import APIRouter, HTTPException, Response, status, Header
 

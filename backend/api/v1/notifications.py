@@ -1,3 +1,5 @@
+"""Notification channels, and the test message a user can send to one."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse

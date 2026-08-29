@@ -1,3 +1,5 @@
+"""Read the log, from the database or from the files on disk."""
+
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
 

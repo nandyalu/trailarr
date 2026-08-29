@@ -1,3 +1,10 @@
+"""Failed download attempts, and the backoff they cause.
+
+A failed attempt for a media and profile pair delays the next try. The delay
+doubles with each failure, up to a cap, so a title that cannot be downloaded
+does not run on every pass.
+"""
+
 from datetime import datetime, timezone
 
 from sqlmodel import Session, col, delete, select

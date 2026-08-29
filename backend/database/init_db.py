@@ -1,3 +1,5 @@
+"""Create the database and bring it up to the current schema at start."""
+
 # backend/database/init_db.py
 
 # !!! IMPORTANT !!!

@@ -1,3 +1,10 @@
+"""The database engine, and the session decorators every manager uses.
+
+`read_session` and `write_session` open a session, give it to the function,
+and close it. A write session commits when the function returns and rolls
+back when it raises.
+"""
+
 from contextlib import contextmanager
 from functools import wraps
 from sqlite3 import OperationalError as SQLiteOperationalError

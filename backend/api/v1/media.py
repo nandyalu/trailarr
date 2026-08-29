@@ -1,3 +1,5 @@
+"""The media list and one media item: its files, downloads and trailers."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets

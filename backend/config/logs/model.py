@@ -1,3 +1,5 @@
+"""The shape of a log record in the database."""
+
 from datetime import datetime, timezone
 from enum import Enum
 from pydantic import field_validator
