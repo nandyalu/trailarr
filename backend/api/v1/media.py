@@ -13,6 +13,7 @@ import database.manager.download as download_manager
 import database.manager.event as event_manager
 import database.manager.filefolderinfo as files_manager
 import database.manager.media as media_manager
+from services import media as media_service
 from database.models.event import EventSource
 from database.models.filefolderinfo import FileFolderInfoRead
 from database.models.download import DownloadRead
@@ -26,7 +27,6 @@ from services.trailers.trailers.pending import (
     compute_library_pending,
     compute_media_pending,
 )
-from services.files.files_handler import FilesHandler
 from tasks.files_scan import scan_media_folder
 from tasks.download_trailers import (
     batch_download_trailers,
@@ -479,26 +479,13 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     """
     logger.info(f"Monitoring media with ID: {media_id}")
     try:
-        # Get old monitor status for event tracking
-        media = media_manager.read(media_id)
-        old_monitor = media.monitor
-
-        msg, is_success = media_manager.update_monitoring(media_id, monitor)
-        logger.info(msg)
-
-        # Track monitor_changed event if status actually changed
-        if is_success:
-            event_manager.track_monitor_changed(
-                media_id=media_id,
-                old_monitor=old_monitor,
-                new_monitor=monitor,
-                source=EventSource.USER,
-            )
-
+        result = media_service.set_monitoring(media_id, monitor)
         await websockets.ws_manager.broadcast(
-            msg, "Success" if is_success else "Error", reload="media"
+            result.message,
+            "Success" if result.ok else "Error",
+            reload=result.reload,
         )
-        return msg
+        return result.message
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Error changing Monitor status!", "Error", reload="media"
@@ -549,24 +536,7 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
             detail="Invalid YouTube ID!",
         )
     try:
-        # Get old YouTube ID for event tracking
-        media = media_manager.read(media_id)
-        old_yt_id = media.youtube_trailer_id
-
-        media_manager.update_ytid(media_id, yt_id)
-
-        # Track youtube_id_changed event if ID actually changed
-        if old_yt_id != yt_id:
-            event_manager.track_youtube_id_changed(
-                media_id=media_id,
-                old_yt_id=old_yt_id,
-                new_yt_id=yt_id,
-                source=EventSource.USER,
-                source_detail="UserInput",
-            )
-
-        msg = f"YouTube ID for media with ID: {media_id} has been updated."
-        logger.info(msg)
+        msg = media_service.set_youtube_id(media_id, yt_id)
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return msg
     except Exception as e:
@@ -641,39 +611,13 @@ async def delete_media_trailer(media_id: int) -> str:
     """
     logger.info(f"Deleting trailer for media with ID: {media_id}")
     try:
-        media = media_manager.read(media_id)
-        if not media.folder_path:
-            msg = f"Media '{media.title}' [{media.id}] has no folder path"
-            await websockets.ws_manager.broadcast(msg, "Error")
-            return msg
-        # Use download records as the authoritative source for trailer files
-        downloads = download_manager.read_by_media_id(media_id)
-        live = [d for d in downloads if d.file_exists]
-        if not live:
-            msg = (
-                f"No trailer files found for media '{media.title}'"
-                f" [{media.id}]"
-            )
-            await websockets.ws_manager.broadcast(msg, "Error")
-            return msg
-
-        for d in live:
-            await FilesHandler.delete_file(d.path)
-            download_manager.mark_as_deleted(d.id)
-
-        # Track trailer_deleted event (once per media item, not per file)
-        event_manager.track_trailer_deleted(
-            media_id=media_id,
-            reason="user_request",
-            source=EventSource.USER,
+        result = await media_service.delete_trailers(media_id)
+        await websockets.ws_manager.broadcast(
+            result.message,
+            "Success" if result.ok else "Error",
+            reload=result.reload,
         )
-
-        msg = (
-            f"Trailer for media '{media.title}' [{media.id}] has been deleted."
-        )
-        logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
-        return msg
+        return result.message
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Error deleting trailer!", "Error", reload="media"
