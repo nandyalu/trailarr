@@ -7,10 +7,11 @@
 **Stage B COMPLETE** — 5 routers thinned (settings, logs, files, connections, media),
 the media batch path routed through the service, and hygiene H1 done with its permitted
 spec diff (18 added 500s + 2 previously-undocumented 404s).
-**Stage C: log messages DONE** — every message swept to one house style, the media
-link decoupled from the wording, and both permitted spec diffs spent.
-**Remaining:** comments and docstrings outside `api/v1`, the frontend light touch, the
-contributor docs, graphify re-index and the Docker build. 1419 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**Stage C DONE** — every log message swept to one house style, the media link decoupled
+from the wording, both permitted spec diffs spent, the frontend light touch done, the
+contributor docs and graphify updated, and the full verification protocol run.
+**Remaining:** a pass over the comments and docstrings that the log sweep did not
+touch. 1594 tests green. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
@@ -489,3 +490,34 @@ Still outstanding before the phase can ship: Stage B, Stage C, the frontend ligh
 `.github/instructions/backend.instructions.md` (18 stale `core/…` paths),
 `.github/planned_tasks.md`, a `graphify update .` re-index, the Docker build, and the
 `config-dev` copy boot. `CLAUDE.md` is already updated.
+
+
+## Verification protocol — run Aug 29, 2026
+
+| Check | Result |
+|---|---|
+| Backend suite | **1594 passed** (1089 before the phase; the rest are new tests for extracted logic and three new guards) |
+| `openapi.json` | No structural change. Two text diffs, each in its own commit: 18 documented 500s + 2 previously-undocumented 404s (H1), and 3 rewritten descriptions (Stage C) |
+| Layering | `tests/test_layering.py`: 0 imports from `database/` into `api`, `services` or `tasks`; `utils/` imports no layer; nothing imports `core` |
+| Migrations | 27 applied to a fresh database, then VACUUM |
+| Real-library boot | A copy of `config-dev` (3,704 media, 3 connections) boots with **no traceback**; the Plex refresh and both startup passes run |
+| Scratch boot | Every reorganized layer answers 200 after login |
+| Frontend | 135 tests pass, production build compiles, `scripts/launch.py` serves every page 200 |
+| Docker | `docker build` succeeds |
+| Media links | 386 of 1,004 log rows in the real-library run carry a correct `mediaid` |
+
+### Three bugs the suite could not catch
+
+Each was found by driving the running app or by diffing the rewrite against the
+original, and each now has a test:
+
+1. **`connections.py` had no module logger** (H1). Every failing connection request
+   answered a bare 500 and logged nothing. → `tests/api/test_error_wiring.py`
+2. **`ProbeStatus.FAIL` and `attempt.next_eligible_at`** (Stage C). Names that do not
+   exist, on an error path and a backoff path.
+3. **`media.title` on a `MediaImage`** (Stage C). That dataclass has no title, and image
+   refresh runs over the whole library every six hours. → both covered by
+   `tests/test_log_message_safety.py`
+
+The common shape: **a line that only runs when something goes wrong is not covered by a
+green suite.** Read the code, or run the app, or write a test that reads the code.
