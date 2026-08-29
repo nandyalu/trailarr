@@ -1,5 +1,5 @@
 import {Directive, ElementRef, inject, input} from '@angular/core';
-import {WebsocketService} from '../services/websocket.service';
+import {WebsocketService} from '../../services/websocket.service';
 
 @Directive({
   selector: '[appCopyToClipboard]',

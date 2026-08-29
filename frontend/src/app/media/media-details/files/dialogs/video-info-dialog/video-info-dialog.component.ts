@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import {FilesService} from 'src/app/services/files.service';
 import {VideoInfo} from 'src/app/models/video';
-import {FileSizePipe} from 'src/app/helpers/file-size.pipe';
+import {FileSizePipe} from 'src/app/shared/pipes/file-size.pipe';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 
 @Component({

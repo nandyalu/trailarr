@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import {FieldTree, form, FormField, submit} from '@angular/forms/signals';
 import {firstValueFrom} from 'rxjs';
-import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
+import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
 import {CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {ProfileService} from 'src/app/services/profile.service';

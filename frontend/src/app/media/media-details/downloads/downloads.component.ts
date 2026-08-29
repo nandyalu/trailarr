@@ -1,8 +1,8 @@
 import {DatePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {RouterLink} from '@angular/router';
-import {DurationSecondsConvertPipe} from 'src/app/helpers/duration-seconds-pipe';
-import {FileSizePipe} from 'src/app/helpers/file-size.pipe';
+import {DurationSecondsConvertPipe} from 'src/app/shared/pipes/duration-seconds-pipe';
+import {FileSizePipe} from 'src/app/shared/pipes/file-size.pipe';
 import {Download} from 'src/app/models/media';
 import {MediaService} from 'src/app/services/media.service';
 import {ProfileService} from 'src/app/services/profile.service';

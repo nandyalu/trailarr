@@ -1,9 +1,9 @@
 import {DatePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
-import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
-import {DurationConvertPipe} from 'src/app/helpers/duration-pipe';
-import {ScrollNearEndDirective} from 'src/app/helpers/scroll-near-end-directive';
+import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
+import {DurationConvertPipe} from 'src/app/shared/pipes/duration-pipe';
+import {ScrollNearEndDirective} from 'src/app/shared/directives/scroll-near-end-directive';
 import {Media} from 'src/app/models/media';
 import {MediaService} from 'src/app/services/media.service';
 import {RouteMedia} from 'src/routing';
