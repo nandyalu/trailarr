@@ -344,8 +344,9 @@ async def update_download_profile(
         str: Message indicating the result.
     """
     logger.info(
-        f"Setting profile [{profile_id}] on download [{download_id}] for"
-        f" media [{media_id}]"
+        f"Assigning download {download_id} to trailer profile"
+        f" {profile_id}.",
+        **logger.media(media_id),
     )
     try:
         download = download_manager.read(download_id)
@@ -382,8 +383,9 @@ async def update_download_profile(
         )
     except Exception as e:
         logger.exception(
-            f"Failed to set profile [{profile_id}] on download"
-            f" [{download_id}]: {e}"
+            f"Could not assign download {download_id} to trailer profile"
+            f" {profile_id}: {e}",
+            **logger.media(media_id),
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

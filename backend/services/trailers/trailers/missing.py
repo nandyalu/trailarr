@@ -155,9 +155,10 @@ def _apply_claims(
             profile.customfilter.filter_name if profile else str(profile_id)
         )
         logger.info(
-            f"Attributed existing download [{download_id}] of"
-            f" '{media.title}' [{media.id}] to profile '{_name}' instead of"
-            " downloading again."
+            f"'{media.title}' already has a trailer from download"
+            f" {download_id}. Trailarr assigned it to profile '{_name}'"
+            " and did not download it again.",
+            **logger.media(media.id),
         )
 
 

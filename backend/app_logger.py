@@ -84,8 +84,39 @@ class ModuleLogger(logging.LoggerAdapter):
         if self.isEnabledFor(TRACE_LEVEL):
             self._log(TRACE_LEVEL, message, args, **kwargs)
 
-    # def process(self, msg, kwargs):
-    #     return "%s: %s" % (self.log_prefix, msg), kwargs
+    def process(self, msg, kwargs):
+        """Keep the fields the caller passed in `extra`.
+
+        The default LoggerAdapter replaces `kwargs["extra"]` with the
+        adapter's own, which is None here, so
+        `logger.info(msg, extra={"mediaid": 42})` was thrown away without a
+        word. The database handler needs that field to link a log line to
+        its media item.
+        """
+        caller_extra = kwargs.get("extra")
+        if self.extra and caller_extra:
+            kwargs["extra"] = {**self.extra, **caller_extra}
+        elif self.extra:
+            kwargs["extra"] = dict(self.extra)
+        # A caller's extra with no adapter extra is already in kwargs
+        return msg, kwargs
+
+    def media(self, media_id: int | None) -> dict:
+        """Build the `extra` that links a log line to a media item.
+
+        Use it as `logger.info("...", **logger.media(media.id))`. The
+        message can then say whatever reads best: the link comes from this
+        field, not from the wording.
+
+        Args:
+            media_id (int | None): The media item the line is about.
+
+        Returns:
+            dict: The keyword arguments to pass to the logging call.
+        """
+        if media_id is None:
+            return {}
+        return {"extra": {"mediaid": media_id}}
 
 
 if not _is_logging_setup:
