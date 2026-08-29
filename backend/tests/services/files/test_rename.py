@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from api.v1.files import rename_file_fol
+from services.files.service import rename_file_or_folder as rename_file_fol
 
 OLD_PATH = "/media/Movie (2025)/Trailers/movie-trailer.mkv"
 NEW_PATH = "/media/Movie (2025)/Trailers/movie-trailer-renamed.mkv"
@@ -26,13 +26,12 @@ class TestRenameFileFolRenameFailure:
     @pytest.mark.asyncio
     async def test_rename_failure_skips_db_update(self):
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
             patch(
-                "api.v1.files.FilesHandler.rename_file_fol",
+                "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=False),
             ),
-            patch("api.v1.files.download_manager.read_by_media_id") as mock_read,
-            patch("api.v1.files.rename_trailer_download") as mock_rename,
+            patch("services.files.service.download_manager.read_by_media_id") as mock_read,
+            patch("services.files.service.rename_trailer_download") as mock_rename,
         ):
             result = await rename_file_fol(OLD_PATH, NEW_PATH, MEDIA_ID)
 
@@ -45,13 +44,12 @@ class TestRenameFileFolNoMediaId:
     @pytest.mark.asyncio
     async def test_rename_without_media_id_skips_db_update(self):
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
             patch(
-                "api.v1.files.FilesHandler.rename_file_fol",
+                "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=True),
             ),
-            patch("api.v1.files.download_manager.read_by_media_id") as mock_read,
-            patch("api.v1.files.rename_trailer_download") as mock_rename,
+            patch("services.files.service.download_manager.read_by_media_id") as mock_read,
+            patch("services.files.service.rename_trailer_download") as mock_rename,
         ):
             result = await rename_file_fol(OLD_PATH, NEW_PATH)  # media_id defaults to -1
 
@@ -66,16 +64,15 @@ class TestRenameFileFolNoMatchingDownload:
         """Renaming a file with no matching download record leaves the DB alone."""
         downloads = [make_download(1, OLD_PATH)]
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
             patch(
-                "api.v1.files.FilesHandler.rename_file_fol",
+                "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=True),
             ),
             patch(
-                "api.v1.files.download_manager.read_by_media_id",
+                "services.files.service.download_manager.read_by_media_id",
                 return_value=downloads,
             ),
-            patch("api.v1.files.rename_trailer_download") as mock_rename,
+            patch("services.files.service.rename_trailer_download") as mock_rename,
         ):
             result = await rename_file_fol(NON_TRAILER_PATH, NEW_PATH, MEDIA_ID)
 
@@ -89,17 +86,16 @@ class TestRenameFileFolUpdatesMatchingDownload:
         """Renaming a tracked trailer file updates the matching Download row in place."""
         download = make_download(1, OLD_PATH)
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
             patch(
-                "api.v1.files.FilesHandler.rename_file_fol",
+                "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=True),
             ),
             patch(
-                "api.v1.files.download_manager.read_by_media_id",
+                "services.files.service.download_manager.read_by_media_id",
                 return_value=[download],
             ),
             patch(
-                "api.v1.files.rename_trailer_download",
+                "services.files.service.rename_trailer_download",
                 new=AsyncMock(return_value=True),
             ) as mock_rename,
         ):

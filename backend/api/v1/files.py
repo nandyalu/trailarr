@@ -1,76 +1,15 @@
 import os
-from pathlib import PurePath
-
 from fastapi import APIRouter, HTTPException, Response, status, Header
 
 from app_logger import ModuleLogger
-import database.manager.download as download_manager
 import database.manager.filefolderinfo as files_manager
-import database.manager.media as media_manager
 from services.trailers import video_analysis
-from services.trailers.trailers.service import rename_trailer_download
+from services.files import service as files_service
 from services.files.files_handler import FilesHandler, FolderInfo
 
 logger = ModuleLogger("MediaFilesAPI")
 
 files_router = APIRouter(prefix="/files", tags=["Files"])
-
-CHUNK_SIZE = 1024 * 1024 * 5  # 5 MB
-
-# System folders that a request path must never point into. These are the
-# Linux ones. Windows keeps its system folders under a drive letter, which
-# is not fixed, so those are matched by name in UNSAFE_WINDOWS_ROOT_NAMES.
-UNSAFE_PATHS = [
-    "/app",
-    "/bin",
-    "/boot",
-    "/etc",
-    "/lib",
-    "/sbin",
-    "/usr",
-    "/var",
-]
-
-# Folder names directly under a Windows drive that hold the system.
-UNSAFE_WINDOWS_ROOT_NAMES = frozenset(
-    {"windows", "program files", "program files (x86)", "programdata"}
-)
-
-# The shortest path a media file can have: a root, a folder, and the file.
-MIN_PATH_PARTS = 4
-
-
-def _is_path_safe(path: str) -> bool:
-    """Check if the path is safe.\n
-    Args:
-        path (str): Path to check.
-    Returns:
-        bool: True if the path is safe, False otherwise."""
-    if not path:
-        return False
-    # normpath resolves any '..' in the path before it is checked
-    pure_path = PurePath(os.path.normpath(path))
-    # A relative path would be resolved against the working directory, which
-    # the caller does not choose. Refuse it instead of guessing.
-    if not pure_path.is_absolute():
-        return False
-    # Compare whole folder names. A plain string prefix would also refuse a
-    # real library at /variable/media, for starting with '/var'.
-    for unsafe_path in UNSAFE_PATHS:
-        unsafe = PurePath(unsafe_path)
-        if pure_path == unsafe or unsafe in pure_path.parents:
-            return False
-    # On Windows the system folders sit under a drive letter
-    if (
-        len(pure_path.parts) > 1
-        and pure_path.parts[1].lower() in UNSAFE_WINDOWS_ROOT_NAMES
-    ):
-        return False
-    # Check the path is deep enough. Count folders, not '/' characters:
-    # a Windows path is separated by backslashes and has no '/' at all.
-    if len(pure_path.parts) < MIN_PATH_PARTS:
-        return False
-    return True
 
 
 @files_router.get("/files_raw")
@@ -113,7 +52,7 @@ async def video_endpoint(file_path: str, range: str = Header(None)):
         HTTPException (400): If the file is not a video file. \n
     Returns:
         Response: Video stream response."""
-    if not _is_path_safe(file_path):
+    if not files_service.is_path_safe(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
@@ -122,28 +61,14 @@ async def video_endpoint(file_path: str, range: str = Header(None)):
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT, detail="File not found."
         )
-    _VALID_VIDEOS = [".mkv", ".mp4", ".avi", ".webm"]
-    if not file_path.endswith(tuple(_VALID_VIDEOS)):
+    if not files_service.is_video_file(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Not a video file."
         )
-    start, end = range.replace("bytes=", "").split("-")
-    filesize = os.path.getsize(file_path)
-    start = int(start)
-    end = int(end) if end else start + CHUNK_SIZE
-    if end > filesize:
-        end = filesize
-    # logger.info(f"Range: {start}-{end}")
-    with open(file_path, "rb") as video:
-        video.seek(start)
-        data = video.read(end - start)
-        headers = {
-            "Content-Range": f"bytes {str(start)}-{str(end - 1)}/{filesize}",
-            "Accept-Ranges": "bytes",
-        }
-        return Response(
-            data, status_code=206, headers=headers, media_type="video/mp4"
-        )
+    data, headers = files_service.read_video_chunk(file_path, range)
+    return Response(
+        data, status_code=206, headers=headers, media_type="video/mp4"
+    )
 
 
 @files_router.get(
@@ -159,20 +84,17 @@ async def read_file(file_path: str) -> str:
         HTTPException (400): If the file path is invalid. \n
     Returns:
         str: Contents of the file."""
-    if not _is_path_safe(file_path):
+    if not files_service.is_path_safe(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
         )
-    file_ext = os.path.splitext(file_path)[1]
-    VALID_FILE_TYPES = [".txt", ".srt", ".log", ".json", ".py", ".sh"]
-    if file_ext not in VALID_FILE_TYPES:
+    if not files_service.is_readable_text_file(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file type.",
         )
-    with open(file_path, "r") as file:
-        return file.read().strip()
+    return files_service.read_text_file(file_path)
 
 
 @files_router.get(
@@ -190,7 +112,7 @@ def get_video_info(file_path: str) -> video_analysis.VideoInfo | None:
         VideoInfo|None: VideoInfo object containing information about \
             the video file.
     """
-    if not _is_path_safe(file_path):
+    if not files_service.is_path_safe(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
@@ -237,7 +159,7 @@ def trim_video(
         HTTPException (400): If the file path is invalid. \n
     Returns:
         str: Message indicating the status of the operation."""
-    if not _is_path_safe(file_path):
+    if not files_service.is_path_safe(file_path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
@@ -275,20 +197,16 @@ async def rename_file_fol(
         bool: True if the file/folder was renamed successfully, \
             False otherwise.
     """
-    if not _is_path_safe(old_path) or not _is_path_safe(new_path):
+    if not files_service.is_path_safe(old_path) or not files_service.is_path_safe(
+        new_path
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
         )
-    renamed_status = await FilesHandler.rename_file_fol(old_path, new_path)
-    if media_id != -1 and renamed_status:
-        all_downloads = download_manager.read_by_media_id(media_id)
-        matching_download = next(
-            (d for d in all_downloads if d.path == old_path), None
-        )
-        if matching_download:
-            await rename_trailer_download(matching_download, new_path)
-    return renamed_status
+    return await files_service.rename_file_or_folder(
+        old_path, new_path, media_id
+    )
 
 
 @files_router.delete(
@@ -307,15 +225,9 @@ async def delete_file_fol(path: str, media_id: int = -1) -> bool:
         bool: True if the file/folder was deleted successfully, \
             False otherwise.
     """
-    if not _is_path_safe(path):
+    if not files_service.is_path_safe(path):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",
         )
-    deleted_status = await FilesHandler.delete_file_fol(path)
-    if media_id != -1 and deleted_status:
-        all_downloads = download_manager.read_by_media_id(media_id)
-        for d in all_downloads:
-            if d.path == path:
-                download_manager.mark_as_deleted(d.id)
-    return deleted_status
+    return await files_service.delete_file_or_folder(path, media_id)

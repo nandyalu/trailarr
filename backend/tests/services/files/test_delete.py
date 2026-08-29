@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from api.v1.files import delete_file_fol
+from services.files.service import delete_file_or_folder as delete_file_fol
 
 TRAILER_PATH = "/media/Movie (2025)/Trailers/movie-trailer.mkv"
 OTHER_PATH = "/media/Movie (2025)/Trailers/movie-trailer2.mkv"
@@ -26,10 +26,9 @@ class TestDeleteFileFolDeletionFailure:
     @pytest.mark.asyncio
     async def test_deletion_failure_skips_db_updates(self):
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=False)),
-            patch("api.v1.files.download_manager.read_by_media_id", MagicMock(return_value=[])) as mock_read,
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=False)),
+            patch("services.files.service.download_manager.read_by_media_id", MagicMock(return_value=[])) as mock_read,
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(TRAILER_PATH, MEDIA_ID)
 
@@ -42,10 +41,9 @@ class TestDeleteFileFolNoMediaId:
     @pytest.mark.asyncio
     async def test_no_media_id_skips_db_updates(self):
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
-            patch("api.v1.files.download_manager.read_by_media_id") as mock_read,
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
+            patch("services.files.service.download_manager.read_by_media_id") as mock_read,
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(TRAILER_PATH)  # media_id defaults to -1
 
@@ -60,10 +58,9 @@ class TestDeleteFileFolNonTrailerFile:
         """Deleting a file with no matching download record marks nothing deleted."""
         downloads = [make_download(1, TRAILER_PATH)]
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
-            patch("api.v1.files.download_manager.read_by_media_id", return_value=downloads),
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
+            patch("services.files.service.download_manager.read_by_media_id", return_value=downloads),
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(NON_TRAILER_PATH, MEDIA_ID)
 
@@ -77,10 +74,9 @@ class TestDeleteFileFolMarksDownloads:
         """Deleting a trailer marks its download record as deleted."""
         downloads = [make_download(1, TRAILER_PATH)]
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
-            patch("api.v1.files.download_manager.read_by_media_id", return_value=downloads),
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
+            patch("services.files.service.download_manager.read_by_media_id", return_value=downloads),
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(TRAILER_PATH, MEDIA_ID)
 
@@ -95,10 +91,9 @@ class TestDeleteFileFolMarksDownloads:
             make_download(2, OTHER_PATH, file_exists=True),
         ]
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
-            patch("api.v1.files.download_manager.read_by_media_id", return_value=downloads),
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
+            patch("services.files.service.download_manager.read_by_media_id", return_value=downloads),
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(TRAILER_PATH, MEDIA_ID)
 
@@ -109,10 +104,9 @@ class TestDeleteFileFolMarksDownloads:
     async def test_no_downloads_for_media_marks_nothing(self):
         """If media has no download records at all, nothing is marked deleted."""
         with (
-            patch("api.v1.files._is_path_safe", return_value=True),
-            patch("api.v1.files.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
-            patch("api.v1.files.download_manager.read_by_media_id", return_value=[]),
-            patch("api.v1.files.download_manager.mark_as_deleted") as mock_mark,
+            patch("services.files.service.FilesHandler.delete_file_fol", AsyncMock(return_value=True)),
+            patch("services.files.service.download_manager.read_by_media_id", return_value=[]),
+            patch("services.files.service.download_manager.mark_as_deleted") as mock_mark,
         ):
             result = await delete_file_fol(NON_TRAILER_PATH, MEDIA_ID)
 
