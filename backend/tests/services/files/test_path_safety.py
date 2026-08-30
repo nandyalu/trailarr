@@ -1,4 +1,4 @@
-"""Tests for the path guard on the file endpoints.
+"""Tests for the path guard in services/files/service.py.
 
 `_is_path_safe` decides whether the API will open a path that arrived in a
 request. It had no tests: every test that reached it patched it to True to
@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from api.v1.files import _is_path_safe
+from services.files.service import is_path_safe as _is_path_safe
 
 
 class TestRealMediaPathsAreAllowed:
@@ -95,8 +95,8 @@ class TestWindows:
 
     @staticmethod
     def _as_windows(path: str) -> bool:
-        with patch("api.v1.files.PurePath", PureWindowsPath):
-            with patch("api.v1.files.os.path.normpath", lambda p: p):
+        with patch("services.files.service.PurePath", PureWindowsPath):
+            with patch("services.files.service.os.path.normpath", lambda p: p):
                 return _is_path_safe(path)
 
     @pytest.mark.parametrize(
