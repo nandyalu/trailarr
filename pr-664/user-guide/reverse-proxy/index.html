@@ -3149,14 +3149,14 @@
 </ul>
 <div class="admonition info">
 <p class="admonition-title">The new value applies immediately</p>
-<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a>
+<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a>
 A change to <code>URL Base</code> applies to the next request. Reload the page in your browser to load the app with the new base path. Before v0.11.4, the setting applied only after an application restart, and the API returned a <code>405 Method Not Allowed</code> error until then.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">How to remove the URL Base</p>
 <p>The application does not accept an empty value for a setting, so you cannot remove the <code>URL Base</code> in the WebUI. Use one of these two methods:</p>
 <ul>
-<li><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a> Set <code>URL_BASE=</code> (empty) in your <code>docker-compose.yml</code>. Then restart the container. From v0.11.4, a variable set for the container has priority over the stored value.</li>
+<li><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a> Set <code>URL_BASE=</code> (empty) in your <code>docker-compose.yml</code>. Then restart the container. From v0.11.4, a variable set for the container has priority over the stored value.</li>
 <li>Open the <code>.env</code> file in your <code>config/</code> folder, remove the value set for <code>URL_BASE</code>, and restart the application.</li>
 </ul>
 </div>
@@ -3362,7 +3362,7 @@ A change to <code>URL Base</code> applies to the next request. Reload the page i
 </ul>
 <p>Both access methods work at the same time — no trade-off between local and proxied access. Trailarr reads the <code>URL Base</code> for each request, so a change to the setting applies without a restart.</p>
 <h2 id="login-problems-in-a-sub-directory-setup">Login Problems in a Sub-directory Setup</h2>
-<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a></p>
+<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
 <p>Versions before v0.11.4 had three problems with a sub-directory setup (<a href="https://github.com/nandyalu/trailarr/issues/663" target="_blank">#663</a>). If you see one of them, update to v0.11.4 or later.</p>
 <ul>
 <li><strong>The login page returns a <code>405 Method Not Allowed</code> error.</strong> The API prefix was removed only for a <code>URL Base</code> that was set when the app started.</li>

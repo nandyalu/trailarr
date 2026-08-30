@@ -2963,7 +2963,7 @@
 
 
 <h1 id="health">Health</h1>
-<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
 <p>The <strong>Settings &gt; Health</strong> page runs live checks of the parts that Trailarr depends on. Each red or yellow result shows the fix and links to the matching docs page. The checks run when you open the page, and when you click <strong>Run checks</strong>. Trailarr keeps the results for 24 hours. The checks never run at startup. All checks run at the same time, and each check has its own timeout. A network mount that does not answer delays only its own check.</p>
 <h2 id="the-checks">The checks</h2>
 <table>
@@ -3012,7 +3012,7 @@
 <p>The <strong>Test YouTube download</strong> button checks that yt-dlp can read a known test video from YouTube. It uses your current settings, and your cookies file when you have one. Trailarr does not download the video.</p>
 <p>The test contacts YouTube, so it never runs automatically. You must confirm it first. Trailarr keeps the result for 24 hours. When the test fails, the result shows the reason in plain language (sign-in required, rate limit, outdated yt-dlp) instead of a raw error.</p>
 <h2 id="youtube-cookies">YouTube cookies</h2>
-<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
 <p>Some downloads fail because YouTube asks for a sign-in ("Sign in to confirm you're not a bot") or rate-limits your address. A cookies file from a signed-in browser session fixes this. You only need one when downloads fail this way — a fresh install works without it.</p>
 <p><strong>Set up:</strong></p>
 <ol>
@@ -3028,7 +3028,7 @@
 <p>The <code>Yt-dlp Cookies Path</code> setting under <a href=".././general-settings/#yt-dlp-cookies-path">General Settings</a> still works and points at any file path you manage yourself. The Health page is the recommended way — it stores the file with safe permissions and shows its status.</p>
 </div>
 <h2 id="classified-download-errors">Classified download errors</h2>
-<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-tbd">v0.11.4</a></p>
+<p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
 <p>When a download fails with a known yt-dlp error, Trailarr records the reason and the fix in plain language first, and the raw error after it:</p>
 <table>
 <thead>
