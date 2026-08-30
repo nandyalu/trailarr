@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.56">
+      <meta name="generator" content="zensical-0.0.57">
     
     
       
@@ -34,12 +34,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.20815dad.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.5da3a30f.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.812a03bb.min.css">
       
       
 
@@ -1470,6 +1470,8 @@
       
         
       
+        
+      
     
     
     
@@ -1665,6 +1667,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../settings/health/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Health
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../settings/notifications/" class="md-nav__link">
         
   
@@ -1719,7 +1748,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1740,14 +1769,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_7_5" id="__nav_3_7_5_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3_7_6" id="__nav_3_7_6_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_5">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1796,10 +1825,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_5_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_7_5_2" id="__nav_3_7_5_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_7_6_2" id="__nav_3_7_6_2_label" tabindex="0">
             
   
   
@@ -1816,8 +1845,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_5_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_5_2">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_6_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2301,6 +2330,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         How It Works
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login-problems-in-a-sub-directory-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Login Problems in a Sub-directory Setup
       </span>
     </span>
   </a>
@@ -2970,6 +3010,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#login-problems-in-a-sub-directory-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Login Problems in a Sub-directory Setup
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#bypassing-authentication-via-reverse-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3089,8 +3140,26 @@
 <p>When hosting the application behind a reverse proxy in a sub-directory (e.g., <code>https://mydomain.com/trailarr/</code>), additional configuration is required to ensure proper routing and resource loading.</p>
 <h3 id="url-base-setting">URL Base Setting</h3>
 <ul>
-<li>Make sure to set the <code>URL Base</code> in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at <code>https://mydomain.com/trailarr/</code>, set the <code>URL Base</code> to <code>/trailarr</code>.</li>
+<li>
+<p>Make sure to set the <code>URL Base</code> in the General Settings of the application to match the sub-directory path used in the reverse proxy. For example, if your application is accessible at <code>https://mydomain.com/trailarr/</code>, set the <code>URL Base</code> to <code>/trailarr</code>.</p>
+</li>
+<li>
+<p>You can set the <code>URL_BASE</code> environment variable instead. Trailarr reads it at startup, and shows the value in the General Settings.</p>
+</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">The new value applies immediately</p>
+<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a>
+A change to <code>URL Base</code> applies to the next request. Reload the page in your browser to load the app with the new base path. Before v0.11.4, the setting applied only after an application restart, and the API returned a <code>405 Method Not Allowed</code> error until then.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">How to remove the URL Base</p>
+<p>The application does not accept an empty value for a setting, so you cannot remove the <code>URL Base</code> in the WebUI. Use one of these two methods:</p>
+<ul>
+<li><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a> Set <code>URL_BASE=</code> (empty) in your <code>docker-compose.yml</code>. Then restart the container. From v0.11.4, a variable set for the container has priority over the stored value.</li>
+<li>Open the <code>.env</code> file in your <code>config/</code> folder, remove the value set for <code>URL_BASE</code>, and restart the application.</li>
+</ul>
+</div>
 <h2 id="example-configurations">Example Configurations</h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -3126,10 +3195,11 @@
 </tr>
 <tr>
 <td><code>X-Forwarded-Prefix</code></td>
-<td>Sub-directory prefix (<code>/trailarr</code>) — required for correct frontend routing in sub-directory setups</td>
+<td>Sub-directory prefix (<code>/trailarr</code>) — see the note below</td>
 </tr>
 </tbody>
 </table>
+<p>Trailarr uses <code>X-Forwarded-Prefix</code> to select the correct frontend when the proxy <strong>removes</strong> the sub-directory prefix before it sends the request (the Apache and Traefik examples below). A proxy that <strong>keeps</strong> the prefix (the Nginx and Caddy examples below) does not need the header, but the header does no harm. If you are not sure, set the header in both cases.</p>
 </div>
 <h3 id="nginx">Nginx</h3>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sub-Domain</label><label for="__tabbed_1_2">Sub-Directory</label></div>
@@ -3264,8 +3334,8 @@
 <h2 id="additional-notes">Additional Notes</h2>
 <ul>
 <li>Forward the <code>X-Forwarded-Prefix</code> header from reverse proxy to Trailarr. <em>Recommended — ensures the correct frontend is served when accessed through the proxy.</em></li>
-<li>Restart Trailarr and reverse proxy to apply the new configuration.</li>
-<li>After setting <code>URL Base</code> and restarting, Trailarr is accessible at <strong>both</strong> the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>).</li>
+<li>Restart the reverse proxy to apply its new configuration. Trailarr applies a new <code>URL Base</code> immediately, but a restart of Trailarr does no harm.</li>
+<li>With <code>URL Base</code> set, Trailarr is accessible at <strong>both</strong> the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>).</li>
 <li>
 <p>You may need to clear your browser cache or perform a hard refresh to load the resources correctly.</p>
 <div class="admonition tip">
@@ -3282,23 +3352,37 @@
 <p>If you are using a different reverse proxy, and successfully configured it to work with Trailarr in a sub-directory, please consider sharing your configuration by opening a new issue or a pull request on our <a href="https://github.com/nandyalu/trailarr/" target="_blank">GitHub repository</a> and we will update the documentation accordingly.</p>
 </div>
 <h2 id="how-it-works">How It Works</h2>
-<p>When <code>URL Base</code> is set and Trailarr restarts, it does the following:</p>
+<p>When <code>URL Base</code> is set, Trailarr does the following:</p>
 <ul>
 <li>Keeps the root <code>index.html</code> with <code>&lt;base href="/"&gt;</code> so the app remains accessible at the local IP and port (<code>http://your-ip:7889/</code>).</li>
 <li>Creates a <code>/{url_base}/</code> subfolder inside the frontend build directory containing a separate <code>index.html</code> patched with <code>&lt;base href="/{url_base}/"&gt;</code>. This makes the app also accessible at <code>http://your-ip:7889/{url_base}/</code> and via the reverse proxy sub-directory URL.</li>
-<li>Registers a middleware that strips the <code>/{url_base}</code> prefix from API, WebSocket, and other server-side requests arriving without a reverse proxy (i.e., direct local access at <code>http://your-ip:7889/{url_base}/api/...</code>), so they are routed correctly without any proxy stripping needed.</li>
+<li>Removes the <code>/{url_base}</code> prefix from API, WebSocket, health and image requests that arrive with the prefix. This applies to direct local access at <code>http://your-ip:7889/{url_base}/api/...</code>, and to a reverse proxy that keeps the prefix. The proxy does not have to remove the prefix.</li>
 <li>Reads the <code>X-Forwarded-Prefix</code> header (sent by the reverse proxy) to decide which <code>index.html</code> to serve when the proxy strips the prefix before forwarding — ensuring Angular loads with the correct base path.</li>
+<li>Keeps the login session cookie at the root path (<code>/</code>), so the same session works at the local URL and at the sub-directory URL.</li>
 </ul>
-<p>Both access methods work simultaneously after a single restart — no trade-off between local and proxied access.</p>
+<p>Both access methods work at the same time — no trade-off between local and proxied access. Trailarr reads the <code>URL Base</code> for each request, so a change to the setting applies without a restart.</p>
+<h2 id="login-problems-in-a-sub-directory-setup">Login Problems in a Sub-directory Setup</h2>
+<p><span class="twemoji orange" title="Updated in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
+<p>Versions before v0.11.4 had three problems with a sub-directory setup (<a href="https://github.com/nandyalu/trailarr/issues/663" target="_blank">#663</a>). If you see one of them, update to v0.11.4 or later.</p>
+<ul>
+<li><strong>The login page returns a <code>405 Method Not Allowed</code> error.</strong> The API prefix was removed only for a <code>URL Base</code> that was set when the app started.</li>
+<li><strong>The login is successful, but every page shows a <code>401 Unauthorized</code> error.</strong> The session cookie was limited to the <code>URL Base</code> path, so the browser did not send it for other paths.</li>
+<li><strong>The app goes to the root URL after login, and the sub-directory prefix is lost.</strong> The redirect used an absolute path and did not include the base path.</li>
+</ul>
+<p>If you cannot sign in and cannot open the Settings page, open the <code>.env</code> file in your <code>config/</code> folder. Remove the value set for <code>URL_BASE</code>. Then restart the application. Trailarr is available at the root URL again.</p>
 <h2 id="bypassing-authentication-via-reverse-proxy">Bypassing Authentication via Reverse Proxy</h2>
 <p>If your reverse proxy already handles authentication (e.g. SSO, OAuth, basic auth at the proxy level) and you want Trailarr to skip its own login screen, configure the proxy to inject the <code>X-API-KEY</code> header with your Trailarr API key on every forwarded request. Trailarr will accept the key, issue a session automatically, and the login page will not be shown.</p>
 <div class="admonition info">
 <p class="admonition-title">Finding your API key</p>
-<p>Your API key is shown in <strong>Settings → General → API Key</strong>.</p>
+<p>Your API key is shown in <strong>Settings → About → API Key</strong>. Click the key to copy it.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Security note</p>
 <p>Anyone who can send an <code>X-API-KEY</code> header directly to Trailarr will bypass authentication. Make sure Trailarr's port is <strong>not</strong> accessible from outside your network — only the reverse proxy should be able to reach it.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Set the header on all forwarded requests</p>
+<p>The WebSocket connection gives you live task and download updates. The browser cannot add a header to that connection. Trailarr solves this with a session: the first request with the key gets a session cookie. The WebSocket then uses that cookie. Set the header for the full location block, and not only for the page URL.</p>
 </div>
 <p>Add the following to your existing reverse proxy configuration (in addition to any other headers already set):</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="5:4"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><input id="__tabbed_5_3" name="__tabbed_5" type="radio" /><input id="__tabbed_5_4" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Nginx</label><label for="__tabbed_5_2">Apache</label><label for="__tabbed_5_3">Caddy</label><label for="__tabbed_5_4">Traefik</label></div>
@@ -3404,7 +3488,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2024 - 2026 nandyalu
+      Made with <span class="love-heart">&#10084;</span> by <a href="https://github.com/nandyalu" target="_blank" rel="noopener">nandyalu</a> &middot; Copyright &copy; 2024 - <span class="copyright-year">2026</span> nandyalu
     </div>
   
   
@@ -3482,7 +3566,9 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e886cdf1.min.js"></script>
+      <script src="../../assets/javascripts/bundle.49251538.min.js"></script>
+      
+        <script src="../../copyright-year.js"></script>
       
     
   </body>
