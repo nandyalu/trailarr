@@ -121,10 +121,23 @@ async def test_download_missing_trailers_prevents_infinite_loop():
             downloaded_at=None,
         )
 
-        # Database should always yield the same media item
-        # This simulates the scenario where download fails and media remains monitored
-        def fake_media_generator(monitored_only=False):
-            yield media
+        media_items = [
+            media.model_copy(
+                update={
+                    "id": item_id,
+                    "arr_id": item_id,
+                    "txdb_id": str(item_id),
+                }
+            )
+            for item_id in range(1, 4)
+        ]
+        yielded_ids = []
+
+        def fake_media_generator(monitored_only=False, after_id=None):
+            for item in media_items:
+                if after_id is None or item.id > after_id:
+                    yielded_ids.append(item.id)
+                    yield item
 
         mock_db_manager_read_all.side_effect = fake_media_generator
 
@@ -144,11 +157,18 @@ async def test_download_missing_trailers_prevents_infinite_loop():
         # Run the function
         await download_missing_trailers()
 
-        # Verify that process was called exactly once despite media remaining monitored
-        assert mock_process.call_count == 1
+        assert mock_process.call_count == len(media_items)
 
-        # Verify read_all was called at least twice (to confirm loop ran multiple times)
-        assert mock_db_manager_read_all.call_count >= 2
+        assert yielded_ids == [item.id for item in media_items]
+        assert mock_db_manager_read_all.call_count == len(media_items) + 1
+        assert mock_db_manager_read_all.call_args_list[0].kwargs == {
+            "monitored_only": True,
+            "after_id": None,
+        }
+        assert [
+            call.kwargs["after_id"]
+            for call in mock_db_manager_read_all.call_args_list[1:]
+        ] == [item.id for item in media_items]
 
 
 @pytest.mark.asyncio
@@ -190,7 +210,7 @@ async def test_download_missing_trailers_no_profiles():
         mock_attempts.prune_for_missing_profiles.return_value = 0
 
         # Configure database manager mock
-        def fake_media_generator(monitored_only=False):
+        def fake_media_generator(monitored_only=False, after_id=None):
             yield from []
 
         mock_db_manager_read_all.side_effect = fake_media_generator

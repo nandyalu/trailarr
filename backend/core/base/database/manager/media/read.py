@@ -115,6 +115,7 @@ def read_all_generator(
     monitored_only: bool = False,
     downloaded_only: bool = False,
     plex_linked_only: bool = False,
+    after_id: int | None = None,
     *,
     _session: Session = None,  # type: ignore
 ) -> Generator[MediaRead, None, None]:
@@ -127,6 +128,8 @@ def read_all_generator(
         monitored_only (bool, Optional=False): Flag to get only monitored media.
         downloaded_only (bool, Optional=False): Flag to get only downloaded media.
         plex_linked_only (bool, Optional=False): Flag to get only media linked to a Plex connection.
+        after_id (int, Optional=None): Return media with an id greater than this
+            value. Results are ordered by id.
         _session (Session, Optional=None): A session to use for the database connection.\n
             Default is None, in which case a new session will be created.\n
     Yields:
@@ -144,6 +147,9 @@ def read_all_generator(
             col(Media.plex_connection_id).is_not(None),
             col(Media.plex_rating_key).is_not(None),
         )
+    if after_id is not None:
+        statement = statement.where(col(Media.id) > after_id)
+    statement = statement.order_by(col(Media.id))
     stream = _session.exec(statement)
     try:
         for db_media in stream:

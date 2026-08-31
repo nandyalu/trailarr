@@ -269,7 +269,8 @@ async def download_missing_trailers(
 
     successful_downloads = 0
     skipped_items = 0
-    processed_media_ids = set()  # Track processed media to avoid reprocessing
+    processed_media_count = 0
+    last_media_id: int | None = None
 
     while True:
         if _stop_event and _stop_event.is_set():
@@ -278,7 +279,10 @@ async def download_missing_trailers(
             )
             return
 
-        db_media_list = media_manager.read_all_generator(monitored_only=True)
+        db_media_list = media_manager.read_all_generator(
+            monitored_only=True,
+            after_id=last_media_id,
+        )
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
         if not trailer_profiles:
@@ -306,9 +310,7 @@ async def download_missing_trailers(
         profiles_to_download: list[TrailerProfileRead] = []
 
         for db_media in db_media_list:
-            # Skip media that was already processed in this run
-            if db_media.id in processed_media_ids:
-                continue
+            last_media_id = db_media.id
             matching_profiles = find_matching_profiles(
                 db_media, enabled_profiles
             )
@@ -318,11 +320,11 @@ async def download_missing_trailers(
             if result.claims:
                 _apply_claims(db_media, result.claims, profiles_by_id)
             if not result.unsatisfied:
-                processed_media_ids.add(db_media.id)
+                processed_media_count += 1
                 continue
             eligible = _filter_backoff_eligible(db_media, result.unsatisfied)
             if not eligible:
-                processed_media_ids.add(db_media.id)
+                processed_media_count += 1
                 continue
             media_to_process = db_media
             profiles_to_download = eligible
@@ -361,11 +363,11 @@ async def download_missing_trailers(
                 f" '{media_to_process.title}' [{media_to_process.id}]: {e}"
             )
         finally:
-            processed_media_ids.add(media_to_process.id)
+            processed_media_count += 1
 
     logger.info(
         "Finished downloading missing trailers. Processed:"
-        f" {len(processed_media_ids)} Successful downloads:"
+        f" {processed_media_count} Successful downloads:"
         f" {successful_downloads}, Skipped items: {skipped_items}"
     )
 

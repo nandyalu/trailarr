@@ -248,3 +248,22 @@ class TestReadAllGeneratorSessionLifecycle:
 
         # The finally block must have added exactly one more close call
         assert after_close == before_close + 1
+
+    def test_after_id_returns_only_later_rows_in_id_order(self):
+        """A cursor resumes after the last row without reading it again."""
+        created = media_manager.create_or_update_bulk(
+            [
+                _make_media(self.conn.id, f"tt_gen_cursor_{index}")
+                for index in range(3)
+            ]
+        )
+        created_ids = sorted(item[0].id for item in created)
+
+        rows = list(media_manager.read_all_generator(after_id=created_ids[0]))
+        returned_ids = [row.id for row in rows]
+
+        assert created_ids[0] not in returned_ids
+        assert created_ids[1:] == [
+            item_id for item_id in returned_ids if item_id in created_ids
+        ]
+        assert returned_ids == sorted(returned_ids)
