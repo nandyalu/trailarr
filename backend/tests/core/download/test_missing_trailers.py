@@ -2,7 +2,7 @@
 
 import datetime
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from config.settings import app_settings
 from core.download.trailers.missing import download_missing_trailers
 from core.base.database.models.media import MediaRead
@@ -75,25 +75,34 @@ def mock_media_with_trailer():
 @pytest.mark.asyncio
 async def test_download_missing_trailers_prevents_infinite_loop():
     """Test that the same media item is not processed multiple times in one run."""
-    with patch(
-        "core.download.trailers.missing.app_settings"
-    ) as mock_settings, patch(
-        "core.download.trailers.missing.downloads_ready", return_value=True
-    ), patch(
-        "core.download.trailers.missing.attempt_manager"
-    ) as mock_attempts, patch(
-        "core.download.trailers.missing.media_manager.read_all_generator"
-    ) as mock_db_manager_read_all, patch(
-        "core.download.trailers.missing.trailerprofile"
-    ) as mock_trailerprofile, patch(
-        "core.download.trailers.missing._process_single_media_item"
-    ) as mock_process:
-
-        # Configure settings
+    with (
+        patch("core.download.trailers.missing.app_settings") as mock_settings,
+        patch(
+            "core.download.trailers.missing.downloads_ready",
+            return_value=True,
+        ),
+        patch(
+            "core.download.trailers.missing.attempt_manager"
+        ) as mock_attempts,
+        patch(
+            "core.download.trailers.missing.media_manager.read_all_generator"
+        ) as mock_media_generator,
+        patch(
+            "core.download.trailers.missing.media_manager.read"
+        ) as mock_media_read,
+        patch(
+            "core.download.trailers.missing.trailerprofile"
+        ) as mock_trailerprofile,
+        patch(
+            "core.download.trailers.missing._process_single_media_item",
+            new_callable=AsyncMock,
+        ) as mock_process,
+    ):
         mock_settings.monitor_enabled = True
+        mock_settings.downloads_enabled = True
         mock_attempts.prune_for_missing_profiles.return_value = 0
+        mock_attempts.read_all.return_value = []
         mock_attempts.read_for_media.return_value = []
-
         media = MediaRead(
             id=1,
             connection_id=1,
@@ -121,27 +130,11 @@ async def test_download_missing_trailers_prevents_infinite_loop():
             downloaded_at=None,
         )
 
-        media_items = [
-            media.model_copy(
-                update={
-                    "id": item_id,
-                    "arr_id": item_id,
-                    "txdb_id": str(item_id),
-                }
-            )
-            for item_id in range(1, 4)
-        ]
-        yielded_ids = []
+        def fake_media_generator(monitored_only=False):
+            yield media
 
-        def fake_media_generator(monitored_only=False, after_id=None):
-            for item in media_items:
-                if after_id is None or item.id > after_id:
-                    yielded_ids.append(item.id)
-                    yield item
-
-        mock_db_manager_read_all.side_effect = fake_media_generator
-
-        # Configure trailer profiles
+        mock_media_generator.side_effect = fake_media_generator
+        mock_media_read.return_value = media
         mock_profile = MagicMock()
         mock_profile.id = 1
         mock_profile.priority = 100
@@ -150,25 +143,12 @@ async def test_download_missing_trailers_prevents_infinite_loop():
         mock_customfilter.filters = []
         mock_profile.customfilter = mock_customfilter
         mock_trailerprofile.get_trailerprofiles.return_value = [mock_profile]
-
-        # Configure process function to return a failure (0 downloads, 1 skip)
         mock_process.return_value = (0, 1)
 
-        # Run the function
         await download_missing_trailers()
 
-        assert mock_process.call_count == len(media_items)
-
-        assert yielded_ids == [item.id for item in media_items]
-        assert mock_db_manager_read_all.call_count == len(media_items) + 1
-        assert mock_db_manager_read_all.call_args_list[0].kwargs == {
-            "monitored_only": True,
-            "after_id": None,
-        }
-        assert [
-            call.kwargs["after_id"]
-            for call in mock_db_manager_read_all.call_args_list[1:]
-        ] == [item.id for item in media_items]
+        assert mock_process.await_count == 1
+        assert mock_media_generator.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -210,7 +190,7 @@ async def test_download_missing_trailers_no_profiles():
         mock_attempts.prune_for_missing_profiles.return_value = 0
 
         # Configure database manager mock
-        def fake_media_generator(monitored_only=False, after_id=None):
+        def fake_media_generator(monitored_only=False):
             yield from []
 
         mock_db_manager_read_all.side_effect = fake_media_generator
@@ -221,8 +201,7 @@ async def test_download_missing_trailers_no_profiles():
         # Run the function
         await download_missing_trailers()
 
-        # Generator is created once before the early return on empty profiles
-        assert mock_db_manager_read_all.call_count == 1
+        mock_db_manager_read_all.assert_not_called()
 
 
 @pytest.mark.asyncio

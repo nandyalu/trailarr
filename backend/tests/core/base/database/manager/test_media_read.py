@@ -1,12 +1,17 @@
 """Tests for media read manager functions."""
 
-import pytest
+from datetime import datetime, timezone
 from unittest.mock import patch
+
+import pytest
+from sqlalchemy import event
 from sqlmodel import Session
 
 from core.base.database.models.connection import ArrType, Connection
+from core.base.database.models.download import DownloadCreate
 from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
+from core.base.database.utils.engine import engine, write_session
+import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
 
 
@@ -30,7 +35,12 @@ def _make_connection(
     return conn
 
 
-def _make_media(connection_id: int, txdb_id: str, folder_path: str | None = None) -> MediaCreate:
+def _make_media(
+    connection_id: int,
+    txdb_id: str,
+    folder_path: str | None = None,
+    monitor: bool = False,
+) -> MediaCreate:
     return MediaCreate(
         connection_id=connection_id,
         arr_id=1,
@@ -38,6 +48,7 @@ def _make_media(connection_id: int, txdb_id: str, folder_path: str | None = None
         title=f"Media {txdb_id}",
         txdb_id=txdb_id,
         folder_path=folder_path,
+        monitor=monitor,
     )
 
 
@@ -249,21 +260,58 @@ class TestReadAllGeneratorSessionLifecycle:
         # The finally block must have added exactly one more close call
         assert after_close == before_close + 1
 
-    def test_after_id_returns_only_later_rows_in_id_order(self):
-        """A cursor resumes after the last row without reading it again."""
+    def test_monitored_generator_eager_loads_downloads_in_bounded_queries(
+        self,
+    ):
+        """The monitored scan loads downloads without one query per row."""
+        batch_size = 500
         created = media_manager.create_or_update_bulk(
             [
-                _make_media(self.conn.id, f"tt_gen_cursor_{index}")
-                for index in range(3)
+                _make_media(
+                    self.conn.id,
+                    f"tt_gen_eager_{index}",
+                    monitor=True,
+                )
+                for index in range(batch_size + 1)
             ]
         )
-        created_ids = sorted(item[0].id for item in created)
+        media_id = created[0][0].id
+        now = datetime.now(timezone.utc)
+        download_manager.create(
+            DownloadCreate(
+                media_id=media_id,
+                path="/trailers/test.mkv",
+                file_name="test.mkv",
+                file_hash="hash",
+                size=1,
+                resolution=1080,
+                file_format="mkv",
+                video_format="h264",
+                audio_format="aac",
+                profile_id=7,
+                added_at=now,
+                updated_at=now,
+            )
+        )
+        select_count = 0
 
-        rows = list(media_manager.read_all_generator(after_id=created_ids[0]))
-        returned_ids = [row.id for row in rows]
+        def count_selects(*args):
+            nonlocal select_count
+            statement = args[2]
+            if statement.lstrip().upper().startswith("SELECT"):
+                select_count += 1
 
-        assert created_ids[0] not in returned_ids
-        assert created_ids[1:] == [
-            item_id for item_id in returned_ids if item_id in created_ids
-        ]
-        assert returned_ids == sorted(returned_ids)
+        event.listen(engine, "before_cursor_execute", count_selects)
+        try:
+            rows = list(media_manager.read_all_generator(monitored_only=True))
+        finally:
+            event.remove(engine, "before_cursor_execute", count_selects)
+
+        created_ids = {item[0].id for item in created}
+        created_rows = [row for row in rows if row.id in created_ids]
+        assert len(created_rows) == batch_size + 1
+        row_with_download = next(
+            row for row in created_rows if row.id == media_id
+        )
+        assert row_with_download.downloads[0].profile_id == 7
+        assert select_count == 3

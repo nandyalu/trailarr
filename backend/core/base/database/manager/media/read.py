@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
 from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, desc, or_, select, text
 from sqlmodel.sql.expression import SelectOfScalar
 
@@ -9,6 +10,8 @@ import core.base.database.manager.connection as connection_manager
 from core.base.database.models.download import Download
 from core.base.database.models.media import Media, MediaRead
 from core.base.database.utils.engine import read_session
+
+_MEDIA_BATCH_SIZE = 500
 
 
 def _active_download_exists():
@@ -115,7 +118,6 @@ def read_all_generator(
     monitored_only: bool = False,
     downloaded_only: bool = False,
     plex_linked_only: bool = False,
-    after_id: int | None = None,
     *,
     _session: Session = None,  # type: ignore
 ) -> Generator[MediaRead, None, None]:
@@ -128,14 +130,16 @@ def read_all_generator(
         monitored_only (bool, Optional=False): Flag to get only monitored media.
         downloaded_only (bool, Optional=False): Flag to get only downloaded media.
         plex_linked_only (bool, Optional=False): Flag to get only media linked to a Plex connection.
-        after_id (int, Optional=None): Return media with an id greater than this
-            value. Results are ordered by id.
         _session (Session, Optional=None): A session to use for the database connection.\n
             Default is None, in which case a new session will be created.\n
     Yields:
         MediaRead: The next MediaRead object.
     """
-    statement = select(Media).execution_options(stream_results=True)
+    statement = (
+        select(Media)
+        .options(selectinload(Media.downloads))
+        .execution_options(yield_per=_MEDIA_BATCH_SIZE)
+    )
     if movies_only is not None:
         statement = statement.where(col(Media.is_movie).is_(movies_only))
     if monitored_only:
@@ -147,9 +151,6 @@ def read_all_generator(
             col(Media.plex_connection_id).is_not(None),
             col(Media.plex_rating_key).is_not(None),
         )
-    if after_id is not None:
-        statement = statement.where(col(Media.id) > after_id)
-    statement = statement.order_by(col(Media.id))
     stream = _session.exec(statement)
     try:
         for db_media in stream:
@@ -255,7 +256,8 @@ def read_by_folder_path(
             continue
         norm = row_path.rstrip("/\\")
         if (
-            folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+            folder_path.startswith(norm + "/")
+            or folder_path.startswith(norm + "\\")
         ) and len(norm) > len(best_norm):
             best_id = row_id
             best_norm = norm

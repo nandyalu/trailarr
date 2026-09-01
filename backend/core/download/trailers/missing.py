@@ -1,5 +1,7 @@
 import os
 import threading
+from contextlib import closing
+from dataclasses import dataclass
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -9,6 +11,7 @@ import core.base.database.manager.downloadattempt as attempt_manager
 import core.base.database.manager.event as event_manager
 import core.base.database.manager.media as media_manager
 from core.base.database.models.downloadattempt import (
+    DownloadAttemptRead,
     is_eligible,
     next_eligible_at,
 )
@@ -21,9 +24,17 @@ from core.download.inflight import inflight_registry
 from core.download.trailers import utils
 from core.files_handler import FilesHandler, is_disk_available
 from core.tasks.startup_passes import downloads_ready
-from exceptions import DownloadFailedError
+from exceptions import DownloadFailedError, ItemNotFoundError
 
 logger = ModuleLogger("TrailerDownloadTasks")
+
+
+@dataclass(frozen=True)
+class _WorkItem:
+    """Identify media and the profile pairs proposed by one sweep."""
+
+    media_id: int
+    profile_ids: frozenset[int]
 
 
 def _is_valid_media(
@@ -67,7 +78,7 @@ def _is_valid_media(
                 if FilesHandler.create_folder(db_media.folder_path):
                     logger.info(
                         f"Media '{db_media.title}' [{db_media.id}]:"
-                        f" created missing folder"
+                        " created missing folder"
                         f" '{db_media.folder_path}'."
                     )
                     return True
@@ -162,15 +173,18 @@ def _apply_claims(
 
 
 def _filter_backoff_eligible(
-    media: MediaRead, unsatisfied: list[TrailerProfileRead]
+    media: MediaRead,
+    unsatisfied: list[TrailerProfileRead],
+    attempts: dict[int, DownloadAttemptRead] | None = None,
 ) -> list[TrailerProfileRead]:
     """Drop profiles whose (media, profile) key is still backing off after
     previous failed download attempts."""
     if not unsatisfied:
         return []
-    attempts = {
-        a.profile_id: a for a in attempt_manager.read_for_media(media.id)
-    }
+    if attempts is None:
+        attempts = {
+            a.profile_id: a for a in attempt_manager.read_for_media(media.id)
+        }
     eligible: list[TrailerProfileRead] = []
     for profile in unsatisfied:
         attempt = attempts.get(profile.id)
@@ -184,6 +198,73 @@ def _filter_backoff_eligible(
                 f" attempt(s), next eligible {next_eligible_at(attempt)}"
             )
     return eligible
+
+
+def _build_work_list(
+    attempted_pairs: set[tuple[int, int]],
+    enabled_profiles: list[TrailerProfileRead],
+    profiles_by_id: dict[int, TrailerProfileRead],
+) -> tuple[list[_WorkItem], int]:
+    """Build one sweep without holding a database session during downloads."""
+    attempts_by_key = {
+        (attempt.media_id, attempt.profile_id): attempt
+        for attempt in attempt_manager.read_all()
+    }
+    work_items: list[_WorkItem] = []
+    scanned_media = 0
+
+    with closing(
+        media_manager.read_all_generator(monitored_only=True)
+    ) as media_rows:
+        for media in media_rows:
+            scanned_media += 1
+            matching_profiles = find_matching_profiles(media, enabled_profiles)
+            if not matching_profiles:
+                continue
+            result = evaluate_satisfaction(media, matching_profiles)
+            if result.claims:
+                _apply_claims(media, result.claims, profiles_by_id)
+            attempts = {
+                profile.id: attempts_by_key[(media.id, profile.id)]
+                for profile in result.unsatisfied
+                if profile.id is not None
+                and (media.id, profile.id) in attempts_by_key
+            }
+            eligible_profiles = _filter_backoff_eligible(
+                media, result.unsatisfied, attempts
+            )
+            profile_ids = frozenset(
+                profile.id
+                for profile in eligible_profiles
+                if profile.id is not None
+                and (media.id, profile.id) not in attempted_pairs
+            )
+            if profile_ids:
+                work_items.append(_WorkItem(media.id, profile_ids))
+
+    return work_items, scanned_media
+
+
+def _read_current_eligible_profiles(
+    media_id: int,
+) -> tuple[MediaRead, list[TrailerProfileRead]]:
+    """Re-read media and profiles before deciding what to download."""
+    media = media_manager.read(media_id)
+    if not media.monitor:
+        return media, []
+
+    all_profiles = trailerprofile.get_trailerprofiles()
+    enabled_profiles = [profile for profile in all_profiles if profile.enabled]
+    matching_profiles = find_matching_profiles(media, enabled_profiles)
+    result = evaluate_satisfaction(media, matching_profiles)
+    if result.claims:
+        profiles_by_id = {
+            profile.id: profile
+            for profile in all_profiles
+            if profile.id is not None
+        }
+        _apply_claims(media, result.claims, profiles_by_id)
+    return media, _filter_backoff_eligible(media, result.unsatisfied)
 
 
 _PREVIEW_LOG_LIMIT = 25
@@ -263,14 +344,14 @@ async def download_missing_trailers(
     pruned = attempt_manager.prune_for_missing_profiles(valid_ids)
     if pruned:
         logger.info(
-            f"Pruned {pruned} download attempt record(s) for deleted"
-            " profiles."
+            f"Pruned {pruned} download attempt record(s) for deleted profiles."
         )
 
+    scanned_media = 0
+    attempted_downloads = 0
     successful_downloads = 0
     skipped_items = 0
-    processed_media_count = 0
-    last_media_id: int | None = None
+    attempted_pairs: set[tuple[int, int]] = set()
 
     while True:
         if _stop_event and _stop_event.is_set():
@@ -279,10 +360,6 @@ async def download_missing_trailers(
             )
             return
 
-        db_media_list = media_manager.read_all_generator(
-            monitored_only=True,
-            after_id=last_media_id,
-        )
         trailer_profiles = trailerprofile.get_trailerprofiles()
 
         if not trailer_profiles:
@@ -305,70 +382,124 @@ async def download_missing_trailers(
         profiles_by_id = {
             p.id: p for p in trailer_profiles if p.id is not None
         }
-
-        media_to_process = None
-        profiles_to_download: list[TrailerProfileRead] = []
-
-        for db_media in db_media_list:
-            last_media_id = db_media.id
-            matching_profiles = find_matching_profiles(
-                db_media, enabled_profiles
-            )
-            if not matching_profiles:
-                continue
-            result = evaluate_satisfaction(db_media, matching_profiles)
-            if result.claims:
-                _apply_claims(db_media, result.claims, profiles_by_id)
-            if not result.unsatisfied:
-                processed_media_count += 1
-                continue
-            eligible = _filter_backoff_eligible(db_media, result.unsatisfied)
-            if not eligible:
-                processed_media_count += 1
-                continue
-            media_to_process = db_media
-            profiles_to_download = eligible
-            db_media_list.close()  # Close the generator
-            break  # Found a media item to process
-
-        if not media_to_process:
+        work_items, sweep_scanned = _build_work_list(
+            attempted_pairs,
+            enabled_profiles,
+            profiles_by_id,
+        )
+        scanned_media += sweep_scanned
+        if not work_items:
             logger.info("No more media items to process.")
             break
 
-        # Clear the lists to free up memory before processing
-        db_media_list = None
-        trailer_profiles = None
-        enabled_profiles = None
-
-        # Process the found media item
-        # Ensure exceptions are caught to continue processing other items
-        try:
+        for work_item in work_items:
             if _stop_event and _stop_event.is_set():
                 logger.info(
                     "Stop event set, terminating download of missing trailers."
                 )
                 return
 
-            downloads, skips = await _process_single_media_item(
-                media_to_process,
-                profiles_to_download,
-                successful_downloads + skipped_items,
-                _stop_event=_stop_event,
+            proposed_pairs = {
+                (work_item.media_id, profile_id)
+                for profile_id in work_item.profile_ids
+            }
+            attempted_pairs.update(proposed_pairs)
+
+            try:
+                media, current_profiles = _read_current_eligible_profiles(
+                    work_item.media_id
+                )
+            except ItemNotFoundError:
+                skipped_items += len(work_item.profile_ids)
+                continue
+            except Exception as exc:
+                skipped_items += len(work_item.profile_ids)
+                logger.exception(
+                    "Trailarr could not re-check media"
+                    f" [{work_item.media_id}]: {exc}"
+                )
+                continue
+
+            current_profile_ids = {
+                profile.id
+                for profile in current_profiles
+                if profile.id is not None
+            }
+            skipped_items += len(
+                work_item.profile_ids.difference(current_profile_ids)
             )
-            successful_downloads += downloads
-            skipped_items += skips
-        except Exception as e:
-            logger.exception(
-                "Unexpected error processing media"
-                f" '{media_to_process.title}' [{media_to_process.id}]: {e}"
+            profiles_to_process = [
+                profile
+                for profile in current_profiles
+                if profile.id is not None
+                and (
+                    profile.id in work_item.profile_ids
+                    or (media.id, profile.id) not in attempted_pairs
+                )
+            ]
+            attempted_pairs.update(
+                (media.id, profile.id)
+                for profile in profiles_to_process
+                if profile.id is not None
             )
-        finally:
-            processed_media_count += 1
+
+            for proposed_profile in profiles_to_process:
+                if _stop_event and _stop_event.is_set():
+                    logger.info(
+                        "Stop event set, terminating download of missing"
+                        " trailers."
+                    )
+                    return
+
+                try:
+                    fresh_media, fresh_profiles = (
+                        _read_current_eligible_profiles(media.id)
+                    )
+                except ItemNotFoundError:
+                    skipped_items += 1
+                    break
+                except Exception as exc:
+                    skipped_items += 1
+                    logger.exception(
+                        f"Trailarr could not re-check media [{media.id}]:"
+                        f" {exc}"
+                    )
+                    continue
+
+                fresh_profile = next(
+                    (
+                        profile
+                        for profile in fresh_profiles
+                        if profile.id == proposed_profile.id
+                    ),
+                    None,
+                )
+                if fresh_profile is None:
+                    skipped_items += 1
+                    continue
+
+                attempted_downloads += 1
+                try:
+                    downloads, skips = await _process_single_media_item(
+                        fresh_media,
+                        [fresh_profile],
+                        attempted_downloads - 1,
+                        _stop_event=_stop_event,
+                    )
+                    successful_downloads += downloads
+                    skipped_items += skips
+                except Exception as exc:
+                    skipped_items += 1
+                    logger.exception(
+                        "Trailarr could not process media"
+                        f" '{fresh_media.title}' [{fresh_media.id}]: {exc}"
+                    )
 
     logger.info(
-        "Finished downloading missing trailers. Processed:"
-        f" {processed_media_count} Successful downloads:"
-        f" {successful_downloads}, Skipped items: {skipped_items}"
+        "Trailarr finished the missing-trailer task. It scanned"
+        f" {scanned_media} media rows, attempted {attempted_downloads}"
+        f" downloads, downloaded {successful_downloads} trailers, and"
+        f" skipped {skipped_items} profile items."
     )
 
 
