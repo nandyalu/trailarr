@@ -150,7 +150,7 @@ def sweep_harness():
             patch(
                 "core.download.trailers.missing._process_single_media_item",
                 new_callable=AsyncMock,
-                return_value=(1, 0),
+                return_value=(1, 0, 1),
             )
         )
 
@@ -179,16 +179,26 @@ def _load(harness, media_items, profiles):
 
 @pytest.mark.asyncio
 async def test_multiple_profiles_are_processed_once_each(sweep_harness):
-    """One media item receives every unsatisfied matching profile."""
+    """One media item receives every unsatisfied matching profile at once.
+
+    The whole media item is handed over in a single call. Calling once per
+    profile would repeat the folder and storage validation, and its skip
+    events, for every profile."""
     media = _media(1)
     _load(sweep_harness, [media], [_profile(1), _profile(2)])
+    handed_over = []
+
+    async def process(media, profiles, *args, **kwargs):
+        handed_over.append(
+            (media.id, sorted(profile.id for profile in profiles))
+        )
+        return 1, 0, 1
+
+    sweep_harness.process.side_effect = process
 
     await download_missing_trailers()
 
-    profile_ids = [
-        call.args[1][0].id for call in sweep_harness.process.await_args_list
-    ]
-    assert profile_ids == [1, 2]
+    assert handed_over == [(1, [1, 2])]
     assert sweep_harness.media_generator.call_count == 2
 
 
@@ -203,45 +213,49 @@ async def test_profile_enabled_mid_sweep_is_caught_in_same_run(sweep_harness):
     processed_pairs = []
 
     async def process(media, profiles, *args, **kwargs):
-        processed_pairs.append((media.id, profiles[0].id))
+        processed_pairs.append(
+            (media.id, sorted(profile.id for profile in profiles))
+        )
         if len(processed_pairs) == 1:
             sweep_harness.state["profiles"].append(profile_two)
-        return 1, 0
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
 
     await download_missing_trailers()
 
-    assert processed_pairs == [(1, 1), (2, 1), (2, 2), (1, 2)]
+    # Media 2 picks the new profile up at its own re-verify; media 1 was
+    # already past, so sweep two catches it via the unconsumed pair.
+    assert processed_pairs == [(1, [1]), (2, [1, 2]), (1, [2])]
     assert sweep_harness.media_generator.call_count == 3
 
 
 @pytest.mark.asyncio
 async def test_profile_is_re_read_before_each_awaited_download(sweep_harness):
-    """A later profile uses settings edited during an earlier download."""
-    media = _media(1)
-    profile_one = _profile(1)
-    old_profile_two = _profile(2, resolution=1080)
-    new_profile_two = _profile(2, resolution=2160)
-    _load(sweep_harness, [media], [profile_one, old_profile_two])
+    """A later media item uses settings edited during an earlier download.
+
+    Profiles are resolved once per media item, immediately before that
+    item's download, so an edit made mid-run reaches every item that has
+    not started yet."""
+    old_profile = _profile(1, resolution=1080)
+    new_profile = _profile(1, resolution=2160)
+    _load(sweep_harness, [_media(1), _media(2)], [old_profile])
     used_profiles = []
 
     async def process(media, profiles, *args, **kwargs):
-        used_profiles.append(profiles[0])
-        if profiles[0].id == 1:
-            sweep_harness.state["profiles"] = [
-                profile_one,
-                new_profile_two,
-            ]
-        return 1, 0
+        used_profiles.append((media.id, profiles[0]))
+        if media.id == 1:
+            sweep_harness.state["profiles"] = [new_profile]
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
 
     await download_missing_trailers()
 
-    assert [profile.id for profile in used_profiles] == [1, 2]
-    assert used_profiles[1] is new_profile_two
-    assert used_profiles[1].video_resolution == 2160
+    assert [media_id for media_id, _ in used_profiles] == [1, 2]
+    assert used_profiles[0][1] is old_profile
+    assert used_profiles[1][1] is new_profile
+    assert used_profiles[1][1].video_resolution == 2160
 
 
 @pytest.mark.asyncio
@@ -260,7 +274,7 @@ async def test_narrowed_profile_filter_drops_later_media(sweep_harness):
 
     async def process(*args, **kwargs):
         profile.allowed_media_ids = {1}
-        return 1, 0
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
     with patch(
@@ -288,7 +302,7 @@ async def test_disabled_or_deleted_profile_stops_later_downloads(
             sweep_harness.state["profiles"] = []
         else:
             profile.enabled = False
-        return 1, 0
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
 
@@ -349,7 +363,7 @@ async def test_media_added_mid_run_is_caught_by_next_sweep(sweep_harness):
         if media.id == 1:
             sweep_harness.state["library"].append(media_two)
             sweep_harness.state["current_media"][2] = media_two
-        return 1, 0
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
 
@@ -378,20 +392,35 @@ async def test_backoff_excludes_pair_with_batched_attempt_lookup(
 async def test_persistent_scan_reverify_disagreement_drains(
     sweep_harness,
 ):
-    """A pair proposed by every scan is consumed after one re-check."""
-    media = _media(1)
+    """A pair every scan re-proposes, and every re-check rejects, drains.
+
+    The scan and the re-verify read different rows, so they can disagree
+    forever. Termination therefore cannot rest on the disagreement ending:
+    it rests on the pair being consumed when the item is visited. Remove
+    that consume and this test hangs rather than fails, which is what the
+    suite-wide timeout is for."""
+    scanned_media = _media(1)
+    current_media = _media(1)
     profile = _profile(1)
-    _load(sweep_harness, [media], [profile])
-    pending = SatisfactionResult(unsatisfied=[profile])
-    satisfied = SatisfactionResult()
+    _load(sweep_harness, [scanned_media], [profile])
+    sweep_harness.state["current_media"][1] = current_media
+
+    def evaluate(media, profiles):
+        # Unconditional and stateless: the scan's row is always pending,
+        # the re-read row is always satisfied, on every sweep.
+        if media is scanned_media:
+            return SatisfactionResult(unsatisfied=list(profiles))
+        return SatisfactionResult()
 
     with patch(
         "core.download.trailers.missing.evaluate_satisfaction",
-        side_effect=[pending, satisfied, pending],
+        side_effect=evaluate,
     ):
         await download_missing_trailers()
 
     sweep_harness.process.assert_not_awaited()
+    # Sweep one proposes and consumes the pair; sweep two finds it already
+    # consumed and returns an empty work list.
     assert sweep_harness.media_generator.call_count == 2
 
 
@@ -405,7 +434,7 @@ async def test_stop_event_ends_download_phase_promptly(sweep_harness):
 
     async def process(*args, **kwargs):
         stop_event.set()
-        return 1, 0
+        return 1, 0, 1
 
     sweep_harness.process.side_effect = process
 
@@ -467,7 +496,9 @@ async def test_download_failure_records_backoff_attempt():
     ):
         result = await _process_single_media_item(media, [profile])
 
-    assert result == (0, 1)
+    # A real failure reached the network, so it counts as an attempt and
+    # advances the delay ladder.
+    assert result == (0, 1, 1)
     record_failure.assert_called_once_with(1, 1, "download failed")
 
 
@@ -493,6 +524,54 @@ async def test_validation_skip_does_not_record_backoff_attempt():
     ):
         result = await _process_single_media_item(media, [profile])
 
-    assert result == (0, 1)
+    # No network call, so no attempt — a library on an offline mount must
+    # not push the delay ladder up.
+    assert result == (0, 1, 0)
     record_failure.assert_not_called()
     download_trailer.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_validation_skip_is_reported_once_for_the_media_item():
+    """An unreachable folder skips the media item, not each profile.
+
+    Events are permanent history in this project, so a library on a
+    disconnected mount must not write one skip row per matching profile."""
+    media = _media(1)
+    profiles = [_profile(1), _profile(2), _profile(3)]
+
+    with (
+        patch(
+            "core.download.trailers.missing._is_valid_media",
+            return_value=False,
+        ) as is_valid_media,
+        patch(
+            "core.download.trailers.missing.trailer_downloader"
+            ".download_trailer",
+            new_callable=AsyncMock,
+        ) as download_trailer,
+    ):
+        result = await _process_single_media_item(media, profiles)
+
+    assert result == (0, 1, 0)
+    is_valid_media.assert_called_once()
+    download_trailer.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_validation_skip_is_not_reproposed_by_the_next_sweep(
+    sweep_harness,
+):
+    """W11: a skip that records no attempt row still drains the loop.
+
+    Backoff cannot exclude the pair, because a validation skip writes no
+    attempt row. Only the consumed-pair set stops the next sweep from
+    proposing the same work again."""
+    _load(sweep_harness, [_media(1)], [_profile(1)])
+    sweep_harness.process.return_value = (0, 1, 0)
+
+    await download_missing_trailers()
+
+    assert sweep_harness.process.await_count == 1
+    sweep_harness.attempts.record_failure.assert_not_called()
+    assert sweep_harness.media_generator.call_count == 2

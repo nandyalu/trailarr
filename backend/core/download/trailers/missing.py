@@ -204,8 +204,12 @@ def _build_work_list(
     attempted_pairs: set[tuple[int, int]],
     enabled_profiles: list[TrailerProfileRead],
     profiles_by_id: dict[int, TrailerProfileRead],
+    _stop_event: threading.Event | None = None,
 ) -> tuple[list[_WorkItem], int]:
-    """Build one sweep without holding a database session during downloads."""
+    """Build one sweep without holding a database session during downloads.
+
+    The scan walks every monitored row, so it checks the stop event as it
+    goes — a run cancelled here must not wait for a whole library."""
     attempts_by_key = {
         (attempt.media_id, attempt.profile_id): attempt
         for attempt in attempt_manager.read_all()
@@ -217,13 +221,24 @@ def _build_work_list(
         media_manager.read_all_generator(monitored_only=True)
     ) as media_rows:
         for media in media_rows:
+            if _stop_event and _stop_event.is_set():
+                break
             scanned_media += 1
             matching_profiles = find_matching_profiles(media, enabled_profiles)
             if not matching_profiles:
                 continue
             result = evaluate_satisfaction(media, matching_profiles)
             if result.claims:
-                _apply_claims(media, result.claims, profiles_by_id)
+                # Claims write to the database. A row deleted by a
+                # concurrent Arr refresh must cost this media item, not
+                # the whole run.
+                try:
+                    _apply_claims(media, result.claims, profiles_by_id)
+                except Exception:
+                    logger.exception(
+                        "Trailarr could not attribute the existing downloads"
+                        f" of '{media.title}' [{media.id}]."
+                    )
             attempts = {
                 profile.id: attempts_by_key[(media.id, profile.id)]
                 for profile in result.unsatisfied
@@ -263,7 +278,15 @@ def _read_current_eligible_profiles(
             for profile in all_profiles
             if profile.id is not None
         }
-        _apply_claims(media, result.claims, profiles_by_id)
+        # Guarded separately so that an ItemNotFoundError raised by a claim
+        # write is never mistaken for "this media item is gone".
+        try:
+            _apply_claims(media, result.claims, profiles_by_id)
+        except Exception:
+            logger.exception(
+                "Trailarr could not attribute the existing downloads of"
+                f" '{media.title}' [{media.id}]."
+            )
     return media, _filter_backoff_eligible(media, result.unsatisfied)
 
 
@@ -386,8 +409,14 @@ async def download_missing_trailers(
             attempted_pairs,
             enabled_profiles,
             profiles_by_id,
+            _stop_event=_stop_event,
         )
         scanned_media += sweep_scanned
+        if _stop_event and _stop_event.is_set():
+            logger.info(
+                "Stop event set, terminating download of missing trailers."
+            )
+            return
         if not work_items:
             logger.info("No more media items to process.")
             break
@@ -411,12 +440,16 @@ async def download_missing_trailers(
                 )
             except ItemNotFoundError:
                 skipped_items += len(work_item.profile_ids)
+                logger.info(
+                    f"Trailarr skipped media [{work_item.media_id}] because it"
+                    " is no longer in the database."
+                )
                 continue
-            except Exception as exc:
+            except Exception:
                 skipped_items += len(work_item.profile_ids)
                 logger.exception(
-                    "Trailarr could not re-check media"
-                    f" [{work_item.media_id}]: {exc}"
+                    f"Trailarr could not re-check media"
+                    f" [{work_item.media_id}] before its download."
                 )
                 continue
 
@@ -442,58 +475,27 @@ async def download_missing_trailers(
                 for profile in profiles_to_process
                 if profile.id is not None
             )
+            if not profiles_to_process:
+                continue
 
-            for proposed_profile in profiles_to_process:
-                if _stop_event and _stop_event.is_set():
-                    logger.info(
-                        "Stop event set, terminating download of missing"
-                        " trailers."
-                    )
-                    return
-
-                try:
-                    fresh_media, fresh_profiles = (
-                        _read_current_eligible_profiles(media.id)
-                    )
-                except ItemNotFoundError:
-                    skipped_items += 1
-                    break
-                except Exception as exc:
-                    skipped_items += 1
-                    logger.exception(
-                        f"Trailarr could not re-check media [{media.id}]:"
-                        f" {exc}"
-                    )
-                    continue
-
-                fresh_profile = next(
-                    (
-                        profile
-                        for profile in fresh_profiles
-                        if profile.id == proposed_profile.id
-                    ),
-                    None,
+            # One call for the whole media item, with every profile it still
+            # needs. Calling once per profile would re-run the folder and
+            # storage checks — and their skip events — once per profile.
+            try:
+                downloads, skips, attempts = await _process_single_media_item(
+                    media,
+                    profiles_to_process,
+                    attempted_downloads,
+                    _stop_event=_stop_event,
                 )
-                if fresh_profile is None:
-                    skipped_items += 1
-                    continue
-
-                attempted_downloads += 1
-                try:
-                    downloads, skips = await _process_single_media_item(
-                        fresh_media,
-                        [fresh_profile],
-                        attempted_downloads - 1,
-                        _stop_event=_stop_event,
-                    )
-                    successful_downloads += downloads
-                    skipped_items += skips
-                except Exception as exc:
-                    skipped_items += 1
-                    logger.exception(
-                        "Trailarr could not process media"
-                        f" '{fresh_media.title}' [{fresh_media.id}]: {exc}"
-                    )
+                successful_downloads += downloads
+                skipped_items += skips
+                attempted_downloads += attempts
+            except Exception:
+                logger.exception(
+                    f"Trailarr could not process media '{media.title}'"
+                    f" [{media.id}]."
+                )
 
     logger.info(
         "Trailarr finished the missing-trailer task. It scanned"
@@ -508,26 +510,37 @@ async def _process_single_media_item(
     profiles: list[TrailerProfileRead],
     total_processed: int = 0,
     _stop_event: threading.Event | None = None,
-) -> tuple[int, int]:
+) -> tuple[int, int, int]:
     """Download trailers for a media item's unsatisfied, backoff-eligible
-    profiles. Successes clear the attempt record; hard failures record one."""
+    profiles. Successes clear the attempt record; hard failures record one.
+
+    Returns the number of successful downloads, the number of skipped
+    profiles, and the number of profiles a download was really attempted
+    for. Only that last count advances the delay ladder — a validation skip
+    never reaches the network, so it must not push the next real download
+    further away."""
     logger.info(
         f"Processing media '{media.title}' [{media.id}] for trailer downloads."
     )
     successful_downloads = 0
     skipped_items = 0
+    download_attempts = 0
 
     for profile in profiles:
         if _stop_event and _stop_event.is_set():
             logger.info(
                 "Stop event set, terminating processing of single media item."
             )
-            return successful_downloads, skipped_items
+            return successful_downloads, skipped_items, download_attempts
 
         check_folder = profile.custom_folder == "{media_folder}"
         if not _is_valid_media(media, check_folder):
             # Validation skips are NOT failed attempts — no backoff recorded
-            return successful_downloads, skipped_items + 1
+            return (
+                successful_downloads,
+                skipped_items + 1,
+                download_attempts,
+            )
 
         _profile_name = profile.customfilter.filter_name
         download_attempted = False
@@ -558,7 +571,10 @@ async def _process_single_media_item(
             )
             skipped_items += 1
         finally:
+            # Reached only when the profile got past validation, so a
+            # storage-unreachable skip never advances the ladder.
             total_processed += 1
+            download_attempts += 1
             if download_attempted:
                 await utils.sleep_between_downloads(total_processed, logger)
 
@@ -567,4 +583,4 @@ async def _process_single_media_item(
     _msg += f" Downloads: {successful_downloads}/{_profile_count}"
     _msg += f", Skipped: {skipped_items}/{_profile_count}"
     logger.info(_msg)
-    return successful_downloads, skipped_items
+    return successful_downloads, skipped_items, download_attempts
