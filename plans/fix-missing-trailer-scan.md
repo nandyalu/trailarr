@@ -1,6 +1,6 @@
 # Fix — Quadratic Missing-Trailer Scans
 
-**Status:** IN PROGRESS — targets v0.11.5 (patch, off `dev`). Supersedes the approach in
+**Status:** DONE — implemented for v0.11.5 (patch, off `dev`). Supersedes the approach in
 PR #666 (`sittingmongoose:fix/missing-trailer-keyset-scan`), whose diagnosis is correct
 and whose fix is not merged — see "PR #666 disposition" below.
 
