@@ -16,7 +16,12 @@ jobs:
     permissions:
       contents: write
     # For pull_request: only run if PR title starts with a semver tag, e.g. "v0.9.5 - Some title"
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.pull_request.title, 'v')
+    # and the branch is in this repository — the job pushes, and a fork PR
+    # has a read-only GITHUB_TOKEN.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (startsWith(github.event.pull_request.title, 'v') &&
+       github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
       - name: Extract version
