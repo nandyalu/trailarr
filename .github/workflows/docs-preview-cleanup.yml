@@ -11,6 +11,11 @@ permissions:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    # Matches the guard in docs-preview.yml: a fork PR never gets a
+    # preview folder, so there is nothing to clean up — and the push to
+    # gh-pages would answer 403 anyway.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout gh-pages branch
         uses: actions/checkout@v7
