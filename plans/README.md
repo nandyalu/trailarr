@@ -182,7 +182,7 @@ skip-safe too:
 - `phase-09-video-types.md`
 - `phase-10-media-types-seasons.md`
 - `phase-11-issues-v1.md`
-- `fix-missing-trailer-scan.md` — IN REVIEW (PR #666, targets v0.11.5). Removes
+- `fix-missing-trailer-scan.md` — DONE (v0.11.5, PR #666, merged Sep 2 2026). Removes
   the per-download library rescan in `download_missing_trailers` and the N+1 lazy load in
   `read_all_generator`. Supersedes the keyset-cursor approach in PR #666. Ships before
   Phase 7, so the reorg branch rebases it across the move map.

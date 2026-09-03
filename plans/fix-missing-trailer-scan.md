@@ -1,9 +1,9 @@
 # Fix — Quadratic Missing-Trailer Scans
 
-**Status:** IN REVIEW — implemented in PR #666
-(`sittingmongoose:fix/missing-trailer-keyset-scan`), targeting v0.11.5 (patch, off `dev`).
-The PR found the bug and now carries this plan's approach instead of its original keyset
-cursor. Flip this line to DONE when the PR merges, and record the shipped version.
+**Status:** DONE — merged to `dev` on September 2, 2026 (PR #666, squashed as `b18fd1c4`),
+ships in v0.11.5. PR #666 found the bug and carried this plan's approach instead of its
+original keyset cursor. Follow-up: hygiene item H21 extracts the scan that `missing.py`
+and `pending.py` still duplicate, after the Phase 7 reorg lands.
 
 ## Objective
 
