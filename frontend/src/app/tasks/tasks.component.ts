@@ -3,9 +3,9 @@ import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, 
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RouterLink} from '@angular/router';
 import {RouteLogs} from '../../routing';
-import {DurationPipe} from '../helpers/duration.pipe';
-import {IntervalPipe} from '../helpers/interval.pipe';
-import {TimediffPipe} from '../helpers/timediff.pipe';
+import {DurationPipe} from '../shared/pipes/duration.pipe';
+import {IntervalPipe} from '../shared/pipes/interval.pipe';
+import {TimediffPipe} from '../shared/pipes/timediff.pipe';
 import {QuivJob, QuivTask, TaskConfigUpdate} from '../models/tasks';
 import {TasksService} from '../services/tasks.service';
 import {WebsocketService} from '../services/websocket.service';

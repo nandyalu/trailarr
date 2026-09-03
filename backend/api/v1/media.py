@@ -1,6 +1,9 @@
+"""The media list and one media item: its files, downloads and trailers."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1 import websockets
+from api.v1 import errors
 from api.v1.models import (
     BatchUpdate,
     ErrorResponse,
@@ -8,27 +11,27 @@ from api.v1.models import (
     SearchMedia,
 )
 from app_logger import ModuleLogger
-from core.base.database.manager import trailerprofile
-import core.base.database.manager.download as download_manager
-import core.base.database.manager.event as event_manager
-import core.base.database.manager.filefolderinfo as files_manager
-import core.base.database.manager.media as media_manager
-from core.base.database.models.event import EventSource
-from core.base.database.models.filefolderinfo import FileFolderInfoRead
-from core.base.database.models.download import DownloadRead
-from core.base.database.models.media import MediaRead
-from core.download import trailer_search
-from core.download.inflight import inflight_registry
-from core.download.trailers import utils as trailer_utils
-from core.download.trailers.pending import (
+from database.manager import trailerprofile
+import database.manager.download as download_manager
+import database.manager.event as event_manager
+import database.manager.filefolderinfo as files_manager
+import database.manager.media as media_manager
+from services import media as media_service
+from database.models.event import EventSource
+from database.models.filefolderinfo import FileFolderInfoRead
+from database.models.download import DownloadRead
+from database.models.media import MediaRead
+from services.trailers import trailer_search
+from services.trailers.inflight import inflight_registry
+from services.trailers.trailers import utils as trailer_utils
+from services.trailers.trailers.pending import (
     MediaPendingView,
     PendingSummary,
     compute_library_pending,
     compute_media_pending,
 )
-from core.files_handler import FilesHandler
-from core.tasks.files_scan import scan_media_folder
-from core.tasks.download_trailers import (
+from tasks.files_scan import scan_media_folder
+from tasks.download_trailers import (
     batch_download_trailers,
     download_trailer_by_id,
 )
@@ -207,6 +210,10 @@ async def search_media(query: str) -> list[SearchMedia]:
     "/{media_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -214,17 +221,18 @@ async def search_media(query: str) -> list[SearchMedia]:
     },
 )
 async def get_media_by_id(media_id: int) -> MediaRead:
-    """Get media by ID. \n
+    """Read one media item. \n
     Args:
         media_id (int): ID of the media item. \n
     Returns:
-        MediaRead: Media object. \n
+        MediaRead: The media item. \n
     """
     try:
         media = media_manager.read(media_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     return media
 
@@ -233,6 +241,10 @@ async def get_media_by_id(media_id: int) -> MediaRead:
     "/{media_id}/downloads",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -262,8 +274,9 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the downloads of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -271,6 +284,10 @@ async def get_media_downloads(media_id: int) -> list[DownloadRead]:
     "/{media_id}/pending",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -292,8 +309,9 @@ async def get_media_pending(media_id: int) -> MediaPendingView:
     try:
         media = media_manager.read(media_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the pending trailers of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     profiles = trailerprofile.get_trailerprofiles()
     return compute_media_pending(media, profiles)
@@ -328,8 +346,9 @@ async def update_download_profile(
         str: Message indicating the result.
     """
     logger.info(
-        f"Setting profile [{profile_id}] on download [{download_id}] for"
-        f" media [{media_id}]"
+        f"Assigning download {download_id} to trailer profile"
+        f" {profile_id}.",
+        **logger.media(media_id),
     )
     try:
         download = download_manager.read(download_id)
@@ -366,8 +385,9 @@ async def update_download_profile(
         )
     except Exception as e:
         logger.exception(
-            f"Failed to set profile [{profile_id}] on download"
-            f" [{download_id}]: {e}"
+            f"Could not assign download {download_id} to trailer profile"
+            f" {profile_id}: {e}",
+            **logger.media(media_id),
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -379,6 +399,10 @@ async def update_download_profile(
     "/{media_id}/files",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -403,12 +427,26 @@ async def get_media_files(media_id: int) -> FileFolderInfoRead:
             raise Exception("No files found in media folder!")
         return files
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the files of media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
-@media_router.post("/{media_id}/rescan_files", status_code=status.HTTP_200_OK)
+@media_router.post(
+    "/{media_id}/rescan_files",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Media Not Found",
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
+    },
+)
 async def rescan_media_files(media_id: int) -> str:
     """Rescan media files by ID. \n
     Args:
@@ -421,13 +459,14 @@ async def rescan_media_files(media_id: int) -> str:
         if not media.folder_path:
             raise Exception("Media has no folder path!")
         await scan_media_folder(media)
-        msg = f"Rescanned files for media with ID: {media_id}"
+        msg = "Trailarr scanned the files of this media item again."
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success", reload="files")
         return msg
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Rescan the media files",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -452,7 +491,7 @@ async def download_media_trailer(
     Returns:
         str: Downloading trailer message.
     """
-    msg = f"Downloading trailer for media with ID: [{media_id}]"
+    msg = "Trailarr downloads the trailer for this media item."
     if yt_id:
         msg += f" from ({yt_id})"
     logger.info(msg)
@@ -463,6 +502,10 @@ async def download_media_trailer(
     "/{media_id}/monitor",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -470,41 +513,32 @@ async def download_media_trailer(
     },
 )
 async def monitor_media(media_id: int, monitor: bool = True) -> str:
-    """Monitor media by ID. \n
+    """Turn monitoring on or off for one media item. \n
     Args:
         media_id (int): ID of the media item.
-        monitor (bool, Optional=True): Monitor status. \n
+        monitor (bool, Optional=True): True to monitor it, False to stop. \n
     Returns:
-        str: Monitoring message.
+        str: A line that says what changed.
     """
-    logger.info(f"Monitoring media with ID: {media_id}")
+    logger.info(
+        f"Trailarr changes the monitor status of this media item.",
+        **logger.media(media_id),
+    )
     try:
-        # Get old monitor status for event tracking
-        media = media_manager.read(media_id)
-        old_monitor = media.monitor
-
-        msg, is_success = media_manager.update_monitoring(media_id, monitor)
-        logger.info(msg)
-
-        # Track monitor_changed event if status actually changed
-        if is_success:
-            event_manager.track_monitor_changed(
-                media_id=media_id,
-                old_monitor=old_monitor,
-                new_monitor=monitor,
-                source=EventSource.USER,
-            )
-
+        result = media_service.set_monitoring(media_id, monitor)
         await websockets.ws_manager.broadcast(
-            msg, "Success" if is_success else "Error", reload="media"
+            result.message,
+            "Success" if result.ok else "Error",
+            reload=result.reload,
         )
-        return msg
+        return result.message
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Error changing Monitor status!", "Error", reload="media"
         )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Change the monitor status",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -512,6 +546,10 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     "/{media_id}/update",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -523,14 +561,17 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
     },
 )
 async def update_yt_id(media_id: int, yt_id: str) -> str:
-    """Update YouTube ID for media by ID. \n
+    """Set the YouTube ID of the trailer for one media item. \n
     Args:
         media_id (int): ID of the media item.
-        yt_id (str): YouTube ID of the trailer. \n
+        yt_id (str): The YouTube ID, or a YouTube URL to read it from. \n
     Returns:
-        str: Updating YouTube ID message.
+        str: A line that says what changed.
     """
-    logger.info(f"Updating YouTube ID for media with ID: {media_id}")
+    logger.info(
+        f"Trailarr updates the YouTube ID of this media item.",
+        **logger.media(media_id),
+    )
     # Check if yt_id is a URL and extract the ID
     if yt_id and yt_id.startswith("http"):
         _yt_id = trailer_utils.extract_youtube_id(yt_id)
@@ -549,29 +590,13 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
             detail="Invalid YouTube ID!",
         )
     try:
-        # Get old YouTube ID for event tracking
-        media = media_manager.read(media_id)
-        old_yt_id = media.youtube_trailer_id
-
-        media_manager.update_ytid(media_id, yt_id)
-
-        # Track youtube_id_changed event if ID actually changed
-        if old_yt_id != yt_id:
-            event_manager.track_youtube_id_changed(
-                media_id=media_id,
-                old_yt_id=old_yt_id,
-                new_yt_id=yt_id,
-                source=EventSource.USER,
-                source_detail="UserInput",
-            )
-
-        msg = f"YouTube ID for media with ID: {media_id} has been updated."
-        logger.info(msg)
+        msg = media_service.set_youtube_id(media_id, yt_id)
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return msg
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update the YouTube ID",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -593,7 +618,10 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     Returns:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
-    logger.info(f"Searching for trailer for media with ID: {media_id}")
+    logger.info(
+        f"Trailarr searches for a trailer for this media item.",
+        **logger.media(media_id),
+    )
     media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
 
@@ -606,17 +634,42 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             source=EventSource.USER,
             source_detail="UserSearch",
         )
-        msg = (
-            f"Trailer found for media '{media.title}' [{media.id}] as"
-            f" ({yt_id})"
-        )
+        msg = f"Trailarr found a trailer for '{media.title}': {yt_id}."
         logger.info(msg)
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return yt_id
-    msg = f"Unable to find a trailer for media '{media.title}' [{media.id}]"
+    msg = f"Trailarr found no trailer for '{media.title}'."
     logger.info(msg)
     await websockets.ws_manager.broadcast(msg, "Error", reload="media")
     return ""
+
+
+async def _delete_trailer_and_report(media_id: int) -> str:
+    """Delete the trailers of one media item and tell the user.
+
+    The batch action shares this, so a batch delete still sends one message
+    per item. It is a plain function rather than the endpoint itself: a
+    route handler calling another route handler hides where the work is.
+    """
+    logger.info(
+        f"Trailarr deletes the trailers of this media item.",
+        **logger.media(media_id),
+    )
+    try:
+        result = await media_service.delete_trailers(media_id)
+        await websockets.ws_manager.broadcast(
+            result.message,
+            "Success" if result.ok else "Error",
+            reload=result.reload,
+        )
+        return result.message
+    except Exception as e:
+        await websockets.ws_manager.broadcast(
+            "Error deleting trailer!", "Error", reload="media"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        )
 
 
 @media_router.delete(
@@ -639,54 +692,17 @@ async def delete_media_trailer(media_id: int) -> str:
     Returns:
         str: Deleting trailer message.
     """
-    logger.info(f"Deleting trailer for media with ID: {media_id}")
-    try:
-        media = media_manager.read(media_id)
-        if not media.folder_path:
-            msg = f"Media '{media.title}' [{media.id}] has no folder path"
-            await websockets.ws_manager.broadcast(msg, "Error")
-            return msg
-        # Use download records as the authoritative source for trailer files
-        downloads = download_manager.read_by_media_id(media_id)
-        live = [d for d in downloads if d.file_exists]
-        if not live:
-            msg = (
-                f"No trailer files found for media '{media.title}'"
-                f" [{media.id}]"
-            )
-            await websockets.ws_manager.broadcast(msg, "Error")
-            return msg
-
-        for d in live:
-            await FilesHandler.delete_file(d.path)
-            download_manager.mark_as_deleted(d.id)
-
-        # Track trailer_deleted event (once per media item, not per file)
-        event_manager.track_trailer_deleted(
-            media_id=media_id,
-            reason="user_request",
-            source=EventSource.USER,
-        )
-
-        msg = (
-            f"Trailer for media '{media.title}' [{media.id}] has been deleted."
-        )
-        logger.info(msg)
-        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
-        return msg
-    except Exception as e:
-        await websockets.ws_manager.broadcast(
-            "Error deleting trailer!", "Error", reload="media"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-        )
+    return await _delete_trailer_and_report(media_id)
 
 
 @media_router.post(
     "/batch_update",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Media Not Found",
@@ -705,18 +721,18 @@ async def batch_update_media(update: BatchUpdate) -> None:
     Returns:
         str: Monitoring message.
     """
-    logger.info(f"Monitoring media with IDs: {update.media_ids}")
+    logger.info(
+        f"Trailarr updates {len(update.media_ids)} media items."
+    )
     try:
         msg = ""
         if update.action == "monitor":
-            media_manager.update_monitoring_bulk(update.media_ids, True)
-            msg = f"{len(update.media_ids)} Media are now monitored"
+            msg = media_service.set_monitoring_bulk(update.media_ids, True)
         elif update.action == "unmonitor":
-            media_manager.update_monitoring_bulk(update.media_ids, False)
-            msg = f"{len(update.media_ids)} Media are now unmonitored"
+            msg = media_service.set_monitoring_bulk(update.media_ids, False)
         elif update.action == "delete":
             for media_id in update.media_ids:
-                await delete_media_trailer(media_id)
+                await _delete_trailer_and_report(media_id)
         elif update.action == "download":
             if not update.profile_id or update.profile_id <= 0:
                 msg = "No trailer profile ID provided!"
@@ -734,6 +750,7 @@ async def batch_update_media(update: BatchUpdate) -> None:
             f"Error updating Media! {e}", "Error", reload="media"
         )
         logger.error(e)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update media",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )

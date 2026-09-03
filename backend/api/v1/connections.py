@@ -1,47 +1,26 @@
-import asyncio
+"""Connections to Radarr, Sonarr and Plex, and the Connection Doctor."""
+
 
 from fastapi import APIRouter, HTTPException, status
 
+from api.v1 import errors
+from app_logger import ModuleLogger
 from api.v1.models import ErrorResponse
 from api.v1 import websockets
 
-import core.base.database.manager.connection as connection_manager
-from core.base.database.models.connection import (
+import database.manager.connection as connection_manager
+from services.connections import probe as connection_probe
+from services.connections import service as connection_service
+from database.models.connection import (
     ArrType,
     ConnectionCreate,
     ConnectionRead,
     ConnectionUpdate,
 )
-from core.diagnostics import connection_doctor
-from core.diagnostics.models import DoctorReport, SuggestedMapping
-from core.tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
-from core.tasks.schedules import ensure_plex_trailer_refresh_scheduled
-
-# Strong references to running background tasks. The event loop only
-# keeps a weak reference, so a task without one can be garbage
-# collected while it runs, and the check never finishes.
-_background_tasks: set[asyncio.Task] = set()
-
-
-def _schedule_doctor(connection_id: int) -> None:
-    """Run the Connection Doctor in the background after a save.
-
-    A failed check must never fail the save — errors show up in the
-    report itself. An unexpected error goes only to the log.
-    """
-
-    async def _run() -> None:
-        try:
-            await connection_doctor.run_doctor(connection_id)
-        except Exception as e:
-            connection_doctor.logger.error(
-                f"Doctor run failed for connection {connection_id}: {e}"
-            )
-
-    task = asyncio.create_task(_run())
-    _background_tasks.add(task)
-    task.add_done_callback(_background_tasks.discard)
-
+from services.diagnostics import connection_doctor
+from services.diagnostics.models import DoctorReport, SuggestedMapping
+from tasks.api_refresh import api_refresh_by_id_job, delete_connection_job
+from tasks.schedules import ensure_plex_trailer_refresh_scheduled
 
 def _schedule_refresh(connection_id: int) -> None:
     """Sync a connection after its path mapping is fixed.
@@ -57,6 +36,8 @@ def _schedule_refresh(connection_id: int) -> None:
             f" {connection_id}: {e}"
         )
 
+
+logger = ModuleLogger("ConnectionsAPI")
 
 connections_router = APIRouter(prefix="/connections", tags=["Connections"])
 
@@ -74,6 +55,10 @@ async def get_doctor_reports() -> list[DoctorReport]:
 @connections_router.post(
     "/doctor/preview",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,
             "description": "Could not check the connection",
@@ -98,8 +83,9 @@ async def preview_connection_doctor(
             connection, connection_id
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Check the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -109,25 +95,16 @@ async def run_all_connection_doctors() -> list[DoctorReport]:
 
     Saves the user from opening one dialog per connection.
     """
-    connections = connection_manager.read_all()
-    results = await asyncio.gather(
-        *(connection_doctor.run_doctor(c.id) for c in connections),
-        return_exceptions=True,
-    )
-    reports: list[DoctorReport] = []
-    for connection, result in zip(connections, results):
-        if isinstance(result, BaseException):
-            connection_doctor.logger.error(
-                f"Doctor failed for '{connection.name}': {result}"
-            )
-            continue
-        reports.append(result)
-    return reports
+    return await connection_doctor.run_doctor_for_all()
 
 
 @connections_router.post(
     "/{connection_id}/doctor",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -139,14 +116,19 @@ async def run_connection_doctor(connection_id: int) -> DoctorReport:
     try:
         return await connection_doctor.run_doctor(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Run the Connection Doctor",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
 
 
 @connections_router.post(
     "/{connection_id}/doctor/mappings",
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -167,17 +149,17 @@ async def apply_doctor_mapping(
     broken until the next scheduled sync.
     """
     try:
-        connection_manager.add_path_mapping(
+        report = await connection_doctor.apply_mapping_and_recheck(
             connection_id, mapping.path_from, mapping.path_to
         )
-        report = await connection_doctor.run_doctor(connection_id)
-        if report.status == "healthy":
-            _schedule_refresh(connection_id)
-        return report
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Apply the path mapping",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
+    if report.status == "healthy":
+        _schedule_refresh(connection_id)
+    return report
 
 
 @connections_router.get("/")
@@ -190,6 +172,10 @@ async def get_connections() -> list[ConnectionRead]:
     "/test",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Radarr Connection Successful Version: 3.x.x.x",
         },
@@ -201,10 +187,11 @@ async def get_connections() -> list[ConnectionRead]:
 )
 async def test_connection(connection: ConnectionCreate) -> str:
     try:
-        result = await connection_manager.validate_connection(connection)
+        result = await connection_probe.validate_connection(connection)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Test the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     return result
 
@@ -213,6 +200,10 @@ async def test_connection(connection: ConnectionCreate) -> str:
     "/rootfolders",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Root Folders Retrieved Successfully!",
         },
@@ -224,10 +215,11 @@ async def test_connection(connection: ConnectionCreate) -> str:
 )
 async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     try:
-        result = await connection_manager.get_rootfolders(connection)
+        result = await connection_probe.get_rootfolders(connection)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the root folders",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     return result
 
@@ -236,6 +228,10 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
     "/",
     status_code=status.HTTP_201_CREATED,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_201_CREATED: {
             "description": (
                 "Connection Created Successfully! "
@@ -250,18 +246,19 @@ async def get_rootfolders(connection: ConnectionCreate) -> list[str]:
 )
 async def create_connection(connection: ConnectionCreate) -> str:
     try:
-        result, connection_id = await connection_manager.create(connection)
+        result, connection_id = await connection_service.create(connection)
         await refresh_connection(connection_id)
         if connection.arr_type == ArrType.PLEX:
             ensure_plex_trailer_refresh_scheduled(delay_seconds=180.0)
         # Check folder visibility and permissions in the background
-        _schedule_doctor(connection_id)
+        connection_doctor.schedule_doctor(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Failed to add Connection!", "Error"
         )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Create the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     await websockets.ws_manager.broadcast(
         "Connection Created Successfully!", "Success", reload="connections"
@@ -273,6 +270,10 @@ async def create_connection(connection: ConnectionCreate) -> str:
     "/{connection_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_404_NOT_FOUND: {
             "model": ErrorResponse,
             "description": "Connection Not Found",
@@ -283,8 +284,9 @@ async def get_connection(connection_id: int) -> ConnectionRead:
     try:
         connection = connection_manager.read(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Read the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     return connection
 
@@ -293,6 +295,10 @@ async def get_connection(connection_id: int) -> ConnectionRead:
     "/{connection_id}",
     status_code=status.HTTP_201_CREATED,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_201_CREATED: {
             "description": "Connection Updated Successfully!",
         },
@@ -307,17 +313,18 @@ async def update_connection(
 ) -> str:
     try:
         # Update the connection in the database
-        await connection_manager.update(connection_id, connection)
+        await connection_service.update(connection_id, connection)
         # Refresh data from API for the connection
         await refresh_connection(connection_id)
         # Check folder visibility and permissions in the background
-        _schedule_doctor(connection_id)
+        connection_doctor.schedule_doctor(connection_id)
     except Exception as e:
         await websockets.ws_manager.broadcast(
             "Failed to update Connection!", "Error"
         )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Update the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     await websockets.ws_manager.broadcast(
         "Connection Updated Successfully!", "Success", reload="connections"
@@ -329,6 +336,10 @@ async def update_connection(
     "/{connection_id}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Unexpected error",
+        },
         status.HTTP_200_OK: {
             "description": "Connection deletion scheduled.",
         },
@@ -342,8 +353,9 @@ async def delete_connection(connection_id: int) -> str:
     try:
         msg = delete_connection_job(connection_id)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        raise errors.as_http_error(
+            e, logger=logger, action="Delete the connection",
+            safe_status=status.HTTP_404_NOT_FOUND,
         )
     connection_doctor.forget_report(connection_id)
     return msg

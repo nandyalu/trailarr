@@ -1,13 +1,15 @@
+"""Notification channels, and the test message a user can send to one."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
 from app_logger import ModuleLogger
-import core.base.database.manager.notificationchannel as channel_manager
-from core.base.database.models.notificationchannel import (
+import database.manager.notificationchannel as channel_manager
+from database.models.notificationchannel import (
     NotificationChannelCreate,
     NotificationChannelRead,
 )
-from core.notifications import dispatcher
+from services.notifications import dispatcher
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("NotificationsAPI")
@@ -56,7 +58,10 @@ async def create_channel(
         # Log only the exception type — the message/traceback of a DB error
         # here (e.g. IntegrityError on the unique name) can include the
         # statement's bound parameters, which would leak the Apprise URL.
-        logger.warning(f"Failed to create notification channel: {type(e).__name__}")
+        logger.warning(
+            f"Trailarr could not create the notification channel:"
+            f" {type(e).__name__}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create notification channel",
@@ -89,7 +94,10 @@ async def update_channel(
     except Exception as e:
         # Log only the exception type — see create_channel for why the
         # message/traceback must not be logged here.
-        logger.warning(f"Failed to update notification channel: {type(e).__name__}")
+        logger.warning(
+            f"Trailarr could not update the notification channel:"
+            f" {type(e).__name__}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update notification channel",
@@ -138,7 +146,9 @@ async def test_channel(channel_id: int) -> str:
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
     except Exception as e:
-        logger.warning(f"Test notification errored: {type(e).__name__}")
+        logger.warning(
+            f"The test notification failed: {type(e).__name__}"
+        )
         success = False
     if not success:
         raise HTTPException(

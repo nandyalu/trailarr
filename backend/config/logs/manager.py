@@ -1,3 +1,5 @@
+"""Read log records back out of the database, filtered and paged."""
+
 from datetime import datetime, timedelta
 from sqlalchemy import delete
 from sqlmodel import col, desc, or_, select

@@ -1,3 +1,9 @@
+"""Write the OpenAPI spec to docs/references/api-docs/openapi.json.
+
+Run this after any change to a route, and commit the result. Set
+APP_VERSION, or the spec records version 0.0.0.
+"""
+
 import json
 import os
 import tempfile

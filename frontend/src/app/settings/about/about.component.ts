@@ -1,8 +1,8 @@
 import {AsyncPipe, NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
-import {TimediffPipe} from 'src/app/helpers/timediff.pipe';
+import {CopyToClipboardDirective} from 'src/app/shared/directives/copy-to-clipboard.directive';
+import {TimediffPipe} from 'src/app/shared/pipes/timediff.pipe';
 import {ServerStats} from 'src/app/models/serverstats';
 import {SettingsService} from '../../services/settings.service';
 

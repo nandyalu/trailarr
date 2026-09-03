@@ -1,3 +1,5 @@
+"""Helpers shared by the API routers."""
+
 import inspect
 import re
 

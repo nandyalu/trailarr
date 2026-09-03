@@ -1,3 +1,10 @@
+"""The exceptions Trailarr raises.
+
+The message of one of these is written for the user, and the API returns it
+in the response. An exception from anywhere else is logged and answered with
+a generic line. See api/v1/errors.py.
+"""
+
 class ConnectionTimeoutError(Exception):
     """Raised when a connection times out"""
 

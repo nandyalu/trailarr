@@ -2,7 +2,7 @@ import {DatePipe, NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, inject, input, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {FileSizePipe} from 'src/app/helpers/file-size.pipe';
+import {FileSizePipe} from 'src/app/shared/pipes/file-size.pipe';
 import {FileFolderInfo} from 'src/app/models/filefolderinfo';
 import {MediaService} from '../../../services/media.service';
 import {WebsocketService} from '../../../services/websocket.service';

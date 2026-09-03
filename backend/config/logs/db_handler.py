@@ -1,3 +1,15 @@
+"""Write each log record to the database.
+
+The handler also fills the mediaid column, which is what lets the Logs page
+link a line to a title. A caller sets it with `logger.media(id)`; when it is
+not set, the handler falls back to the first number in square brackets in
+the message.
+
+Keep that fallback in mind before you put a number in brackets: a profile or
+channel id there becomes the media id, and the line links to the wrong
+title.
+"""
+
 import logging
 import re
 import traceback

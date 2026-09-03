@@ -1,3 +1,5 @@
+"""The log levels Trailarr offers, and the level each logger starts at."""
+
 import logging
 
 

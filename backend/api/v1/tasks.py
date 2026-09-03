@@ -1,14 +1,16 @@
+"""The background tasks: what is scheduled, and running one now."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from pydantic import BaseModel
 from quiv import Task, Job
-from core.base.database.manager.task_config import get_all_task_configs
-from core.base.database.models.task_config import (
+from database.manager.task_config import get_all_task_configs
+from database.models.task_config import (
     ScheduledTaskConfigRead,
     ScheduledTaskConfigUpdate,
 )
-from core.tasks import scheduler
-from core.tasks import schedules
+from tasks import scheduler
+from tasks import schedules
 
 tasks_router = APIRouter(tags=["Tasks", "Jobs"])
 

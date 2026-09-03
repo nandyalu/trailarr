@@ -1,3 +1,5 @@
+"""Log how long each request took."""
+
 import http
 import time
 
