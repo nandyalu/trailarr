@@ -532,6 +532,43 @@ async def test_validation_skip_does_not_record_backoff_attempt():
 
 
 @pytest.mark.asyncio
+async def test_declined_download_is_not_counted_as_an_attempt():
+    """A download that declines to run makes no attempt.
+
+    `download_trailer` returns False without a network request when Plex
+    already holds the trailer, or when the stop event is set. Neither may
+    report a download or advance the delay ladder."""
+    media = _media(1)
+    profile = _profile(1)
+    profile.retry_count = 0
+
+    with (
+        patch(
+            "core.download.trailers.missing._is_valid_media",
+            return_value=True,
+        ),
+        patch(
+            "core.download.trailers.missing.trailer_downloader"
+            ".download_trailer",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch(
+            "core.download.trailers.missing.attempt_manager.record_failure"
+        ) as record_failure,
+        patch(
+            "core.download.trailers.missing.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep_between,
+    ):
+        result = await _process_single_media_item(media, [profile])
+
+    assert result == (0, 0, 0)
+    record_failure.assert_not_called()
+    sleep_between.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_validation_skip_is_reported_once_for_the_media_item():
     """An unreachable folder skips the media item, not each profile.
 

@@ -571,11 +571,15 @@ async def _process_single_media_item(
             )
             skipped_items += 1
         finally:
-            # Reached only when the profile got past validation, so a
-            # storage-unreachable skip never advances the ladder.
-            total_processed += 1
-            download_attempts += 1
+            # Count only a real attempt. `download_trailer` returns False
+            # without touching the network when Plex already holds the
+            # trailer (`skip_if_plex_trailer`) or when the stop event is
+            # set. Those must not report a download, and must not advance
+            # the delay ladder — the ladder paces network requests, and
+            # a skip makes none.
             if download_attempted:
+                total_processed += 1
+                download_attempts += 1
                 await utils.sleep_between_downloads(total_processed, logger)
 
     _profile_count = len(profiles)
