@@ -20,7 +20,8 @@ jobs:
     # has a read-only GITHUB_TOKEN.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (startsWith(github.event.pull_request.title, 'v') &&
+      (github.event_name == 'pull_request' &&
+       startsWith(github.event.pull_request.title, 'v') &&
        github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
