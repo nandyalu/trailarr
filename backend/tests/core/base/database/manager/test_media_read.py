@@ -1,12 +1,19 @@
 """Tests for media read manager functions."""
 
-import pytest
+import math
+from datetime import datetime, timezone
 from unittest.mock import patch
+
+import pytest
+from sqlalchemy import event
 from sqlmodel import Session
 
 from core.base.database.models.connection import ArrType, Connection
+from core.base.database.models.download import DownloadCreate
 from core.base.database.models.media import MediaCreate
-from core.base.database.utils.engine import write_session
+from core.base.database.utils.engine import engine, write_session
+from core.base.database.manager.media.read import _MEDIA_BATCH_SIZE
+import core.base.database.manager.download as download_manager
 import core.base.database.manager.media as media_manager
 
 
@@ -30,7 +37,12 @@ def _make_connection(
     return conn
 
 
-def _make_media(connection_id: int, txdb_id: str, folder_path: str | None = None) -> MediaCreate:
+def _make_media(
+    connection_id: int,
+    txdb_id: str,
+    folder_path: str | None = None,
+    monitor: bool = False,
+) -> MediaCreate:
     return MediaCreate(
         connection_id=connection_id,
         arr_id=1,
@@ -38,6 +50,7 @@ def _make_media(connection_id: int, txdb_id: str, folder_path: str | None = None
         title=f"Media {txdb_id}",
         txdb_id=txdb_id,
         folder_path=folder_path,
+        monitor=monitor,
     )
 
 
@@ -248,3 +261,69 @@ class TestReadAllGeneratorSessionLifecycle:
 
         # The finally block must have added exactly one more close call
         assert after_close == before_close + 1
+
+    def test_monitored_generator_eager_loads_downloads_in_bounded_queries(
+        self,
+    ):
+        """The monitored scan loads downloads without one query per row.
+
+        The assertion is a bound relative to the rows actually returned,
+        not an exact count: this suite shares one database, so any other
+        test that adds monitored media changes how many batches the scan
+        needs."""
+        row_count = 24
+        created = media_manager.create_or_update_bulk(
+            [
+                _make_media(
+                    self.conn.id,
+                    f"tt_gen_eager_{index}",
+                    monitor=True,
+                )
+                for index in range(row_count)
+            ]
+        )
+        media_id = created[0][0].id
+        now = datetime.now(timezone.utc)
+        download_manager.create(
+            DownloadCreate(
+                media_id=media_id,
+                path="/trailers/test.mkv",
+                file_name="test.mkv",
+                file_hash="hash",
+                size=1,
+                resolution=1080,
+                file_format="mkv",
+                video_format="h264",
+                audio_format="aac",
+                profile_id=7,
+                added_at=now,
+                updated_at=now,
+            )
+        )
+        select_count = 0
+
+        def count_selects(*args):
+            nonlocal select_count
+            statement = args[2]
+            if statement.lstrip().upper().startswith("SELECT"):
+                select_count += 1
+
+        event.listen(engine, "before_cursor_execute", count_selects)
+        try:
+            rows = list(media_manager.read_all_generator(monitored_only=True))
+        finally:
+            event.remove(engine, "before_cursor_execute", count_selects)
+
+        created_ids = {item[0].id for item in created}
+        created_rows = [row for row in rows if row.id in created_ids]
+        assert len(created_rows) == row_count
+        row_with_download = next(
+            row for row in created_rows if row.id == media_id
+        )
+        assert row_with_download.downloads[0].profile_id == 7
+
+        # One media query and one downloads query per batch. Lazy loading
+        # would instead cost one query per row.
+        batches = math.ceil(len(rows) / _MEDIA_BATCH_SIZE)
+        assert select_count <= 2 * batches + 1
+        assert select_count < len(rows)

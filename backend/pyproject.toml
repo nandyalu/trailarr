@@ -29,6 +29,7 @@ dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
+    "pytest-timeout==2.4.0",
     "zensical==0.0.57",
 ]
 docs = [
@@ -41,10 +42,11 @@ testing = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
+    "pytest-timeout==2.4.0",
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=. --cov-report=xml --cov-report=term"
+addopts = "--cov=. --cov-report=xml --cov-report=term --timeout=60"
 testpaths = ["tests"]
 
 [tool.coverage.run]
