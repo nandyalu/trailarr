@@ -47,9 +47,16 @@ export class LoginComponent implements OnInit {
         // server root, and a URL base (reverse proxy setup) is lost.
         window.location.href = this.location.prepareExternalUrl(returnUrl);
       },
-      error: () => {
+      error: (err: {status?: number}) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Invalid username or password.');
+        // A network failure (status 0) or a gateway error means the server is
+        // not reachable, not that the password is wrong. Reporting those as
+        // bad credentials sends people looking for the wrong fix.
+        const status = err?.status;
+        const unreachable = status === 0 || status === 502 || status === 503 || status === 504;
+        this.errorMessage.set(
+          unreachable ? 'Cannot reach the Trailarr server. Check that it is running.' : 'Invalid username or password.',
+        );
       },
     });
   }

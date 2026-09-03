@@ -17,6 +17,37 @@ _LOG_DIR = _DATA_DIR / "logs"
 _TASK_NAME = "Trailarr"
 
 
+def build_register_task_ps(
+    exe: Path, script: Path, username: str, task_name: str = _TASK_NAME
+) -> str:
+    """Build the PowerShell that registers and starts the startup task.
+
+    Every path goes inside single quotes. The install path holds a space
+    ("Program Files"), and an unquoted -Execute makes PowerShell read
+    "C:\\Program" as the program and the rest of the path as the positional
+    -WorkingDirectory. PowerShell reports no error for this, so the task
+    registers, reports "Ready", and never starts. \n
+    Args:
+        exe (Path): The program that the task runs. \n
+        script (Path): The start script, passed as an argument. \n
+        username (str): The account that the task runs as. \n
+        task_name (str): The name to register the task under. \n
+    Returns:
+        str: The PowerShell script to run."""
+    return f"""
+$action   = New-ScheduledTaskAction -Execute '{exe}' -Argument '"{script}"'
+$trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
+              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
+              -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
+Register-ScheduledTask -TaskName '{task_name}' `
+  -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
+  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
+Start-ScheduledTask -TaskName '{task_name}'
+"""
+
+
 class WindowsInstaller(BaseInstaller):
     def __init__(self, source_dir: Path, version: str) -> None:
         super().__init__(
@@ -120,18 +151,7 @@ class WindowsInstaller(BaseInstaller):
                 "Could not determine current Windows username"
             )
 
-        ps = f"""
-$action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
-$trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
-$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
-              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
-              -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
-Register-ScheduledTask -TaskName '{_TASK_NAME}' `
-  -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
-  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
-Start-ScheduledTask -TaskName '{_TASK_NAME}'
-"""
+        ps = build_register_task_ps(exe, script, username)
         with step_context("Registering Task Scheduler startup task"):
             result = subprocess.run(
                 ["powershell.exe", "-NonInteractive", "-Command", ps],
