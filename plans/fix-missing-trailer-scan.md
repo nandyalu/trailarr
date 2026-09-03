@@ -1,6 +1,6 @@
 # Fix — Quadratic Missing-Trailer Scans
 
-**Status:** DONE — merged to `dev` on September 2, 2026 (PR #666, squashed as `b18fd1c4`),
+**Status:** DONE — merged to `dev` on September 3, 2026 (PR #666, squashed as `b18fd1c4`),
 ships in v0.11.5. PR #666 found the bug and carried this plan's approach instead of its
 original keyset cursor. Follow-up: hygiene item H21 extracts the scan that `missing.py`
 and `pending.py` still duplicate, after the Phase 7 reorg lands.
