@@ -14,6 +14,15 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # A pull request from a fork gets a read-only GITHUB_TOKEN, so the
+    # deploy to gh-pages answers 403. The permissions block above cannot
+    # raise that. Skip the job instead of failing it.
+    #
+    # Do NOT change this trigger to pull_request_target to get the write
+    # token: `zensical build` runs docs/hooks.py, so a fork's own hooks.py
+    # would execute with write access to this repository.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

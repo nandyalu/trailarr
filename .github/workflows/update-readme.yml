@@ -12,6 +12,10 @@ on:
 jobs:
   githubReadme:
     runs-on: ubuntu-latest
+    # This job pushes to the PR branch. A fork PR gets a read-only
+    # GITHUB_TOKEN, and the push answers 403.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
