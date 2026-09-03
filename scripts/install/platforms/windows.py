@@ -17,6 +17,55 @@ _LOG_DIR = _DATA_DIR / "logs"
 _TASK_NAME = "Trailarr"
 
 
+def _ps_quote(value: object) -> str:
+    """Put a value inside a PowerShell single-quoted string. \n
+    PowerShell escapes a single quote by doubling it. A Windows account can
+    hold an apostrophe (`O'Brien`), and without this the string ends early
+    and the rest of the name runs as a command. \n
+    Args:
+        value (object): The value to quote. \n
+    Returns:
+        str: The value as a PowerShell string literal, quotes included."""
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def build_register_task_ps(
+    exe: Path, script: Path, username: str, task_name: str = _TASK_NAME
+) -> str:
+    """Build the PowerShell that registers and starts the startup task.
+
+    Every value goes inside single quotes. The install path holds a space
+    ("Program Files"), and an unquoted -Execute makes PowerShell read
+    "C:\\Program" as the program and the rest of the path as the positional
+    -WorkingDirectory. PowerShell reports no error for this, so the task
+    registers, reports "Ready", and never starts. \n
+    Args:
+        exe (Path): The program that the task runs. \n
+        script (Path): The start script, passed as an argument. \n
+        username (str): The account that the task runs as. \n
+        task_name (str): The name to register the task under. \n
+    Returns:
+        str: The PowerShell script to run."""
+    # The start script keeps its double quotes: they are part of the command
+    # line that trailarr.exe reads, because that path holds a space too.
+    exe_q = _ps_quote(exe)
+    script_q = _ps_quote(f'"{script}"')
+    user_q = _ps_quote(username)
+    task_q = _ps_quote(task_name)
+    return f"""
+$action   = New-ScheduledTaskAction -Execute {exe_q} -Argument {script_q}
+$trigger  = New-ScheduledTaskTrigger -AtLogon -User {user_q}
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
+              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
+              -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+$principal = New-ScheduledTaskPrincipal -UserId {user_q} -LogonType S4U -RunLevel Limited
+Register-ScheduledTask -TaskName {task_q} `
+  -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
+  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
+Start-ScheduledTask -TaskName {task_q}
+"""
+
+
 class WindowsInstaller(BaseInstaller):
     def __init__(self, source_dir: Path, version: str) -> None:
         super().__init__(
@@ -120,18 +169,7 @@ class WindowsInstaller(BaseInstaller):
                 "Could not determine current Windows username"
             )
 
-        ps = f"""
-$action   = New-ScheduledTaskAction -Execute {exe} -Argument '"{script}"'
-$trigger  = New-ScheduledTaskTrigger -AtLogon -User '{username}'
-$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 `
-              -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable `
-              -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-$principal = New-ScheduledTaskPrincipal -UserId '{username}' -LogonType S4U -RunLevel Limited
-Register-ScheduledTask -TaskName '{_TASK_NAME}' `
-  -Description 'Trailarr - Trailer downloader for Radarr and Sonarr' `
-  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
-Start-ScheduledTask -TaskName '{_TASK_NAME}'
-"""
+        ps = build_register_task_ps(exe, script, username)
         with step_context("Registering Task Scheduler startup task"):
             result = subprocess.run(
                 ["powershell.exe", "-NonInteractive", "-Command", ps],
