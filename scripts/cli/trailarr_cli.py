@@ -198,7 +198,7 @@ def _service_status() -> None:
         # points at a file that does not exist still reports "Ready". The
         # last run result and the action tell you whether it ever started.
         subprocess.run(
-            ["powershell", "-NonInteractive", "-Command",
+            ["powershell", "-NonInteractive", "-NoProfile", "-Command",
              f"$t = Get-ScheduledTask -TaskName '{_TASK_NAME}'; "
              f"$t | Select-Object TaskName, State, Description | Format-List; "
              f"$t.Actions | Select-Object Execute, Arguments | Format-List; "

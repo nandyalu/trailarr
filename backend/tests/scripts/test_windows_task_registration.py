@@ -59,11 +59,30 @@ def test_start_script_is_passed_as_a_quoted_argument(build_ps):
 
 
 def test_task_name_and_user_are_quoted(build_ps):
-    """A user name can hold a space too, and the task name always does not."""
+    """A user name can hold a space, so it stays inside quotes."""
     ps = build_ps(EXE, SCRIPT, "First Last", task_name="Trailarr")
     assert "-User 'First Last'" in ps
     assert "-UserId 'First Last'" in ps
     assert "-TaskName 'Trailarr'" in ps
+
+
+def test_an_apostrophe_in_the_user_name_is_escaped(build_ps):
+    """A Windows account can be named O'Brien. PowerShell doubles the quote.
+
+    Without this the string stops at the apostrophe, and PowerShell runs the
+    remainder of the name as a command.
+    """
+    ps = build_ps(EXE, SCRIPT, "O'Brien")
+    assert "-User 'O''Brien'" in ps
+    assert "-UserId 'O''Brien'" in ps
+    assert "-User 'O'Brien'" not in ps
+
+
+def test_an_apostrophe_in_the_task_name_is_escaped(build_ps):
+    """The task name goes through the same quoting."""
+    ps = build_ps(EXE, SCRIPT, "someuser", task_name="Bob's Trailarr")
+    assert "-TaskName 'Bob''s Trailarr'" in ps
+    assert "Start-ScheduledTask -TaskName 'Bob''s Trailarr'" in ps
 
 
 def test_the_task_starts_after_it_is_registered(build_ps):
@@ -105,3 +124,30 @@ def test_powershell_parses_the_action_as_written(build_ps):
     assert action["Execute"] == str(EXE)
     assert action["Arguments"] == f'"{SCRIPT}"'
     assert not action["WorkingDirectory"]
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32", reason="needs PowerShell to parse the command"
+)
+@pytest.mark.parametrize("username", ["someuser", "First Last", "O'Brien"])
+def test_powershell_reads_the_whole_script_without_an_error(
+    build_ps, username
+):
+    """The generated script is valid PowerShell for each kind of user name."""
+    import subprocess
+
+    ps = build_ps(EXE, SCRIPT, username)
+    # Parse only. Running this would register a task on the test machine.
+    checker = (
+        "$errors = $null; "
+        "[void][System.Management.Automation.Language.Parser]::ParseInput("
+        "[Console]::In.ReadToEnd(), [ref]$null, [ref]$errors); "
+        "if ($errors.Count) { $errors | ForEach-Object { $_.Message }; exit 1 }"
+    )
+    result = subprocess.run(
+        ["powershell", "-NonInteractive", "-NoProfile", "-Command", checker],
+        input=ps,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout
