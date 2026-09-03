@@ -520,3 +520,40 @@ original, and each now has a test:
 
 The common shape: **a line that only runs when something goes wrong is not covered by a
 green suite.** Read the code, or run the app, or write a test that reads the code.
+
+## How this phase lands in `dev` (settled, Sep 3 2026)
+
+**Merge this PR with "Create a merge commit". Do not squash, and do not rebase.**
+
+The 53 commits carry the Stage A / B / C structure, and that structure is the record of
+how a big-churn phase was made safe. A squash reduces it to one commit and the stages
+survive only as prose. Nothing else in the repository holds that history.
+
+`dev` picked up a merge commit when v0.11.5 came into this branch (see below), so
+GitHub's "Rebase and merge" button refuses this PR. That is expected and it is not a
+problem to fix: releases v0.9.2, v0.9.3, v0.9.4 and v0.10.2 all landed on `main` as
+two-parent merge commits. The repository's recent linear history is a preference, not an
+invariant.
+
+Consequence for the release that ships this phase: the `dev` → `main` pull request also
+needs **"Create a merge commit"**, which `.claude/skills/release/SKILL.md` already
+documents as the fallback when a merge commit blocks the rebase. Take that fallback
+deliberately; do not squash the release to make the button work.
+
+Rejected alternatives, so they are not re-argued:
+
+- **Rebase the 53 commits onto `dev`.** It keeps linear history and every commit, at
+  about 11 conflict points. It also force-pushes a shared branch and, worse, produces
+  intermediate commits that no one ever tested — a Stage A move commit replayed onto
+  `dev`'s rewritten `missing.py` gives a tree that neither side ever had.
+- **Tag the branch, then squash.** `dev` stays linear and the history stays reachable
+  through the tag, but stage-level `git log` and `git bisect` no longer work from inside
+  `dev`, which is where anyone debugging this reorg will be standing.
+
+### The v0.11.5 merge (Sep 3 2026)
+
+`dev` was merged into this branch rather than rebased onto it, because the release
+rewrote files this phase moves. Git's rename detection carried most of it across on its
+own. Eleven hunks in seven files were resolved by hand; the merge commit records each
+decision. Verified afterwards: 1622 backend tests, 135 frontend tests, a clean
+production build, and no surviving `core.` import.
