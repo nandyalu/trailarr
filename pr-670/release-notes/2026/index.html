@@ -1,0 +1,4443 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Trailarr is a simple, lightweight, and easy-to-use media server for your personal media collection.">
+      
+      
+      
+        <link rel="canonical" href="https://nandyalu.github.io/trailarr/release-notes/2026/">
+      
+      
+        <link rel="prev" href="../../troubleshooting/faq/">
+      
+      
+        <link rel="next" href="../2025/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
+      <meta name="generator" content="zensical-0.0.57">
+    
+    
+      
+        <title>2026 - Trailarr Docs</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.5da3a30f.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.812a03bb.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#v0115-september-2-2026" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trailarr Docs" class="md-header__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="Trailarr Docs">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trailarr Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2026
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="teal"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/nandyalu/trailarr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    nandyalu/trailarr
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  Trailarr
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/common-issues/" class="md-tabs__link">
+          
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+      
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="././" class="md-tabs__link">
+          
+  
+  Release Notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../references/roadmap/" class="md-tabs__link">
+          
+  
+  References
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trailarr Docs" class="md-nav__button md-logo" aria-label="Trailarr Docs" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="Trailarr Docs">
+
+    </a>
+    Trailarr Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/nandyalu/trailarr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    nandyalu/trailarr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Trailarr
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Getting Started
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Getting Started
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/01-first-things/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  First Things
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  First Things
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/01-first-things/environment-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Environment Variables
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/01-first-things/radarr-sonarr-volumes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Radarr Sonarr Volumes
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/01-first-things/network-drives/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Network Drives
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/02-installation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Installation
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Installation
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/docker-compose/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Docker Compose
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/docker-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Docker Run
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/baremetal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Direct Install
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/self-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Build and Install
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/unraid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Unraid
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/02-installation/hardware-acceleration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Hardware Acceleration
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/03-setup/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Setup
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Setup
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/03-setup/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Profiles
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/03-setup/connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Connections
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/03-setup/plex-connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Plex Connection
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/04-next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Next Steps
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  User Guide
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  User Guide
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/general/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  General
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/library/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Library
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Library
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/library/media-details/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Media Details
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Events
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Tasks
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Logs
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/settings/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Settings
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_7" id="__nav_3_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Settings
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/general-settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  General Settings
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/settings/connections/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Connections
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_7_3" id="__nav_3_7_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Connections
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/connections/plex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Plex
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/health/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Health
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Notifications
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/settings/profiles/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Profiles
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_7_6" id="__nav_3_7_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Profiles
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_7_6_2" id="__nav_3_7_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Settings
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Settings
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/general/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  General
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/file/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  File
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/audio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Audio
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/video/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Video
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/subtitle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Subtitle
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Search
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/settings/plex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Plex
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Filters
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/profiles/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Examples
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  About
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/reverse-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Reverse Proxy
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Troubleshooting
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Troubleshooting
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Common Issues
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Backup & Restore
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  FAQ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Release Notes
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Release Notes
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2026
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2026
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0115-september-2-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.5</strong> - <em>September 2, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0114-august-29-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.4</strong> - <em>August 29, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0113-august-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.3</strong> - <em>August 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0112-august-15-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.2</strong> - <em>August 15, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0111-august-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.1</strong> - <em>August 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-august-9-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.0</strong> - <em>August 9, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0102-july-30-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.2</strong> - <em>July 30, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0101-july-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.1</strong> - <em>July 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0100-july-19-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.0</strong> - <em>July 19, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v099-july-05-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v098-june-28-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 28, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v097-beta-june-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.7-beta</strong> - <em>June 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v096-beta-june-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.6-beta</strong> - <em>June 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v095-beta-may-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.5-beta</strong> - <em>May 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v094-beta-may-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.4-beta</strong> - <em>May 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v093-beta-may-08-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.3-beta</strong> - <em>May 08, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v092-beta-may-06-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.2-beta</strong> - <em>May 06, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v091-beta-may-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.1-beta</strong> - <em>May 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v090-beta-april-30-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.0-beta</strong> - <em>April 30, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-beta-april-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.8.0-beta</strong> - <em>April 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v072-beta-april-05-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.2-beta</strong> - <em>April 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v071-beta-april-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.1-beta</strong> - <em>April 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v070-beta-february-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.0-beta</strong> - <em>February 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0610-beta-february-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.10-beta</strong> - <em>February 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v069-beta-january-14-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.9-beta</strong> - <em>January 14, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v068-beta-january-14-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.8-beta</strong> - <em>January 14, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v067-beta-january-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.7-beta</strong> - <em>January 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v066-beta-january-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.6-beta</strong> - <em>January 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v065-beta-january-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.5-beta</strong> - <em>January 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2025
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2024
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  References
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  References
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Roadmap to v1.0.0
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/legal-disclaimer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Legal Disclaimer
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../references/api-docs/api-docs.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API Docs
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0115-september-2-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.5</strong> - <em>September 2, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0114-august-29-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.4</strong> - <em>August 29, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0113-august-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.3</strong> - <em>August 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0112-august-15-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.2</strong> - <em>August 15, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0111-august-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.1</strong> - <em>August 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-august-9-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.0</strong> - <em>August 9, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0102-july-30-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.2</strong> - <em>July 30, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0101-july-21-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.1</strong> - <em>July 21, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0100-july-19-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.10.0</strong> - <em>July 19, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v099-july-05-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.9</strong> - <em>July 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v098-june-28-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.8</strong> - <em>June 28, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v097-beta-june-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.7-beta</strong> - <em>June 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v096-beta-june-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.6-beta</strong> - <em>June 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v095-beta-may-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.5-beta</strong> - <em>May 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v094-beta-may-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.4-beta</strong> - <em>May 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v093-beta-may-08-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.3-beta</strong> - <em>May 08, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v092-beta-may-06-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.2-beta</strong> - <em>May 06, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v091-beta-may-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.1-beta</strong> - <em>May 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v090-beta-april-30-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.9.0-beta</strong> - <em>April 30, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-beta-april-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.8.0-beta</strong> - <em>April 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v072-beta-april-05-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.2-beta</strong> - <em>April 05, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v071-beta-april-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.1-beta</strong> - <em>April 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v070-beta-february-11-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.7.0-beta</strong> - <em>February 11, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0610-beta-february-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.10-beta</strong> - <em>February 07, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v069-beta-january-14-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.9-beta</strong> - <em>January 14, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v068-beta-january-14-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.8-beta</strong> - <em>January 14, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v067-beta-january-13-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.7-beta</strong> - <em>January 13, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v066-beta-january-09-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.6-beta</strong> - <em>January 09, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v065-beta-january-04-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.6.5-beta</strong> - <em>January 04, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  
+  <span class="md-ellipsis">
+    Trailarr
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-path__item">
+        <a href="././" class="md-path__link">
+          
+  
+  <span class="md-ellipsis">
+    Release Notes
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+  <h1 id="__skip">2026</h1>
+
+<h2 id="v0115-september-2-2026"><strong>v0.11.5</strong> - <em>September 2, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>The missing-trailer task no longer gets slower as it runs</strong> — the task read the whole library again for every trailer that it downloaded. On a large library it used high CPU for hours. The task now reads the library in sweeps, and it looks up the download attempts in one batch. A profile that you change during a run still applies to every item that has not started; see <a href="../../user-guide/tasks/#download-missing-trailers">Tasks</a>. Thanks <a href="https://github.com/sittingmongoose">@sittingmongoose</a> for finding the cause and for the profiling that showed it! (<a href="https://github.com/nandyalu/trailarr/pull/666">#666</a>)</p>
+</li>
+<li>
+<p><strong>Trailarr starts again after an update on Windows</strong> — the installer wrote the startup task with an unquoted program path. Windows read <code>C:\Program</code> as the program, and kept the remainder of the path as the working directory. Windows gave no error for this, so the task registered, showed the state <code>Ready</code>, and never started. The web page did not open, the port stayed closed, and Trailarr wrote no log file. A re-install wrote the same broken task again. The installer now puts quotes around each path, and also accepts a Windows account name that holds an apostrophe. If your installation has this problem, update to this version and run the installer again.</p>
+</li>
+<li>
+<p><strong><code>trailarr status</code> now shows the result of the last run</strong> — on Windows the command showed only the state of the task, and a task that never started still shows <code>Ready</code>. The command now also shows the last run time, the result of the last run, and the program that the task runs.</p>
+</li>
+<li>
+<p><strong>The login page now tells you when the server is down</strong> — a login attempt that could not reach the server showed the message <code>Invalid username or password.</code>, which sent you to look for a password problem. The page now shows <code>Cannot reach the Trailarr server.</code> when the connection fails, and keeps the password message for a refused login.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0114-august-29-2026"><strong>v0.11.4</strong> - <em>August 29, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Connection Doctor</strong> — every connection card now shows a health chip. The doctor checks that Trailarr can reach the application, see each reported media folder, and write to it. If a folder is not visible, the doctor suggests the exact path mapping that fixes it, and one click on <strong>Apply</strong> makes the change — see <a href="../../user-guide/settings/connections/#connection-doctor">Connection Doctor</a>.</p>
+</li>
+<li>
+<p><strong>Permission problems now name the exact fix</strong> — a failed write test reports the owner of the folder (uid/gid) and the user that Trailarr runs as. You see a PUID/PGID mismatch at setup time, and not after three tasks fail.</p>
+</li>
+<li>
+<p><strong>Trailarr now warns about an empty media folder</strong> — Trailarr can reach the folder, but the folder holds no files. Trailarr shows the warning "your mount may be down" instead of a healthy state.</p>
+</li>
+<li>
+<p><strong>Applying a path mapping also syncs the connection</strong> — the library fills in right away instead of staying broken until the next scheduled sync.</p>
+</li>
+<li>
+<p><strong>Check every connection at once</strong> — a <strong>Check all</strong> button on the Connections page runs the doctor for all connections, instead of one dialog each.</p>
+</li>
+<li>
+<p><strong>Find your media folders while you add a connection</strong> — the doctor now also runs on the Add / Edit Connection page. Click <strong>Find folders</strong>, and Trailarr looks on disk for the folders that your Arr reports. Trailarr fills in each Trailarr Path that it finds. It does not replace a path that you typed. Instead, it shows a button to accept the folder that it found. Before this change, you had to know your mount layout, because Trailarr does not save a connection that it cannot read — see <a href="../../user-guide/settings/connections/#find-your-folders-while-you-add-a-connection">Connection Doctor</a>.</p>
+</li>
+<li>
+<p><strong>Trailarr now warns about a full media disk</strong> — the Disk space check reports every media disk with less than 5 GB free, and not only the config volume. The check reports each disk of a split library.</p>
+</li>
+<li>
+<p><strong>New Settings &gt; Health page</strong> — the page shows live checks of FFmpeg, hardware acceleration (finally visible!), yt-dlp, cookies, connections, the image cache, and disk space. Each check that fails names its fix — see <a href="../../user-guide/settings/health/">Health</a>.</p>
+</li>
+<li>
+<p><strong>Set up YouTube cookies from the UI</strong> — upload or paste your cookies.txt on the Health page. Trailarr stores the file with safe permissions, and shows whether the cookies are valid or expired. Trailarr never shows the content again — see <a href="../../user-guide/settings/health/#youtube-cookies">YouTube cookies</a>.</p>
+</li>
+<li>
+<p><strong>Test YouTube downloads with one click</strong> — the Health page can run a yt-dlp test on a known video and report the result in plain language. Trailarr asks you to confirm first, because the test contacts YouTube once.</p>
+</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>File actions work again on a Windows install</strong> — playing, reading, renaming and deleting a trailer answered "Invalid file path", because the path check counted forward slashes and a Windows path has none, so the check now compares folder names and works on Windows, Linux and macOS.</p>
+</li>
+<li>
+<p><strong>A media folder that starts with the name of a system folder is no longer refused</strong> — a library at <code>/variable/media</code> or <code>/usr-data/media</code> failed the path check for starting with <code>/var</code> or <code>/usr</code>, and the check now compares whole folder names instead of the start of the text.</p>
+</li>
+<li>
+<p><strong>Modals show again in Safari</strong> — a dialog stayed hidden while the page behind it dimmed. A dialog now shows even when its opening animation does not run. Trailarr also sets the position and the size limits of a dialog against the window. Before this change, Safari could measure the dialog against a short parent element and give it a height of 0. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report and the console output! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
+</li>
+<li>
+<p><strong>Login works again behind a reverse proxy sub-directory</strong> — the login returned a <code>405 Method Not Allowed</code> error, or was successful and then gave a <code>401 Unauthorized</code> error for every request, which locked you out of the app; the session cookie now stays at the root path, the redirect after login keeps the URL base, and a new <code>URL Base</code> applies without a restart — see <a href="../../user-guide/reverse-proxy/#login-problems-in-a-sub-directory-setup">Reverse Proxy</a>. Thanks <a href="https://github.com/daviddavo">@daviddavo</a> for the detailed report and logs! (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>)</p>
+</li>
+<li>
+<p><strong>Trailarr uses your environment variables again</strong> — a setting stored in the <code>.env</code> file replaced the variable that you set in <code>docker-compose.yml</code>. So <code>URL_BASE=</code> and <code>WEBUI_PASSWORD=</code> did nothing, and you could not correct a setting that locked you out. A variable that you set for the container now has priority — see <a href="../../getting-started/01-first-things/environment-variables/">Environment Variables</a> (<a href="https://github.com/nandyalu/trailarr/issues/663">#663</a>).</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><code>WEBUI_PASSWORD</code> with a value that is not empty now sets that password, and Trailarr stores only its hash. Before this change, such a value broke the login. An empty value still resets the password to <code>trailarr</code> — see <a href="../../getting-started/01-first-things/environment-variables/#webui_password">WEBUI_PASSWORD</a>.</p>
+</li>
+<li>
+<p>Trailarr now records a known yt-dlp failure as a plain-language reason with the fix (for example, "YouTube requires a sign-in for this download. Set up a cookies file on Settings &gt; Health.") instead of a raw traceback — see <a href="../../user-guide/settings/health/#classified-download-errors">Classified download errors</a>.</p>
+</li>
+<li>
+<p>Trailarr keeps health check results when it restarts, so connection chips and the Health page no longer reset to "not checked" after every container update.</p>
+</li>
+<li>
+<p>The Health page runs its checks together instead of one after another, so a hung mount delays only its own check.</p>
+</li>
+<li>
+<p>The Connections health check now runs the Connection Doctor when no report exists yet, instead of asking you to run the doctor.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0113-august-21-2026"><strong>v0.11.3</strong> - <em>August 21, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Filter your library by downloads and files</strong> — view filters gain a new <strong>Downloads</strong> field family: <code>Download Count</code>, <code>Download Profile</code>, <code>Download Resolution</code>, <code>Download Added At</code>, <code>Download File Missing</code>, and <code>Has Unknown Profile Download</code> — see <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Download Filters</a>.</p>
+</li>
+<li>
+<p><strong>Recipe: find trailers below 1080p</strong> — combine <code>Has Downloads Equals true</code> with <code>Download Resolution Less Than 1080</code> in a view filter to list media whose trailer needs a re-download — see <a href="../../user-guide/settings/profiles/examples/#example-4-missing-1080p-trailer-view-filter">this example</a>.</p>
+</li>
+<li>
+<p><strong>Recipe: find deleted trailer files</strong> — a <code>Download File Missing Equals true</code> view filter lists media with a download record whose file is gone from disk.</p>
+</li>
+<li>
+<p>The filter editor groups fields into <strong>Media</strong>, <strong>Downloads</strong>, and <strong>Files</strong>, and the <code>Download Profile</code> filter shows your profiles by name (a deleted profile shows as <code>Deleted [id]</code>).</p>
+</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Downloaded trailers show in Plex immediately again</strong> — the <code>Notify Plex</code> profile setting scanned the media folder, but Plex kept the new trailer hidden on the media item until its metadata refreshed. Trailarr now refreshes the item too, so the trailer shows in seconds — see <a href="../../user-guide/settings/profiles/settings/plex/#notify-plex">Notify Plex</a>. Thanks <a href="https://github.com/lems111">@lems111</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/pull/652">#652</a>)</p>
+</li>
+<li>
+<p><strong>Plex trigger requests no longer fail on an empty response</strong> — Plex answers a scan, a refresh, or an add-extra request with an empty body, which Trailarr tried to read as JSON and recorded as a failure.</p>
+</li>
+<li>
+<p><strong><code>In The Last</code> / <code>Not In The Last</code> date filters work again in profiles</strong> — the backend evaluated these conditions backwards, so <code>In The Last</code> matched every past date and <code>Not In The Last</code> matched none; a profile filtering on <code>Added At In The Last 7 days</code> silently matched the whole library while view pages showed the correct list.</p>
+</li>
+<li>
+<p><strong>First page load no longer freezes with authentication disabled</strong> — on a fresh browser session with <code>WEBUI_DISABLE_AUTH=true</code>, the first settings request could race session creation and fail, which halted all page rendering and left the library empty until a manual refresh.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li><strong>Trailer Profiles now reject download filters (intentional change)</strong> — a profile that filters on its own downloads is circular: it stops matching a media item the moment its trailer downloads. The download engine already prevents re-downloads, so profiles do not need these filters. This includes <code>Has Downloads</code>, which profiles accepted before; saving such a profile now shows an error that recommends a view filter with the <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Download Filters</a> instead. Existing profiles keep working until you edit them.</li>
+</ul>
+<hr />
+<h2 id="v0112-august-15-2026"><strong>v0.11.2</strong> - <em>August 15, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>New <code>Create Missing Folders</code> setting</strong> — Trailarr can create a media folder that does not exist, instead of skipping the download. This helps when you keep trailers in a folder of their own. The setting is off by default. Trailarr never creates a folder when the drive or network share is unreachable — see <a href="../../user-guide/settings/general-settings/#create-missing-folders">Create Missing Folders</a>. (<a href="https://github.com/nandyalu/trailarr/discussions/641">#641</a>)</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>A show with a stray duplicate folder no longer takes over the library</strong> — when a Plex show has episodes in more than one folder, Trailarr selects the folder with the most episodes. Before, Trailarr stored the library root, and that one media item claimed every file and trailer below it — see <a href="../../user-guide/settings/connections/plex/#how-trailarr-resolves-tv-show-folder-paths">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>A media item with a library-root folder is never matched again</strong> — a bad item from the problem above could take over the next new series from Radarr/Sonarr. Trailarr now ignores these items in all folder matches. The next Plex sync deletes them.</p>
+</li>
+<li>
+<p><strong>Dates show in your own timezone</strong> — the web interface showed all dates in UTC. A trailer added at 9 AM in Melbourne showed as the evening before. Dates now use the timezone of the device that you use — see <a href="https://github.com/nandyalu/trailarr/issues/650">#650</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>Plex items link to their Radarr/Sonarr media by TMDB/TVDB id when the folder paths are different — see <a href="../../user-guide/settings/connections/plex/#how-plex-items-link-to-media">Plex Connection</a>.</p>
+</li>
+<li>
+<p>A Plex-only media item keeps its history when you rename its folder in Plex. Before, Trailarr deleted the item and added it again.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0111-august-11-2026"><strong>v0.11.1</strong> - <em>August 11, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>You control AI subtitles now</strong> — the new per-profile <code>Auto-Generated Subtitles</code> setting (off by default) decides if YouTube auto-generated subtitles are used when a video has no uploader subtitles — see <a href="../../user-guide/settings/profiles/settings/subtitle/#auto-generated-subtitles">Subtitle Settings</a>. (<a href="https://github.com/nandyalu/trailarr/issues/644">#644</a>)</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Plex-only media no longer lingers after deletion</strong> — when an item is removed from your Plex library and has no Radarr/Sonarr link, the next Plex sync now deletes it from Trailarr, the same way Arr syncs already clean up — see <a href="../../user-guide/settings/connections/plex/#what-a-plex-connection-does">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>Windows install works again</strong> — the installer passed two parameters that <code>New-ScheduledTaskSettingsSet</code> does not accept, so every Windows install or upgrade failed at the "Registering Task Scheduler startup task" step; the task now registers correctly.</p>
+</li>
+<li>
+<p><strong>YouTube downloads work on direct installs</strong> — the installer now bundles the <a href="https://deno.com">Deno</a> JavaScript runtime that <code>yt-dlp</code> needs to solve YouTube's challenges; without it, every download failed with <code>Requested format is not available</code> — see <a href="../../getting-started/02-installation/self-install/#deno-javascript-runtime-for-yt-dlp">Self Install</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>Trailers now embed the uploader's subtitles when available; before, Trailarr embedded only the auto-generated ones.</p>
+</li>
+<li>
+<p>Media that Radarr/Sonarr still tracks only loses its Plex link when it leaves the Plex library, and Trailarr records a <code>Plex Unlinked</code> event for it.</p>
+</li>
+<li>
+<p>Trailarr checks for a JavaScript runtime at startup, adds a configured <code>DENO_PATH</code> to the process <code>PATH</code> so <code>yt-dlp</code> can find it, and logs a warning when no runtime exists.</p>
+</li>
+<li>
+<p>Trailarr checks the configured <code>yt-dlp</code>, <code>ffmpeg</code>, and <code>ffprobe</code> paths at startup, falls back to the system <code>PATH</code> when a configured path does not exist, and logs a clear error that names the variable to set when the tool is not found at all — see <a href="../../getting-started/02-installation/self-install/#step-6-create-the-env-configuration-file">Self Install</a>.</p>
+</li>
+<li>
+<p>When a download or scan fails because a configured binary is missing, the error now names the configured path and the environment variable to fix instead of a bare <code>FileNotFoundError</code> / <code>[WinError 2]</code> message.</p>
+</li>
+<li>
+<p>Trailarr logs a warning when a profile's yt-dlp extra options override an option Trailarr sets (for example <code>-f</code>); the profile value stays active — see <a href="../../user-guide/settings/profiles/settings/search/#yt-dlp-extra-options">Yt-dlp Extra Options</a>.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0110-august-9-2026"><strong>v0.11.0</strong> - <em>August 9, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>The legacy status fields are gone for good</strong> — Trailarr removed the internal <code>trailer_exists</code> and stored <code>status</code> database fields, so your download records are now the only source of truth — see the <a href="../../references/roadmap/">roadmap</a>.</p>
+</li>
+<li>
+<p><strong>New <code>Has Downloads</code> filter</strong> — custom filters can check whether a media item has at least one downloaded video on disk — see <a href="../../user-guide/settings/profiles/filters/">Filters</a>.</p>
+</li>
+<li>
+<p><strong>Pick a local address for your Plex server</strong> — the server-selection step after Plex sign-in now offers a <strong>Custom URL</strong> choice and a <strong>Test</strong> button, so you can point Trailarr at a local address (instead of the external URLs Plex provides) and check that it is reachable before you connect — see <a href="../../getting-started/03-setup/plex-connection/">Plex Connection</a>.</p>
+</li>
+<li>
+<p><strong>Season counts for Plex-only series</strong> — series tracked only through a Plex connection now get their season count from the seasons present in your Plex library (Specials excluded), so <code>Season Count</code> filters and views work without a Sonarr connection.</p>
+</li>
+<li>
+<p><strong>Your database file shrinks after upgrades</strong> — Trailarr now runs a <code>VACUUM</code> after database migrations, so space freed by schema changes is returned to the filesystem — see <a href="../../troubleshooting/backup-restore/">Backup &amp; Restore</a>.</p>
+</li>
+</ul>
+<p><strong>Custom filters are migrated automatically.</strong> Every change is logged at migration time with the filter's name. The exact transformations:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Your old filter</th>
+<th style="text-align: left;">What happens in v0.11.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Profile filter on <code>Trailer Exists</code> (any value)</td>
+<td style="text-align: left;">Removed — a profile that already owns a download never re-downloads, so the condition is automatic now</td>
+</tr>
+<tr>
+<td style="text-align: left;">Profile filter on <code>Status</code> (any value)</td>
+<td style="text-align: left;">Removed — same reason</td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Trailer Exists Equals true/false</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals true/false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals downloaded</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals true</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals missing</code></td>
+<td style="text-align: left;">Becomes <code>Has Downloads Equals false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">View filter <code>Status Equals monitored</code></td>
+<td style="text-align: left;">Becomes <code>Monitor Equals true</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Any other <code>Status</code> filter (e.g. <code>Equals downloading</code>, <code>Not Equals</code>, <code>Contains</code>)</td>
+<td style="text-align: left;">Removed — it has no equivalent; recreate it with the new fields if needed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Dropdown menus open in the correct place again on new Chrome versions</strong> — a change in Chrome 151 moved the filter, sort, view, log level, event, and assign-profile dropdown menus to the corner of the screen instead of next to their buttons.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p>The API no longer returns <code>trailer_exists</code> or <code>status</code> fields on media objects. Read the <code>downloads</code> list (any entry with <code>file_exists=true</code>) and the <code>monitor</code> flag instead.</p>
+</li>
+<li>
+<p>The <code>Monitor Interval</code> setting is removed from Settings &gt; General and from the settings API — it has had no effect since <code>v0.8.0</code>; change each task's interval on the <a href="../../user-guide/tasks/">Tasks</a> page instead.</p>
+</li>
+<li>
+<p>You cannot downgrade below <code>v0.11.0</code> after upgrading. To go back, restore the automatic pre-upgrade backup — see <a href="../../troubleshooting/backup-restore/">Backup &amp; Restore</a>.</p>
+</li>
+<li>
+<p>Connection syncs no longer scan media folders for trailer files. The files scan owns trailer detection, so <em>Trailer Detected</em> events now come only from it.</p>
+</li>
+<li>
+<p>Screen readers now skip the app's decorative icons, and every icon-only button has an accessible name.</p>
+</li>
+<li>
+<p>With <code>WEBUI_DISABLE_AUTH=true</code>, the UI now hides the logout button and pauses live updates after inactivity (with a <strong>Resume</strong> dialog) instead of bouncing through the login page for a new session. The paused session id is deleted on the server, so requests that replay it get a <code>401</code> response.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0102-july-30-2026"><strong>v0.10.2</strong> - <em>July 30, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Media status now comes from live data, not a stored flag</strong> — Trailarr computes status directly from your actual downloads and the monitor flag, every time. Status can no longer get stuck or fall out of sync — see <a href="../../user-guide/library/#filtering">Filtering</a>.</p>
+</li>
+<li>
+<p><strong>"Downloading" can no longer get stuck</strong> — Trailarr tracks in-progress downloads in memory and sends live updates over the websocket. A crash or restart during a download can no longer leave an item stuck on <em>Downloading</em>.</p>
+</li>
+<li>
+<p><strong>See each profile's download status on Media Details</strong> — The new <a href="../../user-guide/library/media-details/#download-profiles-section">Download Profiles</a> section shows the status of every profile for a media item: not matching, satisfied, pending, or backing off. It uses the same rule as the download engine.</p>
+</li>
+<li>
+<p><strong>Preview mode: see what Trailarr would download, before it downloads anything</strong> — Turn off the new <a href="../../user-guide/settings/general-settings/#downloads-enabled">Downloads Enabled</a> setting. The download task then lists everything it would download, without downloading it. Media pages show a <em>Preview mode</em> banner while this setting is off. (<a href="https://github.com/nandyalu/trailarr/issues/36">#36</a>, <a href="https://github.com/nandyalu/trailarr/issues/435">#435</a>)</p>
+</li>
+<li>
+<p><strong>You control the monitor flag now</strong> — Only you can change the monitor flag after a media item is created. (At creation, the connection's new <a href="../../user-guide/settings/connections/#monitor-types">Monitor New Media</a> toggle sets it once.) Radarr, Sonarr, and Plex syncs, and downloads, never change it again.</p>
+</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Using Monitor Type "Sync"?</strong> Trailarr no longer follows monitoring changes from Radarr or Sonarr. To keep the old sync behavior, add a profile filter on <code>arr_monitored</code> — see <a href="../../user-guide/settings/profiles/filters/#sync-like-behavior-with-arr-monitored">Sync-like behavior with <code>arr_monitored</code></a>.</p>
+<p>⚠️ <strong>Stop Monitoring is removed.</strong> This deprecated per-profile option no longer exists. If several profiles match the same media item, each profile now downloads its own video — see <a href="../../user-guide/settings/profiles/settings/general/#stop-monitoring">Stop Monitoring</a>.</p>
+</blockquote>
+<ul>
+<li><strong>Downloads now skip unreachable storage</strong> — Before it downloads a trailer, Trailarr checks that the storage behind the media folder is reachable and readable. A disconnected network drive is skipped with a clear <em>Storage unreachable</em> reason, and retried on the next run, instead of being treated as a missing folder. A half-dead mount can no longer cause a failed write that counts as a download failure and triggers the retry backoff.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Discord notifications now show a useful preview on your phone</strong> — Mobile push notifications now show the media title and event, for example <em>Inception (2010) ⬇️ Trailer Downloaded</em>, instead of <em>"image received"</em>. For Radarr and Sonarr media, Trailarr loads the poster from its public TMDB or TVDB image URL, the same way other Arr apps do.</li>
+</ul>
+<p><strong>Other Changes:</strong> 🔧</p>
+<ul>
+<li>Notifications now go out within about 10 seconds instead of 30, capped at 5 messages per minute. A bulk operation merges into fewer, larger summary messages.</li>
+<li>Trailarr removed the <code>SIGNAL-DISAGREE</code> bake-window logging added in v0.10.0. The per-profile matrix now explains every decision on demand.</li>
+<li>New API endpoints: <code>GET /api/v1/media/{id}/pending</code> returns the per-profile matrix. <code>GET /api/v1/media/pending</code> returns the library-wide work list. <code>GET /api/v1/media/downloading</code> returns in-flight downloads.</li>
+<li><strong>API break:</strong> Connection objects now use <code>monitor_new_media: bool</code> instead of <code>monitor: &lt;enum&gt;</code>. If you create or update connections through the API, send the new field.</li>
+</ul>
+<hr />
+<h2 id="v0101-july-21-2026"><strong>v0.10.1</strong> - <em>July 21, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Livestreams can no longer be matched or downloaded as trailers</strong> — live and upcoming videos (and videos with no known duration) are now rejected at both search and download time, instead of downloading endlessly until the timeout and filling up disk space — see <a href="../../user-guide/settings/profiles/settings/search/#automatic-exclusions">Automatic Exclusions</a>. Thanks <a href="https://github.com/kevin2xk">@kevin2xk</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/626">#626</a>)</p>
+</li>
+<li>
+<p><strong>Failed downloads no longer leave partial files behind</strong> — partial files are now deleted whenever a download fails or times out, and any orphaned temp files from previous runs are removed automatically at startup.</p>
+</li>
+<li>
+<p><strong>Cleaner event ordering in the Events log</strong> — the <em>Monitor Changed</em> event from a trailer download is now logged after <em>Trailer Downloaded</em>, and newly added media logs a single <em>Monitor Changed</em> event with the final monitoring decision instead of an initial + change pair — see <a href="../../user-guide/events/#monitor-changed">Monitor Changed</a>.</p>
+</li>
+</ul>
+<hr />
+<h2 id="v0100-july-19-2026"><strong>v0.10.0</strong> - <em>July 19, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Downloads now drive the download engine</strong> — The <em>Download Missing Trailers</em> task no longer relies on the <code>trailer_exists</code> flag. For every monitored media item it checks which profiles match and which of them <strong>already own a download</strong> — only genuinely missing ones are downloaded. Existing untracked trailers get claimed instead of re-downloaded, and downloading <strong>no longer switches monitoring off behind your back</strong>: an item can stay monitored forever without ever being re-downloaded. This structurally fixes the endless re-download loop class of bugs (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a> and friends). During this release cycle the engine also logs a <code>SIGNAL-DISAGREE</code> line whenever the old and new logic would have decided differently — if you spot unexpected downloads or skips, include those lines in your report.</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Profile deletion caveat</strong> — downloads are owned by the profile that made them. Deleting a profile whose downloads exist and creating a similar one later means the new profile does not own those downloads and <strong>will download its own trailers</strong> for matching media. Prefer editing an existing profile over deleting and recreating it.</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>Failed downloads back off instead of retrying every run</strong> — A trailer that can't be found retries after 1 day, then 2, then 4, capped at weekly, per media + profile. A manual download from Media Details always bypasses the backoff, and any successful download resets it.</p>
+</li>
+<li>
+<p><strong>Notifications via Apprise</strong> — Add your favorite services under <strong>Settings → Notifications</strong>: Discord, Telegram, Slack, email and <a href="https://appriseit.com/services/">100+ more</a>. Each channel picks which events it receives (e.g. a <code>#trailarr-downloads</code> channel subscribed to <em>Trailer Downloaded</em>). <strong>Discord channels get rich embeds</strong>, sent by a Trailarr-branded bot: media title, poster image, a ▶ YouTube link to the trailer, and color-coded events. Other services receive the same details as text (title, year, id, YouTube link), with the poster attached on single-media notifications where the service supports attachments. Bulk operations are batched into a single summarized message, so a library-wide sync won't flood your channel. Apprise URLs are stored write-only and never shown again after saving. A <strong>Test</strong> button verifies the setup instantly. See the <a href="../../user-guide/settings/notifications/">Notifications guide</a> for setup instructions.</p>
+</li>
+<li>
+<p><strong>Direct install: smarter CLI and safer updates</strong> — The <code>trailarr</code> CLI gains a <code>version</code> command (shows the installed version and whether an update is available), <code>trailarr update vX.Y.Z</code> to install a specific version, and <code>--force</code> to reinstall the current one. Updates now exit early when you are already up to date, verify the download against a published SHA-256 checksum, and — if anything fails mid-update — automatically restore the previous version and restart the service instead of leaving a broken install. Fresh installs can be pinned to a release too (<code>TRAILARR_VERSION=v0.9.9</code> before running the install script), and release assets now ship with a <code>.sha256</code> checksum file.</p>
+</li>
+<li>
+<p><strong>Version-skipping upgrades are now guarded</strong> — Startup fixes are tracked per database, run in order on first boot, and the download task waits for them — so jumping multiple versions (e.g. v0.9.7 → v0.10.0) is safe: whatever the skipped versions fixed simply runs on first boot. Upgrading from versions before download tracking triggers one full disk scan before the first download run to prevent mass re-downloads. And starting an <strong>older</strong> Trailarr version against a database migrated by a newer one now refuses cleanly with instructions, instead of crashing confusingly (see the new <a href="../../troubleshooting/backup-restore/">Backup &amp; Restore</a> page).</p>
+</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Stop Monitoring is deprecated</strong> — downloads are now tracked per profile, so this per-profile option is no longer needed to prevent re-downloads. Its legacy behavior is preserved for now (a successful download from a profile with it enabled marks the media fully satisfied), and it will be removed in an upcoming release.</p>
+</blockquote>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>Play Video dialog no longer shows scrollbars</strong> — On wide screens (wider than 1600px) the video in Media Details → Files → Play Video was sized larger than the dialog itself, producing a horizontal scrollbar. The video now always fits the dialog exactly, and very tall videos shrink to fit the screen instead of scrolling.</p>
+</li>
+<li>
+<p><strong>Logs database now reclaims disk space</strong> — The daily logs cleanup deleted old log entries but SQLite never returned the freed space, so <code>logs.db</code> only ever grew. The cleanup now purges old entries in a single efficient statement and compacts the database file afterwards (a 13 MB logs file with 50k old entries shrinks to ~0.1 MB in under a second).</p>
+</li>
+<li>
+<p><strong>Direct install fixes across all platforms</strong> — A batch of fixes for bare-metal (non-Docker) installs:</p>
+<ul>
+<li><code>trailarr update</code> replaced the application files but never updated the recorded version, so the UI and startup banner kept showing the old version even though the update succeeded. Since the update runs the previously installed CLI, the display corrects itself starting with the <em>next</em> update after this release — or immediately, by editing <code>APP_VERSION</code> in the data directory's <code>.env</code> (e.g. <code>/var/lib/trailarr/.env</code> on Linux) and running <code>trailarr restart</code>.</li>
+<li>Re-running the installer over an existing install no longer silently moves the app to a different port or resets settings you changed (log level, monitor interval, etc.) — it now stops the running service first, keeps your port and settings, and only refreshes application files.</li>
+<li>The install script now finds <code>uv</code> when run with <code>sudo</code> even though uv is installed per-user in <code>~/.local/bin</code> — previously the most common cause of bogus <em>"uv is not installed"</em> failures.</li>
+<li>On Linux, <code>trailarr update</code> left everything except <code>backend/</code> owned by root, which broke URL base support after the first update. Everything is now handed back to the <code>trailarr</code> service user.</li>
+<li>On macOS, the installer resolved paths against root's home when run with <code>sudo</code>, placing the data directory and LaunchAgent where the service could never start at login. All paths now resolve against the invoking user's account, and the service loads into that user's launchd session.</li>
+<li>Apple Silicon Macs now get native arm64 ffmpeg builds instead of Intel binaries running under Rosetta.</li>
+<li>macOS and Windows installs now use the same isolated Python setup Linux already had, preventing <em>"Failed to import encodings"</em> service startup failures.</li>
+<li>Windows installs now warn that the startup task runs without network credentials (S4U logon) — media on mapped drives or password-protected shares needs a password-based task logon; the <a href="https://nandyalu.github.io/trailarr/getting-started/02-installation/baremetal/">docs</a> explain how.</li>
+<li>The service log file (<code>trailarr.log</code>) now rotates at 5 MB instead of growing forever, and uninstall removes leftover log directories.</li>
+</ul>
+</li>
+<li>
+<p><strong>Configured <code>PGID</code> is now preserved for NFS access</strong> — Trailarr set the configured <code>PGID</code> as the app user's primary group but never added the user to that group's member list, so the group was missing from the process's supplementary groups after startup. On NFS servers that authorize against the supplementary group list, this caused permission errors on group-owned media paths even though <code>PUID</code>/<code>PGID</code> were configured correctly. The entrypoint now explicitly adds the app user to the configured group, so the <code>PGID</code> survives into the running process. Thanks <a href="https://github.com/d4rk22">@d4rk22</a>! (<a href="https://github.com/nandyalu/trailarr/pull/620">#620</a>)</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>The docs site now publishes an <a href="https://nandyalu.github.io/trailarr/llms.txt"><code>llms.txt</code></a> file — AI assistants asked to install or troubleshoot Trailarr can start there for accurate, up-to-date commands and links to the right doc pages.</li>
+<li>Direct install docs updated and corrected: macOS service commands now use the user's launchd session, Apple Silicon ffmpeg sources added, and the Windows guide no longer incorrectly claims network shares are accessible from the default startup task.</li>
+</ul>
+<hr />
+<h2 id="v099-july-05-2026"><strong>v0.9.9</strong> - <em>July 05, 2026</em></h2>
+<p><strong>What's New / Bug Fixes:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>Robust trailer file matching in the files-scan task</strong> — Renaming or moving a trailer file (on disk, or via the Rename action in Media Details → Files) is now detected by content hash and updates the existing download record in place, instead of being treated as "deleted + new" and losing its history. Similarly, if a trailer's content changes in place (e.g. re-encoded or edited outside the app) while keeping the same filename, the hash mismatch is detected and the file's metadata (size, resolution, codecs, duration) is automatically refreshed. Two new event types, <strong>Trailer Renamed</strong> and <strong>Trailer Modified</strong>, show up in the Events log for these changes.</p>
+</li>
+<li>
+<p><strong>Files-scan no longer mislabels trailers as missing when a network drive disconnects</strong> — Media stored on a network share (SMB/NFS) that temporarily drops offline could previously have all of its trailers incorrectly marked as missing, since a disconnected drive can look identical to genuinely deleted files. The scan now checks whether the underlying storage is actually reachable before concluding trailers are missing, and skips the scan for that media (logging a clear error) instead of destructively updating it — it will simply retry on the next scheduled run.</p>
+</li>
+<li>
+<p><strong>Downloads are now linked to the Trailer Profile that owns them</strong> — Trailers found on disk (downloaded outside Trailarr, or downloaded before profile tracking existed) were previously recorded without a profile. A new one-time <strong>Attribute Trailer Downloads</strong> task runs shortly after startup and links each such download to the matching profile: it checks which of your profiles apply to that media item (by the profile's filters, ignoring state conditions like <code>trailer_exists</code>) and assigns them in priority order. The files-scan task does the same for any new trailer files it finds going forward. This is groundwork for upcoming releases where downloads — not the <code>trailer_exists</code> flag — will determine which profiles still need a trailer for each media item.</p>
+</li>
+<li>
+<p><strong>Manually assign a profile to a download</strong> — Downloads that couldn't be linked to a profile automatically show their profile as <strong>Unknown</strong> in Media Details → Downloads. That label is now a dropdown: click it and pick the profile that should own the download. The assignment is recorded as a new <strong>Download Attributed</strong> event in the Events log.</p>
+</li>
+<li>
+<p><strong>Find downloads that need a profile</strong> — When any downloads are left without a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a <strong>Review</strong> button, and a new <strong>Unknown Profile</strong> quick filter appears in the filter dropdown. Both disappear automatically once everything is assigned. The attribution log also states <em>why</em> each download couldn't be linked: either no profile's filters match that media (adjust your filters), or all matching profiles already own a download for it (likely an extra/duplicate trailer file — assign it to another profile or delete the file).</p>
+</li>
+<li>
+<p><strong>Stale "missing" statuses from pre-Trailarr trailers now heal on one restart</strong> — Libraries that had trailers on disk before Trailarr was installed could show those items as <em>Missing</em> forever: their download records had no profile, which made them invisible to the trailer-flag repair job. The repair now runs immediately <strong>after</strong> profile attribution in the same startup pass, so one upgrade/restart corrects both the profile links and the stale <code>trailer_exists</code>/status flags. The repair also now covers media that is still monitored — together with the network-drive scan fix above, this breaks the endless trailer re-download loop reported for Arr-monitored media on network storage (<a href="https://github.com/nandyalu/trailarr/issues/591">#591</a>): stuck items are corrected at startup instead of being re-downloaded yet again.</p>
+</li>
+</ul>
+<blockquote>
+<p>ℹ️ <strong>No action needed</strong> — the attribution task runs automatically, changes no files on disk, and doesn't trigger any downloads. You may see a log line per linked download the first time it runs. If a download can't be matched to any profile, it's left as <strong>Unknown</strong> — use the banner/quick filter to find it and assign a profile from Media Details, or it will be linked automatically later if a matching profile is added.</p>
+<p>⚠️ <strong>Check your logs after upgrading</strong> if you manage a large or older library: the task also reports a warning like <code>N media item(s) with trailer_exists=True have no tracked download record</code>. This means those trailers haven't been picked up by the files scan yet — the count should drop to zero after the next <strong>Scan All Media Folders</strong> run completes. If the warning persists across scans, those media folders may be unreachable (e.g. a disconnected network drive), which is worth resolving before future updates that rely on download records.</p>
+</blockquote>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated frontend to <strong>Angular v22</strong>.</li>
+<li>Updated relevant docs pages to reflect new changes and features.</li>
+<li>Included a new <a href="https://nandyalu.github.io/trailarr/references/roadmap/"><strong>Roadmap to v1.0.0</strong></a> page in the docs under References, summarizing the 9-phase plan to reach v1.0.0 and what each phase entails.</li>
+</ul>
+<hr />
+<h2 id="v098-june-28-2026"><strong>v0.9.8</strong> - <em>June 28, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Dedicated <code>tmdb_id</code> and <code>tvdb_id</code> fields on media items</strong> — All media items now store TMDB and TVDB IDs as separate, typed integer fields populated from Radarr, Sonarr, and Plex. These IDs are the foundation for upcoming TMDB extras integration. Custom filters now accept <code>tmdb_id</code> and <code>tvdb_id</code> as numeric filter targets (equals, greater than, etc.).</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>If you have custom filters using <code>txdb_id</code></strong>, consider switching them to <code>tmdb_id</code> (for movies) or <code>tvdb_id</code> (for series) — these are the same values but stored as proper integers, with correct null handling for Plex-only items that have no external ID. The <code>txdb_id</code> field remains available and unchanged.</p>
+</blockquote>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>SQLAlchemy connection pool exhaustion on large Plex libraries</strong> — Plex connections with 1500+ movies or 160+ series could trigger <code>QueuePool limit reached</code> errors and cause an unresponsive web UI. Fixed by processing Plex items in chunks of 100 (matching the Radarr/Sonarr pattern), using bulk DB operations to reduce write sessions from ~10,500 down to ~45 for a 1500-movie sync, and correcting a folder-path prefix-matching bug that would falsely link sibling directories (e.g. <code>The Dark Knight</code> matching <code>The Dark Knight Rises</code>).</p>
+</li>
+<li>
+<p><strong>SQLAlchemy connection pool exhaustion during trailer downloads on large libraries</strong> — Libraries with many items whose media folders don't exist could exhaust the connection pool during the <em>Download Missing Trailers</em> task, causing an unresponsive web UI. The <code>read_all_generator</code> database helper was leaking a pool connection on every iteration of the download loop because the session decorator closed the session before the generator body ran, and the re-acquired connection had no cleanup path when the generator was closed early. Fixed by adding an explicit <code>finally: session.close()</code> inside the generator, ensuring connections are always returned to the pool.</p>
+</li>
+<li>
+<p><strong>VAAPI hardware encoding always failed and GPU detection never reached the app</strong> — Intel/AMD VAAPI HW encoding silently exited with error -22 (exit 69) on every attempt, causing all conversions to fall back to CPU and making hardware acceleration slower than leaving it off. Independently, GPU detection results written by the entrypoint never propagated to the app process, so <code>gpu_available_intel</code> / <code>gpu_available_amd</code> stayed <code>False</code> and VAAPI was never even attempted without manually forcing environment variables. Both issues are now fixed. Thanks <a href="https://github.com/rafapirotto">@rafapirotto</a>! Fixes <a href="https://github.com/nandyalu/trailarr/issues/589">#589</a>.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python packages to latest versions.</li>
+</ul>
+<hr />
+<h2 id="v097-beta-june-09-2026"><strong>v0.9.7-beta</strong> - <em>June 09, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <strong>Yt-dlp Nightly Builds</strong> setting — when <em>Update Yt-dlp</em> is enabled, you can now opt into nightly builds instead of the latest stable release. The setting is available under <strong>Settings &gt; General &gt; Experimental Options</strong> and works for both Docker and direct installations.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Incorrect <code>trailer_exists</code> flag after file size limit change</strong> — Media items that had a trailer downloaded under a profile with <em>Stop Monitoring</em> enabled could be left with <code>trailer_exists=False</code> and <code>status=Missing</code> due to a previous file size limit rejecting the file. A one-time startup fix now detects these items (unmonitored, no trailer flag, but a valid download record with <code>file_exists=True</code>) and corrects both <code>trailer_exists</code> and the media status to <code>Downloaded</code>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python packages to latest versions.</li>
+</ul>
+<hr />
+<h2 id="v096-beta-june-07-2026"><strong>v0.9.6-beta</strong> - <em>June 07, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Reverse proxies can inject <code>X-API-KEY</code> to auto-authenticate the WebUI (skips the login screen).</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li><strong>Trailer re-download loop on large files</strong> — Fixes <a href="https://github.com/nandyalu/trailarr/issues/562">#562</a>. The file scanner was not recognising downloaded trailers larger than 100 MB, which caused a repeated re-download loop: the scanner missed the file, silently reset <code>trailer_exists</code> to false, the connection refresh re-enabled monitoring, and the download task picked it up again. Fixed by: <ol>
+<li>files placed inside a recognised trailer folder (e.g. <code>Trailers/</code>) are now always detected as trailers regardless of size</li>
+<li>inline files with "trailer" in the name up to 200 MB pass without extra checks</li>
+<li>inline files over 200 MB are verified via ffprobe — if their duration is ≤ 10 minutes they are treated as trailers. </li>
+</ol>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python and npm packages to latest versions. </li>
+<li>Removed some older tests from frontend.</li>
+</ul>
+<hr />
+<h2 id="v095-beta-may-13-2026"><strong>v0.9.5-beta</strong> - <em>May 13, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>None in this release. You can skip this release as this is only for fixes related to <strong><em>Direct Install</em></strong> and <strong><em>Self Install</em></strong> scripts - No changes to app runtime, docker users have no real changes.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed direct install scripts failing on Linux when run via <code>curl | sh</code>. Minor polish to console output during installation to show cleaner, correctly ordered messages.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>None in this release.</li>
+</ul>
+<hr />
+<h2 id="v094-beta-may-10-2026"><strong>v0.9.4-beta</strong> - <em>May 10, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Refactored most of the frontend to fix some issues that were overlooked when updates were made to relevant logic in backend; and overhauled the UI styling to ensure everything is consistent.</li>
+<li>Added <strong>Expanded</strong> and <strong>Table</strong> views in media pages with an option to select fields to display. Fixes <a href="https://github.com/nandyalu/trailarr/issues/306">#306</a>.</li>
+<li>Added <strong>Allowed Uploader IDs</strong> setting to Trailer Profiles — restrict trailer searches to specific YouTube channels by providing a comma-separated list of uploader handles (e.g. <code>@WarnerBrosPictures</code>) or channel IDs. Leave empty to allow all channels. See <a href="../../user-guide/settings/profiles/settings/search/#allowed-uploader-ids">Search Settings</a> for details. Fixes <a href="https://github.com/nandyalu/trailarr/issues/59">#59</a>.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed trailer search downloading vertical videos (YouTube Shorts). The search filter now rejects any result whose URL contains <code>/shorts/</code>, which yt-dlp sets at search time for Shorts content. Fixes <a href="https://github.com/nandyalu/trailarr/issues/468">#468</a>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Python and npm packages to latest versions.</li>
+<li><strong>Improved <code>URL_BASE</code> / reverse-proxy support</strong> — Trailarr now serves the frontend correctly at both the local URL (<code>http://your-ip:7889/</code>) and the sub-directory URL (<code>https://mydomain.com/trailarr/</code>) simultaneously. Previously, setting <code>URL_BASE</code> broke direct local access. If you use a reverse proxy with a sub-directory setup, please review your configuration to ensure the recommended headers (<code>X-Forwarded-For</code>, <code>X-Forwarded-Proto</code>, <code>X-Forwarded-Host</code>, <code>X-Forwarded-Prefix</code>) are forwarded correctly — see the <a href="../../user-guide/reverse-proxy/">Reverse Proxy Configuration</a> docs for updated examples.</li>
+</ul>
+<hr />
+<h2 id="v093-beta-may-08-2026"><strong>v0.9.3-beta</strong> - <em>May 08, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Refresh Plex Trailer Flags Task</strong> — New weekly task that caches whether Plex already has a trailer for each media item, eliminating repeated Plex API calls during every download run. See <a href="../../user-guide/tasks/#refresh-plex-trailer-flags">Tasks</a> for details.</li>
+<li><strong>Plex refresh summary log</strong> — The Plex connection refresh now logs a single summary line at completion: how many library sections were scanned (vs total), and how many media items were added, updated, or newly linked. Example: <code>Plex refresh complete for 'My Plex': 2/5 sections scanned, 12 added, 847 updated, 3 newly linked.</code></li>
+<li><strong>Plex section skip detection</strong> — Library sections whose root folders don't match any configured path mapping are now detected and skipped up front with a single log line per section, instead of logging one line per media item in that section.</li>
+<li><strong>Docs</strong> - Switched docs from <code>Material for Mkdocs</code> to <code>Zensical</code> which is a ground-up rebuild of the <code>Material for Mkdocs</code> by the same team. Refactored docs to make them work with Zensical.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed Tasks page showing stale data after navigating away and back. The tasks data is now refreshed on every visit to the Tasks page, so completed or running tasks are always reflected immediately on return.</li>
+<li>Fixed WebSocket connection and API calls failing when WebUI authentication is disabled. The WebSocket was connecting before the backend had a chance to set the session cookie, causing an immediate 401 rejection with no reconnect. The connection is now established only after the auth check confirms the session cookie is in place.</li>
+<li>Fixed Plex library scan request failing after a trailer is downloaded. Plex's scan endpoint returns <code>200 text/html</code> (not JSON), which caused a <code>ContentTypeError</code> when the code tried to parse the response as JSON. The scan now checks only the HTTP status code and ignores the response body. Fixes <a href="https://github.com/nandyalu/trailarr/issues/557">#557</a>.</li>
+<li>Fixed the download missing trailers task sleeping between downloads even when a trailer was skipped (e.g. Plex already has a trailer). The sleep (120–660 seconds) is now only applied after an actual download attempt, not on skips. Fixes <a href="https://github.com/nandyalu/trailarr/issues/558">#558</a>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Centralised all path-mapping logic (subpath matching, path remapping, trailing-slash normalisation) into a single shared utility module used by all connection managers and the database layer. Fixes silent mapping failures when <code>path_from</code> and incoming paths use different separators (e.g. backslash vs forward slash on Windows), false-positive matches against sibling directories, and missing trailing-slash normalisation for Windows UNC paths (<code>\\server\share</code>).</li>
+</ul>
+<hr />
+<h2 id="v092-beta-may-06-2026"><strong>v0.9.2-beta</strong> - <em>May 06, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Improved Search</strong> — Search is now instant (client-side, no API call). Results include the connection name so the same title from different connections (e.g. Radarr + Plex) can be told apart. Search now supports bracket filter syntax for precise lookups — see <a href="../../user-guide/general/">Search Documentation</a> for details:<ul>
+<li><code>[id=&lt;number&gt;]</code> — exact Trailarr ID match (e.g. <code>[id=2]</code>)</li>
+<li><code>[YYYY]</code> (4 digits) — exact year match (e.g. <code>[2026]</code>)</li>
+<li><code>[anything else]</code> — searches language, IMDb ID, TXDB ID, Studio, YouTube ID (e.g. <code>[tt0133093]</code>, <code>[Warner]</code>)</li>
+<li>Multiple brackets are AND'd together: <code>z [2026] [english]</code> returns titles containing "z", year 2026, language English.</li>
+</ul>
+</li>
+<li><strong>Toast Notification Improvements</strong> — Toast messages now show a type icon (✓ success, ⚠ error, ℹ info), a close button to dismiss immediately, and a progress bar that depletes over 3 seconds. Hovering over the toast will pause timer and show an option to pin it open (hides the progress bar) until manually closed.</li>
+<li><strong>Latest Jobs Only</strong> - Tasks page now only displays the latest job for scheduled tasks.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed <code>trailer_exists</code> not being corrected to <code>True</code> when trailers already exist on disk but the flag is stale <code>False</code> (e.g. after a manual file copy or an app restart). The files scan now reconciles the flag upward as well as downward.</li>
+<li>Fixed <code>trailer_exists</code> being incorrectly flipped to <code>True</code> mid-download when a multi-profile download is in progress. Both the new-trailer detection loop and the reconciliation step now skip the upward correction when <code>monitor=True</code>, preventing a race condition where setting the flag early would force monitoring off and cancel pending profile downloads.</li>
+<li>Fixed several UI typos: <code>Minuimum</code> → <code>Minimum</code>, <code>Maximun</code> → <code>Maximum</code>, <code>seperate</code> → <code>separate</code>, <code>atmost</code> → <code>at most</code>, <code>atleast</code> → <code>at least</code>, <code>Youtube</code> → <code>YouTube</code>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Refactored <code>scan_media_folder</code> in the files scan task into focused helpers (<code>_handle_folder_gone</code>, <code>_process_trailer_changes</code>) so flag reconciliation logic is consolidated in one place.</li>
+<li>Updated <a href="../../user-guide/general/">Search documentation</a> to document the bracket filter syntax.</li>
+<li>Updated Python and npm packages to latest versions.</li>
+<li>Moved notifications into it's own component to keep the app component simple.</li>
+</ul>
+<hr />
+<h2 id="v091-beta-may-04-2026"><strong>v0.9.1-beta</strong> - <em>May 04, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Force Full Files Scan</strong> — New <code>FILES_FULL_SCAN</code> setting (env var and General Settings UI) that forces the next <code>Scan Media Folders</code> run to scan every folder in full, bypassing the folder-change optimisation. Designed as a one-shot fix for users with stale <code>trailer_exists</code> or <code>media_exists</code> flags in folders with no recent file-system activity. The setting automatically resets to <code>false</code> once the full scan completes.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed a <code>PermissionError</code> on container startup when <code>URL_BASE</code> is set — <code>index.html</code> is now owned by <code>appuser</code> at startup so it can apply the <code>&lt;base href&gt;</code> patch at runtime.</li>
+<li>Removed restrictions on the <code>Download</code> button in media details page. Previously it was checking for <code>trailer_exists=false</code> and <code>youtube_trailer_id</code> changed before sending the request - both restrictions removed.</li>
+<li>Fixed <code>trailer_exists</code> not being reset to <code>False</code> when a trailer file is deleted externally (outside Trailarr). The files scan now correctly clears the flag — and resets <code>media_exists</code> too — when the media folder is no longer accessible. Related to <a href="https://github.com/nandyalu/trailarr/issues/486">#486</a></li>
+<li>Fixed stale <code>media_exists</code> values left over from older versions. The files scan now reconciles <code>media_exists</code> against disk after every folder scan, correcting both false-positives and false-negatives.</li>
+<li>Fixed <code>trailer_exists</code> and <code>trailer_exists</code>-adjacent status updates not preserving <code>DOWNLOADING</code> status. Resetting the flag while a download is in progress no longer clobbers the active download status.</li>
+<li>Fixed Plex-only media items (no Radarr/Sonarr backing) always having <code>media_exists = False</code> and an empty <code>media_filename</code> after a Plex refresh. These fields are now populated from the Plex <code>Media.Part.file</code> path on creation and kept in sync on subsequent refreshes.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Plex connection refresh no longer writes to the database when nothing has changed. <code>update_plex_fields</code> now compares existing values before committing, eliminating redundant writes on every routine Plex sync.</li>
+<li>Plex refresh no longer overwrites <code>media_filename</code> for Arr-linked media items. Only Plex-only rows (<code>arr_id = 0</code>) have their filename updated by Plex, preventing a circular overwrite loop between Arr and Plex refreshes.</li>
+<li>Minor changes to the media card to ensure the animations are subtle but noticeable.</li>
+<li>Some more polishing and minor updates to the direct install script for Windows.</li>
+</ul>
+<hr />
+<h2 id="v090-beta-april-30-2026"><strong>v0.9.0-beta</strong> - <em>April 30, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li><strong>Plex Integration</strong> — Trailarr can now connect to your Plex Media Server! Adding a Plex connection enables:<ul>
+<li><strong>Automatic media linking</strong> — Trailarr matches your Radarr/Sonarr media to the corresponding Plex library entries and keeps them in sync.</li>
+<li><strong>Plex trailer detection</strong> — Trailarr checks whether Plex already has a remote trailer for a media item. Internet-sourced trailers are counted; locally added file trailers are excluded.</li>
+<li><strong>Skip if Plex trailer</strong> — New profile setting to skip downloading a trailer if Plex already has one at or above a configurable resolution threshold (480p–2160p, default 1080p).</li>
+<li><strong>Notify Plex</strong> — New profile setting to trigger a Plex library scan after a trailer is downloaded, so it appears in Plex immediately.</li>
+<li>See <a href="../../getting-started/03-setup/plex-connection/">Plex Connection Setup</a> to get started, and the <a href="../../user-guide/settings/profiles/settings/plex/">Plex profile settings</a> reference for configuration details.</li>
+</ul>
+</li>
+<li><strong>New Events</strong> — New event types are tracked for Plex-linked media: <code>Plex Linked</code>, <code>Plex Unlinked</code>, <code>Plex Scan Triggered</code>, <code>Arr Linked</code>, and <code>Arr Unlinked</code>. See the <a href="../../user-guide/events/">Events</a> page for details.</li>
+<li><strong>Plex trailer status on Media Details</strong> — When a Plex connection is configured, the media details page shows whether Plex already has a trailer for that item.</li>
+<li><strong>Media-Deails Page &gt; Download Button</strong> - Removed restrictions on when the Download button is shown as we now support multiple trailers download.</li>
+<li><strong>Media-Deails Page &gt; Delete Button</strong> - Removed as this was deleting the first trailer file found in the media folder - ambiguous when a media has multiple trailers. Use the delete option from the files section instead.</li>
+<li><strong>Batch Edit &gt; Delete</strong> - This now shows a confirmation dialog before deleting, and deletes all trailers of that media item.</li>
+<li><strong>New Login Page</strong> - Instead of a browser login, frontend now has a dedicated login page, along with some improvements to how authentication is handled. Logout button was always a bit flaky - this has been fixed. When <code>WEBUI_DISABLE_AUTH=true</code> login page is skipped and logout button is hidden.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue related to changing files ownership of app files which was causing issues on Proxmox. Fixes <a href="https://github.com/nandyalu/trailarr/issues/539">#539</a>.</li>
+<li>Added a check for file size less than 100 MB to be considered a trailer - helps when media title has trailer in it. Thanks to @Josh on Discord for the idea.</li>
+<li>Removed restrictions on when <code>Download</code> button is shown in <code>Media Details</code> page. Fixes <a href="https://github.com/nandyalu/trailarr/issues/486">#486</a>.</li>
+<li>Fixed an issue which prevented loading more than 50 items (on scroll event not triggered) on large screens. Fixes <a href="https://github.com/nandyalu/trailarr/issues/546">#546</a>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li><strong>Faster Files Scan for large libraries</strong> — The <code>Scan Media Folders</code> task now checks folder modification times before doing a full recursive scan. If neither the media folder nor any of its immediate subdirectories (e.g., <code>Trailers/</code>) have changed since the last scan, the folder is skipped entirely. User-initiated scans always run in full. This significantly reduces scan time for large libraries where most folders are unchanged between runs.</li>
+<li><strong>Direct Installation</strong> — The direct install scripts have been overhauled and now fully support <strong>Linux, macOS, and Windows</strong>. Includes a native system service on each platform (systemd / launchd / Task Scheduler), GPU hardware acceleration (NVIDIA, Intel, AMD), and a <code>trailarr</code> CLI for managing the service. A new <a href="../../getting-started/02-installation/self-install/">Build and Install</a> guide has also been added for users who want to set up each step manually.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Existing Direct Install users</p>
+<p>If you installed Trailarr using direct install previously, please <strong>uninstall and reinstall</strong> to pick up all the fixes and improvements. Your data will not be lost — when prompted during uninstall, choose to keep the data directory, then run the installer again. It will detect and reuse your existing configuration and database.</p>
+</div>
+<ul>
+<li>Updated relevant documentation pages to reflect new Plex features.</li>
+</ul>
+<hr />
+<h2 id="v080-beta-april-10-2026"><strong>v0.8.0-beta</strong> - <em>April 10, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Switched background tasks from <code>apscheduler</code> to <a href="https://nandyalu.github.io/quiv/">quiv</a> that supports task cancellation. Made most tasks gracefully cancellable - meaning they will stopped at a reasonable stopping point during the task flow when cancellation is requested.</li>
+<li>Tasks page has been updated to a new layout; <code>Scheduled Tasks</code> now have 3 actions: Run now, Pause/Resume, and Edit.<ul>
+<li>Run now: will run the task immediately</li>
+<li>Pause/Resume: running tasks can be temporarily paused, and later resumed.</li>
+<li>Edit: tasks can be configured to change their name, interval, and delay (delay can be used to adjust task run order).</li>
+</ul>
+</li>
+<li>Job Queue: jobs show a stop button while it is running, and can be used to gracefully stop.</li>
+<li>Added a new database model for <code>ScheduledTaskConfig</code> that saves the task config and persists changes when edited.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>The last update for database read/write sessions with locks and improved tasks should fix the issue of long running tasks. Fixes <a href="https://github.com/nandyalu/trailarr/issues/483">#483</a>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated various Python and npm packages to latest versions.</li>
+<li>Some layout changes in Events and Logs pages to make them consistent with page style.</li>
+</ul>
+<hr />
+<h2 id="v072-beta-april-05-2026"><strong>v0.7.2-beta</strong> - <em>April 05, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Made database handling robust to reduce locking errors. Separated database sessions into read and write sessions - with <code>threading.Lock()</code> for write sessions so that only 1 write is permitted at any given time. This should reduce the <code>database is locked/busy</code> errors in most cases. Related to <a _target="_blank" href="https://github.com/nandyalu/trailarr/issues/483">#483</a>.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>File naming now uses the actual downloaded file resolution, video codec and audio codec rather than relying on the profile options. Fixes <a _target="_blank" href="https://github.com/nandyalu/trailarr/issues/492">#492</a>.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Refactored the trailer download and related code to use Python <code>tempfile.gettempdir()</code> and <code>pathlib.Path</code> to ensure it works on any platform - for future direct installations.</li>
+<li>Added tests for trailer download flow (verification, media analysis, renaming, etc.,).</li>
+</ul>
+<hr />
+<h2 id="v071-beta-april-04-2026"><strong>v0.7.1-beta</strong> - <em>April 04, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <code>--sleep-subtitles 15</code> yt-dlp option to sleep for 15 seconds before subtitles download. Fixes <a _target="_blank" href="https://github.com/nandyalu/trailarr/issues/482">#482</a>.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed minor layout issues in Logs to ensure consistency and visibility.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated various Python and npm packages to latest versions.</li>
+</ul>
+<hr />
+<h2 id="v070-beta-february-11-2026"><strong>v0.7.0-beta</strong> - <em>February 11, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <strong>Events Tracking System</strong> to track media lifecycle events. Events are automatically created for:<ul>
+<li><code>Media Added</code> - When a new media item is added from a connection refresh.</li>
+<li><code>Monitor Changed</code> - When monitoring status changes for a media item.</li>
+<li><code>YouTube ID Changed</code> - When the YouTube trailer ID is updated.</li>
+<li><code>Trailer Detected</code> - When an existing trailer is found on disk.</li>
+<li><code>Trailer Downloaded</code> - When a trailer is successfully downloaded.</li>
+<li><code>Trailer Deleted</code> - When a trailer file is deleted.</li>
+<li><code>Download Skipped</code> - When a trailer download is skipped (e.g., no results found).</li>
+</ul>
+</li>
+<li>New <strong>Events Page</strong> in the web UI to view all events with:<ul>
+<li>Filtering by event type (All Events, Media Added, Monitor Changed, etc.).</li>
+<li>Filtering by event source (All Sources, User, System).</li>
+<li>Search/filter functionality to find specific events.</li>
+<li>Infinite scroll with automatic loading of more events.</li>
+</ul>
+</li>
+<li><strong>Media Events Section</strong> added to Media Details page showing recent events for that media item.</li>
+<li>New <strong>Events API</strong> endpoints for retrieving events with optional filtering by event type, source, and media ID.</li>
+<li>Redesigned <strong>Logs Page</strong> to match the new Events page design:<ul>
+<li>Cleaner row-based layout with log level icons and color coding.</li>
+<li>Log level badge, filename:lineno, and timestamp displayed as metadata.</li>
+<li><strong>Traceback Dialog</strong> - Click the exception icon to view traceback details in a modal dialog instead of inline expansion.</li>
+<li>Media link arrow for logs with associated media items.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>None in this release.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Events are stored in the database and can be queried via the API.</li>
+<li>Updated logs page styling to be consistent with events page for a unified look and feel.</li>
+<li>Various backend improvements for event tracking and database operations.</li>
+</ul>
+<hr />
+<h2 id="v0610-beta-february-07-2026"><strong>v0.6.10-beta</strong> - <em>February 07, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Updated the description of <code>Always Search</code> setting in Edit Profile page to clarify that it ignores the youtube id and always searches for trailers.</li>
+<li>Added <code>Retry Count</code> setting in Edit Profile page to control the number of retry attempts for downloading trailers.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>None in this release.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated multiple npm packages to latest versions.</li>
+<li>Updated multiple python packages to latest versions.</li>
+<li>Updated relevant documentation pages to reflect new changes and features.</li>
+</ul>
+<hr />
+<h2 id="v069-beta-january-14-2026"><strong>v0.6.9-beta</strong> - <em>January 14, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>None in this release.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue where clicking on <code>Add New</code> button in Custom Filters dialog would open <code>Add Filter Dialog</code> and close immediately.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Reverse Proxy documentation to improve clarity.</li>
+</ul>
+<hr />
+<h2 id="v068-beta-january-14-2026"><strong>v0.6.8-beta</strong> - <em>January 14, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Web UI will now remember the scroll position when navigating to a previous page, providing a smoother user experience.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue with Web UI not loading when visiting <code>http://&lt;server-ip&gt;:&lt;port&gt;</code> without a URL base set.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated Angular to <code>21.0.8</code> and various npm packages.</li>
+<li>Dockerfile updated to use <code>nandyalu/python-ffmpeg</code> as the base image to leverage pre-installed <code>ffmpeg</code> binaries.</li>
+</ul>
+<hr />
+<h2 id="v067-beta-january-13-2026"><strong>v0.6.7-beta</strong> - <em>January 13, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <code>DELETE_CORRUPTED_TRAILERS</code> environment variable (default: <code>True</code>) to control whether corrupted trailers should be deleted during the cleanup task.</li>
+<li>Updated <code>URL Base</code> setting to ensure it always starts with a <code>/</code> and doesn't end with a <code>/</code> for consistency, and a default formatter that enforces this behavior. Eg: <code>trailarr</code>, <code>trailarr/</code> or <code>/trailarr/</code> becomes <code>/trailarr</code>.</li>
+<li>Made changes to the app to better support running behind reverse proxies.</li>
+<li>Added a <code>Reverse Proxy</code> section in the documentation with common configurations for Nginx, Apache, Caddy, and Traefik.</li>
+<li>Download button in logs now downloads all filtered logs (not just the visible ones) including tracebacks, sorted by date time in ascending order.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue in the <code>Trailer Cleanup</code> task where unverifiable files were being incorrectly marked for deletion.</li>
+<li>Fixed <code>Pytest</code> configuration issues causing failures in GitHub Actions.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Improved video analysis to skip processing when <code>ffmpeg</code> fails to extract information, preventing potential errors.</li>
+<li>Updated Arr data parsing logic to ensure media's <code>updated_at</code> timestamp is only modified when there are actual changes to the media item and avoid unnecessary updates. Also, improves performance by reducing redundant database writes.</li>
+<li>Updated the image downloader to use <code>Path</code> from <code>pathlib</code> for better path manipulations.</li>
+<li>Updated project documentation and developer instructions.</li>
+</ul>
+<hr />
+<h2 id="v066-beta-january-09-2026"><strong>v0.6.6-beta</strong> - <em>January 09, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Downloads in Media Details page now indicate if the relevant file is missing on disk.</li>
+<li>Logs filtering will now include searching in tracebacks as well, and also does searches on the backend. Downloaded logs will be sorted by date time in ascending order for easier analysis.</li>
+<li>Added options for <code>Disable WebUI Authentication</code> and <code>FFMPEG Timeout</code> settings to General Settings. Fixes <a _target="_blank" href="https://github.com/nandyalu/trailarr/issues/425">#425</a>.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>Fixed an issue that was setting media items to monitored when all trailers were deleted for that media.</li>
+<li>Fixed an issue that could cause <code>database is locked</code> errors during heavy load. Added retries with exponential backoff for database operations that fail due to locking.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated <code>python:aiohttp</code> from <code>3.13.2</code> to <code>3.13.3</code>.</li>
+<li>Updated <code>Cleanup</code> and <code>Scan All Media Folders</code> tasks to not change media monitoring status when trailers are deleted.</li>
+<li>Refactored some backend logic related to media status updates.</li>
+<li>Updated relevant documentation pages to reflect new changes and features.</li>
+<li>Fixed docstring formatting in Swagger UI for better readability, and marked some endpoints as deprecated that are not being used/maintained anymore.</li>
+</ul>
+<hr />
+<h2 id="v065-beta-january-04-2026"><strong>v0.6.5-beta</strong> - <em>January 04, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>Added <code>Files</code> tracking to media items. These are used to display the files and folders associated with each media item in the UI.</li>
+<li>With the help of newly added files tracking, 2 new options for filters were introduced (Fixes <a href="https://github.com/nandyalu/trailarr/issues/420">#420</a>):<ul>
+<li><code>Has File</code> - Indicates whether the media item has a specified file.</li>
+<li><code>Has Folder</code> - Indicates whether the media item has a specified folder.</li>
+</ul>
+</li>
+<li>Logs now show a button to open the relevant media item directly from the log entry.</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>None in this release.</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚡</p>
+<ul>
+<li>Updated FastAPI to <code>0.128.0</code> and various python packages.</li>
+<li>Updated SQLModel to <code>0.0.31</code>.</li>
+<li>Updated Angular to <code>21.0.6</code> and various npm packages.</li>
+<li>This update includes various other minor improvements and optimizations.<ul>
+<li>Backend now uses generators for streaming large query results to reduce memory usage.</li>
+<li>Updated models to save the datetime values in UTC format to avoid timezone issues.</li>
+<li>Increased database connection pool size to improve performance under load.</li>
+<li>Introduced new database queries that returns raw dictionaries instead of ORM models for better performance in certain scenarios, especially for newly added files models.</li>
+<li>Frontend now uses the newly added raw dictionary queries for media items, downloads, and files to improve performance.</li>
+<li>Angular Frontend is now completely zoneless, improving performance and reducing change detection cycles.</li>
+</ul>
+</li>
+<li>Updated Dockerfile to build Frontend static files and copy to final image. Removed the static build files from repository to reduce clutter.</li>
+<li>Update Github Actions workflows to use latest actions versions.</li>
+<li>Updated relevant documentation pages to reflect new changes and features.</li>
+<li>Added some animations and view transitions to media cards and details for a smoother experience.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../troubleshooting/faq/" class="md-footer__link md-footer__link--prev" aria-label="Previous: FAQ">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                FAQ
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../2025/" class="md-footer__link md-footer__link--next" aria-label="Next: 2025">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                2025
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Made with <span class="love-heart">&#10084;</span> by <a href="https://github.com/nandyalu" target="_blank" rel="noopener">nandyalu</a> &middot; Copyright &copy; 2024 - <span class="copyright-year">2026</span> nandyalu
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/nandyalu/trailarr" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://hub.docker.com/r/nandyalu/trailarr" target="_blank" rel="noopener" title="hub.docker.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M349.9 236.3h-66.1v-59.4h66.1zm0-204.3h-66.1v60.7h66.1zm78.2 144.8H362v59.4h66.1zm-156.3-72.1h-66.1v60.1h66.1zm78.1 0h-66.1v60.1h66.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1zm78.1 0h-66.1v59.4h66.1zm-78.1-72.1h-66.1v60.1h66.1z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.reddit.com/r/trailarr" target="_blank" rel="noopener" title="www.reddit.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M373 138.6c-25.2 0-46.3-17.5-51.9-41-30.6 4.3-54.2 30.7-54.2 62.4v.2c47.4 1.8 90.6 15.1 124.9 36.3 12.6-9.7 28.4-15.5 45.5-15.5 41.3 0 74.7 33.4 74.7 74.7 0 29.8-17.4 55.5-42.7 67.5-2.4 86.8-97 156.6-213.2 156.6S45.5 410.1 43 323.4c-25.4-11.9-43-37.7-43-67.7C0 214.4 33.4 181 74.7 181c17.2 0 33 5.8 45.7 15.6 34-21.1 76.8-34.4 123.7-36.4v-.3c0-44.3 33.7-80.9 76.8-85.5C325.8 50.2 347.2 32 373 32c29.4 0 53.3 23.9 53.3 53.3s-23.9 53.3-53.3 53.3M157.5 255.3c-20.9 0-38.9 20.8-40.2 47.9s17.1 38.1 38 38.1 36.6-9.8 37.8-36.9-14.7-49.1-35.7-49.1zM395 303.1c-1.2-27.1-19.2-47.9-40.2-47.9s-36.9 22-35.7 49.1 16.9 36.9 37.8 36.9 39.3-11 38-38.1zm-60.1 70.8c1.5-3.6-1-7.7-4.9-8.1-23-2.3-47.9-3.6-73.8-3.6s-50.8 1.3-73.8 3.6c-3.9.4-6.4 4.5-4.9 8.1 12.9 30.8 43.3 52.4 78.7 52.4s65.8-21.6 78.7-52.4"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://discord.gg/KKPr5kQEzQ" target="_blank" rel="noopener" title="discord.gg" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M492.5 69.8c-.2-.3-.4-.6-.8-.7-38.1-17.5-78.4-30-119.7-37.1-.4-.1-.8 0-1.1.1s-.6.4-.8.8c-5.5 9.9-10.5 20.2-14.9 30.6-44.6-6.8-89.9-6.8-134.4 0-4.5-10.5-9.5-20.7-15.1-30.6-.2-.3-.5-.6-.8-.8s-.7-.2-1.1-.2C162.5 39 122.2 51.5 84.1 69c-.3.1-.6.4-.8.7C7.1 183.5-13.8 294.6-3.6 404.2c0 .3.1.5.2.8s.3.4.5.6c44.4 32.9 94 58 146.8 74.2.4.1.8.1 1.1 0s.7-.4.9-.7c11.3-15.4 21.4-31.8 30-48.8.1-.2.2-.5.2-.8s0-.5-.1-.8-.2-.5-.4-.6-.4-.3-.7-.4c-15.8-6.1-31.2-13.4-45.9-21.9-.3-.2-.5-.4-.7-.6s-.3-.6-.3-.9 0-.6.2-.9.3-.5.6-.7c3.1-2.3 6.2-4.7 9.1-7.1.3-.2.6-.4.9-.4s.7 0 1 .1c96.2 43.9 200.4 43.9 295.5 0 .3-.1.7-.2 1-.2s.7.2.9.4c2.9 2.4 6 4.9 9.1 7.2.2.2.4.4.6.7s.2.6.2.9-.1.6-.3.9-.4.5-.6.6c-14.7 8.6-30 15.9-45.9 21.8-.2.1-.5.2-.7.4s-.3.4-.4.7-.1.5-.1.8.1.5.2.8c8.8 17 18.8 33.3 30 48.8.2.3.6.6.9.7s.8.1 1.1 0c52.9-16.2 102.6-41.3 147.1-74.2.2-.2.4-.4.5-.6s.2-.5.2-.8c12.3-126.8-20.5-236.9-86.9-334.5zm-302 267.7c-29 0-52.8-26.6-52.8-59.2s23.4-59.2 52.8-59.2c29.7 0 53.3 26.8 52.8 59.2 0 32.7-23.4 59.2-52.8 59.2m195.4 0c-29 0-52.8-26.6-52.8-59.2s23.4-59.2 52.8-59.2c29.7 0 53.3 26.8 52.8 59.2 0 32.7-23.2 59.2-52.8 59.2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.49251538.min.js"></script>
+      
+        <script src="../../copyright-year.js"></script>
+      
+    
+  </body>
+</html>
