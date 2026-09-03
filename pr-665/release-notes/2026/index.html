@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0114-august-29-2026" class="md-skip">
+        <a href="#v0115-september-3-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2447,6 +2447,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0115-september-3-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.5</strong> - <em>September 3, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0114-august-29-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3038,6 +3049,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0115-september-3-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.11.5</strong> - <em>September 3, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0114-august-29-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3426,6 +3448,35 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0115-september-3-2026"><strong>v0.11.5</strong> - <em>September 3, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>The missing-trailer task no longer gets slower as it runs</strong> — the task read the whole library again for every trailer that it downloaded. On a large library it used high CPU for hours. The task now reads the library in sweeps, and it looks up the download attempts in one batch. A profile that you change during a run still applies to every item that has not started; see <a href="../../user-guide/tasks/#download-missing-trailers">Tasks</a>. Thanks <a href="https://github.com/sittingmongoose">@sittingmongoose</a> for finding the cause and for the profiling that showed it! (<a href="https://github.com/nandyalu/trailarr/pull/666">#666</a>)</p>
+</li>
+<li>
+<p><strong>Trailarr starts again after an update on Windows</strong> — the installer wrote the startup task with an unquoted program path. Windows read <code>C:\Program</code> as the program, and kept the remainder of the path as the working directory. Windows gave no error for this, so the task registered, showed the state <code>Ready</code>, and never started. The web page did not open, the port stayed closed, and Trailarr wrote no log file. A re-install wrote the same broken task again. The installer now puts quotes around each path, and also accepts a Windows account name that holds an apostrophe. If your installation has this problem, update to this version and run the installer again.</p>
+</li>
+<li>
+<p><strong><code>trailarr status</code> now shows the result of the last run</strong> — on Windows the command showed only the state of the task, and a task that never started still shows <code>Ready</code>. The command now also shows the last run time, the result of the last run, and the program that the task runs.</p>
+</li>
+<li>
+<p><strong>The login page now tells you when the server is down</strong> — a login attempt that could not reach the server showed the message <code>Invalid username or password.</code>, which sent you to look for a password problem. The page now shows <code>Cannot reach the Trailarr server.</code> when the connection fails, and keeps the password message for a refused login.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><strong>A pull request from another person now passes its checks</strong> — such a pull request gets no secrets and a read-only token, but four workflows tried to publish a Docker image, deploy the docs preview, or push a commit. Each one failed for a reason that had nothing to do with the change. The workflows now skip that work, or build without a push. (<a href="https://github.com/nandyalu/trailarr/pull/668">#668</a>)</p>
+</li>
+<li>
+<p><strong>Safari no longer reports a viewport error</strong> — the page set the viewport key <code>interactive-widget</code>, which Safari does not know, so Safari wrote an error into the browser console on every page load. The value that Trailarr set is the default value, so the removal changes nothing on any browser.</p>
+</li>
+<li>
+<p><strong>Dependency updates</strong> — the backend packages move to their current versions. Two build-time frontend packages, <code>fast-uri</code> and <code>qs</code>, take their security fixes. Angular stays on 22.1.3, because <code>@angular/animations</code> 22.1.5 asks for a version of <code>@angular/core</code> that its authors have not released.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0114-august-29-2026"><strong>v0.11.4</strong> - <em>August 29, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
