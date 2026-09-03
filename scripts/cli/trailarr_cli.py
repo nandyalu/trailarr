@@ -194,10 +194,16 @@ def _service_status() -> None:
         if r.returncode != 0:
             subprocess.run(["launchctl", "list", _LAUNCHD_LABEL], check=False)
     elif _IS_WINDOWS:
+        # State alone only says that the task is registered — a task that
+        # points at a file that does not exist still reports "Ready". The
+        # last run result and the action tell you whether it ever started.
         subprocess.run(
-            ["powershell", "-NonInteractive", "-Command",
-             f"Get-ScheduledTask -TaskName '{_TASK_NAME}' | "
-             f"Select-Object TaskName, State, Description"],
+            ["powershell", "-NonInteractive", "-NoProfile", "-Command",
+             f"$t = Get-ScheduledTask -TaskName '{_TASK_NAME}'; "
+             f"$t | Select-Object TaskName, State, Description | Format-List; "
+             f"$t.Actions | Select-Object Execute, Arguments | Format-List; "
+             f"Get-ScheduledTaskInfo -TaskName '{_TASK_NAME}' | "
+             f"Select-Object LastRunTime, LastTaskResult | Format-List"],
             check=False,
         )
 
