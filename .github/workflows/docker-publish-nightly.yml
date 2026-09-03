@@ -90,7 +90,9 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}  # Build only on a PR
+          # Pushes on a push to dev or a manual run. A pull request builds
+          # the image and pushes nothing.
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
