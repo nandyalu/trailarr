@@ -209,6 +209,10 @@ the release before it.
 - `phase-09-video-types.md`
 - `phase-10-media-types-seasons.md`
 - `phase-11-issues-v1.md`
+- `fix-missing-trailer-scan.md` — DONE (v0.11.5, PR #666, merged Sep 3 2026). Removes
+  the per-download library rescan in `download_missing_trailers` and the N+1 lazy load in
+  `read_all_generator`. Supersedes the keyset-cursor approach in PR #666. Ships before
+  Phase 7, so the reorg branch rebases it across the move map.
 - `hygiene-backlog.md` — small non-blocking cleanups; fold into whichever release fits.
 - `post-v1-backlog.md` — post-v1.0 ideas + deliberate deferrals with revisit triggers
   (Arr webhooks with auto-registration is the headline item).

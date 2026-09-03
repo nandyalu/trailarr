@@ -95,6 +95,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Downloading no longer turns monitoring off — the monitor toggle stays exactly as you set it.
 - If a trailer file is deleted from disk, the next files scan notices it and the owning profile becomes unsatisfied — the trailer is downloaded again on the following run.
 - {{ version_badge("add", "0.10.1") }} If the storage backing a media folder is unreachable (e.g. a disconnected network drive), the item is skipped with a *Storage unreachable* reason — it is not counted as a failed download attempt, and is simply retried on the next run once the storage is back.
+- {{ version_badge("upd", "0.11.5") }} The task scans the library in sweeps, so media and profiles that become eligible during a long run can still be downloaded in that run; profile changes apply to media items whose download has not started, while trailers already downloaded keep the profile settings used to download them.
 - Uses yt-dlp and ffmpeg for downloading and conversion.
 
 !!! note "Failed downloads back off"

@@ -162,6 +162,30 @@ none justify their own release. Check items off with the release that shipped th
   and above, which is what a user reads on the Logs page. The 144 DEBUG lines keep their
   old wording. They are for developers, and the effort went where it was read. Fold them
   in whenever a file is open for another reason.
+- [ ] **H21 — the download task and the pending view scan the library twice, separately.**
+  `services/trailers/trailers/pending.py:compute_library_pending` and
+  `services/trailers/trailers/missing.py` run the same scan — monitored media, enabled profiles,
+  `find_matching_profiles`, `evaluate_satisfaction`, backoff — over the same rows.
+  `pending.py`'s own docstring calls itself "exactly the download task's work list", and
+  it already batches the attempt lookup that `missing.py` does per media. They agree
+  today by coincidence, not by construction, and Phase 3 wrote `pending.py` to be THE
+  single source of truth.
+
+  Extract one generator yielding `(media, claims, unsatisfied, eligible)` and have both
+  call it. The one real difference is writes: the download task applies claims, the
+  pending view reports them and persists nothing — so the generator yields claims and
+  lets the caller decide.
+
+  After v0.11.5 there is a THIRD copy: the sweep design re-verifies each item against
+  fresh data immediately before its download, which runs the same chain again inside
+  `missing.py`. The scan and the re-verify must agree — a persistent disagreement makes
+  the sweep loop propose work it then always skips (W13 in `fix-missing-trailer-scan.md`).
+  The unconditional pair-consume keeps that draining, but one implementation is the real
+  protection. This is a correctness item, not only a tidiness one.
+
+  Deliberately NOT done in `fix-missing-trailer-scan.md` (v0.11.5): Phase 7 is the single
+  big-churn release and it moves both files, so extracting before the reorg lands only
+  buys a merge conflict. Do it after v0.12.0.
 
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
