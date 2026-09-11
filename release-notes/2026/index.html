@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0115-september-3-2026" class="md-skip">
+        <a href="#v0120-september-10-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2447,6 +2447,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0120-september-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.12.0</strong> - <em>September 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0115-september-3-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3049,6 +3060,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0120-september-10-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.12.0</strong> - <em>September 10, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0115-september-3-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3448,6 +3470,30 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0120-september-10-2026"><strong>v0.12.0</strong> - <em>September 10, 2026</em></h2>
+<p>This release moves the backend code into layers. It adds no features, and Trailarr behaves the same. It is Phase 7 of the <a href="../../references/roadmap/">roadmap</a>.</p>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>An error answer no longer shows internal details</strong> — eighteen API endpoints answered every failure with the status <code>404</code> and the text of the exception. That text can hold a folder path, a database statement, or a web address with a token in it. Each failure now gets the correct status, and a failure that Trailarr cannot explain to you gives a short line that names only the action. The full error goes to the log. A message that helps you, such as <code>Connection refused</code> from a connection test, stays as it is. A failed Radarr or Sonarr request also put the API key of that connection into its message. The message now tells you to check the key, and it does not show the key.</p>
+</li>
+<li>
+<p><strong>A log line now opens the media item that it is about</strong> — the Logs page found the item from the first number in square brackets in the message. A line that named a profile or a download before the media item opened the wrong title. Trailarr now sends the media id together with the line, and a test keeps ids out of the message text.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><strong>The backend code is in five layers</strong> — <code>api</code>, <code>services</code>, <code>database</code>, <code>tasks</code> and <code>utils</code>. Your database, your settings and the API answers do not change. The new structure makes the next phases of the <a href="../../references/roadmap/">roadmap</a> safer to build.</p>
+</li>
+<li>
+<p><strong>The API documentation lists the errors of each endpoint</strong> — the OpenAPI specification now shows the <code>500</code> response of eighteen endpoints, and the <code>404</code> response of two more endpoints that always could give one.</p>
+</li>
+<li>
+<p><strong>The log messages use one style</strong> — a message is now a full sentence in the active voice, it names Trailarr as the actor, and it gives the title of a media item instead of its id.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0115-september-3-2026"><strong>v0.11.5</strong> - <em>September 3, 2026</em></h2>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
