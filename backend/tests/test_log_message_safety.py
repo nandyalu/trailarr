@@ -142,9 +142,11 @@ def test_attributes_read_from_an_annotated_argument_exist(path):
                 cls = getattr(module, type_name, None)
                 if cls is None or not isinstance(cls, type):
                     continue
-                fields = set(dir(cls)) | set(
-                    getattr(cls, "__annotations__", {})
-                ) | set(getattr(cls, "model_fields", {}))
+                fields = (
+                    set(dir(cls))
+                    | set(getattr(cls, "__annotations__", {}))
+                    | set(getattr(cls, "model_fields", {}))
+                )
                 if attr not in fields:
                     bad.append(f"{owner}.{attr} ({type_name} has no {attr})")
     assert bad == [], (
@@ -187,4 +189,72 @@ def test_no_log_message_puts_a_non_media_id_in_brackets():
         "These log messages put a number that is not a media id in square"
         " brackets, so the Logs page links them to the wrong title:\n  "
         + "\n  ".join(offenders)
+    )
+
+
+def _calls_logger_media(tree) -> bool:
+    """Whether the module really calls `logger.media(...)`.
+
+    Read from the syntax tree, not from the text: two modules describe the
+    call in a docstring without making it.
+    """
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if not isinstance(func, ast.Attribute) or func.attr != "media":
+            continue
+        if isinstance(func.value, ast.Name) and func.value.id == "logger":
+            return True
+    return False
+
+
+def _binds_logger_to_a_module_logger(tree) -> bool:
+    """Whether `logger = ModuleLogger(...)` appears at module level."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        names = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        if "logger" not in names:
+            continue
+        call = node.value
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Name):
+            if call.func.id == "ModuleLogger":
+                return True
+    return False
+
+
+def _imports_the_plain_logger(tree) -> bool:
+    """Whether the module does `from app_logger import logger`."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module == "app_logger":
+            if any(alias.name == "logger" for alias in node.names):
+                return True
+    return False
+
+
+@pytest.mark.parametrize("path", list(_python_files()), ids=lambda p: p.name)
+def test_logger_media_is_called_on_a_logger_that_has_it(path):
+    """`logger.media(id)` needs a ModuleLogger, not the plain logger.
+
+    `media()` lives on ModuleLogger. `from app_logger import logger` gives
+    a plain `logging.Logger`, which parses fine and raises
+    AttributeError the moment the line runs.
+
+    This shipped: `services/images/image.py` imported the plain logger and
+    called `logger.media(media.id)`, so the Image Refresh task died every
+    time — and with it the Arr Data Refresh, which refreshes images when it
+    finishes. Nothing failed until a user's container ran the task.
+    """
+    tree = ast.parse(path.read_text())
+    if not _calls_logger_media(tree):
+        # A module that only mentions it in prose is not calling it.
+        return
+    assert not _imports_the_plain_logger(tree), (
+        f"{path.relative_to(BACKEND)} calls logger.media() but imports the"
+        " plain logger from app_logger. Use ModuleLogger instead."
+    )
+    assert _binds_logger_to_a_module_logger(tree), (
+        f"{path.relative_to(BACKEND)} calls logger.media() without binding"
+        " logger = ModuleLogger(...) at module level."
     )

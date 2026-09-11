@@ -15,10 +15,12 @@ import aiofiles.os
 from PIL import Image
 from async_lru import alru_cache
 
-from app_logger import logger
+from app_logger import ModuleLogger
 from config.settings import app_settings
 from database.models.helpers import MediaImage
 from database.manager import media as media_manager
+
+logger = ModuleLogger("Images")
 
 POSTER = (300, 450)
 FANART = (1280, 720)
