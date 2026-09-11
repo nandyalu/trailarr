@@ -55,7 +55,9 @@ async def refresh_media_videos(
     skipped = 0
     for media_id in media_ids:
         if _stop_event and _stop_event.is_set():
-            logger.info("Trailarr stopped the video refresh. A stop was requested.")
+            logger.info(
+                "Trailarr stopped the video refresh. A stop was requested."
+            )
             break
         if asked >= MAX_ITEMS_PER_RUN:
             logger.info(

@@ -39,4 +39,6 @@ class TMDBVideo(BaseModel):
         TMDB also lists Vimeo and other sites, and Trailarr downloads from
         YouTube only — wargame W3.
         """
-        return self.site.strip().lower() == "youtube" and bool(self.key.strip())
+        return self.site.strip().lower() == "youtube" and bool(
+            self.key.strip()
+        )

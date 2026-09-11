@@ -221,7 +221,9 @@ def replace_source_rows(
         seen.add(incoming.video_id)
         if incoming.video_id in taken:
             continue
-        row = existing.get(incoming.video_id) or claimable.get(incoming.video_id)
+        row = existing.get(incoming.video_id) or claimable.get(
+            incoming.video_id
+        )
         if row is not None and row.source != source:
             # Take the row over, with the better information this source
             # has: an Arr gives an id, and TMDB gives the title, the
@@ -334,7 +336,10 @@ def delete_video(
     *,
     _session: Session = None,  # type: ignore
 ) -> bool:
-    """Remove one video from a media item. Returns False if it was not there."""
+    """Remove one video from a media item.
+
+    Returns False when the media item did not have that video.
+    """
     row = _session.exec(
         select(MediaVideo)
         .where(MediaVideo.media_id == media_id)

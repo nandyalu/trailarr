@@ -96,11 +96,15 @@ class MediaVideo(MediaVideoBase, table=True):
     """
 
     __table_args__ = (
-        UniqueConstraint("media_id", "video_id", name="uq_mediavideo_media_video"),
+        UniqueConstraint(
+            "media_id", "video_id", name="uq_mediavideo_media_video"
+        ),
     )
 
     id: int | None = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id", ondelete="CASCADE", index=True)
+    media_id: int = Field(
+        foreign_key="media.id", ondelete="CASCADE", index=True
+    )
 
     @field_validator("added_at", "updated_at", "published_at", mode="after")
     @classmethod

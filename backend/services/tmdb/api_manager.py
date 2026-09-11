@@ -134,7 +134,9 @@ class TMDBAPI:
                     "TMDB did not answer in time."
                 ) from e
             except aiohttp.ClientError as e:
-                raise InvalidResponseError(f"Trailarr cannot reach TMDB: {e}") from e
+                raise InvalidResponseError(
+                    f"Trailarr cannot reach TMDB: {e}"
+                ) from e
             self._cache[path] = data
             return data
         raise InvalidResponseError(
@@ -170,7 +172,9 @@ class TMDBAPI:
             try:
                 video = TMDBVideo.model_validate(entry)
             except Exception:
-                logger.debug(f"TMDB sent a video that Trailarr cannot read: {entry}")
+                logger.debug(
+                    f"TMDB sent a video that Trailarr cannot read: {entry}"
+                )
                 continue
             if video.is_youtube:
                 videos.append(video)
