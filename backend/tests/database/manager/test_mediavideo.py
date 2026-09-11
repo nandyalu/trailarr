@@ -372,3 +372,25 @@ class TestLanguageFallbackLadder:
         # Nothing is dropped: a trailer in another language is better than
         # no trailer at all.
         assert len(chosen) == len(offered)
+
+
+def test_a_claim_persists_when_nothing_else_about_the_row_changes(media_id):
+    """The source change must be saved on its own.
+
+    The update below it writes only when a field differs, so a row whose
+    title and language already match would leave the claim unsaved if the
+    claim were not added to the session itself.
+    """
+    identical = dict(name="Same", language="en", official=True, sequence=0)
+    video_manager.replace_source_rows(
+        media_id,
+        VideoSource.ARR,
+        [_video("shared", media_id, source=VideoSource.ARR, **identical)],
+    )
+    video_manager.replace_source_rows(
+        media_id, VideoSource.TMDB, [_video("shared", media_id, **identical)]
+    )
+
+    rows = video_manager.read_for_media(media_id)
+    assert len(rows) == 1
+    assert rows[0].source == VideoSource.TMDB

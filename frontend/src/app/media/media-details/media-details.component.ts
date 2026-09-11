@@ -88,7 +88,12 @@ export class MediaDetailsComponent {
 
   // Load media data when the media ID changes
   mediaIDChangeEffect = effect(() => {
-    this.mediaService.selectedMediaID.set(this.mediaId());
+    const mediaId = this.mediaId();
+    this.mediaService.selectedMediaID.set(mediaId);
+    // Read the known videos here rather than with the media data: the
+    // media object changes on every websocket update, and during a
+    // download that is often. Reading them there sent a request each time.
+    this.loadKnownVideos();
   });
 
   /** Every video Trailarr knows for this item, in the order it would use
@@ -100,7 +105,6 @@ export class MediaDetailsComponent {
     if (media) {
       this.trailer_url = media.youtube_trailer_id || '';
       this.isLoadingDownload.set(media.status === 'downloading');
-      this.loadKnownVideos();
       // if (media.status !== 'downloading') {
       //   this.isLoadingDownload.set(false);
       // }

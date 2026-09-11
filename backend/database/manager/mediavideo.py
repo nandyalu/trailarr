@@ -231,6 +231,12 @@ def replace_source_rows(
             row.source = source
             row.season = season
             row.video_type = video_type
+            row.updated_at = now
+            # Added explicitly rather than left to the dirty tracking of
+            # the session: when the rest of the row happens to match, the
+            # block below writes nothing, and the new source still has to
+            # be saved.
+            _session.add(row)
             existing[incoming.video_id] = row
         if row is None:
             _session.add(
