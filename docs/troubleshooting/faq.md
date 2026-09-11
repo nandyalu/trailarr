@@ -27,7 +27,7 @@ Open the media details page and look at **Known videos**. The list shows every v
 
 To choose a different video, find it on YouTube, paste its link into the field above the list, and click the save button. Your video goes to the top of the list, and Trailarr never removes it. Click **Download** to get it now.
 
-{{ version_badge("upd", "0.13.0") }} Both Radarr and Sonarr report a YouTube trailer id, and Trailarr uses it. With a [TMDB API key](../user-guide/settings/tmdb.md), Trailarr prefers the trailers that TMDB curates, which is usually why a wrong trailer stops happening.
+{{ version_badge("upd", "0.13.0") }} Radarr reports a YouTube trailer id, and Trailarr uses it. Sonarr has no such field, because it takes its metadata from TVDB and TVDB holds no YouTube trailer ids, so for a series Trailarr searched YouTube by the title and the year — which is where a wrong trailer usually came from. A [TMDB API key](../user-guide/settings/tmdb.md) changes that the most for series: Trailarr then takes a trailer that TMDB lists instead of searching.
 
 
 !!! info

@@ -2,11 +2,15 @@
 
 Builds a pre-Phase-8 database (the v0.11.3 release fixture), gives some
 media a `youtube_trailer_id` and some none, runs `alembic upgrade head`,
-and asserts that the ids moved into the candidates table as ARR rows and
-that nothing else did.
+and asserts the ids moved into the candidates table with the right source.
 
 The resolver reads only the table from Phase 8 on, so an id that stayed
 behind in the column is an id that Trailarr would stop using.
+
+The source is not always ARR. Radarr reports a trailer id; Sonarr has no
+such field on its series resource, so an id stored for a series is one
+Trailarr found itself and wrote back after the download. Labelling those
+ARR would tell the user that Sonarr chose a video it has never heard of.
 """
 
 import os
@@ -55,6 +59,24 @@ def test_arr_ids_move_into_the_candidates_table(tmp_path: Path):
             "UPDATE media SET youtube_trailer_id = ? WHERE id = ?",
             (yt_id, media_id),
         )
+    # A Sonarr series with a stored id. Sonarr reports no trailer id, so
+    # this one is a video Trailarr found itself and wrote back after the
+    # download — it must not be labelled as coming from the Arr.
+    db.execute(
+        "INSERT INTO connection VALUES"
+        " ('Fixture Sonarr','SONARR','http://localhost:8989','k',2,"
+        "  '2026-08-21 00:00:00','',NULL,1)"
+    )
+    db.execute(
+        "INSERT INTO media (connection_id, arr_id, is_movie, title, year,"
+        " language, runtime, youtube_trailer_id, folder_path, txdb_id, id,"
+        " added_at, updated_at, monitor, arr_monitored, clean_title, studio,"
+        " media_exists, media_filename, title_slug, season_count)"
+        " VALUES (2, 900, 0, 'Fixture Series', 2024, 'en', 30,"
+        " 'seriesFoundId', '/nonexistent/fixture/Series', 'fx-900', 900,"
+        " '2026-08-21 00:00:00', '2026-08-21 00:00:00', 1, 1, '', '', 0,"
+        " '', '', 0)"
+    )
     db.commit()
     db.close()
 
@@ -69,8 +91,17 @@ def test_arr_ids_move_into_the_candidates_table(tmp_path: Path):
         )
     )
 
-    # Only the media that had an id gets a row.
-    assert len(rows) == 1, f"expected one ARR row, got {rows}"
+    # The media that had an id, and the Sonarr series.
+    assert len(rows) == 2, f"expected two rows, got {rows}"
+
+    # The Sonarr series: the id is Trailarr's own, not the Arr's.
+    series = [r for r in rows if r[0] == 900][0]
+    assert series[1] == "seriesFoundId"
+    assert series[2] == "SEARCH", (
+        "Sonarr reports no trailer id, so a stored one came from a search"
+    )
+
+    rows = [r for r in rows if r[0] != 900]
     media_id, video_id, source, video_type, season, sequence = rows[0]
     assert media_id == 1
     assert video_id == "dQw4w9WgXcQ"

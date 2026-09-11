@@ -6,11 +6,14 @@ TMDB ([The Movie Database](https://www.themoviedb.org){:target="_blank"}) keeps 
 
 Trailarr works without a key. Nothing changes for you until you add one.
 
+A key is worth the most for series. Radarr takes its metadata from TMDB, so the trailer id it reports is a TMDB trailer already — that is why a movie usually got a good trailer without a key. Sonarr takes its metadata from TVDB, which holds no YouTube trailer ids, so Sonarr reports none and Trailarr searched YouTube by the title and the year for every series.
+
 ## What changes with a key
 
 | Without a key | With a key |
 |---|---|
-| Trailarr uses the id that Radarr or Sonarr reports. | Trailarr uses the trailers that TMDB lists, and keeps the id from Radarr or Sonarr as a fallback. |
+| For a movie, Trailarr uses the id that Radarr reports, which Radarr got from TMDB. | Trailarr uses the full list of trailers that TMDB curates, and keeps the id from Radarr as a fallback. |
+| For a series, there is no id to use: Sonarr reports none, because TVDB has none. | A series gets the same curated list as a movie. |
 | Without an id, Trailarr searches YouTube for the title and the year. | Trailarr searches YouTube only when TMDB and the Arr have nothing. |
 | A wrong result of a search is downloaded. | A trailer that the studio published is downloaded. |
 

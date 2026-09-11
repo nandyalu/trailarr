@@ -83,25 +83,43 @@ def upgrade() -> None:
             )
         )
 
-    # Move the ids that Radarr and Sonarr gave into the table. The column
+    # Move every stored YouTube id into the table. The column
     # media.youtube_trailer_id stays until the Phase 9 cleanup, but from
     # here the resolver reads only the table, so the ids have to be in it.
-    # The enum column keeps the NAME of the member, so the value is 'ARR'.
+    #
+    # Where a stored id came from decides the source of its row, and it is
+    # not always an Arr. Radarr reports a trailer id, and its column
+    # `youTubeTrailerId` is where most movie ids come from. Sonarr has no
+    # such field at all: its SeriesResource carries no trailer property, so
+    # the id stored for a series is one that Trailarr found itself and
+    # wrote back after the download (`update_download_facts`). The same is
+    # true of a Plex-only item.
+    #
+    # Measured on a 3,704-title library before this was written: every
+    # YOUTUBE_ID_CHANGED event from a sync belongs to Radarr media (177 of
+    # them, none for Sonarr), and 98% of the ids stored for Sonarr series
+    # are exactly the video that was downloaded, against 68% for Radarr.
+    #
+    # The enum column keeps the NAME of the member, so 'ARR' and 'SEARCH'.
     result = op.get_bind().execute(
         sa.text(
             "INSERT INTO mediavideo"
             " (media_id, video_id, source, season, video_type, sequence,"
             "  language, name, official, published_at, added_at, updated_at)"
-            " SELECT id, youtube_trailer_id, 'ARR', NULL, 'trailer', 0,"
+            " SELECT m.id, m.youtube_trailer_id,"
+            "        CASE WHEN c.arr_type = 'RADARR' THEN 'ARR'"
+            "             ELSE 'SEARCH' END,"
+            "        NULL, 'trailer', 0,"
             "        NULL, '', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP"
-            " FROM media"
-            " WHERE youtube_trailer_id IS NOT NULL"
-            "   AND TRIM(youtube_trailer_id) != ''"
+            " FROM media m"
+            " LEFT JOIN connection c ON c.id = m.connection_id"
+            " WHERE m.youtube_trailer_id IS NOT NULL"
+            "   AND TRIM(m.youtube_trailer_id) != ''"
         )
     )
     logger.info(
-        f"Trailarr moved {result.rowcount} YouTube ids from Radarr and Sonarr"
-        " into the video candidates table."
+        f"Trailarr moved {result.rowcount} YouTube ids into the video"
+        " candidates table."
     )
 
     # Re-enable foreign keys after migrations

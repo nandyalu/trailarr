@@ -35,8 +35,9 @@ extend to non-trailer types and seasons. No key configured = behavior identical 
    USER > TMDB > ARR > SEARCH, then sequence → each candidate passes the existing
    duration/uploader validation → live yt-search fallback last (trailers only), and a
    successful search result is written back as a SEARCH row.
-5. **Arr ids migrate into the table:** sync writes `youtube_trailer_id` (Radarr AND
-   Sonarr both provide it — `*/data_parser.py`) as ARR rows; one-time migration copies
+5. **Arr ids migrate into the table:** sync writes `youtube_trailer_id` (⚠️ **only
+   Radarr provides it** — see the correction below; the Sonarr parser carries the field
+   to match the shared shape and it is always empty) as ARR rows; one-time migration copies
    existing `media.youtube_trailer_id` → ARR rows. **User-edit recovery heuristic:**
    on the first post-upgrade sync, when the Arr-reported id differs from a migrated
    ARR row's id, relabel that row `USER` — a differing stored id was almost certainly
@@ -176,7 +177,33 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
    featurettes, and the first Inception trailer in TMDB order is not official while two
    official ones follow it. `to_candidates` keeps only trailers, puts official first,
    and keeps the TMDB order inside each group.
-3. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
+3. **Sonarr does not report a YouTube trailer id.** Decision 5 says Radarr and Sonarr
+   both provide it, and both parsers do read `youTubeTrailerId`, which is what made the
+   claim look true. Sonarr's `SeriesResource` has no trailer property at all, and the
+   Sonarr parser carries a comment saying so; the field exists to match the shape the
+   rest of Trailarr expects, and it is always empty.
+
+   The cause is the metadata source, which makes it a fact about the two applications
+   rather than a gap to fix. Radarr takes its metadata from TMDB, which holds YouTube
+   trailer ids, so a Radarr id is a TMDB trailer already — that is also why 1,822 of
+   2,104 Arr ids turn out to be the very trailer TMDB lists, and why claiming (item 4)
+   matters so much. Sonarr takes its metadata from TVDB, which holds none.
+
+   The library agrees. Every YOUTUBE_ID_CHANGED event written by a sync belongs to
+   Radarr media — 177 of them, none for Sonarr — and 98% of the ids stored for Sonarr
+   series are exactly the video that was downloaded, against 68% for Radarr. The reason
+   is `update_download_facts`, which writes the downloaded video's id back into
+   `media.youtube_trailer_id` after every successful download.
+
+   Two consequences. The migration labelled all 2,560 backfilled ids ARR, which told a
+   user that Sonarr chose a video it has never heard of; it now labels by the owning
+   connection, so the 98 series ids become SEARCH rows, which is what they are. And a
+   series has no ARR candidate at all, so this phase is worth more for a series than
+   for a movie: a movie already had a TMDB trailer by way of Radarr, and a series only
+   ever had a title search. Phase 10, which adds season trailers, inherits that: there
+   is no Arr fallback for a season either.
+
+4. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
    1,822 of 2,104 Arr ids are the trailer TMDB lists — Radarr takes its id from TMDB, so
    agreement is the normal case. Leaving the row with the Arr showed a nameless row and
    sorted the agreed trailer below TMDB's others. A better source now takes the row and

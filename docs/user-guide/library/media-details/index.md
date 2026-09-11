@@ -46,7 +46,7 @@ If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is 
 
 This is the YouTube video ID present in Trailarr for this Media item, and can be updated here!
 
-Radarr and Sonarr both report a YouTube trailer id, and Trailarr stores it. The field is empty when the Arr has no id for that item.
+Radarr reports a YouTube trailer id, and Trailarr stores it. Sonarr has no such field, because its metadata comes from TVDB, so for a series this is empty until Trailarr finds a video itself, or until you choose one. Trailarr also writes the video it downloaded here, so the field can hold a video that no Arr ever reported.
 
 ### Save YouTube ID
 
