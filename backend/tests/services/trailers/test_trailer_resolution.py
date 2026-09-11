@@ -201,7 +201,17 @@ class TestAlwaysSearch:
 
 
 class TestLanguage:
-    """A profile that asks for a language gets it, or a search."""
+    """A profile that asks for a language gets it, or a search.
+
+    A language only filters once a TMDB API key is set, because TMDB is
+    what records the language of a trailer. These tests set one.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _with_a_tmdb_key(self):
+        with patch("services.trailers.resolver.app_settings") as settings:
+            settings.tmdb_api_key = "a-key"
+            yield
 
     def test_the_trailer_in_that_language_is_taken(self, media, profile):
         _add_many(

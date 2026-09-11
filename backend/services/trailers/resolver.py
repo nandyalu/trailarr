@@ -14,6 +14,7 @@ module gives, and falls back to a live search when the list runs out.
 """
 
 from app_logger import ModuleLogger
+from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead, VideoSource
 from database.models.trailerprofile import TrailerProfileRead
@@ -64,7 +65,7 @@ def choose_candidates(
         return []
 
     excluded = set(exclude or [])
-    wanted = (profile.language or "").strip()
+    wanted = effective_language(profile)
     chosen: list[MediaVideoRead] = []
     for candidate in candidates:
         if candidate.video_id in excluded:
@@ -103,3 +104,25 @@ def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
         f"Trailarr takes the trailer for '{media.title}' from {where}"
         f" ({candidate.video_id})."
     )
+
+
+def effective_language(profile: TrailerProfileRead) -> str:
+    """The trailer language this profile can really ask for.
+
+    Only TMDB records which language a trailer is in, so without a TMDB
+    API key no video in the table has one, and a language would match
+    nothing at all: every download would fall through to a search. So a
+    language without a key means any language, which is what the profile
+    did before the field existed.
+
+    The profile page disables the field for the same reason, and says why.
+
+    Args:
+        profile (TrailerProfileRead): The profile that asks for a trailer.
+
+    Returns:
+        str: The language to filter by, or an empty string for any.
+    """
+    if not app_settings.tmdb_api_key:
+        return ""
+    return (profile.language or "").strip()

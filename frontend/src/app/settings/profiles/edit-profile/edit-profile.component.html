@@ -271,16 +271,27 @@
       <app-text-setting
         name="Trailer Language"
         description="Which language of trailer to download, as a 2-letter ISO code. Leave empty for any language, which is the default."
-        descriptionExtra="A language here is a filter, not a preference. Trailarr downloads a trailer in this language or searches YouTube with your search query — it never downloads a trailer in another language instead."
+        [descriptionExtra]="
+          hasTmdbKey()
+            ? 'A language here is a filter, not a preference. Trailarr downloads a trailer in this language or searches YouTube with your search query — it never downloads a trailer in another language instead.'
+            : 'Add a TMDB API key in Settings > General to use this. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell, and every profile takes any language.'
+        "
         [isNumberType]="false"
         [isLongInput]="false"
-        [placeholder]="'any'"
+        [placeholder]="hasTmdbKey() ? 'any' : 'needs a TMDB API key'"
         [autocomplete]="'off'"
         [minLength]="0"
         [maxLength]="5"
-        [value]="profile()?.language ?? ''"
+        [value]="hasTmdbKey() ? (profile()?.language ?? '') : ''"
+        [disabled]="!hasTmdbKey()"
         (onSubmit)="profileService.updateSetting('language', $event)"
       />
+      @if (!hasTmdbKey()) {
+        <p class="text-sm needs-tmdb">
+          <a [href]="helpLinks.tmdb" target="_blank" rel="noopener">How to get a TMDB API key</a>
+          — it is free, and it also gets you trailers the studio published instead of a YouTube search.
+        </p>
+      }
       <app-options-setting
         name="Subtitles Enabled"
         description="Enable or disable subtitle download for this profile."

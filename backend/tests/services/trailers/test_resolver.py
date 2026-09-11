@@ -6,11 +6,15 @@ search stored earlier.
 """
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from database.models.mediavideo import MediaVideoRead, VideoSource
 from database.models.trailerprofile import TrailerProfileRead
 from services.trailers.resolver import choose_candidates, describe_choice
+
+PKG = "services.trailers.resolver"
 
 
 def _candidate(video_id: str, source: VideoSource, sequence: int = 0):
@@ -130,6 +134,14 @@ class TestLanguageIsAFilter:
         _candidate("arr_unknown", VideoSource.ARR),
     ]
 
+    @pytest.fixture(autouse=True)
+    def _with_a_tmdb_key(self):
+        """A language only means something with a key — see the class
+        below. These tests are about what the filter does once it does."""
+        with patch(f"{PKG}.app_settings") as settings:
+            settings.tmdb_api_key = "a-key"
+            yield
+
     def setup_method(self):
         self.MIXED[0].language = "it"
         self.MIXED[1].language = "de"
@@ -150,3 +162,36 @@ class TestLanguageIsAFilter:
         existed, so an upgrade changes nothing."""
         chosen = choose_candidates(self.MIXED, _profile(language=""))
         assert len(chosen) == 3
+
+
+class TestLanguageNeedsAKey:
+    """A trailer language without a TMDB API key matches nothing.
+
+    Only TMDB records the language of a trailer. Without a key no video in
+    the table has one, so a profile asking for Italian would match nothing
+    and search for every single item — worse than before the field
+    existed. So the language is inert without a key, and the profile page
+    disables it and says why.
+    """
+
+    def test_a_language_is_ignored_without_a_key(self):
+        profile = _profile(language="it")
+        with patch(f"{PKG}.app_settings") as settings:
+            settings.tmdb_api_key = ""
+            chosen = choose_candidates(ORDERED, profile)
+
+        assert [c.video_id for c in chosen] == [
+            "user1", "tmdb1", "arr1", "search1"
+        ]
+
+    def test_a_language_filters_once_a_key_is_set(self):
+        profile = _profile(language="it")
+        for candidate in ORDERED:
+            candidate.language = "en"
+        with patch(f"{PKG}.app_settings") as settings:
+            settings.tmdb_api_key = "a-key"
+            chosen = choose_candidates(ORDERED, profile)
+
+        assert chosen == []
+        for candidate in ORDERED:
+            candidate.language = "en"

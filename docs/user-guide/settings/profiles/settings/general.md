@@ -66,8 +66,8 @@ Trailarr only knows the language of a video when something told it. TMDB records
 !!! tip "One profile per language"
     To keep an Italian trailer and an English one for the same media item, make two profiles, one with `it` and one with `en`. Each downloads its own trailer and keeps track of its own file.
 
-!!! note ""
-    This setting needs a [TMDB API key](../../tmdb.md) to do much, because TMDB is what tells Trailarr which language a trailer is in. Without a key, set it only if you also add videos by hand with a language.
+!!! note "This setting needs a TMDB API key"
+    The field is disabled until you add a [TMDB API key](../../tmdb.md) in `Settings > General`, and every profile takes any language until then. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell — and a language it cannot check would match nothing, making every download fall back to a YouTube search.
 
 ## Stop Monitoring
 
