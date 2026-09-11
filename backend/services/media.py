@@ -14,6 +14,8 @@ from app_logger import ModuleLogger
 import database.manager.download as download_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
+import database.manager.mediavideo as video_manager
+from database.models.mediavideo import MediaVideoRead
 from database.models.event import EventSource
 from services.files.files_handler import FilesHandler
 
@@ -108,9 +110,67 @@ def set_youtube_id(media_id: int, yt_id: str) -> str:
             source_detail="UserInput",
         )
 
+    # Phase 8: an id a person typed is a video that person chose. It goes
+    # into the candidates table as a USER row, which the resolver puts
+    # before every other source and no automation ever removes. The column
+    # above stays until the Phase 9 cleanup.
+    if yt_id:
+        video_manager.add_user_video(media_id, yt_id)
+
     msg = "Trailarr updated the YouTube ID of this media item."
     logger.info(msg)
     return msg
+
+
+def list_videos(media_id: int) -> list[MediaVideoRead]:
+    """Every video Trailarr knows for a media item, in resolution order.
+
+    Args:
+        media_id (int): The media item.
+
+    Returns:
+        list[MediaVideoRead]: The videos, the first one being the one a
+            download would use.
+    """
+    return video_manager.read_for_media(media_id)
+
+
+def add_video(media_id: int, video_id: str) -> MediaVideoRead:
+    """Add a video that the user chose.
+
+    Args:
+        media_id (int): The media item.
+        video_id (str): The YouTube id. The caller reads it out of a URL.
+
+    Returns:
+        MediaVideoRead: The row that was created, or the row that another
+            source made for the same video and that now belongs to the user.
+    """
+    row = video_manager.add_user_video(media_id, video_id)
+    logger.info(
+        f"Trailarr added the video '{video_id}' that you chose.",
+        **logger.media(media_id),
+    )
+    return row
+
+
+def remove_video(media_id: int, video_id: str) -> bool:
+    """Remove one known video from a media item.
+
+    Args:
+        media_id (int): The media item.
+        video_id (str): The YouTube id to remove.
+
+    Returns:
+        bool: False when the media item did not have that video.
+    """
+    removed = video_manager.delete_video(media_id, video_id)
+    if removed:
+        logger.info(
+            f"Trailarr removed the video '{video_id}'.",
+            **logger.media(media_id),
+        )
+    return removed
 
 
 def set_monitoring_bulk(media_ids: list[int], monitor: bool) -> str:
