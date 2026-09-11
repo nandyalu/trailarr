@@ -11,6 +11,7 @@ from database.models.download import Download
 from database.models.downloadattempt import DownloadAttempt
 from database.models.event import Event
 from database.models.media import Media
+from database.models.mediavideo import MediaVideo
 from database.models.filter import Filter
 from database.models.customfilter import CustomFilter
 from database.models.notificationchannel import NotificationChannel
@@ -29,6 +30,7 @@ __ALL__ = [
     Download,
     DownloadAttempt,
     Event,
+    MediaVideo,
     Media,
     Filter,
     CustomFilter,
