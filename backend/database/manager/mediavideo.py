@@ -178,15 +178,38 @@ def replace_source_rows(
         statement = statement.where(MediaVideo.season == season)
     existing = {v.video_id: v for v in _session.exec(statement).all()}
 
-    # A video that another source already offers keeps that row. The unique
-    # constraint is (media_id, video_id), so a second row cannot exist, and
-    # the first source to offer it keeps it — see wargame W6.
-    taken = {
-        v.video_id
+    # A video can be offered by more than one source, and (media_id,
+    # video_id) is unique, so only one row can exist for it. The better
+    # source takes the row.
+    #
+    # This is not a detail. On a real library of 3,704 titles, 1,822 of the
+    # ids that Radarr and Sonarr report are the very trailer that TMDB
+    # lists. Leaving those rows with the Arr meant two things: the list
+    # showed a row with no title, because an Arr reports an id and nothing
+    # else, and the trailer that both sources agree on sorted below TMDB's
+    # other trailers, so Trailarr downloaded the second-best one.
+    #
+    # A row that the user owns is never taken. That is the invariant of
+    # decision 5b: their choice outranks every source, including this one.
+    others = {
+        v.video_id: v
         for v in _session.exec(
             select(MediaVideo).where(MediaVideo.media_id == media_id)
         ).all()
         if v.source != source
+    }
+    incoming_rank = SOURCE_PRECEDENCE.get(source.value, len(SOURCE_PRECEDENCE))
+    taken = {
+        video_id
+        for video_id, row in others.items()
+        if row.source == VideoSource.USER
+        or SOURCE_PRECEDENCE.get(row.source.value, len(SOURCE_PRECEDENCE))
+        <= incoming_rank
+    }
+    claimable = {
+        video_id: row
+        for video_id, row in others.items()
+        if video_id not in taken
     }
 
     added = updated = removed = 0
@@ -198,7 +221,15 @@ def replace_source_rows(
         seen.add(incoming.video_id)
         if incoming.video_id in taken:
             continue
-        row = existing.get(incoming.video_id)
+        row = existing.get(incoming.video_id) or claimable.get(incoming.video_id)
+        if row is not None and row.source != source:
+            # Take the row over, with the better information this source
+            # has: an Arr gives an id, and TMDB gives the title, the
+            # language and whether the studio published it.
+            row.source = source
+            row.season = season
+            row.video_type = video_type
+            existing[incoming.video_id] = row
         if row is None:
             _session.add(
                 MediaVideo(

@@ -116,16 +116,52 @@ class TestSourceOwnership:
         assert len(video_manager.read_for_media(media_id)) == 1
 
     def test_the_same_video_from_two_sources_stays_one_row(self, media_id):
-        """Wargame W6: unique (media_id, video_id); the first source keeps it."""
+        """Wargame W6: (media_id, video_id) is unique, so one row.
+
+        The better source takes it. On a real library, most of the ids that
+        Radarr and Sonarr report are the trailer TMDB lists, and leaving
+        the row with the Arr showed a row with no title and sorted the
+        agreed trailer below TMDB's others."""
         video_manager.replace_source_rows(
             media_id, VideoSource.ARR, [_video("same", media_id, source=VideoSource.ARR)]
         )
         video_manager.replace_source_rows(
-            media_id, VideoSource.TMDB, [_video("same", media_id)]
+            media_id,
+            VideoSource.TMDB,
+            [_video("same", media_id, name="Official Trailer", language="de")],
         )
         rows = video_manager.read_for_media(media_id)
         assert len(rows) == 1
-        assert rows[0].source == VideoSource.ARR
+        assert rows[0].source == VideoSource.TMDB
+        # And it carries what TMDB knows, which an Arr never reports.
+        assert rows[0].name == "Official Trailer"
+        assert rows[0].language == "de"
+
+    def test_a_worse_source_does_not_take_the_row(self, media_id):
+        video_manager.replace_source_rows(
+            media_id, VideoSource.TMDB, [_video("same", media_id, name="From TMDB")]
+        )
+        video_manager.replace_source_rows(
+            media_id, VideoSource.ARR, [_video("same", media_id, source=VideoSource.ARR)]
+        )
+        rows = video_manager.read_for_media(media_id)
+        assert len(rows) == 1
+        assert rows[0].source == VideoSource.TMDB
+        assert rows[0].name == "From TMDB"
+
+    def test_no_source_takes_the_video_the_user_chose(self, media_id):
+        """The invariant of decision 5b."""
+        video_manager.add_user_video(media_id, "mine")
+        video_manager.replace_source_rows(
+            media_id, VideoSource.TMDB, [_video("mine", media_id, name="TMDB name")]
+        )
+        rows = video_manager.read_for_media(media_id)
+        assert len(rows) == 1
+        assert rows[0].source == VideoSource.USER
+
+        # And the TMDB refresh that follows cannot remove it either.
+        video_manager.replace_source_rows(media_id, VideoSource.TMDB, [])
+        assert len(video_manager.read_for_media(media_id)) == 1
 
 
 class TestUserVideos:
