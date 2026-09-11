@@ -26,8 +26,8 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | **v0.10.0** | July 19, 2026 ✅ | Phase 2 — Downloads drive the download engine, plus Notifications (Apprise) |
 | **v0.10.2** | July 30, 2026 ✅ | Phases 3 & 4 — Live status + monitoring becomes yours |
 | **v0.11.0** | August 9, 2026 ✅ | Phase 5 — Cleanup of legacy fields |
-| **v0.11.3** | September 2026 | Phase 6 — Filter by downloads & files |
-| **v0.12.0** | October 2026 | Phase 7 — Internal reorganization for long-term maintainability |
+| **v0.11.3** | August 21, 2026 ✅ | Phase 6 — Filter by downloads & files |
+| **v0.12.0** | September 10, 2026 ✅ | Phase 7 — Internal reorganization for long-term maintainability |
 | **v0.13.0** | November 2026 | Phase 8 — TMDB integration |
 | **v0.14.0** | December 2026 – January 2027 | Phase 9 — Video types |
 | **v0.15.0** | February 2027 | Phase 10 — Movie/Series profiles + season trailers |

@@ -10,7 +10,7 @@ spec diff (18 added 500s + 2 previously-undocumented 404s).
 **Stage C DONE** — every log message swept to one house style, the media link decoupled
 from the wording, both permitted spec diffs spent, every module documented (23 -> 153),
 the frontend light touch done, the contributor docs and graphify updated.
-**PHASE COMPLETE.** 1594 tests green, ready for the v0.12.0 PR. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
+**PHASE COMPLETE.** Merged into `dev` on Sep 10, 2026 as a merge commit (PR #665); ships as v0.12.0. · **Release:** v0.12.0, target Oct 2026 (own release, ~3-week bake)
 **Depends on:** Phase 5/6 shipped (post-refactor codebase is smaller; TMDB/video-types
 are then *born* into the new structure) · **Blocks:** Phases 8–11 (their plans use new paths)
 
