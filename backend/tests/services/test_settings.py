@@ -195,6 +195,21 @@ class TestSecretSettings:
         assert result == "The TMDB API key did not change."
 
     @pytest.mark.asyncio
+    async def test_an_empty_box_removes_the_key(self):
+        """The page sends one space for an empty box. A check of a blank
+        key gets a refusal from TMDB, which kept the key in for good."""
+        with patch(f"{PKG}.app_settings") as mock_settings:
+            mock_settings.tmdb_api_key = self.KEY
+            with patch(f"{PKG}.TMDBAPI") as api:
+                result = await settings_service.update_setting(
+                    "tmdb_api_key", " "
+                )
+
+        assert mock_settings.tmdb_api_key == ""
+        assert api.call_count == 0, "a blank key must not reach TMDB"
+        assert result == "Setting Tmdb Api Key removed."
+
+    @pytest.mark.asyncio
     async def test_a_key_that_tmdb_refuses_is_not_stored(self):
         from services.tmdb.api_manager import TMDBAuthError
 

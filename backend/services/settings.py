@@ -58,16 +58,23 @@ async def _update_secret(key: str, value: str) -> str:
     that masked text comes back. Writing it would replace a working key
     with four stars and some digits, so a value that is the masked form of
     the stored value changes nothing.
+
+    A blank value removes the secret. The page sends one space for an
+    empty box, and a check of a blank key would make TMDB refuse it — so
+    without this, a key could go in but never come out.
     """
     value = value.strip()
+    _name = key.replace("_", " ").title()
     if value.startswith(MASK):
         return "The TMDB API key did not change."
+    if not value:
+        setattr(app_settings, key, "")
+        return f"Setting {_name} removed."
     if key == "tmdb_api_key":
         message = await _validate_tmdb_key(value)
         if message:
             return message
     setattr(app_settings, key, value)
-    _name = key.replace("_", " ").title()
     return f"Setting {_name} updated."
 
 
