@@ -112,3 +112,62 @@ class TestDeliberateHttpExceptions:
         assert result.status_code == status.HTTP_406_NOT_ACCEPTABLE
         assert result.detail == "Invalid YouTube ID!"
         logger.exception.assert_not_called()
+
+
+class TestUpdateConnectionStatusCodes:
+    """H22. `update_connection` mapped every safe exception to 404, so a
+    server that refused looked like a connection that does not exist. The
+    service reads the row before it probes, so the two cases are separable:
+    a bad id is an ItemNotFoundError, and everything after that comes from
+    the server."""
+
+    def test_a_refused_server_is_a_bad_request(self, logger):
+        result = errors.as_http_error(
+            ConnectionError("Connection Refused while connecting to API."),
+            logger=logger,
+            action="Update the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+        assert result.status_code == status.HTTP_400_BAD_REQUEST
+        assert result.detail == "Connection Refused while connecting to API."
+
+    def test_a_slow_server_is_a_bad_request(self, logger):
+        result = errors.as_http_error(
+            ConnectionTimeoutError("Timeout occurred while connecting to API."),
+            logger=logger,
+            action="Update the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+        assert result.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_a_missing_connection_is_still_not_found(self, logger):
+        result = errors.as_http_error(
+            ItemNotFoundError("Connection", 42),
+            logger=logger,
+            action="Update the connection",
+            safe_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+        assert result.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_the_handler_asks_for_the_bad_request_status(self):
+        """The status above only reaches the user if the handler passes it,
+        so read the handler and check the argument it sends."""
+        import ast
+        import inspect
+
+        from api.v1 import connections
+
+        source = inspect.getsource(connections.update_connection)
+        call = next(
+            node
+            for node in ast.walk(ast.parse(source.strip()))
+            if isinstance(node, ast.Call)
+            and getattr(node.func, "attr", "") == "as_http_error"
+        )
+        safe_status = next(
+            kw.value for kw in call.keywords if kw.arg == "safe_status"
+        )
+        assert ast.unparse(safe_status).endswith("HTTP_400_BAD_REQUEST")

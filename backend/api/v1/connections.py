@@ -302,9 +302,13 @@ async def get_connection(connection_id: int) -> ConnectionRead:
         status.HTTP_201_CREATED: {
             "description": "Connection Updated Successfully!",
         },
-        status.HTTP_404_NOT_FOUND: {
+        status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,
             "description": "Connection Not Updated",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Connection Not Found",
         },
     },
 )
@@ -322,9 +326,13 @@ async def update_connection(
         await websockets.ws_manager.broadcast(
             "Failed to update Connection!", "Error"
         )
+        # The service reads the row before it probes, so a bad id is
+        # already an ItemNotFoundError (404). Everything else here is the
+        # server answering, and a refused or slow server is not a missing
+        # connection — same as create. H22.
         raise errors.as_http_error(
             e, logger=logger, action="Update the connection",
-            safe_status=status.HTTP_404_NOT_FOUND,
+            safe_status=status.HTTP_400_BAD_REQUEST,
         )
     await websockets.ws_manager.broadcast(
         "Connection Updated Successfully!", "Success", reload="connections"
