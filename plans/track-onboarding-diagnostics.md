@@ -21,10 +21,16 @@ C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
   same time, so asking about the setup raced `authGuard`: with the web UI login off, the
   session cookie is minted by the call that guard makes, and the setup request came back
   401 and fell through to "no guide". Chaining it after the cached auth check fixes it.
-- Still open for a later pass: C2 (URL_BASE was not tested under a sub-directory) and
-  C4's "continue in background" button — the preview asks for 100 items and shows the
-  real total, which covers the large-library case, but there is no explicit background
-  button.
+- C4 is done (Sep 11, 2026). Step 4 asks the server every four seconds while it is on
+  screen, says how many media items are in so far, and says when that number is still
+  going up. A "Continue in the background" button next to it goes on with the guide
+  while the sync runs, because the sync is a task on the server. The preview reads 25
+  rows at a time with a "Show more" button, over the `limit`/`offset` the endpoint
+  already had. Verified in a browser against a copy of the 3,705-title library: the
+  count climbed 0 → 900 → 2,100 → 3,705, the "still going up" line came and went with
+  it, the whole 92-row list read in three clicks, "Check again" put it back to the first
+  page, and the poll stopped when the step did.
+- Still open for a later pass: C2 (URL_BASE was not tested under a sub-directory).
 
 **Note (Sep 11, 2026):** C's dependencies are all shipped or ready — Phase 7 is out in
 v0.12.0, Phase 3's preview endpoint has been in since v0.10.2, and Phase 8 brings the
