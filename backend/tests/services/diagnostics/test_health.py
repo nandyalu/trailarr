@@ -9,13 +9,17 @@ Wargame coverage:
 
 import asyncio
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from config.settings import app_settings
 from services.diagnostics import cookies, health
-from services.diagnostics.models import ProbeStatus
+from services.diagnostics.models import (
+    HealthCheckResult,
+    HealthReport,
+    ProbeStatus,
+)
 from utils.error_classify import (
     classified_error,
     classify_ytdlp_error,
@@ -208,7 +212,9 @@ class TestErrorClassification:
         import database.manager.downloadattempt as attempt_manager
         import database.manager.media as media_manager
         from database.models.media import MediaCreate
-        from tests.services.diagnostics.test_connection_doctor import _make_conn
+        from tests.services.diagnostics.test_connection_doctor import (
+            _make_conn,
+        )
 
         conn_id = _make_conn(f"Cls-{uuid.uuid4().hex[:8]}")
         media = media_manager.create(
@@ -397,3 +403,79 @@ class TestErrorSignatures:
 
     def test_unknown_errors_pass_through(self):
         assert classify_ytdlp_error("ERROR: something brand new") is None
+
+
+class TestYoutubeTestTarget:
+    """The live YouTube test must not rot, and must not blame the user.
+
+    It used to ask for one hardcoded video id. That video was deleted, so
+    every user's health page said their setup was broken. A search cannot
+    go that way: it resolves to whatever YouTube has now, and it exercises
+    the same extraction code — which is also the path Trailarr takes when
+    it searches for a trailer.
+    """
+
+    @pytest.mark.asyncio
+    async def test_a_working_setup_passes_on_the_first_target(self):
+        with patch(
+            f"{health.__name__}._run_ytdlp_simulate",
+            new=AsyncMock(return_value=(0, "")),
+        ) as run:
+            result = await health.run_ytdlp_test()
+
+        assert result.status == ProbeStatus.OK
+        assert run.await_count == 1
+        assert run.await_args.args[0].startswith("ytsearch1:")
+
+    @pytest.mark.asyncio
+    async def test_an_unreadable_video_makes_it_try_another(self):
+        """Someone else deleting a video is not the user's problem."""
+        with patch(
+            f"{health.__name__}._run_ytdlp_simulate",
+            new=AsyncMock(
+                side_effect=[(1, "ERROR: This video is unavailable"), (0, "")]
+            ),
+        ) as run:
+            result = await health.run_ytdlp_test()
+
+        assert result.status == ProbeStatus.OK
+        assert run.await_count == 2
+
+    @pytest.mark.asyncio
+    async def test_every_video_unreadable_warns_instead_of_failing(self):
+        with patch(
+            f"{health.__name__}._run_ytdlp_simulate",
+            new=AsyncMock(return_value=(1, "ERROR: Video unavailable")),
+        ):
+            result = await health.run_ytdlp_test()
+
+        assert result.status == ProbeStatus.WARNING
+        assert "not about your setup" in result.detail
+
+    @pytest.mark.asyncio
+    async def test_a_sign_in_wall_is_still_an_error_straight_away(self):
+        """The failure that matters must not be softened, or delayed by a
+        retry that will hit the same wall."""
+        with patch(
+            f"{health.__name__}._run_ytdlp_simulate",
+            new=AsyncMock(
+                return_value=(1, "ERROR: Sign in to confirm you're not a bot")
+            ),
+        ) as run:
+            result = await health.run_ytdlp_test()
+
+        assert result.status == ProbeStatus.ERROR
+        assert run.await_count == 1, "a sign-in wall is not worth retrying"
+        assert result.remediation
+
+    @pytest.mark.asyncio
+    async def test_a_missing_ytdlp_is_an_error(self):
+        with patch(
+            f"{health.__name__}._run_ytdlp_simulate",
+            new=AsyncMock(
+                return_value=(1, "yt-dlp was not found at '/nope'.")
+            ),
+        ):
+            result = await health.run_ytdlp_test()
+
+        assert result.status == ProbeStatus.ERROR

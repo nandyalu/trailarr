@@ -55,7 +55,20 @@ _REPORT_TTL = timedelta(hours=24)
 _YTDLP_TEST_TTL = timedelta(hours=24)
 
 # yt-dlp's long-standing designated test video (also used by its own CI)
-_YTDLP_TEST_VIDEO = "https://www.youtube.com/watch?v=BaW_jenozKc"
+# What the live test asks YouTube for.
+#
+# It used to be one video id, and the video was deleted — so every user's
+# health page reported that their setup was broken. Any fixed id can go
+# that way. A search cannot: it resolves to whatever YouTube has right
+# now, and it exercises the same extraction code, which is also the path
+# Trailarr itself uses when it searches for a trailer.
+#
+# Two different queries, because the one video a search returns can itself
+# be private or region locked, and that is not the user's problem either.
+_YTDLP_TEST_TARGETS = (
+    "ytsearch1:official movie trailer",
+    "ytsearch1:movie teaser trailer hd",
+)
 
 _report: HealthReport | None = None
 _ytdlp_test_result: HealthCheckResult | None = None
@@ -116,9 +129,7 @@ async def _run_guarded(check) -> HealthCheckResult:
             ),
         )
     except Exception as e:
-        logger.error(
-            f"The health check '{key}' failed: {e}"
-        )
+        logger.error(f"The health check '{key}' failed: {e}")
         return HealthCheckResult(
             key=key,
             name=key.replace("_", " ").title(),
@@ -346,9 +357,7 @@ async def _run_doctor_for_all() -> list:
     try:
         connections = connection_manager.read_all()
     except Exception as e:
-        logger.error(
-            f"Trailarr could not read the connections: {e}"
-        )
+        logger.error(f"Trailarr could not read the connections: {e}")
         return []
     if not connections:
         return []
@@ -587,39 +596,54 @@ async def run_ytdlp_test() -> HealthCheckResult:
 
     The --simulate option runs the extraction code (the part that
     fails with sign-in and bot checks) and downloads nothing.
+
+    A video that cannot be read is not a failure of the setup, so the test
+    tries a second search before it says anything is wrong, and says
+    plainly that it reached YouTube when that is what happened.
     """
     global _ytdlp_test_result
-    args = [app_settings.ytdlp_path, "--simulate", "--quiet"]
-    if app_settings.yt_cookies_path:
-        args += ["--cookies", app_settings.yt_cookies_path]
-    args.append(_YTDLP_TEST_VIDEO)
-    try:
-        process = await asyncio.create_subprocess_exec(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-        )
-        output, _ = await asyncio.wait_for(process.communicate(), timeout=60)
-        code = process.returncode or 0
-        text = output.decode(errors="replace").strip()
-    except asyncio.TimeoutError:
-        process.kill()
-        await process.wait()  # reap it, do not leave a zombie behind
-        code, text = 1, "The test did not finish in 60 seconds."
-    except FileNotFoundError:
-        code, text = 1, f"yt-dlp was not found at '{app_settings.ytdlp_path}'."
-    if code == 0:
+    from utils.error_classify import (
+        classify_ytdlp_error,
+        is_video_unavailable,
+    )
+
+    last_text = ""
+    for target in _YTDLP_TEST_TARGETS:
+        code, text = await _run_ytdlp_simulate(target)
+        if code == 0:
+            result = HealthCheckResult(
+                key="ytdlp_test",
+                name="YouTube download test",
+                status=ProbeStatus.OK,
+                detail="yt-dlp reached YouTube and read a test video.",
+            )
+            _ytdlp_test_result = result
+            _refresh_report_test_entry(result)
+            return result
+        last_text = text
+        if is_video_unavailable(text):
+            # Someone else deleted a video. Try another one rather than
+            # telling the user their setup is broken.
+            continue
+        break
+
+    if is_video_unavailable(last_text):
         result = HealthCheckResult(
             key="ytdlp_test",
             name="YouTube download test",
-            status=ProbeStatus.OK,
-            detail="yt-dlp reached YouTube and read a test video.",
+            status=ProbeStatus.WARNING,
+            detail=(
+                "yt-dlp reached YouTube, but the videos it picked could"
+                " not be read. That is about those videos, not about your"
+                " setup."
+            ),
+            remediation="Run the test again in a few minutes.",
+            docs_url=DOCS_COOKIES,
         )
     else:
-        from utils.error_classify import classify_ytdlp_error
-
-        classified = classify_ytdlp_error(text)
-        last_line = text.splitlines()[-1] if text else "unknown error"
+        classified = classify_ytdlp_error(last_text)
+        lines = [ln for ln in last_text.splitlines() if ln.strip()]
+        last_line = lines[-1] if lines else "unknown error"
         result = HealthCheckResult(
             key="ytdlp_test",
             name="YouTube download test",
@@ -634,6 +658,37 @@ async def run_ytdlp_test() -> HealthCheckResult:
     _ytdlp_test_result = result
     _refresh_report_test_entry(result)
     return result
+
+
+async def _run_ytdlp_simulate(target: str) -> tuple[int, str]:
+    """Run yt-dlp against one target without downloading anything.
+
+    Args:
+        target (str): A URL, or a `ytsearch1:` query.
+
+    Returns:
+        tuple[int, str]: The exit code and the combined output.
+    """
+    args = [app_settings.ytdlp_path, "--simulate", "--quiet"]
+    if app_settings.yt_cookies_path:
+        args += ["--cookies", app_settings.yt_cookies_path]
+    args.append(target)
+    process = None
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+        output, _ = await asyncio.wait_for(process.communicate(), timeout=60)
+        return process.returncode or 0, output.decode(errors="replace").strip()
+    except asyncio.TimeoutError:
+        if process is not None:
+            process.kill()
+            await process.wait()  # reap it, do not leave a zombie behind
+        return 1, "The test did not finish in 60 seconds."
+    except FileNotFoundError:
+        return 1, f"yt-dlp was not found at '{app_settings.ytdlp_path}'."
 
 
 def _refresh_report_test_entry(result: HealthCheckResult) -> None:
