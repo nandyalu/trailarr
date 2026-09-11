@@ -4,8 +4,8 @@ import {ChangeDetectionStrategy, Component, computed, debounced, effect, Element
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {AppLogRecord, LogLevel} from '../models/logs';
 import {take} from 'rxjs';
-import {ScrollNearEndDirective} from '../helpers/scroll-near-end-directive';
-import {TimediffPipe} from '../helpers/timediff.pipe';
+import {ScrollNearEndDirective} from '../shared/directives/scroll-near-end-directive';
+import {TimediffPipe} from '../shared/pipes/timediff.pipe';
 import {LogsService} from '../services/logs.service';
 import {LoadIndicatorComponent} from '../shared/load-indicator';
 

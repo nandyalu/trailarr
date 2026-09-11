@@ -1,3 +1,5 @@
+"""Helpers for serving the built web UI."""
+
 import re
 import shutil
 from pathlib import Path

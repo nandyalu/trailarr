@@ -1,8 +1,10 @@
+"""The Health page: the checks, and the YouTube cookies file."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
-from core.diagnostics import cookies, health
-from core.diagnostics.models import (
+from services.diagnostics import cookies, health
+from services.diagnostics.models import (
     CookiesStatus,
     CookiesUpload,
     HealthCheckResult,

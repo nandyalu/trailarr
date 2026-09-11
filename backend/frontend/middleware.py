@@ -1,3 +1,5 @@
+"""Serve the built web UI, and keep the API routes ahead of it."""
+
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from config.settings import app_settings

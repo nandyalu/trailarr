@@ -1,3 +1,5 @@
+"""Collect every v1 router and guard it with the API key check."""
+
 import os
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.docs import (

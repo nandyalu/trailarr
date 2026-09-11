@@ -1,9 +1,11 @@
+"""The event history. Events are a permanent record and are never pruned."""
+
 from fastapi import APIRouter, HTTPException, status
 
 from api.v1.models import ErrorResponse
 from app_logger import ModuleLogger
-import core.base.database.manager.event as event_manager
-from core.base.database.models.event import EventRead, EventSource, EventType
+import database.manager.event as event_manager
+from database.models.event import EventRead, EventSource, EventType
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("EventsAPI")
@@ -73,7 +75,9 @@ async def get_event_by_id(event_id: int) -> EventRead:
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error fetching event with ID {event_id}: {e}")
+        logger.error(
+            f"Trailarr could not read the event {event_id}: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while fetching the event.",

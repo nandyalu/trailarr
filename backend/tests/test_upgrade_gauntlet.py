@@ -33,9 +33,9 @@ DEFAULT_MEDIA_COUNT = 3
 
 PASS_SCRIPT = """
 import asyncio, json
-from core.tasks.startup_passes import run_startup_passes, downloads_ready
-import core.base.database.manager.connection as connection_manager
-import core.base.database.manager.media as media_manager
+from tasks.startup_passes import run_startup_passes, downloads_ready
+import database.manager.connection as connection_manager
+import database.manager.media as media_manager
 
 asyncio.run(run_startup_passes())
 media_count = sum(1 for _ in media_manager.read_all_generator())

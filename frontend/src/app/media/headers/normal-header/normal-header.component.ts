@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, effect, inject, signal} fr
 import {Media} from 'src/app/models/media';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {MediaService} from 'src/app/services/media.service';
-import {DisplayTitlePipe} from 'src/app/helpers/display-title.pipe';
+import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
 import {FieldConfigDialogComponent, FieldOption} from './dialogs/field-config-dialog/field-config-dialog.component';
 import {ShowFiltersDialogComponent} from './dialogs/show-filters-dialog/show-filters-dialog.component';
 

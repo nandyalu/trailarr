@@ -3,17 +3,48 @@
 Small, non-blocking cleanups. Fold each into whichever release touches the area anyway;
 none justify their own release. Check items off with the release that shipped them.
 
-- [ ] **H1 — API error-handling standardization**: all `api/v1` handlers use the
-  pattern from `update_download_profile` (ItemNotFoundError→404, unexpected→logged 500
-  with generic detail — no `str(e)` leaks, no blanket 404s). Scheduled: Phase 7 Stage B
-  (touches every handler anyway).
+- [x] **H1 — API error-handling standardization** — DONE (Phase 7 Stage B, ships in
+  v0.12.0). Eighteen handlers caught every exception and answered 404 with `str(e)`.
+  `api/v1/errors.py` now holds the mapping: a missing item is a 404, an exception whose
+  message is written for the user keeps it (ConnectionError, ConnectionTimeoutError,
+  InvalidResponseError, ItemExistsError, FolderNotFoundError, FolderPathEmptyError,
+  ValueError), and anything else is logged with its traceback and answered with a line
+  naming only the action. The spec documents the new 500s in its own commit — 18 added
+  500s plus 2 previously-undocumented 404s, no removals.
+
+  Two things worth keeping: "Connection refused" is the *answer* for Test Connection and
+  the Connection Doctor, so those keep their message and their 400 — a blanket
+  genericization would have broken the feature. And `except Exception` catches
+  HTTPException too, so the mapper returns a deliberate one untouched; without that the
+  406 from `update_yt_id` would have become a 500.
+
+  The first attempt shipped a NameError: `connections.py` had no module-level logger,
+  so every failing connection request returned a blank 500 and logged nothing — and the
+  full suite passed, because no test walks those error paths. Found by driving the
+  running app. `tests/api/test_error_wiring.py` now parses each module and checks that
+  every name passed to the mapper resolves.
 - [x] **H2 — Decorative SVG accessibility sweep** — DONE (ships in v0.11.0): 159
   decorative inline SVGs got `aria-hidden="true" focusable="false"`; three icon-only
   buttons gained aria-labels; two stale "Trailer Exists" labels renamed "Downloaded".
 - [ ] **H3 — Older API endpoints marked deprecated** (`/media/all` etc.) — actually
   remove at v1.0.0 API freeze.
-- [ ] **H4 — `tests/conftest.py` TODO** ("Update all tests to current codebase") —
-  address during Phase 7 test-tree mirror.
+- [ ] **H4 — the test suite shares one database, and the order matters.** Phase 7
+  mirrored the test tree but did not fix this, so the item stays open with a sharper
+  description than "update all tests".
+
+  `conftest.pytest_configure` builds one SQLite database for the whole session, and
+  every test writes into it. A test that assumes an autoincrement id therefore depends
+  on which test ran first. Moving files in Stage A reshuffled pytest's collection order
+  and broke `test_connection.py`, which had hardcoded `CONN_ID_1 = 1`; the fix was to
+  use the id `create()` returns.
+
+  That was one instance. Any future move, rename or new test file reshuffles the order
+  again, and the next instance will look like an unrelated failure. Phases 8 to 10 all
+  add tables and tests.
+
+  The fix is a per-test transaction that rolls back, or a fresh database per module.
+  Either is a change to `conftest.py` and to the handful of tests that lean on shared
+  state — `test_connection.py` notes which ones near the top.
 - [x] **H5 — Duplicate `displayTitle` pipes** — DONE (ships in v0.11.0): merged into
   `helpers/display-title.pipe.ts` with a `fieldKey` mode (preserves casing, strips the
   `_at` suffix) so header output is unchanged; `media/pipes/` copy deleted.
@@ -67,11 +98,73 @@ none justify their own release. Check items off with the release that shipped th
   heuristic refuses. Fix it together with the allowlist, which does not need a depth
   heuristic.
 
-- [ ] **H21 — the download task and the pending view scan the library twice, separately.**
-  (H14–H20 are reserved by the Phase 7 branch, which has not merged yet — hence the gap.)
+- [ ] **H14 — retire the bracketed-id fallback in the log handler.** Every backend log
+  line now passes the media id with `logger.media(id)`, so the fallback in
+  `config/logs/db_handler.py` — take the first `[123]` in the message as the media id —
+  only serves logs from libraries, and it is what linked seven lines to the wrong title
+  before Phase 7 fixed them.
 
-  `download/trailers/pending.py:compute_library_pending` and
-  `download/trailers/missing.py` run the same scan — monitored media, enabled profiles,
+  Not removed yet on purpose: a line that has not been converted would lose its link
+  with no fallback, and third-party logs would never link again. Revisit once the
+  explicit tag has shipped in a release or two.
+  `tests/test_log_message_safety.py` already forbids a bracketed non-media id, so the
+  risk of a new wrong link is small; the remaining question is only what the fallback
+  still earns.
+
+- [ ] **H15 — a failing batch delete tells the user twice.** `batch_update_media` with
+  the delete action calls the same code the delete endpoint uses, which broadcasts
+  "Error deleting trailer!" on a failure. The batch handler then catches the same
+  exception and broadcasts "Error updating Media!". The user sees both.
+
+  Phase 7 kept it: Stage B does not change behavior. Pick one message when something
+  else touches that handler.
+
+- [ ] **H16 — `api/v1/media.py` still holds logic.** Stage B extracted the three
+  heaviest handlers (delete trailers, set YouTube id, set monitoring) and the bulk
+  monitor path, taking the file from 739 lines to 691. The read handlers still build
+  their own filters and shape their own responses.
+
+  Not urgent: what is left is closer to "parse, call, return" than the rest was. Do it
+  when Phase 9 or 10 touches this router anyway.
+
+- [ ] **H17 — a register of strings that are contract, not prose.** Phase 7 rewrote
+  every log message, and three sets of strings had to be left alone because something
+  reads them. They are recorded here so the next prose pass does not have to rediscover
+  them, and so nobody "improves" one:
+
+  - `exceptions.py` — the message of `ItemNotFoundError` is returned as the 404 detail
+    and is asserted in tests. It is API, not prose.
+  - The yt-dlp and FFmpeg failure text in `services/trailers/video_v2.py` — fed to
+    `classify_ytdlp_error`, which matches fragments such as "please sign in" and
+    "login required". A reword can make a message start matching a signature it does
+    not match today, and change the reason the user is shown.
+  - `"YT-DLP Output::"` and `"FFMPEG Output::"` — `config/logs/db_handler.py` matches
+    these to move the tool output into the traceback column and replace the message.
+    Rewording either puts a wall of ffmpeg output back on the Logs page.
+
+  Worth turning into a test that asserts each string still exists.
+
+- [ ] **H18 — dead code with an expired removal note.** `database/engine.py` carries a
+  commented-out `manage_session` decorator under "Remove in v0.8.0!". The version is
+  v0.12.0. Nothing references it. Delete it.
+
+- [ ] **H19 — a service cannot schedule a task.** `_schedule_refresh` stayed in
+  `api/v1/connections.py` during Stage B because it registers a job with the scheduler,
+  and a service importing `tasks/` would invert the layering that stage had just
+  established.
+
+  That is fine while only a handler needs it. When a service needs to schedule work —
+  Phase 8's TMDB refresh is the likely first — invert it the way the event listeners
+  were inverted: `tasks/` registers a callable that `services/` can call, rather than
+  `services/` importing `tasks/`.
+
+- [ ] **H20 — the DEBUG log lines were not swept.** Stage C rewrote every line at INFO
+  and above, which is what a user reads on the Logs page. The 144 DEBUG lines keep their
+  old wording. They are for developers, and the effort went where it was read. Fold them
+  in whenever a file is open for another reason.
+- [ ] **H21 — the download task and the pending view scan the library twice, separately.**
+  `services/trailers/trailers/pending.py:compute_library_pending` and
+  `services/trailers/trailers/missing.py` run the same scan — monitored media, enabled profiles,
   `find_matching_profiles`, `evaluate_satisfaction`, backoff — over the same rows.
   `pending.py`'s own docstring calls itself "exactly the download task's work list", and
   it already batches the attempt lookup that `missing.py` does per media. They agree

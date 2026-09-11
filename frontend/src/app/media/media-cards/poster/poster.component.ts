@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {RemoveStartingSlashPipe} from 'src/app/helpers/remove-starting-slash.pipe';
-import {ScrollNearEndDirective} from 'src/app/helpers/scroll-near-end-directive';
+import {RemoveStartingSlashPipe} from 'src/app/shared/pipes/remove-starting-slash.pipe';
+import {ScrollNearEndDirective} from 'src/app/shared/directives/scroll-near-end-directive';
 import {MediaService} from 'src/app/services/media.service';
 import {MediaCardShellComponent} from '../media-card-shell/media-card-shell.component';
 

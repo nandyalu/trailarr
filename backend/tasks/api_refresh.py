@@ -1,0 +1,169 @@
+"""Read media from the Arr and Plex servers, and write it to the database.
+
+The scheduled task refreshes every connection. The by-id functions run one
+connection, and the delete job removes a connection in the background so a
+slow delete does not hold up the request.
+"""
+
+import threading
+
+from config.logging_context import with_logging_context
+import database.manager.connection as connection_manager
+from database.models.connection import ArrType, ConnectionRead
+from services.connections.plex.connection_manager import PlexConnectionManager
+from services.connections.arr.radarr.connection_manager import RadarrConnectionManager
+from services.connections.arr.sonarr.connection_manager import SonarrConnectionManager
+from app_logger import ModuleLogger
+from api.v1.websockets import ws_manager
+from tasks.image_refresh import refresh_images
+from tasks import scheduler
+
+logger = ModuleLogger("APIRefreshTasks")
+
+
+async def api_refresh(_stop_event: threading.Event | None = None) -> None:
+    logger.info("Trailarr refreshes the data from every connection.")
+    # Get all connections from database
+    connections = connection_manager.read_all()
+    if len(connections) == 0:
+        logger.warning("There are no connections to refresh.")
+        return
+
+    # Refresh data from API for each connection
+    for connection in connections:
+        if _stop_event and _stop_event.is_set():
+            logger.info("Trailarr stopped the refresh. A stop was requested.")
+            return
+        await api_refresh_by_id(connection, image_refresh=False)
+
+    # Refresh images after API refresh to download/update images for new media
+    if _stop_event and _stop_event.is_set():
+        logger.info("Trailarr stopped the refresh. A stop was requested.")
+        return
+    await refresh_images(recent_only=True, _stop_event=_stop_event)
+    logger.info("Trailarr refreshed the data from every connection.")
+
+
+async def api_refresh_by_id(
+    connection: ConnectionRead,
+    image_refresh=True,
+    _stop_event: threading.Event | None = None,
+) -> None:
+    logger.info(f"Trailarr refreshes the data from '{connection.name}'.")
+    # Get connection manager based on connection type
+    if connection.arr_type == ArrType.SONARR:
+        connection_db_manager = SonarrConnectionManager(connection)
+    elif connection.arr_type == ArrType.RADARR:
+        connection_db_manager = RadarrConnectionManager(connection)
+    elif connection.arr_type == ArrType.PLEX:
+        connection_db_manager = PlexConnectionManager(connection)
+    else:
+        logger.warning(
+            f"Trailarr cannot refresh '{connection.name}'. The connection"
+            f" type '{connection.arr_type}' is not valid."
+        )
+        return
+
+    # Refresh data from API
+    await connection_db_manager.refresh()
+    logger.info(f"Trailarr refreshed the data from '{connection.name}'.")
+
+    # Refresh images after API refresh to download/update images for new media
+    if image_refresh:
+        await refresh_images(recent_only=True, _stop_event=_stop_event)
+        logger.info("Trailarr refreshed the images.")
+        logger.info("Trailarr refreshed the data from every connection.")
+
+
+@with_logging_context
+async def _api_refresh_by_id_job(
+    connection: ConnectionRead,
+    *,
+    _job_id: str | None = None,
+    _stop_event: threading.Event | None = None,
+):
+    await api_refresh_by_id(connection, _stop_event=_stop_event)
+    return None
+
+
+def api_refresh_by_id_job(connection_id: int):
+
+    logger.info(f"Trailarr refreshes the data from connection {connection_id}.")
+    # Get connection from database
+    try:
+        connection = connection_manager.read(connection_id)
+    except Exception as e:
+        msg = f"Trailarr could not read the connection {connection_id}."
+        logger.error(f"{msg}. Error: {e}")
+        return msg
+
+    # Refresh data from API for the connection
+    msg = f"Trailarr refreshes the data from '{connection.name}'."
+    logger.info(msg)
+    scheduler.add_task(
+        task_name=f"Arr Data Refresh for {connection.name}",
+        func=_api_refresh_by_id_job,
+        interval=86400.0,
+        delay=1,
+        run_once=True,
+        args=(connection,),
+    )
+    return msg
+
+
+@with_logging_context
+async def _delete_connection_job(
+    connection_id: int,
+    connection_name: str,
+    *,
+    _job_id: str | None = None,
+    _stop_event: threading.Event | None = None,
+) -> None:
+    """Background task: delete a connection and all its cascaded data."""
+    logger.info(
+        f"Trailarr deletes the connection '{connection_name}'"
+        f" (id={connection_id})."
+    )
+    try:
+        connection_manager.delete(connection_id)
+        logger.info(
+            f"Trailarr deleted the connection '{connection_name}'"
+            f" (id={connection_id})."
+        )
+        await ws_manager.broadcast(
+            f"Connection '{connection_name}' deleted successfully!",
+            "Success",
+            reload="connections,media",
+        )
+    except Exception as e:
+        logger.error(
+            f"Trailarr could not delete the connection '{connection_name}'"
+            f" (id={connection_id}): {e}"
+        )
+        await ws_manager.broadcast(
+            f"Failed to delete connection '{connection_name}'!", "Error"
+        )
+
+
+def delete_connection_job(connection_id: int) -> str:
+    """Validate that *connection_id* exists, then schedule its deletion.
+
+    Returns a human-readable message suitable for the HTTP response.
+    Raises the underlying exception (e.g. ItemNotFoundError) if the
+    connection cannot be found so the caller can return a 404.
+    """
+    connection = connection_manager.read(connection_id)  # raises if not found
+    task_name = f"Delete Connection '{connection.name}'"
+    logger.info(
+        f"Trailarr will delete the connection '{connection.name}'"
+        f" (id={connection_id}) in the background."
+    )
+    scheduler.add_task(
+        task_name=task_name,
+        func=_delete_connection_job,
+        interval=86400.0,
+        delay=1,
+        run_once=True,
+        args=(connection_id, connection.name),
+    )
+    return f"Connection '{connection.name}' deletion scheduled"

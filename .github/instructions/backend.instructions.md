@@ -45,22 +45,32 @@ backend/
 │   ├── logging_context.py     # Logging context utilities
 │   └── timing_middleware.py   # Request timing middleware
 │
-├── core/                      # Core business logic
-│   ├── files_handler.py       # File operations handler (needs to be break down and move to files package)
-│   ├── base/                  # Shared base components
-│   │   ├── database/          # Database layer
-│   │   │   ├── models/        # SQLModel table definitions
-│   │   │   ├── manager/       # CRUD operations per model
-│   │   │   └── utils/         # DB engine, session management
-│   │   ├── arr_manager/       # Base Arr API client
-│   │   ├── connection_manager.py # Arr Connection manager (refresh data)
-│   │   └── utils/             # Shared utilities
-│   ├── radarr/                # Radarr-specific logic
-│   ├── sonarr/                # Sonarr-specific logic
-│   ├── download/              # download logic (images, trailers)
-│   ├── files/                 # File management
-│   ├── tasks/                 # Background task definitions
-│   └── updates/               # Update checking logic
+├── services/                  # Business logic
+│   ├── connections/           # Arr and Plex integrations
+│   │   ├── base.py            # BaseConnectionManager (shared refresh, CRUD)
+│   │   ├── probe.py           # Network probes against a server
+│   │   ├── service.py         # Create and update a connection
+│   │   ├── arr/               # Base Arr client, with radarr/ and sonarr/
+│   │   └── plex/              # Plex client, parser and models
+│   ├── trailers/              # Trailer download, search and conversion
+│   ├── files/                 # File operations and the media scanner
+│   ├── diagnostics/           # Connection Doctor, health checks, cookies
+│   ├── images/                # Image download
+│   ├── notifications/         # Apprise dispatch
+│   ├── updates/               # Update checking logic
+│   ├── auth.py                # Sessions and credentials
+│   ├── media.py               # Actions on a media item
+│   └── profiles.py, filters.py, satisfaction.py, settings.py, logs.py
+│
+├── database/                  # Persistence layer
+│   ├── models/                # SQLModel table definitions
+│   ├── manager/               # CRUD operations per model
+│   └── engine.py, init_db.py, version_guard.py
+│
+├── tasks/                     # Background task definitions and scheduling
+│
+├── utils/                     # Pure helpers, no dependency on other layers
+│   └── path_utils.py, error_classify.py
 │
 ├── alembic/                   # Database migrations
 │   ├── env.py                 # Alembic environment config
@@ -71,8 +81,10 @@ backend/
     ├── conftest.py            # Pytest fixtures and configuration
     ├── api/                   # API route tests
     ├── config/                # Configuration tests
-    ├── core/                  # Core logic tests
-    └── services/              # Service tests
+    ├── database/              # Database layer tests
+    ├── services/              # Service tests
+    ├── tasks/                 # Background task tests
+    └── utils/                 # Helper tests
 ```
 
 ## Core Patterns
@@ -81,7 +93,7 @@ backend/
 
 The database layer follows a **Model → Manager → API** pattern:
 
-#### Models (`core/base/database/models/`)
+#### Models (`database/models/`)
 
 Define SQLModel classes with clear separation:
 
@@ -114,7 +126,7 @@ class MediaUpdate(SQLModel):
     title: str | None = None
 ```
 
-#### Managers (`core/base/database/manager/`)
+#### Managers (`database/manager/`)
 
 - Always fetch db model of resource and return read model, db model should never leave manager
 - Should be short operations to prevent db lockup
@@ -137,7 +149,7 @@ __all__ = ["create_or_update_bulk", "read", "read_all", ...]
 Each operation file uses the session decorator:
 
 ```python
-from core.base.database.utils.engine import manage_session
+from database.engine import manage_session
 
 @manage_session
 def read(
@@ -169,8 +181,8 @@ Routes are organized by resource in `api/v1/`:
 from fastapi import APIRouter, HTTPException, status
 from api.v1.models import ErrorResponse
 from app_logger import ModuleLogger
-import core.base.database.manager.resource as resource_manager
-from core.base.database.models.resource import ResourceCreate, ResourceRead
+import database.manager.resource as resource_manager
+from database.models.resource import ResourceCreate, ResourceRead
 
 logger = ModuleLogger("ResourceAPI")
 
@@ -269,10 +281,10 @@ async def get_item(item_id: int) -> ItemRead:
 
 ### 5. Background Tasks Pattern
 
-Tasks are using `apscheduler`, defined in `core/tasks/` and scheduled in `main.py`:
+Tasks are using `apscheduler`, defined in `tasks/` and scheduled in `main.py`:
 
 ```python
-# core/tasks/my_task.py
+# tasks/my_task.py
 from app_logger import ModuleLogger
 
 logger = ModuleLogger("MyTask")
@@ -283,9 +295,9 @@ def my_background_job():
     # ... task logic
     logger.info("Background job completed")
 
-# core/tasks/schedules.py
-from core.tasks import scheduler
-from core.tasks.my_task import my_background_job
+# tasks/schedules.py
+from tasks import scheduler
+from tasks.my_task import my_background_job
 
 def schedule_all_tasks():
     scheduler.add_job(
@@ -317,7 +329,7 @@ uv run alembic history
 
 ### Creating a New Migration
 
-1. **Modify the SQLModel** in `core/base/database/models/`
+1. **Modify the SQLModel** in `database/models/`
 
 2. **Generate migration** using the Alembic CLI (preferred):
 
@@ -393,19 +405,18 @@ tests/
 ├── conftest.py          # Shared fixtures, temp DB setup
 ├── api/                 # API endpoint tests
 ├── config/              # Configuration tests
-├── core/
-│   ├── base/
-│   │   └── database/    # Database operation tests
-│   └── download/        # Download logic tests
-└── services/            # Service integration tests
+├── database/            # Database operation tests
+├── services/            # Service tests, mirroring services/
+├── tasks/               # Background task tests
+└── utils/               # Helper tests
 ```
 
 ### Writing Tests
 
 ```python
 import pytest
-from core.base.database.manager import resource as resource_manager
-from core.base.database.models.resource import ResourceCreate
+from database.manager import resource as resource_manager
+from database.models.resource import ResourceCreate
 
 class TestResourceManager:
     """Tests for resource manager operations."""
@@ -440,19 +451,19 @@ uv run python -m pytest --cov=. --cov-report=html
 
 ### Adding a New API Endpoint
 
-1. **Create/update models** in `core/base/database/models/[resource].py`
-2. **Create/update manager** functions in `core/base/database/manager/[resource]/`
+1. **Create/update models** in `database/models/[resource].py`
+2. **Create/update manager** functions in `database/manager/[resource]/`
 3. **Add route handler** in `api/v1/[resource].py`
 4. **Register router** in `api/v1/routes.py` (if new file)
-5. **Add tests** in `tests/api/` and `tests/core/`
+5. **Add tests** in `tests/api/` and the folder that mirrors the code
 6. **Regenerate OpenAPI** - Run VSCode task "Generate OpenAPI Files"
 7. **Update frontend API client** - Run `npm run openapi` in frontend
 
 ### Adding a New Database Model
 
-1. **Create model file** in `core/base/database/models/[model].py`
-2. **Export from** `core/base/database/models/__init__.py`
-3. **Create manager folder** `core/base/database/manager/[model]/`
+1. **Create model file** in `database/models/[model].py`
+2. **Export from** `database/models/__init__.py`
+3. **Create manager folder** `database/manager/[model]/`
 4. **Add CRUD operations** (create.py, read.py, update.py, delete.py)
 5. **Export from manager** `__init__.py`
 6. **Create migration**:
@@ -464,9 +475,9 @@ uv run python -m pytest --cov=. --cov-report=html
 
 ### Adding a New Background Task
 
-1. **Create task file** in `core/tasks/[task_name].py`
-2. **Add schedule** in `core/tasks/schedules.py`
-3. **Add tests** in `tests/core/tasks/`
+1. **Create task file** in `tasks/[task_name].py`
+2. **Add schedule** in `tasks/schedules.py`
+3. **Add tests** in `tests/tasks/`
 
 ## Documentation Requirements
 

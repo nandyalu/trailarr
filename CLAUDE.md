@@ -109,18 +109,28 @@ Layered architecture:
 
 - `main.py` — FastAPI app entry point (`trailarr_api`)
 - `api/v1/` — Route handlers (media, tasks, connections, settings, events, logs, websockets, etc.)
-- `core/` — Business logic
-  - `base/database/models/` — SQLModel ORM models
-  - `base/database/manager/` — Database access managers (one per model type)
-  - `base/arr_manager/` — Base Radarr/Sonarr integration
-  - `base/connection_manager.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
-  - `radarr/`, `sonarr/` — App-specific logic
-  - `plex/` — Plex connection manager, API client, data parser, models
-  - `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
-  - `download/trailers/` — Trailer download orchestration via yt-dlp
-  - `files_handler.py` — File management
+- `services/` — Business logic
+  - `connections/base.py` — `BaseConnectionManager` for Arr connections (shared refresh, create/update/delete logic)
+  - `connections/arr/` — Base Radarr/Sonarr integration, with `radarr/` and `sonarr/` subpackages
+  - `connections/plex/` — Plex connection manager, API client, data parser, models
+  - `trailers/` — Trailer download orchestration via yt-dlp
+  - `diagnostics/` — Connection Doctor, health checks, cookies status, report store
+  - `files/` — File management (`files_handler.py`) and the media scanner
+  - `images/`, `notifications/`, `updates/`, `binaries.py` — image download, Apprise dispatch, Docker update check, startup binary-path checks
+  - `profiles.py`, `filters.py`, `satisfaction.py` — profile and filter helpers
+- `database/` — Persistence layer
+  - `models/` — SQLModel ORM models
+  - `manager/` — Database access managers (one per model type)
+  - `engine.py`, `init_db.py`, `version_guard.py`
+- `tasks/` — Quiv scheduler setup (`__init__.py`), schedules (`schedules.py`), and task implementations
+- `utils/` — Pure helpers with no dependency on the other layers (`path_utils.py`, `error_classify.py`). Both `database/` and `services/` may import these; `utils/` imports none of them.
 - `config/settings.py` — Environment-based configuration; settings persisted to `.env` in `APP_DATA_DIR`
-- `tests/` — pytest test suite
+- `tests/` — pytest test suite, mirroring the tree above
+
+**Layering rule:** `api/` → `services/` → `database/`, with `utils/` importable by
+anything and importing nothing. `database/` must not import from `services/`. Nine such
+imports remain (connection validation calling the Arr/Plex clients, plus one
+notification dispatch); Phase 7 Stage B removes them. Do not add more.
 
 **Key patterns:**
 - All endpoints and background tasks are async/await
@@ -317,7 +327,9 @@ LOG_LEVEL=Info                 # Logging level
 - **Raw endpoints are a deliberate design, not a cleanup target**: `/media/all_raw`, `/media/downloads_raw`, `/files/files_raw` return raw dicts from SQL on purpose. Data is validated when WRITTEN to the database, so re-validating and building typed Python objects on every read would only add memory pressure and latency on large libraries. Do not "fix" them into typed responses; new list-scale endpoints may follow the same pattern when hot.
 - **Docs prose style**: write each sentence/paragraph as ONE continuous line — never hard-wrap prose across multiple lines in `docs/` markdown. Zensical renders continuous lines correctly, but a paragraph broken into separate lines can break formatting. (Code blocks and lists are fine as usual.)
 - **Simplified Technical English**: when writing or updating log lines, docs, and comments, follow [ASD-STE100](https://www.asd-ste100.org/) Simplified Technical English. Short sentences, one instruction/idea per sentence, active voice, approved/simple vocabulary, present tense, no strung-together noun clusters. Applies to new/changed content only — no need to rewrite untouched text just to comply.
-- **Linking a log line to a media item depends on the branch.** On `dev` and every released version up to v0.11.x, put the id in the message text as `[123]` — the log handler takes the first bracketed number as the media id. `logger.media(id)` does NOT exist there: `ModuleLogger` in `backend/app_logger.py` only adds `trace()`. The explicit `logger.media(id)` tag arrives with the Phase 7 reorg (`feat/phase7-backend-reorg`, ships in v0.12.0), which converts every backend log line and keeps the bracketed fallback for third-party logs (see hygiene item H14 in that branch's `plans/hygiene-backlog.md`). **Check which of the two exists before writing a log line** — a wrong call raises `AttributeError`, and it does so on the error path where the line usually lives, so the test suite stays green.
+- **Log messages**: a whole sentence, active voice, naming Trailarr as the actor, ending in a period — "Trailarr downloaded the trailer for 'Inception'." No "!" and no "...". Say the title, not the id.
+- **Linking a log line to a media item**: pass the id, never write it into the message: `logger.info("Trailarr downloaded the trailer.", **logger.media(media.id))`. The Logs page links a line from the `mediaid` column, which `logger.media()` fills. **Never put a number that is not a media id in square brackets** — `config/logs/db_handler.py` still falls back to reading the first `[123]` in a message as the media id, so a bracketed profile, download, channel or connection id links the line to the wrong title. `tests/test_log_message_safety.py` enforces this.
+- **A log message is only evaluated when its line runs.** An f-string naming something that does not exist passes every test and raises in production, on the error path where the message mattered most. Phase 7 did this three times. The same test file checks that enum members and the fields read from annotated arguments actually exist.
 
 ## Roadmap Execution Plans
 
