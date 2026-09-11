@@ -142,3 +142,23 @@
     padding: 1rem 0.75rem 2rem;
   }
 }
+
+.setup-count {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--color-on-surface);
+}
+
+.setup-still-reading {
+  color: var(--color-on-surface-variant);
+}
+
+.setup-more {
+  margin-top: 0.5rem;
+}
+
+.setup-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}

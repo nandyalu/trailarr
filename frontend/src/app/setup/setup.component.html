@@ -76,28 +76,48 @@
       <h1>What Trailarr would download</h1>
       @if (mediaCount() === 0) {
         <p class="setup-lead">Trailarr is reading your library. This takes a few minutes for a large one.</p>
-        <p class="setup-note">You do not have to wait here — finish the guide and the sync keeps running in the background.</p>
-      } @else if (previewLoading()) {
-        <p class="setup-lead">Working out what the first run would download…</p>
-      } @else if (preview(); as summary) {
-        <p class="setup-lead">
-          Trailarr would download <strong>{{ summary.pending_pairs }}</strong> trailer{{ summary.pending_pairs === 1 ? '' : 's' }}
-          for <strong>{{ summary.total_media }}</strong> media item{{ summary.total_media === 1 ? '' : 's' }}.
-        </p>
-        @if (summary.items.length > 0) {
-          <ul class="setup-list setup-preview">
-            @for (item of summary.items.slice(0, 12); track item.media_id) {
-              <li>{{ item.title }}</li>
-            }
-          </ul>
-          @if (summary.total_media > 12) {
-            <p class="setup-muted">and {{ summary.total_media - 12 }} more.</p>
-          }
-        }
+        <p class="setup-note">This page counts along by itself. You do not have to wait here.</p>
       } @else {
-        <p class="setup-lead">Nothing is waiting for a trailer yet.</p>
+        <p class="setup-count">
+          Trailarr has read <strong>{{ mediaCount() }}</strong> media item{{ mediaCount() === 1 ? '' : 's' }}@if (stillReading()) {
+            <span class="setup-still-reading">, and the number is still going up</span>
+          }.
+        </p>
+        @if (previewLoading() && shownItems().length === 0) {
+          <p class="setup-lead">Working out what the first run would download…</p>
+        } @else if (preview(); as summary) {
+          <p class="setup-lead">
+            Trailarr would download <strong>{{ summary.pending_pairs }}</strong> trailer{{ summary.pending_pairs === 1 ? '' : 's' }}
+            for <strong>{{ summary.total_media }}</strong> media item{{ summary.total_media === 1 ? '' : 's' }}.
+          </p>
+          @if (shownItems().length > 0) {
+            <ul class="setup-list setup-preview">
+              @for (item of shownItems(); track item.media_id + '-' + item.profile_id) {
+                <li>{{ item.title }} <span class="setup-muted">{{ item.profile_name }}</span></li>
+              }
+            </ul>
+            @if (hasMoreToShow()) {
+              <button class="btn tertiary setup-more" type="button" [disabled]="previewLoading()" (click)="showMore()">
+                {{ previewLoading() ? 'Reading…' : 'Show more' }}
+                <span class="setup-muted">({{ remainingCount() }} more)</span>
+              </button>
+            } @else if (shownItems().length > pageSize) {
+              <p class="setup-muted">That is the whole list.</p>
+            }
+          }
+        } @else {
+          <p class="setup-lead">Nothing is waiting for a trailer yet.</p>
+        }
       }
-      <button class="btn tertiary setup-refresh" type="button" (click)="refreshCounts()">Check again</button>
+      <div class="setup-step-actions">
+        <button class="btn tertiary" type="button" (click)="refreshCounts()">Check again</button>
+        @if (mediaCount() === 0 || stillReading()) {
+          <button class="btn secondary" type="button" (click)="continueInBackground()">Continue in the background</button>
+        }
+      </div>
+      @if (mediaCount() === 0 || stillReading()) {
+        <p class="setup-note">Trailarr reads the rest of your library after you go on. The sync is a task on the server, and it does not stop.</p>
+      }
     </section>
   }
 
