@@ -706,11 +706,23 @@ dialog[open]::backdrop {
 }
 
 /* Shared dialog structure utilities */
+
+/* NOTE on `flex: 1 1 auto` below (and in the dialog components):
+   The dialog is a column flex container, and the browser gives it the
+   height of its contents (`height: fit-content` in the user-agent style
+   sheet). The shorthand `flex: 1` sets `flex-basis: 0%`. WebKit gives a
+   column flex item with a percentage basis a base height of 0, so the
+   dialog measures its contents as 0 and gets a height of 0: the backdrop
+   dims the page and the dialog shows nothing. Issue #653 reports a dialog
+   of 0 height, with a body that is only its own padding. `flex-basis:
+   auto` makes the item start from its content height, which keeps the
+   measurement correct. The item still grows and shrinks as before,
+   because it is the only child that grows. */
 .app-dialog-container {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -776,7 +788,7 @@ dialog[open]::backdrop {
 }
 
 .app-dialog-body {
-  flex: 1;
+  flex: 1 1 auto;
   overflow-y: auto;
   padding: 1.5rem;
   overscroll-behavior: contain;

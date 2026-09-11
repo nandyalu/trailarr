@@ -48,7 +48,10 @@ input {
 }
 
 section {
-  flex: 1;
+  /* `flex-basis: auto`, not the 0% that `flex: 1` sets — this is a direct
+     child of the dialog, and WebKit gives the dialog a height of 0 when a
+     column flex item starts from a percentage basis. Issue #653. */
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   width: 60vw;
