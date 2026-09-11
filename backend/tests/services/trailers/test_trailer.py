@@ -273,8 +273,16 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
-        """Excludes existing trailer ID when an active download uses it."""
-        mock_media.downloads = [MagicMock(file_exists=True)]
+        """A video already on disk is not offered again.
+
+        Phase 8 reads the ids from the downloads themselves. Reading the
+        single `media.youtube_trailer_id` saw only the last video, so a
+        second profile could be handed a video the item already had."""
+        mock_media.downloads = [
+            MagicMock(file_exists=True, youtube_id="existing_id"),
+            MagicMock(file_exists=True, youtube_id="another_existing"),
+            MagicMock(file_exists=False, youtube_id="deleted_one"),
+        ]
         mock_media.youtube_trailer_id = "existing_id"
         mock_get_video_id.return_value = "new_video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
@@ -285,9 +293,11 @@ class TestDownloadTrailer:
 
         await download_trailer(mock_media, mock_profile)
 
-        # Check that existing ID was passed to exclude
-        call_args = mock_get_video_id.call_args
-        assert "existing_id" in call_args[0][2]  # exclude list
+        exclude = mock_get_video_id.call_args[0][2]
+        assert "existing_id" in exclude
+        assert "another_existing" in exclude
+        # A download whose file is gone is not a reason to skip the video.
+        assert "deleted_one" not in exclude
 
     @pytest.mark.asyncio
     @patch("services.trailers.trailer.trailer_search.get_video_id")
