@@ -247,3 +247,28 @@ class TestCandidateOrder:
         assert [
             v.video_id for v in video_manager.read_candidates(media_id, season=1)
         ] == ["s1"]
+
+
+def _connection_of(media_id: int) -> int:
+    return media_manager.read(media_id).connection_id
+
+
+class TestMediaDeletion:
+    """Wargame W7: the rows of a deleted media item go with it.
+
+    The foreign key says CASCADE, but SQLite enforces a foreign key only
+    when `PRAGMA foreign_keys` is on for the connection. If it is off, the
+    rows stay behind and point at a media item that no longer exists.
+    """
+
+    def test_deleting_the_media_removes_its_videos(self, media_id):
+        video_manager.add_user_video(media_id, "goes_away")
+        video_manager.replace_source_rows(
+            media_id, VideoSource.TMDB, [_video("also_goes", media_id)]
+        )
+        assert len(video_manager.read_for_media(media_id)) == 2
+
+        media_manager.delete_except(_connection_of(media_id), [])
+
+        assert video_manager.read_for_media(media_id) == []
+

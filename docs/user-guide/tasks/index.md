@@ -117,6 +117,15 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 
     All delays also includes an extra random time between `0 - 60` seconds.
 
+### **Refresh Video Lists**
+
+{{ version_badge("add", "0.13.0") }}
+
+- Runs every 12 hours (first run starts 10 minutes after app launch).
+- Asks TMDB which videos belong to the media items that are waiting for a trailer, so the [Known videos](../library/media-details/index.md#known-videos) list is ready before a download needs it.
+- Does nothing when no [TMDB API key](../settings/tmdb.md) is set.
+- Asks about at most 200 media items in one run, and leaves an item alone when its videos were read in the last 7 days. A large library fills in over a few runs instead of sending thousands of requests at once.
+
 ### **Refresh Plex Trailer Flags**
 
 {{ version_badge("add", "0.9.3") }}
