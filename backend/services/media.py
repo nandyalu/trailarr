@@ -138,6 +138,11 @@ def list_videos(media_id: int) -> list[MediaVideoRead]:
 def add_video(media_id: int, video_id: str) -> MediaVideoRead:
     """Add a video that the user chose.
 
+    The same thing happens as when a user types an id into the YouTube ID
+    field, because it is the same act: the row is created, the legacy
+    column follows it, and the change is recorded as an event. The two
+    paths must agree while the column lives — Phase 9 removes it (H9).
+
     Args:
         media_id (int): The media item.
         video_id (str): The YouTube id. The caller reads it out of a URL.
@@ -146,7 +151,20 @@ def add_video(media_id: int, video_id: str) -> MediaVideoRead:
         MediaVideoRead: The row that was created, or the row that another
             source made for the same video and that now belongs to the user.
     """
+    media = media_manager.read(media_id)
+    old_yt_id = media.youtube_trailer_id
+
     row = video_manager.add_user_video(media_id, video_id)
+    media_manager.update_ytid(media_id, video_id)
+    if old_yt_id != video_id:
+        event_manager.track_youtube_id_changed(
+            media_id=media_id,
+            old_yt_id=old_yt_id,
+            new_yt_id=video_id,
+            source=EventSource.USER,
+            source_detail="UserInput",
+        )
+
     logger.info(
         f"Trailarr added the video '{video_id}' that you chose.",
         **logger.media(media_id),
