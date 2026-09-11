@@ -246,6 +246,40 @@
             }
           </div>
         </div>
+        @if (knownVideos().length > 0) {
+          <div class="media-details-row">
+            <div class="labeled-text">
+              <span class="label">Known videos</span>
+              <p class="text-sm info-text">Trailarr takes the first one that works. A video you add comes before the rest.</p>
+              <ul class="known-videos">
+                @for (video of knownVideos(); track video.id) {
+                  <li class="known-video">
+                    <span class="known-video-source" [class.known-video-source__user]="video.source === 'user'">
+                      {{ sourceLabel(video.source) }}
+                    </span>
+                    <a class="known-video-name" [href]="youtubeLink(video.video_id)" target="_blank" rel="noopener">
+                      {{ video.name || video.video_id }}
+                    </a>
+                    @if (video.language) {
+                      <span class="known-video-meta">{{ video.language }}</span>
+                    }
+                    <button
+                      class="known-video-remove"
+                      type="button"
+                      [attr.aria-label]="'Remove ' + (video.name || video.video_id)"
+                      title="Remove this video"
+                      (click)="removeKnownVideo(video.video_id)"
+                    >
+                      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                      </svg>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
         <div class="media-details-row">
           @if (selectedMedia_.youtube_trailer_id) {
             <button (click)="openTrailer()" class="primary" title="Watch Trailer on YouTube">Watch</button>

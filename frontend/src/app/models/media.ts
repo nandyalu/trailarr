@@ -193,3 +193,25 @@ function isFile(file: any): boolean {
   // For example, you might check a 'type' property:
   return file.type === 'file';
 }
+
+/** Where Trailarr learned about a video. The order here is the order the
+ * resolver tries them: your choice first, then the TMDB list, then the id
+ * from Radarr or Sonarr, then a result of an earlier YouTube search. */
+export type VideoSource = 'user' | 'tmdb' | 'arr' | 'search';
+
+/** One video that Trailarr could download for a media item. */
+export interface MediaVideo {
+  id: number;
+  media_id: number;
+  video_id: string;
+  source: VideoSource;
+  season: number | null;
+  video_type: string;
+  sequence: number;
+  language: string | null;
+  name: string;
+  official: boolean;
+  published_at: string | null;
+  added_at: string;
+  updated_at: string;
+}

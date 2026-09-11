@@ -17,6 +17,7 @@ export interface TrailerProfileRead {
   audio_volume_level?: number;
   video_format?: string;
   video_resolution?: number;
+  language?: string;
   subtitles_enabled?: boolean;
   subtitles_auto_generated?: boolean;
   subtitles_format?: string;
@@ -53,6 +54,7 @@ export interface TrailerProfileCreate {
   audio_volume_level?: number;
   video_format?: string;
   video_resolution?: number;
+  language?: string;
   subtitles_enabled?: boolean;
   subtitles_auto_generated?: boolean;
   subtitles_format?: string;

@@ -7,6 +7,7 @@ import {CopyToClipboardDirective} from 'src/app/shared/directives/copy-to-clipbo
 import {RemoveStartingSlashPipe} from 'src/app/shared/pipes/remove-starting-slash.pipe';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
+import {MediaVideo} from 'src/app/models/media';
 import {RouteMedia} from 'src/routing';
 import {DurationConvertPipe} from '../../shared/pipes/duration-pipe';
 import {MediaService} from '../../services/media.service';
@@ -90,11 +91,16 @@ export class MediaDetailsComponent {
     this.mediaService.selectedMediaID.set(this.mediaId());
   });
 
+  /** Every video Trailarr knows for this item, in the order it would use
+   * them. The first one is what a download takes right now. */
+  readonly knownVideos = signal<MediaVideo[]>([]);
+
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
     if (media) {
       this.trailer_url = media.youtube_trailer_id || '';
       this.isLoadingDownload.set(media.status === 'downloading');
+      this.loadKnownVideos();
       // if (media.status !== 'downloading') {
       //   this.isLoadingDownload.set(false);
       // }
@@ -207,7 +213,65 @@ export class MediaDetailsComponent {
       )
       .subscribe(() => {
         this.isLoadingDownload.set(false);
+        this.loadKnownVideos();
       });
+  }
+
+  /** Reads the known videos for the media item that is open. */
+  loadKnownVideos() {
+    const mediaId = this.mediaId();
+    if (!mediaId) {
+      return;
+    }
+    this.mediaService
+      .getMediaVideos(mediaId)
+      .pipe(
+        catchError(() => {
+          // The list is extra information, so a failure to read it must
+          // not take over the page.
+          return of([] as MediaVideo[]);
+        }),
+      )
+      .subscribe((videos) => this.knownVideos.set(videos));
+  }
+
+  /** Removes one known video. A video you chose comes back only if you add
+   * it again; a video from TMDB comes back with the next refresh. */
+  removeKnownVideo(videoId: string) {
+    this.mediaService
+      .deleteMediaVideo(this.mediaId(), videoId)
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not remove the video.', 'Error');
+          return of(null);
+        }),
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.webSocketService.showToast('Trailarr removed the video.');
+          this.loadKnownVideos();
+        }
+      });
+  }
+
+  /** How a source reads on the page. */
+  sourceLabel(source: MediaVideo['source']): string {
+    switch (source) {
+      case 'user':
+        return 'You chose this';
+      case 'tmdb':
+        return 'TMDB';
+      case 'arr':
+        return 'Radarr / Sonarr';
+      case 'search':
+        return 'YouTube search';
+      default:
+        return source;
+    }
+  }
+
+  youtubeLink(videoId: string): string {
+    return `https://www.youtube.com/watch?v=${videoId}`;
   }
 
   saveYtId() {

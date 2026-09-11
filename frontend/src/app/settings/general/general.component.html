@@ -115,6 +115,19 @@
         (optionChange)="updateSetting('log_level', $event)"
       />
       <app-text-setting
+        name="TMDB API Key"
+        description="Your TMDB API key. With a key, Trailarr takes the trailer from the list TMDB curates instead of searching YouTube."
+        descriptionExtra="Trailarr shows only the last four characters of a key it stores. Leave the field as it is to keep the key."
+        [isNumberType]="false"
+        [isLongInput]="true"
+        placeholder="Paste your TMDB API key"
+        autocomplete="off"
+        [minLength]="0"
+        [maxLength]="255"
+        [value]="settings()?.tmdb_api_key ?? ''"
+        (onSubmit)="updateSetting('tmdb_api_key', $event)"
+      />
+      <app-text-setting
         name="Yt-dlp Cookies Path"
         description="Path to yt-dlp cookies file to use for downloading trailers."
         [isNumberType]="false"
