@@ -187,17 +187,44 @@ none justify their own release. Check items off with the release that shipped th
   big-churn release and it moves both files, so extracting before the reorg lands only
   buys a merge conflict. Do it after v0.12.0.
 
-- [ ] **H22 — `update_connection` answers 404 when the server refuses.** The handler
-  passes `safe_status=404` to the error mapper, so a `ConnectionError` or a
-  `ConnectionTimeoutError` raised by the probe inside `connection_service.update()`
-  looks like a missing connection. `create_connection` uses 400 for the same failure,
-  so the two disagree.
+- [x] **H22 — `update_connection` answers 404 when the server refuses** — DONE (ships in
+  v0.12.1). The handler passed `safe_status=404` to the error mapper, so a
+  `ConnectionError` or a `ConnectionTimeoutError` raised by the probe inside
+  `connection_service.update()` looked like a missing connection.
+  `create_connection` uses 400 for the same failure, so the two disagreed.
 
   Phase 7 kept the 404 on purpose: `main` already answered 404 with `str(e)` there,
   Stage B changed no behavior, and the endpoint documents 404 and no 400 — so the fix
-  is also a spec diff. Change the status, the spec and the frontend error handling
-  together; `ItemNotFoundError` stays the 404 case. Raised by Copilot on the v0.12.0
-  release PR ([#674](https://github.com/nandyalu/trailarr/pull/674)).
+  is also a spec diff. Raised by Copilot on the v0.12.0 release PR
+  ([#674](https://github.com/nandyalu/trailarr/pull/674)).
+
+  Fixed in v0.12.1: the handler passes `safe_status=400`, and the spec documents the
+  400 and renames the 404 to "Connection Not Found". The two cases were already
+  separable — `connection_service.update()` reads the row before it probes, so a bad id
+  raises `ItemNotFoundError` before any network call, and everything after that is the
+  server answering. The frontend needed no change: it formats
+  `Server Error (<status>): <detail>` and never branches on the status.
+
+  The sibling handlers keep their 404. `run_connection_doctor` and
+  `apply_doctor_mapping` report a connection problem inside the report they return
+  rather than raising, so their safe path is a missing connection.
+
+- [ ] **H23 — `_request` throws away the message that `_process_response` chose.**
+  `services/connections/arr/request_manager.py` calls `_process_response` inside the
+  `async with session.request(...)` block, and the enclosing `except Exception` then
+  replaces whatever it raised with `"Unable to connect to API. Check your connection."`
+
+  So the per-status messages — "Unauthorized. Check that the API key for this
+  connection is correct.", "Access restricted...", "Bad Gateway..." — never reach a
+  caller that goes through `_request`. A user with a wrong API key is told to check
+  the connection. Found while verifying H22 against the running app: a server that
+  answers 401 gives the generic text, not the 401 text.
+
+  The fix is to let the exceptions the method raises on purpose pass through, the way
+  `api/v1/errors.py` lets an intentional `HTTPException` pass: re-raise
+  `ConnectionError`, `ConnectionTimeoutError` and `InvalidResponseError` before the
+  broad `except`. Kept out of v0.12.1 because it changes the text a user sees for
+  every failing Arr request, which wants its own look at the messages.
 
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
