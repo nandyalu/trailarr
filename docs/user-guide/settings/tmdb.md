@@ -37,6 +37,9 @@ Trailarr asks TMDB which videos belong to a media item before it downloads a tra
 
 An answer from TMDB stays fresh for seven days. A curated list changes rarely, and asking about every item on every run would send thousands of requests.
 
+!!! info "Trailarr may not take the first trailer TMDB lists"
+    TMDB marks some short videos as trailers. The first trailer it lists for The Matrix, for example, is a 33-second anniversary spot, which is shorter than the `Min Duration` of a profile. Trailarr tries it, sees that it is too short, and moves to the next one in the list. This is normal, and the log line says which video it took.
+
 !!! info "Which trailer of several"
     A profile has a [Trailer Language](profiles/settings/general.md#trailer-language). Trailarr prefers a trailer in that language, then one with no language, then English, then any other. It is a preference and not a filter: a trailer in another language is better than no trailer.
 

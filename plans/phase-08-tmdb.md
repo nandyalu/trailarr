@@ -160,6 +160,12 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
   TMDB key field and the Trailer Language field.
 - **Docs.** The TMDB page, media details, profile settings, the FAQ, the environment
   variables, `llms.txt`, draft v0.13.0 release notes.
+- **A real download, end to end.** With a real key against YouTube: the resolver took
+  TMDB's first trailer for The Matrix, a 33-second anniversary spot; verification
+  rejected it for the 60-second minimum; the retry excluded it and took the next TMDB
+  candidate, which downloaded as an 80-second, 3.2 MB file. Candidate iteration is not
+  a theoretical case — TMDB marks short spots as trailers, so it earns its keep on the
+  first title anyone tries. Documented on the TMDB page.
 
 ### Three decisions that the plan got wrong, and why
 
@@ -180,10 +186,8 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
 
 - **Season videos** (`/tv/{id}/season/{n}/videos`). The column and the manager take a
   season; nothing calls it. Phase 10 owns it, as planned.
-- **A component test for the Known videos list.** The three service calls have tests;
-  the template does not.
+- **Season videos beyond the column.** Listed above; Phase 10 owns it.
 - **The `media.youtube_trailer_id` column** still exists and is still written. H9 in the
   hygiene backlog retires it in Phase 9, as planned.
-- **A real end-to-end download** through the new resolver. Every step around it is
-  verified, but no trailer was downloaded from YouTube on this branch.
+- **A component test for the Known videos template.** (The service calls have tests.)
 - **Release notes are a draft** with a TBD date, and the roadmap row says in progress.
