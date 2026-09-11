@@ -26,14 +26,16 @@ logger = ModuleLogger("AlembicMigrations")
 def upgrade() -> None:
     op.execute("PRAGMA foreign_keys=OFF")
 
-    # Every existing profile prefers English, which is what Trailarr used
-    # before a profile could ask for a language.
+    # Empty means any language, and every existing profile gets it: that
+    # is what they did before the field existed. A language here is a
+    # filter, so defaulting to English would quietly stop a profile from
+    # downloading the trailers it downloads today.
     with op.batch_alter_table("trailerprofile", schema=None) as batch_op:
         batch_op.add_column(
             sa.Column(
                 "language",
                 sa.String(),
-                server_default="en",
+                server_default="",
                 nullable=False,
             )
         )

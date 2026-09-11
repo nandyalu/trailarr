@@ -198,9 +198,7 @@ class BaseConnectionManager(ABC):
         media_data = await self.get_media_data()
         logger.debug(f"Media data received: {len(media_data)} items")
         if not media_data:
-            logger.warning(
-                "The application returned no media data."
-            )
+            logger.warning("The application returned no media data.")
             return
         # Parse the media data to MediaCreate objects in chunks of 100
         for chunk in batched(media_data, 100):
@@ -257,7 +255,9 @@ class BaseConnectionManager(ABC):
             self.media_ids.append(media_read.id)
             arr_videos.sync_arr_video_id(
                 media_read,
-                arr_video_ids.get((media_read.connection_id, media_read.arr_id)),
+                arr_video_ids.get(
+                    (media_read.connection_id, media_read.arr_id)
+                ),
             )
             if created:
                 self.created_count += 1

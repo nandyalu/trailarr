@@ -30,9 +30,18 @@ def choose_candidates(
 ) -> list[MediaVideoRead]:
     """Give back the candidates to try, best first.
 
+    Two profile settings decide what survives:
+
+    - `Always Search` returns nothing at all, so the caller searches.
+    - `Trailer Language`, when it names a language, keeps only the videos
+      recorded in that language. A video of another language is not what
+      was asked for, and a video with no recorded language cannot be shown
+      to be what was asked for. A profile that takes any language leaves
+      the field empty and keeps everything.
+
     Args:
         candidates (list[MediaVideoRead]): The rows for this media item,
-            already in source and language order.
+            already in source order.
         profile (TrailerProfileRead): The profile that asks for a trailer.
         exclude (list[str] | None): Ids not to offer, such as the video of
             a trailer that is already on disk.
@@ -43,31 +52,30 @@ def choose_candidates(
     Returns:
         list[MediaVideoRead]: What to try, in order. Can be empty.
     """
+    if profile.always_search:
+        # `Always Search` means what it says: do not take an id from any
+        # source, search YouTube with the search query of the profile.
+        # That is what it did before the candidates table existed — it
+        # cleared `media.youtube_trailer_id`, the only source there was —
+        # and the documentation has always said it ignores an id you set
+        # by hand. A profile that wants one video keeps this off and adds
+        # that video; a profile that wants Trailarr to look every time
+        # turns it on.
+        return []
+
     excluded = set(exclude or [])
+    wanted = (profile.language or "").strip()
     chosen: list[MediaVideoRead] = []
     for candidate in candidates:
         if candidate.video_id in excluded:
             continue
-        # `Always Search` drops the two sources that hand Trailarr an id
-        # without being asked: the result a search stored earlier, and the
-        # id from Radarr. It keeps the video the user chose, and it keeps
-        # the TMDB list.
-        #
-        # Why the Arr id goes with it: before this phase, the setting set
-        # `media.youtube_trailer_id` to None, so the Arr id was exactly what
-        # it threw away. People turn it on because Radarr reports one
-        # trailer, usually English, and they want another — a trailer in
-        # their own language, most often. Keeping the Arr id here would
-        # hand those users the English trailer they turned the setting on
-        # to avoid.
-        #
-        # TMDB stays, because it answers the same need better: it lists a
-        # trailer per language, and the profile says which one to prefer.
-        # A blind YouTube search is the fallback, as it always was.
-        if profile.always_search and candidate.source in (
-            VideoSource.SEARCH,
-            VideoSource.ARR,
-        ):
+        if wanted and (candidate.language or "") != wanted:
+            # The profile asks for one language, so a video in another
+            # language is not an answer, and a video whose language nobody
+            # recorded — an id from Radarr, or an old search result — is
+            # not an answer either. Trailarr searches instead, with the
+            # search query of the profile, which the user writes and can
+            # aim at their language.
             continue
         chosen.append(candidate)
 

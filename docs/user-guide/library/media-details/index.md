@@ -84,6 +84,8 @@ Trailarr takes the first video that works. When a download fails, that video mov
 
 Click the title to watch a video on YouTube. Click the cross to remove one. A video you chose comes back only when you add it again; a video from TMDB comes back with the next refresh.
 
+{{ version_badge("add", "0.13.0") }} The **Language** box next to the YouTube ID records which language your video is in. A profile that asks for that language can then use it, which is how one media item serves an Italian profile and an English one — see [Trailer Language](../../settings/profiles/settings/general.md#trailer-language). Leave it empty if the video suits a profile that takes any language.
+
 ## Action Buttons
 
 There are up to 2 action buttons that can appear depending on the selected Media.

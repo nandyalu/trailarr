@@ -28,7 +28,7 @@ class TestVideoConversionHardwareAcceleration:
             id=1,
             filter_name="Test CF",
             filter_type=FilterType.TRAILER,
-            filters=[]
+            filters=[],
         )
         return TrailerProfileRead(
             id=1,
@@ -178,9 +178,7 @@ class TestVideoConversionHardwareAcceleration:
         assert options == expected_options
 
     @patch.dict(
-        os.environ, {
-            "GPU_DEVICE_AMD": "/dev/dri/renderD130"
-        }, clear=True
+        os.environ, {"GPU_DEVICE_AMD": "/dev/dri/renderD130"}, clear=True
     )
     @patch(
         "services.trailers.video_conversion.platform.system",

@@ -270,15 +270,15 @@
     <div class="setting-group">
       <app-text-setting
         name="Trailer Language"
-        description="Which language of trailer to prefer, as a 2-letter ISO code. TMDB lists a trailer per language."
-        descriptionExtra="A preference, not a filter: a trailer in another language is still downloaded when the language you asked for has none."
+        description="Which language of trailer to download, as a 2-letter ISO code. Leave empty for any language, which is the default."
+        descriptionExtra="A language here is a filter, not a preference. Trailarr downloads a trailer in this language or searches YouTube with your search query — it never downloads a trailer in another language instead."
         [isNumberType]="false"
         [isLongInput]="false"
-        [placeholder]="'Trailer Language'"
+        [placeholder]="'any'"
         [autocomplete]="'off'"
-        [minLength]="2"
+        [minLength]="0"
         [maxLength]="5"
-        [value]="profile()?.language ?? 'en'"
+        [value]="profile()?.language ?? ''"
         (onSubmit)="profileService.updateSetting('language', $event)"
       />
       <app-options-setting

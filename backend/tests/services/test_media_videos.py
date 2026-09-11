@@ -33,7 +33,9 @@ class TestAddVideo:
 
         media_service.add_video(7, "new_id")
 
-        video_manager.add_user_video.assert_called_once_with(7, "new_id")
+        video_manager.add_user_video.assert_called_once_with(
+            7, "new_id", language=None
+        )
         media_manager.update_ytid.assert_called_once_with(7, "new_id")
         assert event_manager.track_youtube_id_changed.call_count == 1
 
@@ -74,3 +76,16 @@ class TestRemoveVideo:
         video_manager.delete_video.return_value = False
 
         assert media_service.remove_video(7, "gone") is False
+
+
+class TestAddVideoWithALanguage:
+
+    def test_the_language_reaches_the_row(self, managers):
+        """Two profiles, one per language, each need their own video."""
+        _, video_manager, _ = managers
+
+        media_service.add_video(7, "italian_id", "it")
+
+        video_manager.add_user_video.assert_called_once_with(
+            7, "italian_id", language="it"
+        )

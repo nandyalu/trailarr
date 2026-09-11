@@ -8,9 +8,9 @@ Trailarr works without a key. Nothing changes for you until you add one.
 
 Before a key, Trailarr had one id per media item at most, and it was always the same trailer for everyone. Radarr reports a trailer id, which it takes from TMDB, so a movie usually got a reasonable one — in English. Sonarr reports none at all, because its metadata comes from TVDB and TVDB holds no YouTube trailer ids, so every series trailer came from a YouTube search on the title and the year.
 
-That single id is why [Always Search](profiles/settings/search.md) exists: if you want a trailer in your own language, the one id from Radarr is the wrong one, so you turn the setting on and let Trailarr search YouTube instead. A search is a guess, and it returns whatever matches the title.
+That single id is why [Always Search](profiles/settings/search.md#always-search) exists: if you want a trailer in your own language, the one id from Radarr is the wrong one, so you turn the setting on and let Trailarr search YouTube instead. A search is a guess, and it returns whatever matches the title.
 
-With a key, Trailarr asks TMDB for the trailers of the item and picks by the [Trailer Language](profiles/settings/general.md#trailer-language) of the profile. A curated trailer in your language replaces the guess, and a search stays as the fallback when TMDB lists nothing suitable.
+With a key, Trailarr asks TMDB which trailers the item has, in the languages your profiles ask for, and downloads the one that matches. The Matrix, for example, has four English trailers, a French one and an Italian one. A curated trailer in your language replaces the guess, and a search stays as the fallback for when TMDB has none — and the log says when that happened, so you can see that Trailarr looked.
 
 ## What changes with a key
 
@@ -49,10 +49,10 @@ An answer from TMDB stays fresh for seven days. A curated list changes rarely, a
     TMDB marks some short videos as trailers. The first trailer it lists for The Matrix, for example, is a 33-second anniversary spot, which is shorter than the `Min Duration` of a profile. Trailarr tries it, sees that it is too short, and moves to the next one in the list. This is normal, and the log line says which video it took.
 
 !!! info "Which trailer of several"
-    A profile has a [Trailer Language](profiles/settings/general.md#trailer-language). Trailarr prefers a trailer in that language, then one with no language, then English, then any other. It is a preference and not a filter: a trailer in another language is better than no trailer.
+    A profile has a [Trailer Language](profiles/settings/general.md#trailer-language). A profile that names one downloads a trailer in that language or searches YouTube — it never downloads another language instead. A profile that leaves it empty takes the first trailer in the list. Trailarr asks TMDB for every language its profiles want in a single request, so two profiles, one Italian and one English, cost one call and each gets its own trailer.
 
 !!! info "With `Always Search` on"
-    `Always Search` drops the id from Radarr and any result an earlier search stored, which is what it always did. It keeps the TMDB list and a video you chose. So a profile that searched for every trailer now takes a curated one in your language first, and searches only when TMDB lists nothing.
+    A profile with [Always Search](profiles/settings/search.md#always-search) on ignores every known video, including the TMDB list, and searches YouTube every time. If you turned it on to get a trailer in your language, a TMDB key and a `Trailer Language` do that better: turn `Always Search` off and set the language.
 
 ## A media item with no TMDB id
 

@@ -668,19 +668,24 @@ async def get_media_videos(media_id: int) -> list[MediaVideoRead]:
         },
     },
 )
-async def add_media_video(media_id: int, yt_id: str) -> MediaVideoRead:
+async def add_media_video(
+    media_id: int, yt_id: str, language: str = ""
+) -> MediaVideoRead:
     """Add a video that you chose for one media item. \n
     Trailarr tries your video before every other source, and no task ever
     removes it. \n
     Args:
         media_id (int): ID of the media item.
-        yt_id (str): The YouTube ID, or a YouTube URL to read it from. \n
+        yt_id (str): The YouTube ID, or a YouTube URL to read it from.
+        language (str, Optional=""): The language the video is in, as a
+            2-letter code. A profile that asks for that language can then
+            use it. Empty suits a profile that takes any language. \n
     Returns:
         MediaVideoRead: The video that was added.
     """
     video_id = _read_youtube_id(yt_id)
     try:
-        row = media_service.add_video(media_id, video_id)
+        row = media_service.add_video(media_id, video_id, language or None)
     except Exception as e:
         raise errors.as_http_error(
             e,

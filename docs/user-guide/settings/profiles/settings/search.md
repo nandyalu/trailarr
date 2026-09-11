@@ -61,10 +61,12 @@ Enable this setting to always search YouTube for trailers. If disabled, the app 
 
 Most people turn this on to get a trailer that Radarr does not report — a trailer in their own language, usually, because the id Radarr reports is one trailer and it is usually English.
 
-{{ version_badge("upd", "0.13.0") }} From `v0.13.0` the setting drops the id from Radarr and the result of an earlier search, which is what it always did. Two things it now keeps:
+{{ version_badge("upd", "0.13.0") }} From `v0.13.0` the setting ignores **every** known video for the media item — the id from Radarr, a result an earlier search stored, the trailers TMDB lists, and a video you added by hand. Trailarr searches YouTube every time, which is what the setting says.
 
-- **A video you chose.** Adding a video on the media details page is a decision, not a guess, so the setting no longer throws it away. Remove the video if you do not want it.
-- **The trailers that TMDB lists**, if you set a [TMDB API key](../../tmdb.md). TMDB lists a trailer per language, and the profile's [Trailer Language](general.md#trailer-language) says which to prefer — which answers the reason you turned this setting on, without the guesswork of a search. Trailarr searches YouTube when TMDB lists nothing suitable, exactly as before.
+!!! tip "You may not need it any more"
+    Most people turn this on to get a trailer that Radarr does not report — a trailer in their own language, usually, because the id Radarr reports is one trailer and it is usually English. With a [TMDB API key](../../tmdb.md) and a [Trailer Language](general.md#trailer-language), Trailarr downloads a curated trailer in that language instead of guessing from a search, and searches only when TMDB has none. That is the better setup for a language: turn `Always Search` off, and set the language.
+
+    Keep `Always Search` on when you want a search regardless — for example when your [Search Query](#search-query) finds something the curated lists do not have.
 
 ## Include Words in Title
 

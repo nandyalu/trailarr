@@ -85,7 +85,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=None,
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is False
+            )
 
     @pytest.mark.asyncio
     async def test_ffprobe_duration_zero(self, scanner):
@@ -93,7 +96,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(0),
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is False
+            )
 
     @pytest.mark.asyncio
     async def test_ffprobe_negative_duration(self, scanner):
@@ -101,7 +107,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(-1),
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is False
+            )
 
     @pytest.mark.asyncio
     async def test_duration_within_limit(self, scanner):
@@ -109,7 +118,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION - 1),
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is True
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is True
+            )
 
     @pytest.mark.asyncio
     async def test_duration_exactly_at_limit(self, scanner):
@@ -117,7 +129,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION),
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is True
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is True
+            )
 
     @pytest.mark.asyncio
     async def test_duration_one_second_over_limit(self, scanner):
@@ -125,7 +140,10 @@ class TestCheckLargeNameTrailer:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION + 1),
         ):
-            assert await scanner._check_large_name_trailer("/m/movie-trailer.mkv") is False
+            assert (
+                await scanner._check_large_name_trailer("/m/movie-trailer.mkv")
+                is False
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -158,16 +176,27 @@ class TestIsTrailerFileEpisodeGuard:
 
     @pytest.mark.asyncio
     async def test_uppercase_episode_pattern_returns_false(self, scanner):
-        assert await scanner.is_trailer_file("/m/Show - S01E01 - trailer.mkv") is False
+        assert (
+            await scanner.is_trailer_file("/m/Show - S01E01 - trailer.mkv")
+            is False
+        )
 
     @pytest.mark.asyncio
     async def test_lowercase_episode_pattern_returns_false(self, scanner):
-        assert await scanner.is_trailer_file("/m/show - s02e03 - episode.mkv") is False
+        assert (
+            await scanner.is_trailer_file("/m/show - s02e03 - episode.mkv")
+            is False
+        )
 
     @pytest.mark.asyncio
     async def test_episode_in_trailer_folder_returns_false(self, scanner):
         # Episode guard fires before folder-placement check.
-        assert await scanner.is_trailer_file("/m/Movie/Trailers/show - S01E01.mkv") is False
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Trailers/show - S01E01.mkv"
+            )
+            is False
+        )
 
 
 class TestIsTrailerFileFolderAuthoritative:
@@ -175,23 +204,46 @@ class TestIsTrailerFileFolderAuthoritative:
 
     @pytest.mark.asyncio
     async def test_any_video_in_trailers_folder_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Trailers/movie.mkv", 50 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Trailers/movie.mkv", 50 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_large_video_in_trailers_folder_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Trailers/movie.mkv", 300 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Trailers/movie.mkv", 300 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_trailer_singular_folder_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Trailer/movie.mkv", 5 * MB) is True
+        assert (
+            await scanner.is_trailer_file("/m/Movie/Trailer/movie.mkv", 5 * MB)
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_lowercase_trailers_folder_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/trailers/movie.mkv", 5 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/trailers/movie.mkv", 5 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_mp4_in_trailers_folder_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Trailers/movie.mp4", 80 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Trailers/movie.mp4", 80 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_custom_profile_folder_returns_true(self):
@@ -200,11 +252,21 @@ class TestIsTrailerFileFolderAuthoritative:
             return_value={"extras"},
         ):
             s = MediaScanner()
-        assert await s.is_trailer_file("/m/Movie/extras/movie.mkv", 50 * MB) is True
+        assert (
+            await s.is_trailer_file("/m/Movie/extras/movie.mkv", 50 * MB)
+            is True
+        )
 
     @pytest.mark.asyncio
-    async def test_unknown_folder_without_trailer_in_name_returns_false(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Featurettes/movie.mkv", 50 * MB) is False
+    async def test_unknown_folder_without_trailer_in_name_returns_false(
+        self, scanner
+    ):
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Featurettes/movie.mkv", 50 * MB
+            )
+            is False
+        )
 
 
 class TestIsTrailerFileNameQuickPath:
@@ -212,55 +274,105 @@ class TestIsTrailerFileNameQuickPath:
 
     @pytest.mark.asyncio
     async def test_no_size_given_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv") is True
+        assert (
+            await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv") is True
+        )
 
     @pytest.mark.asyncio
     async def test_size_zero_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 0) is True
+        assert (
+            await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 0)
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_small_size_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 50 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.mkv", 50 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_just_below_threshold_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX - 1) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.mkv", QUICK_MAX - 1
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_trailer_uppercase_in_name_returns_true(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/Movie-TRAILER.mkv", 50 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Movie-TRAILER.mkv", 50 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_no_trailer_word_in_name_returns_false(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie.mkv", 50 * MB) is False
+        assert (
+            await scanner.is_trailer_file("/m/Movie/movie.mkv", 50 * MB)
+            is False
+        )
 
     @pytest.mark.asyncio
     async def test_mkv_extension_accepted(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 10 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.mkv", 10 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_mp4_extension_accepted(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mp4", 10 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.mp4", 10 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_avi_extension_accepted(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.avi", 10 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.avi", 10 * MB
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_webm_extension_accepted(self, scanner):
-        assert await scanner.is_trailer_file("/m/Movie/movie-trailer.webm", 10 * MB) is True
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/movie-trailer.webm", 10 * MB
+            )
+            is True
+        )
 
 
 class TestIsTrailerFileLargeWithFfprobe:
     """Files at or above QUICK_MAX threshold require ffprobe confirmation."""
 
     @pytest.mark.asyncio
-    async def test_exactly_at_threshold_short_duration_returns_true(self, scanner):
+    async def test_exactly_at_threshold_short_duration_returns_true(
+        self, scanner
+    ):
         with patch(
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(120),
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is True
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", QUICK_MAX
+                )
+                is True
+            )
 
     @pytest.mark.asyncio
     async def test_at_threshold_duration_at_limit_returns_true(self, scanner):
@@ -268,23 +380,42 @@ class TestIsTrailerFileLargeWithFfprobe:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION),
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is True
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", QUICK_MAX
+                )
+                is True
+            )
 
     @pytest.mark.asyncio
-    async def test_at_threshold_duration_over_limit_returns_false(self, scanner):
+    async def test_at_threshold_duration_over_limit_returns_false(
+        self, scanner
+    ):
         with patch(
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(MAX_DURATION + 1),
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", QUICK_MAX
+                )
+                is False
+            )
 
     @pytest.mark.asyncio
-    async def test_well_above_threshold_short_duration_returns_true(self, scanner):
+    async def test_well_above_threshold_short_duration_returns_true(
+        self, scanner
+    ):
         with patch(
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(90),
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", 500 * MB) is True
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", 500 * MB
+                )
+                is True
+            )
 
     @pytest.mark.asyncio
     async def test_ffprobe_returns_none_returns_false(self, scanner):
@@ -292,7 +423,12 @@ class TestIsTrailerFileLargeWithFfprobe:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=None,
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", QUICK_MAX
+                )
+                is False
+            )
 
     @pytest.mark.asyncio
     async def test_ffprobe_duration_zero_returns_false(self, scanner):
@@ -300,7 +436,12 @@ class TestIsTrailerFileLargeWithFfprobe:
             "services.files.media_scanner.video_analysis.get_media_info",
             return_value=_video_info(0),
         ):
-            assert await scanner.is_trailer_file("/m/Movie/movie-trailer.mkv", QUICK_MAX) is False
+            assert (
+                await scanner.is_trailer_file(
+                    "/m/Movie/movie-trailer.mkv", QUICK_MAX
+                )
+                is False
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -361,19 +502,33 @@ class TestGetTrailerPaths:
         assert scanner.get_trailer_paths(f) == set()
 
     def test_single_trailer_returns_its_path(self, scanner):
-        t = _file("movie-trailer.mkv", path="/m/Movie/movie-trailer.mkv", is_trailer=True)
+        t = _file(
+            "movie-trailer.mkv",
+            path="/m/Movie/movie-trailer.mkv",
+            is_trailer=True,
+        )
         f = _folder("Movie", children=[t])
         assert scanner.get_trailer_paths(f) == {"/m/Movie/movie-trailer.mkv"}
 
     def test_nested_trailer_in_subfolder_is_found(self, scanner):
-        t = _file("trailer.mkv", path="/m/Movie/Trailers/trailer.mkv", is_trailer=True)
+        t = _file(
+            "trailer.mkv",
+            path="/m/Movie/Trailers/trailer.mkv",
+            is_trailer=True,
+        )
         sub = _folder("Trailers", children=[t])
         f = _folder("Movie", children=[sub])
-        assert scanner.get_trailer_paths(f) == {"/m/Movie/Trailers/trailer.mkv"}
+        assert scanner.get_trailer_paths(f) == {
+            "/m/Movie/Trailers/trailer.mkv"
+        }
 
     def test_mix_returns_only_trailer_paths(self, scanner):
         main = _file("movie.mkv", 200 * MB, path="/m/Movie/movie.mkv")
-        t = _file("movie-trailer.mkv", path="/m/Movie/movie-trailer.mkv", is_trailer=True)
+        t = _file(
+            "movie-trailer.mkv",
+            path="/m/Movie/movie-trailer.mkv",
+            is_trailer=True,
+        )
         f = _folder("Movie", children=[main, t])
         assert scanner.get_trailer_paths(f) == {"/m/Movie/movie-trailer.mkv"}
 
@@ -388,7 +543,9 @@ class TestGetTrailerPaths:
         }
 
     def test_non_trailer_file_in_trailer_folder_excluded(self, scanner):
-        non_trailer = _file("movie.mkv", path="/m/Movie/Trailers/movie.mkv", is_trailer=False)
+        non_trailer = _file(
+            "movie.mkv", path="/m/Movie/Trailers/movie.mkv", is_trailer=False
+        )
         sub = _folder("Trailers", children=[non_trailer])
         f = _folder("Movie", children=[sub])
         assert scanner.get_trailer_paths(f) == set()
@@ -411,27 +568,38 @@ class TestCheckMediaExists:
         assert await scanner.check_media_exists(f) is True
 
     @pytest.mark.asyncio
-    async def test_folder_info_with_only_small_video_returns_false(self, scanner):
+    async def test_folder_info_with_only_small_video_returns_false(
+        self, scanner
+    ):
         f = _folder("Movie", children=[_file("movie.mkv", 50 * MB)])
         assert await scanner.check_media_exists(f) is False
 
     @pytest.mark.asyncio
     async def test_nonexistent_folder_path_returns_false(self, scanner):
-        assert await scanner.check_media_exists(None, "/nonexistent/path/xyz") is False
+        assert (
+            await scanner.check_media_exists(None, "/nonexistent/path/xyz")
+            is False
+        )
 
     @pytest.mark.asyncio
-    async def test_real_folder_with_large_sparse_video_returns_true(self, scanner, tmp_path):
+    async def test_real_folder_with_large_sparse_video_returns_true(
+        self, scanner, tmp_path
+    ):
         movie_dir = tmp_path / "Movie (2025)"
         movie_dir.mkdir()
         movie_file = movie_dir / "Movie (2025).mkv"
         movie_file.touch()
-        os.truncate(str(movie_file), 100 * MB)  # sparse file, no ffprobe triggered
+        os.truncate(
+            str(movie_file), 100 * MB
+        )  # sparse file, no ffprobe triggered
 
         result = await scanner.check_media_exists(None, str(movie_dir))
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_real_folder_with_small_video_only_returns_false(self, scanner, tmp_path):
+    async def test_real_folder_with_small_video_only_returns_false(
+        self, scanner, tmp_path
+    ):
         movie_dir = tmp_path / "Movie (2025)"
         movie_dir.mkdir()
         (movie_dir / "sample.mkv").write_bytes(b"x" * (1 * MB))

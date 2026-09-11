@@ -72,9 +72,7 @@ async def delete_image(image_path: str):
         else:
             logger.debug(f"Image not found: '{image_path}'")
     except Exception:
-        logger.error(
-            f"Trailarr could not delete the image '{image_path}'."
-        )
+        logger.error(f"Trailarr could not delete the image '{image_path}'.")
     return
 
 
@@ -91,7 +89,11 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
     filename = get_md5_filename(media.image_url)
     file_path = base_path / f"{filename}.jpg"
     # Check if a poster/artwork already exists
-    url_path = _IMAGES_URL_PREFIX + "/" + file_path.relative_to(IMAGES_PATH).as_posix()
+    url_path = (
+        _IMAGES_URL_PREFIX
+        + "/"
+        + file_path.relative_to(IMAGES_PATH).as_posix()
+    )
     if media.image_path:
         # Check if the existing path matches with new path
         if media.image_path != url_path:
@@ -109,13 +111,12 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
     return True
 
 
-async def download_image(
-    url: str, headers: dict | None = None
-) -> Image.Image:
+async def download_image(url: str, headers: dict | None = None) -> Image.Image:
     """Download an image from a URL. \n
     Args:
         url (str): URL of the image.
-        headers (dict | None): Optional extra HTTP headers (e.g. X-Plex-Token)."""
+        headers (dict | None): Optional extra HTTP headers (e.g. X-Plex-Token).
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
             response.raise_for_status()

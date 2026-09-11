@@ -383,9 +383,7 @@ def _download_with_ytdlp(
         msg = f"Error running yt-dlp process: {str(e)}"
         raise DownloadFailedError(msg)
 
-    logger.info(
-        "Trailarr downloaded the video."
-    )
+    logger.info("Trailarr downloaded the video.")
     return downloaded_file
 
 
@@ -467,9 +465,7 @@ def _convert_video(
         msg = f"Error running FFmpeg process: {str(e)}"
         raise ConversionFailedError(msg)
 
-    logger.info(
-        "Trailarr converted the video."
-    )
+    logger.info("Trailarr converted the video.")
     return "Video converted successfully"
 
 
@@ -518,7 +514,5 @@ def download_video(
     _convert_video(profile, download_file_path, converted_file_path)
     logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
     Path(download_file_path).unlink()
-    logger.info(
-        "Trailarr downloaded and converted the video."
-    )
+    logger.info("Trailarr downloaded and converted the video.")
     return converted_file_path

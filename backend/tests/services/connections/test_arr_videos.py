@@ -87,7 +87,10 @@ class TestTheSyncDecidesTheSource:
 
         sync_arr_video_id(media, "fromRadarr")
 
-        rows = {r.video_id: r.source for r in video_manager.read_for_media(media.id)}
+        rows = {
+            r.video_id: r.source
+            for r in video_manager.read_for_media(media.id)
+        }
         assert rows["trailarrFoundIt"] == VideoSource.SEARCH
         assert rows["fromRadarr"] == VideoSource.ARR
 

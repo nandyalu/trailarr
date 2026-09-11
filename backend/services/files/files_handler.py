@@ -235,14 +235,10 @@ class FilesHandler:
                 os.chmod(path, permissions)
             else:
                 os.makedirs(path, exist_ok=True)
-            logger.info(
-                f"Trailarr created the missing folder '{path}'."
-            )
+            logger.info(f"Trailarr created the missing folder '{path}'.")
             return True
         except OSError as e:
-            logger.error(
-                f"Trailarr could not create the folder '{path}': {e}"
-            )
+            logger.error(f"Trailarr could not create the folder '{path}': {e}")
             return False
 
     @staticmethod
@@ -327,12 +323,17 @@ class FilesHandler:
             file_path (str): The full path of the file to check.
         Returns:
             bool: True if the file is a trailer, False if not."""
-        media_info = await asyncio.to_thread(video_analysis.get_media_info, file_path)
+        media_info = await asyncio.to_thread(
+            video_analysis.get_media_info, file_path
+        )
         if media_info is None:
             return False
         if media_info.duration_seconds <= 0:
             return False
-        return media_info.duration_seconds <= FilesHandler.TRAILER_MAX_DURATION_SECONDS
+        return (
+            media_info.duration_seconds
+            <= FilesHandler.TRAILER_MAX_DURATION_SECONDS
+        )
 
     @staticmethod
     async def is_trailer_file(
@@ -435,7 +436,9 @@ class FilesHandler:
         for entry in await aiofiles.os.scandir(folder_path):
             if not entry.is_file():
                 continue
-            if not await FilesHandler.is_trailer_file(entry.name, entry.stat().st_size, entry.path):
+            if not await FilesHandler.is_trailer_file(
+                entry.name, entry.stat().st_size, entry.path
+            ):
                 continue
             return entry.path
         return None
@@ -463,7 +466,9 @@ class FilesHandler:
                 if not sub_entry.is_file():
                     continue
                 # Return file with `trailer` in name (if exists)
-                if await FilesHandler.is_trailer_file(sub_entry.name, sub_entry.stat().st_size, sub_entry.path):
+                if await FilesHandler.is_trailer_file(
+                    sub_entry.name, sub_entry.stat().st_size, sub_entry.path
+                ):
                     return sub_entry.path
                 # Return video file path (if exists)
                 if FilesHandler.is_video_file(sub_entry.name):
@@ -520,9 +525,7 @@ class FilesHandler:
             logger.debug(f"File deleted: {file_path}")
             return True
         except FileNotFoundError:
-            logger.error(
-                f"Trailarr cannot find the file '{file_path}'."
-            )
+            logger.error(f"Trailarr cannot find the file '{file_path}'.")
             return False
         except Exception as e:
             logger.error(
@@ -559,9 +562,7 @@ class FilesHandler:
             logger.debug(f"Folder deleted: {folder_path}")
             return True
         except FileNotFoundError:
-            logger.error(
-                f"Trailarr cannot find the folder '{folder_path}'."
-            )
+            logger.error(f"Trailarr cannot find the folder '{folder_path}'.")
             return False
         except Exception as e:
             logger.error(
@@ -602,14 +603,10 @@ class FilesHandler:
             logger.debug(f"File/Folder renamed: {old_path} -> {new_path}")
             return True
         except FileNotFoundError:
-            logger.error(
-                f"Trailarr cannot find '{old_path}'."
-            )
+            logger.error(f"Trailarr cannot find '{old_path}'.")
             return False
         except Exception as e:
-            logger.error(
-                f"Trailarr could not rename '{old_path}': {e}"
-            )
+            logger.error(f"Trailarr could not rename '{old_path}': {e}")
             return False
 
     @staticmethod

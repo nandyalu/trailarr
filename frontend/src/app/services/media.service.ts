@@ -489,10 +489,16 @@ export class MediaService {
    *
    * @param {number} mediaID - The ID of the media item.
    * @param {string} ytID - A YouTube ID, or a YouTube link to read it from.
+   * @param {string} language - The language the video is in, as a 2-letter
+   * code. A profile asking for that language can then use it. Empty suits a
+   * profile that takes any language.
    * @returns {Observable<MediaVideo>} The video that was added.
    */
-  addMediaVideo(mediaID: number, ytID: string): Observable<MediaVideo> {
-    const params = new HttpParams().set('yt_id', ytID);
+  addMediaVideo(mediaID: number, ytID: string, language: string = ''): Observable<MediaVideo> {
+    let params = new HttpParams().set('yt_id', ytID);
+    if (language) {
+      params = params.set('language', language);
+    }
     return this.httpClient.post<MediaVideo>(`${this.mediaUrl}${mediaID}/videos`, {}, {params: params});
   }
 

@@ -377,3 +377,14 @@
     }
   }
 }
+
+/* The language of a video you add. A profile that asks for that language
+   can then use it, which is how one item serves an Italian profile and an
+   English one. */
+.video-language-input {
+  flex: 0 0 auto;
+
+  input {
+    width: 4.5rem;
+  }
+}

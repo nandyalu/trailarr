@@ -77,9 +77,7 @@ class TestChannelManager:
         channel = make_channel()
         channel_manager.update(
             channel.id,
-            NotificationChannelCreate(
-                name="Discord", url="tgram://new/token"
-            ),
+            NotificationChannelCreate(name="Discord", url="tgram://new/token"),
         )
         assert channel_manager.get_url(channel.id) == "tgram://new/token"
 
@@ -122,7 +120,9 @@ def _names(pairs):
 class TestMaskUrl:
 
     def test_masks_token_tail(self):
-        assert mask_apprise_url("discord://abcdef/ghij") == "discord://abcd****"
+        assert (
+            mask_apprise_url("discord://abcdef/ghij") == "discord://abcd****"
+        )
 
     def test_handles_schemeless(self):
         assert mask_apprise_url("garbage") == "****"
@@ -323,7 +323,9 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("services.images.image._url_to_fs_path", return_value=poster),
+            patch(
+                "services.images.image._url_to_fs_path", return_value=poster
+            ),
         ):
             assert dispatcher._poster_attachment(notes, {}) == str(poster)
 
@@ -361,10 +363,10 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("services.images.image._url_to_fs_path", return_value=poster),
-            patch.object(
-                dispatcher, "_send_sync", return_value=True
-            ) as send,
+            patch(
+                "services.images.image._url_to_fs_path", return_value=poster
+            ),
+            patch.object(dispatcher, "_send_sync", return_value=True) as send,
         ):
             await dispatcher._dispatch_pending()
         assert send.call_count == 1
@@ -382,9 +384,12 @@ class TestDiscordNative:
     _TOKEN = "abcDEFghiJKLmnoPQRstuVWXyz-1234567890abcdefghij"
 
     def test_webhook_url_from_discord_scheme(self):
-        assert dispatcher._discord_webhook_url(
-            f"discord://{self._ID}/{self._TOKEN}"
-        ) == f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+        assert (
+            dispatcher._discord_webhook_url(
+                f"discord://{self._ID}/{self._TOKEN}"
+            )
+            == f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+        )
 
     def test_webhook_url_from_pasted_discord_url(self):
         url = f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
@@ -429,9 +434,7 @@ class TestDiscordNative:
             "⬇️ Trailer Downloaded: Test Movie (2024)"
         )
 
-    def test_single_media_multi_note_content_lists_event_types(
-        self, tmp_path
-    ):
+    def test_single_media_multi_note_content_lists_event_types(self, tmp_path):
         poster_file = tmp_path / "poster.jpg"
         poster_file.write_bytes(b"jpg")
         notes = [
@@ -482,9 +485,7 @@ class TestDiscordNative:
         )
         notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")]
         with (
-            patch.object(
-                dispatcher.media_manager, "read", return_value=media
-            ),
+            patch.object(dispatcher.media_manager, "read", return_value=media),
             patch(
                 "services.images.image._url_to_fs_path",
                 return_value=poster_file,

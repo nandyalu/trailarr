@@ -15,7 +15,13 @@ from services import media as media_service
 PKG = "services.media"
 
 
-def _media(media_id=42, title="Film", folder_path="/media/Film", monitor=False, yt_id=""):
+def _media(
+    media_id=42,
+    title="Film",
+    folder_path="/media/Film",
+    monitor=False,
+    yt_id="",
+):
     return SimpleNamespace(
         id=media_id,
         title=title,
@@ -33,7 +39,9 @@ class TestDeleteTrailers:
 
     @pytest.mark.asyncio
     async def test_media_without_a_folder_is_refused(self):
-        with patch(f"{PKG}.media_manager.read", return_value=_media(folder_path="")):
+        with patch(
+            f"{PKG}.media_manager.read", return_value=_media(folder_path="")
+        ):
             result = await media_service.delete_trailers(42)
 
         assert result.ok is False
@@ -49,7 +57,9 @@ class TestDeleteTrailers:
                 f"{PKG}.download_manager.read_by_media_id",
                 return_value=[_download(1, "/gone.mkv", file_exists=False)],
             ),
-            patch(f"{PKG}.FilesHandler.delete_file", AsyncMock()) as mock_delete,
+            patch(
+                f"{PKG}.FilesHandler.delete_file", AsyncMock()
+            ) as mock_delete,
         ):
             result = await media_service.delete_trailers(42)
 
@@ -67,9 +77,12 @@ class TestDeleteTrailers:
         with (
             patch(f"{PKG}.media_manager.read", return_value=_media()),
             patch(
-                f"{PKG}.download_manager.read_by_media_id", return_value=downloads
+                f"{PKG}.download_manager.read_by_media_id",
+                return_value=downloads,
             ),
-            patch(f"{PKG}.FilesHandler.delete_file", AsyncMock()) as mock_delete,
+            patch(
+                f"{PKG}.FilesHandler.delete_file", AsyncMock()
+            ) as mock_delete,
             patch(f"{PKG}.download_manager.mark_as_deleted") as mock_mark,
             patch(f"{PKG}.event_manager.track_trailer_deleted") as mock_event,
         ):
@@ -91,9 +104,13 @@ class TestSetYoutubeId:
 
     def test_a_changed_id_is_stored_and_tracked(self):
         with (
-            patch(f"{PKG}.media_manager.read", return_value=_media(yt_id="old")),
+            patch(
+                f"{PKG}.media_manager.read", return_value=_media(yt_id="old")
+            ),
             patch(f"{PKG}.media_manager.update_ytid") as mock_update,
-            patch(f"{PKG}.event_manager.track_youtube_id_changed") as mock_event,
+            patch(
+                f"{PKG}.event_manager.track_youtube_id_changed"
+            ) as mock_event,
         ):
             msg = media_service.set_youtube_id(42, "newvalue123")
 
@@ -104,9 +121,13 @@ class TestSetYoutubeId:
     def test_the_same_id_is_stored_but_not_tracked(self):
         """Re-saving the same id is not a change worth an event."""
         with (
-            patch(f"{PKG}.media_manager.read", return_value=_media(yt_id="same")),
+            patch(
+                f"{PKG}.media_manager.read", return_value=_media(yt_id="same")
+            ),
             patch(f"{PKG}.media_manager.update_ytid") as mock_update,
-            patch(f"{PKG}.event_manager.track_youtube_id_changed") as mock_event,
+            patch(
+                f"{PKG}.event_manager.track_youtube_id_changed"
+            ) as mock_event,
         ):
             media_service.set_youtube_id(42, "same")
 
@@ -118,7 +139,9 @@ class TestSetMonitoring:
 
     def test_a_successful_change_is_tracked(self):
         with (
-            patch(f"{PKG}.media_manager.read", return_value=_media(monitor=False)),
+            patch(
+                f"{PKG}.media_manager.read", return_value=_media(monitor=False)
+            ),
             patch(
                 f"{PKG}.media_manager.update_monitoring",
                 return_value=("Now monitored", True),
@@ -134,7 +157,9 @@ class TestSetMonitoring:
 
     def test_a_failed_change_is_not_tracked(self):
         with (
-            patch(f"{PKG}.media_manager.read", return_value=_media(monitor=False)),
+            patch(
+                f"{PKG}.media_manager.read", return_value=_media(monitor=False)
+            ),
             patch(
                 f"{PKG}.media_manager.update_monitoring",
                 return_value=("Could not monitor", False),

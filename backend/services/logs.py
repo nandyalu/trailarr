@@ -119,9 +119,7 @@ async def read_logs(page: int = 0, limit: int = 1000) -> list[dict]:
     directory = logs_dir()
     logs: collections.deque = collections.deque(maxlen=limit)
     if not await async_os.path.exists(directory):
-        logger.info(
-            "The logs folder does not exist."
-        )
+        logger.info("The logs folder does not exist.")
         return [no_logs_record()]
     log_ext = ".log"
     if page > 0:

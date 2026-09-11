@@ -348,9 +348,12 @@ def _video_id_from_candidates(
 ) -> str | None:
     """Take the best candidate from the table, if there is one."""
     try:
-        candidates = video_manager.read_candidates(
-            media.id, language=profile.language
-        )
+        # Everything Trailarr knows for this item, in source order. The
+        # language rule belongs to the resolver, which applies it once —
+        # and reading the unfiltered list is what lets the log below say
+        # "I know four videos, none of them Italian" instead of "I know
+        # nothing".
+        candidates = video_manager.read_candidates(media.id)
     except Exception as e:
         # The table is an optimisation over searching. If reading it fails,
         # a search still finds a trailer.
@@ -364,6 +367,7 @@ def _video_id_from_candidates(
         candidates, profile, exclude=exclude, last_tried=last_tried
     )
     if not chosen:
+        _say_why_it_searches(media, profile, candidates)
         return None
     best = chosen[0]
     logger.info(
@@ -406,3 +410,38 @@ def _remember_search_result(media: MediaRead, video_id: str) -> None:
             f"Trailarr found a trailer for '{media.title}' but could not"
             f" store it as a known video: {e}"
         )
+
+
+def _say_why_it_searches(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    candidates: list,
+) -> None:
+    """Log the reason no known video was used, before a search runs.
+
+    A user who asks for a trailer in their language and gets a search
+    result should be able to see that Trailarr looked and found nothing,
+    rather than guess whether the setting works at all.
+    """
+    name = profile.customfilter.filter_name
+    if profile.always_search:
+        logger.debug(
+            f"The profile '{name}' always searches, so Trailarr searches"
+            f" YouTube for '{media.title}'."
+        )
+        return
+    wanted = (profile.language or "").strip()
+    if wanted and candidates:
+        have = sorted({c.language or "unknown" for c in candidates})
+        logger.info(
+            f"Trailarr knows {len(candidates)} video(s) for '{media.title}'"
+            f" but none in the language '{wanted}' that the profile"
+            f" '{name}' asks for (found: {', '.join(have)}). Trailarr"
+            " searches YouTube instead.",
+            **logger.media(media.id),
+        )
+        return
+    logger.debug(
+        f"Trailarr knows no video for '{media.title}' that the profile"
+        f" '{name}' can use, so it searches YouTube."
+    )

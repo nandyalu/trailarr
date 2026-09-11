@@ -12,7 +12,11 @@ import pytest
 
 from database.models.mediavideo import VideoSource
 from exceptions import InvalidResponseError
-from services.tmdb.api_manager import TMDBAPI, TMDBAuthError, _is_read_access_token
+from services.tmdb.api_manager import (
+    TMDBAPI,
+    TMDBAuthError,
+    _is_read_access_token,
+)
 from services.tmdb.models import TMDBVideo
 from services.tmdb.videos import to_candidates
 
@@ -20,38 +24,64 @@ MATRIX_PAYLOAD = {
     "id": 603,
     "results": [
         {
-            "iso_639_1": "en", "iso_3166_1": "US",
-            "name": "How KEANU REEVES prepared", "key": "w-efbYj1YHA",
-            "site": "YouTube", "size": 1080, "type": "Featurette",
-            "official": True, "published_at": "2024-09-11T14:00:11.000Z",
+            "iso_639_1": "en",
+            "iso_3166_1": "US",
+            "name": "How KEANU REEVES prepared",
+            "key": "w-efbYj1YHA",
+            "site": "YouTube",
+            "size": 1080,
+            "type": "Featurette",
+            "official": True,
+            "published_at": "2024-09-11T14:00:11.000Z",
             "id": "66e1a1",
         },
         {
-            "iso_639_1": "en", "iso_3166_1": "US",
-            "name": "Official 25th Anniversary Trailer #3", "key": "FVI84Dfx2-I",
-            "site": "YouTube", "size": 1080, "type": "Trailer",
-            "official": True, "published_at": "2024-08-01T16:00:10.000Z",
+            "iso_639_1": "en",
+            "iso_3166_1": "US",
+            "name": "Official 25th Anniversary Trailer #3",
+            "key": "FVI84Dfx2-I",
+            "site": "YouTube",
+            "size": 1080,
+            "type": "Trailer",
+            "official": True,
+            "published_at": "2024-08-01T16:00:10.000Z",
             "id": "66ab2c",
         },
         {
-            "iso_639_1": "en", "iso_3166_1": "US",
-            "name": "Fan cut trailer", "key": "unofficial1",
-            "site": "YouTube", "size": 1080, "type": "Trailer",
-            "official": False, "published_at": "2010-01-01T00:00:00.000Z",
+            "iso_639_1": "en",
+            "iso_3166_1": "US",
+            "name": "Fan cut trailer",
+            "key": "unofficial1",
+            "site": "YouTube",
+            "size": 1080,
+            "type": "Trailer",
+            "official": False,
+            "published_at": "2010-01-01T00:00:00.000Z",
             "id": "aaa111",
         },
         {
-            "iso_639_1": "de", "iso_3166_1": "DE",
-            "name": "Deutscher Trailer", "key": "german1",
-            "site": "YouTube", "size": 1080, "type": "Trailer",
-            "official": True, "published_at": "2024-08-02T16:00:10.000Z",
+            "iso_639_1": "de",
+            "iso_3166_1": "DE",
+            "name": "Deutscher Trailer",
+            "key": "german1",
+            "site": "YouTube",
+            "size": 1080,
+            "type": "Trailer",
+            "official": True,
+            "published_at": "2024-08-02T16:00:10.000Z",
             "id": "bbb222",
         },
         {
-            "iso_639_1": "en", "iso_3166_1": "US",
-            "name": "Not on YouTube", "key": "vimeo1",
-            "site": "Vimeo", "size": 1080, "type": "Trailer",
-            "official": True, "published_at": None, "id": "ccc333",
+            "iso_639_1": "en",
+            "iso_3166_1": "US",
+            "name": "Not on YouTube",
+            "key": "vimeo1",
+            "site": "Vimeo",
+            "size": 1080,
+            "type": "Trailer",
+            "official": True,
+            "published_at": None,
+            "id": "ccc333",
         },
     ],
 }
@@ -191,7 +221,9 @@ class TestToCandidates:
         """Phase 8 downloads trailers; Phase 9 adds the other types."""
         rows = to_candidates(self._videos(), media_id=7)
         assert {r.video_id for r in rows} == {
-            "FVI84Dfx2-I", "unofficial1", "german1"
+            "FVI84Dfx2-I",
+            "unofficial1",
+            "german1",
         }
         assert all(r.video_type == "trailer" for r in rows)
         assert all(r.source == VideoSource.TMDB for r in rows)
@@ -208,9 +240,13 @@ class TestToCandidates:
         assert [r.sequence for r in rows] == [0, 1, 2]
 
     def test_the_language_and_the_title_are_kept(self):
-        rows = {r.video_id: r for r in to_candidates(self._videos(), media_id=7)}
+        rows = {
+            r.video_id: r for r in to_candidates(self._videos(), media_id=7)
+        }
         assert rows["german1"].language == "de"
-        assert rows["FVI84Dfx2-I"].name == "Official 25th Anniversary Trailer #3"
+        assert (
+            rows["FVI84Dfx2-I"].name == "Official 25th Anniversary Trailer #3"
+        )
         assert rows["FVI84Dfx2-I"].published_at is not None
 
     def test_a_title_with_no_trailer_gives_no_rows(self):

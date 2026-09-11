@@ -80,9 +80,9 @@ def read_candidates(
 
     Args:
         media_id (int): The media item.
-        language (str | None): The language the profile asks for. A video
-            in that language comes first, then a video with no language,
-            then the rest. None keeps the source order only.
+        language (str | None): The language the profile asks for. Only
+            videos recorded in that language come back. None or empty
+            means any language, and everything comes back.
         video_type (str): Only 'trailer' exists until Phase 9.
         season (int | None): NULL is the movie, or the series as a whole.
 
@@ -99,35 +99,12 @@ def read_candidates(
     else:
         statement = statement.where(MediaVideo.season == season)
     videos = [_to_read(v) for v in _session.exec(statement).all()]
+    ordered = sort_candidates(videos)
     if not language:
-        return sort_candidates(videos)
-
-    # A language is a preference, not a filter: a trailer in another
-    # language is better than no trailer. So the list keeps everything and
-    # only changes the order.
-    #
-    # The source still decides first. Sorting by language across sources
-    # would let a TMDB trailer in the asked language beat the video that
-    # the user chose, which is the one thing the order must never do — a
-    # USER row carries no language, because a person pasted a link.
-    def language_rank(video: MediaVideoRead) -> int:
-        if video.language == language:
-            return 0
-        if video.language is None:
-            return 1
-        if video.language == "en":
-            return 2
-        return 3
-
-    return sorted(
-        videos,
-        key=lambda v: (
-            SOURCE_PRECEDENCE.get(v.source.value, len(SOURCE_PRECEDENCE)),
-            language_rank(v),
-            v.sequence,
-            v.id,
-        ),
-    )
+        return ordered
+    # A language is a filter, not an order. The resolver applies the same
+    # rule; this keeps a caller that asks for one language from having to.
+    return [v for v in ordered if (v.language or "") == language]
 
 
 @write_session
@@ -289,6 +266,7 @@ def add_user_video(
     video_id: str,
     *,
     name: str = "",
+    language: str | None = None,
     video_type: str = VIDEO_TYPE_TRAILER,
     season: int | None = None,
     _session: Session = None,  # type: ignore
@@ -298,6 +276,11 @@ def add_user_video(
 
     Taking over is what the user asked for: the video they typed is now
     their choice, and no task may remove it.
+
+    The language matters when a profile asks for one. Someone who wants an
+    Italian trailer and an English one runs two profiles, and each takes
+    the video recorded in its own language, so a user video with no
+    language is only ever used by a profile that takes any language.
     """
     existing = _session.exec(
         select(MediaVideo)
@@ -310,6 +293,8 @@ def add_user_video(
         existing.updated_at = now
         if name:
             existing.name = name
+        if language is not None:
+            existing.language = language.strip() or None
         _session.add(existing)
         _session.commit()
         _session.refresh(existing)
@@ -322,7 +307,7 @@ def add_user_video(
         season=season,
         video_type=video_type,
         sequence=0,
-        language=None,
+        language=(language or "").strip() or None,
         name=name,
         official=False,
         published_at=None,

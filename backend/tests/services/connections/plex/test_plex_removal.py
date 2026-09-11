@@ -108,7 +108,9 @@ def _build_manager(conn_id: int, prefix: str) -> PlexConnectionManager:
         monitor_new_media=True,
         path_mappings=[_pm(f"/plex/{prefix}/movies")],
     )
-    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch(
+        "services.connections.plex.connection_manager.PlexAPI"
+    ) as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         return PlexConnectionManager(connection)  # type: ignore
 
@@ -118,7 +120,12 @@ async def _sync_items(
 ) -> None:
     section = _section(prefix)
     chunk = [
-        (_movie_item(prefix, i), section, True, f"/plex/{prefix}/movies/Film{i}")
+        (
+            _movie_item(prefix, i),
+            section,
+            True,
+            f"/plex/{prefix}/movies/Film{i}",
+        )
         for i in indexes
     ]
     await mgr._process_item_chunk(chunk)

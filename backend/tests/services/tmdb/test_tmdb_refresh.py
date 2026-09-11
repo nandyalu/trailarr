@@ -31,8 +31,12 @@ def _media(media_id=1, tmdb_id=603, is_movie=True, title="The Matrix"):
 
 def _trailer(key="abc", official=True, language="en"):
     return TMDBVideo(
-        key=key, name="Official Trailer", site="YouTube", type="Trailer",
-        official=official, iso_639_1=language,
+        key=key,
+        name="Official Trailer",
+        site="YouTube",
+        type="Trailer",
+        official=official,
+        iso_639_1=language,
     )
 
 
@@ -62,7 +66,9 @@ class TestRefresh:
     @pytest.mark.asyncio
     async def test_the_trailers_are_stored_as_tmdb_rows(self):
         api = MagicMock(configured=True)
-        api.get_videos = AsyncMock(return_value=[_trailer("aaa"), _trailer("bbb")])
+        api.get_videos = AsyncMock(
+            return_value=[_trailer("aaa"), _trailer("bbb")]
+        )
         with patch(f"{PKG}.video_manager") as manager:
             manager.replace_source_rows.return_value = (2, 0, 0)
             count = await TMDBRefresher(api).refresh_media(_media())

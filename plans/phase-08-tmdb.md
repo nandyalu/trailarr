@@ -226,7 +226,38 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
    Second, a series has no ARR candidate at all, so Phase 10's season trailers have no
    Arr fallback either.
 
-4. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
+4. **Dropping `include_video_language` broke the language feature outright.** The TMDB
+   reference no longer documents the parameter, so the client left it out and asked for
+   "every video". TMDB's videos endpoint defaults to `language=en-US`, so it answered
+   with English and nothing else: 120 real titles gave 90 with trailers, 100% English,
+   zero in any other language — a number I first read as "TMDB only lists English". The
+   parameter still works. `/movie/603/videos` returns 4 trailers; with
+   `include_video_language=it,de,fr,en,null` it returns 8, including the Italian,
+   German and French ones. The client now builds the value from the languages the
+   enabled profiles ask for, so one call per item serves every profile.
+
+5. **A trailer language is a filter, not a preference, and `Always Search` means what
+   it says.** Both were resolved the wrong way first.
+
+   `Always Search` kept the TMDB list and a video the user chose. It now takes nothing
+   from the table at all, which is what it did before the table existed — it cleared
+   `media.youtube_trailer_id`, the only source there was — and what the documentation
+   has always said about ignoring an id set by hand.
+
+   The language ordered the candidates rather than filtering them, so a profile asking
+   for Italian would download a German trailer when no Italian one existed. That is the
+   pain the feature exists to remove. A named language now filters, and a video whose
+   language nobody recorded — an id from Radarr, an old search result — cannot satisfy
+   it. When nothing matches, Trailarr searches with the profile's own search query and
+   logs the reason, naming the languages it did find.
+
+   The default had to change with it. The field defaulted to `en`, which as a filter
+   would have stopped every existing profile from using Radarr ids. It now defaults to
+   empty, meaning any language, so an upgrade changes nothing and a language means
+   something only when someone chooses it. A user video carries a language too, which
+   is what lets one media item serve an Italian profile and an English one.
+
+6. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
    1,822 of 2,104 Arr ids are the trailer TMDB lists — Radarr takes its id from TMDB, so
    agreement is the normal case. Leaving the row with the Arr showed a nameless row and
    sorted the agreed trailer below TMDB's others. A better source now takes the row and

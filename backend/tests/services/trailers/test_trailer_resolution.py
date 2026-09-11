@@ -80,7 +80,39 @@ def profile():
     )
 
 
-def _add(media_id: int, video_id: str, source: VideoSource, sequence=0, language="en"):
+def _add_many(
+    media_id: int, source: VideoSource, videos: list[tuple[str, str | None]]
+):
+    """Add several videos of one source at once.
+
+    `replace_source_rows` gives the source a whole new list, so adding one
+    at a time would drop the one added before.
+    """
+    video_manager.replace_source_rows(
+        media_id,
+        source,
+        [
+            MediaVideoCreate(
+                media_id=media_id,
+                video_id=video_id,
+                source=source,
+                sequence=index,
+                language=language,
+                name=video_id,
+                official=True,
+            )
+            for index, (video_id, language) in enumerate(videos)
+        ],
+    )
+
+
+def _add(
+    media_id: int,
+    video_id: str,
+    source: VideoSource,
+    sequence=0,
+    language="en",
+):
     video_manager.replace_source_rows(
         media_id,
         source,
@@ -154,54 +186,83 @@ class TestTheChoice:
 
 
 class TestAlwaysSearch:
-    """The redefinition in the plan: `Always Search` drops the stored
-    search result, and keeps everything a person or a curator chose."""
+    """The setting means what it says: search, every time."""
 
-    def test_a_stored_search_result_is_not_reused(self, media, profile):
+    def test_nothing_in_the_table_is_used(self, media, profile):
+        _add(media.id, "tmdb-id", VideoSource.TMDB)
+        _add(media.id, "arr-id", VideoSource.ARR)
         _add(media.id, "old-search", VideoSource.SEARCH)
+        video_manager.add_user_video(media.id, "user-id")
         profile.always_search = True
 
         with patch(SEARCH, return_value="fresh-id") as search:
             assert trailer_search.get_video_id(media, profile) == "fresh-id"
         search.assert_called_once()
 
-    def test_the_tmdb_trailer_is_still_used(self, media, profile):
-        _add(media.id, "tmdb-id", VideoSource.TMDB)
-        _add(media.id, "old-search", VideoSource.SEARCH)
-        profile.always_search = True
 
-        with patch(SEARCH) as search:
-            assert trailer_search.get_video_id(media, profile) == "tmdb-id"
-        search.assert_not_called()
+class TestLanguage:
+    """A profile that asks for a language gets it, or a search."""
 
-    def test_the_arr_id_is_dropped_too(self, media, profile):
-        """The reason people turn the setting on: Radarr reports one
-        trailer, usually English, and they want one in their language."""
-        _add(media.id, "arr-id", VideoSource.ARR)
-        profile.always_search = True
-
-        with patch(SEARCH, return_value="searched-id") as search:
-            assert trailer_search.get_video_id(media, profile) == "searched-id"
-        search.assert_called_once()
-
-    def test_tmdb_beats_a_search_for_a_profile_that_always_searches(
-        self, media, profile
-    ):
-        """With a TMDB key, such a profile stops guessing: it takes the
-        curated trailer instead of whatever a search returns."""
-        _add(media.id, "arr-id", VideoSource.ARR)
-        _add(media.id, "tmdb-it", VideoSource.TMDB, language="it")
-        profile.always_search = True
+    def test_the_trailer_in_that_language_is_taken(self, media, profile):
+        _add_many(
+            media.id, VideoSource.TMDB, [("tmdb-it", "it"), ("tmdb-en", "en")]
+        )
         profile.language = "it"
 
         with patch(SEARCH) as search:
             assert trailer_search.get_video_id(media, profile) == "tmdb-it"
         search.assert_not_called()
 
+    def test_another_language_is_never_downloaded_instead(
+        self, media, profile
+    ):
+        """The pain this feature removes: asking for Italian and getting
+        German. Trailarr searches, with the query the profile sets."""
+        _add(media.id, "tmdb-de", VideoSource.TMDB, language="de")
+        _add(media.id, "arr-id", VideoSource.ARR)
+        profile.language = "it"
+
+        with patch(SEARCH, return_value="searched-id") as search:
+            assert trailer_search.get_video_id(media, profile) == "searched-id"
+        search.assert_called_once()
+
+    def test_a_user_video_in_that_language_wins(self, media, profile):
+        """Two profiles, one per language, each take their own video."""
+        video_manager.add_user_video(media.id, "my-italian", language="it")
+        video_manager.add_user_video(media.id, "my-english", language="en")
+        profile.language = "it"
+
+        with patch(SEARCH):
+            assert trailer_search.get_video_id(media, profile) == "my-italian"
+
+    def test_asking_for_no_language_takes_what_there_is(self, media, profile):
+        """The default, and what every profile did before the field."""
+        _add(media.id, "tmdb-de", VideoSource.TMDB, language="de")
+        profile.language = ""
+
+        with patch(SEARCH) as search:
+            assert trailer_search.get_video_id(media, profile) == "tmdb-de"
+        search.assert_not_called()
+
+    def test_the_log_says_why_it_searched(self, media, profile, caplog):
+        """Be honest: the user asked for Italian and got a search."""
+        _add(media.id, "tmdb-de", VideoSource.TMDB, language="de")
+        profile.language = "it"
+
+        with caplog.at_level("INFO"):
+            with patch(SEARCH, return_value="searched-id"):
+                trailer_search.get_video_id(media, profile)
+
+        assert any(
+            "none in the language 'it'" in r.message for r in caplog.records
+        ), [r.message for r in caplog.records]
+
 
 class TestTheLogLine:
 
-    def test_the_log_says_where_the_video_came_from(self, media, profile, caplog):
+    def test_the_log_says_where_the_video_came_from(
+        self, media, profile, caplog
+    ):
         """Exit criterion: a log line per resolution names the source."""
         _add(media.id, "tmdb-id", VideoSource.TMDB)
 
@@ -209,6 +270,6 @@ class TestTheLogLine:
             with patch(SEARCH):
                 trailer_search.get_video_id(media, profile)
 
-        assert any("TMDB" in record.message for record in caplog.records), (
-            f"no line named TMDB: {[r.message for r in caplog.records]}"
-        )
+        assert any(
+            "TMDB" in record.message for record in caplog.records
+        ), f"no line named TMDB: {[r.message for r in caplog.records]}"

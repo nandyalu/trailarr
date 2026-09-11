@@ -177,6 +177,17 @@
                 <span class="text-md sm-show">YouTube ID/URL:</span>
                 <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="YouTube Video ID / URL" />
               </div>
+              <div class="labeled-input video-language-input">
+                <span class="text-md">Language</span>
+                <input
+                  id="video_language"
+                  type="text"
+                  [(ngModel)]="videoLanguage"
+                  placeholder="any"
+                  maxlength="5"
+                  title="The language this video is in, such as it. Leave empty for any language."
+                />
+              </div>
               @if (selectedMedia_.youtube_trailer_id == '' && trailer_url == '' && !isLoadingDownload()) {
                 <span class="search-button icon-link" title="Search Trailer" (click)="openProfileSelectDialog(true)">
                   <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">

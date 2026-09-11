@@ -55,14 +55,19 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 
 | Type    | Required | Default | Valid Values                     |
 |:-------:|:--------:|:-------:|:--------------------------------:|
-| String  | Yes      | en      | valid ISO 639-1 language code    |
+| String  | No       | empty   | empty, or an ISO 639-1 code      |
 
-Which language of trailer this profile prefers. TMDB lists a trailer per language, and Trailarr puts the one in this language first — see [TMDB](../../tmdb.md).
+Which language of trailer this profile downloads. Leave it empty for any language, which is what every profile did before this setting existed.
 
-This is a preference, not a filter. When the language you ask for has no trailer, Trailarr takes one with no language, then an English one, then any other. A trailer in another language is better than no trailer.
+A language here is a **filter, not a preference**. A profile that asks for `it` downloads an Italian trailer or nothing: Trailarr never downloads a German trailer instead, because a trailer in the wrong language is not what you asked for. When Trailarr knows no trailer in that language, it searches YouTube with the [Search Query](search.md#search-query) of the profile, which you write and can aim at your language.
+
+Trailarr only knows the language of a video when something told it. TMDB records a language for each trailer it lists, and you can [add a video](../../../library/media-details/index.md#known-videos) with a language yourself. The id that Radarr reports carries no language, so a profile that asks for a language does not use it.
+
+!!! tip "One profile per language"
+    To keep an Italian trailer and an English one for the same media item, make two profiles, one with `it` and one with `en`. Each downloads its own trailer and keeps track of its own file.
 
 !!! note ""
-    This setting orders the videos from TMDB. It does nothing while no TMDB API key is set, because the other sources report one id and not a list per language.
+    This setting needs a [TMDB API key](../../tmdb.md) to do much, because TMDB is what tells Trailarr which language a trailer is in. Without a key, set it only if you also add videos by hand with a language.
 
 ## Stop Monitoring
 

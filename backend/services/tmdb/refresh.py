@@ -12,6 +12,7 @@ run, so one bad key cannot make a whole task fail (wargame W1).
 
 from app_logger import ModuleLogger
 import database.manager.mediavideo as video_manager
+import database.manager.trailerprofile as trailerprofile_manager
 from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.mediavideo import VideoSource
@@ -29,9 +30,18 @@ class TMDBRefresher:
     makes no more calls.
     """
 
-    def __init__(self, api: TMDBAPI | None = None):
+    def __init__(
+        self, api: TMDBAPI | None = None, languages: list[str] | None = None
+    ):
         self.api = api or TMDBAPI(app_settings.tmdb_api_key)
         self._disabled = not self.api.configured
+        # One media item can match several profiles that each ask for a
+        # different language, and the answer is stored once for all of
+        # them. So the run asks TMDB for every language any enabled
+        # profile wants, in a single call per item.
+        self.languages = (
+            languages if languages is not None else profile_languages()
+        )
 
     @property
     def enabled(self) -> bool:
@@ -61,7 +71,9 @@ class TMDBRefresher:
             return 0
         try:
             videos = await self.api.get_videos(
-                int(media.tmdb_id), is_movie=media.is_movie
+                int(media.tmdb_id),
+                is_movie=media.is_movie,
+                languages=self.languages,
             )
         except TMDBAuthError as e:
             self._disabled = True
@@ -89,3 +101,28 @@ class TMDBRefresher:
                 **logger.media(media.id),
             )
         return len(candidates)
+
+
+def profile_languages() -> list[str]:
+    """The trailer languages that the enabled profiles ask for.
+
+    A profile with no language set takes any language, so it adds nothing
+    to the list.
+
+    Returns:
+        list[str]: The language codes, without repeats.
+    """
+    try:
+        profiles = trailerprofile_manager.get_trailerprofiles()
+    except Exception as e:
+        logger.warning(
+            f"Trailarr could not read the profiles to see which trailer"
+            f" languages to ask TMDB for: {e}"
+        )
+        return []
+    wanted = [
+        profile.language.strip()
+        for profile in profiles
+        if profile.enabled and profile.language and profile.language.strip()
+    ]
+    return list(dict.fromkeys(wanted))

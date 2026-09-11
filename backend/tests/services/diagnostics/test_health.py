@@ -208,7 +208,9 @@ class TestErrorClassification:
         import database.manager.downloadattempt as attempt_manager
         import database.manager.media as media_manager
         from database.models.media import MediaCreate
-        from tests.services.diagnostics.test_connection_doctor import _make_conn
+        from tests.services.diagnostics.test_connection_doctor import (
+            _make_conn,
+        )
 
         conn_id = _make_conn(f"Cls-{uuid.uuid4().hex[:8]}")
         media = media_manager.create(

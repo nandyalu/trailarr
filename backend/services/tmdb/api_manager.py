@@ -4,11 +4,18 @@ Trailarr asks TMDB which videos belong to a movie or a series, so that it
 downloads the trailer the studio published instead of the first result of a
 YouTube search.
 
-The client asks for every video and does not send a language filter. TMDB
-returns each video with the language it belongs to, and the resolver picks
-by the language of the profile. Asking TMDB to filter would hide the videos
-of the other languages, which the resolver wants when the language of the
-profile has none.
+TMDB answers with English videos only unless it is asked otherwise: the
+videos endpoint defaults to `language=en-US`. Measured against the live
+API, /movie/603/videos returns 4 trailers, all English, and the same call
+with `include_video_language=it,de,fr,en,null` returns 8 — the Italian,
+German and French ones as well.
+
+So the client sends `include_video_language`, built from the languages the
+profiles ask for plus English and `null` (a video with no language). One
+call then covers every profile that matches the item, whatever language
+each asks for. The parameter is not in the current TMDB reference, but it
+works; without it the trailer language of a profile could never do
+anything.
 
 The key: TMDB gives an account two credentials. The older one is an API key
 of 32 characters, which goes in the query. The newer one is a read access
@@ -91,6 +98,9 @@ class TMDBAPI:
         if path in self._cache:
             return self._cache[path]
         headers, params = self._auth()
+        # `path` may already carry a query, which urljoin-free formatting
+        # keeps, and the cache key is the whole path so two languages do
+        # not share an answer.
         url = f"{BASE_URL}/{path.lstrip('/')}"
         wait = _DEFAULT_RETRY_WAIT
         for attempt in range(_MAX_RETRIES):
@@ -145,7 +155,12 @@ class TMDBAPI:
         )
 
     async def get_videos(
-        self, tmdb_id: int, *, is_movie: bool, season: int | None = None
+        self,
+        tmdb_id: int,
+        *,
+        is_movie: bool,
+        season: int | None = None,
+        languages: list[str] | None = None,
     ) -> list[TMDBVideo]:
         """Get the videos that TMDB lists for one movie, series or season.
 
@@ -153,6 +168,9 @@ class TMDBAPI:
             tmdb_id (int): The id of the movie or series at TMDB.
             is_movie (bool): True for a movie, False for a series.
             season (int | None): The season number, for a season video list.
+            languages (list[str] | None): The languages the profiles ask
+                for. English and videos with no language always come back
+                as well, so one call serves every profile.
 
         Returns:
             list[TMDBVideo]: Every YouTube video that TMDB lists, in the
@@ -165,6 +183,7 @@ class TMDBAPI:
             path = f"tv/{tmdb_id}/season/{season}/videos"
         else:
             path = f"{kind}/{tmdb_id}/videos"
+        path = f"{path}?include_video_language={video_languages(languages)}"
         data = await self._get(path)
         results = data.get("results") or []
         videos: list[TMDBVideo] = []
@@ -209,3 +228,24 @@ def _retry_after(headers, fallback: float) -> float:
         return max(1.0, float(value))
     except (TypeError, ValueError):
         return fallback
+
+
+def video_languages(languages: list[str] | None) -> str:
+    """Build the `include_video_language` value.
+
+    English and `null` are always included: English because most trailers
+    are English and a profile asking for Italian still wants something when
+    Italian is missing, and `null` because TMDB marks some videos with no
+    language at all.
+
+    Args:
+        languages (list[str] | None): The languages profiles ask for.
+
+    Returns:
+        str: The comma-separated value for the query.
+    """
+    wanted = [
+        code.strip().lower() for code in (languages or []) if code.strip()
+    ]
+    # dict.fromkeys keeps the order and drops the repeats.
+    return ",".join(dict.fromkeys([*wanted, "en", "null"]))

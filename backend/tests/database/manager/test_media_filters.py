@@ -155,9 +155,7 @@ class TestRecentlyDownloaded:
             [_make_media(conn.id, f"rec{conn.id}del")]
         )
         media = result[0][0]
-        download_manager.create(
-            _make_download(media.id, file_exists=False)
-        )
+        download_manager.create(_make_download(media.id, file_exists=False))
         ids = [m.id for m in media_manager.read_recently_downloaded()]
         assert media.id not in ids
 
@@ -177,8 +175,6 @@ class TestStats:
         with_download = result[0][0]
         # two active downloads for ONE media -> still counts once (distinct)
         download_manager.create(_make_download(with_download.id))
-        download_manager.create(
-            _make_download(with_download.id, age_hours=5)
-        )
+        download_manager.create(_make_download(with_download.id, age_hours=5))
         after = general_manager.get_stats()
         assert after.trailers_detected == before.trailers_detected + 1

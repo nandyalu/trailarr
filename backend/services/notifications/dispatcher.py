@@ -106,7 +106,9 @@ def _media_info(media_id: int | None, cache: dict[int, object]):
     return cache[media_id]
 
 
-def _format_batch(notes: list[EventNote], media_cache: dict[int, object]) -> str:
+def _format_batch(
+    notes: list[EventNote], media_cache: dict[int, object]
+) -> str:
     """One message body for a channel's batch: up to MAX_LINES lines,
     then a summary of the rest."""
     lines: list[str] = []
@@ -306,7 +308,9 @@ def _discord_payload(
                 }
     else:
         count = len(notes)
-        embed["title"] = f"Trailarr — {count} update{'s' if count != 1 else ''}"
+        embed["title"] = (
+            f"Trailarr — {count} update{'s' if count != 1 else ''}"
+        )
         embed["description"] = _format_batch(notes, media_cache)
     payload = {
         "username": "Trailarr",
@@ -470,9 +474,7 @@ async def _dispatch_loop() -> None:
         try:
             await _dispatch_pending()
         except Exception as e:  # never let the loop die
-            logger.warning(
-                f"Trailarr could not send the notifications: {e}"
-            )
+            logger.warning(f"Trailarr could not send the notifications: {e}")
 
 
 def start() -> None:

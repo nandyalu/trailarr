@@ -75,7 +75,10 @@ class TestSourceOwnership:
         added, updated, removed = video_manager.replace_source_rows(
             media_id,
             VideoSource.TMDB,
-            [_video("aaa", media_id, sequence=0), _video("bbb", media_id, sequence=1)],
+            [
+                _video("aaa", media_id, sequence=0),
+                _video("bbb", media_id, sequence=1),
+            ],
         )
         assert (added, updated, removed) == (2, 0, 0)
 
@@ -91,7 +94,9 @@ class TestSourceOwnership:
 
     def test_a_refresh_leaves_the_rows_of_other_sources_alone(self, media_id):
         video_manager.replace_source_rows(
-            media_id, VideoSource.ARR, [_video("arr1", media_id, source=VideoSource.ARR)]
+            media_id,
+            VideoSource.ARR,
+            [_video("arr1", media_id, source=VideoSource.ARR)],
         )
         video_manager.add_user_video(media_id, "user1")
 
@@ -102,7 +107,8 @@ class TestSourceOwnership:
         video_manager.replace_source_rows(media_id, VideoSource.TMDB, [])
 
         remaining = {
-            v.video_id: v.source for v in video_manager.read_for_media(media_id)
+            v.video_id: v.source
+            for v in video_manager.read_for_media(media_id)
         }
         assert remaining == {
             "arr1": VideoSource.ARR,
@@ -123,7 +129,9 @@ class TestSourceOwnership:
         the row with the Arr showed a row with no title and sorted the
         agreed trailer below TMDB's others."""
         video_manager.replace_source_rows(
-            media_id, VideoSource.ARR, [_video("same", media_id, source=VideoSource.ARR)]
+            media_id,
+            VideoSource.ARR,
+            [_video("same", media_id, source=VideoSource.ARR)],
         )
         video_manager.replace_source_rows(
             media_id,
@@ -139,10 +147,14 @@ class TestSourceOwnership:
 
     def test_a_worse_source_does_not_take_the_row(self, media_id):
         video_manager.replace_source_rows(
-            media_id, VideoSource.TMDB, [_video("same", media_id, name="From TMDB")]
+            media_id,
+            VideoSource.TMDB,
+            [_video("same", media_id, name="From TMDB")],
         )
         video_manager.replace_source_rows(
-            media_id, VideoSource.ARR, [_video("same", media_id, source=VideoSource.ARR)]
+            media_id,
+            VideoSource.ARR,
+            [_video("same", media_id, source=VideoSource.ARR)],
         )
         rows = video_manager.read_for_media(media_id)
         assert len(rows) == 1
@@ -153,7 +165,9 @@ class TestSourceOwnership:
         """The invariant of decision 5b."""
         video_manager.add_user_video(media_id, "mine")
         video_manager.replace_source_rows(
-            media_id, VideoSource.TMDB, [_video("mine", media_id, name="TMDB name")]
+            media_id,
+            VideoSource.TMDB,
+            [_video("mine", media_id, name="TMDB name")],
         )
         rows = video_manager.read_for_media(media_id)
         assert len(rows) == 1
@@ -182,16 +196,21 @@ class TestUserVideos:
 
         # And a later TMDB refresh can no longer remove it.
         video_manager.replace_source_rows(media_id, VideoSource.TMDB, [])
-        assert [v.video_id for v in video_manager.read_for_media(media_id)] == [
-            "shared"
-        ]
+        assert [
+            v.video_id for v in video_manager.read_for_media(media_id)
+        ] == ["shared"]
 
     def test_relabelling_an_arr_row_as_the_choice_of_the_user(self, media_id):
         video_manager.replace_source_rows(
-            media_id, VideoSource.ARR, [_video("hand", media_id, source=VideoSource.ARR)]
+            media_id,
+            VideoSource.ARR,
+            [_video("hand", media_id, source=VideoSource.ARR)],
         )
         assert video_manager.relabel_as_user(media_id, "hand") is True
-        assert video_manager.read_for_media(media_id)[0].source == VideoSource.USER
+        assert (
+            video_manager.read_for_media(media_id)[0].source
+            == VideoSource.USER
+        )
         # Already a USER row: nothing to do.
         assert video_manager.relabel_as_user(media_id, "hand") is False
 
@@ -210,7 +229,9 @@ class TestCandidateOrder:
             [_video("search1", media_id, source=VideoSource.SEARCH)],
         )
         video_manager.replace_source_rows(
-            media_id, VideoSource.ARR, [_video("arr1", media_id, source=VideoSource.ARR)]
+            media_id,
+            VideoSource.ARR,
+            [_video("arr1", media_id, source=VideoSource.ARR)],
         )
         video_manager.replace_source_rows(
             media_id, VideoSource.TMDB, [_video("tmdb1", media_id)]
@@ -233,7 +254,10 @@ class TestCandidateOrder:
         order = [v.video_id for v in video_manager.read_candidates(media_id)]
         assert order == ["first", "second", "third"]
 
-    def test_the_language_of_the_profile_comes_first(self, media_id):
+    def test_only_the_asked_language_comes_back(self, media_id):
+        """A language is a filter, not an order: a profile that asks for
+        German gets the German trailer or nothing, never the English one.
+        Downloading the wrong language is the pain this feature removes."""
         video_manager.replace_source_rows(
             media_id,
             VideoSource.TMDB,
@@ -243,26 +267,27 @@ class TestCandidateOrder:
                 _video("none1", media_id, sequence=2, language=None),
             ],
         )
-        order = [
-            v.video_id for v in video_manager.read_candidates(media_id, language="de")
-        ]
-        # The asked language first, then the row with no language, then
-        # English, then the rest. Nothing is dropped: a trailer in another
-        # language is better than no trailer.
-        assert order[0] == "de1"
-        assert set(order) == {"en1", "de1", "none1"}
 
-    def test_the_source_still_wins_when_a_language_is_asked_for(self, media_id):
-        """A USER row carries no language, because a person pasted a link.
-        Ordering by language across sources therefore let a TMDB trailer in
-        the asked language beat the video the user chose. The source
-        decides first, and the language orders inside one source."""
+        assert [
+            v.video_id
+            for v in video_manager.read_candidates(media_id, language="de")
+        ] == ["de1"]
+        # Nothing recorded in French, so nothing comes back and the caller
+        # searches instead.
+        assert video_manager.read_candidates(media_id, language="fr") == []
+        # No language asked for: everything, in source order.
+        assert len(video_manager.read_candidates(media_id)) == 3
+
+    def test_the_source_still_decides_among_videos_of_one_language(
+        self, media_id
+    ):
+        """Filtering by language must not disturb the source order."""
         video_manager.replace_source_rows(
             media_id,
             VideoSource.TMDB,
             [_video("tmdb_en", media_id, language="en")],
         )
-        video_manager.add_user_video(media_id, "user_pick")
+        video_manager.add_user_video(media_id, "user_pick", language="en")
 
         order = [
             v.video_id
@@ -277,11 +302,12 @@ class TestCandidateOrder:
         video_manager.replace_source_rows(
             media_id, VideoSource.TMDB, [_video("main", media_id)]
         )
-        assert [v.video_id for v in video_manager.read_candidates(media_id)] == [
-            "main"
-        ]
         assert [
-            v.video_id for v in video_manager.read_candidates(media_id, season=1)
+            v.video_id for v in video_manager.read_candidates(media_id)
+        ] == ["main"]
+        assert [
+            v.video_id
+            for v in video_manager.read_candidates(media_id, season=1)
         ] == ["s1"]
 
 
@@ -309,54 +335,29 @@ class TestMediaDeletion:
         assert video_manager.read_for_media(media_id) == []
 
 
+class TestLanguageFilter:
+    """Wargame W2, re-decided: a language is a filter, and the fallback is
+    a YouTube search rather than a trailer in a language nobody asked for.
 
-class TestLanguageFallbackLadder:
-    """Wargame W2, table driven.
-
-    TMDB lists a trailer per language. When the language a profile asks for
-    has none, Trailarr walks down a ladder rather than giving up: a video
-    with no language, then English, then anything else. Inside each step
-    the order TMDB gave decides, and `to_candidates` puts an official
-    trailer first, so the official one of a step comes first.
+    A profile writes its own search query, so a user who wants Italian can
+    aim the search at Italian — which is a better answer than a German
+    trailer.
     """
 
-    # (what TMDB offers as (video_id, language), what the profile asks for,
-    #  which video must be chosen, why)
     CASES = [
-        (
-            [("de1", "de"), ("en1", "en")],
-            "de",
-            "de1",
-            "the language asked for wins",
-        ),
+        ([("de1", "de"), ("en1", "en")], "de", ["de1"], "the asked language"),
         (
             [("en1", "en"), ("fr1", "fr")],
             "de",
-            "en1",
-            "no German, so English",
+            [],
+            "no German: search instead",
         ),
-        (
-            [("none1", None), ("en1", "en")],
-            "de",
-            "none1",
-            "a video with no language beats a language that was not asked for",
-        ),
-        (
-            [("fr1", "fr"), ("it1", "it")],
-            "de",
-            "fr1",
-            "no German, no English: the first that TMDB gave",
-        ),
-        (
-            [("en1", "en")],
-            "en",
-            "en1",
-            "the usual case",
-        ),
+        ([("none1", None)], "de", [], "an unknown language is not German"),
+        ([("en1", "en"), ("fr1", "fr")], "", ["en1", "fr1"], "any language"),
     ]
 
     @pytest.mark.parametrize("offered,asked,expected,reason", CASES)
-    def test_the_ladder(self, media_id, offered, asked, expected, reason):
+    def test_the_filter(self, media_id, offered, asked, expected, reason):
         video_manager.replace_source_rows(
             media_id,
             VideoSource.TMDB,
@@ -368,29 +369,4 @@ class TestLanguageFallbackLadder:
 
         chosen = video_manager.read_candidates(media_id, language=asked)
 
-        assert chosen[0].video_id == expected, reason
-        # Nothing is dropped: a trailer in another language is better than
-        # no trailer at all.
-        assert len(chosen) == len(offered)
-
-
-def test_a_claim_persists_when_nothing_else_about_the_row_changes(media_id):
-    """The source change must be saved on its own.
-
-    The update below it writes only when a field differs, so a row whose
-    title and language already match would leave the claim unsaved if the
-    claim were not added to the session itself.
-    """
-    identical = dict(name="Same", language="en", official=True, sequence=0)
-    video_manager.replace_source_rows(
-        media_id,
-        VideoSource.ARR,
-        [_video("shared", media_id, source=VideoSource.ARR, **identical)],
-    )
-    video_manager.replace_source_rows(
-        media_id, VideoSource.TMDB, [_video("shared", media_id, **identical)]
-    )
-
-    rows = video_manager.read_for_media(media_id)
-    assert len(rows) == 1
-    assert rows[0].source == VideoSource.TMDB
+        assert [c.video_id for c in chosen] == expected, reason

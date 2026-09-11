@@ -63,9 +63,7 @@ class TestSubtitleOptions:
         assert "--write-subs" in options
         assert "--write-auto-subs" in options
 
-    def test_disabled_subtitles_add_no_subtitle_options(
-        self, trailer_profile
-    ):
+    def test_disabled_subtitles_add_no_subtitle_options(self, trailer_profile):
         trailer_profile.subtitles_enabled = False
         options = _get_ytdl_options(trailer_profile)
         assert "--write-subs" not in options
@@ -74,9 +72,7 @@ class TestSubtitleOptions:
 
 
 class TestUserOptionOverrideWarning:
-    def test_user_format_option_warns_and_stays_active(
-        self, trailer_profile
-    ):
+    def test_user_format_option_warns_and_stays_active(self, trailer_profile):
         trailer_profile.ytdlp_extra_options = "-f bestvideo+bestaudio"
         with patch("services.trailers.video_v2.logger.warning") as mock_warn:
             options = _get_ytdl_options(trailer_profile)

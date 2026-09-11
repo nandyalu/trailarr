@@ -7,9 +7,7 @@ moved it into a service, where it can be called with a string.
 from services import logs as logs_service
 
 # A real line, as ModuleLogger writes it
-REAL_LINE = (
-    "2026-08-28T01:41:48-0500 [INFO|main|L075]: Main: Starting Trailarr application"
-)
+REAL_LINE = "2026-08-28T01:41:48-0500 [INFO|main|L075]: Main: Starting Trailarr application"
 
 
 class TestParseLogLine:
@@ -85,4 +83,6 @@ class TestDownloadHelpers:
     def test_an_existing_file_is_returned(self, tmp_path, monkeypatch):
         (tmp_path / "trailarr.log").write_text("hello")
         monkeypatch.setattr(logs_service, "logs_dir", lambda: str(tmp_path))
-        assert logs_service.log_file_to_download() == f"{tmp_path}/trailarr.log"
+        assert (
+            logs_service.log_file_to_download() == f"{tmp_path}/trailarr.log"
+        )

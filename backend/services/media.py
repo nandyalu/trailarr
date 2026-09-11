@@ -135,7 +135,9 @@ def list_videos(media_id: int) -> list[MediaVideoRead]:
     return video_manager.read_for_media(media_id)
 
 
-def add_video(media_id: int, video_id: str) -> MediaVideoRead:
+def add_video(
+    media_id: int, video_id: str, language: str | None = None
+) -> MediaVideoRead:
     """Add a video that the user chose.
 
     The same thing happens as when a user types an id into the YouTube ID
@@ -146,6 +148,9 @@ def add_video(media_id: int, video_id: str) -> MediaVideoRead:
     Args:
         media_id (int): The media item.
         video_id (str): The YouTube id. The caller reads it out of a URL.
+        language (str | None): The language the video is in, so that a
+            profile asking for that language can use it. None means the
+            video suits a profile that takes any language.
 
     Returns:
         MediaVideoRead: The row that was created, or the row that another
@@ -154,7 +159,7 @@ def add_video(media_id: int, video_id: str) -> MediaVideoRead:
     media = media_manager.read(media_id)
     old_yt_id = media.youtube_trailer_id
 
-    row = video_manager.add_user_video(media_id, video_id)
+    row = video_manager.add_user_video(media_id, video_id, language=language)
     media_manager.update_ytid(media_id, video_id)
     if old_yt_id != video_id:
         event_manager.track_youtube_id_changed(

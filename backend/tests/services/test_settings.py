@@ -62,7 +62,9 @@ class TestUpdateSetting:
         """0 is falsy but valid — only None and "" are refused."""
         with patch(f"{PKG}.app_settings") as mock_settings:
             mock_settings.monitor_interval = 60
-            result = await settings_service.update_setting("monitor_interval", 0)
+            result = await settings_service.update_setting(
+                "monitor_interval", 0
+            )
 
         assert mock_settings.monitor_interval == 0
         assert "updated to" in result
@@ -86,7 +88,8 @@ class TestUpdateLogin:
         with (
             patch(f"{PKG}.auth.verify_password", return_value=True),
             patch(
-                f"{PKG}.auth.set_username", return_value="Username updated successfully"
+                f"{PKG}.auth.set_username",
+                return_value="Username updated successfully",
             ) as mock_user,
             patch(f"{PKG}.auth.set_password") as mock_pass,
         ):
@@ -102,7 +105,8 @@ class TestUpdateLogin:
             patch(f"{PKG}.auth.verify_password", return_value=True),
             patch(f"{PKG}.auth.set_username") as mock_user,
             patch(
-                f"{PKG}.auth.set_password", return_value="Password updated successfully"
+                f"{PKG}.auth.set_password",
+                return_value="Password updated successfully",
             ) as mock_pass,
         ):
             result = settings_service.update_login("right", None, "newpass")
@@ -184,7 +188,9 @@ class TestSecretSettings:
                     "tmdb_api_key", "****99eb"
                 )
 
-        assert mock_settings.tmdb_api_key == self.KEY, "the key was overwritten"
+        assert (
+            mock_settings.tmdb_api_key == self.KEY
+        ), "the key was overwritten"
         assert api.call_count == 0, "a masked value must not reach TMDB"
         assert result == "The TMDB API key did not change."
 

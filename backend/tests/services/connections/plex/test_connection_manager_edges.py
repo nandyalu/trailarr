@@ -23,12 +23,16 @@ from database.models.media import MediaCreate
 from database.engine import write_session
 import database.manager.media as media_manager
 from services.connections.plex.connection_manager import PlexConnectionManager
-from services.connections.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
-
+from services.connections.plex.models import (
+    PlexEpisodeLeaf,
+    PlexLibrarySection,
+    PlexMediaItem,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 @write_session
 def _make_plex_conn(name: str, *, _session: Session = None) -> int:  # type: ignore
@@ -45,7 +49,9 @@ def _make_plex_conn(name: str, *, _session: Session = None) -> int:  # type: ign
     return conn.id  # type: ignore
 
 
-def _pm(path_from: str, path_to: str = "", *, section_key: str | None = "1") -> SimpleNamespace:
+def _pm(
+    path_from: str, path_to: str = "", *, section_key: str | None = "1"
+) -> SimpleNamespace:
     return SimpleNamespace(
         id=9999,
         path_from=path_from,
@@ -54,21 +60,32 @@ def _pm(path_from: str, path_to: str = "", *, section_key: str | None = "1") -> 
     )
 
 
-def _section(key: str, type_: str, folder: str, title: str = "Lib") -> PlexLibrarySection:
+def _section(
+    key: str, type_: str, folder: str, title: str = "Lib"
+) -> PlexLibrarySection:
     return PlexLibrarySection.model_validate(
-        {"key": key, "type": type_, "title": title, "Location": [{"path": folder}]}
+        {
+            "key": key,
+            "type": type_,
+            "title": title,
+            "Location": [{"path": folder}],
+        }
     )
 
 
-def _movie_item(prefix: str, i: int, folder: str | None = None) -> PlexMediaItem:
+def _movie_item(
+    prefix: str, i: int, folder: str | None = None
+) -> PlexMediaItem:
     f = folder or f"/plex/{prefix}/movies/Film{i}"
-    return PlexMediaItem.model_validate({
-        "ratingKey": str(7000 + i),
-        "title": f"Edge Film {i}",
-        "year": 2010,
-        "Media": [{"Part": [{"file": f"{f}/movie.mkv"}]}],
-        "Guid": [{"id": f"tmdb://{800000 + i}"}],
-    })
+    return PlexMediaItem.model_validate(
+        {
+            "ratingKey": str(7000 + i),
+            "title": f"Edge Film {i}",
+            "year": 2010,
+            "Media": [{"Part": [{"file": f"{f}/movie.mkv"}]}],
+            "Guid": [{"id": f"tmdb://{800000 + i}"}],
+        }
+    )
 
 
 def _build_manager(
@@ -88,7 +105,9 @@ def _build_manager(
             _pm(f"/plex/{prefix}/shows"),
         ],
     )
-    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch(
+        "services.connections.plex.connection_manager.PlexAPI"
+    ) as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         mgr = PlexConnectionManager(connection)
     return mgr
@@ -98,15 +117,14 @@ def _build_manager(
 # Creation-time monitor default (Phase 4)
 # ---------------------------------------------------------------------------
 
+
 class TestCreationMonitorDefault:
     """Phase 4: the connection's monitor_new_media bool is applied once at
     creation; trailer presence no longer influences the monitor flag."""
 
     def _our_media(self, conn_id: int):
         return [
-            m
-            for m in media_manager.read_all()
-            if m.connection_id == conn_id
+            m for m in media_manager.read_all() if m.connection_id == conn_id
         ]
 
     @pytest.mark.asyncio
@@ -124,12 +142,14 @@ class TestCreationMonitorDefault:
     @pytest.mark.asyncio
     async def test_new_item_gets_monitor_true(self):
         import uuid
+
         conn_id = await self._sync_one(True, uuid.uuid4().hex[:10])
         assert [m.monitor for m in self._our_media(conn_id)] == [True]
 
     @pytest.mark.asyncio
     async def test_new_item_gets_monitor_false(self):
         import uuid
+
         conn_id = await self._sync_one(False, uuid.uuid4().hex[:10])
         assert [m.monitor for m in self._our_media(conn_id)] == [False]
 
@@ -138,11 +158,13 @@ class TestCreationMonitorDefault:
 # _process_item_chunk edge cases
 # ---------------------------------------------------------------------------
 
+
 class TestProcessItemChunkEdges:
 
     @pytest.fixture(autouse=True)
     def setup(self):
         import uuid
+
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_plex_conn(f"ChunkEdge-{self._p}")
         self.mgr = _build_manager(self.conn_id, self._p)
@@ -160,7 +182,8 @@ class TestProcessItemChunkEdges:
     @pytest.mark.asyncio
     async def test_item_not_in_configured_library_is_skipped(self):
         """Item whose plex_folder is outside all path_from values is skipped
-        (lines 193-198), leaving parsed empty → early return (lines 211-212)."""
+        (lines 193-198), leaving parsed empty → early return (lines 211-212).
+        """
         foreign_item = _movie_item(self._p, 0, folder="/unmapped/Film0")
         chunk = [(foreign_item, self.section, True, "/unmapped/Film0")]
         await self._run_chunk(chunk)
@@ -170,13 +193,15 @@ class TestProcessItemChunkEdges:
     async def test_item_with_empty_plex_folder_skips_path_mapping(self):
         """Item with empty plex_folder skips library check and path mapping
         (else branch of the plex_folder check)."""
-        item = PlexMediaItem.model_validate({
-            "ratingKey": "9001",
-            "title": "No Folder Film",
-            "year": 2020,
-            "Guid": [{"id": "tmdb://990001"}],
-            # No Media.Part.file and no Location → media_folder = ""
-        })
+        item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "9001",
+                "title": "No Folder Film",
+                "year": 2020,
+                "Guid": [{"id": "tmdb://990001"}],
+                # No Media.Part.file and no Location → media_folder = ""
+            }
+        )
         chunk = [(item, self.section, True, "")]
         await self._run_chunk(chunk)
         assert self.mgr._stats_added == 1
@@ -189,7 +214,8 @@ class TestProcessItemChunkEdges:
         folder = f"/plex/{self._p}/movies/Film50"
 
         original_parse = __import__(
-            "services.connections.plex.data_parser", fromlist=["parse_plex_item"]
+            "services.connections.plex.data_parser",
+            fromlist=["parse_plex_item"],
         ).parse_plex_item
 
         def _parse_with_yt(*args, **kwargs):
@@ -198,7 +224,10 @@ class TestProcessItemChunkEdges:
             return mc
 
         chunk = [(item, self.section, True, folder)]
-        with patch("services.connections.plex.connection_manager.parse_plex_item", side_effect=_parse_with_yt):
+        with patch(
+            "services.connections.plex.connection_manager.parse_plex_item",
+            side_effect=_parse_with_yt,
+        ):
             await self._run_chunk(chunk)
 
         assert self.mgr._stats_added == 1
@@ -235,31 +264,46 @@ class TestProcessItemChunkEdges:
 # _process_show_section edge cases
 # ---------------------------------------------------------------------------
 
+
 class TestProcessShowSectionEdges:
 
     @pytest.fixture(autouse=True)
     def setup(self):
         import uuid
+
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_plex_conn(f"ShowEdge-{self._p}")
         self.mgr = _build_manager(self.conn_id, self._p)
-        self.section = _section("2", "show", f"/plex/{self._p}/shows", title="Shows")
+        self.section = _section(
+            "2", "show", f"/plex/{self._p}/shows", title="Shows"
+        )
 
     @pytest.mark.asyncio
     async def test_leaf_with_no_grandparent_key_is_ignored(self):
         """A leaf with empty grandparentRatingKey is skipped in folder_map build
-        (line 382, false branch of `if leaf.grandparentRatingKey and leaf.media_folder`)."""
-        bad_leaf = PlexEpisodeLeaf.model_validate({
-            "grandparentRatingKey": "",
-            "Media": [{"Part": [{"file": f"/plex/{self._p}/shows/Show0/S01E01.mkv"}]}],
-        })
-        show_item = PlexMediaItem.model_validate({
-            "ratingKey": "6001",
-            "title": "Show Zero",
-            "year": 2018,
-            "Location": [{"path": f"/plex/{self._p}/shows/Show0"}],
-            "Guid": [{"id": "tvdb://600001"}],
-        })
+        (line 382, false branch of `if leaf.grandparentRatingKey and leaf.media_folder`).
+        """
+        bad_leaf = PlexEpisodeLeaf.model_validate(
+            {
+                "grandparentRatingKey": "",
+                "Media": [
+                    {
+                        "Part": [
+                            {"file": f"/plex/{self._p}/shows/Show0/S01E01.mkv"}
+                        ]
+                    }
+                ],
+            }
+        )
+        show_item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "6001",
+                "title": "Show Zero",
+                "year": 2018,
+                "Location": [{"path": f"/plex/{self._p}/shows/Show0"}],
+                "Guid": [{"id": "tvdb://600001"}],
+            }
+        )
 
         async def _leaves(_key):
             yield bad_leaf
@@ -282,17 +326,29 @@ class TestProcessShowSectionEdges:
     async def test_commonpath_value_error_falls_back_to_first_path(self):
         """When os.path.commonpath raises ValueError, the fallback uses paths[0]
         (lines 387-390)."""
-        leaf = PlexEpisodeLeaf.model_validate({
-            "grandparentRatingKey": "6002",
-            "Media": [{"Part": [{"file": f"/plex/{self._p}/shows/ShowErr/S01E01.mkv"}]}],
-        })
-        show_item = PlexMediaItem.model_validate({
-            "ratingKey": "6002",
-            "title": "Show Error",
-            "year": 2019,
-            "Location": [{"path": f"/plex/{self._p}/shows/ShowErr"}],
-            "Guid": [{"id": "tvdb://600002"}],
-        })
+        leaf = PlexEpisodeLeaf.model_validate(
+            {
+                "grandparentRatingKey": "6002",
+                "Media": [
+                    {
+                        "Part": [
+                            {
+                                "file": f"/plex/{self._p}/shows/ShowErr/S01E01.mkv"
+                            }
+                        ]
+                    }
+                ],
+            }
+        )
+        show_item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "6002",
+                "title": "Show Error",
+                "year": 2019,
+                "Location": [{"path": f"/plex/{self._p}/shows/ShowErr"}],
+                "Guid": [{"id": "tvdb://600002"}],
+            }
+        )
 
         async def _leaves(_key):
             yield leaf
@@ -318,11 +374,13 @@ class TestProcessShowSectionEdges:
 # _process_section: untracked / unsupported type / _persist_section_keys
 # ---------------------------------------------------------------------------
 
+
 class TestProcessSection:
 
     @pytest.fixture(autouse=True)
     def setup(self):
         import uuid
+
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_plex_conn(f"SecEdge-{self._p}")
         self.mgr = _build_manager(self.conn_id, self._p)
@@ -331,7 +389,9 @@ class TestProcessSection:
     async def test_untracked_section_is_skipped(self):
         """Section whose folders don't match any path_from is skipped before
         any processing (lines 412-417)."""
-        untracked = _section("9", "movie", "/completely/different/path", title="Untracked")
+        untracked = _section(
+            "9", "movie", "/completely/different/path", title="Untracked"
+        )
         await self.mgr._process_section(untracked)
         assert self.mgr._stats_sections_scanned == 0
 
@@ -339,12 +399,16 @@ class TestProcessSection:
     async def test_unsupported_section_type_logs_and_does_nothing(self):
         """Section type not in movie/show constants logs and returns without adding
         media (lines 424-428)."""
-        music = PlexLibrarySection.model_validate({
-            "key": "5",
-            "type": "artist",
-            "title": "Music",
-            "Location": [{"path": f"/plex/{self._p}/movies"}],  # tracked folder
-        })
+        music = PlexLibrarySection.model_validate(
+            {
+                "key": "5",
+                "type": "artist",
+                "title": "Music",
+                "Location": [
+                    {"path": f"/plex/{self._p}/movies"}
+                ],  # tracked folder
+            }
+        )
         await self.mgr._process_section(music)
         assert self.mgr._stats_added == 0
         # Section IS tracked, so it counts as scanned
@@ -354,6 +418,7 @@ class TestProcessSection:
         """_persist_section_keys calls update_path_mapping_section_key when the
         path mapping's plex_section_key is None (lines 157-165)."""
         import uuid
+
         p = uuid.uuid4().hex[:10]
         conn_id = _make_plex_conn(f"PersistKey-{p}")
         pm_none = SimpleNamespace(
@@ -370,7 +435,9 @@ class TestProcessSection:
             monitor_new_media=True,
             path_mappings=[pm_none],
         )
-        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch(
+            "services.connections.plex.connection_manager.PlexAPI"
+        ) as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             mgr = PlexConnectionManager(connection)
 
@@ -387,11 +454,13 @@ class TestProcessSection:
 # refresh: no path mappings + section exception
 # ---------------------------------------------------------------------------
 
+
 class TestRefreshEdges:
 
     @pytest.fixture(autouse=True)
     def setup(self):
         import uuid
+
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_plex_conn(f"RefEdge-{self._p}")
 
@@ -404,7 +473,9 @@ class TestRefreshEdges:
             monitor_new_media=True,
             path_mappings=path_mappings,
         )
-        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch(
+            "services.connections.plex.connection_manager.PlexAPI"
+        ) as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             return PlexConnectionManager(connection)
 
@@ -424,7 +495,9 @@ class TestRefreshEdges:
         """An exception in _process_section is caught and logged; refresh()
         does not propagate it (lines 487-492)."""
         mgr = self._build([_pm(f"/plex/{self._p}/movies")])
-        broken_section = _section("1", "movie", f"/plex/{self._p}/movies", title="Broken")
+        broken_section = _section(
+            "1", "movie", f"/plex/{self._p}/movies", title="Broken"
+        )
 
         async def _get_libraries():
             return [broken_section]
@@ -433,7 +506,9 @@ class TestRefreshEdges:
         mock_api.get_libraries = _get_libraries
         mgr.api = mock_api
 
-        with patch.object(mgr, "_process_section", side_effect=RuntimeError("boom")):
+        with patch.object(
+            mgr, "_process_section", side_effect=RuntimeError("boom")
+        ):
             await mgr.refresh()  # must not raise
 
         assert mgr._stats_sections_scanned == 0
@@ -443,11 +518,13 @@ class TestRefreshEdges:
 # trigger_item_scan: success and failure paths
 # ---------------------------------------------------------------------------
 
+
 class TestTriggerItemScan:
 
     @pytest.fixture(autouse=True)
     def setup(self):
         import uuid
+
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_plex_conn(f"TrigScan-{self._p}")
 
@@ -473,7 +550,9 @@ class TestTriggerItemScan:
             monitor_new_media=True,
             path_mappings=[_pm(f"/plex/{self._p}/movies")],
         )
-        with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+        with patch(
+            "services.connections.plex.connection_manager.PlexAPI"
+        ) as MockAPI:
             MockAPI.return_value = MagicMock(server_url="")
             self.mgr = PlexConnectionManager(mgr_conn)
 

@@ -100,6 +100,10 @@ export class MediaDetailsComponent {
    * them. The first one is what a download takes right now. */
   readonly knownVideos = signal<MediaVideo[]>([]);
 
+  /** The language of the video being added, as a 2-letter code. Empty
+   * means the video suits a profile that takes any language. */
+  videoLanguage = '';
+
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
     if (media) {
@@ -221,6 +225,28 @@ export class MediaDetailsComponent {
       });
   }
 
+  /** Adds the video in the box as one the user chose. */
+  addChosenVideo() {
+    this.webSocketService.showToast('Saving your video...');
+    this.isLoadingDownload.set(true);
+    this.mediaService
+      .addMediaVideo(this.mediaId(), this.trailer_url.trim(), this.videoLanguage.trim())
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not add the video.', 'Error');
+          this.isLoadingDownload.set(false);
+          return of(null);
+        }),
+      )
+      .subscribe((row) => {
+        this.isLoadingDownload.set(false);
+        if (row) {
+          this.videoLanguage = '';
+          this.loadKnownVideos();
+        }
+      });
+  }
+
   /** Reads the known videos for the media item that is open. */
   loadKnownVideos() {
     const mediaId = this.mediaId();
@@ -279,7 +305,13 @@ export class MediaDetailsComponent {
   }
 
   saveYtId() {
-    // console.log('Saving youtube id');
+    // An id that a person types is a video that person chose, so it goes
+    // in as one, with the language they say it is in. An empty box still
+    // goes through the old call, which clears the stored id.
+    if (this.trailer_url?.trim()) {
+      this.addChosenVideo();
+      return;
+    }
     this.webSocketService.showToast('Saving youtube id...');
     this.isLoadingDownload.set(true);
     this.mediaService

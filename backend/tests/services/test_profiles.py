@@ -108,11 +108,17 @@ class TestFindMatchingProfiles:
 
 class TestPickProfileForDownload:
     def test_picks_highest_priority_matching_profile(self):
-        profiles = [make_profile(1, priority=500), make_profile(2, priority=10)]
+        profiles = [
+            make_profile(1, priority=500),
+            make_profile(2, priority=10),
+        ]
         assert pick_profile_for_download(make_media(), profiles, set()) == 2
 
     def test_skips_profiles_already_owning_a_download(self):
-        profiles = [make_profile(1, priority=10), make_profile(2, priority=500)]
+        profiles = [
+            make_profile(1, priority=10),
+            make_profile(2, priority=500),
+        ]
         assert pick_profile_for_download(make_media(), profiles, {1}) == 2
 
     def test_returns_zero_when_all_matching_profiles_used(self):

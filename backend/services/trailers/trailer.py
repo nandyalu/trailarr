@@ -114,7 +114,9 @@ async def _notify_plex(media: MediaRead) -> None:
         if conn.arr_type != ArrType.PLEX:
             return
         # Import here to avoid a circular import at module level
-        from services.connections.plex.connection_manager import PlexConnectionManager
+        from services.connections.plex.connection_manager import (
+            PlexConnectionManager,
+        )
 
         plex_manager = PlexConnectionManager(conn)
         await plex_manager.trigger_item_scan(
@@ -318,9 +320,7 @@ async def download_trailer(
         )
         return True
     except Exception as e:
-        logger.exception(
-            f"Trailarr could not download the trailer: {e}"
-        )
+        logger.exception(f"Trailarr could not download the trailer: {e}")
         if _stop_event and _stop_event.is_set():
             logger.info(
                 f"Trailarr stopped the download for '{media.title}'. A stop was"

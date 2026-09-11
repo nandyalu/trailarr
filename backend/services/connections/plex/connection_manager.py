@@ -40,6 +40,7 @@ _SEASON_FOLDER_RE = re.compile(
     re.IGNORECASE,
 )
 
+
 def _resolve_show_root(folder: str) -> str:
     """Return the show-root folder. Strip a trailing season directory
     if one is detected.

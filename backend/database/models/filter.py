@@ -69,7 +69,16 @@ VIRTUAL_DATE_COLS = ["download_added_at"]
 # media as soon as it downloads a trailer for it.
 VIEW_ONLY_COLS = set(VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS)
 
-INT_COLS = ["arr_id", "connection_id", "id", "runtime", "season_count", "tmdb_id", "tvdb_id", "year"]
+INT_COLS = [
+    "arr_id",
+    "connection_id",
+    "id",
+    "runtime",
+    "season_count",
+    "tmdb_id",
+    "tvdb_id",
+    "year",
+]
 STR_COLS = [
     "clean_title",
     "folder_path",
