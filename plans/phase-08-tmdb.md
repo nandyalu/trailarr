@@ -189,5 +189,4 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
 - **Season videos beyond the column.** Listed above; Phase 10 owns it.
 - **The `media.youtube_trailer_id` column** still exists and is still written. H9 in the
   hygiene backlog retires it in Phase 9, as planned.
-- **A component test for the Known videos template.** (The service calls have tests.)
 - **Release notes are a draft** with a TBD date, and the roadmap row says in progress.
