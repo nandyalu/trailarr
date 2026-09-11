@@ -20,9 +20,15 @@ The **Settings > Health** page runs live checks of the parts that Trailarr depen
 
 ## YouTube download test
 
-The **Test YouTube download** button checks that yt-dlp can read a known test video from YouTube. It uses your current settings, and your cookies file when you have one. Trailarr does not download the video.
+{{ version_badge("upd", "0.13.0") }}
 
-The test contacts YouTube, so it never runs automatically. You must confirm it first. Trailarr keeps the result for 24 hours. When the test fails, the result shows the reason in plain language (sign-in required, rate limit, outdated yt-dlp) instead of a raw error.
+Checks that yt-dlp can read a video from YouTube with your current setup, including your cookies file when you have one. It reads the video information and downloads nothing.
+
+Trailarr asks YouTube for a search result rather than a fixed video. A fixed video can be deleted — the one this test used before `v0.13.0` was, and every health page then reported that the setup was broken when nothing was wrong. A search always resolves to a video that exists, and it uses the same code that Trailarr uses when it searches for a trailer.
+
+If the video it picks cannot be read — deleted, private, or not available in your country — Trailarr tries a second search, and says that it reached YouTube. That is a warning, not an error: the video is the problem, not your setup. A sign-in wall, a rate limit or an outdated yt-dlp is an error, and says what to do.
+
+The result is kept for 24 hours and shown with the checks above.
 
 ## YouTube cookies
 

@@ -122,3 +122,39 @@ def classified_error(error_text: str) -> str:
     lines = [line.strip() for line in error_text.splitlines() if line.strip()]
     raw = lines[-1] if lines else ""
     return f"{reason} [{raw}]" if raw else reason
+
+
+# A video that cannot be read says nothing about whether yt-dlp and the
+# network work: the video was removed, made private, or is region locked.
+# The health test tells this apart from a real failure, because blaming a
+# user's setup for someone else deleting a video sends them hunting for a
+# problem they do not have.
+_UNAVAILABLE_FRAGMENTS = (
+    "video unavailable",
+    "this video is unavailable",
+    "video is private",
+    "private video",
+    "has been removed",
+    "removed by the uploader",
+    "no longer available",
+    # YouTube words the geo-block two ways: "is not available in your
+    # country" and "has not made this video available in your country".
+    "available in your country",
+    "unavailable in your country",
+)
+
+
+def is_video_unavailable(error_text: str | None) -> bool:
+    """Whether the error is about one video rather than about yt-dlp.
+
+    Args:
+        error_text: The raw yt-dlp output or exception text.
+
+    Returns:
+        bool: True when the video could not be read, and everything else
+            about the setup looks fine.
+    """
+    if not error_text:
+        return False
+    lowered = error_text.lower()
+    return any(f in lowered for f in _UNAVAILABLE_FRAGMENTS)
