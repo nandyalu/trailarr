@@ -60,6 +60,16 @@ Useful if you have permission issues with the application writing to the volume.
 ```
 
 
+### `TMDB_API_KEY`
+
+{{ version_badge("add", "0.13.0") }}
+
+- Default is empty.
+
+Your TMDB API key or read access token. With one, Trailarr takes a trailer from the list that TMDB curates instead of searching YouTube — see [TMDB](../../user-guide/settings/tmdb.md).
+
+Set it in `Settings > General` instead, unless you keep every setting in your compose file. Trailarr checks a key that you type in the WebUI before it stores it; a key from a variable is used as it is.
+
 ### `TZ`
 
 - Default is `America/New_York`.

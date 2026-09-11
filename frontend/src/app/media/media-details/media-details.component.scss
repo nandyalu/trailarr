@@ -282,6 +282,13 @@
   }
 }
 
+/* A quiet caption, not a notice: `.info-text` is styled as an alert and
+   this line is permanent. */
+.known-videos-hint {
+  margin: 0.15rem 0 0;
+  color: var(--color-on-surface-variant);
+}
+
 /* The list of videos Trailarr could download for this item. */
 .known-videos {
   list-style: none;

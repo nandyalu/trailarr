@@ -49,6 +49,21 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 !!! note "Retries vs. backoff"
     {{ version_badge("add", "0.10.0") }} Retries here happen immediately, within the same task run. If all retries fail, the download is attempted again on a later task run with an increasing delay — 1 day after the first failure, then 2 days, then 4, capped at weekly. See [Download Missing Trailers](../../../tasks/index.md#download-missing-trailers).
 
+## Trailer Language
+
+{{ version_badge("add", "0.13.0") }}
+
+| Type    | Required | Default | Valid Values                     |
+|:-------:|:--------:|:-------:|:--------------------------------:|
+| String  | Yes      | en      | valid ISO 639-1 language code    |
+
+Which language of trailer this profile prefers. TMDB lists a trailer per language, and Trailarr puts the one in this language first — see [TMDB](../../tmdb.md).
+
+This is a preference, not a filter. When the language you ask for has no trailer, Trailarr takes one with no language, then an English one, then any other. A trailer in another language is better than no trailer.
+
+!!! note ""
+    This setting orders the videos from TMDB. It does nothing while no TMDB API key is set, because the other sources report one id and not a list per language.
+
 ## Stop Monitoring
 
 {{ version_badge("upd", "0.10.2") }}
