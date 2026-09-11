@@ -1,8 +1,9 @@
 # Phase 8 — TMDB Integration
 
-**Status:** not started · **Release:** v0.13.0, target Nov 2026 · **Depends on:** Phase 7 (paths below are
-post-reorg; translate via phase-07 move map if executing earlier)
-**Refresh this plan before execution** — verify TMDB API terms/endpoints unchanged.
+**Status:** IN PROGRESS (Sep 11, 2026, branch `feat/phase8-tmdb`) — the backbone is
+built, tested and verified against the live TMDB API and a copy of the 3,704-title
+library. See "Where this phase stands" at the end of this file. · **Release:** v0.13.0,
+target Nov 2026 · **Depends on:** Phase 7 (shipped in v0.12.0)
 
 ## Objective
 
@@ -132,3 +133,57 @@ task on ~50-item slice, inspect rows.
 Trailer resolution provably prefers TMDB (log line per resolution source); no key = no
 behavior change; candidates visible on media details; Docs section executed (TMDB setup
 page live) + roadmap tick; release notes with key-setup walkthrough.
+
+---
+
+## Where this phase stands (Sep 11, 2026)
+
+Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests pass.
+
+### Done
+
+- **The candidates table.** `MediaVideo` with every column of decision 1, the manager
+  that owns the source rules, and the migration that moves `media.youtube_trailer_id`
+  into ARR rows. Verified on a copy of the real library: 2,560 ids moved in 1.1s, none
+  left behind, no orphan rows.
+- **The TMDB client** (`services/tmdb/`), the mapping to candidates, and the refresher.
+  Live-verified against api.themoviedb.org with a real key.
+- **Settings and profile.** `tmdb_api_key`, masked in the API and checked against TMDB
+  before it is stored; profile `language`.
+- **Resolution.** `get_video_id` reads the table, in the order USER, TMDB, ARR, SEARCH,
+  and searches only when the table offers nothing. A search result is written back.
+  `DownloadAttempt.last_video_id` moves a failed candidate to the end of the next run.
+- **Population.** Lazy refresh with a 7-day TTL in the download task
+  (`media.last_videos_refresh`), plus the `Refresh Video Lists` task every 12 hours,
+  capped at 200 items per run.
+- **UI and API.** Three endpoints on `/media/{id}/videos`; the Known videos list, the
+  TMDB key field and the Trailer Language field.
+- **Docs.** The TMDB page, media details, profile settings, the FAQ, the environment
+  variables, `llms.txt`, draft v0.13.0 release notes.
+
+### Three decisions that the plan got wrong, and why
+
+1. **`include_video_language` is gone from the TMDB reference.** The client asks for
+   every video and the resolver picks the language instead. That also keeps the other
+   languages, which the resolver wants when the asked language has none.
+2. **The order TMDB returns is not useful.** The first four videos of The Matrix are
+   featurettes, and the first Inception trailer in TMDB order is not official while two
+   official ones follow it. `to_candidates` keeps only trailers, puts official first,
+   and keeps the TMDB order inside each group.
+3. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
+   1,822 of 2,104 Arr ids are the trailer TMDB lists — Radarr takes its id from TMDB, so
+   agreement is the normal case. Leaving the row with the Arr showed a nameless row and
+   sorted the agreed trailer below TMDB's others. A better source now takes the row and
+   brings its title, language and official flag. USER rows are never taken.
+
+### Not done
+
+- **Season videos** (`/tv/{id}/season/{n}/videos`). The column and the manager take a
+  season; nothing calls it. Phase 10 owns it, as planned.
+- **A component test for the Known videos list.** The three service calls have tests;
+  the template does not.
+- **The `media.youtube_trailer_id` column** still exists and is still written. H9 in the
+  hygiene backlog retires it in Phase 9, as planned.
+- **A real end-to-end download** through the new resolver. Every step around it is
+  verified, but no trailer was downloaded from YouTube on this branch.
+- **Release notes are a draft** with a TBD date, and the roadmap row says in progress.

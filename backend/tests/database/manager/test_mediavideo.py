@@ -308,3 +308,67 @@ class TestMediaDeletion:
 
         assert video_manager.read_for_media(media_id) == []
 
+
+
+class TestLanguageFallbackLadder:
+    """Wargame W2, table driven.
+
+    TMDB lists a trailer per language. When the language a profile asks for
+    has none, Trailarr walks down a ladder rather than giving up: a video
+    with no language, then English, then anything else. Inside each step
+    the order TMDB gave decides, and `to_candidates` puts an official
+    trailer first, so the official one of a step comes first.
+    """
+
+    # (what TMDB offers as (video_id, language), what the profile asks for,
+    #  which video must be chosen, why)
+    CASES = [
+        (
+            [("de1", "de"), ("en1", "en")],
+            "de",
+            "de1",
+            "the language asked for wins",
+        ),
+        (
+            [("en1", "en"), ("fr1", "fr")],
+            "de",
+            "en1",
+            "no German, so English",
+        ),
+        (
+            [("none1", None), ("en1", "en")],
+            "de",
+            "none1",
+            "a video with no language beats a language that was not asked for",
+        ),
+        (
+            [("fr1", "fr"), ("it1", "it")],
+            "de",
+            "fr1",
+            "no German, no English: the first that TMDB gave",
+        ),
+        (
+            [("en1", "en")],
+            "en",
+            "en1",
+            "the usual case",
+        ),
+    ]
+
+    @pytest.mark.parametrize("offered,asked,expected,reason", CASES)
+    def test_the_ladder(self, media_id, offered, asked, expected, reason):
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.TMDB,
+            [
+                _video(video_id, media_id, sequence=index, language=language)
+                for index, (video_id, language) in enumerate(offered)
+            ],
+        )
+
+        chosen = video_manager.read_candidates(media_id, language=asked)
+
+        assert chosen[0].video_id == expected, reason
+        # Nothing is dropped: a trailer in another language is better than
+        # no trailer at all.
+        assert len(chosen) == len(offered)
