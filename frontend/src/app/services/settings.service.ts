@@ -3,17 +3,27 @@ import {computed, inject, Injectable, signal} from '@angular/core';
 import {catchError, Observable, of} from 'rxjs';
 import {FolderInfo, ServerStats, Settings} from '../models/settings';
 import {environment} from '../../environment';
+import {AuthService} from './auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SettingsService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   private settingsUrl = environment.apiUrl + environment.settings;
   private filesUrl = environment.apiUrl + environment.files;
 
-  readonly settingsResource = httpResource<Settings>(() => this.settingsUrl);
+  /** The settings, read once there is a session to read them with.
+   *
+   * Waiting for the session is the point. This request goes out while the
+   * app starts, at the same time as the auth check that mints the session
+   * cookie, and without the cookie it comes back 401. The resource then
+   * holds that error for the rest of the session: the theme stays on
+   * "auto", preview mode does not show, and a profile is told there is no
+   * TMDB key when there is one. */
+  readonly settingsResource = httpResource<Settings>(() => (this.authService.isAuthenticated() ? this.settingsUrl : undefined));
 
   /** Settings, or undefined while loading or after a failed request.
    *
