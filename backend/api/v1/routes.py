@@ -18,6 +18,7 @@ from api.v1.health import health_router
 from api.v1.media import media_router
 from api.v1.notifications import notifications_router
 from api.v1.settings import settings_router
+from api.v1.setup import setup_router
 from api.v1.logs import logs_router
 from api.v1.tasks import tasks_router
 from api.v1.trailerprofiles import trailerprofiles_router
@@ -47,6 +48,7 @@ authenticated_router.include_router(logs_router)
 authenticated_router.include_router(media_router)
 authenticated_router.include_router(notifications_router)
 authenticated_router.include_router(settings_router)
+authenticated_router.include_router(setup_router)
 authenticated_router.include_router(tasks_router)
 authenticated_router.include_router(trailerprofiles_router)
 

@@ -1,9 +1,30 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestones A+B DONE — merged to `dev` Aug 28, 2026 (PR #658),
-shipping in v0.11.4; C–D not started · **Releases:** incremental —
+**Status:** Milestones A+B DONE — shipped in v0.11.4. **C DONE** (Sep 11, 2026, branch
+`feat/phase8-tmdb`, ships with v0.13.0); D not started · **Releases:** incremental —
 C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+
+**C execution notes (Sep 11, 2026):**
+
+- Built on the Phase 8 branch, because TMDB is the reason to expect new installs.
+- The five steps are as written below. Step 2 hands off to the existing Add Connection
+  page rather than embedding it: that page owns its own routing and the inline doctor,
+  and the guide remembers its step, so leaving and coming back resumes it (C3).
+- C1 needed two mechanisms, not one. The startup pass records an installation that is
+  already in use, but it runs a minute after start, and for that minute an upgraded
+  installation would have been told it needs the guide. `status()` therefore records the
+  same decision the moment anyone asks. Verified against a copy of the 3,704-title
+  library: `needed:false` on the first request after boot, and the browser goes to
+  `/home` — including when `/setup` is typed by hand.
+- The guard has to wait for the auth check. Angular runs the guards of a route at the
+  same time, so asking about the setup raced `authGuard`: with the web UI login off, the
+  session cookie is minted by the call that guard makes, and the setup request came back
+  401 and fell through to "no guide". Chaining it after the cached auth check fixes it.
+- Still open for a later pass: C2 (URL_BASE was not tested under a sub-directory) and
+  C4's "continue in background" button — the preview asks for 100 items and shows the
+  real total, which covers the large-library case, but there is no explicit background
+  button.
 
 **Note (Sep 11, 2026):** C's dependencies are all shipped or ready — Phase 7 is out in
 v0.12.0, Phase 3's preview endpoint has been in since v0.10.2, and Phase 8 brings the

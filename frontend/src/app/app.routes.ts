@@ -1,12 +1,14 @@
 import {Routes} from '@angular/router';
-import {RouteEvents, RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteParamMediaId, RouteSeries, RouteSettings, RouteTasks} from '../routing';
+import {RouteEvents, RouteHome, RouteLogs, RouteMedia, RouteMovies, RouteParamMediaId, RouteSeries, RouteSettings, RouteSetup, RouteTasks} from '../routing';
 import {authGuard} from './auth/auth.guard';
+import {setupOnlyWhenNeededGuard, setupRedirectGuard} from './setup/setup.guard';
 import {LoginComponent} from './auth/login/login.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: RouteMedia, redirectTo: RouteHome, pathMatch: 'full'},
-  {path: RouteHome, canActivate: [authGuard], loadChildren: () => import('./media/routes')},
+  {path: RouteSetup, canActivate: [authGuard, setupOnlyWhenNeededGuard], loadComponent: () => import('./setup/setup.component').then((m) => m.SetupComponent)},
+  {path: RouteHome, canActivate: [authGuard, setupRedirectGuard], loadChildren: () => import('./media/routes')},
   {path: `${RouteMedia}/:${RouteParamMediaId}`, canActivate: [authGuard], loadChildren: () => import('./media/media-details/routes')},
   {path: RouteMovies, canActivate: [authGuard], loadChildren: () => import('./media/routes')},
   {path: RouteSeries, canActivate: [authGuard], loadChildren: () => import('./media/routes')},

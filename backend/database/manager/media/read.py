@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Generator
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
-from sqlmodel import Session, col, desc, or_, select, text
+from sqlmodel import Session, col, desc, func, or_, select, text
 from sqlmodel.sql.expression import SelectOfScalar
 
 from . import base
@@ -400,3 +400,17 @@ def _apply_filter(
     # If filter_by is `all` or doesn't match any of the above,
     # return the statement as is
     return statement
+
+
+@read_session
+def count_all(
+    *,
+    _session: Session = None,  # type: ignore
+) -> int:
+    """How many media items exist.
+
+    One number, not a list: the setup guide asks whether this
+    installation has anything in it yet, and a library can hold thousands
+    of rows that nobody wants loaded to answer that.
+    """
+    return _session.exec(select(func.count()).select_from(Media)).one()

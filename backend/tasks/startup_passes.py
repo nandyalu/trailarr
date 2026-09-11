@@ -23,6 +23,7 @@ logger = ModuleLogger("StartupPasses")
 
 PASS_ATTRIBUTE_DOWNLOADS = "attribute-downloads-v0.9.9"
 PASS_FULL_SCAN_GUARD = "full-scan-before-downloads-v0.10"
+PASS_SETUP_STATE = "setup_state_v0.13.0"
 
 # Passes the download engine depends on — it skips its run until these are
 # recorded complete (upgrade guard against mass re-downloads on databases
@@ -65,10 +66,28 @@ async def _pass_full_scan_guard() -> None:
     await scan_all_media_folders()
 
 
+async def _pass_setup_state() -> None:
+    """Keep an installation that is already in use out of the setup guide.
+
+    The guide is for a fresh install. An installation with a connection or
+    any media has been set up already, whatever its settings say, so this
+    records that the guide is done before the frontend can ask.
+
+    Deciding it once here, rather than counting rows whenever the page
+    loads, is what makes it stick: someone who removes their last
+    connection is not a new user and must not be sent back to the guide
+    (wargame C1).
+    """
+    from services import setup as setup_service
+
+    setup_service.mark_existing_installation()
+
+
 # Ordered registry — order is the dependency order.
 REGISTRY: list[tuple[str, Callable[[], Awaitable[None]], str]] = [
     (PASS_ATTRIBUTE_DOWNLOADS, _pass_attribute_downloads, "always"),
     (PASS_FULL_SCAN_GUARD, _pass_full_scan_guard, "once"),
+    (PASS_SETUP_STATE, _pass_setup_state, "once"),
 ]
 
 
@@ -84,7 +103,9 @@ async def run_startup_passes(
     completed = startuppass_manager.completed_names()
     for name, func, policy in REGISTRY:
         if _stop_event and _stop_event.is_set():
-            logger.info("Trailarr stopped the startup passes. A stop was requested.")
+            logger.info(
+                "Trailarr stopped the startup passes. A stop was requested."
+            )
             return
         recorded = name in completed
         if recorded and policy == "once":
@@ -100,7 +121,9 @@ async def run_startup_passes(
             return
         if not recorded:
             startuppass_manager.mark_completed(name)
-            logger.info(f"Trailarr completed the startup pass '{name}' and recorded it.")
+            logger.info(
+                f"Trailarr completed the startup pass '{name}' and recorded it."
+            )
 
 
 def downloads_ready() -> bool:

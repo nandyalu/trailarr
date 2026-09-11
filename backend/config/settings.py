@@ -308,6 +308,7 @@ class _Config:
             "gpu_enabled_amd": self.gpu_enabled_amd,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
+            "setup_completed": self.setup_completed,
             "tmdb_api_key": mask_secret(self.tmdb_api_key),
             "server_hostname": self.server_hostname,
             "server_model": self.server_model,
@@ -445,6 +446,13 @@ class _Config:
         - Valid values are True/False."""
 
     downloads_enabled = bool_property("DOWNLOADS_ENABLED", default=True)
+
+    setup_completed = bool_property("SETUP_COMPLETED", default=False)
+    """Whether the first-run setup is behind this installation.
+        - False shows the setup guide on a fresh install.
+        - A startup pass sets it on an installation that already has a
+          connection or any media, so an upgrade never sees the guide.
+        - Finishing or skipping the guide sets it."""
     """Whether the scheduled download task actually downloads (Phase 3).
         When False the app runs in PREVIEW mode: the task computes and
         publishes what it WOULD download but downloads nothing. Scans,
