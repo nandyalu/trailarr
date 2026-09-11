@@ -14,11 +14,7 @@ better sources.
 from app_logger import ModuleLogger
 import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
-from database.models.mediavideo import (
-    MediaVideoCreate,
-    MediaVideoRead,
-    VideoSource,
-)
+from database.models.mediavideo import MediaVideoCreate, VideoSource
 
 logger = ModuleLogger("ArrVideos")
 
@@ -26,19 +22,19 @@ logger = ModuleLogger("ArrVideos")
 def sync_arr_video_id(media: MediaRead, arr_video_id: str | None) -> None:
     """Put the id that the Arr reports into the candidates table.
 
-    The recovery of decision 5: before Phase 8, the only way to choose a
-    trailer by hand was to edit `media.youtube_trailer_id`, and the upgrade
-    turned every one of those into an ARR row. So an ARR row that holds a
-    different id than the Arr now reports was almost certainly typed by a
-    person, and it becomes a USER row instead of being replaced.
+    This is also where a migrated row learns where its id came from. The
+    upgrade could not know: `media.youtube_trailer_id` held whatever was
+    last written to it, which is an id from Radarr for some items and a
+    video Trailarr downloaded for others, so every migrated row starts as
+    a SEARCH row. The Arr is the only thing that can say, and it says it
+    here — the id it reports takes the row over as an ARR row.
 
-    Mislabelling is safe in this direction: it gives an id that someone
-    stored on purpose a little more precedence, and it protects it from
-    later automation. Losing it is not safe, which is the other direction.
+    A row that the user owns is never taken (decision 5b).
 
     Args:
         media (MediaRead): The media item that the sync just wrote.
-        arr_video_id (str | None): The id the Arr reports, if any.
+        arr_video_id (str | None): The id the Arr reports, if any. Sonarr
+            reports none, because its metadata comes from TVDB.
     """
     if not arr_video_id:
         return
@@ -46,20 +42,10 @@ def sync_arr_video_id(media: MediaRead, arr_video_id: str | None) -> None:
     if not arr_video_id:
         return
 
-    existing = video_manager.read_for_media(media.id)
-    by_id = {row.video_id: row for row in existing}
-    if arr_video_id in by_id:
-        # Already known, from this source or a better one. Nothing to do:
-        # a row that the user owns must keep its source.
-        return
-
-    for row in existing:
-        if row.source != VideoSource.ARR:
-            continue
-        if row.video_id == arr_video_id:
-            continue
-        _keep_as_user_choice(media, row)
-
+    # No early return when the id is already in the table: the row may be
+    # a SEARCH row from the upgrade, or from a search that happened to find
+    # the same video, and the call below promotes it to an ARR row. The
+    # manager refuses to take a row the user owns, so their choice is safe.
     video_manager.replace_source_rows(
         media.id,
         VideoSource.ARR,
@@ -74,14 +60,3 @@ def sync_arr_video_id(media: MediaRead, arr_video_id: str | None) -> None:
             )
         ],
     )
-
-
-def _keep_as_user_choice(media: MediaRead, row: MediaVideoRead) -> None:
-    """Turn an ARR row that no longer matches the Arr into a USER row."""
-    if video_manager.relabel_as_user(media.id, row.video_id):
-        logger.info(
-            f"The trailer id '{row.video_id}' for '{media.title}' is not the"
-            " one that Radarr or Sonarr reports, so Trailarr keeps it as a"
-            " video that you chose.",
-            **logger.media(media.id),
-        )

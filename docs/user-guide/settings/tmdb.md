@@ -6,14 +6,19 @@ TMDB ([The Movie Database](https://www.themoviedb.org){:target="_blank"}) keeps 
 
 Trailarr works without a key. Nothing changes for you until you add one.
 
-A key is worth the most for series. Radarr takes its metadata from TMDB, so the trailer id it reports is a TMDB trailer already — that is why a movie usually got a good trailer without a key. Sonarr takes its metadata from TVDB, which holds no YouTube trailer ids, so Sonarr reports none and Trailarr searched YouTube by the title and the year for every series.
+Before a key, Trailarr had one id per media item at most, and it was always the same trailer for everyone. Radarr reports a trailer id, which it takes from TMDB, so a movie usually got a reasonable one — in English. Sonarr reports none at all, because its metadata comes from TVDB and TVDB holds no YouTube trailer ids, so every series trailer came from a YouTube search on the title and the year.
+
+That single id is why [Always Search](profiles/settings/search.md) exists: if you want a trailer in your own language, the one id from Radarr is the wrong one, so you turn the setting on and let Trailarr search YouTube instead. A search is a guess, and it returns whatever matches the title.
+
+With a key, Trailarr asks TMDB for the trailers of the item and picks by the [Trailer Language](profiles/settings/general.md#trailer-language) of the profile. A curated trailer in your language replaces the guess, and a search stays as the fallback when TMDB lists nothing suitable.
 
 ## What changes with a key
 
 | Without a key | With a key |
 |---|---|
-| For a movie, Trailarr uses the id that Radarr reports, which Radarr got from TMDB. | Trailarr uses the full list of trailers that TMDB curates, and keeps the id from Radarr as a fallback. |
+| For a movie, Trailarr uses the one id that Radarr reports, which is usually an English trailer. | Trailarr uses the full list of trailers that TMDB curates, and keeps the id from Radarr as a fallback. |
 | For a series, there is no id to use: Sonarr reports none, because TVDB has none. | A series gets the same curated list as a movie. |
+| To get a trailer in another language, you turn on `Always Search` and take what a YouTube search returns. | Trailarr takes a trailer that TMDB lists in the language your profile asks for, and searches only when there is none. |
 | Without an id, Trailarr searches YouTube for the title and the year. | Trailarr searches YouTube only when TMDB and the Arr have nothing. |
 | A wrong result of a search is downloaded. | A trailer that the studio published is downloaded. |
 
@@ -45,6 +50,9 @@ An answer from TMDB stays fresh for seven days. A curated list changes rarely, a
 
 !!! info "Which trailer of several"
     A profile has a [Trailer Language](profiles/settings/general.md#trailer-language). Trailarr prefers a trailer in that language, then one with no language, then English, then any other. It is a preference and not a filter: a trailer in another language is better than no trailer.
+
+!!! info "With `Always Search` on"
+    `Always Search` drops the id from Radarr and any result an earlier search stored, which is what it always did. It keeps the TMDB list and a video you chose. So a profile that searched for every trailer now takes a curated one in your language first, and searches only when TMDB lists nothing.
 
 ## A media item with no TMDB id
 

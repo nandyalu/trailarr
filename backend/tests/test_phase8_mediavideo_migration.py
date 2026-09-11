@@ -2,15 +2,16 @@
 
 Builds a pre-Phase-8 database (the v0.11.3 release fixture), gives some
 media a `youtube_trailer_id` and some none, runs `alembic upgrade head`,
-and asserts the ids moved into the candidates table with the right source.
+and asserts the ids moved into the candidates table.
 
 The resolver reads only the table from Phase 8 on, so an id that stayed
 behind in the column is an id that Trailarr would stop using.
 
-The source is not always ARR. Radarr reports a trailer id; Sonarr has no
-such field on its series resource, so an id stored for a series is one
-Trailarr found itself and wrote back after the download. Labelling those
-ARR would tell the user that Sonarr chose a video it has never heard of.
+Every migrated row is a SEARCH row. The column does not record where its
+id came from — Radarr reports one, Sonarr reports none because its
+metadata comes from TVDB, and a finished download overwrites the column
+with the video it took — so the migration does not guess. The sync marks
+the ids the Arr reports, which is the only source that knows.
 """
 
 import os
@@ -100,13 +101,16 @@ def test_arr_ids_move_into_the_candidates_table(tmp_path: Path):
     assert series[2] == "SEARCH", (
         "Sonarr reports no trailer id, so a stored one came from a search"
     )
+    # And it stays a SEARCH row, because no sync will ever report it: the
+    # promotion below happens only for an id the Arr really sends.
 
     rows = [r for r in rows if r[0] != 900]
     media_id, video_id, source, video_type, season, sequence = rows[0]
     assert media_id == 1
     assert video_id == "dQw4w9WgXcQ"
     # The enum column stores the NAME of the member, not its value.
-    assert source == "ARR"
+    # SEARCH, not ARR: only a sync can say where an id came from.
+    assert source == "SEARCH"
     assert video_type == "trailer"
     assert season is None
     assert sequence == 0

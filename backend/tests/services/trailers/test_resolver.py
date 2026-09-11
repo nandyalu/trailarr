@@ -59,12 +59,19 @@ class TestChooseCandidates:
         chosen = choose_candidates(ORDERED, _profile(), exclude=["user1"])
         assert [c.video_id for c in chosen] == ["tmdb1", "arr1", "search1"]
 
-    def test_always_search_drops_only_the_stored_search_result(self):
-        """The pitfall in the plan: `Always Search` used to mean 'ignore
-        the stored id'. It now means 'do not reuse what a search found',
-        and it never throws away the choice of the user or the TMDB list."""
+    def test_always_search_drops_the_automatic_ids(self):
+        """`Always Search` drops the id from Radarr and the result a
+        search stored earlier, and keeps the choice of the user and the
+        TMDB list.
+
+        Before this phase the setting cleared `media.youtube_trailer_id`,
+        so the Arr id was what it threw away. People turn it on because
+        Radarr reports one trailer, usually English, and they want another
+        — so keeping the Arr id would give them the trailer they turned
+        the setting on to avoid. TMDB stays, because it lists a trailer per
+        language and answers that need properly."""
         chosen = choose_candidates(ORDERED, _profile(always_search=True))
-        assert [c.video_id for c in chosen] == ["user1", "tmdb1", "arr1"]
+        assert [c.video_id for c in chosen] == ["user1", "tmdb1"]
 
     def test_the_video_of_the_last_attempt_goes_last(self):
         """Wargame W5: the video may be gone from YouTube, so try the

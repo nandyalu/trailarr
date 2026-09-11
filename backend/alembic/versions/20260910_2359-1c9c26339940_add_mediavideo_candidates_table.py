@@ -87,39 +87,37 @@ def upgrade() -> None:
     # media.youtube_trailer_id stays until the Phase 9 cleanup, but from
     # here the resolver reads only the table, so the ids have to be in it.
     #
-    # Where a stored id came from decides the source of its row, and it is
-    # not always an Arr. Radarr reports a trailer id, and its column
-    # `youTubeTrailerId` is where most movie ids come from. Sonarr has no
-    # such field at all: its SeriesResource carries no trailer property, so
-    # the id stored for a series is one that Trailarr found itself and
-    # wrote back after the download (`update_download_facts`). The same is
-    # true of a Plex-only item.
+    # Every row comes in as SEARCH, and that is deliberate. The column does
+    # not say where its id came from, and it cannot be worked out from the
+    # database: Radarr reports a trailer id, Sonarr reports none because its
+    # metadata comes from TVDB, and `update_download_facts` overwrites the
+    # column with whatever Trailarr downloaded. On a 3,704-title library,
+    # 1,336 of the 2,462 ids stored for Radarr media are one of that item's
+    # downloads, and no column tells them apart from an id Radarr gave.
     #
-    # Measured on a 3,704-title library before this was written: every
-    # YOUTUBE_ID_CHANGED event from a sync belongs to Radarr media (177 of
-    # them, none for Sonarr), and 98% of the ids stored for Sonarr series
-    # are exactly the video that was downloaded, against 68% for Radarr.
-    #
-    # The enum column keeps the NAME of the member, so 'ARR' and 'SEARCH'.
+    # Only the Arr knows, and a migration must not ask it: a migration has
+    # to be fast and deterministic, and a request to a server that is down
+    # would turn an upgrade into a failed start. The sync already asks, every
+    # hour. It writes the id the Arr reports as an ARR row, which takes over
+    # the row this migration made, so each id ends up labelled by the only
+    # source that can say. A first sync runs 30 seconds after start, well
+    # before the first download run.
     result = op.get_bind().execute(
         sa.text(
             "INSERT INTO mediavideo"
             " (media_id, video_id, source, season, video_type, sequence,"
             "  language, name, official, published_at, added_at, updated_at)"
-            " SELECT m.id, m.youtube_trailer_id,"
-            "        CASE WHEN c.arr_type = 'RADARR' THEN 'ARR'"
-            "             ELSE 'SEARCH' END,"
-            "        NULL, 'trailer', 0,"
+            " SELECT id, youtube_trailer_id, 'SEARCH', NULL, 'trailer', 0,"
             "        NULL, '', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP"
-            " FROM media m"
-            " LEFT JOIN connection c ON c.id = m.connection_id"
-            " WHERE m.youtube_trailer_id IS NOT NULL"
-            "   AND TRIM(m.youtube_trailer_id) != ''"
+            " FROM media"
+            " WHERE youtube_trailer_id IS NOT NULL"
+            "   AND TRIM(youtube_trailer_id) != ''"
         )
     )
     logger.info(
         f"Trailarr moved {result.rowcount} YouTube ids into the video"
-        " candidates table."
+        " candidates table. The next sync marks the ids that Radarr or"
+        " Sonarr reports as coming from them."
     )
 
     # Re-enable foreign keys after migrations

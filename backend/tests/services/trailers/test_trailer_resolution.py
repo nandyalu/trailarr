@@ -174,6 +174,30 @@ class TestAlwaysSearch:
             assert trailer_search.get_video_id(media, profile) == "tmdb-id"
         search.assert_not_called()
 
+    def test_the_arr_id_is_dropped_too(self, media, profile):
+        """The reason people turn the setting on: Radarr reports one
+        trailer, usually English, and they want one in their language."""
+        _add(media.id, "arr-id", VideoSource.ARR)
+        profile.always_search = True
+
+        with patch(SEARCH, return_value="searched-id") as search:
+            assert trailer_search.get_video_id(media, profile) == "searched-id"
+        search.assert_called_once()
+
+    def test_tmdb_beats_a_search_for_a_profile_that_always_searches(
+        self, media, profile
+    ):
+        """With a TMDB key, such a profile stops guessing: it takes the
+        curated trailer instead of whatever a search returns."""
+        _add(media.id, "arr-id", VideoSource.ARR)
+        _add(media.id, "tmdb-it", VideoSource.TMDB, language="it")
+        profile.always_search = True
+        profile.language = "it"
+
+        with patch(SEARCH) as search:
+            assert trailer_search.get_video_id(media, profile) == "tmdb-it"
+        search.assert_not_called()
+
 
 class TestTheLogLine:
 

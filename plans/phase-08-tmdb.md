@@ -37,7 +37,10 @@ extend to non-trailer types and seasons. No key configured = behavior identical 
    successful search result is written back as a SEARCH row.
 5. **Arr ids migrate into the table:** sync writes `youtube_trailer_id` (⚠️ **only
    Radarr provides it** — see the correction below; the Sonarr parser carries the field
-   to match the shared shape and it is always empty) as ARR rows; one-time migration copies
+   to match the shared shape and it is always empty) as ARR rows. ⚠️ **The one-time
+   migration does not label them**: the column cannot say where its id came from, so
+   every migrated row is a SEARCH row and the first sync promotes the ids the Arr
+   really reports. The user-edit heuristic below is dropped with it; one-time migration copies
    existing `media.youtube_trailer_id` → ARR rows. **User-edit recovery heuristic:**
    on the first post-upgrade sync, when the Arr-reported id differs from a migrated
    ARR row's id, relabel that row `USER` — a differing stored id was almost certainly
@@ -91,6 +94,16 @@ extend to non-trailer types and seasons. No key configured = behavior identical 
   — manual `yt_id` = USER row (write it) and takes precedence; `always_search=True`
   skips table candidates? NO — redefine: always_search skips only the *stored search
   result reuse*, not TMDB/USER; document in code + release notes.
+
+  ⚠️ **Resolved as: skip SEARCH *and* ARR, keep USER and TMDB.** Reading the pitfall as
+  "keep everything but SEARCH" left the Arr id in, which reverses what the setting is
+  for. Before this phase it set `media.youtube_trailer_id` to None, so the Arr id was
+  exactly what it discarded, and people turn it on because Radarr reports one trailer,
+  usually English, and they want another — most often one in their own language.
+  Keeping the Arr id would have handed them the trailer they turned the setting on to
+  avoid. TMDB stays, because it lists a trailer per language and answers that need
+  properly, which is also what makes the profile `language` field load-bearing rather
+  than cosmetic.
 - `exclude` logic in `trailer.py:257` (excluded previous id when re-searching) is
   superseded by candidate iteration — remove carefully with the tests around it.
 - OpenAPI + frontend client regen (settings, profile language field, candidates
@@ -195,13 +208,23 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
    is `update_download_facts`, which writes the downloaded video's id back into
    `media.youtube_trailer_id` after every successful download.
 
-   Two consequences. The migration labelled all 2,560 backfilled ids ARR, which told a
-   user that Sonarr chose a video it has never heard of; it now labels by the owning
-   connection, so the 98 series ids become SEARCH rows, which is what they are. And a
-   series has no ARR candidate at all, so this phase is worth more for a series than
-   for a movie: a movie already had a TMDB trailer by way of Radarr, and a series only
-   ever had a title search. Phase 10, which adds season trailers, inherits that: there
-   is no Arr fallback for a season either.
+   Two consequences. First, the migration cannot label these rows at all. Guessing by
+   connection type was still wrong: 1,336 of the 2,462 ids stored for Radarr media are
+   one of that item's own downloads, because `update_download_facts` overwrites the
+   column, and no column tells those apart from an id Radarr gave. Only the Arr knows,
+   and a migration must not ask it — a request to a server that is down would turn an
+   upgrade into a failed start. So every migrated row is a SEARCH row, and the sync,
+   which runs 30 seconds after start and already writes the Arr id, promotes the ones
+   the Arr reports. Verified on the library copy: 2,560 SEARCH rows after the upgrade,
+   and 392 of 400 became ARR rows after one simulated sync, the 8 series staying SEARCH.
+
+   The user-edit heuristic of decision 5 goes with it. Its premise — a stored id that
+   differs from the Arr's was hand-picked — is the same mistake: a differing id is
+   usually Trailarr's own write-back. It would have marked hundreds of rows as the
+   user's choice, which is the one label no automation may touch.
+
+   Second, a series has no ARR candidate at all, so Phase 10's season trailers have no
+   Arr fallback either.
 
 4. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
    1,822 of 2,104 Arr ids are the trailer TMDB lists — Radarr takes its id from TMDB, so
