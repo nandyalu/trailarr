@@ -68,7 +68,7 @@ class TestAsyncBaseArrManager:
             await self.arr_manager._get_system_status("Radarr")
 
         # Assert
-        _error = f"Invalid Host ({self.URL}) or API Key ({self.API_KEY}), not a Radarr instance."
+        _error = f"Invalid host ({self.URL}) or API key. This is not a Radarr instance."
         assert str(e.value) == _error
         assert e.type == InvalidResponseError
 

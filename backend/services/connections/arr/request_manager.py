@@ -110,13 +110,16 @@ class AsyncRequestManager:
                 f"Bad Request, possibly a bug. {str(await response.text())}"
             )
         if response.status == 401:
+            # The API key never goes into the message: the text of a
+            # ConnectionError reaches the user as the error detail.
             raise ConnectionError(
-                f"Unauthorized. Please ensure valid API Key is used: {self.api_key}"
+                "Unauthorized. Check that the API key for this connection"
+                " is correct."
             )
         if response.status == 403:
             raise ConnectionError(
-                f"Access restricted. Please ensure API Key '{self.api_key}'"
-                f" has correct permissions"
+                "Access restricted. Check that the API key for this"
+                " connection has the correct permissions."
             )
         if response.status == 404:
             raise ConnectionError(f"Resource not found: {response.url}")
@@ -138,6 +141,6 @@ class AsyncRequestManager:
                 f"Bad Gateway. Check if your server at {response.url} is accessible."
             )
         raise ConnectionError(
-            f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
-            f"not a Radarr or Sonarr instance."
+            f"Invalid host ({self.host_url}) or API key."
+            " This is not a Radarr or Sonarr instance."
         )

@@ -39,6 +39,6 @@ class TestSonarrManager:
             await self.sonarr_manager.get_system_status()
 
         # Assert
-        _error = f"Invalid Host ({self.URL}) or API Key ({self.API_KEY}), not a Sonarr instance."
+        _error = f"Invalid host ({self.URL}) or API key. This is not a Sonarr instance."
         assert str(e.value) == _error
         assert e.type == InvalidResponseError

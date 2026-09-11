@@ -85,9 +85,11 @@ class AsyncBaseArrManager(AsyncRequestManager):
                     f"{app_name} Connection Successful! Version:"
                     f" {status.get('version')}"
                 )
+        # The API key never goes into the message: the text of an
+        # InvalidResponseError reaches the user as the error detail.
         raise InvalidResponseError(
-            f"Invalid Host ({self.host_url}) or API Key ({self.api_key}), "
-            f"not a {app_name} instance."
+            f"Invalid host ({self.host_url}) or API key."
+            f" This is not a {app_name} instance."
         )
 
     async def ping(self) -> str | dict[str, str] | list[dict[str, Any]]:

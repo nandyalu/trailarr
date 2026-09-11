@@ -187,6 +187,18 @@ none justify their own release. Check items off with the release that shipped th
   big-churn release and it moves both files, so extracting before the reorg lands only
   buys a merge conflict. Do it after v0.12.0.
 
+- [ ] **H22 — `update_connection` answers 404 when the server refuses.** The handler
+  passes `safe_status=404` to the error mapper, so a `ConnectionError` or a
+  `ConnectionTimeoutError` raised by the probe inside `connection_service.update()`
+  looks like a missing connection. `create_connection` uses 400 for the same failure,
+  so the two disagree.
+
+  Phase 7 kept the 404 on purpose: `main` already answered 404 with `str(e)` there,
+  Stage B changed no behavior, and the endpoint documents 404 and no 400 — so the fix
+  is also a spec diff. Change the status, the spec and the frontend error handling
+  together; `ItemNotFoundError` stays the 404 case. Raised by Copilot on the v0.12.0
+  release PR ([#674](https://github.com/nandyalu/trailarr/pull/674)).
+
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
   autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at

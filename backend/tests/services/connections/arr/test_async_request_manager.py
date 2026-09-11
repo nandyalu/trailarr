@@ -125,10 +125,15 @@ class TestAsyncRequestManager:
         "status, msg",
         [
             (400, "Bad Request, possibly a bug. Some Error Text"),
-            (401, "Unauthorized. Please ensure valid API Key is used: API_KEY"),
+            (
+                401,
+                "Unauthorized. Check that the API key for this connection"
+                " is correct.",
+            ),
             (
                 403,
-                "Access restricted. Please ensure API Key 'API_KEY' has correct permissions",
+                "Access restricted. Check that the API key for this"
+                " connection has the correct permissions.",
             ),
             (404, "Resource not found: http://example.com/example"),
             (405, "The endpoint http://example.com/example is not allowed"),
@@ -138,8 +143,8 @@ class TestAsyncRequestManager:
             ),
             (
                 503,
-                "Invalid Host (http://example.com) or API Key (API_KEY), "
-                "not a Radarr or Sonarr instance.",
+                "Invalid host (http://example.com) or API key."
+                " This is not a Radarr or Sonarr instance.",
             ),
         ],
     )
@@ -160,6 +165,25 @@ class TestAsyncRequestManager:
         # Assert that an exception is raised
         assert msg == str(e.value)
         assert e.type == ConnectionError
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("status", [400, 401, 403, 404, 405, 500, 502, 503])
+    async def test_error_message_never_holds_the_api_key(
+        self, request_manager: AsyncRequestManager, status
+    ):
+        """The message of a ConnectionError reaches the user as the error
+        detail, because `api/v1/errors.py` treats it as safe to report. So no
+        message from this class may hold the API key."""
+        mock_response = Mock()
+        mock_response.url = "http://example.com/example"
+        mock_response.status = status
+        mock_response.text = AsyncMock(return_value="Some Error Text")
+        mock_response.json = AsyncMock(side_effect=ValueError)
+
+        with pytest.raises(Exception) as e:
+            await request_manager._process_response(mock_response)
+
+        assert self.api_key not in str(e.value)
 
     @pytest.mark.asyncio
     async def test_process_response_500_json(
