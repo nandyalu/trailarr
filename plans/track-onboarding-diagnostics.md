@@ -5,6 +5,14 @@ shipping in v0.11.4; C–D not started · **Releases:** incremental —
 C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
+**Note (Sep 11, 2026):** C's dependencies are all shipped or ready — Phase 7 is out in
+v0.12.0, Phase 3's preview endpoint has been in since v0.10.2, and Phase 8 brings the
+two fields step 3 wants (the TMDB key and the trailer language). C targets v0.13.x,
+which is the train Phase 8 is on, so the wizard can carry the key on the day it lands.
+Until C exists, a fresh install sees only the empty state on the Connections page
+("No connections configured yet"), and the TMDB key is discoverable only through the
+Health page or the docs.
+
 **Milestone A execution notes (Aug 14, 2026):**
 
 - Code lives in `core/diagnostics/` per the pitfalls rule; add to the phase-07 move map
@@ -178,8 +186,25 @@ Wizard shown when the app has zero connections (and re-runnable from Settings �
 1. Welcome + what Trailarr does (one screen, not a tour).
 2. Add first connection — Connection Doctor runs inline; can't advance with red
    path/permission results without an explicit "I know what I'm doing" skip.
-3. Defaults: trailer language (Phase 8 field), keep-or-edit the two default profiles
-   (plain-language summary of what they'll do — no filter UI here).
+3. Defaults: **TMDB API key** and trailer language (both Phase 8 fields), keep-or-edit
+   the two default profiles (plain-language summary of what they'll do — no filter UI
+   here).
+
+   The key belongs here, and it belongs before the language. It is the setting that
+   most changes which trailer a user gets — without one Trailarr searches YouTube and
+   takes the best match; with one it downloads what the studio published, in the
+   language asked for — and a new user has no way to know it exists. Offer it with the
+   same three facts the Health page uses: what happens without a key, what a key gives,
+   and that it is free, with a link to `user-guide/settings/tmdb.md`.
+
+   Skippable in one click, and never a blocker: Trailarr works without a key, and a
+   setup screen that argues with someone in a hurry is worse than no screen. The
+   language field is only worth showing once a key is set, because without one Trailarr
+   cannot know what language a trailer is in.
+
+   Already covered for existing installs: the Health page lists the key with a neutral
+   status and the same link (v0.13.0), so this step is about the fresh install that
+   never opens that page.
 4. First sync runs with progress (websocket), then **preview screen** (Phase 3's
    library-wide pending view): "Trailarr would download N trailers" with the list.
 5. Finish = user explicitly enables downloads (see Phase 3 preview-mode setting);
