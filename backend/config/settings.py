@@ -13,6 +13,8 @@ import secrets
 import bcrypt
 from dotenv import load_dotenv, set_key
 
+from utils.secrets import mask_secret
+
 from config import app_logger_opts
 
 APP_DATA_DIR = os.path.abspath(os.getenv("APP_DATA_DIR", "/config"))
@@ -306,6 +308,7 @@ class _Config:
             "gpu_enabled_amd": self.gpu_enabled_amd,
             "log_level": self.log_level,
             "monitor_enabled": self.monitor_enabled,
+            "tmdb_api_key": mask_secret(self.tmdb_api_key),
             "server_hostname": self.server_hostname,
             "server_model": self.server_model,
             "server_platform": self.server_platform,
@@ -497,6 +500,11 @@ class _Config:
         - Valid values are any hashed string of password."""
 
     yt_cookies_path = str_property("YT_COOKIES_PATH", default="")
+
+    tmdb_api_key = str_property("TMDB_API_KEY", default="")
+    """The TMDB API key or read access token of the user.
+        - Default is empty, and an empty key turns the TMDB lookup off.
+        - The API answers with a masked value, never the key itself."""
     """Path to the YouTube cookies file.
         - Default is empty string.
         - Valid values are any file path."""

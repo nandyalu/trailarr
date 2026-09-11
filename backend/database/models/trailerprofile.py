@@ -95,6 +95,14 @@ class _TrailerProfileBase(AppSQLModel):
     )
     subtitles_format: str = "srt"
     subtitles_language: str = "en"
+    # Video settings from TMDB
+    # Which language of trailer to prefer. TMDB lists a trailer per
+    # language, and the resolver puts this one first. It is a preference,
+    # not a filter: a trailer in another language is better than none.
+    language: str = Field(
+        default="en",
+        sa_column=Column(String, server_default="en", nullable=False),
+    )
     # General settings
     search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60
