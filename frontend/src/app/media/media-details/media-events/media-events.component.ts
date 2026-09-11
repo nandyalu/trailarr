@@ -1,7 +1,7 @@
 import {AsyncPipe, TitleCasePipe} from '@angular/common';
 import {httpResource} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
-import {TimediffPipe} from 'src/app/helpers/timediff.pipe';
+import {TimediffPipe} from 'src/app/shared/pipes/timediff.pipe';
 import {EVENT_TYPE_LABELS, EventRead, EventType} from 'src/app/models/event';
 import {EventsService} from 'src/app/services/events.service';
 

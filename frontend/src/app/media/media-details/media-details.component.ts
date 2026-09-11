@@ -3,12 +3,12 @@ import {ChangeDetectionStrategy, Component, computed, effect, inject, input, sig
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {catchError, of} from 'rxjs';
-import {CopyToClipboardDirective} from 'src/app/helpers/copy-to-clipboard.directive';
-import {RemoveStartingSlashPipe} from 'src/app/helpers/remove-starting-slash.pipe';
+import {CopyToClipboardDirective} from 'src/app/shared/directives/copy-to-clipboard.directive';
+import {RemoveStartingSlashPipe} from 'src/app/shared/pipes/remove-starting-slash.pipe';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {RouteMedia} from 'src/routing';
-import {DurationConvertPipe} from '../../helpers/duration-pipe';
+import {DurationConvertPipe} from '../../shared/pipes/duration-pipe';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
 import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';

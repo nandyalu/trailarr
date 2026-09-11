@@ -141,6 +141,29 @@ skip-safe too:
    the running app, refuse to start with a clear message pointing at the pre-upgrade
    backup — never crash confusingly on a newer schema.
 
+## A green suite does not mean the code runs
+
+Phase 7 shipped three bugs past a fully green suite, and found each one by driving the
+running app or by reading the diff — never by testing. They share a shape: **a line that
+only runs when something goes wrong is invisible to a passing test run.**
+
+- `connections.py` had no module-level logger, so every *failing* connection request
+  answered a bare 500 and logged nothing.
+- A log message read `ProbeStatus.FAIL`, which does not exist, on the line that ends
+  every Connection Doctor run.
+- A log message read `media.title` on a `MediaImage`, which has no title, in the image
+  refresh that runs over the whole library every six hours.
+
+Each is now covered by a test that **reads the code** rather than running it
+(`tests/api/test_error_wiring.py`, `tests/test_log_message_safety.py`,
+`tests/test_layering.py`). When a phase adds error paths — and every phase does — either
+walk them in a real run, or write a test that inspects them. Do not take a green suite as
+evidence that a handler's `except` block works.
+
+The same applies to the app itself. Boot it, log in, and drive the pages a change
+touches. Phase 7 found the missing logger that way, and the v0.11.4 path-guard bug in
+the release before it.
+
 ## Cross-phase invariants
 
 1. `PYTHONPATH=backend uv run python -m pytest tests/` green at every commit.
@@ -177,7 +200,11 @@ skip-safe too:
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
   — watch for filter-migration and has_downloads reports before starting Phase 6.
 - `phase-06-view-filters.md` — DONE (v0.11.3, Aug 21 2026).
-- `phase-07-backend-reorg.md`
+- `phase-07-backend-reorg.md` — **DONE** (Aug 29, 2026) on `feat/phase7-backend-reorg`,
+  awaiting the v0.12.0 PR. Three stages: A (pure moves, `core/` retired), B (thin the API
+  layer, database layer made standalone, hygiene H1), C (STE100 sweep, every module
+  documented). 1594 tests, Docker builds, real-library boot clean. Read its verification
+  section before Phase 8 — it records three bugs a green suite could not catch.
 - `phase-08-tmdb.md`
 - `phase-09-video-types.md`
 - `phase-10-media-types-seasons.md`

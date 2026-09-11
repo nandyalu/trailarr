@@ -56,7 +56,7 @@ def pytest_configure(config):
     ), f"Insufficient permissions on {_temp_dir.name}"
 
     # os.environ["TESTING"] = "True"
-    from core.base.database.utils.init_db import init_db
+    from database.init_db import init_db
 
     init_db()
 

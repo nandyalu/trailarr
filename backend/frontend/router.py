@@ -1,3 +1,9 @@
+"""Serve the files that `npm run build` writes to frontend-build/.
+
+The path is worked out from this file's own location, so this module must
+stay where it is.
+"""
+
 from pathlib import Path
 from urllib.parse import unquote
 

@@ -1,3 +1,10 @@
+"""Every application setting, read from the environment.
+
+A setting is read once at start. A change through the API is written to the
+.env file in APP_DATA_DIR and applied to the running process. A variable set
+for the container wins over the stored value.
+"""
+
 from datetime import datetime, timezone
 import os
 import platform

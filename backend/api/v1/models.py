@@ -1,3 +1,5 @@
+"""Request and response shapes that belong to the API, not the database."""
+
 from pydantic import BaseModel
 
 # THESE MODELS ARE ONLY FOR API RESPONSES

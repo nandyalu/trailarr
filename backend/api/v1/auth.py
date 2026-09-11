@@ -1,12 +1,16 @@
+"""Log in, log out, and report whether a session is still valid."""
+
 from typing import Annotated
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from pydantic import BaseModel
 
 from api.v1.authentication import (
-    create_session,
-    delete_session,
     validate_api_key_header,
     verify_login,
+)
+from services.auth import (
+    create_session,
+    delete_session,
     verify_session,
 )
 from config.settings import app_settings

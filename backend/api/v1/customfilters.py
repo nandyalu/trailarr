@@ -1,10 +1,13 @@
+"""Saved filters: the views on the media list, and the filters a
+trailer profile uses."""
+
 import functools
 
 from fastapi import APIRouter, HTTPException
 
 from app_logger import ModuleLogger
-from core.base.database.manager import customfilter
-from core.base.database.models.customfilter import (
+from database.manager import customfilter
+from database.models.customfilter import (
     CustomFilterCreate,
     CustomFilterRead,
 )

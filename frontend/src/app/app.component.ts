@@ -2,7 +2,7 @@ import {AsyncPipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {msMinute} from 'src/util';
-import {TimeRemainingPipe} from './helpers/time-remaining.pipe';
+import {TimeRemainingPipe} from './shared/pipes/time-remaining.pipe';
 import {SidenavComponent} from './nav/sidenav/sidenav.component';
 import {TopnavComponent} from './nav/topnav/topnav.component';
 import {NotificationsComponent} from './notifications/notifications.component';
