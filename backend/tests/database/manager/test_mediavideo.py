@@ -216,6 +216,24 @@ class TestCandidateOrder:
         assert order[0] == "de1"
         assert set(order) == {"en1", "de1", "none1"}
 
+    def test_the_source_still_wins_when_a_language_is_asked_for(self, media_id):
+        """A USER row carries no language, because a person pasted a link.
+        Ordering by language across sources therefore let a TMDB trailer in
+        the asked language beat the video the user chose. The source
+        decides first, and the language orders inside one source."""
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.TMDB,
+            [_video("tmdb_en", media_id, language="en")],
+        )
+        video_manager.add_user_video(media_id, "user_pick")
+
+        order = [
+            v.video_id
+            for v in video_manager.read_candidates(media_id, language="en")
+        ]
+        assert order == ["user_pick", "tmdb_en"]
+
     def test_a_season_video_is_not_a_candidate_for_the_movie(self, media_id):
         video_manager.replace_source_rows(
             media_id, VideoSource.TMDB, [_video("s1", media_id)], season=1

@@ -99,13 +99,17 @@ def read_candidates(
     else:
         statement = statement.where(MediaVideo.season == season)
     videos = [_to_read(v) for v in _session.exec(statement).all()]
-    ordered = sort_candidates(videos)
     if not language:
-        return ordered
+        return sort_candidates(videos)
 
     # A language is a preference, not a filter: a trailer in another
     # language is better than no trailer. So the list keeps everything and
     # only changes the order.
+    #
+    # The source still decides first. Sorting by language across sources
+    # would let a TMDB trailer in the asked language beat the video that
+    # the user chose, which is the one thing the order must never do — a
+    # USER row carries no language, because a person pasted a link.
     def language_rank(video: MediaVideoRead) -> int:
         if video.language == language:
             return 0
@@ -115,7 +119,15 @@ def read_candidates(
             return 2
         return 3
 
-    return sorted(ordered, key=language_rank)
+    return sorted(
+        videos,
+        key=lambda v: (
+            SOURCE_PRECEDENCE.get(v.source.value, len(SOURCE_PRECEDENCE)),
+            language_rank(v),
+            v.sequence,
+            v.id,
+        ),
+    )
 
 
 @write_session

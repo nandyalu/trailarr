@@ -16,6 +16,7 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 import database.manager.event as event_manager
 import database.manager.media as media_manager
+from services.connections import arr_videos
 from database.models.event import EventSource
 from database.models.helpers import MediaReadDC
 from utils.path_utils import apply_path_mappings
@@ -243,9 +244,21 @@ class BaseConnectionManager(ABC):
         Returns:
             list[MediaReadDC]: A list of MediaRead objects."""
         media_read_list = media_manager.create_or_update_bulk(media_data)
+        # The id each Arr reports for a media item, so the candidates table
+        # can be kept in step below. Phase 8: the resolver reads only that
+        # table, so an id that stays in the column is an id Trailarr would
+        # never use.
+        arr_video_ids = {
+            (mc.connection_id, mc.arr_id): mc.youtube_trailer_id
+            for mc in media_data
+        }
         media_read_dc_list = []
         for media_read, created, updated, arr_linked in media_read_list:
             self.media_ids.append(media_read.id)
+            arr_videos.sync_arr_video_id(
+                media_read,
+                arr_video_ids.get((media_read.connection_id, media_read.arr_id)),
+            )
             if created:
                 self.created_count += 1
                 # Track events for new media (added, youtube_id)
