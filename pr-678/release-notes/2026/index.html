@@ -3496,7 +3496,7 @@
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li>
-<p><strong>The image refresh and the library sync work again</strong> — both tasks stopped with an error as soon as they reached a media item, because a log line used a feature of a logger that this file does not have. The <code>Image Refresh</code> task failed every run, and <code>Arr Data Refresh</code> failed at the end, where it refreshes the images of the media it just synced.</p>
+<p><strong>The image refresh and the library sync work again</strong> — both tasks stopped with an error as soon as they reached a media item, because a log line used a feature of a logger that this file does not have. The <code>Image Refresh</code> task failed every run, and <code>Arr Data Refresh</code> failed at the end, where it refreshes the images of the media it just synced. Thanks <a href="https://github.com/St3ffn">@St3ffn</a> for the detailed report, which named the file and the cause! (<a href="https://github.com/nandyalu/trailarr/issues/677">#677</a>)</p>
 </li>
 <li>
 <p><strong>A dialog opens again in Safari</strong> — a dialog showed nothing: the page went grey behind it, but the box had a height of zero. A dialog takes its height from its contents, and Safari measures a column part that starts from a percentage as zero tall. Each part of a dialog now starts from the height of its own content. This applies to every dialog, such as Custom Filters and the profile selection for a download. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report and for the measurements from the browser console! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
