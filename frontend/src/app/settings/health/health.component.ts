@@ -21,7 +21,7 @@ export class HealthComponent {
   protected readonly running = signal<boolean>(false);
   protected readonly testRunning = signal<boolean>(false);
   protected readonly cookiesBusy = signal<boolean>(false);
-  protected readonly message = signal<{type: 'success' | 'error'; text: string} | null>(null);
+  protected readonly message = signal<{type: 'success' | 'warning' | 'error'; text: string} | null>(null);
   protected readonly cookiesText = signal<string>('');
   /** Shown after saving cookies: the next question is always "did that
    * work?", so the answer is one click away instead of a hunt. */
@@ -67,9 +67,16 @@ export class HealthComponent {
     try {
       const result = await firstValueFrom(this.healthService.runYtdlpTest(true));
       this.report.reload();
+      // A warning says the video could not be read, not that the setup is
+      // broken. Showing it as a failure sends the user to fix nothing.
       this.message.set({
-        type: result.status === 'ok' ? 'success' : 'error',
-        text: result.status === 'ok' ? 'YouTube test passed. ' + result.detail : 'YouTube test failed. ' + result.detail,
+        type: result.status === 'ok' ? 'success' : result.status === 'warning' ? 'warning' : 'error',
+        text:
+          result.status === 'ok'
+            ? 'YouTube test passed. ' + result.detail
+            : result.status === 'warning'
+              ? 'YouTube test finished with a warning. ' + result.detail
+              : 'YouTube test failed. ' + result.detail,
       });
     } catch (error) {
       this.message.set({type: 'error', text: 'The YouTube test failed to run. ' + (error as Error).message});
