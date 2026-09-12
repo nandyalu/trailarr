@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.57">
+      <meta name="generator" content="zensical-0.0.61">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.5da3a30f.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.ce62732f.min.css">
       
         
           
@@ -2972,6 +2972,7 @@
 <ul>
 <li><strong>API reachability</strong> — Trailarr asks the application for its root folders (Plex: library folders). This check reports a wrong URL or a wrong API key.</li>
 <li><strong>Path visibility</strong> — each reported folder must exist, and Trailarr must be able to list its contents after it applies your path mappings. Trailarr gives a warning for a folder that it can reach but that is empty. Some network mounts show an empty folder when the mount is not available — see <a href="../../../getting-started/01-first-things/network-drives/">Network Drives</a>.</li>
+<li><strong>Plex libraries you do not monitor</strong> <span class="twemoji golden" title="Added in v0.12.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0121-september-12-2026">v0.12.1</a> — a Plex connection reads only the libraries that have a library folder row, so the doctor leaves the other libraries out. It lists them as skipped, and does not ask you to add a mapping for them. To monitor one of them, add a library folder row for it. A Plex connection with no library folder rows at all is checked in full, because it has made no choice yet.</li>
 <li><strong>Mapping suggestions</strong> — when a reported folder is not visible, the doctor finds it for you. It searches the disk for media folders that Trailarr already tracks, by their distinctive names (for example, <code>Show Name (2015) {tvdb-281662}</code>). It then derives the path mapping from the place where it finds them. It confirms the mapping against several media folders from different parts of the library. Each suggestion maps one reported root folder (for example, <code>/media/tv → /media/all/Media/tv</code>), so there is one mapping for each root folder the application reports. Click <strong>Apply</strong> to add the mapping and to run the check again. When the root folder already has a mapping, the button says <strong>Update mapping</strong> and changes the target of that mapping. It does not add a second mapping. When the check passes, Trailarr also starts a sync of that connection immediately. Trailarr then adds the media to your library before the next scheduled sync. For a new connection with no synced media, the doctor compares the remote path against the visible folders instead. A suggestion that matches only a folder name says so. Look at the folder contents before you apply that suggestion.</li>
 <li><strong>Write permissions</strong> — the doctor creates a <code>.trailarr-write-test</code> file in <strong>every</strong> accessible folder, then deletes it. One writable folder does not make the other folders writable. For example, the doctor reports a read-only TV share next to a writable movies mount. When the test fails, the doctor shows the owner (uid/gid) of the folder and the user that Trailarr runs as. Compare the two values, then set the correct PUID and PGID — see <a href="../../../getting-started/01-first-things/environment-variables/">Environment Variables</a>.</li>
 </ul>
@@ -3150,10 +3151,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.49251538.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
       
         <script src="../../../copyright-year.js"></script>
       

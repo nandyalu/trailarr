@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.57">
+      <meta name="generator" content="zensical-0.0.61">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.5da3a30f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.ce62732f.min.css">
       
         
           
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0120-september-10-2026" class="md-skip">
+        <a href="#v0121-september-12-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2447,6 +2447,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0121-september-12-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.12.1</strong> - <em>September 12, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0120-september-10-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3060,6 +3071,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0121-september-12-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.12.1</strong> - <em>September 12, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0120-september-10-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3470,6 +3492,38 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0121-september-12-2026"><strong>v0.12.1</strong> - <em>September 12, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>The image refresh and the library sync work again</strong> — both tasks stopped with an error as soon as they reached a media item, because a log line used a feature of a logger that this file does not have. The <code>Image Refresh</code> task failed every run, and <code>Arr Data Refresh</code> failed at the end, where it refreshes the images of the media it just synced. Thanks <a href="https://github.com/St3ffn">@St3ffn</a> for the detailed report, which named the file and the cause! (<a href="https://github.com/nandyalu/trailarr/issues/677">#677</a>)</p>
+</li>
+<li>
+<p><strong>A dialog opens again in Safari</strong> — a dialog showed nothing: the page went grey behind it, but the box had a height of zero. A dialog takes its height from its contents, and Safari measures a column part that starts from a percentage as zero tall. Each part of a dialog now starts from the height of its own content. This applies to every dialog, such as Custom Filters and the profile selection for a download. Thanks <a href="https://github.com/carlosjfcasero">@carlosjfcasero</a> for the report and for the measurements from the browser console! (<a href="https://github.com/nandyalu/trailarr/issues/653">#653</a>)</p>
+</li>
+<li>
+<p><strong>A Plex library that you do not monitor is no longer reported as a problem</strong> — the Connection Doctor checked every library that Plex reports, so the libraries you removed from the connection came back as folders that Trailarr cannot see, each with a path mapping to add. The doctor now skips them, and says why — see <a href="../../user-guide/settings/connections/#connection-doctor">Connection Doctor</a>.</p>
+</li>
+<li>
+<p><strong>The disk report names a disk, not one film</strong> — the Health page listed a folder such as <code>'/media/movies/all/Varavu (2026) {imdb-tt37963237}': 3.9 TiB free</code>. The free space was right, but the name was the folder of one title, which reads like a report about that title. The page now names your library folders, and falls back to the disk the media sits on.</p>
+</li>
+<li>
+<p><strong>The Health page no longer reports that every setup is broken</strong> — the YouTube download test asked for one particular video, and that video was deleted, so every setup reported a fault. The test no longer depends on one id: it searches for a trailer and reads the first result. When that video cannot be read, Trailarr tries a second search, and then says the video is the problem instead of reporting an error about your setup — see <a href="../../user-guide/settings/health/#youtube-download-test">Health</a>.</p>
+</li>
+<li>
+<p><strong>The theme and the preview banner show on the first page load</strong> — the web page asked for your settings before it had a session, got a refusal, and kept it for the rest of the visit. The theme stayed on <code>Auto</code> and the preview-mode banner did not show while downloads were off.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><strong>A burst of events no longer floods your notification channel</strong> — a job that makes thousands of events, such as a library scan after you change a path mapping, sent one message every ten seconds. Trailarr now waits longer after a big batch, up to five minutes, and goes back to ten seconds as soon as the job stops. A scan that finds 1,292 renamed trailers sends about four messages instead of about forty, and each message says how many of each kind there are, such as <code>Trailer Renamed — 1,292 items</code> — see <a href="../../user-guide/settings/notifications/#good-to-know">Notifications</a>.</p>
+</li>
+<li>
+<p><strong>A failed connection update gives the correct status</strong> — the API answered <code>404</code> when your Radarr, Sonarr or Plex server refused the request or did not answer, which is the same answer as a connection that does not exist. The API now answers <code>400</code> for a problem with the server, and keeps <code>404</code> for an id that is not in the database. The message that you see does not change.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0120-september-10-2026"><strong>v0.12.0</strong> - <em>September 10, 2026</em></h2>
 <p>This release moves the backend code into layers. It adds no features, and Trailarr behaves the same. It is Phase 7 of the <a href="../../references/roadmap/">roadmap</a>.</p>
 <p><strong>Bug Fixes:</strong> 🐛</p>
@@ -4489,10 +4543,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.49251538.min.js"></script>
+      <script src="../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       

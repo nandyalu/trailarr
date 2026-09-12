@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.57">
+      <meta name="generator" content="zensical-0.0.61">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.5da3a30f.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.ce62732f.min.css">
       
         
           
@@ -3009,8 +3009,11 @@
 </tbody>
 </table>
 <h2 id="youtube-download-test">YouTube download test</h2>
-<p>The <strong>Test YouTube download</strong> button checks that yt-dlp can read a known test video from YouTube. It uses your current settings, and your cookies file when you have one. Trailarr does not download the video.</p>
-<p>The test contacts YouTube, so it never runs automatically. You must confirm it first. Trailarr keeps the result for 24 hours. When the test fails, the result shows the reason in plain language (sign-in required, rate limit, outdated yt-dlp) instead of a raw error.</p>
+<p><span class="twemoji orange" title="Updated in v0.12.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0121-september-12-2026">v0.12.1</a></p>
+<p>Checks that yt-dlp can read a video from YouTube with your current setup, including your cookies file when you have one. It reads the video information and downloads nothing.</p>
+<p>Trailarr asks YouTube for a search result rather than a fixed video. A fixed video can be deleted — the one this test used before <code>v0.12.1</code> was, and every health page then reported that the setup was broken when nothing was wrong. A search has no id to rot, and it uses the same code that Trailarr uses when it searches for a trailer.</p>
+<p>If the video it picks cannot be read — deleted, private, or not available in your country — Trailarr tries a second search, and says that it reached YouTube. That is a warning, not an error: the video is the problem, not your setup. A sign-in wall, a rate limit or an outdated yt-dlp is an error, and says what to do.</p>
+<p>The result is kept for 24 hours and shown with the checks above.</p>
 <h2 id="youtube-cookies">YouTube cookies</h2>
 <p><span class="twemoji golden" title="Added in v0.11.4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0114-august-29-2026">v0.11.4</a></p>
 <p>Some downloads fail because YouTube asks for a sign-in ("Sign in to confirm you're not a bot") or rate-limits your address. A cookies file from a signed-in browser session fixes this. You only need one when downloads fail this way — a fresh install works without it.</p>
@@ -3219,10 +3222,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.49251538.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
       
         <script src="../../../copyright-year.js"></script>
       
