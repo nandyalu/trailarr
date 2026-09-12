@@ -130,13 +130,22 @@ def _count_of(word: str, count: int) -> str:
 
 
 def _format_grouped(
-    notes: list[EventNote], media_cache: dict[int, object]
+    notes: list[EventNote],
+    media_cache: dict[int, object],
+    with_titles: bool = True,
 ) -> str:
     """One line for each kind of event in a batch too big to list.
 
     A scan after a path change makes hundreds of notes of two or three
     kinds. Ten of those lines and "…and 1,282 more" tells the user
     nothing, so each kind gets its count and a title or two.
+
+    Args:
+        notes (list[EventNote]): The batch.
+        media_cache (dict[int, object]): Media rows read this cycle.
+        with_titles (bool): Name a title or two for each kind. False when
+            the message already names the media item, which is the whole
+            batch — repeating it on every line says nothing.
     """
     by_type: dict[str, list[EventNote]] = {}
     for note in notes:
@@ -150,7 +159,7 @@ def _format_grouped(
             f" — {_count_of('item', len(type_notes))}"
         )
         titles: list[str] = []
-        for note in type_notes:
+        for note in type_notes if with_titles else []:
             media = _media_info(note.media_id, media_cache)
             if media is None:
                 continue
@@ -341,15 +350,18 @@ def _discord_payload(
     poster: str | None = None
     if single is not None:
         embed["title"] = f"{single.title} ({single.year})"
-        lines = [
-            f"{_event_emoji(n.event_type)} {_event_label(n.event_type)}"
-            + (f" — {n.detail}" if n.detail else "")
-            for n in notes[:MAX_LINES_PER_MESSAGE]
-        ]
-        overflow = len(notes) - MAX_LINES_PER_MESSAGE
-        if overflow > 0:
-            lines.append(f"…and {overflow} more")
-        embed["description"] = "\n".join(lines)
+        if len(notes) > MAX_LINES_PER_MESSAGE:
+            # One title with a burst of its own gets counts, like any other
+            # batch too big to list. The embed title already names it.
+            embed["description"] = _format_grouped(
+                notes, media_cache, with_titles=False
+            )
+        else:
+            embed["description"] = "\n".join(
+                f"{_event_emoji(n.event_type)} {_event_label(n.event_type)}"
+                + (f" — {n.detail}" if n.detail else "")
+                for n in notes
+            )
         fields = [{"name": "Media", "value": f"#{single.id}", "inline": True}]
         if single.youtube_trailer_id:
             fields.append(
