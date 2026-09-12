@@ -9,6 +9,7 @@ Wargame coverage:
 
 import asyncio
 import os
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -377,6 +378,86 @@ class TestDiskSpace:
         ):
             mounts = health._media_mounts()
         assert len(mounts) == 1
+
+
+class TestDiskSpaceNamesADisk:
+    """The disk report must name a disk, not one title folder.
+
+    The fallback took the folder of a recent media item, so the page said
+    `'/media/movies/all/Varavu (2026) {imdb-tt37963237}': 3.9 TiB free`.
+    The number was right and the name was not: that is one film, and it
+    reads like a report about that film.
+    """
+
+    def test_a_library_root_wins_over_a_title_folder(self, tmp_path):
+        root = tmp_path / "movies"
+        title = root / "Varavu (2026) {imdb-tt37963237}"
+        title.mkdir(parents=True)
+        mapping = SimpleNamespace(path_from="/data/movies", path_to=str(root))
+        connection = SimpleNamespace(path_mappings=[mapping])
+        media = [type("M", (), {"folder_path": str(title)})()]
+
+        with (
+            patch.object(
+                health.connection_doctor, "get_all_reports", return_value=[]
+            ),
+            patch.object(
+                health.connection_manager, "read_all", return_value=[connection]
+            ),
+            patch.object(
+                health.media_manager, "read_recent", return_value=media
+            ),
+            patch.object(health, "_config_device", return_value=None),
+        ):
+            mounts = health._media_mounts()
+
+        assert mounts == [str(root)]
+
+    def test_a_title_folder_is_reduced_to_its_disk(self, tmp_path):
+        """With no connection to ask, the report names the mount."""
+        title = tmp_path / "movies" / "Varavu (2026) {imdb-tt37963237}"
+        title.mkdir(parents=True)
+        media = [type("M", (), {"folder_path": str(title)})()]
+
+        with (
+            patch.object(
+                health.connection_doctor, "get_all_reports", return_value=[]
+            ),
+            patch.object(
+                health.connection_manager, "read_all", return_value=[]
+            ),
+            patch.object(
+                health.media_manager, "read_recent", return_value=media
+            ),
+            patch.object(health, "_config_device", return_value=None),
+        ):
+            mounts = health._media_mounts()
+
+        assert len(mounts) == 1
+        assert mounts[0] != str(title), "the report named one film"
+        assert str(title).startswith(mounts[0])
+
+    def test_the_mount_point_stops_at_the_disk_boundary(self):
+        """`_mount_point` walks up while the disk stays the same."""
+        devices = {
+            "/media/movies/all/Varavu (2026)": 42,
+            "/media/movies/all": 42,
+            "/media/movies": 42,
+            "/media": 7,
+            "/": 7,
+        }
+
+        def fake_stat(path):
+            return SimpleNamespace(st_dev=devices[str(path)])
+
+        with patch.object(health.os, "stat", side_effect=fake_stat):
+            found = health._mount_point("/media/movies/all/Varavu (2026)")
+
+        assert found == "/media/movies"
+
+    def test_a_folder_that_cannot_be_read_is_given_back_as_it_is(self):
+        with patch.object(health.os, "stat", side_effect=OSError("gone")):
+            assert health._mount_point("/media/movies") == "/media/movies"
 
 
 class TestErrorSignatures:
