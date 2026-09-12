@@ -128,6 +128,24 @@ class TestMaskUrl:
         assert mask_apprise_url("garbage") == "****"
 
 
+@pytest.fixture(autouse=True)
+def _reset_dispatcher_state():
+    """The window and the last-batch stamp are module state (burst control).
+
+    A test that sends a big batch grows the window, and the next test would
+    then find the dispatcher holding for a burst that is not its own.
+    """
+    dispatcher._queue.clear()
+    dispatcher._send_times.clear()
+    dispatcher._window = dispatcher.BATCH_WINDOW_SECONDS
+    dispatcher._last_dispatch_at = 0.0
+    yield
+    dispatcher._queue.clear()
+    dispatcher._send_times.clear()
+    dispatcher._window = dispatcher.BATCH_WINDOW_SECONDS
+    dispatcher._last_dispatch_at = 0.0
+
+
 class TestDispatcher:
 
     @pytest.mark.asyncio
@@ -145,8 +163,9 @@ class TestDispatcher:
 
         assert send.call_count == 1
         body = send.call_args[0][1]["embeds"][0]["description"]
-        assert "…and 490 more" in body
-        assert len(body.splitlines()) == 11  # 10 lines + overflow summary
+        # A batch this big is grouped by kind: the count is the message.
+        assert "Trailer Downloaded — 500 items" in body
+        assert len(body.splitlines()) == 1
 
     @pytest.mark.asyncio
     async def test_apprise_path_used_for_non_discord(self):
@@ -259,6 +278,126 @@ class TestDispatcher:
         body = dispatcher._format_batch(notes, {})
         assert "Trailer Downloaded — abc123" in body
         assert "Media Added" in body
+
+
+class TestABurstBecomesAFewMessages:
+    """A bulk job must not turn into one Discord ping every ten seconds.
+
+    On Sep 11, 2026 a library scan on a machine whose mounts differed from
+    the recorded paths matched every trailer by hash at a new path and made
+    1,292 `TRAILER_RENAMED` notes over about eight minutes. The fixed
+    ten-second window turned that into ~26 messages, each of ten lines and
+    "…and 40 more".
+    """
+
+    async def _run_scan(self, total: int, seconds: int, per_tick: int):
+        """Feed `total` notes over `seconds`, ticking every window.
+
+        Returns:
+            tuple[list[int], int]: the size of every message that was sent,
+                and how many notes never went out.
+        """
+        clock = {"now": 1000.0}
+        sizes: list[int] = []
+
+        def fake_send(webhook, payload, poster=None):
+            title = payload["embeds"][0]["title"]
+            # "Trailarr — N updates", or a single-media title
+            sizes.append(
+                int(title.split("—")[1].split()[0].replace(",", ""))
+                if "—" in title and "updates" in title
+                else 1
+            )
+            return True
+
+        sent = 0
+        with (
+            patch.object(dispatcher.time, "monotonic", lambda: clock["now"]),
+            patch.object(dispatcher, "_post_discord_sync", side_effect=fake_send),
+        ):
+            for tick in range(seconds // int(dispatcher.BATCH_WINDOW_SECONDS)):
+                for _ in range(per_tick):
+                    if sent < total:
+                        dispatcher.enqueue(
+                            "TRAILER_RENAMED", "SYSTEM", None, "moved"
+                        )
+                        sent += 1
+                clock["now"] += dispatcher.BATCH_WINDOW_SECONDS
+                await dispatcher._dispatch_pending()
+            # The job is done; the loop keeps ticking.
+            for _ in range(3):
+                clock["now"] += dispatcher.BATCH_WINDOW_SECONDS
+                await dispatcher._dispatch_pending()
+            leftover = len(dispatcher._queue)
+        return sizes, leftover
+
+    @pytest.mark.asyncio
+    async def test_the_scan_flood_fits_in_a_handful_of_messages(self):
+        make_channel(name="all", event_types=["TRAILER_RENAMED"])
+        # 1,292 notes over ~490 seconds, the shape of the real scan.
+        sizes, leftover = await self._run_scan(1292, 490, 27)
+
+        assert leftover == 0, "every note must go out"
+        assert sum(sizes) == 1292, "no note may be sent twice or dropped"
+        assert len(sizes) <= 6, f"still a flood: {len(sizes)} messages"
+        assert len(sizes) >= 2
+
+    @pytest.mark.asyncio
+    async def test_normal_traffic_still_goes_out_in_one_window(self):
+        """One download must not wait behind the burst rule."""
+        make_channel(name="all", event_types=["TRAILER_DOWNLOADED"])
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "yt1")
+        with patch.object(
+            dispatcher, "_post_discord_sync", return_value=True
+        ) as send:
+            await dispatcher._dispatch_pending()
+        assert send.call_count == 1
+        assert dispatcher._window == dispatcher.BATCH_WINDOW_SECONDS
+
+    @pytest.mark.asyncio
+    async def test_a_quiet_note_after_a_burst_waits_one_window(self):
+        """When the burst stops, the next note goes out on the usual beat."""
+        make_channel(name="all", event_types=["TRAILER_DOWNLOADED"])
+        clock = {"now": 500.0}
+        with (
+            patch.object(dispatcher.time, "monotonic", lambda: clock["now"]),
+            patch.object(dispatcher, "_post_discord_sync", return_value=True),
+        ):
+            for _ in range(dispatcher.BURST_NOTES * 2):
+                dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "x")
+            await dispatcher._dispatch_pending()
+            assert dispatcher._window > dispatcher.BATCH_WINDOW_SECONDS
+
+            # The job is over. One note arrives.
+            dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "last")
+            clock["now"] += 5.0
+            await dispatcher._dispatch_pending()
+            assert len(dispatcher._queue) == 1, "sent before the window"
+
+            clock["now"] += dispatcher.BATCH_WINDOW_SECONDS
+            await dispatcher._dispatch_pending()
+            assert len(dispatcher._queue) == 0, "held after the burst ended"
+        assert dispatcher._window == dispatcher.BATCH_WINDOW_SECONDS
+
+    def test_a_grouped_body_names_the_kinds_and_the_titles(self):
+        media = _fake_media(id=3, title="Rental Family", year=2025)
+        notes = [
+            EventNote("TRAILER_RENAMED", "SYSTEM", 3, "moved")
+            for _ in range(40)
+        ] + [EventNote("TRAILER_DETECTED", "SYSTEM", None, "") for _ in range(2)]
+        body = dispatcher._format_batch(notes, {3: media})
+
+        assert "Trailer Renamed — 40 items: Rental Family (2025)" in body
+        assert "Trailer Detected — 2 items" in body
+        assert "…and" not in body, "a count replaces the overflow line"
+
+    def test_one_item_is_not_called_one_items(self):
+        notes = [
+            EventNote("TRAILER_RENAMED", "SYSTEM", None, "")
+            for _ in range(11)
+        ] + [EventNote("TRAILER_DELETED", "SYSTEM", None, "")]
+        body = dispatcher._format_batch(notes, {})
+        assert "Trailer Deleted — 1 item" in body
 
 
 def _fake_media(**overrides):
