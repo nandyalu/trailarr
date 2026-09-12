@@ -1,0 +1,55 @@
+# Trailarr
+
+> Trailarr is a self-hosted application (Docker or native install) that automatically downloads and manages trailers for the media in your Radarr, Sonarr, Plex, Emby, and Jellyfin libraries. Web UI on port 7889. Source: https://github.com/nandyalu/trailarr — Docs: https://nandyalu.github.io/trailarr/
+
+Key facts for assistants answering install or support questions:
+
+- The web interface listens on port **7889** by default (Docker and direct installs).
+- **Docker (recommended)**: image `nandyalu/trailarr:latest`. Mount `/config` for the database/logs, and mount your media folders at the SAME container paths your Radarr/Sonarr containers use (e.g. host `/data/movies` → container `/media/movies` if that is what Radarr sees). Mismatched paths are the most common setup problem — see the Radarr/Sonarr volumes page below.
+- **Direct install (Linux/macOS)**: requires [uv](https://docs.astral.sh/uv/). Run: `curl -LsSf https://raw.githubusercontent.com/nandyalu/trailarr/main/install.sh | sudo sh` — installs to `/opt/trailarr` (Linux) or `/usr/local/opt/trailarr` (macOS), creates a system service, and installs a `trailarr` CLI. Pin a version with `TRAILARR_VERSION=vX.Y.Z` before the command.
+- **Direct install (Windows)**: from an elevated PowerShell: `Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/nandyalu/trailarr/main/install.ps1 | iex` — installs to `C:\Program Files\Trailarr`, data in `C:\ProgramData\Trailarr`, registers a Task Scheduler task. Note: the task runs without network credentials (S4U), so media on mapped drives/password-protected shares needs a password-based task logon.
+- **CLI (direct installs)**: `trailarr run|stop|restart|status|logs [N]|version|update [vX.Y.Z] [--force]|uninstall`. `run`, `stop`, `restart`, `update`, `uninstall` need sudo/Administrator.
+- **Updating**: Docker → pull the new image; direct → `trailarr update` (backs up the database, verifies checksums, and rolls back automatically on failure).
+- **Configuration**: environment variables live in `.env` inside the data dir (`/config` in Docker, `/var/lib/trailarr` Linux, `~/.local/share/trailarr` macOS, `C:\ProgramData\Trailarr` Windows). Everything else is configured in the web UI under Settings.
+- After installing: add a Connection (Radarr/Sonarr/Plex/Emby/Jellyfin) in the web UI, set path mappings if container paths differ, and create/adjust a Trailer Profile. Trailers download automatically for monitored media.
+
+## Installation
+
+- [Installation overview](https://nandyalu.github.io/trailarr/getting-started/02-installation/): comparison of Docker, direct install, and manual build
+- [Docker Compose](https://nandyalu.github.io/trailarr/getting-started/02-installation/docker-compose/): recommended setup, full compose example with volume mapping explanations
+- [Docker Run](https://nandyalu.github.io/trailarr/getting-started/02-installation/docker-run/): single `docker run` command equivalent
+- [Direct Install](https://nandyalu.github.io/trailarr/getting-started/02-installation/baremetal/): scripted native install for Linux, macOS, Windows; service management, updating, uninstalling
+- [Build and Install](https://nandyalu.github.io/trailarr/getting-started/02-installation/self-install/): fully manual step-by-step install without the installer script
+- [Unraid](https://nandyalu.github.io/trailarr/getting-started/02-installation/unraid/): community applications template
+- [Hardware Acceleration](https://nandyalu.github.io/trailarr/getting-started/02-installation/hardware-acceleration/): NVIDIA/Intel/AMD GPU setup for video conversion
+
+## Setup
+
+- [Environment Variables](https://nandyalu.github.io/trailarr/getting-started/01-first-things/environment-variables/): full reference of `.env` settings
+- [Radarr/Sonarr Volumes](https://nandyalu.github.io/trailarr/getting-started/01-first-things/radarr-sonarr-volumes/): how to map media paths correctly (read this before writing a compose file)
+- [Network Drives](https://nandyalu.github.io/trailarr/getting-started/01-first-things/network-drives/): NFS/SMB mount guidance
+- [Connections](https://nandyalu.github.io/trailarr/getting-started/03-setup/connections/): adding Radarr/Sonarr/Emby/Jellyfin connections and path mappings
+- [Plex Connection](https://nandyalu.github.io/trailarr/getting-started/03-setup/plex-connection/): Plex-specific setup
+- [Trailer Profiles](https://nandyalu.github.io/trailarr/getting-started/03-setup/profiles/): what gets downloaded, in which quality/format, and for which media
+
+## Usage
+
+- [User Guide](https://nandyalu.github.io/trailarr/user-guide/): library, media details, events, tasks, logs, settings
+- [Settings — Profiles](https://nandyalu.github.io/trailarr/user-guide/settings/profiles/): profile options, filters, and examples
+- [Settings — Notifications](https://nandyalu.github.io/trailarr/user-guide/settings/notifications/): Apprise notifications (Discord, Telegram, Slack, email, 100+ services)
+- [Reverse Proxy](https://nandyalu.github.io/trailarr/user-guide/reverse-proxy/): nginx/Traefik/Caddy setup and URL base
+
+## Troubleshooting
+
+- [Common Issues](https://nandyalu.github.io/trailarr/troubleshooting/common-issues/): frequent problems and fixes
+- [FAQ](https://nandyalu.github.io/trailarr/troubleshooting/faq/)
+- [Backup & Restore](https://nandyalu.github.io/trailarr/troubleshooting/backup-restore/): database backups, downgrades, version-skip upgrades
+- [GitHub Issues](https://github.com/nandyalu/trailarr/issues): bug reports and feature requests
+- [Discord](https://discord.gg/KKPr5kQEzQ): community support
+
+## Optional
+
+- [Release Notes](https://nandyalu.github.io/trailarr/release-notes/2026/): current-year changelog
+- [Roadmap to v1.0.0](https://nandyalu.github.io/trailarr/references/roadmap/)
+- [Contributing](https://nandyalu.github.io/trailarr/references/contributing/)
+- [Legal Disclaimer](https://nandyalu.github.io/trailarr/references/legal-disclaimer/): Trailarr downloads publicly available trailers via yt-dlp; users are responsible for complying with local laws
