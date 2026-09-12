@@ -391,6 +391,34 @@ class TestABurstBecomesAFewMessages:
         assert "Trailer Detected — 2 items" in body
         assert "…and" not in body, "a count replaces the overflow line"
 
+    def test_one_title_with_a_burst_is_grouped_too(self):
+        """A batch about one media item gets counts, without the title on
+        every line — the embed header already names it."""
+        media = _fake_media(id=9, title="Solo Film", year=2026)
+        notes = [
+            EventNote("TRAILER_RENAMED", "SYSTEM", 9, "moved")
+            for _ in range(15)
+        ]
+        payload, _ = dispatcher._discord_payload(notes, {9: media})
+        embed = payload["embeds"][0]
+
+        assert embed["title"] == "Solo Film (2026)"
+        assert "Trailer Renamed — 15 items" in embed["description"]
+        assert "…and 5 more" not in embed["description"]
+        assert "Solo Film" not in embed["description"], "the header says it"
+
+    def test_a_small_single_media_batch_keeps_its_lines(self):
+        media = _fake_media(id=9, title="Solo Film", year=2026)
+        notes = [
+            EventNote("TRAILER_DOWNLOADED", "SYSTEM", 9, "yt1"),
+            EventNote("TRAILER_DETECTED", "SYSTEM", 9, ""),
+        ]
+        payload, _ = dispatcher._discord_payload(notes, {9: media})
+        body = payload["embeds"][0]["description"]
+
+        assert "Trailer Downloaded — yt1" in body
+        assert len(body.splitlines()) == 2
+
     def test_one_item_is_not_called_one_items(self):
         notes = [
             EventNote("TRAILER_RENAMED", "SYSTEM", None, "")

@@ -85,8 +85,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add backend/pyproject.toml frontend/package.json frontend/package-lock.json \
-                  .vscode/tasks.json docs/references/api-docs/openapi.json
+          # `uv sync` above re-locks after the pyproject bump, so the lock
+          # goes in too. Without it the lockfile keeps the previous
+          # version of the project and every release ships it one behind.
+          git add backend/pyproject.toml backend/uv.lock frontend/package.json \
+                  frontend/package-lock.json .vscode/tasks.json \
+                  docs/references/api-docs/openapi.json
           git commit -m "chore: bump version to ${{ steps.version.outputs.tag }}" || echo "Nothing to commit"
 
           # Another workflow can push to the same branch while this job runs
