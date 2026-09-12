@@ -3505,6 +3505,9 @@
 <p><strong>A Plex library that you do not monitor is no longer reported as a problem</strong> — the Connection Doctor checked every library that Plex reports, so the libraries you removed from the connection came back as folders that Trailarr cannot see, each with a path mapping to add. The doctor now skips them, and says why — see <a href="../../user-guide/settings/connections/#connection-doctor">Connection Doctor</a>.</p>
 </li>
 <li>
+<p><strong>The disk report names a disk, not one film</strong> — the Health page listed a folder such as <code>'/media/movies/all/Varavu (2026) {imdb-tt37963237}': 3.9 TiB free</code>. The free space was right, but the name was the folder of one title, which reads like a report about that title. The page now names your library folders, and falls back to the disk the media sits on.</p>
+</li>
+<li>
 <p><strong>The Health page no longer reports that every setup is broken</strong> — the YouTube download test asked for one particular video, and that video was deleted. Trailarr now asks for a search result, which always exists. A video that cannot be read gives a warning that says so, instead of an error about your setup — see <a href="../../user-guide/settings/health/#youtube-download-test">Health</a>.</p>
 </li>
 <li>
