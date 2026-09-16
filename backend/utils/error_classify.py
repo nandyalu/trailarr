@@ -137,6 +137,9 @@ _UNAVAILABLE_FRAGMENTS = (
     "has been removed",
     "removed by the uploader",
     "no longer available",
+    "this video is not available",
+    # A deleted video also comes back as a plain 410 from the API.
+    "http error 410",
     # YouTube words the geo-block two ways: "is not available in your
     # country" and "has not made this video available in your country".
     "available in your country",

@@ -32,6 +32,7 @@ from app_logger import ModuleLogger
 import database.manager.connection as connection_manager
 import database.manager.media as media_manager
 from database.models.connection import (
+    ArrType,
     ConnectionCreate,
     ConnectionRead,
 )
@@ -272,7 +273,11 @@ async def run_probes(
     # the disk again. Suggestions themselves stay root-scoped.
     known_prefixes: list[SimpleNamespace] = []
     checked_dirs: list[str] = []
+    unmonitored = _unmonitored_plex_roots(connection, roots)
     for root in roots:
+        if root in unmonitored:
+            report.probes.append(_unmonitored_probe(root, connection))
+            continue
         probe, mapped_dir = _probe_root(
             root, connection, samples, bases, known_prefixes
         )
@@ -344,6 +349,91 @@ async def _fetch_roots(
         detail=(
             f"{connection.name} answered and reports {len(roots)} folder(s)."
         ),
+    )
+
+
+def _unmonitored_plex_roots(
+    connection: DoctorConnection, roots: list[str]
+) -> set[str]:
+    """The Plex libraries the user chose not to monitor.
+
+    A Plex connection syncs only the libraries that a path mapping covers.
+    The rule is the one `_section_is_tracked` uses in the Plex connection
+    manager: a mapping covers a library when its `path_from` is the
+    library folder, or a parent of it. A library with no such mapping is a
+    choice, not a fault, and the doctor must not report it as an invisible
+    folder.
+
+    The rule has to be the same rule. A mapping *inside* a library does
+    not make the sync read that library — it skips the whole section — so
+    a doctor that accepted one would probe a folder that Trailarr never
+    reads, and could report a fault for it.
+
+    A connection with no mappings at all has made no choice yet. Every
+    folder of it is checked, because that is the connection that needs
+    the help.
+
+    Args:
+        connection (DoctorConnection): The connection under check.
+        roots (list[str]): The folders the application reports.
+
+    Returns:
+        set[str]: The folders to leave out of the checks.
+    """
+    if connection.arr_type != ArrType.PLEX:
+        return set()
+    mappings = list(connection.path_mappings or [])
+    if not mappings:
+        return set()
+    return {
+        root
+        for root in roots
+        if not any(is_subpath(pm.path_from, root) for pm in mappings)
+    }
+
+
+def _unmonitored_probe(
+    root: str, connection: DoctorConnection
+) -> ProbeResult:
+    """Say that a Plex library is out of scope, and how to bring it in.
+
+    A mapping for a folder inside the library gets its own message. That
+    setup looks monitored and is not: Trailarr skips the whole library,
+    because a mapping must start at the library folder or above it.
+    """
+    inner = [
+        pm.path_from
+        for pm in (connection.path_mappings or [])
+        if is_subpath(root, pm.path_from)
+        and not is_subpath(pm.path_from, root)
+    ]
+    if inner:
+        return ProbeResult(
+            kind="path_visibility",
+            name=f"Folder: {root}",
+            status=ProbeStatus.SKIPPED,
+            detail=(
+                "Trailarr does not monitor this Plex library. The mapping"
+                f" '{inner[0]}' starts inside the library, and Trailarr"
+                " reads a library only from the library folder itself."
+            ),
+            remediation=(
+                f"To monitor this library, map '{root}' as well."
+            ),
+            docs_url=DOCS_PATH_MAPPINGS,
+        )
+    return ProbeResult(
+        kind="path_visibility",
+        name=f"Folder: {root}",
+        status=ProbeStatus.SKIPPED,
+        detail=(
+            "Trailarr does not monitor this Plex library, because no path"
+            " mapping covers it."
+        ),
+        remediation=(
+            "To monitor this library, add a path mapping for this folder."
+        ),
+        docs_url=DOCS_PATH_MAPPINGS,
     )
 
 

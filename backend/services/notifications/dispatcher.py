@@ -10,6 +10,14 @@ Discord channel receives a single summarized message instead
 are capped at MAX_SENDS_PER_MINUTE: a rate-limited cycle leaves the queue
 untouched, so held notes simply merge into the next allowed batch.
 
+A burst gets more than the window. A library scan after a path change can
+make a thousand notes over several minutes, which the fixed window turned
+into one message every ten seconds. After a batch of BURST_NOTES or more,
+the window grows (up to MAX_BATCH_WINDOW_SECONDS) so the rest of the burst
+collects into a few messages, and the first small batch puts it back. A
+batch too big to list is grouped by event type with a count, because ten
+lines and "…and 1,282 more" says nothing about what happened.
+
 Discord channels bypass Apprise's generic send: its plugin cannot place
 the poster inside the embed, set fields, or a timestamped footer, so we
 POST the webhook payload ourselves (decision D10). Every other service
@@ -38,6 +46,14 @@ BATCH_WINDOW_SECONDS = 10.0
 MAX_LINES_PER_MESSAGE = 10
 MAX_SENDS_PER_MINUTE = 5
 
+# Burst control. A batch of this many notes says a bulk job is running, so
+# the next window grows by WINDOW_GROWTH, to at most MAX_BATCH_WINDOW_SECONDS.
+BURST_NOTES = 25
+WINDOW_GROWTH = 4.0
+MAX_BATCH_WINDOW_SECONDS = 300.0
+# Titles named for each event type in a grouped message.
+GROUP_EXAMPLES = 2
+
 # Public HTTPS URL — services like Discord fetch the bot avatar themselves,
 # so a local file path won't work here.
 _LOGO_URL = (
@@ -47,6 +63,8 @@ _LOGO_URL = (
 
 _queue: deque["EventNote"] = deque()
 _send_times: deque[float] = deque()  # monotonic stamps of recent sends
+_window = BATCH_WINDOW_SECONDS  # seconds to collect before the next batch
+_last_dispatch_at = 0.0  # monotonic stamp of the last batch, 0 = none yet
 _dispatch_task: asyncio.Task | None = None
 _stop_event: asyncio.Event | None = None
 
@@ -106,11 +124,68 @@ def _media_info(media_id: int | None, cache: dict[int, object]):
     return cache[media_id]
 
 
-def _format_batch(
-    notes: list[EventNote], media_cache: dict[int, object]
+def _count_of(word: str, count: int) -> str:
+    """`3 items`, `1 item`."""
+    return f"{count} {word}{'s' if count != 1 else ''}"
+
+
+def _format_grouped(
+    notes: list[EventNote],
+    media_cache: dict[int, object],
+    with_titles: bool = True,
 ) -> str:
+    """One line for each kind of event in a batch too big to list.
+
+    A scan after a path change makes hundreds of notes of two or three
+    kinds. Ten of those lines and "…and 1,282 more" tells the user
+    nothing, so each kind gets its count and a title or two.
+
+    Args:
+        notes (list[EventNote]): The batch.
+        media_cache (dict[int, object]): Media rows read this cycle.
+        with_titles (bool): Name a title or two for each kind. False when
+            the message already names the media item, which is the whole
+            batch — repeating it on every line says nothing.
+    """
+    by_type: dict[str, list[EventNote]] = {}
+    for note in notes:
+        by_type.setdefault(note.event_type, []).append(note)
+    ranked = sorted(by_type.items(), key=lambda kv: len(kv[1]), reverse=True)
+
+    lines: list[str] = []
+    for event_type, type_notes in ranked[:MAX_LINES_PER_MESSAGE]:
+        line = (
+            f"{_event_emoji(event_type)} {_event_label(event_type)}"
+            f" — {_count_of('item', len(type_notes))}"
+        )
+        titles: list[str] = []
+        for note in type_notes if with_titles else []:
+            media = _media_info(note.media_id, media_cache)
+            if media is None:
+                continue
+            title = f"{media.title} ({media.year})"
+            if title not in titles:
+                titles.append(title)
+            if len(titles) == GROUP_EXAMPLES:
+                break
+        if titles:
+            line += ": " + ", ".join(titles)
+            rest = len(type_notes) - len(titles)
+            if rest > 0:
+                line += f" and {rest} more"
+        lines.append(line)
+    hidden = len(ranked) - MAX_LINES_PER_MESSAGE
+    if hidden > 0:
+        lines.append(f"…and {_count_of('kind', hidden)} more")
+    return "\n".join(lines)
+
+
+def _format_batch(notes: list[EventNote], media_cache: dict[int, object]) -> str:
     """One message body for a channel's batch: up to MAX_LINES lines,
-    then a summary of the rest."""
+    then a summary of the rest. A batch too big to list is grouped by
+    event type instead."""
+    if len(notes) > MAX_LINES_PER_MESSAGE:
+        return _format_grouped(notes, media_cache)
     lines: list[str] = []
     for note in notes[:MAX_LINES_PER_MESSAGE]:
         line = f"{_event_label(note.event_type)}"
@@ -275,15 +350,18 @@ def _discord_payload(
     poster: str | None = None
     if single is not None:
         embed["title"] = f"{single.title} ({single.year})"
-        lines = [
-            f"{_event_emoji(n.event_type)} {_event_label(n.event_type)}"
-            + (f" — {n.detail}" if n.detail else "")
-            for n in notes[:MAX_LINES_PER_MESSAGE]
-        ]
-        overflow = len(notes) - MAX_LINES_PER_MESSAGE
-        if overflow > 0:
-            lines.append(f"…and {overflow} more")
-        embed["description"] = "\n".join(lines)
+        if len(notes) > MAX_LINES_PER_MESSAGE:
+            # One title with a burst of its own gets counts, like any other
+            # batch too big to list. The embed title already names it.
+            embed["description"] = _format_grouped(
+                notes, media_cache, with_titles=False
+            )
+        else:
+            embed["description"] = "\n".join(
+                f"{_event_emoji(n.event_type)} {_event_label(n.event_type)}"
+                + (f" — {n.detail}" if n.detail else "")
+                for n in notes
+            )
         fields = [{"name": "Media", "value": f"#{single.id}", "inline": True}]
         if single.youtube_trailer_id:
             fields.append(
@@ -308,9 +386,7 @@ def _discord_payload(
                 }
     else:
         count = len(notes)
-        embed["title"] = (
-            f"Trailarr — {count} update{'s' if count != 1 else ''}"
-        )
+        embed["title"] = f"Trailarr — {count} update{'s' if count != 1 else ''}"
         embed["description"] = _format_batch(notes, media_cache)
     payload = {
         "username": "Trailarr",
@@ -403,15 +479,51 @@ def _rate_limited() -> bool:
     return len(_send_times) >= MAX_SENDS_PER_MINUTE
 
 
+def _holding_for_burst() -> bool:
+    """True while a burst is collecting and its window has not passed.
+
+    The window only grows after a big batch, so normal traffic never waits
+    longer than BATCH_WINDOW_SECONDS: this returns False whenever the
+    window is the normal one, and as soon as the burst stops.
+    """
+    if _window <= BATCH_WINDOW_SECONDS or not _last_dispatch_at:
+        return False
+    elapsed = time.monotonic() - _last_dispatch_at
+    if elapsed >= _window:
+        return False
+    # The burst is over when the queue stops filling at burst rate. Waiting
+    # out the rest of a five-minute window for one note would make a single
+    # download report late, which is the opposite of the point.
+    if len(_queue) < BURST_NOTES and elapsed >= BATCH_WINDOW_SECONDS:
+        return False
+    return True
+
+
+def _adjust_window(sent: int) -> None:
+    """Grow the window after a big batch, and reset it after a small one.
+
+    Args:
+        sent (int): How many notes the largest message carried.
+    """
+    global _window
+    if sent >= BURST_NOTES:
+        _window = min(_window * WINDOW_GROWTH, MAX_BATCH_WINDOW_SECONDS)
+    else:
+        _window = BATCH_WINDOW_SECONDS
+
+
 async def _dispatch_pending(force: bool = False) -> None:
     """Drain the queue and send one batched message per subscribed channel.
 
     A rate-limited cycle returns with the queue untouched — those notes
-    merge into the next allowed batch. `force` (shutdown flush) bypasses
-    the cap so pending notes are never dropped."""
+    merge into the next allowed batch, and so does a cycle that is holding
+    a burst. `force` (shutdown flush) bypasses both so pending notes are
+    never dropped."""
     if not _queue:
         return
     if not force and _rate_limited():
+        return
+    if not force and _holding_for_burst():
         return
     notes: list[EventNote] = []
     while _queue:
@@ -432,8 +544,11 @@ async def _dispatch_pending(force: bool = False) -> None:
         for channel_id, url in subscribed:
             per_channel.setdefault(channel_id, (url, []))[1].append(note)
 
+    global _last_dispatch_at
     if per_channel:
         _send_times.append(time.monotonic())
+    _last_dispatch_at = time.monotonic()
+    _adjust_window(max((len(n) for _, n in per_channel.values()), default=0))
     media_cache: dict[int, object] = {}
     for channel_id, (url, channel_notes) in per_channel.items():
         webhook = _discord_webhook_url(url)
@@ -474,7 +589,9 @@ async def _dispatch_loop() -> None:
         try:
             await _dispatch_pending()
         except Exception as e:  # never let the loop die
-            logger.warning(f"Trailarr could not send the notifications: {e}")
+            logger.warning(
+                f"Trailarr could not send the notifications: {e}"
+            )
 
 
 def start() -> None:
@@ -483,6 +600,9 @@ def start() -> None:
     global _dispatch_task, _stop_event
     if _dispatch_task is not None:
         return
+    global _window, _last_dispatch_at
+    _window = BATCH_WINDOW_SECONDS
+    _last_dispatch_at = 0.0
     _stop_event = asyncio.Event()
     _dispatch_task = asyncio.get_running_loop().create_task(_dispatch_loop())
     logger.debug("Notification dispatcher started")

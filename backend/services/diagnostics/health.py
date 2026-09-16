@@ -599,14 +599,71 @@ def _config_device() -> int | None:
         return None
 
 
+def _library_roots() -> list[str]:
+    """The library folders as Trailarr sees them, from the connections.
+
+    The `path_to` side of a path mapping is the folder inside Trailarr,
+    which is the folder to name in a report about disks.
+
+    Returns:
+        list[str]: The library folders, in the order the connections
+            were read. The list can be empty.
+    """
+    roots: list[str] = []
+    try:
+        for connection in connection_manager.read_all():
+            for mapping in connection.path_mappings:
+                if mapping.path_to:
+                    roots.append(mapping.path_to)
+    except Exception:
+        pass
+    return roots
+
+
+def _mount_point(folder: str) -> str:
+    """The folder where the disk under `folder` is mounted.
+
+    A media folder is one title deep — `/media/movies/Film (2026)`. The
+    free space belongs to the disk, not to that folder, so a report that
+    names the title folder reads like a fault in the library. This walks
+    up to the first parent on another disk, which is the mount.
+
+    Args:
+        folder (str): A folder on the disk.
+
+    Returns:
+        str: The mount point, or `folder` when it cannot be read.
+    """
+    try:
+        current = os.path.abspath(folder)
+        device = os.stat(current).st_dev
+    except OSError:
+        return folder
+    while True:
+        parent = os.path.dirname(current)
+        if parent == current:
+            return current
+        try:
+            if os.stat(parent).st_dev != device:
+                return current
+        except OSError:
+            return current
+        current = parent
+
+
 def _media_mounts() -> list[str]:
     """One existing folder per distinct media mount.
 
     Media libraries are commonly split over several disks (movies on
     one, TV on another). Reporting only the first one hides a full
-    second disk, so every distinct device gets its own entry. Folders
-    checked by the Connection Doctor come first, because those are the
-    library roots. Recent media folders complete the list.
+    second disk, so every distinct device gets its own entry.
+
+    The folders come from the connections: the ones the Connection
+    Doctor wrote to, then the library folders of every path mapping.
+    Both are library roots, which is what a user recognizes. A media
+    folder is the last resort, and it is reduced to its mount first —
+    the free space is the disk's, and naming one title folder makes the
+    report look like it is about that title.
     """
     candidates: list[str] = []
     for report in connection_doctor.get_all_reports():
@@ -617,10 +674,11 @@ def _media_mounts() -> list[str]:
             _, _, folder = probe.name.partition(": ")
             if folder:
                 candidates.append(folder)
+    candidates.extend(_library_roots())
     try:
         for media in media_manager.read_recent(limit=50):
             if media.folder_path:
-                candidates.append(media.folder_path)
+                candidates.append(_mount_point(media.folder_path))
     except Exception:
         pass
 

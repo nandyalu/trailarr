@@ -38,6 +38,7 @@ Set them up under **Settings → Notifications**.
 ## Good to know
 
 - **Batching:** bulk operations (library syncs, full scans) can produce many events at once — Trailarr groups them into a single summarized message per channel instead of flooding it.
+- **A burst gets fewer, bigger messages** {{ version_badge("upd", "0.12.1") }} — Trailarr collects notifications for ten seconds and sends one message for each channel. After a big batch it waits longer before the next one, up to five minutes, so a job that makes thousands of events sends a few messages and not one every ten seconds. A scan that finds 1,292 renamed trailers sends about four messages. The wait goes back to ten seconds as soon as the job stops, so a single download is still reported at once. A message too big to list its lines says how many of each kind there are, such as `Trailer Renamed — 1,292 items`.
 - **User-initiated events** (your own clicks in the UI) are excluded by default; enable *Include user-initiated events* per channel if you want them.
 - **Apprise URLs contain credentials** — Trailarr stores them write-only. They are never shown again after saving (the list shows a masked form like `discord://12ab****`), never appear in logs, and are excluded from any diagnostics output. To change a URL, just paste a new one; leaving the field blank when editing keeps the saved one.
 - A failing channel never affects Trailarr's operation — a warning is logged and the app carries on. Use **Test** to diagnose.

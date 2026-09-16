@@ -54,6 +54,34 @@ def _make_conn(
     return conn.id  # type: ignore
 
 
+@write_session
+def _make_plex_conn(
+    name: str,
+    mappings: list[tuple[str, str]] | None = None,
+    *,
+    _session: Session = None,  # type: ignore
+) -> int:
+    """A Plex connection. Its path mappings are the libraries it syncs."""
+    conn = Connection(
+        name=name,
+        arr_type=ArrType.PLEX,
+        url="http://localhost:32400",
+        api_key="token",
+        monitor_new_media=True,
+    )
+    _session.add(conn)
+    _session.commit()
+    _session.refresh(conn)
+    for path_from, path_to in mappings or []:
+        _session.add(
+            PathMapping(
+                connection_id=conn.id, path_from=path_from, path_to=path_to
+            )
+        )
+    _session.commit()
+    return conn.id  # type: ignore
+
+
 def _patched(roots, samples=None, bases=None, search_roots=None):
     """Patch API roots, media samples, suggester bases, and search roots.
 
@@ -778,3 +806,138 @@ class TestPreviewBeforeSaving:
         probe = _probe(report, "reachability")
         assert probe.status == ProbeStatus.ERROR
         assert "URL and API key" in probe.remediation
+
+
+class TestPlexLibrariesTheUserDoesNotMonitor:
+    """A Plex connection syncs only the libraries a path mapping covers.
+
+    The other libraries are a choice, and the doctor used to report every
+    one of them as a folder it cannot see, with a mapping to add.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.tmp = tmp_path
+
+    @pytest.mark.asyncio
+    async def test_a_library_with_no_mapping_is_left_out(self):
+        movies = self.tmp / "movies"
+        (movies / "Film A").mkdir(parents=True)
+        conn_id = _make_plex_conn(
+            f"Plex-{uuid.uuid4().hex[:8]}",
+            [(str(movies), str(movies))],
+        )
+        p1, p2, p3, p4 = _patched([str(movies), "/plex/home videos"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+
+        assert report.status == "healthy", "an unmonitored library is not a fault"
+        skipped = _probe(report, "path_visibility", "home videos")
+        assert skipped.status == ProbeStatus.SKIPPED
+        assert "does not monitor" in skipped.detail
+        assert skipped.suggested_mapping is None
+        assert _probe(report, "path_visibility", "movies").status == ProbeStatus.OK
+
+    @pytest.mark.asyncio
+    async def test_a_monitored_library_is_still_checked(self):
+        """The mapped library keeps every check it had."""
+        conn_id = _make_plex_conn(
+            f"Plex-{uuid.uuid4().hex[:8]}",
+            [("/plex/movies", "/nonexistent/movies")],
+        )
+        p1, p2, p3, p4 = _patched(["/plex/movies"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+
+        assert report.status == "issues"
+        probe = _probe(report, "path_visibility", "movies")
+        assert probe.status == ProbeStatus.ERROR
+        assert "not visible" in probe.detail
+
+    @pytest.mark.asyncio
+    async def test_a_connection_with_no_mappings_is_checked_in_full(self):
+        """A new connection has made no choice yet, and needs the help."""
+        conn_id = _make_plex_conn(f"Plex-{uuid.uuid4().hex[:8]}")
+        p1, p2, p3, p4 = _patched(["/plex/movies", "/plex/shows"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+
+        assert report.status == "issues"
+        for name in ("movies", "shows"):
+            assert (
+                _probe(report, "path_visibility", name).status
+                == ProbeStatus.ERROR
+            )
+
+    @pytest.mark.asyncio
+    async def test_an_arr_connection_checks_every_root(self):
+        """Radarr and Sonarr have no library selection to respect."""
+        conn_id = _make_conn(
+            f"Doc-{uuid.uuid4().hex[:8]}", [("/data/movies", "/movies")]
+        )
+        p1, p2, p3, p4 = _patched(["/data/movies", "/data/other"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+
+        assert report.status == "issues"
+        assert (
+            _probe(report, "path_visibility", "other").status
+            == ProbeStatus.ERROR
+        )
+
+    @pytest.mark.asyncio
+    async def test_a_mapping_inside_a_library_says_what_is_wrong(self):
+        """The sync reads a library from the library folder or above it.
+
+        A mapping that starts inside the library looks like it monitors
+        the library and does not — `_section_is_tracked` skips the whole
+        section. The doctor has to use the same rule, or it would probe a
+        folder Trailarr never reads and report a fault for it.
+        """
+        conn_id = _make_plex_conn(
+            f"Plex-{uuid.uuid4().hex[:8]}",
+            [("/plex/movies/4k", "/movies/4k")],
+        )
+        p1, p2, p3, p4 = _patched(["/plex/movies"])
+        with p1, p2, p3, p4:
+            report = await connection_doctor.run_doctor(conn_id)
+
+        assert report.status == "healthy"
+        probe = _probe(report, "path_visibility", "movies")
+        assert probe.status == ProbeStatus.SKIPPED
+        assert "/plex/movies/4k" in probe.detail
+        assert "starts inside the library" in probe.detail
+        assert "/plex/movies" in probe.remediation
+
+    @pytest.mark.asyncio
+    async def test_the_doctor_and_the_sync_agree_on_coverage(self):
+        """Whatever the sync reads, the doctor checks — and nothing else."""
+        from services.connections.plex.connection_manager import (
+            PlexConnectionManager,
+        )
+        from types import SimpleNamespace
+
+        cases = [
+            ("/plex/movies", "/plex/movies"),  # the library folder itself
+            ("/plex", "/plex/movies"),  # a parent of it
+            ("/plex/movies/4k", "/plex/movies"),  # inside it
+            ("/plex/shows", "/plex/movies"),  # somewhere else
+        ]
+        for path_from, root in cases:
+            mapping = SimpleNamespace(path_from=path_from, path_to="/x")
+            connection = SimpleNamespace(
+                arr_type=ArrType.PLEX, path_mappings=[mapping]
+            )
+            manager = PlexConnectionManager.__new__(PlexConnectionManager)
+            manager.all_path_mappings = [mapping]
+            section = SimpleNamespace(folders=[root], key="1", title="L")
+
+            synced = manager._section_is_tracked(section)
+            checked = root not in connection_doctor._unmonitored_plex_roots(
+                connection, [root]
+            )
+            assert synced == checked, (
+                f"mapping '{path_from}' with library '{root}':"
+                f" the sync reads it = {synced},"
+                f" the doctor checks it = {checked}"
+            )

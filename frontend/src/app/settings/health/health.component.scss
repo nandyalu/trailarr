@@ -116,6 +116,11 @@
     color: var(--color-success);
   }
 
+  &.warning {
+    background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    color: var(--color-warning);
+  }
+
   &.error {
     background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
     color: var(--color-danger);
