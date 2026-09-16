@@ -402,7 +402,9 @@ class TestDiskSpaceNamesADisk:
                 health.connection_doctor, "get_all_reports", return_value=[]
             ),
             patch.object(
-                health.connection_manager, "read_all", return_value=[connection]
+                health.connection_manager,
+                "read_all",
+                return_value=[connection],
             ),
             patch.object(
                 health.media_manager, "read_recent", return_value=media
