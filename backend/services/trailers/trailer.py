@@ -307,10 +307,10 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailarr downloaded the trailer for '{media.title}'."
-            f" from ({video_id})"
+            f"Trailarr downloaded the trailer for '{media.title}'"
+            f" from video {video_id}."
         )
-        logger.info(msg)
+        logger.info(msg, **logger.media(media.id))
         # Finish BEFORE broadcasting so clients refetching the downloading
         # overlay on this message no longer see this media in flight. The
         # downloads reload matters too: computed status derives from it.
