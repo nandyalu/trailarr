@@ -94,6 +94,10 @@ target, so every later phase pulls in by ~1 month against the July estimates. v1
 moves from Mar–Apr 2027 to Mar 2027 — one month of the gain is deliberately held back as
 buffer for the December slowdown (Phase 9 spans Dec–Jan) rather than being spent.
 
+**Parallel tracks alongside the phases:** Onboarding & Diagnostics
+(`track-onboarding-diagnostics.md`) and Media Tags (`track-tags.md`). Neither displaces a
+phase; both ride releases that are already going out.
+
 **Parallel track — Onboarding & Diagnostics** (`track-onboarding-diagnostics.md`):
 Connection Doctor + Health page + cookies UI (milestones A+B) are DONE — merged to `dev`
 Aug 28, 2026 (PR #658), shipping in v0.11.4. The first-run guided setup (C) rides v0.13.x
@@ -193,8 +197,10 @@ the release before it.
 - `phase-02-downloads-engine.md` — DONE (v0.10.0, Jul 19 2026).
 - `track-apprise-notifications.md` — DONE (shipped with v0.10.0).
 - `track-onboarding-diagnostics.md` — parallel track: A+B (Connection Doctor, Health
-  page, cookies UI) DONE (v0.11.4); C (first-run guided setup) and D (diagnostics
-  bundle) not started.
+  page, cookies UI) DONE (v0.11.4); C (first-run guided setup) DONE (ships v0.13.0);
+  D (diagnostics bundle) and E (backups & restore, from #681) not started.
+- `track-tags.md` — parallel track: media tags. Stage 1 (tags + view filters + bulk
+  tag/untag) targets v0.14.x; Stage 2 (tags in profile filters) ships with Phase 10.
 - `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
 - `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
