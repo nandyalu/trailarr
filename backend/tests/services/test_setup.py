@@ -59,7 +59,24 @@ class TestStatus:
         """The guide is a helper. It must not be what stops the app."""
         with patch(f"{PKG}.connection_manager") as connections:
             connections.read_all.side_effect = OSError("database is locked")
-            assert setup_service.counts()[0] == 0
+            assert setup_service.counts()[0] is None
+
+    def test_a_locked_database_does_not_open_the_guide(self, settings):
+        """Wargame C1. A count that failed is not a count of zero.
+
+        A locked database used to read as an empty one, which sent an
+        installation of thousands of titles into the first-run guide.
+        """
+        with patch(f"{PKG}.counts", return_value=(None, None)):
+            status = setup_service.status()
+
+        assert status.needed is False
+
+    def test_one_broken_count_is_enough_to_keep_it_shut(self, settings):
+        with patch(f"{PKG}.counts", return_value=(0, None)):
+            status = setup_service.status()
+
+        assert status.needed is False
 
 
 class TestExistingInstallations:
@@ -78,6 +95,13 @@ class TestExistingInstallations:
         with patch(f"{PKG}.counts", return_value=(0, 12)):
             assert setup_service.mark_existing_installation() is True
         assert settings.setup_completed is True
+
+    def test_a_failed_count_is_not_recorded_as_a_decision(self, settings):
+        """Marking is permanent, so a read that failed must not decide it."""
+        with patch(f"{PKG}.counts", return_value=(None, None)):
+            assert setup_service.mark_existing_installation() is False
+
+        assert settings.setup_completed is False
 
     def test_an_empty_installation_is_left_alone(self, settings):
         with patch(f"{PKG}.counts", return_value=(0, 0)):

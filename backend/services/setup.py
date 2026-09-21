@@ -21,20 +21,25 @@ from database.models.setup import SetupStatus
 logger = ModuleLogger("Setup")
 
 
-def counts() -> tuple[int, int]:
+def counts() -> tuple[int | None, int | None]:
     """How many connections and media items exist.
 
     Returns:
-        tuple[int, int]: The connection count and the media count.
+        tuple[int | None, int | None]: The connection count and the media
+            count. `None` means the database could not answer. A count of
+            zero and a count that failed must stay apart: a locked database
+            reads as an empty one, and an empty one opens the guide.
     """
     try:
         connections = len(connection_manager.read_all())
-    except Exception:
-        connections = 0
+    except Exception as e:
+        logger.warning(f"Trailarr could not count the connections: {e}")
+        connections = None
     try:
         media = media_manager.count_all()
-    except Exception:
-        media = 0
+    except Exception as e:
+        logger.warning(f"Trailarr could not count the media items: {e}")
+        media = None
     return connections, media
 
 
@@ -51,11 +56,15 @@ def status() -> SetupStatus:
     if not app_settings.setup_completed:
         mark_existing_installation()
     connections, media = counts()
+    # A database that cannot answer says nothing about how full it is, so
+    # Trailarr keeps the guide shut. Showing it to a library of thousands
+    # is worse than withholding it from a fresh install for one page load.
+    unknown = connections is None or media is None
     return SetupStatus(
-        needed=not app_settings.setup_completed,
+        needed=not app_settings.setup_completed and not unknown,
         completed=app_settings.setup_completed,
-        connections=connections,
-        media=media,
+        connections=connections or 0,
+        media=media or 0,
         downloads_enabled=app_settings.downloads_enabled,
         tmdb_key_set=bool(app_settings.tmdb_api_key),
     )
@@ -81,6 +90,10 @@ def mark_existing_installation() -> bool:
     if app_settings.setup_completed:
         return False
     connections, media = counts()
+    if connections is None or media is None:
+        # The decision is permanent, so Trailarr does not take it from a
+        # read that failed. The next call asks again.
+        return False
     if connections == 0 and media == 0:
         return False
     app_settings.setup_completed = True
