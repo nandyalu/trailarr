@@ -88,6 +88,26 @@
   gap: 0.5rem;
 }
 
+// How many media items the current filter matched, out of the total the page
+// could show. Tabular numerals so the button does not jog as counts change.
+.filter-count {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+// The header collapses to icons on a phone, and view/sort/filter need theirs.
+// The count is the one label still worth the width, so it stays while there is
+// room for it and the filter name goes. Below 360px there is none: the spacer
+// is already at zero and the count would sit against the Edit button, so the
+// icons win and the count goes with the other labels.
+@media (360px <= width < 765px) {
+  .media-header button .filter-count {
+    display: inline;
+  }
+}
+
 .media-header button:hover:not(.delete),
 .media-header button:focus-visible:not(.delete) {
   background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);

@@ -70,6 +70,12 @@ The filters on the **Home** page are slightly different as it only contains medi
 
 Custom filters are also supported here!
 
+!!! info "The filter button counts the view"
+    {{ version_badge("add", "0.13.0") }}
+    The filter button reads `2789 / 3746`. The first number is how many media items the filter matched. The second number is how many the page can show: every media item on the `Home` page, every movie on the `Movies` page, and every series on the `Series` page.
+
+    On the `Home` page the count tells you how much of your library has a trailer, because that page shows only media with a downloaded video. On the `Movies` and `Series` pages, select `Downloaded` or `Missing` to get the same count for that type. A media item counts as done when it has at least one downloaded video, whatever the profile asked for. Custom filters get a count too.
+
 !!! success ""
     When you make a selection for a `sort` or `filter` option, browser will remember and apply that next time.
 

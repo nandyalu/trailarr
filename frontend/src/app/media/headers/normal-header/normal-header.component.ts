@@ -35,6 +35,8 @@ export class NormalHeaderComponent {
   protected readonly selectedView = this.mediaService.selectedView;
   protected readonly expandedFields = this.mediaService.expandedFields;
   protected readonly tableColumns = this.mediaService.tableColumns;
+  protected readonly filteredCount = this.mediaService.filteredCount;
+  protected readonly scopedMediaCount = this.mediaService.scopedMediaCount;
 
   // Signals from Custom Filter Service
   protected readonly customFilters = this.customfilterService.viewFilters;

@@ -38,6 +38,26 @@ describe('NormalHeaderComponent', () => {
     expect(popover!.classList.contains('popover')).toBe(true);
   });
 
+  // #618: the filter button carries "matched / total" for the current view.
+  it('renders the filter count on the filter button', () => {
+    const host: HTMLElement = fixture.nativeElement;
+    const button = host.querySelector('button[popovertarget="filterDropdown"]')!;
+    const count = button.querySelector('.filter-count');
+    expect(count).not.toBeNull();
+    expect(count!.textContent!.trim()).toMatch(/^\d+ \/ \d+$/);
+    // An aria-label would otherwise reduce the button to just "Filter".
+    expect(button.getAttribute('aria-label')).toMatch(/showing \d+ of \d+/);
+  });
+
+  // The header collapses to icons on a phone. The count stays, but only while
+  // there is room beside the icons — the rule must have a lower bound, or a
+  // 320px phone shows the count jammed against the Edit button.
+  it('shows the filter count on a phone only above the narrow-screen bound', () => {
+    const styles = injectedStyles();
+    const rule = /@media[^{]*360px[^{]*\{\s*[^{}]*\.filter-count[^{]*\{[^}]*display:\s*inline/;
+    expect(styles).toMatch(rule);
+  });
+
   // Chromium 151+ does not resolve anchor() insets against the implicit
   // anchor, which left popovers at the viewport edge. The styles must anchor
   // popovers with position-area and clear the UA popover inset instead.

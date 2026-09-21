@@ -3,7 +3,7 @@ import {computed, inject, Injectable, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
-import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
+import {applySelectedFilter, applySelectedSort, MOVIES_ONLY_FILTERS} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
 import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, MediaVideo, SearchMedia} from '../models/media';
 import {mapMediaPending, MediaPendingView} from '../models/pending';
@@ -177,6 +177,27 @@ export class MediaService {
 
   /** Media list to display based on the current display count */
   readonly displayMedia = computed(() => this.filteredSortedMedia().slice(0, this.displayCount()));
+
+  /** How many media items the current view matched — the numerator of the
+   * header count. Counts the whole filtered list, not the paged slice. */
+  readonly filteredCount = computed(() => this.filteredSortedMedia().length);
+
+  /** How many media items the current page and filter could show at most,
+   * before trailer state narrows the list — the denominator of the header
+   * count.
+   *
+   * The Home page lists only media that already has a trailer, so dividing by
+   * the whole library is what makes its count read as coverage. Home's
+   * 'movies' and 'series' options narrow by type as well, so the denominator
+   * follows them — otherwise a movies count would be shown over a whole-library
+   * total. */
+  readonly scopedMediaCount = computed(() => {
+    const isMovie = this.moviesOnly() ?? MOVIES_ONLY_FILTERS[this.selectedFilter()] ?? null;
+    if (isMovie === null) {
+      return this.combinedMedia().length;
+    }
+    return this.combinedMedia().filter((media) => media.is_movie === isMovie).length;
+  });
 
   /** Count of media items that have an active download with no profile
    * assigned (profile_id=0) — drives the 'Unknown Profile' quick filter
