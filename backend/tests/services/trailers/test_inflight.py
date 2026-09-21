@@ -69,9 +69,7 @@ class TestInflightRegistry:
                 registry.start(media_id, media_id * 10)
                 registry.finish(media_id)
 
-        threads = [
-            threading.Thread(target=churn, args=(i,)) for i in range(8)
-        ]
+        threads = [threading.Thread(target=churn, args=(i,)) for i in range(8)]
         for t in threads:
             t.start()
         for t in threads:

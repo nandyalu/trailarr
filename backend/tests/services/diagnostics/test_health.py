@@ -402,7 +402,9 @@ class TestDiskSpaceNamesADisk:
                 health.connection_doctor, "get_all_reports", return_value=[]
             ),
             patch.object(
-                health.connection_manager, "read_all", return_value=[connection]
+                health.connection_manager,
+                "read_all",
+                return_value=[connection],
             ),
             patch.object(
                 health.media_manager, "read_recent", return_value=media
@@ -484,6 +486,95 @@ class TestErrorSignatures:
 
     def test_unknown_errors_pass_through(self):
         assert classify_ytdlp_error("ERROR: something brand new") is None
+
+
+class TestTMDBCheck:
+    """The TMDB key on the Health page — Phase 8.
+
+    It is listed because it is the setting that most changes which trailer
+    a user gets. It is optional, so a missing key must never make the page
+    say something is wrong, and it must point at the docs that say how to
+    get one.
+    """
+
+    KEY = "7cd673aa4e20351ed73609dd49d199eb"
+
+    @pytest.mark.asyncio
+    async def test_no_key_is_skipped_and_points_at_the_docs(self):
+        with patch.object(type(app_settings), "tmdb_api_key", ""):
+            result = await health._check_tmdb()
+
+        assert result.status == ProbeStatus.SKIPPED
+        assert result.docs_url.endswith("/settings/tmdb/")
+        # Say what they gain, and that it costs nothing.
+        assert "free" in result.remediation
+        assert "Settings > General" in result.remediation
+
+    def test_a_missing_key_never_makes_the_page_say_issues(self):
+        """The whole point of SKIPPED: optional, not broken."""
+        report = HealthReport(
+            checks=[
+                HealthCheckResult(
+                    key="tmdb",
+                    name="TMDB",
+                    status=ProbeStatus.SKIPPED,
+                    detail="No TMDB API key is set up.",
+                )
+            ]
+        ).finalize()
+
+        assert report.status == "healthy"
+
+    @pytest.mark.asyncio
+    async def test_a_working_key_passes(self):
+        with patch.object(type(app_settings), "tmdb_api_key", self.KEY):
+            with patch(f"{health.__name__}.TMDBAPI", create=True):
+                with patch(
+                    "services.tmdb.api_manager.TMDBAPI.validate_key",
+                    new=AsyncMock(return_value="ok"),
+                ):
+                    result = await health._check_tmdb()
+
+        assert result.status == ProbeStatus.OK
+
+    @pytest.mark.asyncio
+    async def test_a_refused_key_is_an_error_with_a_fix(self):
+        from services.tmdb.api_manager import TMDBAuthError
+
+        with patch.object(type(app_settings), "tmdb_api_key", "wrong"):
+            with patch(
+                "services.tmdb.api_manager.TMDBAPI.validate_key",
+                new=AsyncMock(side_effect=TMDBAuthError("no")),
+            ):
+                result = await health._check_tmdb()
+
+        assert result.status == ProbeStatus.ERROR
+        assert "refused" in result.detail
+        assert result.remediation
+
+    @pytest.mark.asyncio
+    async def test_tmdb_being_unreachable_warns_and_reassures(self):
+        """Downloads keep working without TMDB, so say so."""
+        with patch.object(type(app_settings), "tmdb_api_key", self.KEY):
+            with patch(
+                "services.tmdb.api_manager.TMDBAPI.validate_key",
+                new=AsyncMock(side_effect=OSError("network down")),
+            ):
+                result = await health._check_tmdb()
+
+        assert result.status == ProbeStatus.WARNING
+        assert "keep working" in result.remediation
+
+    @pytest.mark.asyncio
+    async def test_the_key_itself_never_reaches_the_page(self):
+        with patch.object(type(app_settings), "tmdb_api_key", self.KEY):
+            with patch(
+                "services.tmdb.api_manager.TMDBAPI.validate_key",
+                new=AsyncMock(return_value="ok"),
+            ):
+                result = await health._check_tmdb()
+
+        assert self.KEY not in (result.detail + result.remediation)
 
 
 class TestYoutubeTestTarget:

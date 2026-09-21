@@ -6,12 +6,26 @@ expects — do not change it to an HTTP error without changing the frontend
 and the OpenAPI spec together.
 """
 
+from app_logger import ModuleLogger
 from config.settings import app_settings
+from exceptions import InvalidResponseError
 from services import auth
+from services.tmdb.api_manager import TMDBAPI, TMDBAuthError
+from utils.secrets import MASK
+
+logger = ModuleLogger("Settings")
+
+# Settings whose value the API only ever sends masked. The value of one of
+# these never goes back to the client, not in the settings and not in the
+# message that says it changed.
+SECRET_SETTINGS = ("tmdb_api_key",)
 
 
-def update_setting(key: str | None, value) -> str:
+async def update_setting(key: str | None, value) -> str:
     """Change one application setting.
+
+    A secret is checked before it is stored, and it is never sent back:
+    the message says that it changed, not what it is.
 
     Args:
         key (str | None): The name of the setting.
@@ -28,10 +42,66 @@ def update_setting(key: str | None, value) -> str:
         msg = "Error updating setting: Invalid key"
         msg += f" '{key}'! Valid values are {app_settings.as_dict().keys()}"
         return msg
+    if key in SECRET_SETTINGS:
+        return await _update_secret(key, str(value))
     setattr(app_settings, key, value)
     _new_value = getattr(app_settings, key, None)
     _name = key.replace("_", " ").title()
     return f"Setting {_name} updated to {_new_value}"
+
+
+async def _update_secret(key: str, value: str) -> str:
+    """Store a secret, after a check that it works.
+
+    The API sends a secret masked, so the page shows something like
+    `****99eb`. If the user saves the page without touching the field,
+    that masked text comes back. Writing it would replace a working key
+    with four stars and some digits, so a value that is the masked form of
+    the stored value changes nothing.
+
+    A blank value removes the secret. The page sends one space for an
+    empty box, and a check of a blank key would make TMDB refuse it — so
+    without this, a key could go in but never come out.
+    """
+    value = value.strip()
+    _name = key.replace("_", " ").title()
+    if value.startswith(MASK):
+        return "The TMDB API key did not change."
+    if not value:
+        setattr(app_settings, key, "")
+        return f"Setting {_name} removed."
+    if key == "tmdb_api_key":
+        message = await _validate_tmdb_key(value)
+        if message:
+            return message
+    setattr(app_settings, key, value)
+    return f"Setting {_name} updated."
+
+
+async def _validate_tmdb_key(value: str) -> str:
+    """Ask TMDB whether the key works.
+
+    Returns:
+        str: An error message for the user, or an empty string when the
+            key is good. A key that Trailarr cannot check, because TMDB is
+            unreachable, is stored: the network is the problem, not the key.
+    """
+    try:
+        await TMDBAPI(value).validate_key()
+    except TMDBAuthError:
+        return (
+            "Error updating setting: TMDB refused that key. Check that you"
+            " copied the whole key from your TMDB account."
+        )
+    except InvalidResponseError as e:
+        logger.warning(
+            f"Trailarr could not check the TMDB key, and stored it: {e}"
+        )
+    except Exception as e:
+        logger.warning(
+            f"Trailarr could not check the TMDB key, and stored it: {e}"
+        )
+    return ""
 
 
 def update_login(

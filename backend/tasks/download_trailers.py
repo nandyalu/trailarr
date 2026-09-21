@@ -96,12 +96,15 @@ def download_trailer_by_id(
         run_once=True,
         args=(media, profile, retry_count),
     )
-    msg = "Trailarr started the trailer download in the background for "
-    msg += f"{_type}: '{media.title}' [{media_id}]"
+    msg = (
+        "Trailarr started the trailer download in the background for"
+        f" {_type}: '{media.title}'"
+    )
     if yt_id:
-        msg += f" from ({yt_id})"
+        msg += f" from video {yt_id}"
+    msg += "."
 
-    logger.info(msg)
+    logger.info(msg, **logger.media(media_id))
     return msg
 
 

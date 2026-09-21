@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 from services.connections.plex.api_manager import PlexAPI
 
-
 PLEX_URL = "http://plex-test"
 PLEX_TOKEN = "test-token"
 
@@ -20,7 +19,9 @@ _LEAF_RAW = {
 
 
 def _make_container(items: list, total: int | None = None) -> dict:
-    container: dict = {"MediaContainer": {"size": len(items), "Metadata": items}}
+    container: dict = {
+        "MediaContainer": {"size": len(items), "Metadata": items}
+    }
     if total is not None:
         container["MediaContainer"]["totalSize"] = total
     return container
@@ -39,14 +40,18 @@ class TestGetTotalSize:
                 f"{PLEX_URL}/library/sections/1/all",
                 payload={"MediaContainer": {"totalSize": 42, "size": 0}},
             )
-            total = await api._get_total_size(f"{PLEX_URL}/library/sections/1/all")
+            total = await api._get_total_size(
+                f"{PLEX_URL}/library/sections/1/all"
+            )
         assert total == 42
 
     @pytest.mark.asyncio
     async def test_returns_zero_on_http_error(self, api):
         with aioresponses() as m:
             m.get(f"{PLEX_URL}/library/sections/1/all", status=500)
-            total = await api._get_total_size(f"{PLEX_URL}/library/sections/1/all")
+            total = await api._get_total_size(
+                f"{PLEX_URL}/library/sections/1/all"
+            )
         assert total == 0
 
     @pytest.mark.asyncio
@@ -56,7 +61,9 @@ class TestGetTotalSize:
                 f"{PLEX_URL}/library/sections/1/all",
                 exception=Exception("connection refused"),
             )
-            total = await api._get_total_size(f"{PLEX_URL}/library/sections/1/all")
+            total = await api._get_total_size(
+                f"{PLEX_URL}/library/sections/1/all"
+            )
         assert total == 0
 
 
@@ -78,7 +85,9 @@ class TestIterPages:
             m.get(url, payload={"MediaContainer": {"totalSize": 3, "size": 0}})
             # page 1
             m.get(url, payload=_make_container(items))
-            results = [item async for item in api._iter_pages(url, page_size=500)]
+            results = [
+                item async for item in api._iter_pages(url, page_size=500)
+            ]
         assert len(results) == 3
 
     @pytest.mark.asyncio
@@ -93,7 +102,9 @@ class TestIterPages:
             m.get(url, payload=_make_container(page1))
             # page 2 (offset 3, size 3)
             m.get(url, payload=_make_container(page2))
-            results = [item async for item in api._iter_pages(url, page_size=3)]
+            results = [
+                item async for item in api._iter_pages(url, page_size=3)
+            ]
         assert len(results) == 5
         assert results[0]["ratingKey"] == "0"
         assert results[4]["ratingKey"] == "4"
@@ -102,10 +113,14 @@ class TestIterPages:
     async def test_stops_early_on_empty_page(self, api):
         url = f"{PLEX_URL}/library/sections/1/all"
         with aioresponses() as m:
-            m.get(url, payload={"MediaContainer": {"totalSize": 10, "size": 0}})
+            m.get(
+                url, payload={"MediaContainer": {"totalSize": 10, "size": 0}}
+            )
             # first real page returns empty — server lied about totalSize
             m.get(url, payload=_make_container([]))
-            results = [item async for item in api._iter_pages(url, page_size=500)]
+            results = [
+                item async for item in api._iter_pages(url, page_size=500)
+            ]
         assert results == []
 
     @pytest.mark.asyncio
@@ -136,7 +151,10 @@ class TestGetLibraryMedia:
 
         pattern = re.compile(r".*/library/sections/1/all.*")
         with aioresponses() as m:
-            m.get(pattern, payload={"MediaContainer": {"totalSize": 1, "size": 0}})
+            m.get(
+                pattern,
+                payload={"MediaContainer": {"totalSize": 1, "size": 0}},
+            )
             m.get(pattern, payload=_make_container([_MOVIE_RAW]))
             results = [item async for item in api.get_library_media(1)]
         assert len(results) == 1
@@ -190,7 +208,10 @@ class TestGetLibraryLeaves:
 
         pattern = re.compile(r".*/library/sections/3/allLeaves.*")
         with aioresponses() as m:
-            m.get(pattern, payload={"MediaContainer": {"totalSize": 1, "size": 0}})
+            m.get(
+                pattern,
+                payload={"MediaContainer": {"totalSize": 1, "size": 0}},
+            )
             m.get(pattern, payload=_make_container([_LEAF_RAW]))
             results = [item async for item in api.get_library_leaves(3)]
         assert len(results) == 1
@@ -217,7 +238,10 @@ class TestGetLibraryLeaves:
     async def test_yields_nothing_for_empty_section(self, api):
         url_prefix = f"{PLEX_URL}/library/sections/3/allLeaves"
         with aioresponses() as m:
-            m.get(url_prefix, payload={"MediaContainer": {"totalSize": 0, "size": 0}})
+            m.get(
+                url_prefix,
+                payload={"MediaContainer": {"totalSize": 0, "size": 0}},
+            )
             results = [item async for item in api.get_library_leaves(3)]
         assert results == []
 

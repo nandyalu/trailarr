@@ -11,6 +11,7 @@ export const RouteNotifications = 'notifications';
 export const RouteProfiles = 'profiles';
 export const RouteSeries = 'series';
 export const RouteSettings = 'settings';
+export const RouteSetup = 'setup';
 export const RouteTasks = 'tasks';
 export const RouteGeneral = 'general';
 export const RouteHealth = 'health';

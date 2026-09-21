@@ -89,16 +89,13 @@ def compute_media_pending(
     """
     if attempts is None:
         attempts = {
-            a.profile_id: a
-            for a in attempt_manager.read_for_media(media.id)
+            a.profile_id: a for a in attempt_manager.read_for_media(media.id)
         }
     enabled_profiles = [p for p in all_profiles if p.enabled]
 
     # `matches` is display info for ALL profiles; the engine run below only
     # considers enabled ones (identical to the download task).
-    matching_ids = {
-        p.id for p in find_matching_profiles(media, all_profiles)
-    }
+    matching_ids = {p.id for p in find_matching_profiles(media, all_profiles)}
     result = evaluate_satisfaction(
         media, find_matching_profiles(media, enabled_profiles)
     )
@@ -125,8 +122,8 @@ def compute_media_pending(
             satisfied_via = "own_download" if satisfied else None
         pending = profile.id in unsatisfied_ids
         attempt = attempts.get(profile.id)
-        backing_off = pending and attempt is not None and not is_eligible(
-            attempt
+        backing_off = (
+            pending and attempt is not None and not is_eligible(attempt)
         )
         rows.append(
             MediaPendingProfile(
@@ -141,9 +138,9 @@ def compute_media_pending(
                 backing_off=backing_off,
                 attempt_count=attempt.attempt_count if attempt else 0,
                 last_error=attempt.last_error if attempt else None,
-                next_eligible_at=next_eligible_at(attempt)
-                if attempt
-                else None,
+                next_eligible_at=(
+                    next_eligible_at(attempt) if attempt else None
+                ),
             )
         )
     return MediaPendingView(
@@ -196,9 +193,9 @@ def compute_library_pending(
                         profile_id=profile.id,
                         profile_name=_profile_name(profile),
                         reason="pending" if eligible else "backoff",
-                        next_eligible_at=next_eligible_at(attempt)
-                        if attempt
-                        else None,
+                        next_eligible_at=(
+                            next_eligible_at(attempt) if attempt else None
+                        ),
                     )
                 )
 

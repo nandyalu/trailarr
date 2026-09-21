@@ -59,6 +59,7 @@ class TestIsPathSafe:
             is False
         )
 
+
 class TestFileTypeGuards:
 
     @pytest.mark.parametrize(
@@ -101,7 +102,9 @@ class TestReadVideoChunk:
         return f
 
     def test_a_bounded_range_reads_exactly_that_span(self, video):
-        data, headers = files_service.read_video_chunk(str(video), "bytes=0-99")
+        data, headers = files_service.read_video_chunk(
+            str(video), "bytes=0-99"
+        )
         assert len(data) == 99
         assert headers["Content-Range"] == "bytes 0-98/2560"
         assert headers["Accept-Ranges"] == "bytes"

@@ -15,6 +15,7 @@ import {TrailerProfileCreate} from 'src/app/models/trailerprofile';
 import {CustomFilter} from 'src/app/models/customfilter';
 import {ArrType} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
+import {SettingsService} from 'src/app/services/settings.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -41,6 +42,7 @@ import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialo
 export class EditProfileComponent {
   protected profileService = inject(ProfileService);
   private readonly connectionService = inject(ConnectionService);
+  private readonly settingsService = inject(SettingsService);
   private readonly router = inject(Router);
 
   profileId = input(0, {
@@ -82,6 +84,11 @@ export class EditProfileComponent {
     this.connectionService.connectionsResource.value().some((c) => c.arr_type === ArrType.Plex)
   );
 
+  /** Only TMDB records which language a trailer is in, so the trailer
+   * language can do nothing until a TMDB API key is set. The field is
+   * disabled until then, and says why. */
+  readonly hasTmdbKey = computed(() => !!this.settingsService.settings()?.tmdb_api_key);
+
   helpLinks = {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
     file: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/file/',
@@ -91,6 +98,7 @@ export class EditProfileComponent {
     search: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/search/',
     filters: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/filters/',
     plex: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/plex/',
+    tmdb: 'https://nandyalu.github.io/trailarr/user-guide/settings/tmdb/',
   };
 
   // Disabled options

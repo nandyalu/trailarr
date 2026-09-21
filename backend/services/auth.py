@@ -119,4 +119,3 @@ def verify_api_key(api_key: str) -> bool:
     Returns:
         bool: True if the API key is valid, False otherwise"""
     return api_key == app_settings.api_key
-

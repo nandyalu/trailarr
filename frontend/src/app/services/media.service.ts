@@ -5,7 +5,7 @@ import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
-import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, SearchMedia} from '../models/media';
+import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, MediaVideo, SearchMedia} from '../models/media';
 import {mapMediaPending, MediaPendingView} from '../models/pending';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
@@ -470,5 +470,46 @@ export class MediaService {
     const url = `${this.mediaUrl}${mediaID}/update`;
     const params = new HttpParams().set('yt_id', ytID);
     return this.httpClient.post(url, {}, {params: params});
+  }
+
+  /**
+   * Gets every video Trailarr knows for a media item, best first.
+   *
+   * @param {number} mediaID - The ID of the media item.
+   * @returns {Observable<MediaVideo[]>} The known videos, in the order a
+   * download would use them.
+   */
+  getMediaVideos(mediaID: number): Observable<MediaVideo[]> {
+    return this.httpClient.get<MediaVideo[]>(`${this.mediaUrl}${mediaID}/videos`);
+  }
+
+  /**
+   * Adds a video that the user chose. Trailarr tries it before every other
+   * source, and no task removes it.
+   *
+   * @param {number} mediaID - The ID of the media item.
+   * @param {string} ytID - A YouTube ID, or a YouTube link to read it from.
+   * @param {string} language - The language the video is in, as a 2-letter
+   * code. A profile asking for that language can then use it. Empty suits a
+   * profile that takes any language.
+   * @returns {Observable<MediaVideo>} The video that was added.
+   */
+  addMediaVideo(mediaID: number, ytID: string, language: string = ''): Observable<MediaVideo> {
+    let params = new HttpParams().set('yt_id', ytID);
+    if (language) {
+      params = params.set('language', language);
+    }
+    return this.httpClient.post<MediaVideo>(`${this.mediaUrl}${mediaID}/videos`, {}, {params: params});
+  }
+
+  /**
+   * Removes one known video from a media item.
+   *
+   * @param {number} mediaID - The ID of the media item.
+   * @param {string} videoID - The YouTube ID to remove.
+   * @returns {Observable<any>} The response from the server.
+   */
+  deleteMediaVideo(mediaID: number, videoID: string): Observable<any> {
+    return this.httpClient.delete(`${this.mediaUrl}${mediaID}/videos/${videoID}`);
   }
 }

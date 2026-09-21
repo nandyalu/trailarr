@@ -46,6 +46,10 @@ class DownloadAttemptBase(AppSQLModel):
     attempt_count: int = Field(default=0)
     last_attempt_at: datetime = Field(default_factory=get_current_time)
     last_error: str | None = None
+    # The candidate that the last attempt used. The resolver reads it to
+    # take the next candidate on the next run, instead of asking for the
+    # same video again after it failed.
+    last_video_id: str | None = None
 
 
 class DownloadAttempt(DownloadAttemptBase, table=True):

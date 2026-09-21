@@ -111,7 +111,9 @@ class TestCreateOrUpdateBulkUpdatePaths:
     def setup(self):
         self.conn = _make_connection()
 
-    def _mc(self, txdb_id: str, title: str = "Film", yt_id: str | None = None) -> MediaCreate:
+    def _mc(
+        self, txdb_id: str, title: str = "Film", yt_id: str | None = None
+    ) -> MediaCreate:
         return MediaCreate(
             connection_id=self.conn.id,  # type: ignore
             arr_id=100,
@@ -150,7 +152,7 @@ class TestCreateOrUpdateBulkUpdatePaths:
         result2 = media_manager.create_or_update_bulk([mc2])
         _, created2, updated2, _ = result2[0]
         assert created2 is False  # covers 69->71 (created=False branch)
-        assert updated2 is True   # covers line 72 (updated_count += 1)
+        assert updated2 is True  # covers line 72 (updated_count += 1)
 
     def test_unchanged_existing_item_returns_not_updated(self):
         """Updating with identical data returns created=False, updated=False."""
@@ -194,8 +196,14 @@ class TestPlexCreateOrUpdateBulk:
         self.plex = _make_plex_connection("PlexBulkTest")
         self.radarr = _make_connection()
 
-    def _plex_mc(self, txdb_id: str, folder_path: str, *, title: str = "Film",
-                  rating_key: str = "rk1") -> MediaCreate:
+    def _plex_mc(
+        self,
+        txdb_id: str,
+        folder_path: str,
+        *,
+        title: str = "Film",
+        rating_key: str = "rk1",
+    ) -> MediaCreate:
         return MediaCreate(
             connection_id=self.plex.id,  # type: ignore
             arr_id=0,
@@ -208,7 +216,9 @@ class TestPlexCreateOrUpdateBulk:
             plex_section_key="1",
         )
 
-    def _arr_mc(self, txdb_id: str, folder_path: str, *, title: str = "Film") -> MediaCreate:
+    def _arr_mc(
+        self, txdb_id: str, folder_path: str, *, title: str = "Film"
+    ) -> MediaCreate:
         return MediaCreate(
             connection_id=self.radarr.id,  # type: ignore
             arr_id=999,
@@ -247,12 +257,21 @@ class TestPlexCreateOrUpdateBulk:
         """Stage 2 finds an existing row when stored path is a parent directory
         of the new path (separated by '/')."""
         # Store a show-root folder path
-        show_mc = self._plex_mc("tvdb_show_001", "/plex/shows/GreatShow", title="Great Show", rating_key="rk_gs")
+        show_mc = self._plex_mc(
+            "tvdb_show_001",
+            "/plex/shows/GreatShow",
+            title="Great Show",
+            rating_key="rk_gs",
+        )
         media_manager.plex_create_or_update_bulk([show_mc])
 
         # New item with episode-level subfolder path — should match via Stage 2
-        ep_mc = self._plex_mc("tvdb_show_001b", "/plex/shows/GreatShow/Season 1",
-                               title="Great Show (ep)", rating_key="rk_gs_ep")
+        ep_mc = self._plex_mc(
+            "tvdb_show_001b",
+            "/plex/shows/GreatShow/Season 1",
+            title="Great Show (ep)",
+            rating_key="rk_gs_ep",
+        )
         result = media_manager.plex_create_or_update_bulk([ep_mc])
         _, created, _, _ = result[0]
         assert created is False  # found via Stage 2 prefix match
@@ -261,12 +280,21 @@ class TestPlexCreateOrUpdateBulk:
 
     def test_stage2_backslash_prefix_match(self):
         """Stage 2 hits the backslash branch when stored path uses Windows separators."""
-        win_mc = self._plex_mc("tmdb_win_001", r"C:\Movies\WinFilm", title="Win Film", rating_key="rk_win")
+        win_mc = self._plex_mc(
+            "tmdb_win_001",
+            r"C:\Movies\WinFilm",
+            title="Win Film",
+            rating_key="rk_win",
+        )
         media_manager.plex_create_or_update_bulk([win_mc])
 
         # Child path with backslash separator → norm + "\\" branch
-        child_mc = self._plex_mc("tmdb_win_001b", r"C:\Movies\WinFilm\extras",
-                                  title="Win Film Extras", rating_key="rk_win_e")
+        child_mc = self._plex_mc(
+            "tmdb_win_001b",
+            r"C:\Movies\WinFilm\extras",
+            title="Win Film Extras",
+            rating_key="rk_win_e",
+        )
         result = media_manager.plex_create_or_update_bulk([child_mc])
         _, created, _, _ = result[0]
         assert created is False  # found via Stage 2 backslash branch
@@ -290,7 +318,9 @@ class TestPlexCreateOrUpdateBulk:
         media_manager.plex_create_or_update_bulk([no_path_mc])
 
         # New item with a real path — Stage 2 should skip the empty-path row
-        real_mc = self._plex_mc("tmdb_nopath_002", "/plex/movies/SomeFilm", rating_key="rk_sf")
+        real_mc = self._plex_mc(
+            "tmdb_nopath_002", "/plex/movies/SomeFilm", rating_key="rk_sf"
+        )
         result = media_manager.plex_create_or_update_bulk([real_mc])
         _, created, _, _ = result[0]
         assert created is True  # no false match against the empty-path row
@@ -299,7 +329,9 @@ class TestPlexCreateOrUpdateBulk:
 
     def test_plex_fields_unchanged_returns_not_changed(self):
         """Second sync with identical plex fields: changed=False (no DB write)."""
-        mc = self._plex_mc("tmdb_unch_001", "/plex/movies/StableFilm", rating_key="rk_sf2")
+        mc = self._plex_mc(
+            "tmdb_unch_001", "/plex/movies/StableFilm", rating_key="rk_sf2"
+        )
         media_manager.plex_create_or_update_bulk([mc])
         result2 = media_manager.plex_create_or_update_bulk([mc])
         _, created2, newly_linked2, changed2 = result2[0]
@@ -312,10 +344,14 @@ class TestPlexCreateOrUpdateBulk:
     def test_arr_adopts_plex_only_row_exact_path(self):
         """Arr create_or_update_bulk adopts an existing Plex-only row at the exact
         same folder_path (arr_linked=True, line 298 exact match)."""
-        plex_mc = self._plex_mc("tmdb_adopt_001", "/plex/movies/AdoptMe", rating_key="rk_adopt")
+        plex_mc = self._plex_mc(
+            "tmdb_adopt_001", "/plex/movies/AdoptMe", rating_key="rk_adopt"
+        )
         media_manager.plex_create_or_update_bulk([plex_mc])
 
-        arr_mc = self._arr_mc("tmdb_adopt_arr_001", "/plex/movies/AdoptMe", title="AdoptMe")
+        arr_mc = self._arr_mc(
+            "tmdb_adopt_arr_001", "/plex/movies/AdoptMe", title="AdoptMe"
+        )
         result = media_manager.create_or_update_bulk([arr_mc])
         _, created, _, arr_linked = result[0]
         assert created is False
@@ -326,13 +362,20 @@ class TestPlexCreateOrUpdateBulk:
     def test_arr_adopts_plex_only_row_via_prefix_match(self):
         """Arr create_or_update_bulk adopts a Plex-only row via Stage-2 prefix match
         (lines 309-316 loop body, line 319 return)."""
-        show_mc = self._plex_mc("tvdb_adopt_002", "/plex/shows/AdoptShow",
-                                 title="Adopt Show", rating_key="rk_adshow")
+        show_mc = self._plex_mc(
+            "tvdb_adopt_002",
+            "/plex/shows/AdoptShow",
+            title="Adopt Show",
+            rating_key="rk_adshow",
+        )
         media_manager.plex_create_or_update_bulk([show_mc])
 
         # Arr item's folder is a subfolder of the Plex-only show root
-        arr_mc = self._arr_mc("tvdb_adopt_arr_002", "/plex/shows/AdoptShow/Season 1",
-                               title="Adopt Show Arr")
+        arr_mc = self._arr_mc(
+            "tvdb_adopt_arr_002",
+            "/plex/shows/AdoptShow/Season 1",
+            title="Adopt Show Arr",
+        )
         result = media_manager.create_or_update_bulk([arr_mc])
         _, created, _, arr_linked = result[0]
         assert created is False

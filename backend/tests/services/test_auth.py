@@ -25,7 +25,9 @@ from services.auth import (
 
 VALID_API_KEY = "test-api-key-abc123"
 # bcrypt hash of "trailarr" (the app default)
-_HASHED_TRAILARR = "$2b$12$CU7h.sOkBp5RFRJIYEwXU.1LCUTD2pWE4p5nsW3k1iC9oZEGVWeum"
+_HASHED_TRAILARR = (
+    "$2b$12$CU7h.sOkBp5RFRJIYEwXU.1LCUTD2pWE4p5nsW3k1iC9oZEGVWeum"
+)
 
 
 @pytest.fixture(autouse=True)

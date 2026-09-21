@@ -42,15 +42,17 @@ class TestTrackPlexLinked:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.conn = _make_connection()
-        result = media_manager.create_or_update_bulk([
-            MediaCreate(
-                connection_id=self.conn.id,  # type: ignore
-                arr_id=1,
-                is_movie=True,
-                title="Linked Movie",
-                txdb_id="tt8881001",
-            )
-        ])
+        result = media_manager.create_or_update_bulk(
+            [
+                MediaCreate(
+                    connection_id=self.conn.id,  # type: ignore
+                    arr_id=1,
+                    is_movie=True,
+                    title="Linked Movie",
+                    txdb_id="tt8881001",
+                )
+            ]
+        )
         self.media, _, _, _ = result[0]
 
     def test_creates_plex_linked_event(self):
@@ -63,7 +65,9 @@ class TestTrackPlexLinked:
             source_detail="PlexRefresh",
         )
         events = event_manager.read_by_media_id(self.media.id)
-        plex_events = [e for e in events if e.event_type == EventType.PLEX_LINKED]
+        plex_events = [
+            e for e in events if e.event_type == EventType.PLEX_LINKED
+        ]
         assert len(plex_events) == 1
         evt = plex_events[0]
         assert evt.new_value == "My Plex"
@@ -86,15 +90,17 @@ class TestTrackPlexUnlinked:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.conn = _make_connection()
-        result = media_manager.create_or_update_bulk([
-            MediaCreate(
-                connection_id=self.conn.id,  # type: ignore
-                arr_id=2,
-                is_movie=True,
-                title="Unlinked Movie",
-                txdb_id="tt8882001",
-            )
-        ])
+        result = media_manager.create_or_update_bulk(
+            [
+                MediaCreate(
+                    connection_id=self.conn.id,  # type: ignore
+                    arr_id=2,
+                    is_movie=True,
+                    title="Unlinked Movie",
+                    txdb_id="tt8882001",
+                )
+            ]
+        )
         self.media, _, _, _ = result[0]
 
     def test_creates_plex_unlinked_event(self):
@@ -106,7 +112,9 @@ class TestTrackPlexUnlinked:
             source_detail="ConnectionDeleted",
         )
         events = event_manager.read_by_media_id(self.media.id)
-        plex_events = [e for e in events if e.event_type == EventType.PLEX_UNLINKED]
+        plex_events = [
+            e for e in events if e.event_type == EventType.PLEX_UNLINKED
+        ]
         assert len(plex_events) == 1
         evt = plex_events[0]
         assert evt.old_value == "Old Plex"
@@ -124,15 +132,17 @@ class TestTrackPlexScanTriggered:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.conn = _make_connection()
-        result = media_manager.create_or_update_bulk([
-            MediaCreate(
-                connection_id=self.conn.id,  # type: ignore
-                arr_id=3,
-                is_movie=True,
-                title="Scanned Movie",
-                txdb_id="tt8883001",
-            )
-        ])
+        result = media_manager.create_or_update_bulk(
+            [
+                MediaCreate(
+                    connection_id=self.conn.id,  # type: ignore
+                    arr_id=3,
+                    is_movie=True,
+                    title="Scanned Movie",
+                    txdb_id="tt8883001",
+                )
+            ]
+        )
         self.media, _, _, _ = result[0]
 
     def test_creates_plex_scan_triggered_event(self):
@@ -144,7 +154,9 @@ class TestTrackPlexScanTriggered:
             source_detail="TrailerDownloaded",
         )
         events = event_manager.read_by_media_id(self.media.id)
-        scan_events = [e for e in events if e.event_type == EventType.PLEX_SCAN_TRIGGERED]
+        scan_events = [
+            e for e in events if e.event_type == EventType.PLEX_SCAN_TRIGGERED
+        ]
         assert len(scan_events) == 1
         evt = scan_events[0]
         assert evt.new_value == "/plex/media/movies/Scanned Movie"

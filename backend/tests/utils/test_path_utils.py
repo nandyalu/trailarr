@@ -28,6 +28,7 @@ def _pm(path_from: str, path_to: str) -> SimpleNamespace:
 # is_subpath
 # ---------------------------------------------------------------------------
 
+
 class TestIsSubpath:
 
     # --- POSIX (Linux / macOS) ---
@@ -39,7 +40,10 @@ class TestIsSubpath:
         assert is_subpath("/movies", "/movies/Film (2020)") is True
 
     def test_posix_deeply_nested_child(self):
-        assert is_subpath("/data/media", "/data/media/Movies/Film (2020)/extras") is True
+        assert (
+            is_subpath("/data/media", "/data/media/Movies/Film (2020)/extras")
+            is True
+        )
 
     def test_posix_false_positive_boundary(self):
         # /data/media must NOT match /data/media-backup — classic prefix bug
@@ -61,10 +65,20 @@ class TestIsSubpath:
         assert is_subpath("/movies/", "/movies/") is True
 
     def test_posix_macos_volumes_path(self):
-        assert is_subpath("/Volumes/Plex/Movies", "/Volumes/Plex/Movies/Film (2020)") is True
+        assert (
+            is_subpath(
+                "/Volumes/Plex/Movies", "/Volumes/Plex/Movies/Film (2020)"
+            )
+            is True
+        )
 
     def test_posix_macos_false_positive_boundary(self):
-        assert is_subpath("/Volumes/Plex/Movies", "/Volumes/Plex/Movies-Archive/Film") is False
+        assert (
+            is_subpath(
+                "/Volumes/Plex/Movies", "/Volumes/Plex/Movies-Archive/Film"
+            )
+            is False
+        )
 
     # --- Windows (backslash) ---
 
@@ -75,7 +89,10 @@ class TestIsSubpath:
         assert is_subpath("C:\\Movies", "C:\\Movies\\Film (2020)") is True
 
     def test_windows_deeply_nested(self):
-        assert is_subpath("D:\\Media", "D:\\Media\\Movies\\Film (2020)\\extras") is True
+        assert (
+            is_subpath("D:\\Media", "D:\\Media\\Movies\\Film (2020)\\extras")
+            is True
+        )
 
     def test_windows_trailing_backslash_on_parent(self):
         assert is_subpath("C:\\Movies\\", "C:\\Movies\\Film") is True
@@ -118,13 +135,22 @@ class TestIsSubpath:
         assert is_subpath("\\\\NAS\\media", "\\\\NAS\\media\\Film") is True
 
     def test_unc_deeply_nested(self):
-        assert is_subpath("\\\\NAS\\media\\movies", "\\\\NAS\\media\\movies\\Action\\Film") is True
+        assert (
+            is_subpath(
+                "\\\\NAS\\media\\movies",
+                "\\\\NAS\\media\\movies\\Action\\Film",
+            )
+            is True
+        )
 
     def test_unc_trailing_backslash_on_parent(self):
         assert is_subpath("\\\\NAS\\media\\", "\\\\NAS\\media\\Film") is True
 
     def test_unc_false_positive_boundary(self):
-        assert is_subpath("\\\\NAS\\media", "\\\\NAS\\media-backup\\Film") is False
+        assert (
+            is_subpath("\\\\NAS\\media", "\\\\NAS\\media-backup\\Film")
+            is False
+        )
 
     def test_unc_different_server(self):
         assert is_subpath("\\\\NAS1\\media", "\\\\NAS2\\media\\Film") is False
@@ -163,6 +189,7 @@ class TestIsSubpath:
 # normalize_trailing_slash
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizeTrailingSlash:
 
     # --- Empty ---
@@ -179,10 +206,16 @@ class TestNormalizeTrailingSlash:
         assert normalize_trailing_slash("/data/movies/") == "/data/movies/"
 
     def test_macos_adds_forward_slash(self):
-        assert normalize_trailing_slash("/Volumes/Media/Movies") == "/Volumes/Media/Movies/"
+        assert (
+            normalize_trailing_slash("/Volumes/Media/Movies")
+            == "/Volumes/Media/Movies/"
+        )
 
     def test_macos_already_has_slash(self):
-        assert normalize_trailing_slash("/Volumes/Media/Movies/") == "/Volumes/Media/Movies/"
+        assert (
+            normalize_trailing_slash("/Volumes/Media/Movies/")
+            == "/Volumes/Media/Movies/"
+        )
 
     def test_posix_root(self):
         assert normalize_trailing_slash("/") == "/"
@@ -196,10 +229,16 @@ class TestNormalizeTrailingSlash:
         assert normalize_trailing_slash("C:\\Movies\\") == "C:\\Movies\\"
 
     def test_windows_backslash_nested_adds_backslash(self):
-        assert normalize_trailing_slash("C:\\Movies\\Films") == "C:\\Movies\\Films\\"
+        assert (
+            normalize_trailing_slash("C:\\Movies\\Films")
+            == "C:\\Movies\\Films\\"
+        )
 
     def test_windows_backslash_nested_already_has_backslash(self):
-        assert normalize_trailing_slash("C:\\Movies\\Films\\") == "C:\\Movies\\Films\\"
+        assert (
+            normalize_trailing_slash("C:\\Movies\\Films\\")
+            == "C:\\Movies\\Films\\"
+        )
 
     def test_windows_drive_root_already_correct(self):
         assert normalize_trailing_slash("C:\\") == "C:\\"
@@ -210,10 +249,15 @@ class TestNormalizeTrailingSlash:
         assert normalize_trailing_slash("\\\\NAS\\media") == "\\\\NAS\\media\\"
 
     def test_unc_already_has_backslash(self):
-        assert normalize_trailing_slash("\\\\NAS\\media\\") == "\\\\NAS\\media\\"
+        assert (
+            normalize_trailing_slash("\\\\NAS\\media\\") == "\\\\NAS\\media\\"
+        )
 
     def test_unc_nested_adds_backslash(self):
-        assert normalize_trailing_slash("\\\\NAS\\media\\movies") == "\\\\NAS\\media\\movies\\"
+        assert (
+            normalize_trailing_slash("\\\\NAS\\media\\movies")
+            == "\\\\NAS\\media\\movies\\"
+        )
 
     # --- Forward-slash UNC (//server/share) — gets forward slash ---
 
@@ -234,35 +278,50 @@ class TestNormalizeTrailingSlash:
         assert normalize_trailing_slash("C:/Movies/") == "C:/Movies/"
 
     def test_windows_forward_slash_nested(self):
-        assert normalize_trailing_slash("C:/Movies/Films") == "C:/Movies/Films/"
+        assert (
+            normalize_trailing_slash("C:/Movies/Films") == "C:/Movies/Films/"
+        )
 
 
 # ---------------------------------------------------------------------------
 # apply_path_mappings
 # ---------------------------------------------------------------------------
 
+
 class TestApplyPathMappings:
 
     # --- Linux Plex → Linux Trailarr ---
 
     def test_linux_to_linux_basic(self):
-        result = apply_path_mappings("/plex/movies/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "/plex/movies/Film", [_pm("/plex/movies/", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_linux_to_linux_nested(self):
-        result = apply_path_mappings("/plex/movies/Action/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "/plex/movies/Action/Film",
+            [_pm("/plex/movies/", "/local/movies/")],
+        )
         assert result == "/local/movies/Action/Film"
 
     def test_linux_to_linux_exact_match(self):
-        result = apply_path_mappings("/plex/movies", [_pm("/plex/movies", "/local/movies")])
+        result = apply_path_mappings(
+            "/plex/movies", [_pm("/plex/movies", "/local/movies")]
+        )
         assert result == "/local/movies"
 
     def test_linux_to_linux_trailing_slash_in_mapping(self):
-        result = apply_path_mappings("/plex/movies/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "/plex/movies/Film", [_pm("/plex/movies/", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_linux_no_false_positive_boundary(self):
-        result = apply_path_mappings("/plex/movies-backup/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "/plex/movies-backup/Film",
+            [_pm("/plex/movies/", "/local/movies/")],
+        )
         assert result == "/plex/movies-backup/Film"
 
     # --- macOS Plex → Linux Trailarr ---
@@ -284,42 +343,58 @@ class TestApplyPathMappings:
     # --- Windows Plex → Linux Trailarr ---
 
     def test_windows_backslash_to_linux(self):
-        result = apply_path_mappings("C:\\Movies\\Film", [_pm("C:\\Movies\\", "/local/movies/")])
+        result = apply_path_mappings(
+            "C:\\Movies\\Film", [_pm("C:\\Movies\\", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_windows_forward_slash_to_linux(self):
-        result = apply_path_mappings("C:/Movies/Film", [_pm("C:/Movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "C:/Movies/Film", [_pm("C:/Movies/", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_windows_mixed_path_from_backslash_path_forward(self):
         """path_from stored with backslash; incoming path uses forward slashes."""
-        result = apply_path_mappings("C:/Movies/Film", [_pm("C:\\Movies\\", "/local/movies/")])
+        result = apply_path_mappings(
+            "C:/Movies/Film", [_pm("C:\\Movies\\", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_windows_mixed_path_from_forward_path_backslash(self):
         """path_from stored with forward slash; incoming path uses backslashes."""
-        result = apply_path_mappings("C:\\Movies\\Film", [_pm("C:/Movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "C:\\Movies\\Film", [_pm("C:/Movies/", "/local/movies/")]
+        )
         assert result == "/local/movies/Film"
 
     def test_windows_no_false_positive_boundary(self):
-        result = apply_path_mappings("C:\\Movies-Backup\\Film", [_pm("C:\\Movies\\", "/local/movies/")])
+        result = apply_path_mappings(
+            "C:\\Movies-Backup\\Film", [_pm("C:\\Movies\\", "/local/movies/")]
+        )
         # no match → backslashes normalised, path unchanged otherwise
         assert result == "C:/Movies-Backup/Film"
 
     # --- Windows Plex → Windows Trailarr ---
 
     def test_windows_to_windows(self):
-        result = apply_path_mappings("C:\\Plex\\Film", [_pm("C:\\Plex\\", "D:\\Local\\")])
+        result = apply_path_mappings(
+            "C:\\Plex\\Film", [_pm("C:\\Plex\\", "D:\\Local\\")]
+        )
         assert result == "D:/Local/Film"
 
     def test_windows_different_drives(self):
-        result = apply_path_mappings("E:\\Media\\Film", [_pm("E:\\Media\\", "F:\\Storage\\")])
+        result = apply_path_mappings(
+            "E:\\Media\\Film", [_pm("E:\\Media\\", "F:\\Storage\\")]
+        )
         assert result == "F:/Storage/Film"
 
     # --- Linux Plex → Windows Trailarr ---
 
     def test_linux_to_windows(self):
-        result = apply_path_mappings("/plex/movies/Film", [_pm("/plex/movies/", "D:\\Local\\Movies\\")])
+        result = apply_path_mappings(
+            "/plex/movies/Film", [_pm("/plex/movies/", "D:\\Local\\Movies\\")]
+        )
         assert result == "D:/Local/Movies/Film"
 
     # --- Multiple mappings ---
@@ -350,11 +425,15 @@ class TestApplyPathMappings:
         assert apply_path_mappings("C:\\Movies\\Film", []) == "C:/Movies/Film"
 
     def test_no_matching_mapping_normalises_backslashes(self):
-        result = apply_path_mappings("C:\\Movies\\Film", [_pm("/plex/", "/local/")])
+        result = apply_path_mappings(
+            "C:\\Movies\\Film", [_pm("/plex/", "/local/")]
+        )
         assert result == "C:/Movies/Film"
 
     def test_posix_unmatched_path_unchanged(self):
-        result = apply_path_mappings("/other/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = apply_path_mappings(
+            "/other/Film", [_pm("/plex/movies/", "/local/movies/")]
+        )
         assert result == "/other/Film"
 
     # --- Windows UNC path_from ---
@@ -405,12 +484,15 @@ class TestApplyPathMappings:
 # reverse_path_mappings
 # ---------------------------------------------------------------------------
 
+
 class TestReversePathMappings:
 
     # --- Basic reversal ---
 
     def test_linux_to_linux_reverse(self):
-        result = reverse_path_mappings("/local/movies/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = reverse_path_mappings(
+            "/local/movies/Film", [_pm("/plex/movies/", "/local/movies/")]
+        )
         assert result == "/plex/movies/Film"
 
     def test_linux_to_linux_nested_reverse(self):
@@ -421,13 +503,17 @@ class TestReversePathMappings:
         assert result == "/plex/movies/Action/Film"
 
     def test_exact_match_reverse(self):
-        result = reverse_path_mappings("/local/movies", [_pm("/plex/movies", "/local/movies")])
+        result = reverse_path_mappings(
+            "/local/movies", [_pm("/plex/movies", "/local/movies")]
+        )
         assert result == "/plex/movies"
 
     # --- No match ---
 
     def test_no_match_returns_path_unchanged(self):
-        result = reverse_path_mappings("/other/Film", [_pm("/plex/movies/", "/local/movies/")])
+        result = reverse_path_mappings(
+            "/other/Film", [_pm("/plex/movies/", "/local/movies/")]
+        )
         assert result == "/other/Film"
 
     def test_no_mappings_returns_unchanged(self):

@@ -47,7 +47,9 @@ def _convert_path_mappings(
         db_path_mapping.path_from = normalize_trailing_slash(
             db_path_mapping.path_from
         )
-        db_path_mapping.path_to = normalize_trailing_slash(db_path_mapping.path_to)
+        db_path_mapping.path_to = normalize_trailing_slash(
+            db_path_mapping.path_to
+        )
         db_path_mappings.append(db_path_mapping)
     return db_path_mappings
 

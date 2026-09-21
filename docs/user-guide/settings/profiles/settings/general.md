@@ -49,6 +49,26 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 !!! note "Retries vs. backoff"
     {{ version_badge("add", "0.10.0") }} Retries here happen immediately, within the same task run. If all retries fail, the download is attempted again on a later task run with an increasing delay — 1 day after the first failure, then 2 days, then 4, capped at weekly. See [Download Missing Trailers](../../../tasks/index.md#download-missing-trailers).
 
+## Trailer Language
+
+{{ version_badge("add", "0.13.0") }}
+
+| Type    | Required | Default | Valid Values                     |
+|:-------:|:--------:|:-------:|:--------------------------------:|
+| String  | No       | empty   | empty, or an ISO 639-1 code      |
+
+Which language of trailer this profile downloads. Leave it empty for any language, which is what every profile did before this setting existed.
+
+A language here is a **filter, not a preference**. A profile that asks for `it` downloads an Italian trailer or nothing: Trailarr never downloads a German trailer instead, because a trailer in the wrong language is not what you asked for. When Trailarr knows no trailer in that language, it searches YouTube with the [Search Query](search.md#search-query) of the profile, which you write and can aim at your language.
+
+Trailarr only knows the language of a video when something told it. TMDB records a language for each trailer it lists, and you can [add a video](../../../library/media-details/index.md#known-videos) with a language yourself. The id that Radarr reports carries no language, so a profile that asks for a language does not use it.
+
+!!! tip "One profile per language"
+    To keep an Italian trailer and an English one for the same media item, make two profiles, one with `it` and one with `en`. Each downloads its own trailer and keeps track of its own file.
+
+!!! note "This setting needs a TMDB API key"
+    The field is disabled until you add a [TMDB API key](../../tmdb.md) in `Settings > General`, and every profile takes any language until then. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell — and a language it cannot check would match nothing, making every download fall back to a YouTube search.
+
 ## Stop Monitoring
 
 {{ version_badge("upd", "0.10.2") }}

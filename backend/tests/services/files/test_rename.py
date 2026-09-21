@@ -30,8 +30,12 @@ class TestRenameFileFolRenameFailure:
                 "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=False),
             ),
-            patch("services.files.service.download_manager.read_by_media_id") as mock_read,
-            patch("services.files.service.rename_trailer_download") as mock_rename,
+            patch(
+                "services.files.service.download_manager.read_by_media_id"
+            ) as mock_read,
+            patch(
+                "services.files.service.rename_trailer_download"
+            ) as mock_rename,
         ):
             result = await rename_file_fol(OLD_PATH, NEW_PATH, MEDIA_ID)
 
@@ -48,10 +52,16 @@ class TestRenameFileFolNoMediaId:
                 "services.files.service.FilesHandler.rename_file_fol",
                 AsyncMock(return_value=True),
             ),
-            patch("services.files.service.download_manager.read_by_media_id") as mock_read,
-            patch("services.files.service.rename_trailer_download") as mock_rename,
+            patch(
+                "services.files.service.download_manager.read_by_media_id"
+            ) as mock_read,
+            patch(
+                "services.files.service.rename_trailer_download"
+            ) as mock_rename,
         ):
-            result = await rename_file_fol(OLD_PATH, NEW_PATH)  # media_id defaults to -1
+            result = await rename_file_fol(
+                OLD_PATH, NEW_PATH
+            )  # media_id defaults to -1
 
         assert result is True
         mock_read.assert_not_called()
@@ -72,9 +82,13 @@ class TestRenameFileFolNoMatchingDownload:
                 "services.files.service.download_manager.read_by_media_id",
                 return_value=downloads,
             ),
-            patch("services.files.service.rename_trailer_download") as mock_rename,
+            patch(
+                "services.files.service.rename_trailer_download"
+            ) as mock_rename,
         ):
-            result = await rename_file_fol(NON_TRAILER_PATH, NEW_PATH, MEDIA_ID)
+            result = await rename_file_fol(
+                NON_TRAILER_PATH, NEW_PATH, MEDIA_ID
+            )
 
         assert result is True
         mock_rename.assert_not_called()

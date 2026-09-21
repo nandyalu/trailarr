@@ -67,7 +67,9 @@ class SonarrManager(AsyncBaseArrManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If the API response is invalid
         """
-        series = await self._request("GET", f"/api/{self.version}/series/{sonarr_id}")
+        series = await self._request(
+            "GET", f"/api/{self.version}/series/{sonarr_id}"
+        )
         if isinstance(series, dict):
             return series
         raise InvalidResponseError("Invalid response from Sonarr API")

@@ -39,7 +39,9 @@ def parse_plex_item(
     if not txdb_id:
         txdb_id = f"plex-{item.ratingKey}"
 
-    poster_url = f"{server_url}{item.thumb}" if server_url and item.thumb else None
+    poster_url = (
+        f"{server_url}{item.thumb}" if server_url and item.thumb else None
+    )
     fanart_url = f"{server_url}{item.art}" if server_url and item.art else None
 
     return MediaCreate(

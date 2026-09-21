@@ -149,6 +149,7 @@ nav:
         - user-guide/settings/connections/index.md
         - Plex: user-guide/settings/connections/plex.md
       - Health: user-guide/settings/health.md
+      - TMDB: user-guide/settings/tmdb.md
       - Notifications: user-guide/settings/notifications.md
       - Profiles:
         - user-guide/settings/profiles/index.md

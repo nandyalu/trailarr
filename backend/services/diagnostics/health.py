@@ -40,6 +40,7 @@ DOCS_HW_ACCEL = (
 )
 DOCS_COOKIES = DOCS_BASE + "user-guide/settings/health/"
 DOCS_CONNECTIONS = DOCS_BASE + "user-guide/settings/connections/"
+DOCS_TMDB = DOCS_BASE + "user-guide/settings/tmdb/"
 
 # Free-space thresholds. Trailers are small, but a disk this low is
 # about to fail a download with an error that does not mention space.
@@ -50,7 +51,7 @@ _MAX_MEDIA_MOUNTS = 5
 _CHECK_TIMEOUT_SECONDS = 10
 # The connections check runs the Connection Doctor when no report is
 # stored, and that talks to Radarr/Sonarr/Plex over the network.
-_CHECK_TIMEOUT_OVERRIDES = {"connections": 30}
+_CHECK_TIMEOUT_OVERRIDES = {"connections": 30, "tmdb": 20}
 _REPORT_TTL = timedelta(hours=24)
 _YTDLP_TEST_TTL = timedelta(hours=24)
 
@@ -93,6 +94,7 @@ async def run_health_checks() -> HealthReport:
         _check_ytdlp,
         _check_app_version,
         _check_cookies,
+        _check_tmdb,
         _check_connections,
         _check_images,
         _check_disk_space,
@@ -375,6 +377,73 @@ async def _run_doctor_for_all() -> list:
             continue
         reports.append(result)
     return reports
+
+
+async def _check_tmdb() -> HealthCheckResult:
+    """Is a TMDB key set up, and does it work?
+
+    Optional, so a missing key is SKIPPED and never makes the page say
+    there is an issue. It is listed because it is the setting that most
+    changes which trailer you get: without it Trailarr searches YouTube
+    and takes the best match, and with it Trailarr downloads a trailer
+    that the studio published, in the language the profile asks for.
+    """
+    from services.tmdb.api_manager import TMDBAPI, TMDBAuthError
+
+    key = app_settings.tmdb_api_key
+    if not key:
+        return HealthCheckResult(
+            key="tmdb",
+            name="TMDB",
+            status=ProbeStatus.SKIPPED,
+            detail=(
+                "No TMDB API key is set up. Trailarr searches YouTube for"
+                " every trailer and takes the best match it finds."
+            ),
+            remediation=(
+                "Add a key in Settings > General to download the trailers"
+                " that TMDB curates, in the language your profiles ask"
+                " for. A key is free."
+            ),
+            docs_url=DOCS_TMDB,
+        )
+    try:
+        await TMDBAPI(key).validate_key()
+    except TMDBAuthError:
+        return HealthCheckResult(
+            key="tmdb",
+            name="TMDB",
+            status=ProbeStatus.ERROR,
+            detail="TMDB refused the API key.",
+            remediation=(
+                "Check that you copied the whole key from your TMDB"
+                " account, and paste it again in Settings > General."
+            ),
+            docs_url=DOCS_TMDB,
+        )
+    except Exception as e:
+        return HealthCheckResult(
+            key="tmdb",
+            name="TMDB",
+            status=ProbeStatus.WARNING,
+            detail=f"Trailarr could not reach TMDB: {e}",
+            remediation=(
+                "Trailarr searches YouTube while TMDB is unreachable, so"
+                " downloads keep working. Check your network if this"
+                " stays."
+            ),
+            docs_url=DOCS_TMDB,
+        )
+    return HealthCheckResult(
+        key="tmdb",
+        name="TMDB",
+        status=ProbeStatus.OK,
+        detail=(
+            "The TMDB API key works. Trailarr takes trailers from the"
+            " list TMDB curates before it searches YouTube."
+        ),
+        docs_url=DOCS_TMDB,
+    )
 
 
 async def _check_connections() -> HealthCheckResult:

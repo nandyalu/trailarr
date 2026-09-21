@@ -114,7 +114,9 @@ async def _notify_plex(media: MediaRead) -> None:
         if conn.arr_type != ArrType.PLEX:
             return
         # Import here to avoid a circular import at module level
-        from services.connections.plex.connection_manager import PlexConnectionManager
+        from services.connections.plex.connection_manager import (
+            PlexConnectionManager,
+        )
 
         plex_manager = PlexConnectionManager(conn)
         await plex_manager.trigger_item_scan(
@@ -225,15 +227,18 @@ async def download_trailer(
     if not exclude:
         exclude = []
 
-    # Exclude the current trailer ID if an active download already uses it
-    if media.youtube_trailer_id and any(
-        d.file_exists for d in media.downloads
-    ):
-        exclude.append(media.youtube_trailer_id)
+    # Do not download a video that this media item already has on disk.
+    # Phase 8: read the ids from the downloads themselves. Reading the
+    # single `media.youtube_trailer_id` missed every video but the last
+    # one, and the resolver now offers a list.
+    exclude.extend(
+        download.youtube_id
+        for download in media.downloads
+        if download.file_exists and download.youtube_id
+    )
 
-    # Ignore the current trailer ID if always_search is enabled
-    if profile.always_search:
-        media.youtube_trailer_id = None
+    # `Always Search` is applied by the resolver, which skips the videos a
+    # search stored earlier and keeps the ones a person or TMDB chose.
 
     # Skip download if Plex already has a trailer and profile says to
     if await _check_plex_trailer(media, profile):
@@ -302,10 +307,10 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailarr downloaded the trailer for '{media.title}'."
-            f" from ({video_id})"
+            f"Trailarr downloaded the trailer for '{media.title}'"
+            f" from video {video_id}."
         )
-        logger.info(msg)
+        logger.info(msg, **logger.media(media.id))
         # Finish BEFORE broadcasting so clients refetching the downloading
         # overlay on this message no longer see this media in flight. The
         # downloads reload matters too: computed status derives from it.
@@ -315,9 +320,7 @@ async def download_trailer(
         )
         return True
     except Exception as e:
-        logger.exception(
-            f"Trailarr could not download the trailer: {e}"
-        )
+        logger.exception(f"Trailarr could not download the trailer: {e}")
         if _stop_event and _stop_event.is_set():
             logger.info(
                 f"Trailarr stopped the download for '{media.title}'. A stop was"
@@ -331,7 +334,8 @@ async def download_trailer(
                 f" Attempt {3 - retry_count} of 3.",
                 **logger.media(media.id),
             )
-            media.youtube_trailer_id = None
+            # The failed video is not offered again in this chain, so the
+            # next call takes the next candidate from the table.
             if video_id:
                 exclude.append(video_id)
             return await download_trailer(

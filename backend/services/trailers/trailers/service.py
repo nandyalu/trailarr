@@ -227,7 +227,9 @@ async def record_new_trailer_download(
         )
 
 
-async def rename_trailer_download(download: DownloadRead, new_path: str) -> bool:
+async def rename_trailer_download(
+    download: DownloadRead, new_path: str
+) -> bool:
     """Update path/file_name for a download whose file was renamed or moved on
     disk. Used when a disk file is matched to an existing download by content
     hash at a different path — keeps history/metadata on the same row instead

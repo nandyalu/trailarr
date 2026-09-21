@@ -4,6 +4,10 @@
 
 Once your connections are set up:
 
+!!! tip "The setup guide does this for you"
+    {{ version_badge("add", "0.13.0") }}
+    A new installation opens a short guide the first time you load the web page: what Trailarr does, your first connection, the optional [TMDB API key](../user-guide/settings/tmdb.md), and a look at what the first run would download before anything is downloaded. You can skip it at any point, and an installation that already has a connection or any media never sees it.
+
 1.  **Initial Sync:** Trailarr will begin to sync media items from all your configured and enabled connections. This process involves fetching lists of your movies and series.
 2.  **Trailer Scan:** It will then scan your existing library (based on your path mappings) to see which trailers you already have.
 3.  **Magic Happens (Downloads):** Trailarr includes a scheduled task, "Download Missing Trailers," which runs every hour by default (you can change the interval on the `Tasks` page). This task will identify media items missing trailers (according to your profiles) and attempt to download them.

@@ -25,9 +25,7 @@ connection = ConnectionCreate(
 )
 
 # Default connection update object to use in tests
-connection_update = ConnectionUpdate(
-    monitor_new_media=True, path_mappings=[]
-)
+connection_update = ConnectionUpdate(monitor_new_media=True, path_mappings=[])
 
 # Note: connection ids are autoincrement and shared with every other test
 # module in the session, so these tests use the id that `create` returns.
@@ -107,14 +105,15 @@ class TestConnectionDatabaseHandler:
         assert update_result.arr_type == connection.arr_type
         assert update_result.url == connection.url
         assert update_result.api_key == connection.api_key
-        assert update_result.monitor_new_media == connection_update.monitor_new_media
+        assert (
+            update_result.monitor_new_media
+            == connection_update.monitor_new_media
+        )
 
     def test_update_connection_stores_machine_identifier(self):
         """The caller passes a refreshed Plex identifier; update stores it."""
         conn_id = db_manager.create(connection, machine_identifier="old")
-        db_manager.update(
-            conn_id, connection_update, machine_identifier="new"
-        )
+        db_manager.update(conn_id, connection_update, machine_identifier="new")
         assert db_manager.read(conn_id).machine_identifier == "new"
 
     def test_update_connection_keeps_machine_identifier_when_not_given(self):

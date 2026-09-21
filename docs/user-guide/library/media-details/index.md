@@ -46,7 +46,7 @@ If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is 
 
 This is the YouTube video ID present in Trailarr for this Media item, and can be updated here!
 
-This usually comes from `Radarr` for Movies, however `Sonarr` does not contain any such value so this will initially be empty for `TV Shows`.
+Radarr reports a YouTube trailer id, and Trailarr stores it. Sonarr has no such field, because its metadata comes from TVDB, so for a series this is empty until Trailarr finds a video itself, or until you choose one. Trailarr also writes the video it downloaded here, so the field can hold a video that no Arr ever reported.
 
 ### Save YouTube ID
 
@@ -55,7 +55,9 @@ This usually comes from `Radarr` for Movies, however `Sonarr` does not contain a
 A save button will appear if `YouTube Trailer ID` value has changed, prompting you to save.
 
 !!! note ""
-    Save will only save the `YouTube Trailer ID` in Trailarr, does not download trailer automatically!
+    Save only stores the video in Trailarr. It does not download a trailer. Click `Download` to get it now.
+
+{{ version_badge("upd", "0.13.0") }} A saved id is now a video **you chose**. It goes to the top of the [Known videos](#known-videos) list, Trailarr tries it before every other source, and no task removes it — not even when the download of it fails.
 
 ### Search YouTube ID
 
@@ -64,6 +66,25 @@ A save button will appear if `YouTube Trailer ID` value has changed, prompting y
 A search button will appear if `YouTube Trailer ID` is not available for the `Media` in Trailarr.
 
 This can be used to let Trailarr search for a trailer for the `Media` by selecting a `Profile`.
+
+## Known videos
+
+{{ version_badge("add", "0.13.0") }}
+
+Every video that Trailarr can download for this media item, in the order it tries them:
+
+| Label | Where it came from |
+|---|---|
+| **You chose this** | You pasted the link. It wins over every other source, and no task removes it. |
+| **TMDB** | A trailer from the list that TMDB curates. Needs a [TMDB API key](../../settings/tmdb.md). |
+| **Radarr / Sonarr** | The id that your Arr reports for this item. |
+| **YouTube search** | What a search found on an earlier run, kept so the next run does not search again. |
+
+Trailarr takes the first video that works. When a download fails, that video moves to the end of the list for the next run, so a video that YouTube no longer has does not block the ones behind it.
+
+Click the title to watch a video on YouTube. Click the cross to remove one. A video you chose comes back only when you add it again; a video from TMDB comes back with the next refresh.
+
+{{ version_badge("add", "0.13.0") }} The **Language** box next to the YouTube ID records which language your video is in. A profile that asks for that language can then use it, which is how one media item serves an Italian profile and an English one — see [Trailer Language](../../settings/profiles/settings/general.md#trailer-language). Leave it empty if the video suits a profile that takes any language.
 
 ## Action Buttons
 

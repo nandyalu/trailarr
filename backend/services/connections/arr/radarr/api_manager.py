@@ -72,7 +72,9 @@ class RadarrManager(AsyncBaseArrManager):
             ConnectionTimeoutError: If the connection times out
             InvalidResponseError: If the API response is invalid
         """
-        movie = await self._request("GET", f"/api/{self.version}/movie/{radarr_id}")
+        movie = await self._request(
+            "GET", f"/api/{self.version}/movie/{radarr_id}"
+        )
         if isinstance(movie, dict):
             return movie
         raise InvalidResponseError("Invalid response from Radarr API")

@@ -54,11 +54,16 @@ def record_failure(
     error: str,
     unit: str = DEFAULT_UNIT,
     *,
+    video_id: str | None = None,
     _session: Session = None,  # type: ignore
 ) -> DownloadAttemptRead:
     """Record a failed download attempt for (media, profile, unit) —
     creates the row or increments its counter. Only real attempted-and-failed
-    downloads belong here; validation skips (missing folder etc.) do not."""
+    downloads belong here; validation skips (missing folder etc.) do not.
+
+    `video_id` is the candidate the attempt used. The resolver reads it and
+    puts that candidate last on the next run, so a video that YouTube no
+    longer has does not block the others (Phase 8, wargame W5)."""
     statement = select(DownloadAttempt).where(
         DownloadAttempt.media_id == media_id,
         DownloadAttempt.profile_id == profile_id,
@@ -77,6 +82,8 @@ def record_failure(
     if error:
         error = classified_error(error)
     attempt.last_error = error[:MAX_ERROR_LENGTH] if error else None
+    if video_id:
+        attempt.last_video_id = video_id
     _session.add(attempt)
     _session.commit()
     _session.refresh(attempt)

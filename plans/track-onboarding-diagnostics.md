@@ -1,9 +1,44 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestones A+B DONE — merged to `dev` Aug 28, 2026 (PR #658),
-shipping in v0.11.4; C–D not started · **Releases:** incremental —
+**Status:** Milestones A+B DONE — shipped in v0.11.4. **C DONE** (Sep 11, 2026, branch
+`feat/phase8-tmdb`, ships with v0.13.0); D not started · **Releases:** incremental —
 C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+
+**C execution notes (Sep 11, 2026):**
+
+- Built on the Phase 8 branch, because TMDB is the reason to expect new installs.
+- The five steps are as written below. Step 2 hands off to the existing Add Connection
+  page rather than embedding it: that page owns its own routing and the inline doctor,
+  and the guide remembers its step, so leaving and coming back resumes it (C3).
+- C1 needed two mechanisms, not one. The startup pass records an installation that is
+  already in use, but it runs a minute after start, and for that minute an upgraded
+  installation would have been told it needs the guide. `status()` therefore records the
+  same decision the moment anyone asks. Verified against a copy of the 3,704-title
+  library: `needed:false` on the first request after boot, and the browser goes to
+  `/home` — including when `/setup` is typed by hand.
+- The guard has to wait for the auth check. Angular runs the guards of a route at the
+  same time, so asking about the setup raced `authGuard`: with the web UI login off, the
+  session cookie is minted by the call that guard makes, and the setup request came back
+  401 and fell through to "no guide". Chaining it after the cached auth check fixes it.
+- C4 is done (Sep 11, 2026). Step 4 asks the server every four seconds while it is on
+  screen, says how many media items are in so far, and says when that number is still
+  going up. A "Continue in the background" button next to it goes on with the guide
+  while the sync runs, because the sync is a task on the server. The preview reads 25
+  rows at a time with a "Show more" button, over the `limit`/`offset` the endpoint
+  already had. Verified in a browser against a copy of the 3,705-title library: the
+  count climbed 0 → 900 → 2,100 → 3,705, the "still going up" line came and went with
+  it, the whole 92-row list read in three clicks, "Check again" put it back to the first
+  page, and the poll stopped when the step did.
+- Still open for a later pass: C2 (URL_BASE was not tested under a sub-directory).
+
+**Note (Sep 11, 2026):** C's dependencies are all shipped or ready — Phase 7 is out in
+v0.12.0, Phase 3's preview endpoint has been in since v0.10.2, and Phase 8 brings the
+two fields step 3 wants (the TMDB key and the trailer language). C targets v0.13.x,
+which is the train Phase 8 is on, so the wizard can carry the key on the day it lands.
+Until C exists, a fresh install sees only the empty state on the Connections page
+("No connections configured yet"), and the TMDB key is discoverable only through the
+Health page or the docs.
 
 **Milestone A execution notes (Aug 14, 2026):**
 
@@ -178,8 +213,25 @@ Wizard shown when the app has zero connections (and re-runnable from Settings �
 1. Welcome + what Trailarr does (one screen, not a tour).
 2. Add first connection — Connection Doctor runs inline; can't advance with red
    path/permission results without an explicit "I know what I'm doing" skip.
-3. Defaults: trailer language (Phase 8 field), keep-or-edit the two default profiles
-   (plain-language summary of what they'll do — no filter UI here).
+3. Defaults: **TMDB API key** and trailer language (both Phase 8 fields), keep-or-edit
+   the two default profiles (plain-language summary of what they'll do — no filter UI
+   here).
+
+   The key belongs here, and it belongs before the language. It is the setting that
+   most changes which trailer a user gets — without one Trailarr searches YouTube and
+   takes the best match; with one it downloads what the studio published, in the
+   language asked for — and a new user has no way to know it exists. Offer it with the
+   same three facts the Health page uses: what happens without a key, what a key gives,
+   and that it is free, with a link to `user-guide/settings/tmdb.md`.
+
+   Skippable in one click, and never a blocker: Trailarr works without a key, and a
+   setup screen that argues with someone in a hurry is worse than no screen. The
+   language field is only worth showing once a key is set, because without one Trailarr
+   cannot know what language a trailer is in.
+
+   Already covered for existing installs: the Health page lists the key with a neutral
+   status and the same link (v0.13.0), so this step is about the fresh install that
+   never opens that page.
 4. First sync runs with progress (websocket), then **preview screen** (Phase 3's
    library-wide pending view): "Trailarr would download N trailers" with the list.
 5. Finish = user explicitly enables downloads (see Phase 3 preview-mode setting);

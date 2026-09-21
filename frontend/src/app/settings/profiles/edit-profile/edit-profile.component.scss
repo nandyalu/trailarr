@@ -317,3 +317,10 @@ dialog.delete-dialog {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
   }
 }
+
+/* Shown under the trailer language while no TMDB API key is set. */
+.needs-tmdb {
+  margin: -0.25rem 0 0.5rem;
+  padding: 0 0.5rem;
+  color: var(--color-on-surface-variant);
+}

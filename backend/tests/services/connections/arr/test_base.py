@@ -20,7 +20,9 @@ class TestAsyncBaseArrManager:
             ({"abc": "abc"}, ""),
         ],
     )
-    async def test_api_version_success(self, debug_aiohttp, payload, expected_result):
+    async def test_api_version_success(
+        self, debug_aiohttp, payload, expected_result
+    ):
         # Arrange
         debug_aiohttp.get(f"{self.URL}/api", status=200, payload=payload)
 
@@ -55,7 +57,9 @@ class TestAsyncBaseArrManager:
             {"appName": "testApp", "version": ""},
         ],
     )
-    async def test_get_system_status_invalid_appname(self, debug_aiohttp, payload):
+    async def test_get_system_status_invalid_appname(
+        self, debug_aiohttp, payload
+    ):
         # Arrange
         debug_aiohttp.get(
             f"{self.URL}/api/v3/system/status",
@@ -106,7 +110,9 @@ class TestAsyncBaseArrManager:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("payload", [None, 123])
-    async def test_get_system_status_unknown_error(self, debug_aiohttp, payload):
+    async def test_get_system_status_unknown_error(
+        self, debug_aiohttp, payload
+    ):
         # Arrange
         debug_aiohttp.get(
             f"{self.URL}/api/v3/system/status",
@@ -137,7 +143,9 @@ class TestAsyncBaseArrManager:
     @pytest.mark.asyncio
     async def test_ping_error(self, debug_aiohttp):
         # Arrange
-        debug_aiohttp.get(f"{self.URL}/ping", exception=Exception("Error message"))
+        debug_aiohttp.get(
+            f"{self.URL}/ping", exception=Exception("Error message")
+        )
 
         # Act
         with pytest.raises(Exception) as e:

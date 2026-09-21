@@ -31,7 +31,9 @@ def create(
     Raises:
         ItemNotFoundError: If the connection_id is invalid.
     """
-    if not connection_manager.exists(media_create.connection_id, _session=_session):
+    if not connection_manager.exists(
+        media_create.connection_id, _session=_session
+    ):
         raise ItemNotFoundError("Connection", media_create.connection_id)
     db_media = Media.model_validate(media_create)
     _session.add(db_media)
@@ -66,7 +68,9 @@ def create_or_update_bulk(
     new_count: int = 0
     updated_count: int = 0
     for media_create in media_create_list:
-        db_media, created, updated, arr_linked = _create_or_update(media_create, _session)
+        db_media, created, updated, arr_linked = _create_or_update(
+            media_create, _session
+        )
         db_media_list.append((db_media, created, updated, arr_linked))
         if created:
             new_count += 1
@@ -143,7 +147,9 @@ def plex_create_or_update_bulk(
         folder_path = media_create.folder_path or ""
 
         # Stage 1: exact match
-        existing_id: int | None = exact_map.get(folder_path) if folder_path else None
+        existing_id: int | None = (
+            exact_map.get(folder_path) if folder_path else None
+        )
 
         # Stage 2: prefix match — stored path is a parent directory
         if existing_id is None and folder_path:
@@ -154,7 +160,8 @@ def plex_create_or_update_bulk(
                     continue
                 norm = path.rstrip("/\\")
                 if (
-                    folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+                    folder_path.startswith(norm + "/")
+                    or folder_path.startswith(norm + "\\")
                 ) and len(norm) > len(best_norm):
                     best_id = mid
                     best_norm = norm
@@ -183,13 +190,9 @@ def plex_create_or_update_bulk(
                 )
                 if (
                     arr_id
-                    and plex_conn_id
-                    in (None, media_create.plex_connection_id)
+                    and plex_conn_id in (None, media_create.plex_connection_id)
                 )
-                or (
-                    not arr_id
-                    and conn_id == media_create.connection_id
-                )
+                or (not arr_id and conn_id == media_create.connection_id)
             ]
             if len(eligible) == 1:
                 existing_id = eligible[0]
@@ -197,7 +200,9 @@ def plex_create_or_update_bulk(
 
         if existing_id is not None:
             db_media = base._get_db_item(existing_id, _session)
-            newly_linked = db_media.plex_connection_id != media_create.plex_connection_id
+            newly_linked = (
+                db_media.plex_connection_id != media_create.plex_connection_id
+            )
             # Only sync media_filename for Plex-only rows (arr_id == 0)
             plex_media_filename = (
                 media_create.media_filename
@@ -229,7 +234,8 @@ def plex_create_or_update_bulk(
             changed = (
                 db_media.plex_rating_key != media_create.plex_rating_key
                 or db_media.plex_section_key != media_create.plex_section_key
-                or db_media.plex_connection_id != media_create.plex_connection_id
+                or db_media.plex_connection_id
+                != media_create.plex_connection_id
                 or (
                     plex_media_filename is not None
                     and db_media.media_filename != plex_media_filename
@@ -306,7 +312,9 @@ def _create_or_update(
     arr_linked = False
     if db_media is None:
         # Fallback: adopt a Plex-only row at the same folder path to avoid duplicates.
-        plex_row = _read_plex_only_by_folder_path(media_create.folder_path, session)
+        plex_row = _read_plex_only_by_folder_path(
+            media_create.folder_path, session
+        )
         if plex_row is not None:
             db_media = plex_row
             arr_linked = True
@@ -401,7 +409,8 @@ def _read_plex_only_by_folder_path(
             continue
         norm = row_path.rstrip("/\\")
         if (
-            folder_path.startswith(norm + "/") or folder_path.startswith(norm + "\\")
+            folder_path.startswith(norm + "/")
+            or folder_path.startswith(norm + "\\")
         ) and len(norm) > len(best_norm):
             best_id = row_id
             best_norm = norm

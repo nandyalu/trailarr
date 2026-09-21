@@ -110,9 +110,7 @@ class TestViewOnlyFieldsRejectedOnProfiles:
                     filter_type=FilterType.TRAILER,
                     filters=[
                         _filter(*_SCOPE_FILTER),
-                        _filter(
-                            "download_count", FilterCondition.EQUALS, "1"
-                        ),
+                        _filter("download_count", FilterCondition.EQUALS, "1"),
                     ],
                 )
             )

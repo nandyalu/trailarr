@@ -14,9 +14,13 @@ from yt_dlp import YoutubeDL
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
+import database.manager.downloadattempt as attempt_manager
+import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
+from database.models.mediavideo import MediaVideoCreate, VideoSource
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
+from services.trailers import resolver
 from services.trailers.cli import cli_to_api
 from services.trailers.trailers.utils import extract_youtube_id
 
@@ -298,12 +302,11 @@ def get_video_id(
         search_length (int, Optional=10): Number of search results to return.
     Returns:
         str|None: Youtube video id / None if not found."""
-    video_id = ""
-    if media.youtube_trailer_id:
-        if "youtu" in media.youtube_trailer_id:
-            video_id = extract_youtube_id(media.youtube_trailer_id)
-        else:
-            video_id = media.youtube_trailer_id
+    # Phase 8: the candidates table is the source of the answer. It holds
+    # the video the user chose, the trailers TMDB lists, and the id that
+    # Radarr or Sonarr gave — in that order. A search runs only when the
+    # table offers nothing that this profile can use.
+    video_id = _video_id_from_candidates(media, profile, exclude)
     if video_id:
         media.youtube_trailer_id = video_id
         return video_id
@@ -311,6 +314,11 @@ def get_video_id(
     video_id = search_yt_for_trailer(
         media, profile, exclude, search_length=search_length
     )
+    if video_id:
+        # Remember what the search found, so the next run does not have to
+        # search again. The row belongs to the SEARCH source, so a profile
+        # with `Always Search` on will skip it.
+        _remember_search_result(media, video_id)
     if not video_id:
         if search_length >= 30:
             logger.warning(
@@ -331,3 +339,109 @@ def get_video_id(
     if video_id:
         media.youtube_trailer_id = video_id
     return video_id
+
+
+def _video_id_from_candidates(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    exclude: list[str] | None,
+) -> str | None:
+    """Take the best candidate from the table, if there is one."""
+    try:
+        # Everything Trailarr knows for this item, in source order. The
+        # language rule belongs to the resolver, which applies it once —
+        # and reading the unfiltered list is what lets the log below say
+        # "I know four videos, none of them Italian" instead of "I know
+        # nothing".
+        candidates = video_manager.read_candidates(media.id)
+    except Exception as e:
+        # The table is an optimisation over searching. If reading it fails,
+        # a search still finds a trailer.
+        logger.warning(
+            f"Trailarr could not read the known videos for '{media.title}',"
+            f" and searches instead: {e}"
+        )
+        return None
+    last_tried = _last_tried_video_id(media.id, profile.id)
+    chosen = resolver.choose_candidates(
+        candidates, profile, exclude=exclude, last_tried=last_tried
+    )
+    if not chosen:
+        _say_why_it_searches(media, profile, candidates)
+        return None
+    best = chosen[0]
+    logger.info(
+        resolver.describe_choice(media, best), **logger.media(media.id)
+    )
+    return best.video_id
+
+
+def _last_tried_video_id(media_id: int, profile_id: int) -> str | None:
+    """The candidate the last attempt of this profile used, if any."""
+    try:
+        attempts = attempt_manager.read_for_media(media_id)
+    except Exception:
+        return None
+    for attempt in attempts:
+        if attempt.profile_id == profile_id:
+            return attempt.last_video_id
+    return None
+
+
+def _remember_search_result(media: MediaRead, video_id: str) -> None:
+    """Write back what the search found, as a SEARCH candidate."""
+    try:
+        video_manager.replace_source_rows(
+            media.id,
+            VideoSource.SEARCH,
+            [
+                MediaVideoCreate(
+                    media_id=media.id,
+                    video_id=video_id,
+                    source=VideoSource.SEARCH,
+                    sequence=0,
+                    name="",
+                    official=False,
+                )
+            ],
+        )
+    except Exception as e:
+        logger.warning(
+            f"Trailarr found a trailer for '{media.title}' but could not"
+            f" store it as a known video: {e}"
+        )
+
+
+def _say_why_it_searches(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    candidates: list,
+) -> None:
+    """Log the reason no known video was used, before a search runs.
+
+    A user who asks for a trailer in their language and gets a search
+    result should be able to see that Trailarr looked and found nothing,
+    rather than guess whether the setting works at all.
+    """
+    name = profile.customfilter.filter_name
+    if profile.always_search:
+        logger.debug(
+            f"The profile '{name}' always searches, so Trailarr searches"
+            f" YouTube for '{media.title}'."
+        )
+        return
+    wanted = (profile.language or "").strip()
+    if wanted and candidates:
+        have = sorted({c.language or "unknown" for c in candidates})
+        logger.info(
+            f"Trailarr knows {len(candidates)} video(s) for '{media.title}'"
+            f" but none in the language '{wanted}' that the profile"
+            f" '{name}' asks for (found: {', '.join(have)}). Trailarr"
+            " searches YouTube instead.",
+            **logger.media(media.id),
+        )
+        return
+    logger.debug(
+        f"Trailarr knows no video for '{media.title}' that the profile"
+        f" '{name}' can use, so it searches YouTube."
+    )

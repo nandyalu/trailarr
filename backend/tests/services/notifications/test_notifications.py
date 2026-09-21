@@ -77,9 +77,7 @@ class TestChannelManager:
         channel = make_channel()
         channel_manager.update(
             channel.id,
-            NotificationChannelCreate(
-                name="Discord", url="tgram://new/token"
-            ),
+            NotificationChannelCreate(name="Discord", url="tgram://new/token"),
         )
         assert channel_manager.get_url(channel.id) == "tgram://new/token"
 
@@ -122,7 +120,9 @@ def _names(pairs):
 class TestMaskUrl:
 
     def test_masks_token_tail(self):
-        assert mask_apprise_url("discord://abcdef/ghij") == "discord://abcd****"
+        assert (
+            mask_apprise_url("discord://abcdef/ghij") == "discord://abcd****"
+        )
 
     def test_handles_schemeless(self):
         assert mask_apprise_url("garbage") == "****"
@@ -313,7 +313,9 @@ class TestABurstBecomesAFewMessages:
         sent = 0
         with (
             patch.object(dispatcher.time, "monotonic", lambda: clock["now"]),
-            patch.object(dispatcher, "_post_discord_sync", side_effect=fake_send),
+            patch.object(
+                dispatcher, "_post_discord_sync", side_effect=fake_send
+            ),
         ):
             for tick in range(seconds // int(dispatcher.BATCH_WINDOW_SECONDS)):
                 for _ in range(per_tick):
@@ -384,7 +386,9 @@ class TestABurstBecomesAFewMessages:
         notes = [
             EventNote("TRAILER_RENAMED", "SYSTEM", 3, "moved")
             for _ in range(40)
-        ] + [EventNote("TRAILER_DETECTED", "SYSTEM", None, "") for _ in range(2)]
+        ] + [
+            EventNote("TRAILER_DETECTED", "SYSTEM", None, "") for _ in range(2)
+        ]
         body = dispatcher._format_batch(notes, {3: media})
 
         assert "Trailer Renamed — 40 items: Rental Family (2025)" in body
@@ -421,8 +425,7 @@ class TestABurstBecomesAFewMessages:
 
     def test_one_item_is_not_called_one_items(self):
         notes = [
-            EventNote("TRAILER_RENAMED", "SYSTEM", None, "")
-            for _ in range(11)
+            EventNote("TRAILER_RENAMED", "SYSTEM", None, "") for _ in range(11)
         ] + [EventNote("TRAILER_DELETED", "SYSTEM", None, "")]
         body = dispatcher._format_batch(notes, {})
         assert "Trailer Deleted — 1 item" in body
@@ -490,7 +493,9 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("services.images.image._url_to_fs_path", return_value=poster),
+            patch(
+                "services.images.image._url_to_fs_path", return_value=poster
+            ),
         ):
             assert dispatcher._poster_attachment(notes, {}) == str(poster)
 
@@ -528,10 +533,10 @@ class TestEnrichedNotifications:
             patch.object(
                 dispatcher.media_manager, "read", return_value=_fake_media()
             ),
-            patch("services.images.image._url_to_fs_path", return_value=poster),
-            patch.object(
-                dispatcher, "_send_sync", return_value=True
-            ) as send,
+            patch(
+                "services.images.image._url_to_fs_path", return_value=poster
+            ),
+            patch.object(dispatcher, "_send_sync", return_value=True) as send,
         ):
             await dispatcher._dispatch_pending()
         assert send.call_count == 1
@@ -549,9 +554,12 @@ class TestDiscordNative:
     _TOKEN = "abcDEFghiJKLmnoPQRstuVWXyz-1234567890abcdefghij"
 
     def test_webhook_url_from_discord_scheme(self):
-        assert dispatcher._discord_webhook_url(
-            f"discord://{self._ID}/{self._TOKEN}"
-        ) == f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+        assert (
+            dispatcher._discord_webhook_url(
+                f"discord://{self._ID}/{self._TOKEN}"
+            )
+            == f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
+        )
 
     def test_webhook_url_from_pasted_discord_url(self):
         url = f"https://discord.com/api/webhooks/{self._ID}/{self._TOKEN}"
@@ -592,13 +600,9 @@ class TestDiscordNative:
         assert payload["username"] == "Trailarr"
         # Mobile push previews only show top-level content — without it
         # a poster-attachment message notifies as just "image received"
-        assert payload["content"] == (
-            "⬇️ Trailer Downloaded: Test Movie (2024)"
-        )
+        assert payload["content"] == "⬇️ Trailer Downloaded: Test Movie (2024)"
 
-    def test_single_media_multi_note_content_lists_event_types(
-        self, tmp_path
-    ):
+    def test_single_media_multi_note_content_lists_event_types(self, tmp_path):
         poster_file = tmp_path / "poster.jpg"
         poster_file.write_bytes(b"jpg")
         notes = [
@@ -615,8 +619,9 @@ class TestDiscordNative:
             ),
         ):
             payload, _ = dispatcher._discord_payload(notes, {})
-        assert payload["content"] == (
-            "Test Movie (2024): Trailer Downloaded, Media Renamed"
+        assert (
+            payload["content"]
+            == "Test Movie (2024): Trailer Downloaded, Media Renamed"
         )
 
     def test_arr_media_uses_public_poster_url_and_no_content(self):
@@ -649,9 +654,7 @@ class TestDiscordNative:
         )
         notes = [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")]
         with (
-            patch.object(
-                dispatcher.media_manager, "read", return_value=media
-            ),
+            patch.object(dispatcher.media_manager, "read", return_value=media),
             patch(
                 "services.images.image._url_to_fs_path",
                 return_value=poster_file,
@@ -662,9 +665,7 @@ class TestDiscordNative:
         assert payload["embeds"][0]["image"] == {
             "url": "attachment://poster.jpg"
         }
-        assert payload["content"] == (
-            "⬇️ Trailer Downloaded: Test Movie (2024)"
-        )
+        assert payload["content"] == "⬇️ Trailer Downloaded: Test Movie (2024)"
 
     def test_multi_media_payload_stays_compact(self):
         notes = [
@@ -680,8 +681,9 @@ class TestDiscordNative:
         assert embed["title"] == "Trailarr — 2 updates"
         assert "image" not in embed
         assert "fields" not in embed
-        assert payload["content"] == (
-            "Test Movie — Trailer Downloaded;"
+        assert (
+            payload["content"]
+            == "Test Movie — Trailer Downloaded;"
             " Test Movie — Trailer Downloaded"
         )
 
@@ -694,8 +696,9 @@ class TestDiscordNative:
             dispatcher.media_manager, "read", return_value=_fake_media()
         ):
             payload, _ = dispatcher._discord_payload(notes, {})
-        assert payload["content"] == (
-            "Test Movie — Trailer Downloaded;"
+        assert (
+            payload["content"]
+            == "Test Movie — Trailer Downloaded;"
             " Test Movie — Trailer Downloaded; …and 3 more"
         )
 

@@ -62,7 +62,12 @@ class AsyncRequestManager:
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.request(
-                    method, url, headers=headers, params=params, data=data, ssl=ssl_context
+                    method,
+                    url,
+                    headers=headers,
+                    params=params,
+                    data=data,
+                    ssl=ssl_context,
                 ) as client_response:
                     # client_response.raise_for_status()
                     response = await self._process_response(client_response)
@@ -72,7 +77,9 @@ class AsyncRequestManager:
                     "Timeout occurred while connecting to API."
                 )
             except aiohttp.ClientConnectionError:
-                raise ConnectionError("Connection Refused while connecting to API.")
+                raise ConnectionError(
+                    "Connection Refused while connecting to API."
+                )
             except Exception:
                 raise ConnectionError(
                     "Unable to connect to API. Check your connection."
@@ -124,7 +131,9 @@ class AsyncRequestManager:
         if response.status == 404:
             raise ConnectionError(f"Resource not found: {response.url}")
         if response.status == 405:
-            raise ConnectionError(f"The endpoint {response.url} is not allowed")
+            raise ConnectionError(
+                f"The endpoint {response.url} is not allowed"
+            )
         if response.status == 500:
             try:
                 message = (await response.json()).get("message", "")
@@ -134,7 +143,9 @@ class AsyncRequestManager:
                 if text:
                     error_message = f"Internal Server Error: {text}"
                 else:
-                    error_message = "Internal Server Error: Unknown Error Occurred."
+                    error_message = (
+                        "Internal Server Error: Unknown Error Occurred."
+                    )
             raise ConnectionError(error_message)
         if response.status == 502:
             raise ConnectionError(

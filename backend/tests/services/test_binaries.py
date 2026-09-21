@@ -13,7 +13,9 @@ from services.binaries import (
 class TestResolveBinary:
     def test_configured_path_valid_keeps_env_unchanged(self, monkeypatch):
         monkeypatch.delenv("YTDLP_PATH", raising=False)
-        with patch("services.binaries.shutil.which", return_value="/usr/bin/yt-dlp"):
+        with patch(
+            "services.binaries.shutil.which", return_value="/usr/bin/yt-dlp"
+        ):
             _resolve_binary("yt-dlp", "YTDLP_PATH", "/usr/bin/yt-dlp")
         assert "YTDLP_PATH" not in os.environ
 
@@ -75,9 +77,7 @@ class TestEnsureJsRuntime:
 
         with patch("services.binaries.shutil.which", side_effect=fake_which):
             _ensure_js_runtime()
-        assert os.environ["PATH"].startswith(
-            "/opt/trailarr/bin" + os.pathsep
-        )
+        assert os.environ["PATH"].startswith("/opt/trailarr/bin" + os.pathsep)
 
     def test_no_runtime_anywhere_logs_warning(self, monkeypatch):
         monkeypatch.setenv("PATH", "/usr/bin")

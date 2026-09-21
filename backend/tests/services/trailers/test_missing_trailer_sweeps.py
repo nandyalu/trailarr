@@ -499,7 +499,9 @@ async def test_download_failure_records_backoff_attempt():
     # A real failure reached the network, so it counts as an attempt and
     # advances the delay ladder.
     assert result == (0, 1, 1)
-    record_failure.assert_called_once_with(1, 1, "download failed")
+    record_failure.assert_called_once_with(
+        1, 1, "download failed", video_id=media.youtube_trailer_id
+    )
 
 
 @pytest.mark.asyncio

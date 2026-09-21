@@ -1,6 +1,7 @@
 from .create import create, create_or_update_bulk, plex_create_or_update_bulk
 from .delete import delete_except
 from .read import (
+    count_all,
     read,
     read_all,
     read_all_raw,
@@ -17,6 +18,7 @@ from .update import (
     demote_arr_items_with_plex_to_plex_only,
     unlink_plex_missing_items,
     update_download_facts,
+    mark_videos_refreshed,
     update_media_exists,
     update_media_image,
     update_monitoring,
@@ -34,6 +36,7 @@ __all__ = [
     "delete_except",
     "demote_arr_items_with_plex_to_plex_only",
     "unlink_plex_missing_items",
+    "count_all",
     "read",
     "read_all",
     "read_all_raw",
@@ -46,6 +49,7 @@ __all__ = [
     "read_updated_after",
     "search",
     "update_download_facts",
+    "mark_videos_refreshed",
     "update_media_exists",
     "update_media_image",
     "update_monitoring",

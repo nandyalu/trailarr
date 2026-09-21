@@ -1,8 +1,9 @@
 # Phase 8 — TMDB Integration
 
-**Status:** not started · **Release:** v0.13.0, target Nov 2026 · **Depends on:** Phase 7 (paths below are
-post-reorg; translate via phase-07 move map if executing earlier)
-**Refresh this plan before execution** — verify TMDB API terms/endpoints unchanged.
+**Status:** IN PROGRESS (Sep 11, 2026, branch `feat/phase8-tmdb`) — the backbone is
+built, tested and verified against the live TMDB API and a copy of the 3,704-title
+library. See "Where this phase stands" at the end of this file. · **Release:** v0.13.0,
+target Nov 2026 · **Depends on:** Phase 7 (shipped in v0.12.0)
 
 ## Objective
 
@@ -34,8 +35,12 @@ extend to non-trailer types and seasons. No key configured = behavior identical 
    USER > TMDB > ARR > SEARCH, then sequence → each candidate passes the existing
    duration/uploader validation → live yt-search fallback last (trailers only), and a
    successful search result is written back as a SEARCH row.
-5. **Arr ids migrate into the table:** sync writes `youtube_trailer_id` (Radarr AND
-   Sonarr both provide it — `*/data_parser.py`) as ARR rows; one-time migration copies
+5. **Arr ids migrate into the table:** sync writes `youtube_trailer_id` (⚠️ **only
+   Radarr provides it** — see the correction below; the Sonarr parser carries the field
+   to match the shared shape and it is always empty) as ARR rows. ⚠️ **The one-time
+   migration does not label them**: the column cannot say where its id came from, so
+   every migrated row is a SEARCH row and the first sync promotes the ids the Arr
+   really reports. The user-edit heuristic below is dropped with it; one-time migration copies
    existing `media.youtube_trailer_id` → ARR rows. **User-edit recovery heuristic:**
    on the first post-upgrade sync, when the Arr-reported id differs from a migrated
    ARR row's id, relabel that row `USER` — a differing stored id was almost certainly
@@ -89,6 +94,16 @@ extend to non-trailer types and seasons. No key configured = behavior identical 
   — manual `yt_id` = USER row (write it) and takes precedence; `always_search=True`
   skips table candidates? NO — redefine: always_search skips only the *stored search
   result reuse*, not TMDB/USER; document in code + release notes.
+
+  ⚠️ **Resolved as: skip SEARCH *and* ARR, keep USER and TMDB.** Reading the pitfall as
+  "keep everything but SEARCH" left the Arr id in, which reverses what the setting is
+  for. Before this phase it set `media.youtube_trailer_id` to None, so the Arr id was
+  exactly what it discarded, and people turn it on because Radarr reports one trailer,
+  usually English, and they want another — most often one in their own language.
+  Keeping the Arr id would have handed them the trailer they turned the setting on to
+  avoid. TMDB stays, because it lists a trailer per language and answers that need
+  properly, which is also what makes the profile `language` field load-bearing rather
+  than cosmetic.
 - `exclude` logic in `trailer.py:257` (excluded previous id when re-searching) is
   superseded by candidate iteration — remove carefully with the tests around it.
 - OpenAPI + frontend client regen (settings, profile language field, candidates
@@ -132,3 +147,127 @@ task on ~50-item slice, inspect rows.
 Trailer resolution provably prefers TMDB (log line per resolution source); no key = no
 behavior change; candidates visible on media details; Docs section executed (TMDB setup
 page live) + roadmap tick; release notes with key-setup walkthrough.
+
+---
+
+## Where this phase stands (Sep 11, 2026)
+
+Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests pass.
+
+### Done
+
+- **The candidates table.** `MediaVideo` with every column of decision 1, the manager
+  that owns the source rules, and the migration that moves `media.youtube_trailer_id`
+  into ARR rows. Verified on a copy of the real library: 2,560 ids moved in 1.1s, none
+  left behind, no orphan rows.
+- **The TMDB client** (`services/tmdb/`), the mapping to candidates, and the refresher.
+  Live-verified against api.themoviedb.org with a real key.
+- **Settings and profile.** `tmdb_api_key`, masked in the API and checked against TMDB
+  before it is stored; profile `language`.
+- **Resolution.** `get_video_id` reads the table, in the order USER, TMDB, ARR, SEARCH,
+  and searches only when the table offers nothing. A search result is written back.
+  `DownloadAttempt.last_video_id` moves a failed candidate to the end of the next run.
+- **Population.** Lazy refresh with a 7-day TTL in the download task
+  (`media.last_videos_refresh`), plus the `Refresh Video Lists` task every 12 hours,
+  capped at 200 items per run.
+- **UI and API.** Three endpoints on `/media/{id}/videos`; the Known videos list, the
+  TMDB key field and the Trailer Language field.
+- **Docs.** The TMDB page, media details, profile settings, the FAQ, the environment
+  variables, `llms.txt`, draft v0.13.0 release notes.
+- **A real download, end to end.** With a real key against YouTube: the resolver took
+  TMDB's first trailer for The Matrix, a 33-second anniversary spot; verification
+  rejected it for the 60-second minimum; the retry excluded it and took the next TMDB
+  candidate, which downloaded as an 80-second, 3.2 MB file. Candidate iteration is not
+  a theoretical case — TMDB marks short spots as trailers, so it earns its keep on the
+  first title anyone tries. Documented on the TMDB page.
+
+### Three decisions that the plan got wrong, and why
+
+1. **`include_video_language` is gone from the TMDB reference.** The client asks for
+   every video and the resolver picks the language instead. That also keeps the other
+   languages, which the resolver wants when the asked language has none.
+2. **The order TMDB returns is not useful.** The first four videos of The Matrix are
+   featurettes, and the first Inception trailer in TMDB order is not official while two
+   official ones follow it. `to_candidates` keeps only trailers, puts official first,
+   and keeps the TMDB order inside each group.
+3. **Sonarr does not report a YouTube trailer id.** Decision 5 says Radarr and Sonarr
+   both provide it, and both parsers do read `youTubeTrailerId`, which is what made the
+   claim look true. Sonarr's `SeriesResource` has no trailer property at all, and the
+   Sonarr parser carries a comment saying so; the field exists to match the shape the
+   rest of Trailarr expects, and it is always empty.
+
+   The cause is the metadata source, which makes it a fact about the two applications
+   rather than a gap to fix. Radarr takes its metadata from TMDB, which holds YouTube
+   trailer ids, so a Radarr id is a TMDB trailer already — that is also why 1,822 of
+   2,104 Arr ids turn out to be the very trailer TMDB lists, and why claiming (item 4)
+   matters so much. Sonarr takes its metadata from TVDB, which holds none.
+
+   The library agrees. Every YOUTUBE_ID_CHANGED event written by a sync belongs to
+   Radarr media — 177 of them, none for Sonarr — and 98% of the ids stored for Sonarr
+   series are exactly the video that was downloaded, against 68% for Radarr. The reason
+   is `update_download_facts`, which writes the downloaded video's id back into
+   `media.youtube_trailer_id` after every successful download.
+
+   Two consequences. First, the migration cannot label these rows at all. Guessing by
+   connection type was still wrong: 1,336 of the 2,462 ids stored for Radarr media are
+   one of that item's own downloads, because `update_download_facts` overwrites the
+   column, and no column tells those apart from an id Radarr gave. Only the Arr knows,
+   and a migration must not ask it — a request to a server that is down would turn an
+   upgrade into a failed start. So every migrated row is a SEARCH row, and the sync,
+   which runs 30 seconds after start and already writes the Arr id, promotes the ones
+   the Arr reports. Verified on the library copy: 2,560 SEARCH rows after the upgrade,
+   and 392 of 400 became ARR rows after one simulated sync, the 8 series staying SEARCH.
+
+   The user-edit heuristic of decision 5 goes with it. Its premise — a stored id that
+   differs from the Arr's was hand-picked — is the same mistake: a differing id is
+   usually Trailarr's own write-back. It would have marked hundreds of rows as the
+   user's choice, which is the one label no automation may touch.
+
+   Second, a series has no ARR candidate at all, so Phase 10's season trailers have no
+   Arr fallback either.
+
+4. **Dropping `include_video_language` broke the language feature outright.** The TMDB
+   reference no longer documents the parameter, so the client left it out and asked for
+   "every video". TMDB's videos endpoint defaults to `language=en-US`, so it answered
+   with English and nothing else: 120 real titles gave 90 with trailers, 100% English,
+   zero in any other language — a number I first read as "TMDB only lists English". The
+   parameter still works. `/movie/603/videos` returns 4 trailers; with
+   `include_video_language=it,de,fr,en,null` it returns 8, including the Italian,
+   German and French ones. The client now builds the value from the languages the
+   enabled profiles ask for, so one call per item serves every profile.
+
+5. **A trailer language is a filter, not a preference, and `Always Search` means what
+   it says.** Both were resolved the wrong way first.
+
+   `Always Search` kept the TMDB list and a video the user chose. It now takes nothing
+   from the table at all, which is what it did before the table existed — it cleared
+   `media.youtube_trailer_id`, the only source there was — and what the documentation
+   has always said about ignoring an id set by hand.
+
+   The language ordered the candidates rather than filtering them, so a profile asking
+   for Italian would download a German trailer when no Italian one existed. That is the
+   pain the feature exists to remove. A named language now filters, and a video whose
+   language nobody recorded — an id from Radarr, an old search result — cannot satisfy
+   it. When nothing matches, Trailarr searches with the profile's own search query and
+   logs the reason, naming the languages it did find.
+
+   The default had to change with it. The field defaulted to `en`, which as a filter
+   would have stopped every existing profile from using Radarr ids. It now defaults to
+   empty, meaning any language, so an upgrade changes nothing and a language means
+   something only when someone chooses it. A user video carries a language too, which
+   is what lets one media item serve an Italian profile and an English one.
+
+6. **W6's "the first source keeps the row" is wrong at scale.** On the real library,
+   1,822 of 2,104 Arr ids are the trailer TMDB lists — Radarr takes its id from TMDB, so
+   agreement is the normal case. Leaving the row with the Arr showed a nameless row and
+   sorted the agreed trailer below TMDB's others. A better source now takes the row and
+   brings its title, language and official flag. USER rows are never taken.
+
+### Not done
+
+- **Season videos** (`/tv/{id}/season/{n}/videos`). The column and the manager take a
+  season; nothing calls it. Phase 10 owns it, as planned.
+- **Season videos beyond the column.** Listed above; Phase 10 owns it.
+- **The `media.youtube_trailer_id` column** still exists and is still written. H9 in the
+  hygiene backlog retires it in Phase 9, as planned.
+- **Release notes are a draft** with a TBD date, and the roadmap row says in progress.

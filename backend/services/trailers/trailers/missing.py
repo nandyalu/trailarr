@@ -11,6 +11,7 @@ problem that is not its own.
 
 import os
 import threading
+from datetime import datetime, timedelta, timezone
 from contextlib import closing
 from dataclasses import dataclass
 
@@ -31,6 +32,7 @@ from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
 from services.satisfaction import evaluate_satisfaction
 from services.trailers import trailer as trailer_downloader
+from services.tmdb.refresh import TMDBRefresher
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils
 from services.files.files_handler import FilesHandler, is_disk_available
@@ -378,6 +380,16 @@ async def download_missing_trailers(
         await _run_preview_pass()
         return
 
+    # One TMDB client for the whole run: it caches the answers, and it
+    # remembers a refused key so that one bad key costs one call and not
+    # one per media item.
+    refresher = TMDBRefresher()
+    if refresher.enabled:
+        logger.info(
+            "Trailarr asks TMDB which videos belong to a media item before"
+            " it searches YouTube."
+        )
+
     # Defensive: no in-flight entries can survive between runs (the registry
     # is process-local and download_trailer cleans up in finally), but a
     # fresh task run must never start with a stale overlay.
@@ -516,6 +528,7 @@ async def download_missing_trailers(
                     profiles_to_process,
                     attempted_downloads,
                     _stop_event=_stop_event,
+                    refresher=refresher,
                 )
                 successful_downloads += downloads
                 skipped_items += skips
@@ -539,6 +552,7 @@ async def _process_single_media_item(
     profiles: list[TrailerProfileRead],
     total_processed: int = 0,
     _stop_event: threading.Event | None = None,
+    refresher: TMDBRefresher | None = None,
 ) -> tuple[int, int, int]:
     """Download trailers for a media item's unsatisfied, backoff-eligible
     profiles. Successes clear the attempt record; hard failures record one.
@@ -555,6 +569,13 @@ async def _process_single_media_item(
     successful_downloads = 0
     skipped_items = 0
     download_attempts = 0
+
+    # Ask TMDB which videos belong to this item before choosing one, so
+    # the resolver has the curated list to pick from. This does nothing
+    # when there is no key, when the item has no TMDB id, or when the
+    # answer is still fresh.
+    if refresher is not None:
+        await refresh_videos_if_stale(media, refresher)
 
     for profile in profiles:
         if _stop_event and _stop_event.is_set():
@@ -592,7 +613,14 @@ async def _process_single_media_item(
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(
-                media.id, profile.id, str(e) or type(e).__name__
+                media.id,
+                profile.id,
+                str(e) or type(e).__name__,
+                # The candidate that this attempt used. `download_trailer`
+                # writes it onto the media object as it resolves, and the
+                # resolver puts it last on the next run so a video that
+                # YouTube no longer has does not block the others.
+                video_id=media.youtube_trailer_id,
             )
             logger.warning(
                 f"Trailarr could not download a trailer for '{media.title}' with"
@@ -619,3 +647,33 @@ async def _process_single_media_item(
     _msg += f", Skipped: {skipped_items}/{_profile_count}"
     logger.info(_msg)
     return successful_downloads, skipped_items, download_attempts
+
+
+# How long an answer from TMDB stays fresh. A curated list changes rarely,
+# and a library of 1,700 titles would otherwise ask TMDB 1,700 times a run.
+VIDEOS_TTL = timedelta(days=7)
+
+
+async def refresh_videos_if_stale(
+    media: MediaRead, refresher: TMDBRefresher
+) -> bool:
+    """Ask TMDB about a media item, if the last answer is old enough.
+
+    Args:
+        media (MediaRead): The media item about to be examined.
+        refresher (TMDBRefresher): The client for this run.
+
+    Returns:
+        bool: True when Trailarr asked TMDB.
+    """
+    if not refresher.enabled:
+        return False
+    last = media.last_videos_refresh
+    if last is not None:
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) - last < VIDEOS_TTL:
+            return False
+    await refresher.refresh_media(media)
+    media_manager.mark_videos_refreshed(media.id)
+    return True

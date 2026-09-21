@@ -23,9 +23,11 @@ Also note that since `v0.10.0`, a download that failed previously is retried wit
 
 
 ## Trailarr downloaded an incorrect trailer for a Movie or Series. How can I fix it?
-Movies: Radarr provides a youtube trailer link for Movies that it gets from TMDB. Trailarr will attempt to download that trailer first, if that fails or not set, Trailarr downloads trailers based on the Movie title and year. If Trailarr downloaded an incorrect trailer, you can manually search on youtube and update the youtube trailer link in Movie details page in Trailarr.
+Open the media details page and look at **Known videos**. The list shows every video Trailarr can download for that item, in the order it tries them: a video you chose, then the trailers that TMDB lists, then the id that Radarr or Sonarr reports, then the result of an earlier YouTube search. Trailarr takes the first one that works — see [Known videos](../user-guide/library/media-details/index.md#known-videos).
 
-Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will search for the Series trailer based on the Series title and year. If Trailarr downloaded an incorrect trailer, you can manually search on youtube and update the youtube trailer link in Series details page in Trailarr.
+To choose a different video, find it on YouTube, paste its link into the field above the list, and click the save button. Your video goes to the top of the list, and Trailarr never removes it. Click **Download** to get it now.
+
+{{ version_badge("upd", "0.13.0") }} Radarr reports a YouTube trailer id, and Trailarr uses it. Sonarr has no such field, because it takes its metadata from TVDB and TVDB holds no YouTube trailer ids, so for a series Trailarr searched YouTube by the title and the year — which is where a wrong trailer usually came from. A [TMDB API key](../user-guide/settings/tmdb.md) changes that the most for series: Trailarr then takes a trailer that TMDB lists instead of searching.
 
 
 !!! info

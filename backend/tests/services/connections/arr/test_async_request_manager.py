@@ -23,7 +23,10 @@ class TestAsyncRequestManager:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("method", ["GET", "POST", "PUT", "DELETE"])
     async def test_async_request(
-        self, method: str, request_manager: AsyncRequestManager, debug_aiohttp_200
+        self,
+        method: str,
+        request_manager: AsyncRequestManager,
+        debug_aiohttp_200,
     ):
         # Now call your method which uses session.request
         response = await request_manager._request(
@@ -65,7 +68,9 @@ class TestAsyncRequestManager:
         method = "GET"
         # Now call your method which uses session.request
         with pytest.raises(Exception) as e:
-            await request_manager._request(method, self.path, self.params, self.data)
+            await request_manager._request(
+                method, self.path, self.params, self.data
+            )
         # Now you can make assertions about the response
         assert e.type == exception_raised
         assert str(e.value) == message
@@ -87,7 +92,9 @@ class TestAsyncRequestManager:
         mock_response = Mock()
         mock_response.status = 200
         mock_response.json.side_effect = Exception
-        mock_response.headers = {"content-type": "application/response; charset=utf-8"}
+        mock_response.headers = {
+            "content-type": "application/response; charset=utf-8"
+        }
         mock_response.text = AsyncMock(return_value="Some Text Response")
 
         # Call the _process_response method
@@ -167,7 +174,9 @@ class TestAsyncRequestManager:
         assert e.type == ConnectionError
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("status", [400, 401, 403, 404, 405, 500, 502, 503])
+    @pytest.mark.parametrize(
+        "status", [400, 401, 403, 404, 405, 500, 502, 503]
+    )
     async def test_error_message_never_holds_the_api_key(
         self, request_manager: AsyncRequestManager, status
     ):
@@ -192,7 +201,9 @@ class TestAsyncRequestManager:
         # Mock the response object
         mock_response = Mock()
         mock_response.status = 500
-        mock_response.json = AsyncMock(return_value={"message": "Some Error Text"})
+        mock_response.json = AsyncMock(
+            return_value={"message": "Some Error Text"}
+        )
 
         # Call the _process_response method
         with pytest.raises(Exception) as e:

@@ -60,7 +60,9 @@ def pick_profile_for_download(
     Returns:
         int: Id of the highest-priority matching profile that doesn't already
             own a download, or 0 if no matching profile is available."""
-    matching = find_matching_profiles(media, profiles, ignore_state_filters=True)
+    matching = find_matching_profiles(
+        media, profiles, ignore_state_filters=True
+    )
     for profile in matching:
         if profile.id not in used_profile_ids:
             return profile.id

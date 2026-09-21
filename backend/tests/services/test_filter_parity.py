@@ -90,9 +90,7 @@ def _build_filter(case: dict) -> FilterRead:
     )
 
 
-@pytest.mark.parametrize(
-    "case", FIXTURE["cases"], ids=lambda c: c["name"]
-)
+@pytest.mark.parametrize("case", FIXTURE["cases"], ids=lambda c: c["name"])
 def test_filter_parity_case(case: dict):
     """Each shared case evaluates to its expected result."""
     media = _build_media(FIXTURE["media"][case["media"]])

@@ -29,12 +29,29 @@ async def api_refresh(_stop_event: threading.Event | None = None) -> None:
         logger.warning("There are no connections to refresh.")
         return
 
-    # Refresh data from API for each connection
+    # Refresh data from API for each connection. One connection that cannot
+    # be reached must cost only itself: without this guard, a server that is
+    # down stops the refresh for every connection after it in the list, and
+    # the image refresh below never runs at all.
+    failed: list[str] = []
     for connection in connections:
         if _stop_event and _stop_event.is_set():
             logger.info("Trailarr stopped the refresh. A stop was requested.")
             return
-        await api_refresh_by_id(connection, image_refresh=False)
+        try:
+            await api_refresh_by_id(connection, image_refresh=False)
+        except Exception:
+            failed.append(connection.name)
+            logger.exception(
+                f"Trailarr could not refresh the data from '{connection.name}'."
+                " It continues with the other connections."
+            )
+
+    if failed:
+        logger.warning(
+            f"Trailarr could not refresh {len(failed)} of"
+            f" {len(connections)} connections: {', '.join(failed)}."
+        )
 
     # Refresh images after API refresh to download/update images for new media
     if _stop_event and _stop_event.is_set():
@@ -72,7 +89,6 @@ async def api_refresh_by_id(
     if image_refresh:
         await refresh_images(recent_only=True, _stop_event=_stop_event)
         logger.info("Trailarr refreshed the images.")
-        logger.info("Trailarr refreshed the data from every connection.")
 
 
 @with_logging_context
