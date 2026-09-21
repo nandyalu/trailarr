@@ -1,8 +1,9 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
 **Status:** Milestones A+B DONE — shipped in v0.11.4. **C DONE** (Sep 11, 2026, branch
-`feat/phase8-tmdb`, ships with v0.13.0); D not started · **Releases:** incremental —
-C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
+`feat/phase8-tmdb`, ships with v0.13.0). **E1 DONE** (Sep 20, 2026, ships with v0.13.0);
+D and E2 not started · **Releases:** incremental — C and E1 ship in v0.13.0, D anytime,
+E2 with or after D · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 **C execution notes (Sep 11, 2026):**
@@ -255,6 +256,94 @@ secrets/API keys/URLs masked, cookies excluded), health-check results, app/OS/ve
 last ~500 log lines, DB shape stats (row counts only — no titles/paths unless the user
 ticks "include library details"). Issue templates updated to request the bundle.
 
+## Milestone E — Backups & restore (retention fix now, UI with or after D)
+
+Raised by [#681](https://github.com/nandyalu/trailarr/issues/681): a user found 1.5 GB of
+database backups. Trailarr keeps the newest 30 and nothing else, so a 45 MB database
+bounds at 1.35 GB — the cap exists but it does not bound disk. Backups are also silent
+(startup logs only), have no UI, no settings and no API, and yet `version_guard.py`
+already tells a user to restore from them after a downgrade. They are load-bearing
+recovery with no controls, which is why this is a milestone rather than a fix.
+
+**The same policy is implemented four times today. All four move together:**
+
+| Path | Location | Today |
+|---|---|---|
+| Docker | `scripts/start.sh:13-29` | copy, keep 30, auto-restore if `alembic upgrade` fails |
+| Direct install | `scripts/start/start.py:238-257` | same policy, hardcoded `backups[30:]` |
+| CLI update | `scripts/cli/trailarr_cli.py:404` | `backups/update_<tag>/` — **no cap at all** |
+| Dev launcher | `scripts/launch.py:33-43` | same 30 |
+
+### Stage E1 — bound the disk — DONE (ships in v0.13.0)
+
+**Defaults: keep 10 backups, 30 days** (KR, Sep 20 2026), overridable with
+`BACKUP_KEEP_COUNT` / `BACKUP_KEEP_DAYS`. Both limits apply together: the count bounds a
+frequent restarter, the age removes the stale files of a rare one. Neither alone does
+both, which is why 30-by-count let a 45 MB database reach 1.35 GB.
+
+**The four implementations became one.** Rather than write the new rule twice more,
+`scripts/backup_retention.py` holds it; `start.sh` runs it as a command, and the other
+three import `prune_backups`. Stdlib only, no `backend/` imports — it runs before the
+app and before the venv is certain. This also brought the uncapped `update_<tag>/`
+directories under the same policy; they counted as entries, not a separate family.
+
+Execution notes, against what this plan predicted:
+
+1. **The `.env` load order was the real trap, as written.** `start.sh` loaded
+   `APP_DATA_DIR/.env` at line 47, after the backup at 13-29, so a stored retention
+   setting would have been read too late to do anything in Docker. The load moved above
+   the backup block. Side effect worth knowing: `alembic upgrade` now inherits `.env`
+   through the shell as well. Precedence is unchanged — `load_env_file` and
+   `load_dotenv(override=False)` both keep an already-set variable — so the values are
+   the same either way.
+2. **Drift is now structural, not a test promise.** `test_backup_retention.py` still
+   asserts every path calls the shared module and that none of the four old spellings
+   (`backups[30:]`, `tail -n +31`, `-gt 30`) comes back, plus the load order and the
+   fact that a retention failure cannot stop the container.
+3. **Verified by running it**, not only by the suite: the Docker shell fragment against
+   a seeded folder of 41 entries (12 fresh, 28 stale, one 300-day update dir) left
+   exactly the 10 newest; `start.py:_backup_database` ran for real against a seeded data
+   dir; the CLI and launcher import blocks resolve.
+
+Left for E2, deliberately: the total-size cap. Count plus age bounds the folder for
+every real library, and a size cap is a setting with no UI to set it in.
+
+### Stage E2 — Backups card on the Health page (with or after D)
+
+Same surface as Milestone B, same principle — the app tells you about itself. Lists
+backups with sizes and a folder total, exposes retention settings, and offers Back up
+now, download, delete, and restore.
+
+Two decisions settled up front:
+
+- **"Back up now" cannot be `shutil.copy2`.** The startup copy is safe only because the
+  app has not started yet. A backup taken while the app is running must use `VACUUM INTO`
+  or the `sqlite3` backup API, or it ships a database missing its WAL.
+- **Restore requires a restart, and the plan says so rather than pretending otherwise.**
+  The app stages the chosen backup with a marker file and `start.sh` swaps it in on the
+  next boot. Docker users restart the container; the CLI can do it directly. No in-app
+  hot restore — a running app holds the database open.
+
+### Wargame (E)
+
+- E1. A library whose database is 200 MB: the count cap alone allows 6 GB. The size cap
+  has to win over the count cap, and the message has to say which one deleted what.
+- E2. Retention set to 1 while the migration-failure restore path depends on the backup
+  taken moments earlier — that backup is the current run's, never a retention candidate.
+- E3. Restore of a backup from an older schema: the app boots, Alembic migrates it
+  forward. Restore of a NEWER one hits the `version_guard.py` downgrade guard, which is
+  the correct refusal — verify the message names the backups folder.
+- E4. Backups folder on a full or read-only disk: the app starts anyway and reports it.
+  A failed backup must never block boot, but it must not be silent either.
+- E5. A user deletes the backups folder while the app runs; "Back up now" recreates it.
+
+### Docs to update (E)
+
+New backups section under `docs/user-guide/settings/` (with the Health page docs):
+what is backed up and when, the retention settings, restore-needs-a-restart, and where
+the files live. `docs/troubleshooting/` gains the restore walkthrough that
+`version_guard.py`'s downgrade message currently points at with no page behind it.
+
 ## Pitfalls (track-wide)
 
 - Doctor/health code lives in `services/diagnostics/` (post-reorg) — if Milestone A/B
@@ -303,3 +392,6 @@ configurable in UI. Verified end-to-end on a running app.
 C: fresh scratch install → working, previewed, downloads-enabled library without
 touching docs. D: bundle attached to a test issue contains zero secrets (grep-verified
 in a test).
+E1: the backups folder cannot grow past the configured size on any of the four paths,
+proven against a copy of the real library rather than a fixture. E2: a user can see what
+backups exist, take one, and restore one without a shell.

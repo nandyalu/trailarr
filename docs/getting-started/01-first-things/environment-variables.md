@@ -135,6 +135,26 @@ To change the password, go to `Settings > About > Password` in web interface.
     Once you change your password, don't forget to remove the `WEBUI_PASSWORD` environment variable from the docker-compose file.
 
 
+### `BACKUP_KEEP_COUNT` and `BACKUP_KEEP_DAYS`
+
+{{ version_badge("add", "0.13.0") }}
+
+- Defaults: `10` backups, and `30` days.
+
+Trailarr copies the database into the `backups` folder of your data directory every time it starts, before it runs the migrations. These two variables say how many copies it keeps.
+
+Both limits apply. Trailarr keeps the newest `BACKUP_KEEP_COUNT` backups, and deletes a backup that is older than `BACKUP_KEEP_DAYS` days. The count limit is the one that bounds the folder if you restart often. The age limit removes the old files if you restart rarely.
+
+```yaml
+    environment:
+        - BACKUP_KEEP_COUNT=10
+        - BACKUP_KEEP_DAYS=30
+```
+
+The backup that the current start makes is never deleted, because Trailarr restores it if the migrations fail. A value below `1` is read as `1` for the same reason.
+
+The limits also apply to the `update_<version>` folders that the `trailarr update` command makes on a direct installation.
+
 ### `FILES_FULL_SCAN`
 
 {{ version_badge("add", "0.9.1") }}
