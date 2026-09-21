@@ -3561,9 +3561,15 @@
 <li>
 <p><strong>A new installation gets a setup guide</strong> — the first time you open the web page, Trailarr walks you through what it does, your first connection, the optional TMDB API key, and what the first run would download — then you decide when downloads start. Every step can be skipped, and an installation that already has a connection or any media never sees it.</p>
 </li>
+<li>
+<p><strong>The filter button counts what it found</strong> — the button now reads <code>2789 / 3746</code>: how many items the filter matched, and how many the page can show. On the <code>Home</code> page this is how much of your library has a trailer. On the <code>Movies</code> and <code>Series</code> pages, select <code>Downloaded</code> or <code>Missing</code> to see the same count for that type — see <a href="../../user-guide/library/#filtering">Filtering</a>.</p>
+</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
+<li>
+<p><strong>Old database backups are deleted</strong> — Trailarr copies the database at every start, and kept the newest 30 copies. That limits a count, not a disk: one user found 1.5 GB of backups. Trailarr now keeps 10 backups and deletes any backup more than 30 days old. Set <code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code> to change the limits — see <a href="../../getting-started/01-first-things/environment-variables/#backup_keep_count-and-backup_keep_days">Environment variables</a>. The copy from the current start is never deleted, and the <code>update_&lt;version&gt;</code> folders of a direct installation now obey the same limits.</p>
+</li>
 <li>
 <p><strong>The Health page tells you about the TMDB key</strong> — the page lists the key with the rest of your setup, says what Trailarr does without one, and links to the page that says how to get one. It stays grey while no key is set: a key is optional, so the page does not report an issue for it — see <a href="../../user-guide/settings/health/#the-checks">Health</a>.</p>
 </li>

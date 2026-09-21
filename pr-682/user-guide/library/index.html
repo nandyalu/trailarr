@@ -3032,6 +3032,12 @@ When any downloads are not linked to a profile, the media pages show a banner ("
 <li>Series: Series only</li>
 </ul>
 <p>Custom filters are also supported here!</p>
+<div class="admonition info">
+<p class="admonition-title">The filter button counts the view</p>
+<p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-tbd">v0.13.0</a>
+The filter button reads <code>2789 / 3746</code>. The first number is how many media items the filter matched. The second number is how many the page can show: every media item on the <code>Home</code> page, every movie on the <code>Movies</code> page, and every series on the <code>Series</code> page.</p>
+<p>On the <code>Home</code> page the count tells you how much of your library has a trailer, because that page shows only media with a downloaded video. On the <code>Movies</code> and <code>Series</code> pages, select <code>Downloaded</code> or <code>Missing</code> to get the same count for that type. A media item counts as done when it has at least one downloaded video, whatever the profile asked for. Custom filters get a count too.</p>
+</div>
 <div class="admonition success">
 <p>When you make a selection for a <code>sort</code> or <code>filter</code> option, browser will remember and apply that next time.</p>
 </div>

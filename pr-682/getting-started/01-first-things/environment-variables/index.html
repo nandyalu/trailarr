@@ -759,6 +759,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#backup_keep_count-and-backup_keep_days" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#files_full_scan" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2944,6 +2955,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#backup_keep_count-and-backup_keep_days" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#files_full_scan" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3194,6 +3216,19 @@ A value that is not empty becomes your new password. Trailarr hashes it at start
 <p class="admonition-title">Warning</p>
 <p>Once you change your password, don't forget to remove the <code>WEBUI_PASSWORD</code> environment variable from the docker-compose file.</p>
 </div>
+<h3 id="backup_keep_count-and-backup_keep_days"><code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code></h3>
+<p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-tbd">v0.13.0</a></p>
+<ul>
+<li>Defaults: <code>10</code> backups, and <code>30</code> days.</li>
+</ul>
+<p>Trailarr copies the database into the <code>backups</code> folder of your data directory every time it starts, before it runs the migrations. These two variables say how many copies it keeps.</p>
+<p>Both limits apply. Trailarr keeps the newest <code>BACKUP_KEEP_COUNT</code> backups, and deletes a backup that is older than <code>BACKUP_KEEP_DAYS</code> days. The count limit is the one that bounds the folder if you restart often. The age limit removes the old files if you restart rarely.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BACKUP_KEEP_COUNT=10</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BACKUP_KEEP_DAYS=30</span>
+</span></code></pre></div>
+<p>The backup that the current start makes is never deleted, because Trailarr restores it if the migrations fail. A value below <code>1</code> is read as <code>1</code> for the same reason.</p>
+<p>The limits also apply to the <code>update_&lt;version&gt;</code> folders that the <code>trailarr update</code> command makes on a direct installation.</p>
 <h3 id="files_full_scan"><code>FILES_FULL_SCAN</code></h3>
 <p><span class="twemoji golden" title="Added in v0.9.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v091-beta-may-04-2026">v0.9.1</a></p>
 <ul>
@@ -3201,19 +3236,19 @@ A value that is not empty becomes your new password. Trailarr hashes it at start
 </ul>
 <p>When set to <code>true</code>, the next <strong>Scan Media Folders</strong> task run will scan every media folder in full, ignoring the folder-change optimisation that normally skips unchanged folders. Useful for correcting stale download records or <code>media_exists</code> flags after trailers are added or removed outside of Trailarr.</p>
 <p>The value is <strong>automatically reset to <code>false</code></strong> once the full scan finishes — you do not need to remove it manually.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FILES_FULL_SCAN=true</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FILES_FULL_SCAN=true</span>
 </span></code></pre></div>
 <p>This setting can also be toggled from the web interface under <strong>Settings &gt; General &gt; Files &gt; Force Full Files Scan</strong>.</p>
 <h3 id="example">Example</h3>
 <p>Here is an example of setting the environment variables:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TZ=America/Los_Angeles</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUID=1000</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PGID=1000</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP_DATA_DIR=/data/trailarr</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/appdata/trailarr:/data/trailarr</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TZ=America/Los_Angeles</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUID=1000</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PGID=1000</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP_DATA_DIR=/data/trailarr</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/appdata/trailarr:/data/trailarr</span>
 </span></code></pre></div>
 <p>This sets the environment variables to run the app with following settings:</p>
 <ul>
