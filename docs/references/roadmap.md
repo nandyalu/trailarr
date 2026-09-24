@@ -28,7 +28,7 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | **v0.11.0** | August 9, 2026 ✅ | Phase 5 — Cleanup of legacy fields |
 | **v0.11.3** | August 21, 2026 ✅ | Phase 6 — Filter by downloads & files |
 | **v0.12.0** | September 10, 2026 ✅ | Phase 7 — Internal reorganization for long-term maintainability |
-| **v0.13.0** | November 2026 | Phase 8 — TMDB integration ✅ |
+| **v0.13.0** | September 24, 2026 ✅ | Phase 8 — TMDB integration |
 | **v0.14.0** | December 2026 – January 2027 | Phase 9 — Video types |
 | **v0.15.0** | February 2027 | Phase 10 — Movie/Series profiles + season trailers |
 | **v1.0.0** | March 2027 | Phase 11 — Issues section + stabilization |
@@ -68,7 +68,7 @@ With nothing depending on them anymore, the legacy `trailer_exists` and stored-s
 
 *What you'll notice:* very little — this is the payoff release where the old failure modes become impossible.
 
-### Phase 6 — Filter by downloads & files — `v0.11.3`
+### Phase 6 — Filter by downloads & files — `v0.11.3` ✅
 
 Custom view filters gain a whole new family of fields: filter your library by download
 count, download resolution, owning profile, download dates, files present, and more.
@@ -77,7 +77,7 @@ whose only trailer is below 1080p"* or *"has a deleted trailer file"*. (Profile 
 deliberately don't get these fields — a profile filtering on its own output would be
 circular.)
 
-### Phase 7 — Internal reorganization — `v0.12.0`
+### Phase 7 — Internal reorganization — `v0.12.0` ✅
 
 No new features on purpose: the backend is restructured into clean layers (API,
 services, database, task scheduling) so the remaining phases — and years of maintenance
@@ -85,7 +85,7 @@ after v1.0.0 — build on a foundation that's easy to reason about. Everything i
 to behave byte-for-byte identically. If you notice *anything* different after this
 release, that's a bug — please report it.
 
-### Phase 8 — TMDB integration — `v0.13.0`
+### Phase 8 — TMDB integration — `v0.13.0` ✅
 
 Add your own **TMDB API key** and Trailarr resolves trailers from TMDB's curated video lists (with your preferred language, set per profile) before falling back to YouTube search. Radarr/Sonarr-provided IDs and manual selections all feed one per-media list of known videos, refreshed periodically.
 
@@ -124,7 +124,7 @@ YouTube cookies). So a **Setup & Health track** runs alongside the phases:
   space. When a download fails because YouTube wants a sign-in, Trailarr will say so —
   and link the fix — instead of burying a stack trace in the logs. See
   [Health](../user-guide/settings/health.md).
-- **Guided setup** *(~v0.13.x)* — a first-run wizard: add a connection (doctor runs
+- **Guided setup** — `v0.13.0` ✅ — a first-run wizard: add a connection (doctor runs
   inline), confirm sensible defaults, run the first sync, **preview** what would be
   downloaded, then enable downloads. Ten minutes from install to a working library,
   without reading a single docs page.

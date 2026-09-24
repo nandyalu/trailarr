@@ -1,9 +1,10 @@
 # Phase 8 — TMDB Integration
 
-**Status:** IN PROGRESS (Sep 11, 2026, branch `feat/phase8-tmdb`) — the backbone is
-built, tested and verified against the live TMDB API and a copy of the 3,704-title
-library. See "Where this phase stands" at the end of this file. · **Release:** v0.13.0,
-target Nov 2026 · **Depends on:** Phase 7 (shipped in v0.12.0)
+**Status:** DONE — shipped in v0.13.0 on Sep 24, 2026 (PR #682), about six weeks ahead
+of the Nov 2026 target. It closed [#511](https://github.com/nandyalu/trailarr/issues/511)
+("Use trailers from TMDB"). Baking ~3–4 weeks before Phase 9 starts. "Where this phase
+stands" at the end of this file records what was built and what moved to later phases. ·
+**Release:** v0.13.0 · **Depends on:** Phase 7 (shipped in v0.12.0)
 
 ## Objective
 
@@ -270,4 +271,6 @@ Branch `feat/phase8-tmdb`, 11 commits. 1734 backend tests and 138 frontend tests
 - **Season videos beyond the column.** Listed above; Phase 10 owns it.
 - **The `media.youtube_trailer_id` column** still exists and is still written. H9 in the
   hygiene backlog retires it in Phase 9, as planned.
-- **Release notes are a draft** with a TBD date, and the roadmap row says in progress.
+- ~~Release notes are a draft with a TBD date, and the roadmap row says in progress.~~
+  Resolved: v0.13.0 shipped on Sep 24, 2026 with dated notes, and the roadmap row is
+  ticked.
