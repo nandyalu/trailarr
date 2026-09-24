@@ -894,7 +894,12 @@ async def batch_update_media(update: BatchUpdate) -> None:
             msg = media_service.set_monitoring_bulk(update.media_ids, False)
         elif update.action == "delete":
             for media_id in update.media_ids:
-                await _delete_trailer_and_report(media_id)
+                try:
+                    await _delete_trailer_and_report(media_id)
+                except HTTPException:
+                    # The helper already told the user about this item.
+                    # Go on with the next item.
+                    continue
         elif update.action == "download":
             if not update.profile_id or update.profile_id <= 0:
                 msg = "No trailer profile ID provided!"
