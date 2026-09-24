@@ -64,7 +64,7 @@ Standard checklist, in addition to each phase's listed pages:
 - The startup pass ("Attribute Trailer Downloads") fires at +60s; disk scan at +480s;
   download task at +900s. Time your verification windows accordingly.
 
-## Release ladder (estimates as of August 11, 2026)
+## Release ladder (estimates as of September 24, 2026)
 
 | Release | Phase | Content | Target | Bake before next |
 |---|---|---|---|---|
@@ -79,10 +79,10 @@ Standard checklist, in addition to each phase's listed pages:
 | v0.11.5 | — | Faster missing-trailer scans (`fix-missing-trailer-scan.md`) + Windows install fixes | ✅ shipped Sep 3, 2026 | — |
 | v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | ✅ shipped Sep 10, 2026 | ✅ done |
 | v0.12.1 | — | Refresh tasks, health checks, calmer notifications (H22) | ✅ shipped Sep 12, 2026 | — |
-| v0.13.0 | 8 | TMDB integration (media-videos candidates table) + onboarding C + filter counts (#618) + backup retention (E1, #681) | ✅ shipped Sep 24, 2026 | ~3–4 weeks |
-| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | Dec 2026 – Jan 2027 | ~3 weeks |
-| v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | Feb 2027 | ~4 weeks |
-| v1.0.0 | 11 | Issues section + delight items + stabilization | Mar 2027 | — |
+| v0.13.0 | 8 | TMDB integration (media-videos candidates table) + onboarding C + filter counts (#618) + backup retention (E1, #681) | ✅ shipped Sep 24, 2026 | ~4 weeks |
+| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | ~Oct 22, 2026 | ~4 weeks |
+| v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | ~Nov 19, 2026 | ~3 weeks |
+| v1.0.0 | 11 | Issues section + delight items + stabilization | ~Dec 10, 2026 | — |
 
 **Patch releases do not carry phases.** v0.11.1 and v0.11.2 are fix-only releases that
 came out of real-library bug reports, so Phase 6 moved from v0.11.1 to v0.11.3. Expect
@@ -98,10 +98,24 @@ buffer for the December slowdown (Phase 9 spans Dec–Jan) rather than being spe
 
 **Status update (Sep 24, 2026):** Phase 7 shipped about a month ahead of its Oct target
 (v0.12.0, Sep 10), and Phase 8 shipped about six weeks ahead of its Nov target (v0.13.0,
-Sep 24). The Phase 9–11 targets above are still the Aug 11 estimates. They have not been
-re-dated. The gain is not yet spent — deciding whether to pull those targets in, or hold
-the gain as buffer as on Aug 11, is the maintainer's call. Phase 8's ~3–4 week bake starts
-now, so Phase 9 work should not start before mid-October.
+Sep 24).
+
+**Re-dated (Sep 24, 2026):** the maintainer pulled Phases 9–11 in. Each phase release
+now comes 3–4 weeks after the one before it. The size of the phase sets the gap:
+
+- **Phase 9 — 4 weeks (~Oct 22).** A medium phase, but the Sep 24 refresh added work
+  (fixtures, wargame W6, open decisions). Phase 8 also needs its full ~3–4 week bake.
+- **Phase 10 — 4 weeks (~Nov 19).** The largest phase, and the one release with a
+  breaking change.
+- **Phase 11 — 3 weeks (~Dec 10).** Its feeds are computed from data that already
+  exists. It needs no large schema change. It ships before the December slowdown.
+
+v1.0.0 moves from Mar 2027 to Dec 2026. The Aug 11 buffer for December is spent.
+
+**The bake is the time before the next phase ships, not before work on it starts.** Work
+on the next phase continues on `dev` while the last release bakes, as Phase 8 did while
+Phase 7 baked. Bug reports from the bake go into patch releases first. A phase that finds
+a release blocker in the bake moves its date. The gap never shrinks to make a date.
 
 **Parallel tracks alongside the phases:** Onboarding & Diagnostics
 (`track-onboarding-diagnostics.md`) and Media Tags (`track-tags.md`). Neither displaces a
@@ -116,8 +130,11 @@ shipped with Phase 3 (v0.10.2).
 
 Rules of the ladder:
 
-- **Additive migrations only until Phase 5**; Phase 5 is the single destructive-migration
-  release; Phase 7 is the single big-churn (zero-behavior-change) release.
+- **Additive migrations only until Phase 5**; Phase 5 is the first destructive-migration
+  release; Phase 7 is the single big-churn (zero-behavior-change) release. Phase 9 is
+  the second destructive release: it drops `media.youtube_trailer_id` (hygiene H9,
+  maintainer decision Sep 24, 2026). It follows the Phase 5 pattern: backfill first,
+  migrate saved filters, log every filter it rewrites or deletes, then drop.
 - Every phase defaults to current behavior (no key → old search; new columns defaulted;
   new options off) — users never *need* to act to stay working.
 - Phases 8–11 plans reference **post-reorg paths** (`services/…`, `database/…`). If the

@@ -62,7 +62,8 @@ none justify their own release. Check items off with the release that shipped th
   files-scan → wired and removed in Phase 11.
 - [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
-  candidate).
+  candidate). Scheduled: Phase 9 decision 9 drops the column (maintainer decision, Sep
+  24, 2026). The steps are in `phase-09-video-types.md`.
 - [x] **H11 — Release-fixture gauntlet caught up** — DONE (ships in v0.11.2): the
   ladder's rule-4 fixtures were missing for v0.11.0 and v0.11.1. Added
   `v0_11_0_columns_dropped.sql` (post-destructive-migration schema, migrated
@@ -111,8 +112,11 @@ none justify their own release. Check items off with the release that shipped th
   risk of a new wrong link is small; the remaining question is only what the fallback
   still earns.
 
-- [ ] **H15 — a failing batch delete tells the user twice.** `batch_update_media` with
-  the delete action calls the same code the delete endpoint uses, which broadcasts
+- [x] **H15 — a failing batch delete tells the user twice.** — DONE (ships in v0.13.1):
+  the batch loop catches the `HTTPException` of each item and goes on. One message per
+  item, and a failed item no longer stops the batch (`tests/api/test_batch_update.py`).
+
+  The original report: `batch_update_media` with the delete action calls the same code the delete endpoint uses, which broadcasts
   "Error deleting trailer!" on a failure. The batch handler then catches the same
   exception and broadcasts "Error updating Media!". The user sees both.
 
@@ -127,8 +131,12 @@ none justify their own release. Check items off with the release that shipped th
   Not urgent: what is left is closer to "parse, call, return" than the rest was. Do it
   when Phase 9 or 10 touches this router anyway.
 
-- [ ] **H17 — a register of strings that are contract, not prose.** Phase 7 rewrote
-  every log message, and three sets of strings had to be left alone because something
+- [x] **H17 — a register of strings that are contract, not prose.** — DONE (ships in
+  v0.13.1): `tests/test_contract_strings.py` checks that both sides still hold the
+  `Output::` markers, and that no message our download code raises matches a yt-dlp
+  signature. The register below stays as the record.
+
+  Phase 7 rewrote every log message, and three sets of strings had to be left alone because something
   reads them. They are recorded here so the next prose pass does not have to rediscover
   them, and so nobody "improves" one:
 
@@ -144,8 +152,8 @@ none justify their own release. Check items off with the release that shipped th
 
   Worth turning into a test that asserts each string still exists.
 
-- [ ] **H18 — dead code with an expired removal note.** `database/engine.py` carries a
-  commented-out `manage_session` decorator under "Remove in v0.8.0!". The version is
+- [x] **H18 — dead code with an expired removal note.** — DONE (ships in v0.13.1).
+  `database/engine.py` carried a commented-out `manage_session` decorator under "Remove in v0.8.0!". The version is
   v0.12.0. Nothing references it. Delete it.
 
 - [ ] **H19 — a service cannot schedule a task.** `_schedule_refresh` stayed in
@@ -209,8 +217,11 @@ none justify their own release. Check items off with the release that shipped th
   `apply_doctor_mapping` report a connection problem inside the report they return
   rather than raising, so their safe path is a missing connection.
 
-- [ ] **H23 — `_request` throws away the message that `_process_response` chose.**
-  `services/connections/arr/request_manager.py` calls `_process_response` inside the
+- [x] **H23 — `_request` throws away the message that `_process_response` chose.** —
+  DONE (ships in v0.13.1): the three exceptions pass through before the broad `except`.
+  Checked in the real app against a server that answers 401 and 403.
+
+  The original report: `services/connections/arr/request_manager.py` calls `_process_response` inside the
   `async with session.request(...)` block, and the enclosing `except Exception` then
   replaces whatever it raised with `"Unable to connect to API. Check your connection."`
 

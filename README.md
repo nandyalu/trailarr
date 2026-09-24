@@ -106,7 +106,7 @@ There are some changes that are planned for the future. These changes are not gu
 - [x] Add Support for Hardware Acceleration using VAAPI (Intel and AMD)
 - [x] Add Event tracking similar to History in Radarr/Sonarr
 - [x] Add Discord notifications for important events
-- [ ] Use TMDB API for finding trailers as an option - planned for v0.12.0 (Oct-Nov 2026)
+- [x] Use TMDB API for finding trailers as an option
 
 
 If you have any suggestions or ideas for new features, please feel free to reach out on [Discord](https://discord.gg/KKPr5kQEzQ). We are always looking for ways to improve the project.
