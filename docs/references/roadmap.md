@@ -29,9 +29,9 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | **v0.11.3** | August 21, 2026 ✅ | Phase 6 — Filter by downloads & files |
 | **v0.12.0** | September 10, 2026 ✅ | Phase 7 — Internal reorganization for long-term maintainability |
 | **v0.13.0** | September 24, 2026 ✅ | Phase 8 — TMDB integration |
-| **v0.14.0** | December 2026 – January 2027 | Phase 9 — Video types |
-| **v0.15.0** | February 2027 | Phase 10 — Movie/Series profiles + season trailers |
-| **v1.0.0** | March 2027 | Phase 11 — Issues section + stabilization |
+| **v0.14.0** | October 2026 | Phase 9 — Video types |
+| **v0.15.0** | November 2026 | Phase 10 — Movie/Series profiles + season trailers |
+| **v1.0.0** | December 2026 | Phase 11 — Issues section + stabilization |
 
 !!! note "Fix releases in between"
     Phase releases are not the only releases. `v0.11.1` and `v0.11.2` are fix-only releases with no phase in them, which is why Phase 6 targets `v0.11.3`. Bug fixes always come out when they are ready, and a pending phase moves to the next free version instead of waiting.
