@@ -95,6 +95,16 @@ class _TrailerProfileBase(AppSQLModel):
     )
     subtitles_format: str = "srt"
     subtitles_language: str = "en"
+    # Video settings from TMDB
+    # Which language of trailer to download. Empty means any language,
+    # which is what every profile did before this field existed, and it is
+    # the default. A language here is a filter and not a preference: a
+    # profile that asks for Italian gets an Italian trailer or a search,
+    # never a German one.
+    language: str = Field(
+        default="",
+        sa_column=Column(String, server_default="", nullable=False),
+    )
     # General settings
     search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60

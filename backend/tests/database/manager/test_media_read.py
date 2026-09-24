@@ -64,10 +64,12 @@ class TestReadByFolderPath:
         # Embed connection ID in paths so each test fixture has unique paths
         self.movie_path = f"/media/movies/Movie{cid} (2020)"
         self.show_path = f"/media/tv/Show{cid}"
-        result = media_manager.create_or_update_bulk([
-            _make_media(cid, f"tt000{cid}1", self.movie_path),
-            _make_media(cid, f"tt000{cid}2", self.show_path),
-        ])
+        result = media_manager.create_or_update_bulk(
+            [
+                _make_media(cid, f"tt000{cid}1", self.movie_path),
+                _make_media(cid, f"tt000{cid}2", self.show_path),
+            ]
+        )
         self.movie, _, _, _ = result[0]
         self.show, _, _, _ = result[1]
 
@@ -79,7 +81,9 @@ class TestReadByFolderPath:
 
     def test_prefix_match_finds_parent_path(self):
         """Stage 2: Plex gives season subfolder; DB has show root — prefix match."""
-        found = media_manager.read_by_folder_path(f"{self.show_path}/Season 01")
+        found = media_manager.read_by_folder_path(
+            f"{self.show_path}/Season 01"
+        )
         assert found is not None
         assert found.id == self.show.id
 
@@ -93,7 +97,9 @@ class TestReadByFolderPath:
 
     def test_returns_none_when_no_match(self):
         """Returns None when no exact or prefix match exists."""
-        found = media_manager.read_by_folder_path("/media/movies/DoesNotExistXYZ")
+        found = media_manager.read_by_folder_path(
+            "/media/movies/DoesNotExistXYZ"
+        )
         assert found is None
 
     def test_exact_match_takes_priority_over_prefix(self):
@@ -119,7 +125,9 @@ class TestReadByFolderPath:
         media_manager.create_or_update_bulk([empty_mc])
 
         # Look up a real path — should not match the empty-path row
-        found = media_manager.read_by_folder_path(f"/media/movies/Movie{cid}X (2021)")
+        found = media_manager.read_by_folder_path(
+            f"/media/movies/Movie{cid}X (2021)"
+        )
         assert found is None
 
     def test_stage2_backslash_separator(self):
@@ -138,11 +146,15 @@ class TestReadByFolderPath:
         """Stage 2 normalises trailing slashes before comparing (rstrip)."""
         cid = self.conn.id
         # Store path WITH trailing slash
-        trailing_mc = _make_media(cid, f"tt_trail_{cid}", folder_path=f"/media/tv/Trail{cid}/")
+        trailing_mc = _make_media(
+            cid, f"tt_trail_{cid}", folder_path=f"/media/tv/Trail{cid}/"
+        )
         media_manager.create_or_update_bulk([trailing_mc])
 
         # Child path with forward slash should still match
-        found = media_manager.read_by_folder_path(f"/media/tv/Trail{cid}/Season 2")
+        found = media_manager.read_by_folder_path(
+            f"/media/tv/Trail{cid}/Season 2"
+        )
         assert found is not None
         assert found.txdb_id == f"tt_trail_{cid}"
 
@@ -156,9 +168,13 @@ class TestReadArrLinkedToPlexConnection:
         self.plex_conn = _make_connection("Plex", ArrType.PLEX)
 
         # Arr-sourced row linked to Plex via folder matching
-        result = media_manager.create_or_update_bulk([
-            _make_media(self.radarr_conn.id, "tt1111111", "/media/movies/Linked"),
-        ])
+        result = media_manager.create_or_update_bulk(
+            [
+                _make_media(
+                    self.radarr_conn.id, "tt1111111", "/media/movies/Linked"
+                ),
+            ]
+        )
         self.arr_media, _, _, _ = result[0]
         media_manager.update_plex_fields(
             media_id=self.arr_media.id,
@@ -168,9 +184,13 @@ class TestReadArrLinkedToPlexConnection:
         )
 
         # Plex-only row (connection_id == plex_connection_id)
-        result2 = media_manager.create_or_update_bulk([
-            _make_media(self.plex_conn.id, "tt2222222", "/media/movies/PlexOnly"),
-        ])
+        result2 = media_manager.create_or_update_bulk(
+            [
+                _make_media(
+                    self.plex_conn.id, "tt2222222", "/media/movies/PlexOnly"
+                ),
+            ]
+        )
         self.plex_only, _, _, _ = result2[0]
         media_manager.update_plex_fields(
             media_id=self.plex_only.id,
@@ -181,13 +201,17 @@ class TestReadArrLinkedToPlexConnection:
 
     def test_returns_arr_linked_rows(self):
         """Returns Arr-sourced rows that are linked to the Plex connection."""
-        rows = media_manager.read_arr_linked_to_plex_connection(self.plex_conn.id)
+        rows = media_manager.read_arr_linked_to_plex_connection(
+            self.plex_conn.id
+        )
         ids = [r.id for r in rows]
         assert self.arr_media.id in ids
 
     def test_excludes_plex_only_rows(self):
         """Does not return rows where connection_id == plex_connection_id."""
-        rows = media_manager.read_arr_linked_to_plex_connection(self.plex_conn.id)
+        rows = media_manager.read_arr_linked_to_plex_connection(
+            self.plex_conn.id
+        )
         ids = [r.id for r in rows]
         assert self.plex_only.id not in ids
 
@@ -240,9 +264,9 @@ class TestReadAllGeneratorSessionLifecycle:
         # Seed a real row so the generator has something to yield and pause at.
         # (close() on a never-started generator skips the body; next() must be
         # called first to enter the try block and reach the yield.)
-        media_manager.create_or_update_bulk([
-            _make_media(self.conn.id, "tt_gen_early_close_lifecycle")
-        ])
+        media_manager.create_or_update_bulk(
+            [_make_media(self.conn.id, "tt_gen_early_close_lifecycle")]
+        )
 
         close_calls = 0
         real_close = Session.close
@@ -254,9 +278,9 @@ class TestReadAllGeneratorSessionLifecycle:
 
         with patch.object(Session, "close", spy):
             gen = media_manager.read_all_generator()
-            next(gen)               # enters the body, pauses at the yield
+            next(gen)  # enters the body, pauses at the yield
             before_close = close_calls
-            gen.close()             # GeneratorExit → finally: _session.close()
+            gen.close()  # GeneratorExit → finally: _session.close()
             after_close = close_calls
 
         # The finally block must have added exactly one more close call

@@ -24,7 +24,9 @@ def update_path_mapping_section_key(
     Called by PlexConnectionManager the first time it discovers which section
     a path mapping belongs to.  Skips gracefully if the row is not found.
     """
-    pm = _session.exec(select(PathMapping).where(PathMapping.id == pm_id)).first()
+    pm = _session.exec(
+        select(PathMapping).where(PathMapping.id == pm_id)
+    ).first()
     if pm is None:
         return
     pm.plex_section_key = section_key

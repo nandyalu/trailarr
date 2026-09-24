@@ -51,7 +51,7 @@ Select the maximum duration of the trailers to download. Trailers with a duratio
 
 ## Always Search
 
-{{ version_badge("upd", "0.6.10") }}
+{{ version_badge("upd", "0.13.0") }}
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
@@ -59,8 +59,14 @@ Select the maximum duration of the trailers to download. Trailers with a duratio
 
 Enable this setting to always search YouTube for trailers. If disabled, the app will only search YouTube if it cannot find a trailer in Radarr; Sonarr doesn't provide youtube trailer ids.
 
-!!! note
-    Enabling this will ignore the `YouTube Trailer ID` even if you manually updated it for a media item.
+Most people turn this on to get a trailer that Radarr does not report — a trailer in their own language, usually, because the id Radarr reports is one trailer and it is usually English.
+
+{{ version_badge("upd", "0.13.0") }} From `v0.13.0` the setting ignores **every** known video for the media item — the id from Radarr, a result an earlier search stored, the trailers TMDB lists, and a video you added by hand. Trailarr searches YouTube every time, which is what the setting says.
+
+!!! tip "You may not need it any more"
+    Most people turn this on to get a trailer that Radarr does not report — a trailer in their own language, usually, because the id Radarr reports is one trailer and it is usually English. With a [TMDB API key](../../tmdb.md) and a [Trailer Language](general.md#trailer-language), Trailarr downloads a curated trailer in that language instead of guessing from a search, and searches only when TMDB has none. That is the better setup for a language: turn `Always Search` off, and set the language.
+
+    Keep `Always Search` on when you want a search regardless — for example when your [Search Query](#search-query) finds something the curated lists do not have.
 
 ## Include Words in Title
 

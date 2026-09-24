@@ -23,12 +23,16 @@ from database.models.event import Event, EventType
 from database.models.media import Media
 from database.engine import get_session, write_session
 from services.connections.plex.connection_manager import PlexConnectionManager
-from services.connections.plex.models import PlexEpisodeLeaf, PlexLibrarySection, PlexMediaItem
-
+from services.connections.plex.models import (
+    PlexEpisodeLeaf,
+    PlexLibrarySection,
+    PlexMediaItem,
+)
 
 # ---------------------------------------------------------------------------
 # DB helpers
 # ---------------------------------------------------------------------------
+
 
 @write_session
 def _create_plex_connection(name: str, *, _session: Session = None) -> int:  # type: ignore
@@ -49,54 +53,78 @@ def _create_plex_connection(name: str, *, _session: Session = None) -> int:  # t
 # Plex item factory helpers (prefix-aware to avoid cross-run path collisions)
 # ---------------------------------------------------------------------------
 
+
 def _movie(prefix: str, i: int) -> PlexMediaItem:
     """Dummy movie whose folder_path will be /plex/<prefix>/movies/Movie <i>."""
-    return PlexMediaItem.model_validate({
-        "ratingKey": str(10000 + i),
-        "title": f"Plex Movie {i}",
-        "year": 2000 + (i % 25),
-        "Media": [{"Part": [{"file": f"/plex/{prefix}/movies/Movie {i}/movie.mkv"}]}],
-        "Guid": [{"id": f"tmdb://{300000 + i}"}],
-    })
+    return PlexMediaItem.model_validate(
+        {
+            "ratingKey": str(10000 + i),
+            "title": f"Plex Movie {i}",
+            "year": 2000 + (i % 25),
+            "Media": [
+                {
+                    "Part": [
+                        {"file": f"/plex/{prefix}/movies/Movie {i}/movie.mkv"}
+                    ]
+                }
+            ],
+            "Guid": [{"id": f"tmdb://{300000 + i}"}],
+        }
+    )
 
 
 def _show(prefix: str, i: int) -> PlexMediaItem:
     """Dummy show whose folder_path will be /plex/<prefix>/shows/Show <i>."""
-    return PlexMediaItem.model_validate({
-        "ratingKey": str(50000 + i),
-        "title": f"Plex Show {i}",
-        "year": 2010 + (i % 15),
-        "Location": [{"path": f"/plex/{prefix}/shows/Show {i}"}],
-        "Guid": [{"id": f"tvdb://{400000 + i}"}],
-    })
+    return PlexMediaItem.model_validate(
+        {
+            "ratingKey": str(50000 + i),
+            "title": f"Plex Show {i}",
+            "year": 2010 + (i % 15),
+            "Location": [{"path": f"/plex/{prefix}/shows/Show {i}"}],
+            "Guid": [{"id": f"tvdb://{400000 + i}"}],
+        }
+    )
 
 
 def _episode(
     prefix: str, show_i: int, ep: int, season: int = 1
 ) -> PlexEpisodeLeaf:
     """Dummy episode leaf used to resolve show-root folder + season count."""
-    return PlexEpisodeLeaf.model_validate({
-        "grandparentRatingKey": str(50000 + show_i),
-        "parentIndex": season,
-        "Media": [{
-            "Part": [{
-                "file": f"/plex/{prefix}/shows/Show {show_i}"
-                f"/Season {season}/S{season:02d}E{ep:02d}.mkv"
-            }]
-        }],
-    })
+    return PlexEpisodeLeaf.model_validate(
+        {
+            "grandparentRatingKey": str(50000 + show_i),
+            "parentIndex": season,
+            "Media": [
+                {
+                    "Part": [
+                        {
+                            "file": f"/plex/{prefix}/shows/Show {show_i}"
+                            f"/Season {season}/S{season:02d}E{ep:02d}.mkv"
+                        }
+                    ]
+                }
+            ],
+        }
+    )
 
 
-def _library_section(key: str, type_: str, title: str, folder: str) -> PlexLibrarySection:
-    return PlexLibrarySection.model_validate({
-        "key": key, "type": type_, "title": title,
-        "Location": [{"path": folder}],
-    })
+def _library_section(
+    key: str, type_: str, title: str, folder: str
+) -> PlexLibrarySection:
+    return PlexLibrarySection.model_validate(
+        {
+            "key": key,
+            "type": type_,
+            "title": title,
+            "Location": [{"path": folder}],
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # Integration test class
 # ---------------------------------------------------------------------------
+
 
 class TestPlexLargeLibrarySync:
     """PlexConnectionManager correctly syncs 1500 movies + 160 series without errors."""
@@ -152,10 +180,12 @@ class TestPlexLargeLibrarySync:
             for ep in (1, 2)
         ]
 
-        self.movie_section = _library_section("1", "movie", "Movies",
-                                               f"/plex/{p}/movies")
-        self.show_section = _library_section("2", "show", "Shows",
-                                              f"/plex/{p}/shows")
+        self.movie_section = _library_section(
+            "1", "movie", "Movies", f"/plex/{p}/movies"
+        )
+        self.show_section = _library_section(
+            "2", "show", "Shows", f"/plex/{p}/shows"
+        )
 
     # ------------------------------------------------------------------
     # Shared helper
@@ -188,7 +218,8 @@ class TestPlexLargeLibrarySync:
         mock_api.get_library_leaves = get_library_leaves
 
         with patch(
-            "services.connections.plex.connection_manager.PlexAPI", return_value=mock_api
+            "services.connections.plex.connection_manager.PlexAPI",
+            return_value=mock_api,
         ):
             manager = PlexConnectionManager(conn)
             await manager.refresh()
@@ -233,12 +264,12 @@ class TestPlexLargeLibrarySync:
         # --- DB: correct row counts ---
         movies_in_db, shows_in_db = self._query_media(self.conn_id)
 
-        assert len(movies_in_db) == self.MOVIE_COUNT, (
-            f"Expected {self.MOVIE_COUNT} movies, got {len(movies_in_db)}"
-        )
-        assert len(shows_in_db) == self.SHOW_COUNT, (
-            f"Expected {self.SHOW_COUNT} shows, got {len(shows_in_db)}"
-        )
+        assert (
+            len(movies_in_db) == self.MOVIE_COUNT
+        ), f"Expected {self.MOVIE_COUNT} movies, got {len(movies_in_db)}"
+        assert (
+            len(shows_in_db) == self.SHOW_COUNT
+        ), f"Expected {self.SHOW_COUNT} shows, got {len(shows_in_db)}"
 
         # All rows are Plex-only (arr_id == 0) linked to this connection
         assert all(m.arr_id == 0 for m in movies_in_db)
@@ -270,9 +301,9 @@ class TestPlexLargeLibrarySync:
         # Second sync: all items already exist
         manager = await self._run_refresh()
 
-        assert manager._stats_added == 0, (
-            f"Second sync must not create new rows, got {manager._stats_added} added"
-        )
+        assert (
+            manager._stats_added == 0
+        ), f"Second sync must not create new rows, got {manager._stats_added} added"
         assert manager._stats_linked == 0
 
         # Row count must be unchanged
@@ -291,11 +322,13 @@ class TestPlexLargeLibrarySync:
         p = self._prefix
         # Show 0: seasons 1+2 plus a Specials episode → count 2.
         # Show 1: keeps the default single Season 1 leaves → count 1.
-        self.leaves.extend([
-            _episode(p, 0, 1, season=2),
-            _episode(p, 0, 2, season=2),
-            _episode(p, 0, 1, season=0),
-        ])
+        self.leaves.extend(
+            [
+                _episode(p, 0, 1, season=2),
+                _episode(p, 0, 2, season=2),
+                _episode(p, 0, 1, season=0),
+            ]
+        )
         await self._run_refresh()
 
         _, shows_in_db = self._query_media(self.conn_id)

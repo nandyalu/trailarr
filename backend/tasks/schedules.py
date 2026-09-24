@@ -24,6 +24,7 @@ import database.manager.connection as connection_manager
 from database.models.connection import ArrType
 from services.trailers.trailers.missing import download_missing_trailers
 from tasks import scheduler
+from tasks.videos_refresh import refresh_media_videos
 from tasks.api_refresh import api_refresh
 from tasks.cleanup import delete_old_logs, trailer_cleanup
 from tasks.files_scan import scan_all_media_folders
@@ -99,6 +100,15 @@ async def _run_startup_passes(
     await run_startup_passes(_stop_event=_stop_event)
 
 
+@with_logging_context
+async def _refresh_media_videos(
+    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+):
+    """Ask TMDB which videos belong to the media items that are waiting for
+    a trailer, so the list is ready before a download needs it."""
+    await refresh_media_videos(_stop_event=_stop_event)
+
+
 # Maps each stable task_key to its handler function.
 TASK_REGISTRY: dict[str, Callable] = {
     "api_refresh": _refresh_api_data,
@@ -108,6 +118,7 @@ TASK_REGISTRY: dict[str, Callable] = {
     "cleanup": _cleanup_trailers,
     "download_trailers": _download_missing_trailers,
     "plex_trailer_refresh": _refresh_plex_trailer_flags,
+    "videos_refresh": _refresh_media_videos,
 }
 
 
@@ -145,6 +156,12 @@ def _build_defaults() -> list[dict[str, str | float]]:
             "task_name": "Image Refresh",
             "interval_seconds": 21600.0,
             "delay_seconds": 720.0,
+        },
+        {
+            "task_key": "videos_refresh",
+            "task_name": "Refresh Video Lists",
+            "interval_seconds": 43200.0,
+            "delay_seconds": 600.0,
         },
         {
             "task_key": "cleanup",

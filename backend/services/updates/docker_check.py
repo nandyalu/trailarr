@@ -57,9 +57,7 @@ async def check_for_update(check_app: bool = True) -> None:
         )
     _app = "Trailarr" if check_app else "yt-dlp"
     current_version = get_current_image_version(check_app)
-    logger.info(
-        f"The current version of {_app} is {current_version}."
-    )
+    logger.info(f"The current version of {_app} is {current_version}.")
     latest_version = await get_latest_image_version(image_name)
 
     if not latest_version:
@@ -75,9 +73,7 @@ async def check_for_update(check_app: bool = True) -> None:
         else:
             app_settings.update_available_ytdlp = True
     else:
-        logger.info(
-            f"{_app} is up to date at version {latest_version}."
-        )
+        logger.info(f"{_app} is up to date at version {latest_version}.")
 
 
 async def check_for_updates():

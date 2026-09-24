@@ -1,0 +1,164 @@
+/* The first-run guide. It owns the whole page: a new user has nothing to
+   navigate to yet, and the side navigation would only offer empty pages. */
+.setup-shell {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.setup-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.setup-logo {
+  width: 12rem;
+  max-width: 60%;
+  margin-bottom: 1rem;
+}
+
+.setup-progress {
+  margin: 0 0 0.5rem;
+  color: var(--color-on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.setup-bar {
+  height: 0.35rem;
+  border-radius: 0.35rem;
+  background-color: var(--color-surface-container-high);
+  overflow: hidden;
+}
+
+.setup-bar-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  transition: width 0.25s ease;
+}
+
+.setup-step {
+  flex: 1 1 auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-container);
+  padding: 1.5rem;
+
+  h1 {
+    margin: 0 0 0.75rem;
+    font-size: 1.4rem;
+    color: var(--color-on-surface);
+  }
+}
+
+.setup-lead {
+  font-size: 1rem;
+  color: var(--color-on-surface);
+}
+
+.setup-points {
+  margin: 1rem 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: var(--color-on-surface);
+}
+
+.setup-list {
+  margin: 0.5rem 0;
+  padding-left: 1.1rem;
+  color: var(--color-on-surface);
+}
+
+.setup-preview {
+  max-height: 14rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.setup-note,
+.setup-muted {
+  color: var(--color-on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.setup-error {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0;
+
+  input {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.5rem;
+    background-color: var(--color-surface-container-lowest);
+    color: var(--color-on-surface);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    }
+  }
+}
+
+.setup-done {
+  margin: 1rem 0;
+}
+
+.setup-refresh {
+  margin-top: 1rem;
+}
+
+.setup-finish {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.setup-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.setup-spacer {
+  flex: 1 1 auto;
+}
+
+@media (width < 765px) {
+  .setup-shell {
+    padding: 1rem 0.75rem 2rem;
+  }
+}
+
+.setup-count {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--color-on-surface);
+}
+
+.setup-still-reading {
+  color: var(--color-on-surface-variant);
+}
+
+.setup-more {
+  margin-top: 0.5rem;
+}
+
+.setup-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}

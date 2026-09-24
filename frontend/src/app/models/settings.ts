@@ -17,6 +17,8 @@ export interface Settings {
   gpu_enabled_nvidia: boolean;
   log_level: string;
   monitor_enabled: boolean;
+  /** Masked: Trailarr sends only the last four characters. */
+  tmdb_api_key: string;
   server_hostname: string;
   server_model: string;
   server_platform: string;

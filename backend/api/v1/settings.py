@@ -23,7 +23,7 @@ async def get_stats() -> ServerStats:
 
 @settings_router.put("/update")
 async def update_setting(update: UpdateSetting) -> str:
-    return settings_service.update_setting(update.key, update.value)
+    return await settings_service.update_setting(update.key, update.value)
 
 
 @settings_router.put("/updatelogin")

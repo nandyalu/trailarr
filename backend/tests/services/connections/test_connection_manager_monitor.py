@@ -129,10 +129,13 @@ class TestArrSyncMonitorIntent:
         # Second sync — with a DIFFERENT default, proving existing rows are
         # untouched even when the connection setting changes
         manager2 = _build_manager(conn_id, f"ArrResync-{p}", False)
-        await _sync(manager2, [
-            _make_media_create(conn_id, f"rs{p}a"),
-            _make_media_create(conn_id, f"rs{p}b"),
-        ])
+        await _sync(
+            manager2,
+            [
+                _make_media_create(conn_id, f"rs{p}a"),
+                _make_media_create(conn_id, f"rs{p}b"),
+            ],
+        )
 
         refreshed = media_manager.read_all_by_connection(conn_id)
         assert {m.id: m.monitor for m in refreshed} == {

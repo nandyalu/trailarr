@@ -13,7 +13,6 @@ from database.models.event import (
 )
 from database.engine import write_session
 
-
 EventListener = Callable[[EventRead | EventCreate], None]
 
 # Functions to call after an event is stored. The database layer must not

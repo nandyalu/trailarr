@@ -108,9 +108,7 @@ def get_media_info(file_path: str) -> VideoInfo | None:
         )
         # Return None if command failed
         if result.returncode != 0:
-            logger.error(
-                f"ffprobe reported an error: {result.stderr}"
-            )
+            logger.error(f"ffprobe reported an error: {result.stderr}")
             return None
 
         # If command ran successfully, parse the output
@@ -488,15 +486,11 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
             - Path to the trimmed video file
             - flag indicating if trimming was successful.
     """
-    logger.info(
-        f"Trailarr looks for silence at the end of '{file_path}'."
-    )
+    logger.info(f"Trailarr looks for silence at the end of '{file_path}'.")
     # Get silence timestamps
     silence_start, silence_end = get_silence_timestamps(file_path)
     if silence_start is None or silence_end is None:
-        logger.info(
-            "There is no silence at the end of the video."
-        )
+        logger.info("There is no silence at the end of the video.")
         return file_path, False
     # Remove silence from the end of the video
     file_path_obj = Path(file_path)

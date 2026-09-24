@@ -1,6 +1,6 @@
 [project]
 name = "Trailarr"
-version = "0.12.1"
+version = "0.13.0"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
 readme = "../README.md"
 requires-python = ">=3.13.5"
@@ -23,19 +23,19 @@ dependencies = [
 [dependency-groups]
 dev = [
     "aioresponses==0.7.9",
-    "mkdocs-git-revision-date-localized-plugin==1.5.4",
+    "mkdocs-git-revision-date-localized-plugin==1.6.0",
     "mkdocs-github-changelog==0.1.1",
     "mkdocs-glightbox==0.5.2",
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
     "pytest-timeout==2.4.0",
-    "zensical==0.0.61",
+    "zensical==0.0.62",
 ]
 docs = [
-    "mkdocs-git-revision-date-localized-plugin==1.5.4",
+    "mkdocs-git-revision-date-localized-plugin==1.6.0",
     "mkdocs-glightbox==0.5.2",
-    "zensical==0.0.61",
+    "zensical==0.0.62",
 ]
 testing = [
     "aioresponses==0.7.9",

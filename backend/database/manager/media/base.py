@@ -139,4 +139,3 @@ def has_updated(
     #             f" {update.folder_path}"
     #         )
     #         return True
-

@@ -104,6 +104,9 @@ class Media(MediaBase, table=True):
     added_at: datetime = Field(default_factory=get_current_time)
     updated_at: datetime = Field(default_factory=get_current_time)
     downloaded_at: datetime | None = Field(default=None)
+    # When Trailarr last asked TMDB which videos belong to this item.
+    # NULL means never, so the next run asks. Phase 8.
+    last_videos_refresh: datetime | None = Field(default=None)
     downloads: list[Download] = Relationship(cascade_delete=True)
     files_info: list[FileFolderInfo] = Relationship(cascade_delete=True)
 
@@ -131,6 +134,7 @@ class MediaRead(MediaBase):
     added_at: datetime
     updated_at: datetime
     downloaded_at: datetime | None
+    last_videos_refresh: datetime | None = None
     downloads: list[DownloadRead] = []
     # files_info: list[FileFolderInfoRead] = Field(default=[])
     # files_tree: FileFolderInfoRead | None = None

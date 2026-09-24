@@ -66,6 +66,16 @@ stabilization checklist.
 - **Library coverage dashboard strip** on home: "N% of movies have trailers · M
   downloaded this month · K need attention (→ Issues)". Computed from existing
   stats + Issues counts; one component, no new endpoints beyond a stats extension.
+
+  **A first slice of this shipped early, in v0.13.0** ([#618](https://github.com/nandyalu/trailarr/issues/618)):
+  the media header shows `matched / total` for the current view, computed client-side
+  from `combinedMedia` — no endpoint, no stored number. "Done" is defined there as
+  **media with at least one active download**, and this strip must not contradict it.
+  What this strip still owes: per-filter counts shown together rather than one at a
+  time, the "downloaded this month" figure, and the Issues count. When Phase 10 lands
+  season trailers, a show with 3 of 5 seasons is the case that decides whether the
+  strip reports coverage more finely than "has a trailer" — the header counter stays
+  at the simple definition either way.
 - **In-UI trailer playback:** the `/api/v1/files/video` streaming endpoint (range
   support) already exists — verify whether media-details files view already plays
   trailers in-browser; if not, add click-to-play on download rows (native `<video>`,

@@ -12,7 +12,10 @@ class TestVideoUnavailable:
             "ERROR: Video unavailable",
             "ERROR: Private video. Sign in if you've been granted access",
             "ERROR: This video has been removed by the uploader",
-            "ERROR: The uploader has not made this video available in your country",
+            (
+                "ERROR: The uploader has not made this video available in your"
+                " country"
+            ),
         ):
             assert is_video_unavailable(text), text
 
@@ -51,12 +54,17 @@ class TestTheTwoListsAgree:
         for fragment in group:
             assert error_classify.is_video_unavailable(
                 f"ERROR: [youtube] {fragment}"
-            ), f"'{fragment}' is unavailable to the classifier, not to the test"
+            ), (
+                f"'{fragment}' is unavailable to the classifier, not to the"
+                " test"
+            )
 
     def test_a_deleted_video_is_not_the_users_fault(self):
         from utils.error_classify import is_video_unavailable
 
-        assert is_video_unavailable("ERROR: unable to download: HTTP Error 410: Gone")
+        assert is_video_unavailable(
+            "ERROR: unable to download: HTTP Error 410: Gone"
+        )
         assert is_video_unavailable(
             "ERROR: [youtube] abc: This video is not available"
         )

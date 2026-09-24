@@ -367,3 +367,24 @@ def unlink_plex_missing_items(
         unlinked_ids.append(db_media.id)  # type: ignore
     _session.commit()
     return unlinked_ids
+
+
+@write_session
+def mark_videos_refreshed(
+    media_id: int,
+    *,
+    when: datetime | None = None,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """Record that Trailarr just asked TMDB about this media item.
+
+    The download task reads the timestamp to leave a fresh answer alone.
+    An item that TMDB knows nothing about is marked too, so a library with
+    many such items does not ask about all of them on every run.
+    """
+    db_media = _session.get(Media, media_id)
+    if db_media is None:
+        return
+    db_media.last_videos_refresh = when or datetime.now(timezone.utc)
+    _session.add(db_media)
+    _session.commit()

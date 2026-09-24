@@ -129,8 +129,6 @@ class TestUpdate:
     async def test_unknown_id_raises_before_any_probe(self):
         with patch(f"{PKG}.probe.validate_connection") as mock_validate:
             with pytest.raises(ItemNotFoundError):
-                await service.update(
-                    1_000, ConnectionUpdate(path_mappings=[])
-                )
+                await service.update(1_000, ConnectionUpdate(path_mappings=[]))
 
         mock_validate.assert_not_called()

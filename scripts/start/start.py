@@ -29,6 +29,11 @@ from pathlib import Path
 
 _SCRIPT_DIR = Path(__file__).parent.resolve()
 _INSTALL_DIR = _SCRIPT_DIR.parent.parent  # scripts/start/ → scripts/ → install root
+
+# One module decides what a backup run deletes, for every installation type.
+sys.path.insert(0, str(_SCRIPT_DIR.parent))
+from backup_retention import human_size, prune_backups  # noqa: E402
+
 _BACKEND_DIR = _INSTALL_DIR / "backend"
 _VENV_DIR = _BACKEND_DIR / ".venv"
 _BIN_DIR = _INSTALL_DIR / "bin"
@@ -247,14 +252,14 @@ def _backup_database(data_dir: Path, console) -> None:
     shutil.copy2(db, dest)
     _log(f"  Database backed up: {dest.name}", console)
 
-    # Keep only the most recent 30 backups
-    backups = sorted(
-        backups_dir.glob("trailarr_*.db"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    for old in backups[30:]:
-        old.unlink(missing_ok=True)
+    # The policy lives in scripts/backup_retention.py, which the Docker start
+    # script and the CLI updater use too, so the paths cannot drift apart.
+    deleted, freed = prune_backups(backups_dir)
+    if deleted:
+        _log(
+            f"  Deleted {len(deleted)} old backup(s), {human_size(freed)} freed",
+            console,
+        )
 
 
 def _run_migrations(console) -> None:

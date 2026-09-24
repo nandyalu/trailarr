@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {computeMediaStatus, Media} from 'src/app/models/media';
 import {CustomFilter} from 'src/app/models/customfilter';
-import {applySelectedFilter} from './apply-filters';
+import {applySelectedFilter, MOVIES_ONLY_FILTERS} from './apply-filters';
 
 function makeMedia(
   id: number,
@@ -38,6 +38,29 @@ describe('applySelectedFilter — unknown_profile', () => {
 
   it('does not affect the all filter', () => {
     expect(applySelectedFilter(all, 'all', [])).toEqual(all);
+  });
+});
+
+// The header count divides by a type total whenever MOVIES_ONLY_FILTERS names
+// the selected filter. A filter listed under the wrong type, or a new
+// type-narrowing filter added to the switch and not to the map, shows a count
+// over the wrong total — which no view test would notice.
+describe('MOVIES_ONLY_FILTERS agrees with applySelectedFilter', () => {
+  const movie = makeMedia(1, [{file_exists: true, profile_id: 1}], {is_movie: true});
+  const show = makeMedia(2, [{file_exists: true, profile_id: 1}], {is_movie: false});
+  const all = [movie, show];
+
+  it.each(Object.keys(MOVIES_ONLY_FILTERS))('narrows %s to the type the map claims', (filterName) => {
+    const expected = MOVIES_ONLY_FILTERS[filterName];
+    const result = applySelectedFilter(all, filterName, []);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((media) => media.is_movie === expected)).toBe(true);
+  });
+
+  it('leaves untyped filters out of the map, so they divide by the whole library', () => {
+    for (const filterName of ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored', 'unknown_profile']) {
+      expect(MOVIES_ONLY_FILTERS[filterName]).toBeUndefined();
+    }
   });
 });
 

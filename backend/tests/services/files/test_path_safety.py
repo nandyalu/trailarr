@@ -122,6 +122,8 @@ class TestWindows:
     def test_windows_system_paths_are_refused(self, path):
         assert self._as_windows(path) is False
 
-    @pytest.mark.parametrize("path", [r"C:\\", r"C:\Media", r"C:\Media\film.mkv"])
+    @pytest.mark.parametrize(
+        "path", [r"C:\\", r"C:\Media", r"C:\Media\film.mkv"]
+    )
     def test_windows_paths_too_shallow_are_refused(self, path):
         assert self._as_windows(path) is False

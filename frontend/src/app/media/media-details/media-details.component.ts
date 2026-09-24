@@ -7,6 +7,7 @@ import {CopyToClipboardDirective} from 'src/app/shared/directives/copy-to-clipbo
 import {RemoveStartingSlashPipe} from 'src/app/shared/pipes/remove-starting-slash.pipe';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
+import {MediaVideo} from 'src/app/models/media';
 import {RouteMedia} from 'src/routing';
 import {DurationConvertPipe} from '../../shared/pipes/duration-pipe';
 import {MediaService} from '../../services/media.service';
@@ -87,8 +88,21 @@ export class MediaDetailsComponent {
 
   // Load media data when the media ID changes
   mediaIDChangeEffect = effect(() => {
-    this.mediaService.selectedMediaID.set(this.mediaId());
+    const mediaId = this.mediaId();
+    this.mediaService.selectedMediaID.set(mediaId);
+    // Read the known videos here rather than with the media data: the
+    // media object changes on every websocket update, and during a
+    // download that is often. Reading them there sent a request each time.
+    this.loadKnownVideos();
   });
+
+  /** Every video Trailarr knows for this item, in the order it would use
+   * them. The first one is what a download takes right now. */
+  readonly knownVideos = signal<MediaVideo[]>([]);
+
+  /** The language of the video being added, as a 2-letter code. Empty
+   * means the video suits a profile that takes any language. */
+  videoLanguage = '';
 
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
@@ -207,11 +221,97 @@ export class MediaDetailsComponent {
       )
       .subscribe(() => {
         this.isLoadingDownload.set(false);
+        this.loadKnownVideos();
       });
   }
 
+  /** Adds the video in the box as one the user chose. */
+  addChosenVideo() {
+    this.webSocketService.showToast('Saving your video...');
+    this.isLoadingDownload.set(true);
+    this.mediaService
+      .addMediaVideo(this.mediaId(), this.trailer_url.trim(), this.videoLanguage.trim())
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not add the video.', 'Error');
+          this.isLoadingDownload.set(false);
+          return of(null);
+        }),
+      )
+      .subscribe((row) => {
+        this.isLoadingDownload.set(false);
+        if (row) {
+          this.videoLanguage = '';
+          this.loadKnownVideos();
+        }
+      });
+  }
+
+  /** Reads the known videos for the media item that is open. */
+  loadKnownVideos() {
+    const mediaId = this.mediaId();
+    if (!mediaId) {
+      return;
+    }
+    this.mediaService
+      .getMediaVideos(mediaId)
+      .pipe(
+        catchError(() => {
+          // The list is extra information, so a failure to read it must
+          // not take over the page.
+          return of([] as MediaVideo[]);
+        }),
+      )
+      .subscribe((videos) => this.knownVideos.set(videos));
+  }
+
+  /** Removes one known video. A video you chose comes back only if you add
+   * it again; a video from TMDB comes back with the next refresh. */
+  removeKnownVideo(videoId: string) {
+    this.mediaService
+      .deleteMediaVideo(this.mediaId(), videoId)
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not remove the video.', 'Error');
+          return of(null);
+        }),
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.webSocketService.showToast('Trailarr removed the video.');
+          this.loadKnownVideos();
+        }
+      });
+  }
+
+  /** How a source reads on the page. */
+  sourceLabel(source: MediaVideo['source']): string {
+    switch (source) {
+      case 'user':
+        return 'You chose this';
+      case 'tmdb':
+        return 'TMDB';
+      case 'arr':
+        return 'Radarr / Sonarr';
+      case 'search':
+        return 'YouTube search';
+      default:
+        return source;
+    }
+  }
+
+  youtubeLink(videoId: string): string {
+    return `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
   saveYtId() {
-    // console.log('Saving youtube id');
+    // An id that a person types is a video that person chose, so it goes
+    // in as one, with the language they say it is in. An empty box still
+    // goes through the old call, which clears the stored id.
+    if (this.trailer_url?.trim()) {
+      this.addChosenVideo();
+      return;
+    }
     this.webSocketService.showToast('Saving youtube id...');
     this.isLoadingDownload.set(true);
     this.mediaService

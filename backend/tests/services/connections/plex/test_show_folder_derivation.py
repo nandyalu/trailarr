@@ -34,10 +34,10 @@ from services.connections.plex.models import (
     PlexMediaItem,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 @write_session
 def _make_conn(
@@ -77,36 +77,44 @@ def _build_manager(conn_id: int, prefix: str) -> PlexConnectionManager:
             _pm(f"/plex/{prefix}/shows"),
         ],
     )
-    with patch("services.connections.plex.connection_manager.PlexAPI") as MockAPI:
+    with patch(
+        "services.connections.plex.connection_manager.PlexAPI"
+    ) as MockAPI:
         MockAPI.return_value = MagicMock(server_url="")
         return PlexConnectionManager(connection)
 
 
 def _leaf(show_key: str, season: int, file: str) -> PlexEpisodeLeaf:
-    return PlexEpisodeLeaf.model_validate({
-        "grandparentRatingKey": show_key,
-        "parentIndex": season,
-        "Media": [{"Part": [{"file": file}]}],
-    })
+    return PlexEpisodeLeaf.model_validate(
+        {
+            "grandparentRatingKey": show_key,
+            "parentIndex": season,
+            "Media": [{"Part": [{"file": file}]}],
+        }
+    )
 
 
 def _show_item(key: str, title: str, tvdb_id: int) -> PlexMediaItem:
-    return PlexMediaItem.model_validate({
-        "ratingKey": key,
-        "title": title,
-        "year": 2015,
-        "type": "show",
-        "Guid": [{"id": f"tvdb://{tvdb_id}"}],
-    })
+    return PlexMediaItem.model_validate(
+        {
+            "ratingKey": key,
+            "title": title,
+            "year": 2015,
+            "type": "show",
+            "Guid": [{"id": f"tvdb://{tvdb_id}"}],
+        }
+    )
 
 
 def _show_section(prefix: str) -> PlexLibrarySection:
-    return PlexLibrarySection.model_validate({
-        "key": "1",
-        "type": "show",
-        "title": "Shows",
-        "Location": [{"path": f"/plex/{prefix}/shows"}],
-    })
+    return PlexLibrarySection.model_validate(
+        {
+            "key": "1",
+            "type": "show",
+            "title": "Shows",
+            "Location": [{"path": f"/plex/{prefix}/shows"}],
+        }
+    )
 
 
 def _async_gen(items):
@@ -120,6 +128,7 @@ def _async_gen(items):
 # ---------------------------------------------------------------------------
 # _is_at_or_above_library_root
 # ---------------------------------------------------------------------------
+
 
 class TestIsAtOrAboveLibraryRoot:
 
@@ -139,8 +148,7 @@ class TestIsAtOrAboveLibraryRoot:
 
     def test_folder_below_root(self):
         assert (
-            self.mgr._is_at_or_above_library_root(f"{self.root}/Show")
-            is False
+            self.mgr._is_at_or_above_library_root(f"{self.root}/Show") is False
         )
 
     def test_unrelated_sibling_folder(self):
@@ -159,6 +167,7 @@ class TestIsAtOrAboveLibraryRoot:
 # ---------------------------------------------------------------------------
 # _derive_show_folder
 # ---------------------------------------------------------------------------
+
 
 class TestDeriveShowFolder:
 
@@ -238,6 +247,7 @@ class TestDeriveShowFolder:
 # _process_item_chunk: library-root guard
 # ---------------------------------------------------------------------------
 
+
 class TestProcessItemChunkRootGuard:
 
     @pytest.fixture(autouse=True)
@@ -245,12 +255,14 @@ class TestProcessItemChunkRootGuard:
         self._p = uuid.uuid4().hex[:10]
         self.conn_id = _make_conn(f"RootGuard-{self._p}", ArrType.PLEX)
         self.mgr = _build_manager(self.conn_id, self._p)
-        self.section = PlexLibrarySection.model_validate({
-            "key": "1",
-            "type": "movie",
-            "title": "Movies",
-            "Location": [{"path": f"/plex/{self._p}/movies"}],
-        })
+        self.section = PlexLibrarySection.model_validate(
+            {
+                "key": "1",
+                "type": "movie",
+                "title": "Movies",
+                "Location": [{"path": f"/plex/{self._p}/movies"}],
+            }
+        )
 
     def _our_media(self):
         return [
@@ -264,13 +276,15 @@ class TestProcessItemChunkRootGuard:
         """A movie file directly in the library root derives the root as
         its folder — the item must be skipped, not stored."""
         root = f"/plex/{self._p}/movies"
-        item = PlexMediaItem.model_validate({
-            "ratingKey": "91001",
-            "title": "Loose File Movie",
-            "year": 2020,
-            "Media": [{"Part": [{"file": f"{root}/movie.mkv"}]}],
-            "Guid": [{"id": "tmdb://910001"}],
-        })
+        item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "91001",
+                "title": "Loose File Movie",
+                "year": 2020,
+                "Media": [{"Part": [{"file": f"{root}/movie.mkv"}]}],
+                "Guid": [{"id": "tmdb://910001"}],
+            }
+        )
         await self.mgr._process_item_chunk([(item, self.section, True, root)])
         assert self.mgr._stats_added == 0
         assert self._our_media() == []
@@ -279,13 +293,15 @@ class TestProcessItemChunkRootGuard:
     async def test_item_below_root_still_processed(self):
         """Sanity: a normal folder below the root is created as usual."""
         folder = f"/plex/{self._p}/movies/Film1"
-        item = PlexMediaItem.model_validate({
-            "ratingKey": "91002",
-            "title": "Normal Movie",
-            "year": 2020,
-            "Media": [{"Part": [{"file": f"{folder}/movie.mkv"}]}],
-            "Guid": [{"id": "tmdb://910002"}],
-        })
+        item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "91002",
+                "title": "Normal Movie",
+                "year": 2020,
+                "Media": [{"Part": [{"file": f"{folder}/movie.mkv"}]}],
+                "Guid": [{"id": "tmdb://910002"}],
+            }
+        )
         await self.mgr._process_item_chunk(
             [(item, self.section, True, folder)]
         )
@@ -296,6 +312,7 @@ class TestProcessItemChunkRootGuard:
 # ---------------------------------------------------------------------------
 # _process_show_section: end-to-end derivation
 # ---------------------------------------------------------------------------
+
 
 class TestProcessShowSectionDerivation:
 
@@ -311,9 +328,7 @@ class TestProcessShowSectionDerivation:
         self.root = f"/plex/{self._p}/shows"
 
     def _media_at(self, folder: str):
-        return [
-            m for m in media_manager.read_all() if m.folder_path == folder
-        ]
+        return [m for m in media_manager.read_all() if m.folder_path == folder]
 
     def _plex_rows(self):
         return [
@@ -339,10 +354,9 @@ class TestProcessShowSectionDerivation:
                 folder_path=real,
             )
         )
-        leaves = (
-            [_leaf("58166", 1, f"{real}/Season 1/e{i}.mkv") for i in range(4)]
-            + [_leaf("58166", 1, f"{stale}/Season 1/e9.mkv")]
-        )
+        leaves = [
+            _leaf("58166", 1, f"{real}/Season 1/e{i}.mkv") for i in range(4)
+        ] + [_leaf("58166", 1, f"{stale}/Season 1/e9.mkv")]
         self.mgr.api.get_library_leaves = _async_gen(leaves)
         self.mgr.api.get_library_media = _async_gen(
             [_show_item("58166", "Dare", tvdb)]
@@ -360,9 +374,7 @@ class TestProcessShowSectionDerivation:
     async def test_episodes_only_in_library_root_skips_show(self):
         """All episode files directly in the library root: the show is
         skipped, no row is created."""
-        leaves = [
-            _leaf("77001", 1, f"{self.root}/e{i}.mkv") for i in range(3)
-        ]
+        leaves = [_leaf("77001", 1, f"{self.root}/e{i}.mkv") for i in range(3)]
         self.mgr.api.get_library_leaves = _async_gen(leaves)
         self.mgr.api.get_library_media = _async_gen(
             [_show_item("77001", "Rootless", uuid.uuid4().int % 10**9)]
@@ -374,14 +386,16 @@ class TestProcessShowSectionDerivation:
     async def test_show_without_leaves_uses_location_path(self):
         """A show with no episode files falls back to its Location path."""
         folder = f"{self.root}/Empty Show (2020)"
-        item = PlexMediaItem.model_validate({
-            "ratingKey": "77002",
-            "title": "Empty Show",
-            "year": 2020,
-            "type": "show",
-            "Guid": [{"id": f"tvdb://{uuid.uuid4().int % 10**9}"}],
-            "Location": [{"path": folder}],
-        })
+        item = PlexMediaItem.model_validate(
+            {
+                "ratingKey": "77002",
+                "title": "Empty Show",
+                "year": 2020,
+                "type": "show",
+                "Guid": [{"id": f"tvdb://{uuid.uuid4().int % 10**9}"}],
+                "Location": [{"path": folder}],
+            }
+        )
         self.mgr.api.get_library_leaves = _async_gen([])
         self.mgr.api.get_library_media = _async_gen([item])
         await self.mgr._process_show_section(self.section)

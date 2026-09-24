@@ -254,10 +254,14 @@ def _get_video_options_videotoolbox(
 
     logger.debug(f"Converting video to '{vcodec}' using VideoToolbox")
     return [
-        "-i", input_file,
-        "-c:v", vencoder,
-        "-q:v", "65",
-        "-b:v", "0",
+        "-i",
+        input_file,
+        "-c:v",
+        vencoder,
+        "-q:v",
+        "65",
+        "-b:v",
+        "0",
     ]
 
 
@@ -280,12 +284,18 @@ def _get_video_options_qsv(
 
     logger.debug(f"Converting video to '{vcodec}' using Intel QSV")
     return [
-        "-hwaccel", "qsv",
-        "-i", input_file,
-        "-c:v", vencoder,
-        "-preset", "fast",
-        "-global_quality", "22",
-        "-b:v", "0",
+        "-hwaccel",
+        "qsv",
+        "-i",
+        input_file,
+        "-c:v",
+        vencoder,
+        "-preset",
+        "fast",
+        "-global_quality",
+        "22",
+        "-b:v",
+        "0",
     ]
 
 
@@ -308,10 +318,14 @@ def _get_video_options_amf(
 
     logger.debug(f"Converting video to '{vcodec}' using AMD AMF")
     return [
-        "-i", input_file,
-        "-c:v", vencoder,
-        "-quality", "balanced",
-        "-b:v", "0",
+        "-i",
+        input_file,
+        "-c:v",
+        vencoder,
+        "-quality",
+        "balanced",
+        "-b:v",
+        "0",
     ]
 
 
@@ -327,7 +341,9 @@ def _get_video_options_vaapi(
         list[str]: FFMPEG command list."""
     if platform.system() == "Darwin":
         # VAAPI doesn't exist on macOS; VideoToolbox covers all GPU vendors
-        return _get_video_options_videotoolbox(vcodec, input_file, video_stream)
+        return _get_video_options_videotoolbox(
+            vcodec, input_file, video_stream
+        )
 
     if platform.system() == "Windows":
         # VAAPI is Linux-only; dispatch to the appropriate Windows encoder
@@ -468,7 +484,7 @@ def _get_audio_options(
         # Case 3: No volume change, convert audio codec
         logger.debug(f"Converting audio to '{acodec}' codec")
         return ["-c:a", _aencoder, "-b:a", "128k"]
-    
+
     # ===> Apply audio volume level filter if enabled <===
     # Volume level setting is between 1 and 200
     # FFMPEG volume filter expects a value between 0.01 and 10.0

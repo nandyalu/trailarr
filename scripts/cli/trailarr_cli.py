@@ -72,6 +72,10 @@ _GITHUB_REPO = "nandyalu/trailarr"
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "install"))
 from common.env_file import load_env, update_env_var  # noqa: E402
 
+# One module decides what a backup run deletes, for every installation type.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from backup_retention import human_size, prune_backups  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # Rich console
 # ---------------------------------------------------------------------------
@@ -408,6 +412,12 @@ def _update(target: str | None = None, force: bool = False) -> None:
         if src.exists():
             shutil.copy2(src, backup_dir / fname)
     _ok(f"Backup saved to {backup_dir}")
+
+    # An update folder was kept forever, one for every version ever installed.
+    # The same retention policy the start scripts use applies to them now.
+    deleted, freed = prune_backups(_DATA_DIR / "backups")
+    if deleted:
+        _ok(f"Deleted {len(deleted)} old backup(s), {human_size(freed)} freed")
 
     # Replaced application dirs are renamed aside (not deleted) so any
     # failure below can roll the install back to the previous version.

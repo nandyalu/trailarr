@@ -190,8 +190,9 @@ class TestComputeLibraryPending:
         assert summary.total_media == 1
         assert summary.pending_pairs == 1
         assert summary.backoff_pairs == 0
-        assert [(i.media_id, i.profile_id, i.reason) for i in summary.items] \
-            == [(2, 1, "pending")]
+        assert [
+            (i.media_id, i.profile_id, i.reason) for i in summary.items
+        ] == [(2, 1, "pending")]
 
     def test_backoff_pairs_counted_separately(self):
         p1 = make_profile(1)

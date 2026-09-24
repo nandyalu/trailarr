@@ -68,9 +68,7 @@ def _ensure_js_runtime() -> None:
     resolved = shutil.which(configured) if configured else None
     if resolved:
         deno_dir = str(Path(resolved).parent)
-        os.environ["PATH"] = (
-            deno_dir + os.pathsep + os.environ.get("PATH", "")
-        )
+        os.environ["PATH"] = deno_dir + os.pathsep + os.environ.get("PATH", "")
         logger.info(
             f"Added '{deno_dir}' to PATH so yt-dlp can find the Deno"
             " JavaScript runtime."

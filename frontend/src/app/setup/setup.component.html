@@ -1,0 +1,153 @@
+<div class="setup-shell">
+  <header class="setup-header">
+    <img src="assets/logos/trailarr-full.svg" alt="Trailarr" class="setup-logo" />
+    <p class="setup-progress">Step {{ step() }} of {{ totalSteps }}</p>
+    <div class="setup-bar" role="progressbar" [attr.aria-valuenow]="step()" aria-valuemin="1" [attr.aria-valuemax]="totalSteps">
+      <div class="setup-bar-fill" [style.width.%]="(step() / totalSteps) * 100"></div>
+    </div>
+  </header>
+
+  <!-- 1. What Trailarr does -->
+  @if (step() === 1) {
+    <section class="setup-step">
+      <h1>Welcome to Trailarr</h1>
+      <p class="setup-lead">Trailarr downloads trailers for the movies and series you already have, and keeps them next to your media so Plex, Emby and Jellyfin show them.</p>
+      <ul class="setup-points">
+        <li><strong>It reads your library</strong> from Radarr, Sonarr or Plex. It never changes anything there.</li>
+        <li><strong>Profiles decide what to download</strong> — quality, format, and which media each one covers. Two are ready to use.</li>
+        <li><strong>Nothing downloads until you say so.</strong> This guide ends by showing you what the first run would do.</li>
+      </ul>
+      <p class="setup-note">This takes about two minutes. You can leave at any point and finish later — anything you set up is kept.</p>
+    </section>
+  }
+
+  <!-- 2. The first connection -->
+  @if (step() === 2) {
+    <section class="setup-step">
+      <h1>Connect your library</h1>
+      <p class="setup-lead">Trailarr needs to read your library from Radarr, Sonarr or Plex.</p>
+      @if (hasConnection()) {
+        <div class="setup-done">
+          <p><strong>{{ connections().length }}</strong> connection{{ connections().length === 1 ? '' : 's' }} added:</p>
+          <ul class="setup-list">
+            @for (connection of connections(); track connection.id) {
+              <li>{{ connection.name }} <span class="setup-muted">({{ connection.arr_type }})</span></li>
+            }
+          </ul>
+          <p class="setup-note">Trailarr checks each connection as you add it, and tells you on the Connections page if a media folder is not visible to it.</p>
+        </div>
+      } @else {
+        <p>Add one now. Trailarr checks it straight away and, if it cannot see your media folders, suggests the path mapping that fixes it.</p>
+        <a class="btn primary" [routerLink]="['/', RouteSettings, RouteConnections, 'add']">Add a connection</a>
+        <p class="setup-note">You will come back here when you are done.</p>
+      }
+      <button class="btn tertiary setup-refresh" type="button" (click)="refreshCounts()">Check again</button>
+    </section>
+  }
+
+  <!-- 3. Better trailers, from TMDB -->
+  @if (step() === 3) {
+    <section class="setup-step">
+      <h1>Better trailers (optional)</h1>
+      @if (hasTmdbKey()) {
+        <p class="setup-lead">A TMDB API key is set up. Trailarr takes trailers from the list TMDB curates before it searches YouTube.</p>
+        <p>You can now set a <strong>Trailer Language</strong> on a profile, so Trailarr downloads the trailer in the language you want.</p>
+      } @else {
+        <p class="setup-lead">Without a key, Trailarr searches YouTube for every trailer and takes the best match it finds.</p>
+        <p>With a free TMDB API key, Trailarr downloads the trailer that the studio published, in the language you ask for.</p>
+        <div class="setup-field">
+          <label for="tmdb_key">TMDB API key</label>
+          <input id="tmdb_key" type="text" [ngModel]="tmdbKey()" (ngModelChange)="tmdbKey.set($event)" placeholder="Paste your key" autocomplete="off" />
+        </div>
+        @if (keyMessage()) {
+          <p class="setup-error">{{ keyMessage() }}</p>
+        }
+        <p class="setup-note">
+          <a href="https://nandyalu.github.io/trailarr/user-guide/settings/tmdb/" target="_blank" rel="noopener">How to get a key</a>
+          — it is free, and takes a minute. You can add it later in Settings > General.
+        </p>
+      }
+    </section>
+  }
+
+  <!-- 4. What the first run would do -->
+  @if (step() === 4) {
+    <section class="setup-step">
+      <h1>What Trailarr would download</h1>
+      @if (mediaCount() === 0) {
+        <p class="setup-lead">Trailarr is reading your library. This takes a few minutes for a large one.</p>
+        <p class="setup-note">This page counts along by itself. You do not have to wait here.</p>
+      } @else {
+        <p class="setup-count">
+          Trailarr has read <strong>{{ mediaCount() }}</strong> media item{{ mediaCount() === 1 ? '' : 's' }}@if (stillReading()) {
+            <span class="setup-still-reading">, and the number is still going up</span>
+          }.
+        </p>
+        @if (previewLoading() && shownItems().length === 0) {
+          <p class="setup-lead">Working out what the first run would download…</p>
+        } @else if (preview(); as summary) {
+          <p class="setup-lead">
+            Trailarr would download <strong>{{ summary.pending_pairs }}</strong> trailer{{ summary.pending_pairs === 1 ? '' : 's' }}
+            for <strong>{{ summary.total_media }}</strong> media item{{ summary.total_media === 1 ? '' : 's' }}.
+          </p>
+          @if (shownItems().length > 0) {
+            <ul class="setup-list setup-preview">
+              @for (item of shownItems(); track item.media_id + '-' + item.profile_id) {
+                <li>{{ item.title }} <span class="setup-muted">{{ item.profile_name }}</span></li>
+              }
+            </ul>
+            @if (hasMoreToShow()) {
+              <button class="btn tertiary setup-more" type="button" [disabled]="previewLoading()" (click)="showMore()">
+                {{ previewLoading() ? 'Reading…' : 'Show more' }}
+                <span class="setup-muted">({{ remainingCount() }} more)</span>
+              </button>
+            } @else if (shownItems().length > pageSize) {
+              <p class="setup-muted">That is the whole list.</p>
+            }
+          }
+        } @else {
+          <p class="setup-lead">Nothing is waiting for a trailer yet.</p>
+        }
+      }
+      <div class="setup-step-actions">
+        <button class="btn tertiary" type="button" (click)="refreshCounts()">Check again</button>
+        @if (mediaCount() === 0 || stillReading()) {
+          <button class="btn secondary" type="button" (click)="continueInBackground()">Continue in the background</button>
+        }
+      </div>
+      @if (mediaCount() === 0 || stillReading()) {
+        <p class="setup-note">Trailarr reads the rest of your library after you go on. The sync is a task on the server, and it does not stop.</p>
+      }
+    </section>
+  }
+
+  <!-- 5. Turn it on -->
+  @if (step() === 5) {
+    <section class="setup-step">
+      <h1>Ready when you are</h1>
+      <p class="setup-lead">Turn downloads on and Trailarr starts working through the list on its next run, about every hour.</p>
+      <p>Prefer to look around first? Leave them off. Trailarr keeps showing what it would download, and you can turn downloads on any time in <strong>Settings > General</strong>.</p>
+      <div class="setup-finish">
+        <button class="btn primary" type="button" (click)="finish(true)">Turn downloads on</button>
+        <button class="btn secondary" type="button" (click)="finish(false)">Leave them off for now</button>
+      </div>
+    </section>
+  }
+
+  <footer class="setup-actions">
+    @if (step() > 1) {
+      <button class="btn tertiary" type="button" (click)="back()">Back</button>
+    }
+    <span class="setup-spacer"></span>
+    <button class="btn tertiary" type="button" (click)="leave()">Skip setup</button>
+    @if (step() < totalSteps) {
+      @if (step() === 3 && !hasTmdbKey()) {
+        <button class="btn primary" type="button" [disabled]="savingKey()" (click)="saveTmdbKey()">
+          {{ tmdbKey().trim() ? (savingKey() ? 'Checking…' : 'Save and continue') : 'Skip for now' }}
+        </button>
+      } @else {
+        <button class="btn primary" type="button" [disabled]="step() === 2 && !hasConnection()" (click)="next()">Continue</button>
+      }
+    }
+  </footer>
+</div>

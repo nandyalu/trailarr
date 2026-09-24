@@ -240,6 +240,17 @@ function applyCustomFilter(customFilters: CustomFilter[], filter_name: string, m
 }
 
 /**
+ * The filter options that narrow by media type as well as by trailer state.
+ * Home offers these two instead of the downloaded/missing family, so a count
+ * shown for one of them has to be divided by that type's total rather than by
+ * the whole library. Keep in step with the 'movies'/'series' cases below.
+ */
+export const MOVIES_ONLY_FILTERS: Record<string, boolean | undefined> = {
+  movies: true,
+  series: false,
+};
+
+/**
  * Filters a list of media items based on a selected filter option or custom filters.
  *
  * @param allMedia - The complete array of media items to filter.

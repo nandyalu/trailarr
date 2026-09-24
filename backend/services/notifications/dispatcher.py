@@ -180,7 +180,9 @@ def _format_grouped(
     return "\n".join(lines)
 
 
-def _format_batch(notes: list[EventNote], media_cache: dict[int, object]) -> str:
+def _format_batch(
+    notes: list[EventNote], media_cache: dict[int, object]
+) -> str:
     """One message body for a channel's batch: up to MAX_LINES lines,
     then a summary of the rest. A batch too big to list is grouped by
     event type instead."""
@@ -386,7 +388,9 @@ def _discord_payload(
                 }
     else:
         count = len(notes)
-        embed["title"] = f"Trailarr — {count} update{'s' if count != 1 else ''}"
+        embed["title"] = (
+            f"Trailarr — {count} update{'s' if count != 1 else ''}"
+        )
         embed["description"] = _format_batch(notes, media_cache)
     payload = {
         "username": "Trailarr",
@@ -566,13 +570,13 @@ async def _dispatch_pending(force: bool = False) -> None:
                 )
             if not ok:
                 logger.warning(
-                    f"Trailarr could not send a notification to channel"
-                    f" {channel_id}. Check its Apprise URL with the Test button in"
-                    " Settings."
+                    "Trailarr could not send a notification to channel"
+                    f" {channel_id}. Check its Apprise URL with the Test"
+                    " button in Settings."
                 )
         except Exception as e:
             logger.warning(
-                f"Trailarr could not send a notification to channel"
+                "Trailarr could not send a notification to channel"
                 f" {channel_id}: {type(e).__name__}"
             )
 
@@ -589,9 +593,7 @@ async def _dispatch_loop() -> None:
         try:
             await _dispatch_pending()
         except Exception as e:  # never let the loop die
-            logger.warning(
-                f"Trailarr could not send the notifications: {e}"
-            )
+            logger.warning(f"Trailarr could not send the notifications: {e}")
 
 
 def start() -> None:
@@ -633,7 +635,7 @@ async def stop() -> None:
         await _dispatch_pending(force=True)
     except Exception as e:  # best-effort — never block shutdown
         logger.warning(
-            f"Trailarr could not send the last notifications:"
+            "Trailarr could not send the last notifications:"
             f" {type(e).__name__}"
         )
     logger.debug("Notification dispatcher stopped")

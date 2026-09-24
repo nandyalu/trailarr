@@ -6,6 +6,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
+from backup_retention import human_size, prune_backups  # noqa: E402
+
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 BACKEND_DIR = PROJECT_ROOT / "backend"
 CONFIG_DIR = PROJECT_ROOT / "config"
@@ -30,17 +33,12 @@ if OLD_DB.exists():
     shutil.copy2(OLD_DB, backup_path)
     print(f"Database backup created: {backup_path.name}")
 
-    # Keep only the 30 most recent backups
-    backups = sorted(
-        BACKUPS_DIR.glob("trailarr_*.db"), key=lambda p: p.name, reverse=True
-    )
-    to_delete = backups[30:]
-    if to_delete:
-        for old in to_delete:
-            old.unlink()
-        print(f"{len(to_delete)} old backup(s) deleted.")
+    # Same retention policy the Docker and direct installations use.
+    deleted, freed = prune_backups(BACKUPS_DIR)
+    if deleted:
+        print(f"{len(deleted)} old backup(s) deleted, {human_size(freed)} freed.")
     else:
-        print(f"Backup count: {len(backups)}, no old backups deleted.")
+        print(f"Backup count: {len(list(BACKUPS_DIR.glob('trailarr_*.db')))}, nothing deleted.")
 else:
     print("No existing database found, skipping backup.")
 

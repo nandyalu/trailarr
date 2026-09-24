@@ -49,5 +49,3 @@ def read_all(
     return [
         ConnectionRead.model_validate(connection) for connection in connections
     ]
-
-

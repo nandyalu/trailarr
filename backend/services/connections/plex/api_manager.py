@@ -292,9 +292,7 @@ class PlexAPI:
         """Trigger a targeted metadata refresh for a single item."""
         url = f"{self.server_url}/library/metadata/{rating_key}/refresh"
         try:
-            await self.get_query_json(
-                url, method="PUT", expect_json=False
-            )
+            await self.get_query_json(url, method="PUT", expect_json=False)
             logger.debug(f"Triggered refresh for item {rating_key}")
             return True
         except Exception as e:

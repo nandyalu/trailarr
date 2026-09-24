@@ -32,10 +32,10 @@ from database.models.connection import (
 from database.models.media import MediaCreate
 from database.engine import get_session, write_session
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 @write_session
 def _make_conn(
@@ -59,9 +59,7 @@ def _make_conn(
     _session.refresh(conn)
     if root:
         _session.add(
-            PathMapping(
-                connection_id=conn.id, path_from=root, path_to=root
-            )
+            PathMapping(connection_id=conn.id, path_from=root, path_to=root)
         )
         _session.commit()
     return conn.id  # type: ignore
@@ -94,6 +92,7 @@ def _mc(
 # base helpers
 # ---------------------------------------------------------------------------
 
+
 class TestLibraryRootHelpers:
 
     @pytest.fixture(autouse=True)
@@ -109,9 +108,7 @@ class TestLibraryRootHelpers:
         assert self.root in roots
 
     def test_root_itself_detected(self):
-        assert media_base._is_at_or_above_library_root(
-            self.root, {self.root}
-        )
+        assert media_base._is_at_or_above_library_root(self.root, {self.root})
 
     def test_parent_of_root_detected(self):
         assert media_base._is_at_or_above_library_root(
@@ -131,9 +128,7 @@ class TestLibraryRootHelpers:
         )
 
     def test_empty_path_not_detected(self):
-        assert not media_base._is_at_or_above_library_root(
-            "", {self.root}
-        )
+        assert not media_base._is_at_or_above_library_root("", {self.root})
 
     def test_trailing_slash_path_detected(self):
         assert media_base._is_at_or_above_library_root(
@@ -144,6 +139,7 @@ class TestLibraryRootHelpers:
 # ---------------------------------------------------------------------------
 # read_by_folder_path: stage-2 root guard
 # ---------------------------------------------------------------------------
+
 
 class TestReadByFolderPathRootGuard:
 
@@ -187,6 +183,7 @@ class TestReadByFolderPathRootGuard:
 # Arr sync adoption (_read_plex_only_by_folder_path via create_or_update_bulk)
 # ---------------------------------------------------------------------------
 
+
 class TestArrAdoptionRootGuard:
 
     @pytest.fixture(autouse=True)
@@ -196,9 +193,7 @@ class TestArrAdoptionRootGuard:
         self.plex_conn = _make_conn(
             f"AdoptGuardPlex-{self._p}", ArrType.PLEX, self.root
         )
-        self.arr_conn = _make_conn(
-            f"AdoptGuardArr-{self._p}", ArrType.SONARR
-        )
+        self.arr_conn = _make_conn(f"AdoptGuardArr-{self._p}", ArrType.SONARR)
 
     def test_new_arr_item_never_adopts_root_row(self):
         """The second bite of the bug: a new Arr series must not adopt a
@@ -266,6 +261,7 @@ class TestArrAdoptionRootGuard:
 # ---------------------------------------------------------------------------
 # plex_create_or_update_bulk: stage-2 root guard and stage-3 txdb fallback
 # ---------------------------------------------------------------------------
+
 
 class TestPlexUpsertRootGuard:
 

@@ -1,9 +1,45 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestones A+B DONE — merged to `dev` Aug 28, 2026 (PR #658),
-shipping in v0.11.4; C–D not started · **Releases:** incremental —
-C targets v0.13.x (post-reorg, Nov 2026), D anytime · **Depends on:** nothing hard;
+**Status:** Milestones A+B DONE — shipped in v0.11.4. **C DONE** (Sep 11, 2026, branch
+`feat/phase8-tmdb`, ships with v0.13.0). **E1 DONE** (Sep 20, 2026, ships with v0.13.0);
+D and E2 not started · **Releases:** incremental — C and E1 ship in v0.13.0, D anytime,
+E2 with or after D · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
+
+**C execution notes (Sep 11, 2026):**
+
+- Built on the Phase 8 branch, because TMDB is the reason to expect new installs.
+- The five steps are as written below. Step 2 hands off to the existing Add Connection
+  page rather than embedding it: that page owns its own routing and the inline doctor,
+  and the guide remembers its step, so leaving and coming back resumes it (C3).
+- C1 needed two mechanisms, not one. The startup pass records an installation that is
+  already in use, but it runs a minute after start, and for that minute an upgraded
+  installation would have been told it needs the guide. `status()` therefore records the
+  same decision the moment anyone asks. Verified against a copy of the 3,704-title
+  library: `needed:false` on the first request after boot, and the browser goes to
+  `/home` — including when `/setup` is typed by hand.
+- The guard has to wait for the auth check. Angular runs the guards of a route at the
+  same time, so asking about the setup raced `authGuard`: with the web UI login off, the
+  session cookie is minted by the call that guard makes, and the setup request came back
+  401 and fell through to "no guide". Chaining it after the cached auth check fixes it.
+- C4 is done (Sep 11, 2026). Step 4 asks the server every four seconds while it is on
+  screen, says how many media items are in so far, and says when that number is still
+  going up. A "Continue in the background" button next to it goes on with the guide
+  while the sync runs, because the sync is a task on the server. The preview reads 25
+  rows at a time with a "Show more" button, over the `limit`/`offset` the endpoint
+  already had. Verified in a browser against a copy of the 3,705-title library: the
+  count climbed 0 → 900 → 2,100 → 3,705, the "still going up" line came and went with
+  it, the whole 92-row list read in three clicks, "Check again" put it back to the first
+  page, and the poll stopped when the step did.
+- Still open for a later pass: C2 (URL_BASE was not tested under a sub-directory).
+
+**Note (Sep 11, 2026):** C's dependencies are all shipped or ready — Phase 7 is out in
+v0.12.0, Phase 3's preview endpoint has been in since v0.10.2, and Phase 8 brings the
+two fields step 3 wants (the TMDB key and the trailer language). C targets v0.13.x,
+which is the train Phase 8 is on, so the wizard can carry the key on the day it lands.
+Until C exists, a fresh install sees only the empty state on the Connections page
+("No connections configured yet"), and the TMDB key is discoverable only through the
+Health page or the docs.
 
 **Milestone A execution notes (Aug 14, 2026):**
 
@@ -178,8 +214,25 @@ Wizard shown when the app has zero connections (and re-runnable from Settings �
 1. Welcome + what Trailarr does (one screen, not a tour).
 2. Add first connection — Connection Doctor runs inline; can't advance with red
    path/permission results without an explicit "I know what I'm doing" skip.
-3. Defaults: trailer language (Phase 8 field), keep-or-edit the two default profiles
-   (plain-language summary of what they'll do — no filter UI here).
+3. Defaults: **TMDB API key** and trailer language (both Phase 8 fields), keep-or-edit
+   the two default profiles (plain-language summary of what they'll do — no filter UI
+   here).
+
+   The key belongs here, and it belongs before the language. It is the setting that
+   most changes which trailer a user gets — without one Trailarr searches YouTube and
+   takes the best match; with one it downloads what the studio published, in the
+   language asked for — and a new user has no way to know it exists. Offer it with the
+   same three facts the Health page uses: what happens without a key, what a key gives,
+   and that it is free, with a link to `user-guide/settings/tmdb.md`.
+
+   Skippable in one click, and never a blocker: Trailarr works without a key, and a
+   setup screen that argues with someone in a hurry is worse than no screen. The
+   language field is only worth showing once a key is set, because without one Trailarr
+   cannot know what language a trailer is in.
+
+   Already covered for existing installs: the Health page lists the key with a neutral
+   status and the same link (v0.13.0), so this step is about the fresh install that
+   never opens that page.
 4. First sync runs with progress (websocket), then **preview screen** (Phase 3's
    library-wide pending view): "Trailarr would download N trailers" with the list.
 5. Finish = user explicitly enables downloads (see Phase 3 preview-mode setting);
@@ -202,6 +255,94 @@ Button in Settings → About/Health: downloads a zip with sanitized settings (al
 secrets/API keys/URLs masked, cookies excluded), health-check results, app/OS/versions,
 last ~500 log lines, DB shape stats (row counts only — no titles/paths unless the user
 ticks "include library details"). Issue templates updated to request the bundle.
+
+## Milestone E — Backups & restore (retention fix now, UI with or after D)
+
+Raised by [#681](https://github.com/nandyalu/trailarr/issues/681): a user found 1.5 GB of
+database backups. Trailarr keeps the newest 30 and nothing else, so a 45 MB database
+bounds at 1.35 GB — the cap exists but it does not bound disk. Backups are also silent
+(startup logs only), have no UI, no settings and no API, and yet `version_guard.py`
+already tells a user to restore from them after a downgrade. They are load-bearing
+recovery with no controls, which is why this is a milestone rather than a fix.
+
+**The same policy is implemented four times today. All four move together:**
+
+| Path | Location | Today |
+|---|---|---|
+| Docker | `scripts/start.sh:13-29` | copy, keep 30, auto-restore if `alembic upgrade` fails |
+| Direct install | `scripts/start/start.py:238-257` | same policy, hardcoded `backups[30:]` |
+| CLI update | `scripts/cli/trailarr_cli.py:404` | `backups/update_<tag>/` — **no cap at all** |
+| Dev launcher | `scripts/launch.py:33-43` | same 30 |
+
+### Stage E1 — bound the disk — DONE (ships in v0.13.0)
+
+**Defaults: keep 10 backups, 30 days** (KR, Sep 20 2026), overridable with
+`BACKUP_KEEP_COUNT` / `BACKUP_KEEP_DAYS`. Both limits apply together: the count bounds a
+frequent restarter, the age removes the stale files of a rare one. Neither alone does
+both, which is why 30-by-count let a 45 MB database reach 1.35 GB.
+
+**The four implementations became one.** Rather than write the new rule twice more,
+`scripts/backup_retention.py` holds it; `start.sh` runs it as a command, and the other
+three import `prune_backups`. Stdlib only, no `backend/` imports — it runs before the
+app and before the venv is certain. This also brought the uncapped `update_<tag>/`
+directories under the same policy; they counted as entries, not a separate family.
+
+Execution notes, against what this plan predicted:
+
+1. **The `.env` load order was the real trap, as written.** `start.sh` loaded
+   `APP_DATA_DIR/.env` at line 47, after the backup at 13-29, so a stored retention
+   setting would have been read too late to do anything in Docker. The load moved above
+   the backup block. Side effect worth knowing: `alembic upgrade` now inherits `.env`
+   through the shell as well. Precedence is unchanged — `load_env_file` and
+   `load_dotenv(override=False)` both keep an already-set variable — so the values are
+   the same either way.
+2. **Drift is now structural, not a test promise.** `test_backup_retention.py` still
+   asserts every path calls the shared module and that none of the four old spellings
+   (`backups[30:]`, `tail -n +31`, `-gt 30`) comes back, plus the load order and the
+   fact that a retention failure cannot stop the container.
+3. **Verified by running it**, not only by the suite: the Docker shell fragment against
+   a seeded folder of 41 entries (12 fresh, 28 stale, one 300-day update dir) left
+   exactly the 10 newest; `start.py:_backup_database` ran for real against a seeded data
+   dir; the CLI and launcher import blocks resolve.
+
+Left for E2, deliberately: the total-size cap. Count plus age bounds the folder for
+every real library, and a size cap is a setting with no UI to set it in.
+
+### Stage E2 — Backups card on the Health page (with or after D)
+
+Same surface as Milestone B, same principle — the app tells you about itself. Lists
+backups with sizes and a folder total, exposes retention settings, and offers Back up
+now, download, delete, and restore.
+
+Two decisions settled up front:
+
+- **"Back up now" cannot be `shutil.copy2`.** The startup copy is safe only because the
+  app has not started yet. A backup taken while the app is running must use `VACUUM INTO`
+  or the `sqlite3` backup API, or it ships a database missing its WAL.
+- **Restore requires a restart, and the plan says so rather than pretending otherwise.**
+  The app stages the chosen backup with a marker file and `start.sh` swaps it in on the
+  next boot. Docker users restart the container; the CLI can do it directly. No in-app
+  hot restore — a running app holds the database open.
+
+### Wargame (E)
+
+- E1. A library whose database is 200 MB: the count cap alone allows 6 GB. The size cap
+  has to win over the count cap, and the message has to say which one deleted what.
+- E2. Retention set to 1 while the migration-failure restore path depends on the backup
+  taken moments earlier — that backup is the current run's, never a retention candidate.
+- E3. Restore of a backup from an older schema: the app boots, Alembic migrates it
+  forward. Restore of a NEWER one hits the `version_guard.py` downgrade guard, which is
+  the correct refusal — verify the message names the backups folder.
+- E4. Backups folder on a full or read-only disk: the app starts anyway and reports it.
+  A failed backup must never block boot, but it must not be silent either.
+- E5. A user deletes the backups folder while the app runs; "Back up now" recreates it.
+
+### Docs to update (E)
+
+New backups section under `docs/user-guide/settings/` (with the Health page docs):
+what is backed up and when, the retention settings, restore-needs-a-restart, and where
+the files live. `docs/troubleshooting/` gains the restore walkthrough that
+`version_guard.py`'s downgrade message currently points at with no page behind it.
 
 ## Pitfalls (track-wide)
 
@@ -251,3 +392,6 @@ configurable in UI. Verified end-to-end on a running app.
 C: fresh scratch install → working, previewed, downloads-enabled library without
 touching docs. D: bundle attached to a test issue contains zero secrets (grep-verified
 in a test).
+E1: the backups folder cannot grow past the configured size on any of the four paths,
+proven against a copy of the real library rather than a fixture. E2: a user can see what
+backups exist, take one, and restore one without a shell.

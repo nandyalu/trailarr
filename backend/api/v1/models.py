@@ -66,6 +66,8 @@ class Settings(BaseModel):
     gpu_enabled_nvidia: bool
     log_level: str
     monitor_enabled: bool
+    setup_completed: bool
+    tmdb_api_key: str  # Masked; the key itself never leaves the server
     server_hostname: str
     server_model: str
     server_platform: str

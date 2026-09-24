@@ -225,3 +225,6 @@ frontend/typings
 .DS_Store
 Thumbs.db
 .devcontainer/devcontainer.local.jsonc
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

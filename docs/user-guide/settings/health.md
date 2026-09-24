@@ -13,6 +13,7 @@ The **Settings > Health** page runs live checks of the parts that Trailarr depen
 | **yt-dlp** | The version and update channel (stable/nightly), with a warning when a newer version is available. Downloads often fail with an old version after YouTube changes its site. |
 | **Trailarr version** | Your version against the latest release. |
 | **YouTube cookies** | Whether a cookies file is set up, how many youtube.com cookies it has, and whether they are expired. |
+| **TMDB** {{ version_badge("add", "0.13.0") }} | Whether a [TMDB API key](tmdb.md) is set up and works. Optional: with no key this check is grey and never makes the page report an issue, and Trailarr searches YouTube for every trailer as it always did. A key is the setting that most changes which trailer you get, so the check links to the page that says how to get one. |
 | **Connections** | A summary of the [Connection Doctor](./connections/index.md#connection-doctor) results. When no connection has a report yet, this check runs the doctor. |
 | **Image cache** | The poster/image folder exists and is writable. |
 | **Disk space** | Free space on the config volume and on every media disk. Trailarr shows a warning when a media disk has less than 5 GB free. A full disk makes downloads fail with an error that does not mention space. A library that uses more than one disk gets one line for each disk. |
