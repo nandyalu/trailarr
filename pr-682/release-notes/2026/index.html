@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0130-tbd" class="md-skip">
+        <a href="#v0130-september-24-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2476,10 +2476,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0130-tbd" class="md-nav__link">
+  <a href="#v0130-september-24-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.13.0</strong> - <em>TBD</em>
+        <strong>v0.13.0</strong> - <em>September 24, 2026</em>
       </span>
     </span>
   </a>
@@ -3111,10 +3111,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v0130-tbd" class="md-nav__link">
+  <a href="#v0130-september-24-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <strong>v0.13.0</strong> - <em>TBD</em>
+        <strong>v0.13.0</strong> - <em>September 24, 2026</em>
       </span>
     </span>
   </a>
@@ -3543,11 +3543,11 @@
 
   <h1 id="__skip">2026</h1>
 
-<h2 id="v0130-tbd"><strong>v0.13.0</strong> - <em>TBD</em></h2>
+<h2 id="v0130-september-24-2026"><strong>v0.13.0</strong> - <em>September 24, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
 <li>
-<p><strong>Trailers now come from the list that TMDB curates, in the language you want</strong> — add a TMDB API key in <code>Settings &gt; General</code>, and Trailarr downloads a trailer that the studio published instead of searching YouTube and taking the best match. Radarr reports one trailer id and it is usually English, so a trailer in another language meant turning on <code>Always Search</code> and accepting whatever a search returned. Trailarr now asks TMDB for a trailer in the language your profile asks for, and searches only when there is none — see <a href="../../user-guide/settings/tmdb/">TMDB</a>.</p>
+<p><strong>Trailers now come from the list that TMDB curates, in the language you want</strong> — add a TMDB API key in <code>Settings &gt; General</code>, and Trailarr downloads a trailer that the studio published instead of searching YouTube and taking the best match. Radarr reports one trailer id and it is usually English, so a trailer in another language meant turning on <code>Always Search</code> and accepting whatever a search returned. Trailarr now asks TMDB for a trailer in the language your profile asks for, and searches only when there is none — see <a href="../../user-guide/settings/tmdb/">TMDB</a>. Thanks <a href="https://github.com/Jorman">@Jorman</a> for the request, and for the TMDB queries that showed how! (<a href="https://github.com/nandyalu/trailarr/issues/511">#511</a>)</p>
 </li>
 <li>
 <p><strong>Every media item shows the videos Trailarr can download</strong> — the new <code>Known videos</code> list on the media details page shows each video and where it came from: one you chose, the TMDB list, the id from Radarr or Sonarr, or an earlier YouTube search. Trailarr takes the first one that works — see <a href="../../user-guide/library/media-details/#known-videos">Known videos</a>.</p>
@@ -3562,13 +3562,13 @@
 <p><strong>A new installation gets a setup guide</strong> — the first time you open the web page, Trailarr walks you through what it does, your first connection, the optional TMDB API key, and what the first run would download — then you decide when downloads start. Every step can be skipped, and an installation that already has a connection or any media never sees it.</p>
 </li>
 <li>
-<p><strong>The filter button counts what it found</strong> — the button now reads <code>2789 / 3746</code>: how many items the filter matched, and how many the page can show. On the <code>Home</code> page this is how much of your library has a trailer. On the <code>Movies</code> and <code>Series</code> pages, select <code>Downloaded</code> or <code>Missing</code> to see the same count for that type — see <a href="../../user-guide/library/#filtering">Filtering</a>.</p>
+<p><strong>The filter button counts what it found</strong> — the button now reads <code>2789 / 3746</code>: how many items the filter matched, and how many the page can show. On the <code>Home</code> page this is how much of your library has a trailer. On the <code>Movies</code> and <code>Series</code> pages, select <code>Downloaded</code> or <code>Missing</code> to see the same count for that type — see <a href="../../user-guide/library/#filtering">Filtering</a>. Thanks <a href="https://github.com/jaycedk">@jaycedk</a> for the idea and the exact format! (<a href="https://github.com/nandyalu/trailarr/issues/618">#618</a>)</p>
 </li>
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
 <li>
-<p><strong>Old database backups are deleted</strong> — Trailarr copies the database at every start, and kept the newest 30 copies. That limits a count, not a disk: one user found 1.5 GB of backups. Trailarr now keeps 10 backups and deletes any backup more than 30 days old. Set <code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code> to change the limits — see <a href="../../getting-started/01-first-things/environment-variables/#backup_keep_count-and-backup_keep_days">Environment variables</a>. The copy from the current start is never deleted, and the <code>update_&lt;version&gt;</code> folders of a direct installation now obey the same limits.</p>
+<p><strong>Old database backups are deleted</strong> — Trailarr copies the database at every start, and kept the newest 30 copies. That limits a count, not a disk: one user found 1.5 GB of backups. Trailarr now keeps 10 backups and deletes any backup more than 30 days old. Set <code>BACKUP_KEEP_COUNT</code> and <code>BACKUP_KEEP_DAYS</code> to change the limits — see <a href="../../getting-started/01-first-things/environment-variables/#backup_keep_count-and-backup_keep_days">Environment variables</a>. The copy from the current start is never deleted, and the <code>update_&lt;version&gt;</code> folders of a direct installation now obey the same limits. Thanks <a href="https://github.com/JacobBrown4">@JacobBrown4</a> for the report, and for the file sizes that showed the cause! (<a href="https://github.com/nandyalu/trailarr/issues/681">#681</a>)</p>
 </li>
 <li>
 <p><strong>The Health page tells you about the TMDB key</strong> — the page lists the key with the rest of your setup, says what Trailarr does without one, and links to the page that says how to get one. It stays grey while no key is set: a key is optional, so the page does not report an issue for it — see <a href="../../user-guide/settings/health/#the-checks">Health</a>.</p>
