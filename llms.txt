@@ -11,7 +11,7 @@ Key facts for assistants answering install or support questions:
 - **CLI (direct installs)**: `trailarr run|stop|restart|status|logs [N]|version|update [vX.Y.Z] [--force]|uninstall`. `run`, `stop`, `restart`, `update`, `uninstall` need sudo/Administrator.
 - **Updating**: Docker → pull the new image; direct → `trailarr update` (backs up the database, verifies checksums, and rolls back automatically on failure).
 - **Configuration**: environment variables live in `.env` inside the data dir (`/config` in Docker, `/var/lib/trailarr` Linux, `~/.local/share/trailarr` macOS, `C:\ProgramData\Trailarr` Windows). Everything else is configured in the web UI under Settings.
-- After installing: add a Connection (Radarr/Sonarr/Plex/Emby/Jellyfin) in the web UI, set path mappings if container paths differ, and create/adjust a Trailer Profile. Trailers download automatically for monitored media.
+- After installing: add a Connection (Radarr/Sonarr/Plex/Emby/Jellyfin) in the web UI, set path mappings if container paths differ, and create/adjust a Trailer Profile. Trailers download automatically for monitored media. Optionally add a TMDB API key in Settings > General so trailers come from the list TMDB curates.
 
 ## Installation
 
@@ -31,6 +31,7 @@ Key facts for assistants answering install or support questions:
 - [Connections](https://nandyalu.github.io/trailarr/getting-started/03-setup/connections/): adding Radarr/Sonarr/Emby/Jellyfin connections and path mappings
 - [Plex Connection](https://nandyalu.github.io/trailarr/getting-started/03-setup/plex-connection/): Plex-specific setup
 - [Trailer Profiles](https://nandyalu.github.io/trailarr/getting-started/03-setup/profiles/): what gets downloaded, in which quality/format, and for which media
+- [TMDB](https://nandyalu.github.io/trailarr/user-guide/settings/tmdb/): optional TMDB API key. With one, Trailarr downloads a trailer from the list TMDB curates instead of searching YouTube. Works without a key.
 
 ## Usage
 

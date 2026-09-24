@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.61">
+      <meta name="generator" content="zensical-0.0.62">
     
     
       
@@ -1474,6 +1474,8 @@
       
         
       
+        
+      
     
     
     
@@ -1694,6 +1696,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../tmdb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  TMDB
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../notifications/" class="md-nav__link">
         
   
@@ -1748,7 +1777,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_7" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1769,14 +1798,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_7_6" id="__nav_3_7_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3_7_7" id="__nav_3_7_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_7_6">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_7_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1825,10 +1854,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_6_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7_7_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_7_6_2" id="__nav_3_7_6_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_7_7_2" id="__nav_3_7_7_2_label" tabindex="0">
             
   
   
@@ -1845,8 +1874,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_6_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_7_6_2">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_7_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_7_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1954,6 +1983,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Retry Count
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trailer-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Trailer Language
       </span>
     </span>
   </a>
@@ -2835,6 +2875,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#trailer-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Trailer Language
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#stop-monitoring" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2933,6 +2984,8 @@
       
         
           
+        
+      
         
       
         
@@ -3143,6 +3196,37 @@
 <p class="admonition-title">Retries vs. backoff</p>
 <p><span class="twemoji golden" title="Added in v0.10.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0100-july-19-2026">v0.10.0</a> Retries here happen immediately, within the same task run. If all retries fail, the download is attempted again on a later task run with an increasing delay — 1 day after the first failure, then 2 days, then 4, capped at weekly. See <a href="../../../../tasks/#download-missing-trailers">Download Missing Trailers</a>.</p>
 </div>
+<h2 id="trailer-language">Trailer Language</h2>
+<p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Required</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Valid Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">empty</td>
+<td style="text-align: center;">empty, or an ISO 639-1 code</td>
+</tr>
+</tbody>
+</table>
+<p>Which language of trailer this profile downloads. Leave it empty for any language, which is what every profile did before this setting existed.</p>
+<p>A language here is a <strong>filter, not a preference</strong>. A profile that asks for <code>it</code> downloads an Italian trailer or nothing: Trailarr never downloads a German trailer instead, because a trailer in the wrong language is not what you asked for. When Trailarr knows no trailer in that language, it searches YouTube with the <a href="../search/#search-query">Search Query</a> of the profile, which you write and can aim at your language.</p>
+<p>Trailarr only knows the language of a video when something told it. TMDB records a language for each trailer it lists, and you can <a href="../../../../library/media-details/#known-videos">add a video</a> with a language yourself. The id that Radarr reports carries no language, so a profile that asks for a language does not use it.</p>
+<div class="admonition tip">
+<p class="admonition-title">One profile per language</p>
+<p>To keep an Italian trailer and an English one for the same media item, make two profiles, one with <code>it</code> and one with <code>en</code>. Each downloads its own trailer and keeps track of its own file.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">This setting needs a TMDB API key</p>
+<p>The field is disabled until you add a <a href="../../../tmdb/">TMDB API key</a> in <code>Settings &gt; General</code>, and every profile takes any language until then. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell — and a language it cannot check would match nothing, making every download fall back to a YouTube search.</p>
+</div>
 <h2 id="stop-monitoring">Stop Monitoring</h2>
 <p><span class="twemoji orange" title="Updated in v0.10.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0102-july-30-2026">v0.10.2</a></p>
 <p>This option has been <strong>removed in v0.10.2</strong>. Downloads have been tracked per profile since <code>v0.10.0</code>, so it was no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, and downloading never changes the media item's monitor state.</p>
@@ -3312,7 +3396,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.8dcc8e9c.min.js"></script>
       
         <script src="../../../../../copyright-year.js"></script>
       

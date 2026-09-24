@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.61">
+      <meta name="generator" content="zensical-0.0.62">
     
     
       
@@ -1472,6 +1472,8 @@
       
         
       
+        
+      
     
     
     
@@ -1694,6 +1696,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../settings/tmdb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  TMDB
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../settings/notifications/" class="md-nav__link">
         
   
@@ -1748,7 +1777,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1769,14 +1798,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_7_6" id="__nav_3_7_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3_7_7" id="__nav_3_7_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_6">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1825,10 +1854,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_7_6_2" id="__nav_3_7_6_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_7_7_2" id="__nav_3_7_7_2_label" tabindex="0">
             
   
   
@@ -1845,8 +1874,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_6_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_6_2">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3003,6 +3032,12 @@ When any downloads are not linked to a profile, the media pages show a banner ("
 <li>Series: Series only</li>
 </ul>
 <p>Custom filters are also supported here!</p>
+<div class="admonition info">
+<p class="admonition-title">The filter button counts the view</p>
+<p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a>
+The filter button reads <code>2789 / 3746</code>. The first number is how many media items the filter matched. The second number is how many the page can show: every media item on the <code>Home</code> page, every movie on the <code>Movies</code> page, and every series on the <code>Series</code> page.</p>
+<p>On the <code>Home</code> page the count tells you how much of your library has a trailer, because that page shows only media with a downloaded video. On the <code>Movies</code> and <code>Series</code> pages, select <code>Downloaded</code> or <code>Missing</code> to get the same count for that type. A media item counts as done when it has at least one downloaded video, whatever the profile asked for. Custom filters get a count too.</p>
+</div>
 <div class="admonition success">
 <p>When you make a selection for a <code>sort</code> or <code>filter</code> option, browser will remember and apply that next time.</p>
 </div>
@@ -3205,7 +3240,7 @@ When any downloads are not linked to a profile, the media pages show a banner ("
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.8dcc8e9c.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.61">
+      <meta name="generator" content="zensical-0.0.62">
     
     
       
@@ -1466,6 +1466,8 @@
       
         
       
+        
+      
     
     
     
@@ -1685,6 +1687,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/settings/tmdb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  TMDB
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/settings/notifications/" class="md-nav__link">
         
   
@@ -1739,7 +1768,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1760,14 +1789,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_7_6" id="__nav_3_7_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3_7_7" id="__nav_3_7_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_6">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1816,10 +1845,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_6_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_7_6_2" id="__nav_3_7_6_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_7_7_2" id="__nav_3_7_7_2_label" tabindex="0">
             
   
   
@@ -1836,8 +1865,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_6_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_7_6_2">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_7_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_7_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3043,8 +3072,9 @@
 <p>Trailarr only downloads trailers for <strong>monitored</strong> media that match at least one enabled Profile. Check that the media item is monitored (toggle it from the library or Media Details — monitoring is fully under your control since <code>v0.10.1</code>), and that a Profile applies to it (the <strong>Download Profiles</strong> section on Media Details shows exactly which profiles match and why). New media start monitored or unmonitored based on the connection's <a href="../../user-guide/settings/connections/#monitor-types">Monitor New Media</a> setting.</p>
 <p>Also note that since <code>v0.10.0</code>, a download that failed previously is retried with an increasing delay — 1 day after the first failure, doubling up to at most one attempt per week. You can always trigger an immediate download from the Media Details page, which bypasses this wait.</p>
 <h2 id="trailarr-downloaded-an-incorrect-trailer-for-a-movie-or-series-how-can-i-fix-it">Trailarr downloaded an incorrect trailer for a Movie or Series. How can I fix it?</h2>
-<p>Movies: Radarr provides a youtube trailer link for Movies that it gets from TMDB. Trailarr will attempt to download that trailer first, if that fails or not set, Trailarr downloads trailers based on the Movie title and year. If Trailarr downloaded an incorrect trailer, you can manually search on youtube and update the youtube trailer link in Movie details page in Trailarr.</p>
-<p>Series: Sonarr does not provide a youtube trailer link for Series. Trailarr will search for the Series trailer based on the Series title and year. If Trailarr downloaded an incorrect trailer, you can manually search on youtube and update the youtube trailer link in Series details page in Trailarr.</p>
+<p>Open the media details page and look at <strong>Known videos</strong>. The list shows every video Trailarr can download for that item, in the order it tries them: a video you chose, then the trailers that TMDB lists, then the id that Radarr or Sonarr reports, then the result of an earlier YouTube search. Trailarr takes the first one that works — see <a href="../../user-guide/library/media-details/#known-videos">Known videos</a>.</p>
+<p>To choose a different video, find it on YouTube, paste its link into the field above the list, and click the save button. Your video goes to the top of the list, and Trailarr never removes it. Click <strong>Download</strong> to get it now.</p>
+<p><span class="twemoji orange" title="Updated in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a> Radarr reports a YouTube trailer id, and Trailarr uses it. Sonarr has no such field, because it takes its metadata from TVDB and TVDB holds no YouTube trailer ids, so for a series Trailarr searched YouTube by the title and the year — which is where a wrong trailer usually came from. A <a href="../../user-guide/settings/tmdb/">TMDB API key</a> changes that the most for series: Trailarr then takes a trailer that TMDB lists instead of searching.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Trailarr will not delete the trailer that was already downloaded. You have to manually click on <code>Delete</code> button to delete the trailer.</p>
@@ -3227,7 +3257,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.df5d1f2b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.8dcc8e9c.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       
