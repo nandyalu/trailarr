@@ -51,6 +51,9 @@ async def lifespan(app: FastAPI):
     validate_binary_paths()
     # Remove orphaned partial downloads from previous runs (#626)
     cleanup_stale_temp_downloads()
+    # Empty a WAL file that an earlier version let grow too large (#687)
+    flush_records_to_db()
+    flush_logs_to_db()
     # Schedule all tasks
     logging.debug("Scheduling tasks")
     schedule_all_tasks()

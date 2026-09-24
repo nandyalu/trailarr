@@ -60,13 +60,15 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA synchronous=NORMAL")
     # Add busy_timeout for robustness if not already included
     cursor.execute("PRAGMA busy_timeout=20000")  # 20 seconds
+    # Without a limit, the WAL file stays at the largest size it ever had.
+    cursor.execute("PRAGMA journal_size_limit=33554432")  # 32 MiB
     cursor.close()
 
 
 def flush_records_to_db():
-    """Flush in-memory records to the database."""
+    """Write the WAL into the database and empty the WAL file."""
     with engine.connect() as connection:
-        connection.execute(sa_text("PRAGMA wal_checkpoint(FULL);"))
+        connection.execute(sa_text("PRAGMA wal_checkpoint(TRUNCATE);"))
         connection.commit()
 
 
