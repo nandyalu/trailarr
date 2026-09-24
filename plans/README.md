@@ -75,9 +75,11 @@ Standard checklist, in addition to each phase's listed pages:
 | v0.11.1 | — | Unplanned fixes (Plex-only removal cleanup, Windows install, yt-dlp/Deno) | ✅ shipped Aug 11, 2026 | — |
 | v0.11.2 | — | Unplanned fixes (Plex library-root folder match, local-timezone dates) + Create Missing Folders | ✅ shipped Aug 15, 2026 | — |
 | v0.11.3 | 6 | Downloads/files custom-filter family (views) + Plex metadata-refresh fix | ✅ shipped Aug 21, 2026 | ~2 weeks |
-| v0.11.4 | — | Onboarding track A+B (Connection Doctor, Health page, cookies) + Safari dialog fix | merged to dev Aug 28, 2026 | — |
-| v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | Oct 2026 | ~3 weeks |
-| v0.13.0 | 8 | TMDB integration (media-videos candidates table) | Nov 2026 | ~3–4 weeks |
+| v0.11.4 | — | Onboarding track A+B (Connection Doctor, Health page, cookies) + Safari dialog fix | ✅ shipped Aug 29, 2026 | — |
+| v0.11.5 | — | Faster missing-trailer scans (`fix-missing-trailer-scan.md`) + Windows install fixes | ✅ shipped Sep 3, 2026 | — |
+| v0.12.0 | 7 | Backend reorganization (api/services/database/tasks) | ✅ shipped Sep 10, 2026 | ✅ done |
+| v0.12.1 | — | Refresh tasks, health checks, calmer notifications (H22) | ✅ shipped Sep 12, 2026 | — |
+| v0.13.0 | 8 | TMDB integration (media-videos candidates table) + onboarding C + filter counts (#618) + backup retention (E1, #681) | ✅ shipped Sep 24, 2026 | ~3–4 weeks |
 | v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) | Dec 2026 – Jan 2027 | ~3 weeks |
 | v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | Feb 2027 | ~4 weeks |
 | v1.0.0 | 11 | Issues section + delight items + stabilization | Mar 2027 | — |
@@ -94,14 +96,22 @@ target, so every later phase pulls in by ~1 month against the July estimates. v1
 moves from Mar–Apr 2027 to Mar 2027 — one month of the gain is deliberately held back as
 buffer for the December slowdown (Phase 9 spans Dec–Jan) rather than being spent.
 
+**Status update (Sep 24, 2026):** Phase 7 shipped about a month ahead of its Oct target
+(v0.12.0, Sep 10), and Phase 8 shipped about six weeks ahead of its Nov target (v0.13.0,
+Sep 24). The Phase 9–11 targets above are still the Aug 11 estimates. They have not been
+re-dated. The gain is not yet spent — deciding whether to pull those targets in, or hold
+the gain as buffer as on Aug 11, is the maintainer's call. Phase 8's ~3–4 week bake starts
+now, so Phase 9 work should not start before mid-October.
+
 **Parallel tracks alongside the phases:** Onboarding & Diagnostics
 (`track-onboarding-diagnostics.md`) and Media Tags (`track-tags.md`). Neither displaces a
 phase; both ride releases that are already going out.
 
 **Parallel track — Onboarding & Diagnostics** (`track-onboarding-diagnostics.md`):
-Connection Doctor + Health page + cookies UI (milestones A+B) are DONE — merged to `dev`
-Aug 28, 2026 (PR #658), shipping in v0.11.4. The first-run guided setup (C) rides v0.13.x
-(post-reorg); the diagnostics bundle (D) fits any release. Library-wide **preview mode**
+Connection Doctor + Health page + cookies UI (milestones A+B) shipped in v0.11.4
+(PR #658). The first-run guided setup (C) and the backup retention fix (E1) shipped in
+v0.13.0. The diagnostics bundle (D) fits any release; the Backups UI (E2) goes with or
+after D. Library-wide **preview mode**
 shipped with Phase 3 (v0.10.2).
 
 Rules of the ladder:
@@ -197,8 +207,9 @@ the release before it.
 - `phase-02-downloads-engine.md` — DONE (v0.10.0, Jul 19 2026).
 - `track-apprise-notifications.md` — DONE (shipped with v0.10.0).
 - `track-onboarding-diagnostics.md` — parallel track: A+B (Connection Doctor, Health
-  page, cookies UI) DONE (v0.11.4); C (first-run guided setup) DONE (ships v0.13.0);
-  D (diagnostics bundle) and E (backups & restore, from #681) not started.
+  page, cookies UI) DONE (v0.11.4); C (first-run guided setup) and E1 (backup
+  retention, #681) DONE (v0.13.0, Sep 24 2026); D (diagnostics bundle) and E2 (Backups
+  UI) not started.
 - `track-tags.md` — parallel track: media tags. Stage 1 (tags + view filters + bulk
   tag/untag) targets v0.14.x; Stage 2 (tags in profile filters) ships with Phase 10.
 - `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
@@ -206,12 +217,13 @@ the release before it.
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
   — watch for filter-migration and has_downloads reports before starting Phase 6.
 - `phase-06-view-filters.md` — DONE (v0.11.3, Aug 21 2026).
-- `phase-07-backend-reorg.md` — **DONE** (Aug 29, 2026) on `feat/phase7-backend-reorg`,
-  awaiting the v0.12.0 PR. Three stages: A (pure moves, `core/` retired), B (thin the API
+- `phase-07-backend-reorg.md` — DONE (v0.12.0, Sep 10 2026). Three stages: A (pure moves, `core/` retired), B (thin the API
   layer, database layer made standalone, hygiene H1), C (STE100 sweep, every module
   documented). 1594 tests, Docker builds, real-library boot clean. Read its verification
   section before Phase 8 — it records three bugs a green suite could not catch.
-- `phase-08-tmdb.md`
+- `phase-08-tmdb.md` — DONE (v0.13.0, Sep 24 2026, PR #682). Closed #511. Baking
+  ~3–4 weeks before Phase 9 — watch for TMDB-key, `Trailer Language` and Known-videos
+  reports.
 - `phase-09-video-types.md`
 - `phase-10-media-types-seasons.md`
 - `phase-11-issues-v1.md`
