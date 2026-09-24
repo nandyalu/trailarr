@@ -2033,16 +2033,16 @@ wheels = [
 
 [[package]]
 name = "sqlmodel"
-version = "0.0.42"
+version = "0.0.43"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "sqlalchemy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/50/27188d8cbccabf9968d74d4095765399dbc4f9fcae95e928fda69aa44a21/sqlmodel-0.0.42.tar.gz", hash = "sha256:9ecec2b6aa4c2aa58da39d2572e7bef4373419dcd6ec52973c07de7be2b1c516", size = 91737, upload-time = "2026-08-28T19:42:01.611Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/4a/2d0eb65357b9f08cab92e5bb5dd11cf8a49d5dfc1979ecca0f21098896d1/sqlmodel-0.0.43.tar.gz", hash = "sha256:76c552249deda05a9c5db80eb53792f03e24ed7ff4513be415b0bf7a84452672", size = 92090, upload-time = "2026-09-21T15:25:34.824Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/37/d7d6b12b9066005c237de3d52b599298a2693ac423bff0e6b97a90b90bf8/sqlmodel-0.0.42-py3-none-any.whl", hash = "sha256:a732dab1a40e5cbd6ac250cf2b12e8d9b1bf1a47edf27c34d612f359e8875c63", size = 29991, upload-time = "2026-08-28T19:42:00.568Z" },
+    { url = "https://files.pythonhosted.org/packages/82/53/5a412b260a3771798c9803fd219e02f877fb445b64b0a2ea04c1e7484c95/sqlmodel-0.0.43-py3-none-any.whl", hash = "sha256:527b8dae802a49f85fbede0f13d6903964b9e4c02ceeef39fc6ed47a7f3fc7fa", size = 30068, upload-time = "2026-09-21T15:25:33.766Z" },
 ]
 
 [[package]]
@@ -2151,7 +2151,7 @@ requires-dist = [
     { name = "pillow", specifier = "==12.3.0" },
     { name = "quiv", specifier = "==0.10.0" },
     { name = "rich", specifier = ">=15.0.0" },
-    { name = "sqlmodel", specifier = "==0.0.42" },
+    { name = "sqlmodel", specifier = "==0.0.43" },
     { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = "==2026.8.19" },
 ]
 
