@@ -354,6 +354,11 @@ correct name; hacky-profile fixture upgrade produces suggestions and NO unexpect
 downloads (assert download task dry pass). config-dev copy: inference pass summary
 reviewed by maintainer before release.
 
+`max_duration` (decision 10, hygiene H24): tests for 89, 90, 1200 and 1201 through the
+API (`POST`/`PUT` of a profile), not only the model; a gauntlet run from the fixture
+row with `max_duration = 5000` ends at 1200 and the profile list still loads; the
+profile editor slider reaches 1200 in the real app.
+
 Release-fixture gauntlet (`backend/tests/test_upgrade_gauntlet.py`, README rule 4):
 v0.13.0 changed the schema (the `mediavideo` table, `trailerprofile.language`,
 `media.last_videos_refresh`, `downloadattempt.last_video_id`) but added no fixture —
@@ -416,4 +421,7 @@ reads the code (README: "A green suite does not mean the code runs").
 ## Exit criteria
 
 Type-aware satisfaction proven; zero-unexpected-downloads on hacky fixture; Docs
-section executed; release notes with the extras-profile migration guidance.
+section executed; release notes with the extras-profile migration guidance;
+`youtube_trailer_id` dropped with the backfill and filter migration (decision 9);
+the `max_duration` check fixed, the cap at 1200, and stored values above 1200 clamped
+(decision 10, H24) — close #686 with the release.

@@ -99,7 +99,12 @@ none justify their own release. Check items off with the release that shipped th
   heuristic refuses. Fix it together with the allowlist, which does not need a depth
   heuristic.
 
-- [ ] **H14 — retire the bracketed-id fallback in the log handler.** Every backend log
+- [x] **H14 — retire the bracketed-id fallback in the log handler.** — DONE (ships in
+  v0.13.1): the handler reads the media id only from `logger.media()`. The last line
+  that used brackets (`record_new_trailer_download`) now passes the tag, and
+  `test_log_message_safety.py` now rejects any bracketed id in a log message.
+
+  The original entry: Every backend log
   line now passes the media id with `logger.media(id)`, so the fallback in
   `config/logs/db_handler.py` — take the first `[123]` in the message as the media id —
   only serves logs from libraries, and it is what linked seven lines to the wrong title
@@ -237,8 +242,24 @@ none justify their own release. Check items off with the release that shipped th
   broad `except`. Kept out of v0.12.1 because it changes the text a user sees for
   every failing Arr request, which wants its own look at the messages.
 
+- [ ] **H24 — the `max_duration` check is never true.** Scheduled: Phase 9, decision 10.
+  `database/models/trailerprofile.py` checks `if 90 > self.max_duration > 600:`. A
+  chained comparison needs a value below 90 AND above 600, so the check never fails,
+  and the API stores any value. Only the UI slider holds the 600 limit.
+
+  Not fixed in a patch on purpose: the validator is on `_TrailerProfileBase`, so it also
+  runs when a profile is READ. A fix without a migration makes a profile that the API
+  saved with a large value unreadable. Phase 9 fixes the check, raises the cap to 1200
+  (#686), and clamps stored values above 1200 in its migration. The Phase 9
+  verification and exit criteria name it, so it cannot drop out.
+
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
   autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at
   50k rows: 13.3 MB → 0.14 MB in 0.32s. trailarr.db VACUUM-after-migrations still
   lands with Phase 5.
+
+  Changed in v0.13.1 (#687): the VACUUM runs only when at least 25% of logs.db is free
+  pages (`VACUUM_MIN_FREE_RATIO`). The daily purge frees about 3% of the file, and a
+  VACUUM in WAL mode wrote the full file twice for it. A TRUNCATE checkpoint now
+  follows each VACUUM.
