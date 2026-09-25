@@ -16,7 +16,7 @@ logger = ModuleLogger("ImageRefreshTasks")
 
 
 async def refresh_images(
-    recent_only: bool = False, _stop_event: threading.Event | None = None
+    recent_only: bool = False, stop_event: threading.Event | None = None
 ):
     """Refresh images in the system, and update paths in database as \
         needed. This task should be run periodically to ensure that \
@@ -25,11 +25,11 @@ async def refresh_images(
     logger.info("Trailarr refreshes the images.")
 
     await refresh_and_save_media_images(
-        is_movie=True, recent_only=recent_only, _stop_event=_stop_event
+        is_movie=True, recent_only=recent_only, stop_event=stop_event
     )
 
     await refresh_and_save_media_images(
-        is_movie=False, recent_only=recent_only, _stop_event=_stop_event
+        is_movie=False, recent_only=recent_only, stop_event=stop_event
     )
 
     logger.info("Trailarr refreshed the images.")
@@ -39,7 +39,7 @@ async def refresh_images(
 async def refresh_and_save_media_images(
     is_movie: bool,
     recent_only: bool = False,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ):
     if recent_only:
         # Get all media from the database that have been added/updated \
@@ -54,7 +54,7 @@ async def refresh_and_save_media_images(
     plex_tokens: dict[int, str] = {}
     # Create MediaImage objects for each movie/series
     for db_media in db_media_list:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info("Trailarr stopped the image refresh. A stop was requested.")
             return
         # Build extra headers for Plex-hosted images
@@ -88,8 +88,8 @@ async def refresh_and_save_media_images(
         media_image_list.append(fanart_image)
     # Refresh images in the system, and/or get updated paths
     # refresh_media_images modifies the MediaImage objects in place
-    await refresh_media_images(is_movie, media_image_list, _stop_event)
-    if _stop_event and _stop_event.is_set():
+    await refresh_media_images(is_movie, media_image_list, stop_event)
+    if stop_event and stop_event.is_set():
         logger.info("Trailarr stopped the image refresh. A stop was requested.")
         return
     logger.debug(

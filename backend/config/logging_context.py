@@ -42,7 +42,7 @@ def with_logging_context(func):
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
         # 1. Extract or Create
-        trace_id = kwargs.get("_job_id") or kwargs.get("trace_id")
+        trace_id = kwargs.get("job_id") or kwargs.get("trace_id")
 
         token = generate_trace_id(trace_id)  # Falls back to uuid4() internally
         try:
@@ -53,7 +53,7 @@ def with_logging_context(func):
     @wraps(func)
     def sync_wrapper(*args, **kwargs):
         # 1. Extract or Create
-        trace_id = kwargs.get("_job_id") or kwargs.get("trace_id")
+        trace_id = kwargs.get("job_id") or kwargs.get("trace_id")
 
         token = generate_trace_id(trace_id)
         try:

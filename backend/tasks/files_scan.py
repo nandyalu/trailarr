@@ -321,7 +321,7 @@ async def scan_media_folder(
 
 
 async def scan_all_media_folders(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Scan the disk for all media folders to find media files and trailers \
         and update the database with download records."""
@@ -348,7 +348,7 @@ async def scan_all_media_folders(
     modified_trailers = 0
     unavailable_count = 0
     for media in all_media():
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info("Trailarr stopped the disk scan. A stop was requested.")
             return
 

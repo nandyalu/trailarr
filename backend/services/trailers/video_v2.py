@@ -473,14 +473,14 @@ def download_video(
     url: str,
     file_path: str | Path,
     profile: TrailerProfileRead,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> str:
     """Download the video from the given URL
     Args:
         url (str): URL of the video
         file_path (str | Path): Output file path template with %(ext)s
         profile (TrailerProfileRead): Trailer profile used for downloading
-        _stop_event (threading.Event, optional=None): Event to signal stopping the download.
+        stop_event (threading.Event, optional=None): Event to signal stopping the download.
     Returns:
         str: The downloaded (and converted) video file path
     Raises:
@@ -499,7 +499,7 @@ def download_video(
     logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
 
     # Stop if stop event is set
-    if _stop_event and _stop_event.is_set():
+    if stop_event and stop_event.is_set():
         logger.info(
             f"Trailarr stopped the download of {url}. A stop was requested."
         )

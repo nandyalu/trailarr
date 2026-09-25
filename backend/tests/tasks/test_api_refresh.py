@@ -75,7 +75,7 @@ class TestApiRefreshKeepsGoing:
             patch(f"{PKG}.api_refresh_by_id", refresh_one),
             patch(f"{PKG}.refresh_images", new_callable=AsyncMock) as images,
         ):
-            await api_refresh(_stop_event=stop)
+            await api_refresh(stop_event=stop)
 
         refresh_one.assert_not_awaited()
         images.assert_not_awaited()

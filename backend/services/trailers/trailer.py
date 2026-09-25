@@ -159,7 +159,7 @@ def __download_and_verify_trailer(
     media: MediaRead,
     video_id: str,
     profile: TrailerProfileRead,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> tuple[str, VideoInfo | None]:
     """Download the trailer and verify it.
     Returns:
@@ -178,7 +178,7 @@ def __download_and_verify_trailer(
     tmp_dir.mkdir(parents=True, exist_ok=True)
     output_file = tmp_dir / f"{media.id}-trailer.{profile.file_format}"
     output_file = download_video(
-        trailer_url, str(output_file), profile, _stop_event=_stop_event
+        trailer_url, str(output_file), profile, stop_event=stop_event
     )
 
     # Verify and get video info in one pass
@@ -189,7 +189,7 @@ def __download_and_verify_trailer(
         raise DownloadFailedError("Trailer verification failed")
 
     if profile.remove_silence:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             raise StopEventSetError("Stop event set during silence removal")
 
         output_file, _trimmed = video_analysis.remove_silence_at_end(
@@ -207,7 +207,7 @@ async def download_trailer(
     profile: TrailerProfileRead,
     retry_count: int = 2,
     exclude: list[str] | None = None,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> bool:
     """Download trailer for a media object with given profile.
     Args:
@@ -258,7 +258,7 @@ async def download_trailer(
         raise DownloadFailedError(f"No trailer found for {media.title}")
 
     # Stop if stop event is set
-    if _stop_event and _stop_event.is_set():
+    if stop_event and stop_event.is_set():
         logger.info(
             f"Trailarr stopped the download for '{media.title}'.",
             **logger.media(media.id),
@@ -276,7 +276,7 @@ async def download_trailer(
     try:
         # Download the trailer and verify
         output_file, video_info = __download_and_verify_trailer(
-            media, video_id, profile, _stop_event=_stop_event
+            media, video_id, profile, stop_event=stop_event
         )
         # Move the trailer to the media folder (create subfolder if needed)
         final_path = trailer_file.move_trailer_to_folder(
@@ -321,7 +321,7 @@ async def download_trailer(
         return True
     except Exception as e:
         logger.exception(f"Trailarr could not download the trailer: {e}")
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 f"Trailarr stopped the download for '{media.title}'. A stop was"
                 " requested.",

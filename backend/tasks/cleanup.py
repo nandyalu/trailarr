@@ -49,7 +49,7 @@ async def delete_trailer(trailer_path: str, download_id: int):
     return None
 
 
-async def trailer_cleanup(_stop_event: threading.Event | None = None):
+async def trailer_cleanup(stop_event: threading.Event | None = None):
     """
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
     Also cleanup any residual files left in '/tmp' directory.
@@ -73,7 +73,7 @@ async def trailer_cleanup(_stop_event: threading.Event | None = None):
                 **logger.media(media.id),
             )
         for download in media.downloads:
-            if _stop_event and _stop_event.is_set():
+            if stop_event and stop_event.is_set():
                 logger.info(
                     "Trailarr stopped the trailer check. A stop was"
                     " requested."

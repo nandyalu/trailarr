@@ -34,7 +34,7 @@ PAUSE_BETWEEN_CALLS = 0.1
 
 
 async def refresh_media_videos(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Ask TMDB about the media items that have a download waiting."""
     refresher = TMDBRefresher()
@@ -54,7 +54,7 @@ async def refresh_media_videos(
     asked = 0
     skipped = 0
     for media_id in media_ids:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the video refresh. A stop was requested."
             )

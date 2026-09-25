@@ -32,12 +32,12 @@ async def _download_trailer(
     profile: TrailerProfileRead,
     retry_count: int,
     *,
-    _job_id: str | None = None,
-    _stop_event: threading.Event | None = None,
+    job_id: str | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Run the async task in a separate event loop."""
     await download_trailer(
-        media, profile, retry_count, _stop_event=_stop_event
+        media, profile, retry_count, stop_event=stop_event
     )
     return
 
@@ -113,11 +113,11 @@ async def _batch_download_task(
     media_list: list[MediaRead],
     profile: TrailerProfileRead,
     *,
-    _job_id: str | None = None,
-    _stop_event: threading.Event | None = None,
+    job_id: str | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Run the async task in a separate event loop."""
-    await batch_download_task(media_list, profile, _stop_event=_stop_event)
+    await batch_download_task(media_list, profile, stop_event=stop_event)
     return
 
 
