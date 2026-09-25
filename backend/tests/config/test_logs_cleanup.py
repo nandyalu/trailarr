@@ -10,10 +10,12 @@ from sqlalchemy import text as sa_text
 from sqlmodel import col, select
 
 from config.logs.db_utils import (
+    VACUUM_MIN_FREE_RATIO,
     WAL_SIZE_LIMIT,
     async_engine,
     engine,
     get_logs_session,
+    logs_db_free_ratio,
     vacuum_logs_db,
 )
 from config.logs.manager import delete_old_logs
@@ -75,15 +77,53 @@ class TestDeleteOldLogs:
         mock_vacuum.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_vacuum_called_after_deletion(self):
+    async def test_vacuum_runs_when_much_of_the_file_is_free(self):
         seed_logs(2, age_days=40)
-        with patch(
-            "config.logs.manager.vacuum_logs_db", new=AsyncMock()
-        ) as mock_vacuum:
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=VACUUM_MIN_FREE_RATIO),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
             deleted = await delete_old_logs(30)
 
         assert deleted >= 2
         mock_vacuum.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_a_small_purge_skips_vacuum(self):
+        """The daily purge frees about 1/30 of the file. SQLite reuses those
+        pages, so a VACUUM would rewrite the whole file for almost nothing."""
+        seed_logs(2, age_days=40)
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=0.05),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
+            deleted = await delete_old_logs(30)
+
+        assert deleted >= 2
+        mock_vacuum.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_free_ratio_measures_the_real_file(self):
+        seed_logs(3000, age_days=40)
+        # A ratio above 1.0 is never reached, so this purge never vacuums.
+        with patch("config.logs.manager.VACUUM_MIN_FREE_RATIO", 2.0):
+            await delete_old_logs(30)
+
+        assert await logs_db_free_ratio() > 0
+
+        await vacuum_logs_db()
+
+        assert await logs_db_free_ratio() == 0
 
     @pytest.mark.asyncio
     async def test_vacuum_runs_for_real(self):
@@ -99,7 +139,11 @@ class TestDeleteOldLogs:
         seed_logs(500, age_days=40)
         wal = Path(os.environ["APP_DATA_DIR"]) / "logs" / "logs.db-wal"
 
-        await delete_old_logs(30)
+        with patch(
+            "config.logs.manager.logs_db_free_ratio",
+            new=AsyncMock(return_value=1.0),
+        ):
+            await delete_old_logs(30)
 
         assert wal.stat().st_size == 0
 

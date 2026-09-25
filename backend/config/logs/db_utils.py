@@ -64,6 +64,26 @@ def flush_logs_to_db():
         connection.commit()
 
 
+# VACUUM rewrites the full file. Run it only when this part of the file is free.
+VACUUM_MIN_FREE_RATIO = 0.25
+
+
+async def logs_db_free_ratio() -> float:
+    """Return the part of logs.db that is free pages, from 0.0 to 1.0.
+
+    The daily purge deletes about one day of logs in thirty. SQLite uses
+    those free pages again for new logs, so the file does not grow. A
+    VACUUM for so little free space rewrites the full file for almost no
+    gain.
+    """
+    async with async_engine.connect() as connection:
+        free = await connection.execute(sa_text("PRAGMA freelist_count"))
+        total = await connection.execute(sa_text("PRAGMA page_count"))
+        free_pages = free.scalar() or 0
+        total_pages = total.scalar() or 0
+    return free_pages / total_pages if total_pages else 0.0
+
+
 async def vacuum_logs_db() -> None:
     """Reclaim disk space from the logs database.
 
