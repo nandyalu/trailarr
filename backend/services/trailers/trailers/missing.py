@@ -224,7 +224,7 @@ def _build_work_list(
     attempted_pairs: set[tuple[int, int]],
     enabled_profiles: list[TrailerProfileRead],
     profiles_by_id: dict[int, TrailerProfileRead],
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> tuple[list[_WorkItem], int]:
     """Build one sweep without holding a database session during downloads.
 
@@ -241,7 +241,7 @@ def _build_work_list(
         media_manager.read_all_generator(monitored_only=True)
     ) as media_rows:
         for media in media_rows:
-            if _stop_event and _stop_event.is_set():
+            if stop_event and stop_event.is_set():
                 break
             scanned_media += 1
             matching_profiles = find_matching_profiles(media, enabled_profiles)
@@ -348,7 +348,7 @@ async def _run_preview_pass() -> None:
 
 
 async def download_missing_trailers(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Download missing trailers for monitored media items.
 
@@ -412,7 +412,7 @@ async def download_missing_trailers(
     attempted_pairs: set[tuple[int, int]] = set()
 
     while True:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the download of the missing trailers. A stop"
                 " was requested."
@@ -447,10 +447,10 @@ async def download_missing_trailers(
             attempted_pairs,
             enabled_profiles,
             profiles_by_id,
-            _stop_event=_stop_event,
+            stop_event=stop_event,
         )
         scanned_media += sweep_scanned
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Stop event set, terminating download of missing trailers."
             )
@@ -460,7 +460,7 @@ async def download_missing_trailers(
             break
 
         for work_item in work_items:
-            if _stop_event and _stop_event.is_set():
+            if stop_event and stop_event.is_set():
                 logger.info(
                     "Trailarr stopped the download of the missing trailers. A stop"
                     " was requested."
@@ -527,7 +527,7 @@ async def download_missing_trailers(
                     media,
                     profiles_to_process,
                     attempted_downloads,
-                    _stop_event=_stop_event,
+                    stop_event=stop_event,
                     refresher=refresher,
                 )
                 successful_downloads += downloads
@@ -551,7 +551,7 @@ async def _process_single_media_item(
     media: MediaRead,
     profiles: list[TrailerProfileRead],
     total_processed: int = 0,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
     refresher: TMDBRefresher | None = None,
 ) -> tuple[int, int, int]:
     """Download trailers for a media item's unsatisfied, backoff-eligible
@@ -578,7 +578,7 @@ async def _process_single_media_item(
         await refresh_videos_if_stale(media, refresher)
 
     for profile in profiles:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped work on this media item. A stop was requested."
             )
@@ -602,7 +602,7 @@ async def _process_single_media_item(
                 **logger.media(media.id),
             )
             download_successful = await trailer_downloader.download_trailer(
-                media, profile, profile.retry_count, _stop_event=_stop_event
+                media, profile, profile.retry_count, stop_event=stop_event
             )
             if download_successful:
                 download_attempted = True

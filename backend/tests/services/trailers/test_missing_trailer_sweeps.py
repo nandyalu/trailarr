@@ -438,7 +438,7 @@ async def test_stop_event_ends_download_phase_promptly(sweep_harness):
 
     sweep_harness.process.side_effect = process
 
-    await download_missing_trailers(_stop_event=stop_event)
+    await download_missing_trailers(stop_event=stop_event)
 
     assert sweep_harness.process.await_count == 1
 

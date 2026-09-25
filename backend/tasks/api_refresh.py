@@ -21,7 +21,7 @@ from tasks import scheduler
 logger = ModuleLogger("APIRefreshTasks")
 
 
-async def api_refresh(_stop_event: threading.Event | None = None) -> None:
+async def api_refresh(stop_event: threading.Event | None = None) -> None:
     logger.info("Trailarr refreshes the data from every connection.")
     # Get all connections from database
     connections = connection_manager.read_all()
@@ -35,7 +35,7 @@ async def api_refresh(_stop_event: threading.Event | None = None) -> None:
     # the image refresh below never runs at all.
     failed: list[str] = []
     for connection in connections:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info("Trailarr stopped the refresh. A stop was requested.")
             return
         try:
@@ -54,17 +54,17 @@ async def api_refresh(_stop_event: threading.Event | None = None) -> None:
         )
 
     # Refresh images after API refresh to download/update images for new media
-    if _stop_event and _stop_event.is_set():
+    if stop_event and stop_event.is_set():
         logger.info("Trailarr stopped the refresh. A stop was requested.")
         return
-    await refresh_images(recent_only=True, _stop_event=_stop_event)
+    await refresh_images(recent_only=True, stop_event=stop_event)
     logger.info("Trailarr refreshed the data from every connection.")
 
 
 async def api_refresh_by_id(
     connection: ConnectionRead,
     image_refresh=True,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     logger.info(f"Trailarr refreshes the data from '{connection.name}'.")
     # Get connection manager based on connection type
@@ -87,7 +87,7 @@ async def api_refresh_by_id(
 
     # Refresh images after API refresh to download/update images for new media
     if image_refresh:
-        await refresh_images(recent_only=True, _stop_event=_stop_event)
+        await refresh_images(recent_only=True, stop_event=stop_event)
         logger.info("Trailarr refreshed the images.")
 
 
@@ -95,10 +95,10 @@ async def api_refresh_by_id(
 async def _api_refresh_by_id_job(
     connection: ConnectionRead,
     *,
-    _job_id: str | None = None,
-    _stop_event: threading.Event | None = None,
+    job_id: str | None = None,
+    stop_event: threading.Event | None = None,
 ):
-    await api_refresh_by_id(connection, _stop_event=_stop_event)
+    await api_refresh_by_id(connection, stop_event=stop_event)
     return None
 
 
@@ -132,8 +132,8 @@ async def _delete_connection_job(
     connection_id: int,
     connection_name: str,
     *,
-    _job_id: str | None = None,
-    _stop_event: threading.Event | None = None,
+    job_id: str | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Background task: delete a connection and all its cascaded data."""
     logger.info(
