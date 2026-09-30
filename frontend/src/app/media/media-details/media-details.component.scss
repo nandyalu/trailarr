@@ -209,7 +209,15 @@
 .input-row {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 0.5rem;
+
+  // The YouTube field takes what is left of the row. It never shrinks
+  // below its label and input, so when both boxes do not fit, the
+  // language box and buttons wrap to the next line.
+  > .labeled-input:first-child {
+    flex: 1 1 16rem;
+  }
 }
 
 .loading-search {
@@ -382,9 +390,15 @@
    can then use it, which is how one item serves an Italian profile and an
    English one. */
 .video-language-input {
+  // `.labeled-input` is `width: 100%`. With `flex: 0 0 auto` that full
+  // width was the basis and could not shrink, so this box took the row and
+  // squeezed the YouTube field. It holds a 2-letter code: size to it.
   flex: 0 0 auto;
+  width: auto;
 
   input {
+    flex: 0 0 auto;
     width: 4.5rem;
+    min-width: 0;
   }
 }
