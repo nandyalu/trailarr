@@ -92,5 +92,14 @@ async def delete_old_logs(days: int = 30) -> int:
         await session.commit()
         count = result.rowcount or 0
     if count and await logs_db_free_ratio() >= VACUUM_MIN_FREE_RATIO:
-        await vacuum_logs_db()
+        if not await vacuum_logs_db():
+            # Imported here: this module belongs to the log setup, and the
+            # logger imports that setup.
+            from app_logger import ModuleLogger
+
+            ModuleLogger("LogsDatabase").warning(
+                "Trailarr compacted logs.db, but new log lines kept its WAL"
+                " file busy, so the file did not shrink yet. SQLite empties"
+                " the WAL at a later checkpoint."
+            )
     return count

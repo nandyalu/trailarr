@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from config.logs.model import LogBase, AppLogRecord  # noqa F401
 from config.settings import app_settings
+from utils.sqlite_wal import truncate_wal, truncate_wal_async
 
 logs_db = f"sqlite:///{app_settings.app_data_dir}/logs/logs.db"
 logs_async_db = f"sqlite+aiosqlite:///{app_settings.app_data_dir}/logs/logs.db"
@@ -57,11 +58,17 @@ event.listen(async_engine.sync_engine, "connect", _set_sqlite_pragma)
 LogBase.metadata.create_all(engine)
 
 
-def flush_logs_to_db():
-    """Write the WAL into logs.db and empty the WAL file."""
+def flush_logs_to_db() -> bool:
+    """Write the WAL into logs.db and empty the WAL file.
+
+    Returns:
+        bool: False when another connection kept the WAL busy, so it was
+            not emptied. `journal_size_limit` still caps its size.
+    """
     with engine.connect() as connection:
-        connection.execute(sa_text("PRAGMA wal_checkpoint(TRUNCATE);"))
+        done = truncate_wal(connection)
         connection.commit()
+    return done
 
 
 # VACUUM rewrites the full file. Run it only when this part of the file is free.
@@ -84,7 +91,7 @@ async def logs_db_free_ratio() -> float:
     return free_pages / total_pages if total_pages else 0.0
 
 
-async def vacuum_logs_db() -> None:
+async def vacuum_logs_db() -> bool:
     """Reclaim disk space from the logs database.
 
     SQLite keeps deleted pages inside the file, so purging old log rows
@@ -92,14 +99,19 @@ async def vacuum_logs_db() -> None:
     inside a transaction, so it needs an autocommit connection.
 
     VACUUM writes the full database into the WAL. The TRUNCATE checkpoint
-    then empties the WAL file, so the disk space comes back at once.
+    then empties the WAL file, so the disk space comes back at once. New
+    log lines arrive all the time, so the checkpoint can find the WAL busy.
+    It tries a few times.
+
+    Returns:
+        bool: True when the WAL is empty after the VACUUM.
     """
     async with async_engine.connect() as connection:
         connection = await connection.execution_options(
             isolation_level="AUTOCOMMIT"
         )
         await connection.execute(sa_text("VACUUM"))
-        await connection.execute(sa_text("PRAGMA wal_checkpoint(TRUNCATE)"))
+        return await truncate_wal_async(connection, attempts=5)
 
 
 @contextmanager

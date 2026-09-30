@@ -12,10 +12,11 @@ import threading
 from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import Engine, event, QueuePool, StaticPool, text as sa_text
+from sqlalchemy import Engine, event, QueuePool, StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
+from utils.sqlite_wal import truncate_wal
 from config.settings import app_settings
 
 logger = ModuleLogger("database_engine")
@@ -65,11 +66,17 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 
-def flush_records_to_db():
-    """Write the WAL into the database and empty the WAL file."""
+def flush_records_to_db() -> bool:
+    """Write the WAL into the database and empty the WAL file.
+
+    Returns:
+        bool: False when another connection kept the WAL busy, so it was
+            not emptied. `journal_size_limit` still caps its size.
+    """
     with engine.connect() as connection:
-        connection.execute(sa_text("PRAGMA wal_checkpoint(TRUNCATE);"))
+        done = truncate_wal(connection)
         connection.commit()
+    return done
 
 
 @contextmanager
