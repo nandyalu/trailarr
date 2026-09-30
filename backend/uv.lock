@@ -1892,15 +1892,15 @@ wheels = [
 
 [[package]]
 name = "quiv"
-version = "0.10.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sqlmodel" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ae/fb/33a4659e37c2ce38673f9ba3751da3bf151c3332e1c734997359a0069cdc/quiv-0.10.0.tar.gz", hash = "sha256:500c104f268839d34facf2cd1da0364af0c29b82187e61eef4025849233a1a2a", size = 37342, upload-time = "2026-09-08T17:20:51.496Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/06/b9/d2db43aed053eea105bd7c56cf8bc3806593b05cfb8bc2b7dd49b79bfba7/quiv-1.0.1.tar.gz", hash = "sha256:2a78a3c0f55b6f1c5a2356b1654d38d1fe8f0118056795a6ad62207ea2734e5d", size = 39322, upload-time = "2026-09-19T23:25:22.839Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/e2/8305681a0950c8f22945a56144a2b9796af6d8d3edf48d71fea6c0320a9a/quiv-0.10.0-py3-none-any.whl", hash = "sha256:2440b4dfe0a339823b594e4c7ed2d470d76ce7d203938a3a12266854006b37ae", size = 41216, upload-time = "2026-09-08T17:20:50.551Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/30/5e71d22fa8b3f7d3e397bbe053a274a6ecbc8b485628958401a95002cd2e/quiv-1.0.1-py3-none-any.whl", hash = "sha256:7fc2ab0f0d44d1c7e068edabcb15024a75db392238c1d6e8f62b4ecc83be25a9", size = 43250, upload-time = "2026-09-19T23:25:21.617Z" },
 ]
 
 [[package]]
@@ -2118,7 +2118,7 @@ wheels = [
 
 [[package]]
 name = "trailarr"
-version = "0.13.0"
+version = "0.13.1"
 source = { virtual = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -2172,7 +2172,7 @@ requires-dist = [
     { name = "bcrypt", specifier = "==5.0.0" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.141.1" },
     { name = "pillow", specifier = "==12.3.0" },
-    { name = "quiv", specifier = "==0.10.0" },
+    { name = "quiv", specifier = "==1.0.1" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "sqlmodel", specifier = "==0.0.43" },
     { name = "yt-dlp", extras = ["curl-cffi", "default"], specifier = "==2026.8.19" },

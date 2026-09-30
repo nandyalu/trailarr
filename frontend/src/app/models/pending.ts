@@ -12,6 +12,8 @@ export interface MediaPendingProfile {
   satisfied_by: number | null; // download id
   satisfied_via: 'own_download' | 'claim' | null;
   pending: boolean;
+  /** Pending only because Upgrade To TMDB Trailer replaces the trailer. */
+  upgrade: boolean;
   backing_off: boolean;
   attempt_count: number;
   last_error: string | null;
@@ -42,6 +44,8 @@ export interface PendingSummaryItem {
   profile_id: number;
   profile_name: string;
   reason: 'pending' | 'backoff';
+  /** The trailer is on disk, and the download replaces it with a TMDB one. */
+  upgrade: boolean;
   next_eligible_at: Date | null;
 }
 

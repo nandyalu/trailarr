@@ -88,6 +88,49 @@ def choose_candidates(
     return chosen
 
 
+# The sources whose videos an upgrade accepts. A video the user chose is
+# never something to replace, and a TMDB trailer is what the upgrade is for.
+UPGRADE_SOURCES = (VideoSource.USER, VideoSource.TMDB)
+
+
+def upgrade_targets(
+    candidates: list[MediaVideoRead],
+    profile: TrailerProfileRead,
+    *,
+    exclude: list[str] | None = None,
+    last_tried: str | None = None,
+) -> list[MediaVideoRead]:
+    """The videos that a profile with `Upgrade To TMDB Trailer` accepts.
+
+    A trailer on disk that is one of these videos stays. A trailer that is
+    not one of them is replaced by the first of them that downloads. The
+    language filter of `choose_candidates` applies, so any TMDB trailer in
+    the language of the profile is a match, not only the first one.
+
+    Args:
+        candidates (list[MediaVideoRead]): The rows for this media item,
+            already in source order.
+        profile (TrailerProfileRead): The profile to check.
+        exclude (list[str] | None): Ids not to offer, as for
+            `choose_candidates`.
+        last_tried (str | None): The candidate that the last run used, as
+            for `choose_candidates`.
+
+    Returns:
+        list[MediaVideoRead]: The accepted videos, best first. Empty when
+            the setting is off, when there is no TMDB key, when `Always
+            Search` is on, or when TMDB lists nothing for the profile.
+    """
+    if not profile.upgrade_to_tmdb or not app_settings.tmdb_api_key:
+        return []
+    return choose_candidates(
+        [c for c in candidates if c.source in UPGRADE_SOURCES],
+        profile,
+        exclude=exclude,
+        last_tried=last_tried,
+    )
+
+
 def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
     """The log line that says where a video came from.
 

@@ -81,7 +81,7 @@ class TestRefreshPlexTrailerFlags:
             ) as mock_bulk,
             patch("tasks.plex_trailer_refresh.PlexAPI", return_value=mock_api),
         ):
-            await refresh_plex_trailer_flags(_stop_event=stop)
+            await refresh_plex_trailer_flags(stop_event=stop)
             # Cache is built upfront, but no item-level API calls or DB writes should occur.
             mock_api.get_library_item_extras.assert_not_called()
             mock_bulk.assert_not_called()

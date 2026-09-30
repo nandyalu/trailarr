@@ -9,6 +9,10 @@ instead of landing on one download run.
 It asks about the items that have work waiting — the ones a download task
 would look at — and it stops at a limit per run. A library of 1,700 items
 would otherwise send 1,700 requests the first time it runs.
+
+It also asks about the items whose upgrade to a TMDB trailer waits for a
+TMDB list. These have a trailer, so no download task looks at them, and
+without this task Trailarr would never learn that TMDB has a better one.
 """
 
 import asyncio
@@ -18,7 +22,10 @@ import database.manager.media as media_manager
 from app_logger import ModuleLogger
 from services.tmdb.refresh import TMDBRefresher
 from services.trailers.trailers.missing import refresh_videos_if_stale
-from services.trailers.trailers.pending import compute_library_pending
+from services.trailers.trailers.pending import (
+    compute_library_pending,
+    media_awaiting_tmdb,
+)
 
 logger = ModuleLogger("VideosRefreshTask")
 
@@ -34,7 +41,7 @@ PAUSE_BETWEEN_CALLS = 0.1
 
 
 async def refresh_media_videos(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Ask TMDB about the media items that have a download waiting."""
     refresher = TMDBRefresher()
@@ -46,7 +53,13 @@ async def refresh_media_videos(
         return
 
     pending = compute_library_pending(limit=1000)
-    media_ids = [item.media_id for item in pending.items]
+    # Downloads waiting come first. The upgrades waiting for a TMDB list
+    # follow, and an item in both lists is asked about once.
+    media_ids = list(
+        dict.fromkeys(
+            [item.media_id for item in pending.items] + media_awaiting_tmdb()
+        )
+    )
     if not media_ids:
         logger.info("No media item is waiting for a trailer.")
         return
@@ -54,7 +67,7 @@ async def refresh_media_videos(
     asked = 0
     skipped = 0
     for media_id in media_ids:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the video refresh. A stop was requested."
             )

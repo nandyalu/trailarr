@@ -155,39 +155,36 @@ def test_attributes_read_from_an_annotated_argument_exist(path):
     )
 
 
-def test_no_log_message_puts_a_non_media_id_in_brackets():
-    """A `[123]` in a log message is read as the media id.
+def test_no_log_message_puts_an_id_in_brackets():
+    """A `[123]` in a log message links nothing.
 
-    `db_handler.py` searches the message for the first bracketed number and
-    stores it in the mediaid column, which is what makes the Logs page link
-    a line to a title. A bracketed profile, download, channel, connection or
-    section id therefore links the line to whatever media has that id.
+    `db_handler.py` used to read the first bracketed number as the media id.
+    A bracketed profile, download or channel id then linked the line to the
+    wrong title. v0.13.1 removed that fallback (hygiene H14), so only
+    `logger.media(...)` links a line now.
 
-    Pass the id with `logger.media(...)` instead, and keep other ids out of
-    brackets.
+    An id in brackets is the old habit. For a media id it looks like a link
+    and is not one; for any other id it is noise. Pass a media id with
+    `logger.media(...)`, and name the other thing instead of its id.
     """
     import re
 
     offenders = []
-    bracketed = re.compile(r"\[\{([^{}\[\]]+)\}\]")
+    bracketed_id = re.compile(r"\[\{([^{}\[\]]*id)\}\]", re.I)
     for path in _python_files():
         source = path.read_text()
         tree = ast.parse(source)
         lines = source.splitlines()
         for call in _log_calls(tree):
             block = "\n".join(lines[call.lineno - 1 : call.end_lineno])
-            if "logger.media(" in block:
-                continue
-            for match in bracketed.finditer(block):
-                expression = match.group(1)
-                if not re.search(r"media", expression, re.I):
-                    offenders.append(
-                        f"{path.relative_to(BACKEND)}:{call.lineno}"
-                        f" -> [{{{expression}}}]"
-                    )
+            for match in bracketed_id.finditer(block):
+                offenders.append(
+                    f"{path.relative_to(BACKEND)}:{call.lineno}"
+                    f" -> [{{{match.group(1)}}}]"
+                )
     assert offenders == [], (
-        "These log messages put a number that is not a media id in square"
-        " brackets, so the Logs page links them to the wrong title:\n  "
+        "These log messages put an id in square brackets. Brackets no"
+        " longer link a line to a title; use logger.media(...):\n  "
         + "\n  ".join(offenders)
     )
 

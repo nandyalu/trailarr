@@ -25,7 +25,9 @@ def make_download(
 
 
 def make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
-    return SimpleNamespace(id=profile_id, priority=priority)
+    return SimpleNamespace(
+        id=profile_id, priority=priority, upgrade_to_tmdb=False
+    )
 
 
 def make_media(downloads: list) -> SimpleNamespace:

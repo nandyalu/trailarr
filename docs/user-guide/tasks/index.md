@@ -123,6 +123,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 
 - Runs every 12 hours (first run starts 10 minutes after app launch).
 - Asks TMDB which videos belong to the media items that are waiting for a trailer, so the [Known videos](../library/media-details/index.md#known-videos) list is ready before a download needs it.
+- {{ version_badge("add", "0.13.1") }} Also asks TMDB about the media items whose trailer can go to a TMDB trailer, for profiles with [Upgrade To TMDB Trailer](../settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) on. These items have a trailer, so no download waits for them, and without this task Trailarr would not learn that TMDB has a trailer for them.
 - Does nothing when no [TMDB API key](../settings/tmdb.md) is set.
 - Asks about at most 200 media items in one run, and leaves an item alone when its videos were read in the last 7 days. A large library fills in over a few runs instead of sending thousands of requests at once.
 

@@ -9,7 +9,8 @@ first, so `Setting profile [7] on download [12] for media [42]` stored 7 and
 linked the line to the wrong title. And it tied the wording of every log
 line to a parsing rule, which blocks rewriting them.
 
-A caller can now pass the id, and the search stays as a fallback.
+A caller now passes the id with `logger.media(id)`. v0.13.1 removed the
+search (hygiene H14).
 """
 
 import logging
@@ -78,25 +79,52 @@ class TestTaggingALineWithItsMedia:
         assert getattr(records[0], "custom") == "kept"
 
 
-class TestTheMessageSearchFallback:
-    """The database handler's rule, checked here so its limits are written
-    down. Lines that pass the id explicitly do not depend on any of this."""
+class TestTheDatabaseHandler:
+    """What `DatabaseLoggingHandler` stores in the mediaid column.
+
+    Until v0.13.1 the handler read the first `[123]` in the message when a
+    line had no tag, so `Setting profile [7] on download [12] for media [42]`
+    linked to media 7. The fallback is gone (hygiene H14): only the tag
+    links a line.
+    """
 
     @staticmethod
-    def _mediaid_from_message(message: str):
-        import re
+    def _stored_mediaid(record: logging.LogRecord):
+        from contextlib import contextmanager
+        from unittest.mock import MagicMock, patch
 
-        match = re.search(r"\[([0-9]+)\]", message)
-        return int(match.group(1)) if match else None
+        from config.logs.db_handler import DatabaseLoggingHandler
 
-    def test_a_single_bracketed_id_is_found(self):
-        assert self._mediaid_from_message("Downloaded 'Film' [42]") == 42
+        session = MagicMock()
 
-    def test_the_first_bracket_wins_even_when_it_is_the_wrong_number(self):
-        """This is the bug the explicit tag removes. Kept as a test so
-        nobody 'fixes' a message back into this shape by accident."""
-        message = "Setting profile [7] on download [12] for media [42]"
-        assert self._mediaid_from_message(message) == 7  # not 42
+        @contextmanager
+        def fake_session():
+            yield session
 
-    def test_a_message_with_no_brackets_finds_nothing(self):
-        assert self._mediaid_from_message("Trailarr downloaded a trailer.") is None
+        with patch("config.logs.db_handler.get_logs_session", fake_session):
+            DatabaseLoggingHandler().emit(record)
+        session.add.assert_called_once()
+        return session.add.call_args.args[0].mediaid
+
+    @staticmethod
+    def _record(message: str, mediaid: int | None = None):
+        record = logging.LogRecord(
+            "LinkTest", logging.INFO, __file__, 1, message, None, None
+        )
+        if mediaid is not None:
+            record.mediaid = mediaid
+        return record
+
+    def test_the_tag_is_stored(self):
+        record = self._record("Trailarr downloaded the trailer.", mediaid=42)
+        assert self._stored_mediaid(record) == 42
+
+    def test_a_bracketed_number_is_not_read_as_the_media_id(self):
+        record = self._record(
+            "Setting profile [7] on download [12] for media [42]"
+        )
+        assert self._stored_mediaid(record) is None
+
+    def test_the_tag_wins_over_brackets(self):
+        record = self._record("Profile [7] changed.", mediaid=42)
+        assert self._stored_mediaid(record) == 42

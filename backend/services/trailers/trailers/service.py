@@ -215,8 +215,8 @@ async def record_new_trailer_download(
         # Save to database using dedicated download manager
         download_manager.create(download)
         logger.debug(
-            "Successfully recorded new trailer download for media"
-            f" {media.title} [{media.id}]"
+            f"Trailarr recorded the new trailer download for '{media.title}'.",
+            **logger.media(media.id),
         )
 
     except Exception as e:

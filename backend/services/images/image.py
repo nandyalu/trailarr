@@ -180,7 +180,7 @@ async def process_image(
 async def refresh_media_images(
     is_movie: bool,
     media_list: list[MediaImage],
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Refresh images in the disk. \n
     New images will be downloaded if:
@@ -194,7 +194,7 @@ async def refresh_media_images(
     Args:
         is_movie (bool): Whether the media type is movie or show.
         media_list (list[MediaImage]): List of media image objects.
-        _stop_event (threading.Event Optional=None): Event to signal stopping the operation. \n
+        stop_event (threading.Event Optional=None): Event to signal stopping the operation. \n
     Returns:
         None
     """
@@ -202,7 +202,7 @@ async def refresh_media_images(
     sem = asyncio.Semaphore(5)  # Limit to 5 concurrent downloads
 
     async def download(media_image: MediaImage):
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the image refresh. A stop was requested."
             )

@@ -37,76 +37,76 @@ logger = ModuleLogger("BackgroundTasks")
 
 
 @with_logging_context
-async def _check_for_update(*, _job_id: str | None = None):
+async def _check_for_update(*, job_id: str | None = None):
     """Check for updates to the Docker image."""
     await check_for_updates()
 
 
 @with_logging_context
 async def _refresh_api_data(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Refreshes data from Arr APIs."""
-    await api_refresh(_stop_event=_stop_event)
+    await api_refresh(stop_event=stop_event)
 
 
 @with_logging_context
 async def _refresh_images(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Refreshes all images in the database."""
-    await refresh_images(_stop_event=_stop_event)
+    await refresh_images(stop_event=stop_event)
 
 
 @with_logging_context
 async def _scan_all_media_folders(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Scans the disk for trailers."""
-    await scan_all_media_folders(_stop_event=_stop_event)
+    await scan_all_media_folders(stop_event=stop_event)
 
 
 @with_logging_context
 async def _cleanup_trailers(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Cleanup trailers without audio."""
     await delete_old_logs()
-    await trailer_cleanup(_stop_event=_stop_event)
+    await trailer_cleanup(stop_event=stop_event)
 
 
 @with_logging_context
 async def _download_missing_trailers(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Download missing trailers."""
-    await download_missing_trailers(_stop_event=_stop_event)
+    await download_missing_trailers(stop_event=stop_event)
 
 
 @with_logging_context
 async def _refresh_plex_trailer_flags(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Refresh the plex_trailer flag for all Plex-linked media items."""
-    await refresh_plex_trailer_flags(_stop_event=_stop_event)
+    await refresh_plex_trailer_flags(stop_event=stop_event)
 
 
 @with_logging_context
 async def _run_startup_passes(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Run the startup-pass registry (attribution, upgrade guards) in order.
     The download task gates on these completing at least once per database."""
-    await run_startup_passes(_stop_event=_stop_event)
+    await run_startup_passes(stop_event=stop_event)
 
 
 @with_logging_context
 async def _refresh_media_videos(
-    *, _job_id: str | None = None, _stop_event: threading.Event | None = None
+    *, job_id: str | None = None, stop_event: threading.Event | None = None
 ):
     """Ask TMDB which videos belong to the media items that are waiting for
     a trailer, so the list is ready before a download needs it."""
-    await refresh_media_videos(_stop_event=_stop_event)
+    await refresh_media_videos(stop_event=stop_event)
 
 
 # Maps each stable task_key to its handler function.

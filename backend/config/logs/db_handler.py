@@ -1,17 +1,15 @@
 """Write each log record to the database.
 
 The handler also fills the mediaid column, which is what lets the Logs page
-link a line to a title. A caller sets it with `logger.media(id)`; when it is
-not set, the handler falls back to the first number in square brackets in
-the message.
+link a line to a title. A caller sets it with `logger.media(id)`. A line
+without it has no link.
 
-Keep that fallback in mind before you put a number in brackets: a profile or
-channel id there becomes the media id, and the line links to the wrong
-title.
+The handler does not read a media id from the message text. It used to take
+the first number in square brackets, and a bracketed profile or channel id
+then linked the line to the wrong title.
 """
 
 import logging
-import re
 import traceback
 from logging import LogRecord
 
@@ -85,11 +83,6 @@ class DatabaseLoggingHandler(logging.Handler):
             _message = record.getMessage()
             _taskName = get_trace_id() or "System"
             _mediaid = getattr(record, "mediaid", None)
-            if not _mediaid:
-                # Get media ID in [] in the log message if present
-                match = re.search(r"\[([0-9]+)\]", _message)
-                if match:
-                    _mediaid = int(match.group(1))
             _loggername = record.name
             if "alembic" in _loggername:
                 _loggername = "AlembicMigrations"

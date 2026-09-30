@@ -92,7 +92,7 @@ REGISTRY: list[tuple[str, Callable[[], Awaitable[None]], str]] = [
 
 
 async def run_startup_passes(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Run unrecorded (and always-policy) passes in registry order.
 
@@ -102,7 +102,7 @@ async def run_startup_passes(
     """
     completed = startuppass_manager.completed_names()
     for name, func, policy in REGISTRY:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the startup passes. A stop was requested."
             )
