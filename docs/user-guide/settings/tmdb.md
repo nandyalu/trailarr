@@ -54,6 +54,19 @@ An answer from TMDB stays fresh for seven days. A curated list changes rarely, a
 !!! info "With `Always Search` on"
     A profile with [Always Search](profiles/settings/search.md#always-search) on ignores every known video, including the TMDB list, and searches YouTube every time. If you turned it on to get a trailer in your language, a TMDB key and a `Trailer Language` do that better: turn `Always Search` off and set the language.
 
+## Upgrade an existing library
+
+{{ version_badge("add", "0.13.1") }}
+
+A key changes which trailer Trailarr downloads next. It does not change the trailers that you already have. To replace those with TMDB trailers, turn on [Upgrade To TMDB Trailer](profiles/settings/general.md#upgrade-to-tmdb-trailer) in each profile that you want to upgrade.
+
+Trailarr then replaces only the trailers that are not TMDB trailers. It keeps a trailer that TMDB already lists, and it keeps a trailer when TMDB lists none for the item. Most trailers from Radarr are TMDB trailers already, because Radarr takes its trailer id from TMDB. In a test on one real library, about one media item in four needed a new trailer.
+
+[Delete Replaced Trailer](profiles/settings/general.md#delete-replaced-trailer) decides whether the old file stays next to the new one.
+
+!!! info "A large library upgrades over a few days"
+    Trailarr must know the TMDB list of an item before it can compare. The [Refresh Video Lists](../tasks/index.md#refresh-video-lists) task asks TMDB about 200 items in one run, every 12 hours. To go faster, run the task by hand from the Tasks page. The media details page shows which profiles will replace a trailer on the next run.
+
 ## A media item with no TMDB id
 
 Trailarr asks TMDB about an item only when the item has a TMDB id. Radarr reports one for almost every movie. Sonarr reports one for most series, but not all: a series that Sonarr knows only by its TVDB id has none.

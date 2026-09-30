@@ -59,6 +59,11 @@ export class PendingComponent {
       case 'backoff':
         return `${profile.attempt_count} failed attempt${profile.attempt_count === 1 ? '' : 's'}`;
       case 'pending':
+        if (profile.upgrade) {
+          return this.isMonitored()
+            ? 'Will replace the trailer with a TMDB trailer on the next run'
+            : 'Would replace the trailer with a TMDB trailer, but this item is not monitored';
+        }
         return this.isMonitored() ? 'Will download on the next run' : 'Would download, but this item is not monitored';
       case 'disabled':
         return 'Profile is disabled';

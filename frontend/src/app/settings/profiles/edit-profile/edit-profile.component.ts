@@ -89,6 +89,15 @@ export class EditProfileComponent {
    * disabled until then, and says why. */
   readonly hasTmdbKey = computed(() => !!this.settingsService.settings()?.tmdb_api_key);
 
+  /** Upgrade To TMDB Trailer needs a TMDB list, which needs a key, and it
+   * takes from the list, which Always Search never does. Either way it
+   * could do nothing, so it cannot be turned on, and it says why. */
+  readonly upgradeBlockedReason = computed(() => {
+    if (!this.hasTmdbKey()) return 'Add a TMDB API key in Settings > General to use this.';
+    if (this.profile()?.always_search) return 'Turn off Always Search to use this. Always Search never takes a TMDB trailer.';
+    return '';
+  });
+
   helpLinks = {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
     file: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/file/',
