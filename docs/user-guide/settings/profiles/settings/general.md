@@ -69,6 +69,43 @@ Trailarr only knows the language of a video when something told it. TMDB records
 !!! note "This setting needs a TMDB API key"
     The field is disabled until you add a [TMDB API key](../../tmdb.md) in `Settings > General`, and every profile takes any language until then. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell — and a language it cannot check would match nothing, making every download fall back to a YouTube search.
 
+## Upgrade To TMDB Trailer
+
+{{ version_badge("add", "0.13.1") }}
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | false   | true, false   |
+
+Replace a trailer that is not a TMDB trailer with a trailer that is. Use this to rebuild a library that you downloaded before you added a [TMDB API key](../../tmdb.md).
+
+The [Download Missing Trailers](../../../tasks/index.md#download-missing-trailers) task does the replacement. For each media item, it compares the trailer of this profile with the trailers that TMDB lists:
+
+- **The trailer is a TMDB trailer.** Trailarr keeps it. Any TMDB trailer in the [Trailer Language](#trailer-language) of the profile is a match, not only the first one.
+- **The trailer is a video that you chose** on the media details page. Trailarr keeps it.
+- **TMDB lists no trailer for the item** in the language of the profile. Trailarr keeps the current trailer, and asks TMDB again later.
+- **The trailer is not a TMDB trailer.** Trailarr downloads a TMDB trailer to replace it. A trailer with no known video id, such as a file that Trailarr found on disk, is replaced too, because Trailarr cannot tell that it is a TMDB trailer.
+
+A replacement only takes a TMDB trailer (or a video that you chose). It never takes a YouTube search result. When every TMDB trailer fails, Trailarr keeps the current trailer and tries again later, as for any failed download. A replacement does not look at [Skip If Plex Has A Trailer](plex.md), because the trailer in Plex is the one that Trailarr replaces.
+
+!!! tip "A changed language replaces trailers"
+    When you change the Trailer Language of a profile with this setting on, Trailarr replaces each trailer in the old language with a TMDB trailer in the new language, where TMDB lists one.
+
+!!! note "This setting needs a TMDB API key, and `Always Search` off"
+    Without a key, Trailarr has no TMDB list to compare with. [Always Search](search.md#always-search) never takes a trailer from the TMDB list. In both cases the setting can do nothing, so you cannot turn it on.
+
+## Delete Replaced Trailer
+
+{{ version_badge("add", "0.13.1") }}
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | true    | true, false   |
+
+Shows only when `Upgrade To TMDB Trailer` is on. When it is `true`, Trailarr deletes the old trailer after the TMDB trailer replaces it. The new trailer then takes the file name of the old one, when that is the name that the profile gives it. When it is `false`, Trailarr keeps both files, and does not replace the trailer again.
+
+Trailarr deletes the old trailer only after the new one is in the media folder. A failed download never leaves a media item without a trailer.
+
 ## Stop Monitoring
 
 {{ version_badge("upd", "0.10.2") }}

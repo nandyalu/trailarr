@@ -26,6 +26,8 @@ export interface TrailerProfileRead {
   min_duration?: number;
   max_duration?: number;
   always_search?: boolean;
+  upgrade_to_tmdb?: boolean;
+  delete_replaced_trailer?: boolean;
   exclude_words?: string;
   include_words?: string;
   uploader_ids?: string;
@@ -63,6 +65,8 @@ export interface TrailerProfileCreate {
   min_duration?: number;
   max_duration?: number;
   always_search?: boolean;
+  upgrade_to_tmdb?: boolean;
+  delete_replaced_trailer?: boolean;
   exclude_words?: string;
   include_words?: string;
   uploader_ids?: string;

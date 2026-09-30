@@ -405,7 +405,7 @@ async def test_persistent_scan_reverify_disagreement_drains(
     _load(sweep_harness, [scanned_media], [profile])
     sweep_harness.state["current_media"][1] = current_media
 
-    def evaluate(media, profiles):
+    def evaluate(media, profiles, videos=None):
         # Unconditional and stateless: the scan's row is always pending,
         # the re-read row is always satisfied, on every sweep.
         if media is scanned_media:

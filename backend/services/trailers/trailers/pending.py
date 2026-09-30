@@ -8,12 +8,14 @@ reimplementation — and performs no writes: claims the task would apply are
 reported as satisfied-via-claim, not persisted.
 """
 
+from collections.abc import Iterator
 from datetime import datetime
 
 from pydantic import BaseModel
 
 import database.manager.downloadattempt as attempt_manager
 import database.manager.media as media_manager
+import database.manager.mediavideo as video_manager
 from database.manager import trailerprofile
 from database.models.downloadattempt import (
     DownloadAttemptRead,
@@ -21,9 +23,10 @@ from database.models.downloadattempt import (
     next_eligible_at,
 )
 from database.models.media import MediaRead
+from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
-from services.satisfaction import evaluate_satisfaction
+from services.satisfaction import SatisfactionResult, evaluate_satisfaction
 
 
 class MediaPendingProfile(BaseModel):
@@ -37,6 +40,8 @@ class MediaPendingProfile(BaseModel):
     satisfied_by: int | None  # download id
     satisfied_via: str | None  # "own_download" | "claim"
     pending: bool
+    # Pending only because `Upgrade To TMDB Trailer` replaces the trailer.
+    upgrade: bool = False
     backing_off: bool
     attempt_count: int
     last_error: str | None
@@ -58,6 +63,8 @@ class PendingSummaryItem(BaseModel):
     profile_id: int
     profile_name: str
     reason: str  # "pending" | "backoff"
+    # The trailer is on disk, and the download replaces it with a TMDB one.
+    upgrade: bool = False
     next_eligible_at: datetime | None
 
 
@@ -74,6 +81,19 @@ class PendingSummary(BaseModel):
 
 def _profile_name(profile: TrailerProfileRead) -> str:
     return profile.customfilter.filter_name
+
+
+def read_upgrade_videos(
+    profiles: list[TrailerProfileRead],
+) -> dict[int, list[MediaVideoRead]]:
+    """The USER and TMDB trailers per media id, for a library-wide pass.
+
+    Only a profile with `Upgrade To TMDB Trailer` on reads them, so a
+    library with no such profile makes no query at all.
+    """
+    if not any(profile.upgrade_to_tmdb for profile in profiles):
+        return {}
+    return video_manager.read_upgrade_candidates_by_media()
 
 
 def compute_media_pending(
@@ -96,9 +116,11 @@ def compute_media_pending(
     # `matches` is display info for ALL profiles; the engine run below only
     # considers enabled ones (identical to the download task).
     matching_ids = {p.id for p in find_matching_profiles(media, all_profiles)}
-    result = evaluate_satisfaction(
-        media, find_matching_profiles(media, enabled_profiles)
-    )
+    matching_enabled = find_matching_profiles(media, enabled_profiles)
+    videos = None
+    if any(p.upgrade_to_tmdb for p in matching_enabled):
+        videos = video_manager.read_candidates(media.id)
+    result = evaluate_satisfaction(media, matching_enabled, videos)
     details_by_id = {d.profile_id: d for d in result.details}
     unsatisfied_ids = {p.id for p in result.unsatisfied}
 
@@ -112,10 +134,12 @@ def compute_media_pending(
     rows: list[MediaPendingProfile] = []
     for profile in sorted(all_profiles, key=lambda p: p.priority):
         detail = details_by_id.get(profile.id)
+        upgrade = False
         if detail is not None:
             satisfied = detail.satisfied
             satisfied_by = detail.satisfied_by
             satisfied_via = detail.via
+            upgrade = detail.upgrade
         else:
             satisfied_by = own_download_ids.get(profile.id)
             satisfied = satisfied_by is not None
@@ -135,6 +159,7 @@ def compute_media_pending(
                 satisfied_by=satisfied_by,
                 satisfied_via=satisfied_via,
                 pending=pending,
+                upgrade=upgrade,
                 backing_off=backing_off,
                 attempt_count=attempt.attempt_count if attempt else 0,
                 last_error=attempt.last_error if attempt else None,
@@ -170,14 +195,11 @@ def compute_library_pending(
         attempts_by_key = {
             (a.media_id, a.profile_id): a for a in attempt_manager.read_all()
         }
-        for media in media_manager.read_all_generator(monitored_only=True):
-            matching = find_matching_profiles(media, enabled_profiles)
-            if not matching:
-                continue
-            result = evaluate_satisfaction(media, matching)
+        for media, result in _evaluate_library(enabled_profiles):
             if not result.unsatisfied:
                 continue
             pending_media_ids.add(media.id)
+            upgrades = {d.profile_id for d in result.details if d.upgrade}
             for profile in result.unsatisfied:
                 attempt = attempts_by_key.get((media.id, profile.id))
                 eligible = is_eligible(attempt)
@@ -193,6 +215,7 @@ def compute_library_pending(
                         profile_id=profile.id,
                         profile_name=_profile_name(profile),
                         reason="pending" if eligible else "backoff",
+                        upgrade=profile.id in upgrades,
                         next_eligible_at=(
                             next_eligible_at(attempt) if attempt else None
                         ),
@@ -207,3 +230,44 @@ def compute_library_pending(
         limit=limit,
         offset=offset,
     )
+
+
+def media_awaiting_tmdb() -> list[int]:
+    """The media items whose upgrade waits for a TMDB trailer.
+
+    A profile with `Upgrade To TMDB Trailer` keeps its trailer while TMDB
+    lists nothing for it, and that includes a media item that Trailarr
+    never asked TMDB about. The refresh task asks TMDB about these, so
+    that an upgrade can happen at all.
+
+    Returns:
+        list[int]: The media ids, in library order.
+    """
+    enabled_profiles = [
+        p for p in trailerprofile.get_trailerprofiles() if p.enabled
+    ]
+    if not any(p.upgrade_to_tmdb for p in enabled_profiles):
+        return []
+    return [
+        media.id
+        for media, result in _evaluate_library(enabled_profiles)
+        if any(d.awaiting_tmdb for d in result.details)
+    ]
+
+
+def _evaluate_library(
+    enabled_profiles: list[TrailerProfileRead],
+) -> Iterator[tuple[MediaRead, SatisfactionResult]]:
+    """Run the satisfaction rule over every monitored media item.
+
+    The same rule, with the same inputs, as the download task. A media
+    item that no enabled profile matches is left out.
+    """
+    videos_by_media = read_upgrade_videos(enabled_profiles)
+    for media in media_manager.read_all_generator(monitored_only=True):
+        matching = find_matching_profiles(media, enabled_profiles)
+        if not matching:
+            continue
+        yield media, evaluate_satisfaction(
+            media, matching, videos_by_media.get(media.id)
+        )

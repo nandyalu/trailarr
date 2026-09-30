@@ -13,18 +13,30 @@ import threading
 from api.v1 import websockets
 from app_logger import ModuleLogger
 import database.manager.connection as connection_manager
+import database.manager.download as download_manager
 import database.manager.downloadattempt as attempt_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
+import database.manager.mediavideo as video_manager
 from database.models.connection import ArrType
+from database.models.download import DownloadRead
 from database.models.event import EventSource
 from database.models.helpers import MediaUpdateDC
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from services.files import service as files_service
 from services.trailers.inflight import inflight_registry
-from services.trailers.trailers.service import record_new_trailer_download
+from services.trailers.trailers.service import (
+    record_new_trailer_download,
+    rename_trailer_download,
+)
 from services.trailers.video_v2 import download_video
-from services.trailers import trailer_file, trailer_search, video_analysis
+from services.trailers import (
+    resolver,
+    trailer_file,
+    trailer_search,
+    video_analysis,
+)
 from services.trailers.video_analysis import VideoInfo
 from exceptions import DownloadFailedError, StopEventSetError
 
@@ -208,6 +220,7 @@ async def download_trailer(
     retry_count: int = 2,
     exclude: list[str] | None = None,
     stop_event: threading.Event | None = None,
+    replace: list[DownloadRead] | None = None,
 ) -> bool:
     """Download trailer for a media object with given profile.
     Args:
@@ -215,6 +228,10 @@ async def download_trailer(
         profile (TrailerProfileRead): The trailer profile to use.
         retry_count (int, optional): Number of retries if download fails. Defaults to 2.
         exclude (list[str], optional): List of video IDs to exclude from search. Defaults to None.
+        replace (list[DownloadRead], optional): The trailers of this
+            profile that `Upgrade To TMDB Trailer` replaces. When given,
+            only a TMDB trailer (or a video the user chose) is downloaded,
+            and never a search result. Defaults to None.
     Returns:
         bool: True if trailer download was successful, False otherwise.
     Raises:
@@ -240,8 +257,13 @@ async def download_trailer(
     # `Always Search` is applied by the resolver, which skips the videos a
     # search stored earlier and keeps the ones a person or TMDB chose.
 
+    if replace:
+        # An upgrade does not ask Plex: Plex has a trailer because
+        # Trailarr put the old one there.
+        if not _upgrade_still_needed(media, profile, replace):
+            return False
     # Skip download if Plex already has a trailer and profile says to
-    if await _check_plex_trailer(media, profile):
+    elif await _check_plex_trailer(media, profile):
         logger.info(
             f"Plex already has a trailer for '{media.title}'. Trailarr does"
             " not download another one, because Skip If Plex Has A Trailer"
@@ -251,7 +273,9 @@ async def download_trailer(
         return False
 
     # Get the video ID, search if needed
-    video_id = trailer_search.get_video_id(media, profile, exclude)
+    video_id = trailer_search.get_video_id(
+        media, profile, exclude, upgrade_only=bool(replace)
+    )
     media.youtube_trailer_id = video_id
 
     if not video_id:
@@ -298,6 +322,24 @@ async def download_trailer(
             source_detail="TrailerDownload",
         )
 
+        if replace:
+            # The new trailer is in place and recorded before the old one
+            # goes, so a failure above never leaves the item with none.
+            # This runs after the Trailer Downloaded event, so the history
+            # reads "downloaded", then "deleted, replaced".
+            try:
+                await _finish_upgrade(
+                    media, profile, replace, final_path, video_info
+                )
+            except Exception as e:
+                # The new trailer is in place. A failure here must not
+                # reach the retry below, which would download another one.
+                logger.exception(
+                    f"Trailarr replaced the trailer of '{media.title}' but"
+                    f" could not remove the old one: {e}",
+                    **logger.media(media.id),
+                )
+
         # Record download facts last so any events they log (e.g.
         # YouTube ID Changed) appear after the Trailer Downloaded event
         __record_download_facts(media)
@@ -339,7 +381,7 @@ async def download_trailer(
             if video_id:
                 exclude.append(video_id)
             return await download_trailer(
-                media, profile, retry_count - 1, exclude
+                media, profile, retry_count - 1, exclude, replace=replace
             )
         raise DownloadFailedError(
             f"Failed to download trailer for {media.title}"
@@ -350,3 +392,134 @@ async def download_trailer(
         # cleared by task-lifecycle broadcasts and cost at most a lingering
         # spinner until the next 'downloading' reload.
         inflight_registry.finish(media.id)
+
+
+def _upgrade_still_needed(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    replace: list[DownloadRead],
+) -> bool:
+    """Check the upgrade again, with the TMDB list as it is now.
+
+    The download task decided on the list it read before, and asked TMDB
+    again just before this call. The new answer can list the trailer that
+    is already on disk, or nothing at all. Either way the trailer stays.
+    """
+    targets = resolver.upgrade_targets(
+        video_manager.read_candidates(media.id), profile
+    )
+    if not targets:
+        logger.info(
+            f"TMDB lists no trailer for '{media.title}' that the profile"
+            f" '{profile.customfilter.filter_name}' can use. Trailarr keeps"
+            " the current trailer.",
+            **logger.media(media.id),
+        )
+        return False
+    accepted = {target.video_id for target in targets}
+    if any(download.youtube_id in accepted for download in replace):
+        logger.info(
+            f"The trailer of '{media.title}' is already a TMDB trailer."
+            " Trailarr keeps it.",
+            **logger.media(media.id),
+        )
+        return False
+    logger.info(
+        f"Trailarr replaces the trailer of '{media.title}' with a TMDB"
+        f" trailer, because Upgrade To TMDB Trailer is on in the profile"
+        f" '{profile.customfilter.filter_name}'.",
+        **logger.media(media.id),
+    )
+    return True
+
+
+async def _finish_upgrade(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    replace: list[DownloadRead],
+    new_path: str,
+    video_info: VideoInfo | None,
+) -> None:
+    """Delete the replaced trailers, when the profile says to.
+
+    The new trailer then takes the name of the one it replaces, when that
+    is the name the profile gives it. Without this, every upgraded file
+    would keep the "Trailer 2" name that it got while the old file was
+    still there.
+    """
+    if not profile.delete_replaced_trailer:
+        logger.info(
+            f"Trailarr keeps the replaced trailer of '{media.title}',"
+            " because Delete Replaced Trailer is off.",
+            **logger.media(media.id),
+        )
+        return
+    deleted: list[str] = []
+    for download in replace:
+        if not await files_service.delete_file_or_folder(
+            download.path, media.id
+        ):
+            logger.warning(
+                f"Trailarr could not delete the replaced trailer"
+                f" '{download.path}' of '{media.title}'.",
+                **logger.media(media.id),
+            )
+            continue
+        deleted.append(download.path)
+        event_manager.track_trailer_deleted(
+            media_id=media.id,
+            reason="Replaced by a TMDB trailer",
+            source=EventSource.SYSTEM,
+            source_detail="TrailerUpgrade",
+        )
+        logger.info(
+            f"Trailarr deleted the replaced trailer '{download.path}' of"
+            f" '{media.title}'.",
+            **logger.media(media.id),
+        )
+    if deleted:
+        await _take_replaced_name(
+            media, profile, new_path, deleted, video_info
+        )
+
+
+async def _take_replaced_name(
+    media: MediaRead,
+    profile: TrailerProfileRead,
+    new_path: str,
+    deleted: list[str],
+    video_info: VideoInfo | None,
+) -> None:
+    """Rename the new trailer to the name of a trailer it replaced."""
+    current = Path(new_path)
+    preferred = trailer_file.get_trailer_path(
+        current,
+        current.parent,
+        media,
+        profile,
+        video_info=video_info,
+    )
+    if preferred not in deleted:
+        # The name that the profile gives now is not a name that this
+        # upgrade freed. Another file holds it, or the profile changed.
+        return
+    new_download = next(
+        (
+            d
+            for d in download_manager.read_by_media_id(media.id)
+            if d.path == new_path and d.file_exists
+        ),
+        None,
+    )
+    if new_download is None:
+        return
+    try:
+        current.rename(preferred)
+    except OSError as e:
+        logger.warning(
+            f"Trailarr could not rename the new trailer of '{media.title}'"
+            f" to '{preferred}': {e}",
+            **logger.media(media.id),
+        )
+        return
+    await rename_trailer_download(new_download, preferred)

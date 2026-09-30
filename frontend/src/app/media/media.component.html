@@ -60,7 +60,7 @@
                 <span class="preview-title link" [routerLink]="['/media', item.media_id]" (click)="closePreviewDialog()">{{ item.title }}</span>
                 <span class="preview-profile">{{ item.profile_name }}</span>
                 <span class="preview-reason" [class.backoff]="item.reason === 'backoff'">
-                  {{ item.reason === 'backoff' ? 'backing off' : 'would download' }}
+                  {{ item.reason === 'backoff' ? 'backing off' : item.upgrade ? 'would replace' : 'would download' }}
                 </span>
               </div>
             } @empty {

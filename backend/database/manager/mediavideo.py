@@ -107,6 +107,38 @@ def read_candidates(
     return [v for v in ordered if (v.language or "") == language]
 
 
+@read_session
+def read_upgrade_candidates_by_media(
+    *,
+    _session: Session = None,  # type: ignore
+) -> dict[int, list[MediaVideoRead]]:
+    """Get the USER and TMDB trailers of every media item, in one query.
+
+    A library-wide pass that checks `Upgrade To TMDB Trailer` needs these
+    for each media item, and one query per item would be slow on a large
+    library. Only the rows an upgrade can accept are read.
+
+    Returns:
+        dict[int, list[MediaVideoRead]]: The rows per media id, each list
+            in resolution order. A media item with no rows is not a key.
+    """
+    statement = (
+        select(MediaVideo)
+        .where(MediaVideo.video_type == VIDEO_TYPE_TRAILER)
+        .where(col(MediaVideo.season).is_(None))
+        .where(
+            col(MediaVideo.source).in_([VideoSource.USER, VideoSource.TMDB])
+        )
+    )
+    by_media: dict[int, list[MediaVideoRead]] = {}
+    for video in _session.exec(statement).all():
+        by_media.setdefault(video.media_id, []).append(_to_read(video))
+    return {
+        media_id: sort_candidates(videos)
+        for media_id, videos in by_media.items()
+    }
+
+
 @write_session
 def replace_source_rows(
     media_id: int,

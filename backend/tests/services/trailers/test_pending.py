@@ -39,6 +39,7 @@ def make_profile(
         id=profile_id,
         priority=priority,
         enabled=enabled,
+        upgrade_to_tmdb=False,
         customfilter=SimpleNamespace(
             filter_name=name or f"Profile {profile_id}",
             filters=filters or [],
@@ -225,3 +226,82 @@ class TestComputeLibraryPending:
         assert summary.total_media == 5  # counts are for the whole library
         assert summary.pending_pairs == 5
         assert [i.media_id for i in summary.items] == [3, 4]
+
+
+class TestUpgradeInThePendingView:
+    """plans/track-tmdb-upgrade.md: the pending view and the refresh task
+    see an upgrade exactly as the download task does."""
+
+    @staticmethod
+    def _upgrade_profile():
+        profile = make_profile(1)
+        profile.upgrade_to_tmdb = True
+        profile.always_search = False
+        profile.language = ""
+        return profile
+
+    @staticmethod
+    def _with_trailer(media_id: int, youtube_id: str):
+        download = make_download(media_id, 1)
+        download.youtube_id = youtube_id
+        return make_media([download], media_id=media_id)
+
+    def _run(self, fn, media_list, videos_by_media):
+        profile = self._upgrade_profile()
+        patches = _patch_managers([profile], media_list)
+        with (
+            patches[0],
+            patches[1],
+            patches[2],
+            patch(
+                "services.trailers.trailers.pending.video_manager"
+                ".read_upgrade_candidates_by_media",
+                return_value=videos_by_media,
+            ),
+            patch(
+                "services.trailers.resolver.app_settings",
+                SimpleNamespace(tmdb_api_key="k"),
+            ),
+        ):
+            return fn()
+
+    def test_a_replacement_is_pending_and_marked(self):
+        from services.trailers.trailers.pending import compute_library_pending
+
+        from database.models.mediavideo import VideoSource
+
+        tmdb = [
+            SimpleNamespace(
+                video_id="tmdb1", source=VideoSource.TMDB, language="en"
+            )
+        ]
+        summary = self._run(
+            compute_library_pending,
+            [
+                self._with_trailer(1, "search1"),
+                self._with_trailer(2, "tmdb1"),
+            ],
+            {1: tmdb, 2: tmdb},
+        )
+        assert [(i.media_id, i.upgrade) for i in summary.items] == [(1, True)]
+
+    def test_items_without_a_tmdb_list_await_tmdb(self):
+        from services.trailers.trailers.pending import media_awaiting_tmdb
+
+        awaiting = self._run(
+            media_awaiting_tmdb,
+            [self._with_trailer(1, "search1"), make_media([], media_id=2)],
+            {},
+        )
+        # Item 2 has no trailer: it is a plain download, not an upgrade.
+        assert awaiting == [1]
+
+    def test_no_upgrade_profile_reads_no_videos(self):
+        from services.trailers.trailers.pending import read_upgrade_videos
+
+        with patch(
+            "services.trailers.trailers.pending.video_manager"
+            ".read_upgrade_candidates_by_media"
+        ) as read:
+            assert read_upgrade_videos([make_profile(1)]) == {}
+        read.assert_not_called()

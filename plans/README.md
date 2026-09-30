@@ -229,6 +229,9 @@ the release before it.
   UI) not started.
 - `track-tags.md` — parallel track: media tags. Stage 1 (tags + view filters + bulk
   tag/untag) targets v0.14.x; Stage 2 (tags in profile filters) ships with Phase 10.
+- `track-tmdb-upgrade.md` — parallel track: profile setting `Upgrade To TMDB Trailer`
+  (+ `Delete Replaced Trailer`) to rebuild an existing library with TMDB trailers.
+  Implemented on dev for v0.13.1 (Sep 29 2026). Phase 9 must make its match type-aware.
 - `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
 - `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
