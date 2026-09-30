@@ -137,6 +137,7 @@ def pipeline(folder, video_info):
                 patch(
                     f"{PKG}.record_new_trailer_download",
                     new_callable=AsyncMock,
+                    return_value=True,
                 )
             ),
             delete=stack.enter_context(
@@ -250,6 +251,40 @@ class TestUpgradeDownload:
 
         pipeline.get_video_id.assert_not_called()
         pipeline.delete.assert_not_called()
+
+    async def test_a_video_the_user_chose_is_kept_after_the_refresh(
+        self, media, profile, folder, pipeline
+    ):
+        """Decision 3, in any language (Copilot review on #696)."""
+        from services.trailers.trailer import download_trailer
+
+        profile.language = "it"
+        pipeline.candidates.return_value = [
+            SimpleNamespace(
+                video_id="mine", source=VideoSource.USER, language=None
+            ),
+            SimpleNamespace(
+                video_id="tmdb_it", source=VideoSource.TMDB, language="it"
+            ),
+        ]
+        old = _download(1, folder.old, "mine")
+        assert await download_trailer(media, profile, 0, replace=[old]) is False
+        pipeline.get_video_id.assert_not_called()
+
+    async def test_an_unrecorded_download_keeps_the_old_trailer(
+        self, media, profile, folder, pipeline
+    ):
+        """Decision 9: the old file goes only after the new one is in the
+        database. A failed record keeps it (Copilot review on #696)."""
+        from services.trailers.trailer import download_trailer
+
+        pipeline.record.return_value = False
+        old = _download(1, folder.old, "search1")
+        assert await download_trailer(media, profile, 0, replace=[old])
+
+        pipeline.delete.assert_not_called()
+        pipeline.rename.assert_not_called()
+        assert folder.old.read_bytes() == b"old"
 
     async def test_tmdb_lists_nothing_after_the_refresh(
         self, media, profile, folder, pipeline

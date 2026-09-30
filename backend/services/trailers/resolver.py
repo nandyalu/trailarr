@@ -131,6 +131,31 @@ def upgrade_targets(
     )
 
 
+def upgrade_keeps(
+    candidates: list[MediaVideoRead],
+    targets: list[MediaVideoRead],
+) -> set[str]:
+    """The video ids whose trailer an upgrade keeps.
+
+    That is every target, and every video the user chose, in any
+    language. The language filter decides what an upgrade downloads. It
+    does not make Trailarr delete a video that a person picked: a video
+    added with no language, or in another language, is still their choice.
+
+    Args:
+        candidates (list[MediaVideoRead]): The rows for this media item.
+        targets (list[MediaVideoRead]): What `upgrade_targets` gave.
+
+    Returns:
+        set[str]: The video ids to keep.
+    """
+    kept = {target.video_id for target in targets}
+    kept.update(
+        c.video_id for c in candidates if c.source == VideoSource.USER
+    )
+    return kept
+
+
 def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
     """The log line that says where a video came from.
 

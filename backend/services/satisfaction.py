@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
-from services.trailers.resolver import upgrade_targets
+from services.trailers.resolver import upgrade_keeps, upgrade_targets
 
 
 @dataclass
@@ -140,9 +140,10 @@ def _check_upgrade(
     """Apply `Upgrade To TMDB Trailer` to a satisfied profile, in place.
 
     A download whose video the upgrade accepts keeps the profile
-    satisfied. A download with no known video id is not a match: nothing
-    shows that it is a TMDB trailer. With no video to upgrade to, the
-    trailer stays, and the refresh task asks TMDB about it again.
+    satisfied, and so does a video the user chose, in any language. A
+    download with no known video id is not a match: nothing shows that it
+    is a TMDB trailer. With no video to upgrade to, the trailer stays, and
+    the refresh task asks TMDB about it again.
     """
     if not profile.upgrade_to_tmdb:
         return
@@ -150,8 +151,8 @@ def _check_upgrade(
     if not targets:
         detail.awaiting_tmdb = True
         return
-    accepted = {t.video_id for t in targets}
-    if any(d.youtube_id in accepted for d in owned):
+    kept = upgrade_keeps(videos or [], targets)
+    if any(d.youtube_id in kept for d in owned):
         return
     detail.satisfied = False
     detail.satisfied_by = None

@@ -307,7 +307,7 @@ async def download_trailer(
             output_file, media, profile, video_info
         )
         # Record the download in the database
-        await record_new_trailer_download(
+        recorded = await record_new_trailer_download(
             media, profile.id, final_path, video_id, video_info
         )
         # Success clears any failure-backoff record for this (media, profile)
@@ -322,7 +322,16 @@ async def download_trailer(
             source_detail="TrailerDownload",
         )
 
-        if replace:
+        if replace and not recorded:
+            # The new file is on disk, but Trailarr has no record of it.
+            # The old trailer is the only one it tracks, so it stays. The
+            # next files scan finds the new file.
+            logger.warning(
+                f"Trailarr could not record the new trailer of"
+                f" '{media.title}', so it keeps the old one.",
+                **logger.media(media.id),
+            )
+        elif replace:
             # The new trailer is in place and recorded before the old one
             # goes, so a failure above never leaves the item with none.
             # This runs after the Trailer Downloaded event, so the history
@@ -405,9 +414,8 @@ def _upgrade_still_needed(
     again just before this call. The new answer can list the trailer that
     is already on disk, or nothing at all. Either way the trailer stays.
     """
-    targets = resolver.upgrade_targets(
-        video_manager.read_candidates(media.id), profile
-    )
+    candidates = video_manager.read_candidates(media.id)
+    targets = resolver.upgrade_targets(candidates, profile)
     if not targets:
         logger.info(
             f"TMDB lists no trailer for '{media.title}' that the profile"
@@ -416,11 +424,11 @@ def _upgrade_still_needed(
             **logger.media(media.id),
         )
         return False
-    accepted = {target.video_id for target in targets}
-    if any(download.youtube_id in accepted for download in replace):
+    kept = resolver.upgrade_keeps(candidates, targets)
+    if any(download.youtube_id in kept for download in replace):
         logger.info(
-            f"The trailer of '{media.title}' is already a TMDB trailer."
-            " Trailarr keeps it.",
+            f"The trailer of '{media.title}' is already a TMDB trailer or a"
+            " video you chose. Trailarr keeps it.",
             **logger.media(media.id),
         )
         return False

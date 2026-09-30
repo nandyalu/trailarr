@@ -103,6 +103,19 @@ class TestUpgradeSatisfaction:
         result = evaluate_satisfaction(media, [profile], videos)
         assert result.unsatisfied == []
 
+    def test_a_video_the_user_chose_is_kept_in_any_language(self):
+        """Decision 3: the language filter picks what to download. It never
+        deletes a video a person picked — one added with no language, or
+        in another language, stays (Copilot review on #696)."""
+        profile = make_profile(language="it")
+        media = make_media([make_download(1, 1, "mine")])
+        videos = [
+            video("mine", VideoSource.USER, language=None),
+            video("tmdb_it", language="it"),
+        ]
+        result = evaluate_satisfaction(media, [profile], videos)
+        assert result.unsatisfied == []
+
     def test_an_arr_id_is_not_a_target(self):
         profile = make_profile()
         media = make_media([make_download(1, 1, "search1")])

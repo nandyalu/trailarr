@@ -155,7 +155,7 @@ async def record_new_trailer_download(
     file_path: str,
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
-) -> None:
+) -> bool:
     """
     Records a new trailer download in the database with comprehensive metadata.
     Args:
@@ -165,6 +165,9 @@ async def record_new_trailer_download(
         youtube_video_id (str | None): The YouTube video ID of the trailer.
         video_info (VideoInfo | None): Pre-analyzed video info to avoid
             redundant ffprobe calls. If None, will analyze the file.
+    Returns:
+        bool: True when the download is in the database. A caller that
+            deletes an old trailer must check this first.
     """
     logger.debug(
         f"Trailarr records a new trailer download for '{media.title}'.",
@@ -180,7 +183,7 @@ async def record_new_trailer_download(
                 f"Trailarr could not read the video information of"
                 f" '{file_path}'."
             )
-            return
+            return False
 
         # Get file timestamps from the actual final path (may differ from original)
         file_stat = os.stat(file_path)
@@ -218,6 +221,7 @@ async def record_new_trailer_download(
             f"Trailarr recorded the new trailer download for '{media.title}'.",
             **logger.media(media.id),
         )
+        return True
 
     except Exception as e:
         logger.error(
@@ -225,6 +229,7 @@ async def record_new_trailer_download(
             f" '{media.title}': {e}",
             **logger.media(media.id),
         )
+        return False
 
 
 async def rename_trailer_download(
