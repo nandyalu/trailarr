@@ -258,8 +258,7 @@ def move_trailer_to_folder(
         # Check if media folder path exists
         if not media.folder_path:
             raise FolderPathEmptyError(
-                "Folder path is empty or not set for media:"
-                f" {media.title} [{media.id}]"
+                f"The media item '{media.title}' has no folder path."
             )
         media_folder = Path(media.folder_path)
         if not media_folder.exists():

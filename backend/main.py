@@ -42,6 +42,25 @@ from frontend import setup_frontend
 logging = ModuleLogger("Main")
 
 
+def _flush_wal_files() -> None:
+    """Empty the WAL files of both databases, and say when one was busy.
+
+    One attempt each: a shutdown must finish inside the stop grace period
+    of Docker. A busy WAL is emptied at the next checkpoint, and
+    `journal_size_limit` caps it until then.
+    """
+    for name, flush in (
+        ("trailarr.db", flush_records_to_db),
+        ("logs.db", flush_logs_to_db),
+    ):
+        if not flush():
+            logging.warning(
+                f"Trailarr could not empty the WAL file of {name}, because"
+                " another connection used the database. SQLite empties it"
+                " at a later checkpoint."
+            )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Before startup
@@ -52,8 +71,7 @@ async def lifespan(app: FastAPI):
     # Remove orphaned partial downloads from previous runs (#626)
     cleanup_stale_temp_downloads()
     # Empty a WAL file that an earlier version let grow too large (#687)
-    flush_records_to_db()
-    flush_logs_to_db()
+    _flush_wal_files()
     # Schedule all tasks
     logging.debug("Scheduling tasks")
     schedule_all_tasks()
@@ -68,8 +86,7 @@ async def lifespan(app: FastAPI):
     logging.debug("Shutting down the scheduler and flushing logs to DB")
     await notification_dispatcher.stop()
     scheduler.shutdown()
-    flush_records_to_db()
-    flush_logs_to_db()
+    _flush_wal_files()
     logging.debug("Trailarr shutdown complete")
 
 

@@ -232,7 +232,7 @@ def set_monitoring(media_id: int, monitor: bool) -> ActionResult:
     old_monitor = media.monitor
 
     msg, is_success = media_manager.update_monitoring(media_id, monitor)
-    logger.info(msg)
+    logger.info(msg, **logger.media(media_id))
 
     # Track monitor_changed event if status actually changed
     if is_success:

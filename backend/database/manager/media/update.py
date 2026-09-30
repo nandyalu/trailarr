@@ -113,9 +113,7 @@ def update_monitoring(
     if monitor:
         msg = f"Trailarr now monitors '{db_media.title}'."
     else:
-        msg = (
-            f"Media '{db_media.title}' [{db_media.id}] is no longer monitored"
-        )
+        msg = f"Trailarr no longer monitors '{db_media.title}'."
     return msg, True
 
 
