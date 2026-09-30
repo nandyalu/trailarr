@@ -1,6 +1,6 @@
 """Read log records back out of the database, filtered and paged."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import delete
 from sqlmodel import col, desc, or_, select
 from config.logs.db_utils import (
@@ -77,7 +77,13 @@ async def delete_old_logs(days: int = 30) -> int:
     first purge of a large backlog. The daily purge frees about one thirtieth
     of the file, and SQLite reuses those pages for new logs.
     """
-    date_threshold = datetime.now() - timedelta(days=days)
+    # The log times are stored in UTC. A local time here moved the cut by
+    # the UTC offset, and since sqlmodel 0.0.45 a time without a timezone
+    # is refused, which stopped the cleanup.
+    date_threshold = datetime.now(timezone.utc) - timedelta(days=days)
+    # The session logs and swallows a database error, so `count` must
+    # exist even when the delete below never finishes.
+    count = 0
     async with get_async_logs_session() as session:
         stmt = delete(AppLogRecord).where(
             col(AppLogRecord.created) < date_threshold

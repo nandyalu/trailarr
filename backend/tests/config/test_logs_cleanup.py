@@ -1,7 +1,7 @@
 """Tests for delete_old_logs batch purge + VACUUM in config/logs/manager.py."""
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -25,7 +25,8 @@ MARKER = "LogsCleanupTest"
 
 
 def seed_logs(count: int, age_days: int) -> None:
-    created = datetime.now() - timedelta(days=age_days)
+    # Log times are UTC. sqlmodel 0.0.45 refuses a time with no timezone.
+    created = datetime.now(timezone.utc) - timedelta(days=age_days)
     with get_logs_session() as session:
         for i in range(count):
             session.add(
@@ -40,6 +41,17 @@ def seed_logs(count: int, age_days: int) -> None:
                 )
             )
         session.commit()
+
+
+def _as_utc(value: datetime) -> datetime:
+    """A stored log time as an aware UTC time.
+
+    sqlmodel before 0.0.45 reads it back without a timezone, and from
+    0.0.45 with UTC. The value is UTC either way.
+    """
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
 
 
 def marker_rows() -> list[AppLogRecord]:
@@ -62,9 +74,8 @@ class TestDeleteOldLogs:
         assert deleted >= 5  # at least our seeded old rows
         remaining = marker_rows()
         assert len(remaining) == 3
-        assert all(
-            r.created > datetime.now() - timedelta(days=30) for r in remaining
-        )
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+        assert all(_as_utc(r.created) > cutoff for r in remaining)
 
     @pytest.mark.asyncio
     async def test_nothing_to_delete_skips_vacuum(self):
