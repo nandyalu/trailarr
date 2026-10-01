@@ -151,19 +151,23 @@ class TestUpgradeSatisfaction:
         assert result.unsatisfied == [profile]
 
     def test_no_key_means_no_upgrade(self, _with_a_tmdb_key):
-        """Decision 11."""
+        """Decision 11. An inert upgrade is not waiting for TMDB either."""
         _with_a_tmdb_key.tmdb_api_key = ""
         profile = make_profile()
         media = make_media([make_download(1, 1, "search1")])
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == []
+        assert not result.details[0].awaiting_tmdb
 
     def test_always_search_means_no_upgrade(self):
-        """Decision 11."""
+        """Decision 11. With Always Search on, the upgrade is inert, so the
+        refresh task must not ask TMDB about the item every seven days
+        (Copilot review on #696)."""
         profile = make_profile(always_search=True)
         media = make_media([make_download(1, 1, "search1")])
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == []
+        assert not result.details[0].awaiting_tmdb
 
     def test_a_kept_old_trailer_does_not_replace_again(self):
         """W6: the old file stays next to the TMDB one."""
