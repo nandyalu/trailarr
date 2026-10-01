@@ -16,7 +16,7 @@ from sqlalchemy import Engine, event, QueuePool, StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
-from utils.sqlite_wal import truncate_wal
+from utils.sqlite_wal import STOP_BUSY_TIMEOUT_MS, truncate_wal
 from config.settings import app_settings
 
 logger = ModuleLogger("database_engine")
@@ -69,12 +69,16 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 def flush_records_to_db() -> bool:
     """Write the WAL into the database and empty the WAL file.
 
+    This runs at the start and the stop of the app. Each connection waits
+    20 seconds for a busy database, and Docker stops the container after
+    10, so the checkpoint gets a short timeout of its own.
+
     Returns:
         bool: False when another connection kept the WAL busy, so it was
             not emptied. `journal_size_limit` still caps its size.
     """
     with engine.connect() as connection:
-        done = truncate_wal(connection)
+        done = truncate_wal(connection, busy_timeout_ms=STOP_BUSY_TIMEOUT_MS)
         connection.commit()
     return done
 

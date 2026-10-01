@@ -7,6 +7,7 @@ open, so the checkpoint really is busy (Copilot review on #696).
 
 import asyncio
 import os
+import time
 
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -95,4 +96,61 @@ def test_the_async_version_tries_again_until_the_reader_leaves(tmp_path):
 
     assert asyncio.run(run()) is True
     assert os.path.getsize(f"{db}-wal") == 0
+    asyncio.run(async_engine.dispose())
+
+
+def _slow_engine(url: str):
+    """An engine with the busy timeout of the app: 20 seconds."""
+    engine = create_engine(url)
+
+    @event.listens_for(engine, "connect")
+    def _pragmas(dbapi_connection, _):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=20000")
+        cursor.close()
+
+    return engine
+
+
+def test_a_short_busy_timeout_bounds_the_wait_and_is_put_back(tmp_path):
+    """A connection of the app waits 20 seconds for a busy database. A
+    checkpoint at a stop must not, because Docker stops the container
+    after 10 (Copilot review on #696). The connection goes back to the
+    pool, so its own timeout must come back too."""
+    db = tmp_path / "slow.db"
+    engine = _slow_engine(f"sqlite:///{db}")
+    _write_rows(engine)
+
+    reader = engine.connect()
+    reader.execute(text("BEGIN"))
+    reader.execute(text("SELECT count(*) FROM t")).fetchone()
+    try:
+        _write_rows(engine)
+        with engine.connect() as connection:
+            started = time.monotonic()
+            done = truncate_wal(connection, busy_timeout_ms=200)
+            waited = time.monotonic() - started
+            timeout = connection.execute(text("PRAGMA busy_timeout")).scalar()
+        assert done is False
+        assert waited < 5
+        assert timeout == 20000
+    finally:
+        reader.rollback()
+        reader.close()
+
+
+def test_the_async_version_puts_the_busy_timeout_back(tmp_path):
+    db = tmp_path / "async-timeout.db"
+    _write_rows(_slow_engine(f"sqlite:///{db}"))
+    async_engine = create_async_engine(f"sqlite+aiosqlite:///{db}")
+
+    async def run() -> tuple[bool, int]:
+        async with async_engine.connect() as connection:
+            await connection.exec_driver_sql("PRAGMA busy_timeout=20000")
+            done = await truncate_wal_async(connection, busy_timeout_ms=200)
+            result = await connection.execute(text("PRAGMA busy_timeout"))
+            return done, result.scalar()
+
+    assert asyncio.run(run()) == (True, 20000)
     asyncio.run(async_engine.dispose())

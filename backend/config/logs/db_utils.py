@@ -12,7 +12,11 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from config.logs.model import LogBase, AppLogRecord  # noqa F401
 from config.settings import app_settings
-from utils.sqlite_wal import truncate_wal, truncate_wal_async
+from utils.sqlite_wal import (
+    STOP_BUSY_TIMEOUT_MS,
+    truncate_wal,
+    truncate_wal_async,
+)
 
 logs_db = f"sqlite:///{app_settings.app_data_dir}/logs/logs.db"
 logs_async_db = f"sqlite+aiosqlite:///{app_settings.app_data_dir}/logs/logs.db"
@@ -61,14 +65,36 @@ LogBase.metadata.create_all(engine)
 def flush_logs_to_db() -> bool:
     """Write the WAL into logs.db and empty the WAL file.
 
+    This runs at the start and the stop of the app. Each connection waits
+    20 seconds for a busy database, and Docker stops the container after
+    10, so the checkpoint gets a short timeout of its own.
+
     Returns:
         bool: False when another connection kept the WAL busy, so it was
             not emptied. `journal_size_limit` still caps its size.
     """
     with engine.connect() as connection:
-        done = truncate_wal(connection)
+        done = truncate_wal(connection, busy_timeout_ms=STOP_BUSY_TIMEOUT_MS)
         connection.commit()
     return done
+
+
+async def truncate_logs_wal(attempts: int = 3) -> bool:
+    """Empty the WAL file of logs.db after a purge.
+
+    A purge writes the pages it frees into the WAL, and the WAL file keeps
+    that size until a checkpoint empties it (#687). New log lines arrive
+    all the time, so the checkpoint can find the WAL busy. It tries a few
+    times.
+
+    Returns:
+        bool: True when the WAL is empty.
+    """
+    async with async_engine.connect() as connection:
+        connection = await connection.execution_options(
+            isolation_level="AUTOCOMMIT"
+        )
+        return await truncate_wal_async(connection, attempts=attempts)
 
 
 # VACUUM rewrites the full file. Run it only when this part of the file is free.
