@@ -93,6 +93,27 @@ def choose_candidates(
 UPGRADE_SOURCES = (VideoSource.USER, VideoSource.TMDB)
 
 
+def upgrade_enabled(profile: TrailerProfileRead) -> bool:
+    """True when `Upgrade To TMDB Trailer` can do anything for a profile.
+
+    It needs the setting on, a TMDB API key, and `Always Search` off:
+    Always Search takes nothing from the table, so there is no TMDB
+    trailer to upgrade to. The profile page disables the setting in both
+    cases and says why, but a profile can turn on Always Search after it.
+
+    Args:
+        profile (TrailerProfileRead): The profile to check.
+
+    Returns:
+        bool: False when the upgrade is off, or on but inert.
+    """
+    return bool(
+        profile.upgrade_to_tmdb
+        and app_settings.tmdb_api_key
+        and not profile.always_search
+    )
+
+
 def upgrade_targets(
     candidates: list[MediaVideoRead],
     profile: TrailerProfileRead,
@@ -121,7 +142,7 @@ def upgrade_targets(
             the setting is off, when there is no TMDB key, when `Always
             Search` is on, or when TMDB lists nothing for the profile.
     """
-    if not profile.upgrade_to_tmdb or not app_settings.tmdb_api_key:
+    if not upgrade_enabled(profile):
         return []
     return choose_candidates(
         [c for c in candidates if c.source in UPGRADE_SOURCES],

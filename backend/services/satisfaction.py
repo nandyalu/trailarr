@@ -15,7 +15,11 @@ from dataclasses import dataclass, field
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
-from services.trailers.resolver import upgrade_keeps, upgrade_targets
+from services.trailers.resolver import (
+    upgrade_enabled,
+    upgrade_keeps,
+    upgrade_targets,
+)
 
 
 @dataclass
@@ -144,8 +148,13 @@ def _check_upgrade(
     download with no known video id is not a match: nothing shows that it
     is a TMDB trailer. With no video to upgrade to, the trailer stays, and
     the refresh task asks TMDB about it again.
+
+    An upgrade that is off, or on but inert without a TMDB key or with
+    `Always Search` on, is not waiting for TMDB. Marking it so made the
+    refresh task ask TMDB about the whole library every seven days for
+    nothing (Copilot review on #696).
     """
-    if not profile.upgrade_to_tmdb:
+    if not upgrade_enabled(profile):
         return
     targets = upgrade_targets(videos or [], profile)
     if not targets:

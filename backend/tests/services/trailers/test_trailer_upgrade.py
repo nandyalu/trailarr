@@ -6,6 +6,7 @@ database, YouTube and the websocket are the only things replaced.
 """
 
 from contextlib import ExitStack
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -297,6 +298,67 @@ class TestUpgradeDownload:
         assert await download_trailer(media, profile, 0, replace=[old]) is False
 
         pipeline.get_video_id.assert_not_called()
+
+    async def test_a_video_another_profile_owns_is_still_a_target(
+        self, media, profile, folder, pipeline, tmp_path
+    ):
+        """Another profile has the only TMDB trailer on disk. This profile
+        still downloads its own copy of it. Leaving it out gave the upgrade
+        no target, and an upgrade never searches, so the profile failed
+        and backed off on every run (Copilot review on #696)."""
+        from services.trailers.trailer import download_trailer
+
+        pipeline.candidates.return_value = [_video("tmdb1")]
+        theirs = _download(2, tmp_path / "Theirs-trailer.mkv", "tmdb1")
+        theirs.profile_id = 2
+        old = _download(1, folder.old, "search1")
+        media.downloads = [old, theirs]
+        assert await download_trailer(media, profile, 0, replace=[old])
+
+        exclude = pipeline.get_video_id.call_args.args[2]
+        assert "tmdb1" not in exclude
+        assert "search1" in exclude
+
+    async def test_no_target_left_says_the_trailer_stays(
+        self, media, profile, folder, pipeline
+    ):
+        """The pending view shows this error. The item has a trailer, so
+        the text must not read as if it had none."""
+        from services.trailers.trailer import download_trailer
+
+        pipeline.get_video_id.return_value = None
+        old = _download(1, folder.old, "search1")
+        with pytest.raises(DownloadFailedError, match="current trailer stays"):
+            await download_trailer(media, profile, 0, replace=[old])
+        assert folder.old.read_bytes() == b"old"
+
+    async def test_a_stop_between_retries_stops_the_retry(
+        self, media, profile, folder, pipeline
+    ):
+        """The retry carries the stop event (Copilot review on #696)."""
+        from services.trailers.trailer import download_trailer
+
+        stop = threading.Event()
+        calls = {"n": 0}
+
+        def choose(*args, **kwargs):
+            # The stop arrives while the retry picks its video.
+            calls["n"] += 1
+            if calls["n"] == 2:
+                stop.set()
+            return "tmdb1"
+
+        pipeline.get_video_id.side_effect = choose
+        pipeline.download.side_effect = RuntimeError("video unavailable")
+        old = _download(1, folder.old, "search1")
+        result = await download_trailer(
+            media, profile, 2, replace=[old], stop_event=stop
+        )
+
+        assert result is False
+        pipeline.download.assert_called_once()
+        assert pipeline.get_video_id.call_count == 2
+        assert folder.old.read_bytes() == b"old"
 
     async def test_a_failed_upgrade_keeps_the_old_trailer(
         self, media, profile, folder, pipeline

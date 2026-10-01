@@ -228,6 +228,8 @@ async def download_trailer(
         profile (TrailerProfileRead): The trailer profile to use.
         retry_count (int, optional): Number of retries if download fails. Defaults to 2.
         exclude (list[str], optional): List of video IDs to exclude from search. Defaults to None.
+        stop_event (threading.Event, optional): Set when the task that
+            runs this download is stopped. Every retry gets it too.
         replace (list[DownloadRead], optional): The trailers of this
             profile that `Upgrade To TMDB Trailer` replaces. When given,
             only a TMDB trailer (or a video the user chose) is downloaded,
@@ -244,15 +246,27 @@ async def download_trailer(
     if not exclude:
         exclude = []
 
-    # Do not download a video that this media item already has on disk.
-    # Phase 8: read the ids from the downloads themselves. Reading the
-    # single `media.youtube_trailer_id` missed every video but the last
-    # one, and the resolver now offers a list.
-    exclude.extend(
-        download.youtube_id
-        for download in media.downloads
-        if download.file_exists and download.youtube_id
-    )
+    if replace:
+        # An upgrade replaces the trailers of this profile, so their videos
+        # are left out. A video that another profile has on disk is not:
+        # it can be the only TMDB trailer in the language, and this
+        # profile wants its own copy of it, made with its own settings.
+        # Leaving it out gave the upgrade no target, and it never searches,
+        # so the profile failed and backed off on every run (Copilot
+        # review on #696).
+        exclude.extend(
+            download.youtube_id for download in replace if download.youtube_id
+        )
+    else:
+        # Do not download a video that this media item already has on
+        # disk. Phase 8: read the ids from the downloads themselves.
+        # Reading the single `media.youtube_trailer_id` missed every video
+        # but the last one, and the resolver now offers a list.
+        exclude.extend(
+            download.youtube_id
+            for download in media.downloads
+            if download.file_exists and download.youtube_id
+        )
 
     # `Always Search` is applied by the resolver, which skips the videos a
     # search stored earlier and keeps the ones a person or TMDB chose.
@@ -279,6 +293,13 @@ async def download_trailer(
     media.youtube_trailer_id = video_id
 
     if not video_id:
+        if replace:
+            # The item has a trailer. The pending view shows this text,
+            # so it must not read as if the item had none.
+            raise DownloadFailedError(
+                f"No TMDB trailer of '{media.title}' could be downloaded,"
+                " so the current trailer stays."
+            )
         raise DownloadFailedError(f"No trailer found for {media.title}")
 
     # Stop if stop event is set
@@ -390,7 +411,12 @@ async def download_trailer(
             if video_id:
                 exclude.append(video_id)
             return await download_trailer(
-                media, profile, retry_count - 1, exclude, replace=replace
+                media,
+                profile,
+                retry_count - 1,
+                exclude,
+                stop_event=stop_event,
+                replace=replace,
             )
         raise DownloadFailedError(
             f"Failed to download trailer for {media.title}"
