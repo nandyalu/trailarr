@@ -158,6 +158,28 @@ class TestDeleteOldLogs:
 
         assert wal.stat().st_size == 0
 
+    @pytest.mark.asyncio
+    async def test_a_small_purge_still_empties_the_wal(self):
+        """The daily purge does not VACUUM, but the pages it frees go into
+        the WAL all the same. The cleanup empties the WAL file either way
+        (Copilot review on #696)."""
+        seed_logs(500, age_days=40)
+        wal = Path(os.environ["APP_DATA_DIR"]) / "logs" / "logs.db-wal"
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=0.05),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
+            deleted = await delete_old_logs(30)
+
+        assert deleted >= 500
+        mock_vacuum.assert_not_awaited()
+        assert wal.stat().st_size == 0
+
 
 class TestLogsDbPragmas:
     """Each connection to the log database must limit the WAL size. The
