@@ -259,7 +259,12 @@ export const MOVIES_ONLY_FILTERS: Record<string, boolean | undefined> = {
  * @param customFilters - An array of custom filter definitions to be used if the selected filter does not match a predefined option.
  * @returns An array of media items that match the selected filter criteria.
  */
-export function applySelectedFilter(allMedia: Media[], selectedFilter: string, customFilters: CustomFilter[]): Media[] {
+export function applySelectedFilter(
+  allMedia: Media[],
+  selectedFilter: string,
+  customFilters: CustomFilter[],
+  failingMediaIds: ReadonlySet<number> = new Set<number>(),
+): Media[] {
   // Phase 3: downloaded-ness comes from download rows, never a stored
   // mirror flag; 'downloading' reads the computed status, which
   // the media service derives from the runtime in-flight overlay.
@@ -282,6 +287,10 @@ export function applySelectedFilter(allMedia: Media[], selectedFilter: string, c
       case 'unknown_profile':
         // Media with an active download that has no profile assigned
         return media.downloads.some((d) => d.file_exists && d.profile_id === 0);
+      case 'failing_downloads':
+        // Media whose download failed on two task runs or more. The backend
+        // decides which (GET /media/failing); the raw media list cannot.
+        return failingMediaIds.has(media.id);
       case 'movies':
         return media.is_movie && hasActiveDownload(media);
       case 'series':
