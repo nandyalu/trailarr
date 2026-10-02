@@ -52,7 +52,7 @@ async def _refresh_media_item(
 
 
 async def refresh_plex_trailer_flags(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Refresh the plex_trailer flag for all Plex-linked media items.
 
@@ -80,7 +80,7 @@ async def refresh_plex_trailer_flags(
     errors = 0
 
     for media in media_manager.read_all_generator(plex_linked_only=True):
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the refresh of the Plex trailer flags."
                 " A stop was requested."

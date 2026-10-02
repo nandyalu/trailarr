@@ -1,9 +1,8 @@
 # Parallel Track — Onboarding & Diagnostics ("Setup Doctor")
 
-**Status:** Milestones A+B DONE — shipped in v0.11.4. **C DONE** (Sep 11, 2026, branch
-`feat/phase8-tmdb`, ships with v0.13.0). **E1 DONE** (Sep 20, 2026, ships with v0.13.0);
-D and E2 not started · **Releases:** incremental — C and E1 ship in v0.13.0, D anytime,
-E2 with or after D · **Depends on:** nothing hard;
+**Status:** Milestones A+B DONE — shipped in v0.11.4. **C and E1 DONE** — shipped in
+v0.13.0 on Sep 24, 2026 (E1 closed #681). D and E2 not started · **Releases:**
+incremental — D anytime, E2 with or after D · **Depends on:** nothing hard;
 C wants Phase 7 (services layer) and Phase 3 (preview endpoint)
 
 **C execution notes (Sep 11, 2026):**
@@ -207,7 +206,7 @@ instead of a raw traceback.
 - B4. All checks degrade gracefully offline (no internet ≠ crash; each check times out
   independently, 10s cap).
 
-## Milestone C — First-run guided setup (v0.13.x, post-reorg)
+## Milestone C — First-run guided setup — DONE (shipped in v0.13.0)
 
 Wizard shown when the app has zero connections (and re-runnable from Settings → Help):
 
@@ -274,7 +273,7 @@ recovery with no controls, which is why this is a milestone rather than a fix.
 | CLI update | `scripts/cli/trailarr_cli.py:404` | `backups/update_<tag>/` — **no cap at all** |
 | Dev launcher | `scripts/launch.py:33-43` | same 30 |
 
-### Stage E1 — bound the disk — DONE (ships in v0.13.0)
+### Stage E1 — bound the disk — DONE (shipped in v0.13.0, Sep 24 2026)
 
 **Defaults: keep 10 backups, 30 days** (KR, Sep 20 2026), overridable with
 `BACKUP_KEEP_COUNT` / `BACKUP_KEEP_DAYS`. Both limits apply together: the count bounds a

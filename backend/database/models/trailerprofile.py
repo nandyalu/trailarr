@@ -113,6 +113,27 @@ class _TrailerProfileBase(AppSQLModel):
         default=False,
         sa_column=Column(Boolean, server_default="0", nullable=False),
     )
+    # Replace a trailer that is not a TMDB trailer with one that is. Only
+    # the Download Missing Trailers task does it, and only when TMDB lists
+    # a trailer in the language of the profile.
+    upgrade_to_tmdb: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
+    # After an upgrade, delete the trailer that the new one replaces. When
+    # False, the old file stays next to the new one.
+    delete_replaced_trailer: bool = Field(
+        default=True,
+        sa_column=Column(Boolean, server_default="1", nullable=False),
+    )
+    # Also replace a trailer when nothing shows which video it is: a file
+    # found on disk, or one saved before Trailarr recorded ids. Most such
+    # files came from the id that Radarr reports, which is a TMDB trailer,
+    # so this is off by default and they stay.
+    replace_unknown_videos: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, server_default="0", nullable=False),
+    )
     exclude_words: str = Field(default="")
     include_words: str = Field(default="")
     uploader_ids: str = Field(default="")
@@ -208,6 +229,9 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "subtitles_enabled",
             "subtitles_auto_generated",
             "always_search",
+            "upgrade_to_tmdb",
+            "delete_replaced_trailer",
+            "replace_unknown_videos",
             "embed_metadata",
             "remove_silence",
             "notify_plex",
@@ -234,6 +258,9 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "subtitles_enabled",
         "subtitles_auto_generated",
         "always_search",
+        "upgrade_to_tmdb",
+        "delete_replaced_trailer",
+        "replace_unknown_videos",
         "embed_metadata",
         "remove_silence",
         "notify_plex",

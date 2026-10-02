@@ -1,12 +1,23 @@
 """Tests for delete_old_logs batch purge + VACUUM in config/logs/manager.py."""
 
-from datetime import datetime, timedelta
+import os
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from sqlalchemy import text as sa_text
 from sqlmodel import col, select
 
-from config.logs.db_utils import get_logs_session, vacuum_logs_db
+from config.logs.db_utils import (
+    VACUUM_MIN_FREE_RATIO,
+    WAL_SIZE_LIMIT,
+    async_engine,
+    engine,
+    get_logs_session,
+    logs_db_free_ratio,
+    vacuum_logs_db,
+)
 from config.logs.manager import delete_old_logs
 from config.logs.model import AppLogRecord, LogLevel
 
@@ -14,7 +25,8 @@ MARKER = "LogsCleanupTest"
 
 
 def seed_logs(count: int, age_days: int) -> None:
-    created = datetime.now() - timedelta(days=age_days)
+    # Log times are UTC. sqlmodel 0.0.45 refuses a time with no timezone.
+    created = datetime.now(timezone.utc) - timedelta(days=age_days)
     with get_logs_session() as session:
         for i in range(count):
             session.add(
@@ -29,6 +41,17 @@ def seed_logs(count: int, age_days: int) -> None:
                 )
             )
         session.commit()
+
+
+def _as_utc(value: datetime) -> datetime:
+    """A stored log time as an aware UTC time.
+
+    sqlmodel before 0.0.45 reads it back without a timezone, and from
+    0.0.45 with UTC. The value is UTC either way.
+    """
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
 
 
 def marker_rows() -> list[AppLogRecord]:
@@ -51,9 +74,8 @@ class TestDeleteOldLogs:
         assert deleted >= 5  # at least our seeded old rows
         remaining = marker_rows()
         assert len(remaining) == 3
-        assert all(
-            r.created > datetime.now() - timedelta(days=30) for r in remaining
-        )
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+        assert all(_as_utc(r.created) > cutoff for r in remaining)
 
     @pytest.mark.asyncio
     async def test_nothing_to_delete_skips_vacuum(self):
@@ -66,15 +88,53 @@ class TestDeleteOldLogs:
         mock_vacuum.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_vacuum_called_after_deletion(self):
+    async def test_vacuum_runs_when_much_of_the_file_is_free(self):
         seed_logs(2, age_days=40)
-        with patch(
-            "config.logs.manager.vacuum_logs_db", new=AsyncMock()
-        ) as mock_vacuum:
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=VACUUM_MIN_FREE_RATIO),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
             deleted = await delete_old_logs(30)
 
         assert deleted >= 2
         mock_vacuum.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_a_small_purge_skips_vacuum(self):
+        """The daily purge frees about 1/30 of the file. SQLite reuses those
+        pages, so a VACUUM would rewrite the whole file for almost nothing."""
+        seed_logs(2, age_days=40)
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=0.05),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
+            deleted = await delete_old_logs(30)
+
+        assert deleted >= 2
+        mock_vacuum.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_free_ratio_measures_the_real_file(self):
+        seed_logs(3000, age_days=40)
+        # A ratio above 1.0 is never reached, so this purge never vacuums.
+        with patch("config.logs.manager.VACUUM_MIN_FREE_RATIO", 2.0):
+            await delete_old_logs(30)
+
+        assert await logs_db_free_ratio() > 0
+
+        await vacuum_logs_db()
+
+        assert await logs_db_free_ratio() == 0
 
     @pytest.mark.asyncio
     async def test_vacuum_runs_for_real(self):
@@ -82,3 +142,61 @@ class TestDeleteOldLogs:
         'cannot VACUUM from within a transaction' if the connection isn't
         in autocommit mode, so this guards the isolation-level setup."""
         await vacuum_logs_db()
+
+    @pytest.mark.asyncio
+    async def test_vacuum_leaves_the_wal_empty(self):
+        """VACUUM writes the full database into the WAL. The purge must
+        empty the WAL file after it, or the file stays that large (#687)."""
+        seed_logs(500, age_days=40)
+        wal = Path(os.environ["APP_DATA_DIR"]) / "logs" / "logs.db-wal"
+
+        with patch(
+            "config.logs.manager.logs_db_free_ratio",
+            new=AsyncMock(return_value=1.0),
+        ):
+            await delete_old_logs(30)
+
+        assert wal.stat().st_size == 0
+
+    @pytest.mark.asyncio
+    async def test_a_small_purge_still_empties_the_wal(self):
+        """The daily purge does not VACUUM, but the pages it frees go into
+        the WAL all the same. The cleanup empties the WAL file either way
+        (Copilot review on #696)."""
+        seed_logs(500, age_days=40)
+        wal = Path(os.environ["APP_DATA_DIR"]) / "logs" / "logs.db-wal"
+        with (
+            patch(
+                "config.logs.manager.logs_db_free_ratio",
+                new=AsyncMock(return_value=0.05),
+            ),
+            patch(
+                "config.logs.manager.vacuum_logs_db", new=AsyncMock()
+            ) as mock_vacuum,
+        ):
+            deleted = await delete_old_logs(30)
+
+        assert deleted >= 500
+        mock_vacuum.assert_not_awaited()
+        assert wal.stat().st_size == 0
+
+
+class TestLogsDbPragmas:
+    """Each connection to the log database must limit the WAL size. The
+    engine sets this itself, because it opens its first connection before
+    the listener in `database/engine.py` exists (#687)."""
+
+    def test_sync_connection_limits_the_wal(self):
+        with engine.connect() as connection:
+            mode = connection.execute(sa_text("PRAGMA journal_mode"))
+            limit = connection.execute(sa_text("PRAGMA journal_size_limit"))
+            assert mode.scalar() == "wal"
+            assert limit.scalar() == WAL_SIZE_LIMIT
+
+    @pytest.mark.asyncio
+    async def test_async_connection_limits_the_wal(self):
+        async with async_engine.connect() as connection:
+            result = await connection.execute(
+                sa_text("PRAGMA journal_size_limit")
+            )
+            assert result.scalar() == WAL_SIZE_LIMIT

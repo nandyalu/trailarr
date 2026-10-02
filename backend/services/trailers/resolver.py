@@ -88,6 +88,95 @@ def choose_candidates(
     return chosen
 
 
+# The sources whose videos an upgrade accepts. A video the user chose is
+# never something to replace, and a TMDB trailer is what the upgrade is for.
+UPGRADE_SOURCES = (VideoSource.USER, VideoSource.TMDB)
+
+
+def upgrade_enabled(profile: TrailerProfileRead) -> bool:
+    """True when `Upgrade To TMDB Trailer` can do anything for a profile.
+
+    It needs the setting on, a TMDB API key, and `Always Search` off:
+    Always Search takes nothing from the table, so there is no TMDB
+    trailer to upgrade to. The profile page disables the setting in both
+    cases and says why, but a profile can turn on Always Search after it.
+
+    Args:
+        profile (TrailerProfileRead): The profile to check.
+
+    Returns:
+        bool: False when the upgrade is off, or on but inert.
+    """
+    return bool(
+        profile.upgrade_to_tmdb
+        and app_settings.tmdb_api_key
+        and not profile.always_search
+    )
+
+
+def upgrade_targets(
+    candidates: list[MediaVideoRead],
+    profile: TrailerProfileRead,
+    *,
+    exclude: list[str] | None = None,
+    last_tried: str | None = None,
+) -> list[MediaVideoRead]:
+    """The videos that a profile with `Upgrade To TMDB Trailer` accepts.
+
+    A trailer on disk that is one of these videos stays. A trailer that is
+    not one of them is replaced by the first of them that downloads. The
+    language filter of `choose_candidates` applies, so any TMDB trailer in
+    the language of the profile is a match, not only the first one.
+
+    Args:
+        candidates (list[MediaVideoRead]): The rows for this media item,
+            already in source order.
+        profile (TrailerProfileRead): The profile to check.
+        exclude (list[str] | None): Ids not to offer, as for
+            `choose_candidates`.
+        last_tried (str | None): The candidate that the last run used, as
+            for `choose_candidates`.
+
+    Returns:
+        list[MediaVideoRead]: The accepted videos, best first. Empty when
+            the setting is off, when there is no TMDB key, when `Always
+            Search` is on, or when TMDB lists nothing for the profile.
+    """
+    if not upgrade_enabled(profile):
+        return []
+    return choose_candidates(
+        [c for c in candidates if c.source in UPGRADE_SOURCES],
+        profile,
+        exclude=exclude,
+        last_tried=last_tried,
+    )
+
+
+def upgrade_keeps(
+    candidates: list[MediaVideoRead],
+    targets: list[MediaVideoRead],
+) -> set[str]:
+    """The video ids whose trailer an upgrade keeps.
+
+    That is every target, and every video the user chose, in any
+    language. The language filter decides what an upgrade downloads. It
+    does not make Trailarr delete a video that a person picked: a video
+    added with no language, or in another language, is still their choice.
+
+    Args:
+        candidates (list[MediaVideoRead]): The rows for this media item.
+        targets (list[MediaVideoRead]): What `upgrade_targets` gave.
+
+    Returns:
+        set[str]: The video ids to keep.
+    """
+    kept = {target.video_id for target in targets}
+    kept.update(
+        c.video_id for c in candidates if c.source == VideoSource.USER
+    )
+    return kept
+
+
 def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
     """The log line that says where a video came from.
 

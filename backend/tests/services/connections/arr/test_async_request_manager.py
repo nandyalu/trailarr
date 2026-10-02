@@ -76,6 +76,59 @@ class TestAsyncRequestManager:
         assert str(e.value) == message
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "status, message",
+        [
+            (
+                401,
+                "Unauthorized. Check that the API key for this connection"
+                " is correct.",
+            ),
+            (
+                403,
+                "Access restricted. Check that the API key for this"
+                " connection has the correct permissions.",
+            ),
+            (
+                503,
+                "Invalid host (http://example.com) or API key."
+                " This is not a Radarr or Sonarr instance.",
+            ),
+        ],
+    )
+    async def test_request_keeps_the_status_message(
+        self, debug_aiohttp, request_manager, status, message
+    ):
+        """The message that `_process_response` chose for a status must
+        reach the caller. The broad `except` in `_request` used to replace
+        it with "Unable to connect to API", so a wrong API key told the user
+        to check the connection (H23)."""
+        debug_aiohttp.get(self.final_url, status=status)
+
+        with pytest.raises(ConnectionError) as e:
+            await request_manager._request(
+                "GET", self.path, self.params, self.data
+            )
+
+        assert str(e.value) == message
+
+    @pytest.mark.asyncio
+    async def test_request_keeps_the_invalid_response_error(
+        self, debug_aiohttp, request_manager
+    ):
+        debug_aiohttp.get(
+            self.final_url,
+            status=200,
+            body="<html></html>",
+            content_type="text/html",
+        )
+
+        with pytest.raises(InvalidResponseError):
+            await request_manager._request(
+                "GET", self.path, self.params, self.data
+            )
+
+    @pytest.mark.asyncio
     async def test_process_response_200_json(
         self, request_manager: AsyncRequestManager, debug_aiohttp_200
     ):

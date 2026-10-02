@@ -22,6 +22,19 @@ export class PendingComponent {
   protected readonly profiles = computed(() => this.pendingView()?.profiles ?? []);
   protected readonly isMonitored = computed(() => this.pendingView()?.monitor ?? true);
 
+  /** Why an upgrade profile keeps its trailer while TMDB lists nothing for it.
+   * Three cases read differently, and the page says which. */
+  protected awaitingDetail(): string {
+    const view = this.pendingView();
+    if (view && !view.has_tmdb_id) {
+      return 'TMDB cannot be asked for a better one: this item has no TMDB id';
+    }
+    if (view && !view.tmdb_asked) {
+      return 'Trailarr has not asked TMDB about this item yet; the Refresh Video Lists task will';
+    }
+    return 'TMDB lists no trailer that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
+  }
+
   protected stateOf(profile: MediaPendingProfile): 'satisfied' | 'backoff' | 'pending' | 'disabled' | 'not-matching' {
     if (profile.satisfied) return 'satisfied';
     if (profile.backing_off) return 'backoff';
@@ -47,18 +60,43 @@ export class PendingComponent {
 
   protected stateDetail(profile: MediaPendingProfile): string {
     switch (this.stateOf(profile)) {
-      case 'satisfied':
+      case 'satisfied': {
+        let base: string;
         switch (profile.satisfied_via) {
           case 'own_download':
-            return 'Has its own download';
+            base = 'Has its own download';
+            break;
           case 'claim':
-            return 'Will claim an existing unassigned download';
+            base = 'Will claim an existing unassigned download';
+            break;
           default:
-            return 'Satisfied by an existing download';
+            base = 'Satisfied by an existing download';
         }
+        // With Upgrade To TMDB Trailer on, say what the upgrade makes of
+        // the trailer, so nobody wonders why it was not replaced.
+        switch (profile.upgrade_state) {
+          case 'matched':
+            return `${base}, and it is a TMDB trailer or a video you chose`;
+          case 'awaiting_tmdb':
+            return `${base}. ${this.awaitingDetail()}`;
+          case 'unknown_kept':
+            return `${base}. Trailarr does not know which video it is, so the TMDB upgrade keeps it; turn on Replace Unknown Videos in the profile to replace it`;
+          default:
+            return base;
+        }
+      }
       case 'backoff':
         return `${profile.attempt_count} failed attempt${profile.attempt_count === 1 ? '' : 's'}`;
       case 'pending':
+        if (profile.upgrade) {
+          const why =
+            profile.upgrade_state === 'replace_unknown'
+              ? 'Trailarr does not know which video the trailer is'
+              : 'the trailer is not a TMDB trailer';
+          return this.isMonitored()
+            ? `Will replace the trailer with a TMDB trailer on the next run: ${why}`
+            : `Would replace the trailer with a TMDB trailer (${why}), but this item is not monitored`;
+        }
         return this.isMonitored() ? 'Will download on the next run' : 'Would download, but this item is not monitored';
       case 'disabled':
         return 'Profile is disabled';

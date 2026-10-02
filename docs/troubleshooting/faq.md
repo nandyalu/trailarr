@@ -33,6 +33,19 @@ To choose a different video, find it on YouTube, paste its link into the field a
 !!! info
     Trailarr will not delete the trailer that was already downloaded. You have to manually click on `Delete` button to delete the trailer.
 
+## I added a TMDB API key. How do I replace my existing trailers with TMDB trailers?
+{{ version_badge("add", "0.13.1") }} Turn on [Upgrade To TMDB Trailer](../user-guide/settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) in the profile. You do not have to delete your trailers, and you do not have to download your whole library again.
+
+Trailarr replaces only the trailers that are not TMDB trailers. It keeps a trailer that TMDB already lists in the [Trailer Language](../user-guide/settings/profiles/settings/general.md#trailer-language) of the profile, it keeps a trailer when TMDB lists none for the item, and it keeps a trailer whose video it does not know unless [Replace Unknown Videos](../user-guide/settings/profiles/settings/general.md#replace-unknown-videos) is on. The [Download Missing Trailers](../user-guide/tasks/index.md#download-missing-trailers) task does the replacements on its normal runs. The media details page shows, for each profile, which trailer it replaces and why, and which it keeps and why. To keep one trailer that the upgrade would replace, paste its YouTube link on the media details page: a video that you chose is never replaced.
+
+Set [Delete Replaced Trailer](../user-guide/settings/profiles/settings/general.md#delete-replaced-trailer) to decide if the old file stays. On a large library, the upgrade takes a few days, because Trailarr asks TMDB about 200 items in each run of [Refresh Video Lists](../user-guide/tasks/index.md#refresh-video-lists). To go faster, run that task by hand from the Tasks page. See [Upgrade an existing library](../user-guide/settings/tmdb.md#upgrade-an-existing-library).
+
+!!! warning "Do not use a batch download for this"
+    A batch `Download` from the library pages does not replace a trailer. It skips the video that is already on disk and saves a second trailer next to the first one.
+
+## Some trailers fail to download again and again. How do I find and fix them?
+{{ version_badge("add", "0.13.1") }} When a download fails on two task runs, the library pages show a banner: `N media items have a trailer download that keeps failing`. Click **Review** to see those items, or pick the **Failing Downloads** quick filter. Open an item: the [Download Profiles](../user-guide/library/media-details/index.md#download-profiles-section) section shows the reason of the last failure and, when Trailarr knows it, the fix. After you fix the cause, click **Download** on the item, or select the items and use the batch **Download**: a manual download does not wait for the next retry. An item leaves the banner when a download succeeds, when you unmonitor it, or when no profile matches it any more.
+
 ## Trailarr not downloading the specified youtube video, but downloading a different video. Why?
 Trailarr uses yt-dlp to download youtube videos. Some videos have restrictions on downloading, and yt-dlp might not be able to download them. The solution is to supply a cookie file (`Yt-dlp Cookies Path`) in `Settings > General` to download restricted videos. See [Settings](../user-guide/settings/general-settings/index.md#yt-dlp-cookies-path) for more info.
 

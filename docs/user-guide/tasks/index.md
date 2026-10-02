@@ -99,7 +99,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Uses yt-dlp and ffmpeg for downloading and conversion.
 
 !!! note "Failed downloads back off"
-    {{ version_badge("add", "0.10.0") }} When a download attempt genuinely fails (e.g. no matching video can be found), that media + profile combination is not retried on every run. The retry delay doubles after each failure — 1 day, then 2 days, then 4 days — capped at one attempt per week. A successful download resets the backoff, and a manual download from Media Details always bypasses it. Skips (missing media folder, waiting for the media file) do not count as failed attempts.
+    {{ version_badge("add", "0.10.0") }} When a download attempt genuinely fails (e.g. no matching video can be found), that media + profile combination is not retried on every run. The retry delay doubles after each failure — 1 day, then 2 days, then 4 days — capped at one attempt per week. A successful download resets the backoff, and a manual download from Media Details always bypasses it. Skips (missing media folder, waiting for the media file) do not count as failed attempts. {{ version_badge("add", "0.13.1") }} After two failed runs, the library pages show the item in a banner with a **Failing Downloads** quick filter, so you can find it and fix the cause — see [Filtering](../library/index.md#filtering).
 
 !!! note "Preview mode"
     {{ version_badge("add", "0.10.2") }} When **Downloads Enabled** is turned off in [Settings → General](../settings/general-settings/index.md#downloads-enabled), this task computes and publishes its full work list but downloads nothing — the media pages show a *Preview mode* banner listing every (media, profile) pair it would download. Scans, syncs and attribution keep running so the preview stays accurate, and manual downloads still work.
@@ -123,6 +123,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 
 - Runs every 12 hours (first run starts 10 minutes after app launch).
 - Asks TMDB which videos belong to the media items that are waiting for a trailer, so the [Known videos](../library/media-details/index.md#known-videos) list is ready before a download needs it.
+- {{ version_badge("add", "0.13.1") }} Also asks TMDB about the media items whose trailer can go to a TMDB trailer, for profiles with [Upgrade To TMDB Trailer](../settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) on. These items have a trailer, so no download waits for them, and without this task Trailarr would not learn that TMDB has a trailer for them.
 - Does nothing when no [TMDB API key](../settings/tmdb.md) is set.
 - Asks about at most 200 media items in one run, and leaves an item alone when its videos were read in the last 7 days. A large library fills in over a few runs instead of sending thousands of requests at once.
 

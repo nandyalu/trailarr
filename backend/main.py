@@ -41,6 +41,34 @@ from frontend import setup_frontend
 
 logging = ModuleLogger("Main")
 
+# How long a stop waits for the running jobs of the scheduler, in seconds.
+# Docker stops a container 10 seconds after it asks. A download inside
+# yt-dlp or ffmpeg cannot be interrupted, so without a limit a stop during
+# a download waited for it, Docker killed the process, and the WAL flush
+# below never ran. A job still running after this is abandoned, and the
+# next run downloads it again. The two flushes after it take 2 seconds
+# each at most, so the whole stop finishes inside the grace period.
+SCHEDULER_STOP_TIMEOUT = 4.0
+
+
+def _flush_wal_files() -> None:
+    """Empty the WAL files of both databases, and say when one was busy.
+
+    One attempt each: a shutdown must finish inside the stop grace period
+    of Docker. A busy WAL is emptied at the next checkpoint, and
+    `journal_size_limit` caps it until then.
+    """
+    for name, flush in (
+        ("trailarr.db", flush_records_to_db),
+        ("logs.db", flush_logs_to_db),
+    ):
+        if not flush():
+            logging.warning(
+                f"Trailarr could not empty the WAL file of {name}, because"
+                " another connection used the database. SQLite empties it"
+                " at a later checkpoint."
+            )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,6 +79,8 @@ async def lifespan(app: FastAPI):
     validate_binary_paths()
     # Remove orphaned partial downloads from previous runs (#626)
     cleanup_stale_temp_downloads()
+    # Empty a WAL file that an earlier version let grow too large (#687)
+    _flush_wal_files()
     # Schedule all tasks
     logging.debug("Scheduling tasks")
     schedule_all_tasks()
@@ -64,10 +94,11 @@ async def lifespan(app: FastAPI):
     # Before shutdown
     logging.debug("Shutting down the scheduler and flushing logs to DB")
     await notification_dispatcher.stop()
-    scheduler.shutdown()
-    flush_records_to_db()
-    flush_logs_to_db()
-    logging.debug("Trailarr shutdown complete")
+    scheduler.shutdown(timeout=SCHEDULER_STOP_TIMEOUT)
+    # The last log line of the lifespan goes before the flush. A line
+    # after it would write a new WAL frame into logs.db.
+    logging.debug("Trailarr stops. The WAL files are written last.")
+    _flush_wal_files()
 
 
 # Get APP_NAME and APP_VERSION from environment variables

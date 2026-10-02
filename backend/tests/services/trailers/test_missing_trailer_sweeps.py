@@ -405,7 +405,7 @@ async def test_persistent_scan_reverify_disagreement_drains(
     _load(sweep_harness, [scanned_media], [profile])
     sweep_harness.state["current_media"][1] = current_media
 
-    def evaluate(media, profiles):
+    def evaluate(media, profiles, videos=None):
         # Unconditional and stateless: the scan's row is always pending,
         # the re-read row is always satisfied, on every sweep.
         if media is scanned_media:
@@ -438,7 +438,7 @@ async def test_stop_event_ends_download_phase_promptly(sweep_harness):
 
     sweep_harness.process.side_effect = process
 
-    await download_missing_trailers(_stop_event=stop_event)
+    await download_missing_trailers(stop_event=stop_event)
 
     assert sweep_harness.process.await_count == 1
 

@@ -9,7 +9,11 @@ from datetime import datetime, timezone
 
 from app_logger import ModuleLogger
 import database.manager.download as download_manager
-from database.models.download import DownloadCreate, DownloadRead
+from database.models.download import (
+    UNKNOWN_YOUTUBE_ID,
+    DownloadCreate,
+    DownloadRead,
+)
 from database.models.media import MediaRead
 from services.trailers.video_analysis import VideoInfo, get_media_info
 from services.files.files_handler import FilesHandler
@@ -85,8 +89,8 @@ def find_youtube_id(media_info: VideoInfo, media: MediaRead) -> str:
     Returns:
         str: The YouTube ID if found, else `unknown0000`.
     """
-    youtube_id = media_info.youtube_id or "unknown0000"
-    if youtube_id == "unknown0000" and media.youtube_trailer_id:
+    youtube_id = media_info.youtube_id or UNKNOWN_YOUTUBE_ID
+    if youtube_id == UNKNOWN_YOUTUBE_ID and media.youtube_trailer_id:
         # Check if file was recently created (within 1 hour of download)
         if media.downloaded_at:
             # media.downloaded_at is UTC but timezone-naive from database
@@ -155,7 +159,7 @@ async def record_new_trailer_download(
     file_path: str,
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
-) -> None:
+) -> bool:
     """
     Records a new trailer download in the database with comprehensive metadata.
     Args:
@@ -165,6 +169,9 @@ async def record_new_trailer_download(
         youtube_video_id (str | None): The YouTube video ID of the trailer.
         video_info (VideoInfo | None): Pre-analyzed video info to avoid
             redundant ffprobe calls. If None, will analyze the file.
+    Returns:
+        bool: True when the download is in the database. A caller that
+            deletes an old trailer must check this first.
     """
     logger.debug(
         f"Trailarr records a new trailer download for '{media.title}'.",
@@ -180,7 +187,7 @@ async def record_new_trailer_download(
                 f"Trailarr could not read the video information of"
                 f" '{file_path}'."
             )
-            return
+            return False
 
         # Get file timestamps from the actual final path (may differ from original)
         file_stat = os.stat(file_path)
@@ -195,7 +202,7 @@ async def record_new_trailer_download(
 
         # Get youtube video id
         yt_id = find_youtube_id(media_info, media)
-        if yt_id == "unknown0000" and youtube_video_id:
+        if yt_id == UNKNOWN_YOUTUBE_ID and youtube_video_id:
             yt_id = youtube_video_id
 
         # Create download record with comprehensive metadata
@@ -215,9 +222,10 @@ async def record_new_trailer_download(
         # Save to database using dedicated download manager
         download_manager.create(download)
         logger.debug(
-            "Successfully recorded new trailer download for media"
-            f" {media.title} [{media.id}]"
+            f"Trailarr recorded the new trailer download for '{media.title}'.",
+            **logger.media(media.id),
         )
+        return True
 
     except Exception as e:
         logger.error(
@@ -225,6 +233,7 @@ async def record_new_trailer_download(
             f" '{media.title}': {e}",
             **logger.media(media.id),
         )
+        return False
 
 
 async def rename_trailer_download(

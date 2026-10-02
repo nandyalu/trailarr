@@ -26,8 +26,10 @@ from services.trailers import trailer_search
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils as trailer_utils
 from services.trailers.trailers.pending import (
+    FailingDownload,
     MediaPendingView,
     PendingSummary,
+    compute_failing_downloads,
     compute_library_pending,
     compute_media_pending,
 )
@@ -123,6 +125,20 @@ async def get_library_pending(
         PendingSummary: Counts plus the paginated (media, profile) list. \n
     """
     return compute_library_pending(limit=limit, offset=offset)
+
+
+@media_router.get("/failing")
+async def get_failing_downloads() -> list[FailingDownload]:
+    """The downloads that keep failing. \n
+    Every monitored media item and enabled matching profile whose download
+    failed on two task runs or more, and that the download task would still
+    act on. The library page shows them in a banner with a quick filter, so
+    the items to fix are easy to find. Computed with the exact satisfaction
+    rule the download task uses; performs no writes. \n
+    Returns:
+        list[FailingDownload]: One row per (media, profile) pair, by title. \n
+    """
+    return compute_failing_downloads()
 
 
 @media_router.get("/downloads_raw")
@@ -894,7 +910,12 @@ async def batch_update_media(update: BatchUpdate) -> None:
             msg = media_service.set_monitoring_bulk(update.media_ids, False)
         elif update.action == "delete":
             for media_id in update.media_ids:
-                await _delete_trailer_and_report(media_id)
+                try:
+                    await _delete_trailer_and_report(media_id)
+                except HTTPException:
+                    # The helper already told the user about this item.
+                    # Go on with the next item.
+                    continue
         elif update.action == "download":
             if not update.profile_id or update.profile_id <= 0:
                 msg = "No trailer profile ID provided!"

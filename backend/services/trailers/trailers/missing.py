@@ -22,6 +22,8 @@ import database.manager.download as download_manager
 import database.manager.downloadattempt as attempt_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
+import database.manager.mediavideo as video_manager
+from database.models.download import DownloadRead, is_unknown_video
 from database.models.downloadattempt import (
     DownloadAttemptRead,
     is_eligible,
@@ -31,6 +33,7 @@ from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
 from services.satisfaction import evaluate_satisfaction
+from services.trailers.trailers.pending import read_upgrade_videos
 from services.trailers import trailer as trailer_downloader
 from services.tmdb.refresh import TMDBRefresher
 from services.trailers.inflight import inflight_registry
@@ -224,7 +227,7 @@ def _build_work_list(
     attempted_pairs: set[tuple[int, int]],
     enabled_profiles: list[TrailerProfileRead],
     profiles_by_id: dict[int, TrailerProfileRead],
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> tuple[list[_WorkItem], int]:
     """Build one sweep without holding a database session during downloads.
 
@@ -234,6 +237,7 @@ def _build_work_list(
         (attempt.media_id, attempt.profile_id): attempt
         for attempt in attempt_manager.read_all()
     }
+    videos_by_media = read_upgrade_videos(enabled_profiles)
     work_items: list[_WorkItem] = []
     scanned_media = 0
 
@@ -241,13 +245,15 @@ def _build_work_list(
         media_manager.read_all_generator(monitored_only=True)
     ) as media_rows:
         for media in media_rows:
-            if _stop_event and _stop_event.is_set():
+            if stop_event and stop_event.is_set():
                 break
             scanned_media += 1
             matching_profiles = find_matching_profiles(media, enabled_profiles)
             if not matching_profiles:
                 continue
-            result = evaluate_satisfaction(media, matching_profiles)
+            result = evaluate_satisfaction(
+                media, matching_profiles, videos_by_media.get(media.id)
+            )
             if result.claims:
                 # Claims write to the database. A row deleted by a
                 # concurrent Arr refresh must cost this media item, not
@@ -292,7 +298,10 @@ def _read_current_eligible_profiles(
     all_profiles = trailerprofile.get_trailerprofiles()
     enabled_profiles = [profile for profile in all_profiles if profile.enabled]
     matching_profiles = find_matching_profiles(media, enabled_profiles)
-    result = evaluate_satisfaction(media, matching_profiles)
+    videos = None
+    if any(profile.upgrade_to_tmdb for profile in matching_profiles):
+        videos = video_manager.read_candidates(media.id)
+    result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
         profiles_by_id = {
             profile.id: profile
@@ -327,6 +336,16 @@ async def _run_preview_pass() -> None:
     summary = compute_library_pending(limit=1000)
     would_download = [i for i in summary.items if i.reason == "pending"]
     for item in would_download[:_PREVIEW_LOG_LIMIT]:
+        if item.upgrade:
+            # The item has a trailer. "Would download" read as if it had
+            # none, and the page says "would replace" for the same item.
+            logger.info(
+                f"Preview: Trailarr would replace the trailer of"
+                f" '{item.title}' with a TMDB trailer, with the profile"
+                f" '{item.profile_name}'.",
+                **logger.media(item.media_id),
+            )
+            continue
         logger.info(
             f"Preview: Trailarr would download '{item.title}' with the"
             f" profile '{item.profile_name}'.",
@@ -337,9 +356,14 @@ async def _run_preview_pass() -> None:
             f"Preview: and {len(would_download) - _PREVIEW_LOG_LIMIT} more."
             " The pending downloads view lists them all."
         )
+    replacements = sum(1 for item in would_download if item.upgrade)
     msg = (
         f"Preview mode: {summary.pending_pairs} trailer(s) across"
         f" {summary.total_media} media item(s) would be downloaded"
+    )
+    if replacements:
+        msg += f", {replacements} of them to replace a trailer"
+    msg += (
         f" ({summary.backoff_pairs} backing off). Enable downloads in"
         " settings to perform them."
     )
@@ -348,7 +372,7 @@ async def _run_preview_pass() -> None:
 
 
 async def download_missing_trailers(
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Download missing trailers for monitored media items.
 
@@ -412,7 +436,7 @@ async def download_missing_trailers(
     attempted_pairs: set[tuple[int, int]] = set()
 
     while True:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped the download of the missing trailers. A stop"
                 " was requested."
@@ -447,10 +471,10 @@ async def download_missing_trailers(
             attempted_pairs,
             enabled_profiles,
             profiles_by_id,
-            _stop_event=_stop_event,
+            stop_event=stop_event,
         )
         scanned_media += sweep_scanned
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Stop event set, terminating download of missing trailers."
             )
@@ -460,7 +484,7 @@ async def download_missing_trailers(
             break
 
         for work_item in work_items:
-            if _stop_event and _stop_event.is_set():
+            if stop_event and stop_event.is_set():
                 logger.info(
                     "Trailarr stopped the download of the missing trailers. A stop"
                     " was requested."
@@ -527,7 +551,7 @@ async def download_missing_trailers(
                     media,
                     profiles_to_process,
                     attempted_downloads,
-                    _stop_event=_stop_event,
+                    stop_event=stop_event,
                     refresher=refresher,
                 )
                 successful_downloads += downloads
@@ -551,7 +575,7 @@ async def _process_single_media_item(
     media: MediaRead,
     profiles: list[TrailerProfileRead],
     total_processed: int = 0,
-    _stop_event: threading.Event | None = None,
+    stop_event: threading.Event | None = None,
     refresher: TMDBRefresher | None = None,
 ) -> tuple[int, int, int]:
     """Download trailers for a media item's unsatisfied, backoff-eligible
@@ -578,7 +602,7 @@ async def _process_single_media_item(
         await refresh_videos_if_stale(media, refresher)
 
     for profile in profiles:
-        if _stop_event and _stop_event.is_set():
+        if stop_event and stop_event.is_set():
             logger.info(
                 "Trailarr stopped work on this media item. A stop was requested."
             )
@@ -602,7 +626,11 @@ async def _process_single_media_item(
                 **logger.media(media.id),
             )
             download_successful = await trailer_downloader.download_trailer(
-                media, profile, profile.retry_count, _stop_event=_stop_event
+                media,
+                profile,
+                profile.retry_count,
+                stop_event=stop_event,
+                replace=_downloads_to_replace(media, profile),
             )
             if download_successful:
                 download_attempted = True
@@ -647,6 +675,35 @@ async def _process_single_media_item(
     _msg += f", Skipped: {skipped_items}/{_profile_count}"
     logger.info(_msg)
     return successful_downloads, skipped_items, download_attempts
+
+
+def _downloads_to_replace(
+    media: MediaRead, profile: TrailerProfileRead
+) -> list[DownloadRead]:
+    """The trailers that an upgrade of this profile would replace.
+
+    An unsatisfied profile that already has a trailer on disk is only
+    unsatisfied because `Upgrade To TMDB Trailer` wants a better one. The
+    downloads are read again here, because a claim made in this pass is
+    in the database but not in `media.downloads`.
+
+    A trailer whose video is unknown is left alone unless `Replace Unknown
+    Videos` is on. The satisfaction rule keeps such a profile satisfied,
+    so this matters when the profile also owns a known trailer that is not
+    a TMDB trailer: that one goes, the unknown one stays.
+    """
+    if not profile.upgrade_to_tmdb:
+        return []
+    return [
+        download
+        for download in download_manager.read_by_media_id(media.id)
+        if download.file_exists
+        and download.profile_id == profile.id
+        and (
+            profile.replace_unknown_videos
+            or not is_unknown_video(download.youtube_id)
+        )
+    ]
 
 
 # How long an answer from TMDB stays fresh. A curated list changes rarely,

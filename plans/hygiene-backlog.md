@@ -62,7 +62,8 @@ none justify their own release. Check items off with the release that shipped th
   files-scan → wired and removed in Phase 11.
 - [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
-  candidate).
+  candidate). Scheduled: Phase 9 decision 9 drops the column (maintainer decision, Sep
+  24, 2026). The steps are in `phase-09-video-types.md`.
 - [x] **H11 — Release-fixture gauntlet caught up** — DONE (ships in v0.11.2): the
   ladder's rule-4 fixtures were missing for v0.11.0 and v0.11.1. Added
   `v0_11_0_columns_dropped.sql` (post-destructive-migration schema, migrated
@@ -98,7 +99,12 @@ none justify their own release. Check items off with the release that shipped th
   heuristic refuses. Fix it together with the allowlist, which does not need a depth
   heuristic.
 
-- [ ] **H14 — retire the bracketed-id fallback in the log handler.** Every backend log
+- [x] **H14 — retire the bracketed-id fallback in the log handler.** — DONE (ships in
+  v0.13.1): the handler reads the media id only from `logger.media()`. The last line
+  that used brackets (`record_new_trailer_download`) now passes the tag, and
+  `test_log_message_safety.py` now rejects any bracketed id in a log message.
+
+  The original entry: Every backend log
   line now passes the media id with `logger.media(id)`, so the fallback in
   `config/logs/db_handler.py` — take the first `[123]` in the message as the media id —
   only serves logs from libraries, and it is what linked seven lines to the wrong title
@@ -111,8 +117,11 @@ none justify their own release. Check items off with the release that shipped th
   risk of a new wrong link is small; the remaining question is only what the fallback
   still earns.
 
-- [ ] **H15 — a failing batch delete tells the user twice.** `batch_update_media` with
-  the delete action calls the same code the delete endpoint uses, which broadcasts
+- [x] **H15 — a failing batch delete tells the user twice.** — DONE (ships in v0.13.1):
+  the batch loop catches the `HTTPException` of each item and goes on. One message per
+  item, and a failed item no longer stops the batch (`tests/api/test_batch_update.py`).
+
+  The original report: `batch_update_media` with the delete action calls the same code the delete endpoint uses, which broadcasts
   "Error deleting trailer!" on a failure. The batch handler then catches the same
   exception and broadcasts "Error updating Media!". The user sees both.
 
@@ -127,8 +136,12 @@ none justify their own release. Check items off with the release that shipped th
   Not urgent: what is left is closer to "parse, call, return" than the rest was. Do it
   when Phase 9 or 10 touches this router anyway.
 
-- [ ] **H17 — a register of strings that are contract, not prose.** Phase 7 rewrote
-  every log message, and three sets of strings had to be left alone because something
+- [x] **H17 — a register of strings that are contract, not prose.** — DONE (ships in
+  v0.13.1): `tests/test_contract_strings.py` checks that both sides still hold the
+  `Output::` markers, and that no message our download code raises matches a yt-dlp
+  signature. The register below stays as the record.
+
+  Phase 7 rewrote every log message, and three sets of strings had to be left alone because something
   reads them. They are recorded here so the next prose pass does not have to rediscover
   them, and so nobody "improves" one:
 
@@ -144,8 +157,8 @@ none justify their own release. Check items off with the release that shipped th
 
   Worth turning into a test that asserts each string still exists.
 
-- [ ] **H18 — dead code with an expired removal note.** `database/engine.py` carries a
-  commented-out `manage_session` decorator under "Remove in v0.8.0!". The version is
+- [x] **H18 — dead code with an expired removal note.** — DONE (ships in v0.13.1).
+  `database/engine.py` carried a commented-out `manage_session` decorator under "Remove in v0.8.0!". The version is
   v0.12.0. Nothing references it. Delete it.
 
 - [ ] **H19 — a service cannot schedule a task.** `_schedule_refresh` stayed in
@@ -209,8 +222,11 @@ none justify their own release. Check items off with the release that shipped th
   `apply_doctor_mapping` report a connection problem inside the report they return
   rather than raising, so their safe path is a missing connection.
 
-- [ ] **H23 — `_request` throws away the message that `_process_response` chose.**
-  `services/connections/arr/request_manager.py` calls `_process_response` inside the
+- [x] **H23 — `_request` throws away the message that `_process_response` chose.** —
+  DONE (ships in v0.13.1): the three exceptions pass through before the broad `except`.
+  Checked in the real app against a server that answers 401 and 403.
+
+  The original report: `services/connections/arr/request_manager.py` calls `_process_response` inside the
   `async with session.request(...)` block, and the enclosing `except Exception` then
   replaces whatever it raised with `"Unable to connect to API. Check your connection."`
 
@@ -226,8 +242,24 @@ none justify their own release. Check items off with the release that shipped th
   broad `except`. Kept out of v0.12.1 because it changes the text a user sees for
   every failing Arr request, which wants its own look at the messages.
 
+- [ ] **H24 — the `max_duration` check is never true.** Scheduled: Phase 9, decision 10.
+  `database/models/trailerprofile.py` checks `if 90 > self.max_duration > 600:`. A
+  chained comparison needs a value below 90 AND above 600, so the check never fails,
+  and the API stores any value. Only the UI slider holds the 600 limit.
+
+  Not fixed in a patch on purpose: the validator is on `_TrailerProfileBase`, so it also
+  runs when a profile is READ. A fix without a migration makes a profile that the API
+  saved with a large value unreadable. Phase 9 fixes the check, raises the cap to 1200
+  (#686), and clamps stored values above 1200 in its migration. The Phase 9
+  verification and exit criteria name it, so it cannot drop out.
+
 - [x] **H10 — `VACUUM` for logs.db after the daily purge** — DONE (ships in v0.10.0):
   `delete_old_logs` now uses a single batch DELETE + conditional `VACUUM` on an
   autocommit connection (`vacuum_logs_db` in `config/logs/db_utils.py`). Verified at
   50k rows: 13.3 MB → 0.14 MB in 0.32s. trailarr.db VACUUM-after-migrations still
   lands with Phase 5.
+
+  Changed in v0.13.1 (#687): the VACUUM runs only when at least 25% of logs.db is free
+  pages (`VACUUM_MIN_FREE_RATIO`). The daily purge frees about 3% of the file, and a
+  VACUUM in WAL mode wrote the full file twice for it. A TRUNCATE checkpoint now
+  follows each VACUUM.

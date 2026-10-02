@@ -88,7 +88,7 @@ class TestRefreshTask:
                     with patch(
                         f"{PKG}.refresh_videos_if_stale", new=AsyncMock()
                     ) as refresh:
-                        await refresh_media_videos(_stop_event=stop)
+                        await refresh_media_videos(stop_event=stop)
 
         refresh.assert_not_awaited()
 

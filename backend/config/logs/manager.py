@@ -1,9 +1,15 @@
 """Read log records back out of the database, filtered and paged."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import delete
 from sqlmodel import col, desc, or_, select
-from config.logs.db_utils import get_async_logs_session, vacuum_logs_db
+from config.logs.db_utils import (
+    VACUUM_MIN_FREE_RATIO,
+    get_async_logs_session,
+    logs_db_free_ratio,
+    truncate_logs_wal,
+    vacuum_logs_db,
+)
 from config.logs.model import (
     AppLogRecord,
     AppLogRecordRead,
@@ -65,9 +71,22 @@ def _apply_log_filter(stmt, filter: str | None):
 
 async def delete_old_logs(days: int = 30) -> int:
     """Delete logs older than the specified number of days in a single
-    statement, then VACUUM to return the freed pages to the filesystem
-    (skipped when nothing was deleted — VACUUM rewrites the whole file)."""
-    date_threshold = datetime.now() - timedelta(days=days)
+    statement, and empty the WAL file after it.
+
+    VACUUM rewrites the whole file, so it runs only when the delete left
+    at least `VACUUM_MIN_FREE_RATIO` of the file free. That happens after a
+    first purge of a large backlog. The daily purge frees about one thirtieth
+    of the file, and SQLite reuses those pages for new logs. Both kinds of
+    purge end with a checkpoint, so the WAL file is empty after each
+    cleanup, not only after a compaction (#687).
+    """
+    # The log times are stored in UTC. A local time here moved the cut by
+    # the UTC offset, and since sqlmodel 0.0.45 a time without a timezone
+    # is refused, which stopped the cleanup.
+    date_threshold = datetime.now(timezone.utc) - timedelta(days=days)
+    # The session logs and swallows a database error, so `count` must
+    # exist even when the delete below never finishes.
+    count = 0
     async with get_async_logs_session() as session:
         stmt = delete(AppLogRecord).where(
             col(AppLogRecord.created) < date_threshold
@@ -75,6 +94,20 @@ async def delete_old_logs(days: int = 30) -> int:
         result = await session.exec(stmt)  # type: ignore[call-overload]
         await session.commit()
         count = result.rowcount or 0
-    if count:
-        await vacuum_logs_db()
+    if not count:
+        return count
+    if await logs_db_free_ratio() >= VACUUM_MIN_FREE_RATIO:
+        wal_empty = await vacuum_logs_db()
+    else:
+        wal_empty = await truncate_logs_wal()
+    if not wal_empty:
+        # Imported here: this module belongs to the log setup, and the
+        # logger imports that setup.
+        from app_logger import ModuleLogger
+
+        ModuleLogger("LogsDatabase").warning(
+            "Trailarr cleaned up logs.db, but new log lines kept its WAL"
+            " file busy, so the file did not shrink yet. SQLite empties"
+            " the WAL at a later checkpoint."
+        )
     return count

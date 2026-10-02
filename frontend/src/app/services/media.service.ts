@@ -6,6 +6,7 @@ import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort, MOVIES_ONLY_FILTERS} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
 import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, mapDownload, mapFolderInfo, mapMedia, Media, MediaVideo, SearchMedia} from '../models/media';
+import {FailingDownload, mapFailingDownloads} from '../models/pending';
 import {mapMediaPending, MediaPendingView} from '../models/pending';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
@@ -161,14 +162,20 @@ export class MediaService {
         break;
       }
       case null: {
-        moviesOnlyMediaList = this.combinedMedia().filter((media) => {
-          return media.downloads.some((download) => download.file_exists === true);
-        });
+        // The Home page lists the media that has a trailer. The failing
+        // filter is the exception: a failed download has no trailer, and
+        // that is the point of showing it (Copilot review on #696).
+        moviesOnlyMediaList =
+          this.selectedFilter() === 'failing_downloads'
+            ? this.combinedMedia()
+            : this.combinedMedia().filter((media) => {
+                return media.downloads.some((download) => download.file_exists === true);
+              });
         break;
       }
     }
     // Filter the media list by the selected filter option
-    let mediaList = applySelectedFilter(moviesOnlyMediaList, this.selectedFilter(), this.customFilters());
+    let mediaList = applySelectedFilter(moviesOnlyMediaList, this.selectedFilter(), this.customFilters(), this.failingMediaIds());
     // Sort the media list by the selected sort option
     // Sorts the list in place. If sortAscending is false, reverses the list
     applySelectedSort(mediaList, this.selectedSort(), this.sortAscending());
@@ -205,6 +212,17 @@ export class MediaService {
   readonly unknownProfileCount = computed(() => {
     return this.combinedMedia().filter((media) => media.downloads.some((d) => d.file_exists && d.profile_id === 0)).length;
   });
+
+  /** The downloads that keep failing (GET /media/failing) — drives the
+   * 'Failing Downloads' quick filter and its review banner. The backend
+   * reads only the attempt rows, which exist while a download fails, so
+   * this is small. Reloads with the downloads. */
+  readonly failingDownloadsResource = httpResource<FailingDownload[]>(() => ({url: this.mediaUrl + 'failing'}), {
+    defaultValue: [],
+    parse: (response) => (Array.isArray(response) ? mapFailingDownloads(response) : []),
+  });
+  readonly failingMediaIds = computed(() => new Set(this.failingDownloadsResource.value().map((item) => item.media_id)));
+  readonly failingCount = computed(() => this.failingMediaIds().size);
 
   /** Currently selected media item based on the selectedMediaID */
   readonly selectedMedia = computed(() => {
@@ -274,6 +292,9 @@ export class MediaService {
       }
       if (msg.reload?.includes('downloads')) {
         this.mediaDownloadsResource.reload();
+        // A download that succeeded clears its attempt row, so the failing
+        // list changes with the downloads.
+        this.failingDownloadsResource.reload();
       }
       if (msg.reload?.includes('downloading')) {
         this.downloadingResource.reload();

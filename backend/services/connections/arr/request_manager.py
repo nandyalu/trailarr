@@ -72,6 +72,14 @@ class AsyncRequestManager:
                     # client_response.raise_for_status()
                     response = await self._process_response(client_response)
                     return response
+            except (
+                ConnectionError,
+                ConnectionTimeoutError,
+                InvalidResponseError,
+            ):
+                # _process_response chose this message for the status code,
+                # such as "Unauthorized" for a wrong API key. Keep it.
+                raise
             except aiohttp.ServerTimeoutError:
                 raise ConnectionTimeoutError(
                     "Timeout occurred while connecting to API."

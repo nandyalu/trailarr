@@ -118,9 +118,9 @@ There are up to 2 action buttons that can appear depending on the selected Media
 This section shows, for **every** Trailer Profile, exactly where it stands with this media item:
 
 - **Not matching** — the profile's filters do not apply to this item (or the profile is disabled).
-- **Satisfied** — the profile already owns a downloaded video (its own download, or an existing file it claimed).
-- **Pending** — the profile matches but has no download yet; it will download on the next task run.
-- **Backing off** — previous download attempts failed; shows the attempt count, the last error, and when the next retry is due. A manual download bypasses the wait.
+- **Satisfied** — the profile already owns a downloaded video (its own download, or an existing file it claimed). {{ version_badge("upd", "0.13.1") }} With [Upgrade To TMDB Trailer](../../settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) on, the row also says whether the download is a TMDB trailer, or why the upgrade keeps it: the item has no TMDB id, TMDB was not asked yet, TMDB lists nothing in the language of the profile, or the video of the trailer is unknown.
+- **Pending** — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why.
+- **Backing off** — previous download attempts failed; shows the attempt count, when the next retry is due, and {{ version_badge("upd", "0.13.1") }} the reason of the last failure with the fix, when Trailarr knows it. A manual download bypasses the wait.
 
 The matrix is computed with the exact same rule the download task uses, so what you see here is precisely what the engine will do next — there is no separate bookkeeping that could disagree with it.
 

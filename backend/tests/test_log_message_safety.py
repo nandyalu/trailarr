@@ -155,39 +155,51 @@ def test_attributes_read_from_an_annotated_argument_exist(path):
     )
 
 
-def test_no_log_message_puts_a_non_media_id_in_brackets():
-    """A `[123]` in a log message is read as the media id.
+# Text with a bracketed id that is not a log message, and why it stays.
+BRACKETED_ID_ALLOWED = {
+    # A notification line for a media item that no longer exists. The id
+    # is the only name left, and the text goes to Discord, not the log.
+    "services/notifications/dispatcher.py": "note.media_id",
+}
 
-    `db_handler.py` searches the message for the first bracketed number and
-    stores it in the mediaid column, which is what makes the Logs page link
-    a line to a title. A bracketed profile, download, channel, connection or
-    section id therefore links the line to whatever media has that id.
 
-    Pass the id with `logger.media(...)` instead, and keep other ids out of
-    brackets.
+def test_no_log_message_puts_an_id_in_brackets():
+    """A `[123]` in a log message links nothing.
+
+    `db_handler.py` used to read the first bracketed number as the media id.
+    A bracketed profile, download or channel id then linked the line to the
+    wrong title. v0.13.1 removed that fallback (hygiene H14), so only
+    `logger.media(...)` links a line now.
+
+    An id in brackets is the old habit. For a media id it looks like a link
+    and is not one; for any other id it is noise. Pass a media id with
+    `logger.media(...)`, and name the other thing instead of its id.
+
+    Every f-string is checked, not only the ones inside a logger call. A
+    message built in a variable, returned by a function or given to an
+    exception reaches the log the same way, and a scan of logger calls
+    alone missed one (Copilot review on #696).
     """
     import re
 
     offenders = []
-    bracketed = re.compile(r"\[\{([^{}\[\]]+)\}\]")
+    bracketed_id = re.compile(r"\[\{([^{}\[\]]*id)\}\]", re.I)
     for path in _python_files():
+        rel = str(path.relative_to(BACKEND))
         source = path.read_text()
-        tree = ast.parse(source)
-        lines = source.splitlines()
-        for call in _log_calls(tree):
-            block = "\n".join(lines[call.lineno - 1 : call.end_lineno])
-            if "logger.media(" in block:
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.JoinedStr):
                 continue
-            for match in bracketed.finditer(block):
-                expression = match.group(1)
-                if not re.search(r"media", expression, re.I):
-                    offenders.append(
-                        f"{path.relative_to(BACKEND)}:{call.lineno}"
-                        f" -> [{{{expression}}}]"
-                    )
+            segment = ast.get_source_segment(source, node) or ""
+            for match in bracketed_id.finditer(segment):
+                if BRACKETED_ID_ALLOWED.get(rel) == match.group(1):
+                    continue
+                offenders.append(
+                    f"{rel}:{node.lineno} -> [{{{match.group(1)}}}]"
+                )
     assert offenders == [], (
-        "These log messages put a number that is not a media id in square"
-        " brackets, so the Logs page links them to the wrong title:\n  "
+        "These messages put an id in square brackets. Brackets no"
+        " longer link a line to a title; use logger.media(...):\n  "
         + "\n  ".join(offenders)
     )
 

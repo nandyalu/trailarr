@@ -12,10 +12,11 @@ import threading
 from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import Engine, event, QueuePool, StaticPool, text as sa_text
+from sqlalchemy import Engine, event, QueuePool, StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
+from utils.sqlite_wal import STOP_BUSY_TIMEOUT_MS, truncate_wal
 from config.settings import app_settings
 
 logger = ModuleLogger("database_engine")
@@ -60,14 +61,26 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA synchronous=NORMAL")
     # Add busy_timeout for robustness if not already included
     cursor.execute("PRAGMA busy_timeout=20000")  # 20 seconds
+    # Without a limit, the WAL file stays at the largest size it ever had.
+    cursor.execute("PRAGMA journal_size_limit=33554432")  # 32 MiB
     cursor.close()
 
 
-def flush_records_to_db():
-    """Flush in-memory records to the database."""
+def flush_records_to_db() -> bool:
+    """Write the WAL into the database and empty the WAL file.
+
+    This runs at the start and the stop of the app. Each connection waits
+    20 seconds for a busy database, and Docker stops the container after
+    10, so the checkpoint gets a short timeout of its own.
+
+    Returns:
+        bool: False when another connection kept the WAL busy, so it was
+            not emptied. `journal_size_limit` still caps its size.
+    """
     with engine.connect() as connection:
-        connection.execute(sa_text("PRAGMA wal_checkpoint(FULL);"))
+        done = truncate_wal(connection, busy_timeout_ms=STOP_BUSY_TIMEOUT_MS)
         connection.commit()
+    return done
 
 
 @contextmanager
@@ -92,75 +105,6 @@ def get_session() -> Generator[Session, None, None]:
         raise
     finally:
         session.close()
-
-
-# TODO: All code has been moved to use read/write sessions. Remove in v0.8.0!
-# def manage_session(func):
-#     """Decorator to manage the session for a function. \n
-#     Add '_session' to the function's keyword arguments, \n
-#     decorator will supply a new session if one is not provided. \n
-#     Also handles database lock errors by retrying the function (5 times). \n
-#     Args:
-#         func: The function to decorate
-#     Returns:
-#         The decorated function with a session keyword argument
-#     Example:
-#         1. Within a class method
-#         ```python
-#         class MovieDatabaseHandler:
-#             @manage_session
-#             def read(
-#                 self,
-#                 movie_id: int,
-#                 *,
-#                 _session: Session = None,  # type: ignore
-#             ) -> MovieRead:
-#                 movie = _session.get(Movie, movie_id)
-#                 # do something else with _session or commit the changes
-#                 return movie
-#         ```
-#         2. Outside a class method
-#         ```python
-#         @manage_session
-#         def read(movie_id: int, *, _session: Session = None) -> MovieRead:
-#             movie = _session.get(Movie, movie_id)
-#             # do something else with _session or commit the changes
-#             return movie
-#         ```
-#     """
-
-#     @wraps(func)
-#     def wrapper(*args: Any, **kwargs: Any) -> Any:
-#         retries = 5
-#         delay = 0.1
-#         for i in range(retries):
-#             try:
-#                 # Check if a '_session' keyword argument was provided
-#                 if kwargs.get("_session") is None:
-#                     # If not, create a new session and add it to kwargs
-#                     with get_session() as _session:
-#                         kwargs["_session"] = _session
-#                         return func(*args, **kwargs)
-#                 else:
-#                     # If a session was provided, just call the function
-#                     return func(*args, **kwargs)
-#             except (SAOperationalError, SQLiteOperationalError) as e:
-#                 if "database is locked" in str(e).lower():
-#                     # If this was the last attempt, raise the final exception
-#                     if i == retries - 1:
-#                         raise Exception(
-#                             f"Database locked after {retries} retries: {e}"
-#                         )
-#                     # Wait and retry
-#                     time.sleep(delay)
-#                     delay *= 2  # Exponential backoff
-#                 else:
-#                     # If it's a different Exception, raise it immediately
-#                     raise
-#         # If we exit the loop without returning, raise an exception
-#         raise Exception("Database is locked, retries exhausted.")
-
-#     return wrapper
 
 
 # Lock for write operations - only acquired when creating a new write session

@@ -292,6 +292,8 @@ def get_video_id(
     profile: TrailerProfileRead,
     exclude: list[str] | None = None,
     search_length: int = 10,
+    *,
+    upgrade_only: bool = False,
 ) -> str | None:
     """Get youtube video id for the media object. \n
     Search for trailer on youtube if not found. \n
@@ -300,16 +302,24 @@ def get_video_id(
         profile (TrailerProfileRead): The trailer profile to use.
         exclude (list[str], Optional=None): List of video ids to exclude.
         search_length (int, Optional=10): Number of search results to return.
+        upgrade_only (bool, Optional=False): Take only a video that
+            `Upgrade To TMDB Trailer` accepts, and never search.
     Returns:
         str|None: Youtube video id / None if not found."""
     # Phase 8: the candidates table is the source of the answer. It holds
     # the video the user chose, the trailers TMDB lists, and the id that
     # Radarr or Sonarr gave — in that order. A search runs only when the
     # table offers nothing that this profile can use.
-    video_id = _video_id_from_candidates(media, profile, exclude)
+    video_id = _video_id_from_candidates(
+        media, profile, exclude, upgrade_only=upgrade_only
+    )
     if video_id:
         media.youtube_trailer_id = video_id
         return video_id
+    if upgrade_only:
+        # An upgrade replaces a trailer with a TMDB trailer. A search result
+        # is not one, so the next run would replace it again, and again.
+        return None
     # Search for trailer on youtube, until a max of 30 search results
     video_id = search_yt_for_trailer(
         media, profile, exclude, search_length=search_length
@@ -345,6 +355,8 @@ def _video_id_from_candidates(
     media: MediaRead,
     profile: TrailerProfileRead,
     exclude: list[str] | None,
+    *,
+    upgrade_only: bool = False,
 ) -> str | None:
     """Take the best candidate from the table, if there is one."""
     try:
@@ -363,9 +375,21 @@ def _video_id_from_candidates(
         )
         return None
     last_tried = _last_tried_video_id(media.id, profile.id)
-    chosen = resolver.choose_candidates(
-        candidates, profile, exclude=exclude, last_tried=last_tried
-    )
+    if upgrade_only:
+        chosen = resolver.upgrade_targets(
+            candidates, profile, exclude=exclude, last_tried=last_tried
+        )
+        if not chosen:
+            logger.info(
+                f"Trailarr has no other TMDB trailer to try for"
+                f" '{media.title}'.",
+                **logger.media(media.id),
+            )
+            return None
+    else:
+        chosen = resolver.choose_candidates(
+            candidates, profile, exclude=exclude, last_tried=last_tried
+        )
     if not chosen:
         _say_why_it_searches(media, profile, candidates)
         return None
