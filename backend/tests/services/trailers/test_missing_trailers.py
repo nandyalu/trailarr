@@ -271,7 +271,18 @@ async def test_preview_pass_publishes_would_download_list():
                 profile_name="Movie Trailers",
                 reason="pending",
                 next_eligible_at=None,
-            )
+            ),
+            PendingSummaryItem(
+                media_id=3,
+                title="Upgrade Movie",
+                is_movie=True,
+                profile_id=1,
+                profile_name="Movie Trailers",
+                reason="pending",
+                upgrade=True,
+                upgrade_state="replace_not_tmdb",
+                next_eligible_at=None,
+            ),
         ],
         limit=1000,
         offset=0,
@@ -292,6 +303,8 @@ async def test_preview_pass_publishes_would_download_list():
         message = mock_broadcast.await_args[0][0]
         assert "Preview mode" in message
         assert "1 trailer(s)" in message
+        # An upgrade item has a trailer, so the preview says "replace".
+        assert "1 of them to replace a trailer" in message
 
 
 class TestIsValidMediaStorageGuard:

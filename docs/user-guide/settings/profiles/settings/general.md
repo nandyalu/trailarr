@@ -84,7 +84,10 @@ The [Download Missing Trailers](../../../tasks/index.md#download-missing-trailer
 - **The trailer is a TMDB trailer.** Trailarr keeps it. Any TMDB trailer in the [Trailer Language](#trailer-language) of the profile is a match, not only the first one.
 - **The trailer is a video that you chose** on the media details page. Trailarr keeps it.
 - **TMDB lists no trailer for the item** in the language of the profile. Trailarr keeps the current trailer, and asks TMDB again later.
-- **The trailer is not a TMDB trailer.** Trailarr downloads a TMDB trailer to replace it. A trailer with no known video id, such as a file that Trailarr found on disk, is replaced too, because Trailarr cannot tell that it is a TMDB trailer.
+- **The trailer is not a TMDB trailer.** Trailarr downloads a TMDB trailer to replace it.
+- **Trailarr does not know which video the trailer is**, such as a file that it found on disk. Trailarr keeps it, unless [Replace Unknown Videos](#replace-unknown-videos) is on. {{ version_badge("upd", "0.13.1") }}
+
+The [Download Profiles](../../../library/media-details/index.md#download-profiles-section) section of the media details page says what the upgrade does for each profile: which trailer it replaces and why, and which it keeps and why. To keep one trailer that the upgrade would replace, paste its YouTube link on the media details page: a video that you chose is never replaced.
 
 A replacement only takes a TMDB trailer (or a video that you chose). It never takes a YouTube search result. When every TMDB trailer fails, Trailarr keeps the current trailer and tries again later, as for any failed download. A replacement does not look at [Skip If Plex Has A Trailer](plex.md), because the trailer in Plex is the one that Trailarr replaces.
 
@@ -105,6 +108,20 @@ A replacement only takes a TMDB trailer (or a video that you chose). It never ta
 Shows only when `Upgrade To TMDB Trailer` is on. When it is `true`, Trailarr deletes the old trailer after the TMDB trailer replaces it. The new trailer then takes the file name of the old one, when that is the name that the profile gives it. When it is `false`, Trailarr keeps both files, and does not replace the trailer again.
 
 Trailarr deletes the old trailer only after the new one is in the media folder. A failed download never leaves a media item without a trailer.
+
+## Replace Unknown Videos
+
+{{ version_badge("add", "0.13.1") }}
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | false   | true, false   |
+
+Shows only when `Upgrade To TMDB Trailer` is on. Trailarr does not know which video some trailers are: a file that it found on disk, or one that an old version saved before Trailarr recorded video ids. Nothing shows whether such a trailer is a TMDB trailer, so the upgrade cannot compare it with the TMDB list.
+
+When this is `false`, Trailarr keeps these trailers, and the media details page says so for each one. Most of them came from the trailer id that Radarr reports, and Radarr takes that id from TMDB, so they are TMDB trailers already. Replacing them all would download a large part of a library again for nothing: in one real library, almost a third of the trailers had no known video id.
+
+When this is `true`, Trailarr replaces these trailers too, with a TMDB trailer in the [Trailer Language](#trailer-language) of the profile. Turn it on for a profile whose trailers came from a YouTube search, such as a series profile: Sonarr reports no trailer id, so a series trailer from before the TMDB key is a search result.
 
 ## Stop Monitoring
 

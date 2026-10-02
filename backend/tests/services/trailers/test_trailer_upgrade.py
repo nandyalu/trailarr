@@ -389,6 +389,44 @@ class TestUpgradeDownload:
         pipeline.get_video_id.assert_not_called()
 
 
+class TestDownloadsToReplace:
+
+    def test_an_unknown_video_is_left_alone_unless_the_profile_replaces_it(
+        self,
+    ):
+        """Decision 4, amended. The replacement list of a profile leaves
+        out a trailer whose video is unknown while `Replace Unknown
+        Videos` is off, and never touches another profile's trailer."""
+        from services.trailers.trailers.missing import _downloads_to_replace
+
+        media = MagicMock(id=1)
+        profile = SimpleNamespace(
+            id=1, upgrade_to_tmdb=True, replace_unknown_videos=False
+        )
+        downloads = [
+            SimpleNamespace(
+                id=1, profile_id=1, file_exists=True, youtube_id="unknown0000"
+            ),
+            SimpleNamespace(
+                id=2, profile_id=1, file_exists=True, youtube_id="search1"
+            ),
+            SimpleNamespace(
+                id=3, profile_id=2, file_exists=True, youtube_id="search2"
+            ),
+        ]
+        with patch(
+            "services.trailers.trailers.missing.download_manager"
+            ".read_by_media_id",
+            return_value=downloads,
+        ):
+            assert [d.id for d in _downloads_to_replace(media, profile)] == [2]
+            profile.replace_unknown_videos = True
+            assert [d.id for d in _downloads_to_replace(media, profile)] == [
+                1,
+                2,
+            ]
+
+
 class TestUpgradeNeverSearches:
 
     def test_no_target_left_returns_none_without_a_search(self):

@@ -19,16 +19,23 @@
     <div class="pending-list">
       @for (profile of profiles(); track profile.profile_id) {
         <div class="pending-row" [class.inactive]="stateOf(profile) === 'disabled' || stateOf(profile) === 'not-matching'">
-          <span class="profile-name link" [routerLink]="['/settings', 'profiles', profile.profile_id]">
-            {{ profile.profile_name }}
-          </span>
-          <span class="state-chip" [class]="'state-' + stateOf(profile)">{{ stateLabel(profile) }}</span>
-          <span class="state-detail" [attr.title]="profile.last_error">
-            {{ stateDetail(profile) }}
-            @if (stateOf(profile) === 'backoff' && profile.next_eligible_at) {
-              — retries {{ profile.next_eligible_at | date: 'medium' }}
-            }
-          </span>
+          <div class="pending-main">
+            <span class="profile-name link" [routerLink]="['/settings', 'profiles', profile.profile_id]">
+              {{ profile.profile_name }}
+            </span>
+            <span class="state-chip" [class]="'state-' + stateOf(profile)">{{ stateLabel(profile) }}</span>
+            <span class="state-detail">
+              {{ stateDetail(profile) }}
+              @if (stateOf(profile) === 'backoff' && profile.next_eligible_at) {
+                — retries {{ profile.next_eligible_at | date: 'medium' }}
+              }
+            </span>
+          </div>
+          <!-- The reason of the last failure, with the fix when Trailarr knows it.
+               It was a hover title before, which nobody finds on a phone. -->
+          @if (stateOf(profile) === 'backoff' && profile.last_error) {
+            <p class="state-error">{{ profile.last_error }}</p>
+          }
         </div>
       }
     </div>

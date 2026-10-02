@@ -11,7 +11,9 @@ download task replaces the trailer (plans/track-tmdb-upgrade.md).
 """
 
 from dataclasses import dataclass, field
+from typing import Literal
 
+from database.models.download import is_unknown_video
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
@@ -20,6 +22,24 @@ from services.trailers.resolver import (
     upgrade_keeps,
     upgrade_targets,
 )
+
+# Why `Upgrade To TMDB Trailer` acts on a profile, or why it does not. The
+# pending view shows these, so a user sees why a trailer is replaced, or
+# why it stays, without reading the log.
+UpgradeState = Literal[
+    # The trailer is a known video that TMDB does not list.
+    "replace_not_tmdb",
+    # Nothing shows which video the trailer is, and the profile replaces
+    # such trailers.
+    "replace_unknown",
+    # The trailer is a TMDB trailer, or a video the user chose.
+    "matched",
+    # TMDB lists nothing the profile can use, or was not asked yet.
+    "awaiting_tmdb",
+    # Nothing shows which video the trailer is, and `Replace Unknown
+    # Videos` is off, so it stays.
+    "unknown_kept",
+]
 
 
 @dataclass
@@ -35,6 +55,8 @@ class ProfileSatisfaction:
     trailer is not a TMDB trailer and TMDB lists one. `awaiting_tmdb` is
     True when an upgrade profile keeps its trailer because TMDB lists
     nothing for it yet — the refresh task asks TMDB again about these.
+    `upgrade_state` says which of these applies, and why, for the pending
+    view; it is None when the upgrade is off or inert.
     """
 
     profile_id: int
@@ -43,6 +65,7 @@ class ProfileSatisfaction:
     via: str | None = None
     upgrade: bool = False
     awaiting_tmdb: bool = False
+    upgrade_state: UpgradeState | None = None
 
 
 @dataclass
@@ -144,10 +167,15 @@ def _check_upgrade(
     """Apply `Upgrade To TMDB Trailer` to a satisfied profile, in place.
 
     A download whose video the upgrade accepts keeps the profile
-    satisfied, and so does a video the user chose, in any language. A
-    download with no known video id is not a match: nothing shows that it
-    is a TMDB trailer. With no video to upgrade to, the trailer stays, and
-    the refresh task asks TMDB about it again.
+    satisfied, and so does a video the user chose, in any language. With
+    no video to upgrade to, the trailer stays, and the refresh task asks
+    TMDB about it again.
+
+    A download with no known video id is not a match: nothing shows that
+    it is a TMDB trailer. Most such files came from the id that Radarr
+    reports, which is a TMDB trailer, so a profile replaces them only when
+    `Replace Unknown Videos` is on. Otherwise they stay, and the pending
+    view says so.
 
     An upgrade that is off, or on but inert without a TMDB key or with
     `Always Search` on, is not waiting for TMDB. Marking it so made the
@@ -159,14 +187,21 @@ def _check_upgrade(
     targets = upgrade_targets(videos or [], profile)
     if not targets:
         detail.awaiting_tmdb = True
+        detail.upgrade_state = "awaiting_tmdb"
         return
     kept = upgrade_keeps(videos or [], targets)
     if any(d.youtube_id in kept for d in owned):
+        detail.upgrade_state = "matched"
+        return
+    known = [d for d in owned if not is_unknown_video(d.youtube_id)]
+    if not known and not profile.replace_unknown_videos:
+        detail.upgrade_state = "unknown_kept"
         return
     detail.satisfied = False
     detail.satisfied_by = None
     detail.via = None
     detail.upgrade = True
+    detail.upgrade_state = "replace_not_tmdb" if known else "replace_unknown"
 
 
 def _add(

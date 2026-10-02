@@ -33,6 +33,7 @@ def make_profile(
     upgrade: bool = True,
     language: str = "",
     always_search: bool = False,
+    replace_unknown: bool = False,
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=profile_id,
@@ -40,6 +41,7 @@ def make_profile(
         upgrade_to_tmdb=upgrade,
         language=language,
         always_search=always_search,
+        replace_unknown_videos=replace_unknown,
     )
 
 
@@ -71,6 +73,7 @@ class TestUpgradeSatisfaction:
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == []
         assert not result.details[0].upgrade
+        assert result.details[0].upgrade_state is None
 
     def test_any_tmdb_trailer_is_a_match_not_only_the_first(self):
         """Decision 2."""
@@ -78,6 +81,7 @@ class TestUpgradeSatisfaction:
         media = make_media([make_download(1, 1, "tmdb2")])
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == []
+        assert result.details[0].upgrade_state == "matched"
 
     def test_a_trailer_that_is_not_from_tmdb_is_replaced(self):
         profile = make_profile()
@@ -87,13 +91,39 @@ class TestUpgradeSatisfaction:
         detail = result.details[0]
         assert detail.upgrade and not detail.satisfied
         assert detail.satisfied_by is None and detail.via is None
+        assert detail.upgrade_state == "replace_not_tmdb"
 
-    def test_an_unknown_video_id_is_replaced(self):
-        """Decision 4."""
-        profile = make_profile()
+    def test_an_unknown_video_stays_unless_the_profile_replaces_it(self):
+        """Decision 4, amended: most files with no known video id came from
+        the id that Radarr reports, which is a TMDB trailer. Replacing
+        them all downloaded a large part of a library again for nothing.
+        They stay unless `Replace Unknown Videos` is on, and the pending
+        view says why."""
         media = make_media([make_download(1, 1, "unknown0000")])
+
+        kept = evaluate_satisfaction(media, [make_profile()], TMDB)
+        assert kept.unsatisfied == []
+        assert kept.details[0].upgrade_state == "unknown_kept"
+
+        profile = make_profile(replace_unknown=True)
+        replaced = evaluate_satisfaction(media, [profile], TMDB)
+        assert replaced.unsatisfied == [profile]
+        assert replaced.details[0].upgrade_state == "replace_unknown"
+
+    def test_a_known_trailer_goes_and_an_unknown_one_stays(self):
+        """With `Replace Unknown Videos` off, a profile that owns both is
+        replaced for the known trailer. The download task leaves the
+        unknown one out of the replacement."""
+        profile = make_profile()
+        media = make_media(
+            [
+                make_download(1, 1, "unknown0000"),
+                make_download(2, 1, "search1"),
+            ]
+        )
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == [profile]
+        assert result.details[0].upgrade_state == "replace_not_tmdb"
 
     def test_a_video_the_user_chose_is_a_match(self):
         """Decision 3."""
@@ -133,6 +163,7 @@ class TestUpgradeSatisfaction:
             assert result.unsatisfied == []
             assert result.details[0].satisfied
             assert result.details[0].awaiting_tmdb
+            assert result.details[0].upgrade_state == "awaiting_tmdb"
 
     def test_a_trailer_in_another_language_is_not_a_target(self):
         """Decision 2: the language of the profile filters the targets."""
@@ -168,6 +199,7 @@ class TestUpgradeSatisfaction:
         result = evaluate_satisfaction(media, [profile], TMDB)
         assert result.unsatisfied == []
         assert not result.details[0].awaiting_tmdb
+        assert result.details[0].upgrade_state is None
 
     def test_a_kept_old_trailer_does_not_replace_again(self):
         """W6: the old file stays next to the TMDB one."""

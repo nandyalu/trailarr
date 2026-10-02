@@ -40,6 +40,7 @@ def make_profile(
         priority=priority,
         enabled=enabled,
         upgrade_to_tmdb=False,
+        replace_unknown_videos=False,
         customfilter=SimpleNamespace(
             filter_name=name or f"Profile {profile_id}",
             filters=filters or [],
@@ -48,7 +49,11 @@ def make_profile(
 
 
 def make_media(
-    downloads: list, media_id: int = 1, monitor: bool = True
+    downloads: list,
+    media_id: int = 1,
+    monitor: bool = True,
+    tmdb_id: int | None = 1,
+    tmdb_asked: bool = True,
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=media_id,
@@ -56,6 +61,8 @@ def make_media(
         is_movie=True,
         monitor=monitor,
         downloads=downloads,
+        tmdb_id=tmdb_id,
+        last_videos_refresh=NOW if tmdb_asked else None,
     )
 
 
@@ -112,6 +119,17 @@ class TestComputeMediaPending:
         assert row.attempt_count == 2
         assert row.last_error == "boom"
         assert row.next_eligible_at is not None
+
+    def test_the_view_says_whether_tmdb_was_asked(self):
+        """An upgrade that waits for TMDB reads differently when the item
+        has no TMDB id, when TMDB was not asked yet, and when it listed
+        nothing. The page needs both facts to say which."""
+        asked = compute_media_pending(make_media([]), [], attempts={})
+        assert (asked.has_tmdb_id, asked.tmdb_asked) == (True, True)
+        never = compute_media_pending(
+            make_media([], tmdb_id=None, tmdb_asked=False), [], attempts={}
+        )
+        assert (never.has_tmdb_id, never.tmdb_asked) == (False, False)
 
     def test_failed_but_eligible_again_is_not_backing_off(self):
         p1 = make_profile(1)
@@ -284,6 +302,7 @@ class TestUpgradeInThePendingView:
             {1: tmdb, 2: tmdb},
         )
         assert [(i.media_id, i.upgrade) for i in summary.items] == [(1, True)]
+        assert summary.items[0].upgrade_state == "replace_not_tmdb"
 
     def test_items_without_a_tmdb_list_await_tmdb(self):
         from services.trailers.trailers.pending import media_awaiting_tmdb
@@ -305,3 +324,78 @@ class TestUpgradeInThePendingView:
         ) as read:
             assert read_upgrade_videos([make_profile(1)]) == {}
         read.assert_not_called()
+
+
+class TestFailingDownloads:
+    """The library banner: downloads that failed on two runs or more, and
+    that the download task would still act on."""
+
+    def _run(self, attempts, media_by_id, profiles=None):
+        from exceptions import ItemNotFoundError
+        from services.trailers.trailers.pending import (
+            compute_failing_downloads,
+        )
+
+        def read(media_id):
+            if media_id not in media_by_id:
+                raise ItemNotFoundError("Media", media_id)
+            return media_by_id[media_id]
+
+        with (
+            patch(
+                "services.trailers.trailers.pending.attempt_manager.read_all",
+                return_value=attempts,
+            ),
+            patch(
+                "services.trailers.trailers.pending.trailerprofile"
+                ".get_trailerprofiles",
+                return_value=profiles or [make_profile(1)],
+            ),
+            patch(
+                "services.trailers.trailers.pending.media_manager.read",
+                side_effect=read,
+            ),
+        ):
+            return compute_failing_downloads()
+
+    def test_two_failed_runs_put_an_item_in_the_list(self):
+        once = make_attempt(media_id=2, attempt_count=1)
+        twice = make_attempt(
+            media_id=1, attempt_count=2, last_error="YouTube said no"
+        )
+        failing = self._run(
+            [once, twice],
+            {1: make_media([], media_id=1), 2: make_media([], media_id=2)},
+        )
+        assert [
+            (f.media_id, f.attempt_count, f.last_error) for f in failing
+        ] == [(1, 2, "YouTube said no")]
+        assert failing[0].profile_name == "Profile 1"
+        assert failing[0].upgrade is False
+        assert failing[0].next_eligible_at > twice.last_attempt_at
+
+    def test_a_fixed_or_unmonitored_item_drops_off(self):
+        """The attempt row stays until a download succeeds. The banner
+        must not show an item the download task would not act on."""
+        fixed = make_media([make_download(5, profile_id=1)], media_id=1)
+        unmonitored = make_media([], media_id=2, monitor=False)
+        attempts = [
+            make_attempt(media_id=1, attempt_count=3),
+            make_attempt(media_id=2, attempt_count=3),
+        ]
+        assert self._run(attempts, {1: fixed, 2: unmonitored}) == []
+
+    def test_a_deleted_item_is_skipped(self):
+        assert self._run([make_attempt(media_id=9, attempt_count=2)], {}) == []
+
+    def test_items_come_by_title(self):
+        attempts = [
+            make_attempt(media_id=1, attempt_count=2),
+            make_attempt(media_id=2, attempt_count=2),
+        ]
+        zed = make_media([], media_id=1)
+        zed.title = "Zed"
+        abe = make_media([], media_id=2)
+        abe.title = "Abe"
+        failing = self._run(attempts, {1: zed, 2: abe})
+        assert [f.title for f in failing] == ["Abe", "Zed"]

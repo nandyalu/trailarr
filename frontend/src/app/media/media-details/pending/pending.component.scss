@@ -48,8 +48,8 @@
 
 .pending-row {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.375rem;
   padding: 0.75rem 1rem;
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface-variant);
@@ -58,6 +58,24 @@
 
   &.inactive {
     opacity: 0.65;
+  }
+
+  .pending-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .state-error {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--color-warning);
+    border-radius: 0.375rem;
+    background-color: color-mix(in srgb, var(--color-warning) 8%, transparent);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-on-surface);
+    overflow-wrap: anywhere;
   }
 
   .profile-name {
@@ -116,7 +134,7 @@
 }
 
 @media screen and (max-width: 765px) {
-  .pending-row {
+  .pending-row .pending-main {
     flex-wrap: wrap;
     gap: 0.5rem;
 

@@ -12,6 +12,16 @@ def get_current_time():
     return datetime.now(timezone.utc)
 
 
+# The video id of a download when nothing shows which video it is: a file
+# that Trailarr found on disk, or one saved before Trailarr recorded ids.
+UNKNOWN_YOUTUBE_ID = "unknown0000"
+
+
+def is_unknown_video(youtube_id: str | None) -> bool:
+    """True when nothing shows which YouTube video a download is."""
+    return not youtube_id or youtube_id == UNKNOWN_YOUTUBE_ID
+
+
 class DownloadBase(AppSQLModel):
     """
     Base model for Download.\n
@@ -34,7 +44,7 @@ class DownloadBase(AppSQLModel):
     subtitle_format: str | None = None  # e.g., "srt", "ass", or None
     subtitle_language: str | None = None  # e.g., "eng", or None
     duration: int = 0  # Duration in seconds
-    youtube_id: str = "unknown0000"
+    youtube_id: str = UNKNOWN_YOUTUBE_ID
     youtube_channel: str = "unknownchannel"
     file_exists: bool = True
     profile_id: int = 0  # ID of the TrailerProfile used
