@@ -153,6 +153,7 @@ Most people turn this on to get a trailer that Radarr does not report — a trai
 - Each entry is matched against the video's **uploader handle** (e.g. `@WarnerBrosPictures`) or **channel ID** (e.g. `UCbmNph6atAoGfqLoCL_duAg`). Either format works.
 - Entries are separated by `,` (comma); at least one must match.
 - Matching is exact (not a substring search), so `@Warner` will not match `@WarnerBrosPictures`.
+- The field takes up to 2000 characters, which is about 75 channel IDs. {{ version_badge("upd", "0.13.1") }}
 
 **Examples**:
 
