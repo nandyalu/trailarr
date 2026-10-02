@@ -93,7 +93,7 @@ Add your own **TMDB API key** and Trailarr resolves trailers from TMDB's curated
 
 ### Phase 9 — Video types — `v0.14.0`
 
-Profiles gain a **video type**: trailer, teaser, clip, featurette, and more. Non-trailer types download exclusively from TMDB's curated lists (no YouTube guessing), and every download records its type — so a featurette is never miscounted as your trailer. If you've been using hacky profiles for extras, this is the release where the app starts doing it natively; it will detect those profiles and suggest settings.
+Profiles gain a **video type**: trailer, teaser, clip, featurette, and more. Non-trailer types download exclusively from TMDB's curated lists (no YouTube guessing), and every download records its type — so a featurette is never miscounted as your trailer. If you've been using hacky profiles for extras, this is the release where the app starts doing it natively; it will detect those profiles and suggest settings. The **Expanded** and **Table** views of the library also gain the fields of your trailers: resolution, video and audio codecs, language, subtitles, size, duration and the owning profile, shown as one block per trailer.
 
 ### Phase 10 — Movie/Series profiles + season trailers — `v0.15.0`
 
