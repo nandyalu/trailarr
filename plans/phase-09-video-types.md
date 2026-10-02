@@ -9,6 +9,8 @@ Answered on Sep 24, 2026: H9 is dropped in this phase (decision 9), the duration
 1200 (decision 10), and the Plex names are verified (decision 2). Still open: the
 naming resolution (decision 6), `Always Search` on non-trailer types (decision 5), and
 manual assign across types (Pitfalls).
+Amended Oct 1, 2026: decision 11 (trailer fields in the Expanded and Table views)
+added, with its verification, docs and exit criteria.
 
 ## Objective
 
@@ -221,6 +223,70 @@ TMDB candidates — no YouTube search fallback exists for them, by construction.
       checks `min_duration >= 30` and `max - min >= 60` already stop it. Put a
       `max_duration = 5000` profile in the v0.13.0 catch-up fixture.
 
+11. **Trailer fields in the Expanded and Table views** (maintainer decision, Oct 1,
+    2026). The Configure Fields dialog of the library pages gains the fields of the
+    trailer rows: resolution, video codec, audio codec, audio language, subtitles,
+    container, duration, size, owning profile and trailer count. Frontend only: the
+    list pages already hold every download row (`combinedMedia` in
+    `frontend/src/app/services/media.service.ts` joins `/media/downloads_raw` into
+    `media.downloads`), so there is no API change, no migration and no new request.
+    It ships in this phase because the phase adds the type badge to the same display
+    and `video_type` joins the same list. The base fields depend on nothing else in
+    the phase and may land on `dev` first.
+
+    - **One field registry.** The options live in four places today: two arrays in
+      `frontend/src/app/media/headers/normal-header/normal-header.component.ts`
+      (`expandedFieldOptions`, `tableColumnOptions`), `allColumnDefs` in
+      `media-cards/table/table.component.ts`, and a chain of `@if (hasField(...))`
+      blocks in `media-cards/expanded/expanded.component.html`. Replace them with one
+      registry, `frontend/src/app/media/utils/media-fields.ts`: an ordered list of
+      `{key, label, group: 'media' | 'trailer', value(...)}` entries, where a media
+      field reads the media item and a trailer field reads one download row. The
+      dialog, the table and the expanded card all read the registry. The dialog shows
+      two headings, **Media** and **Trailers**, like the groups of the filter editor.
+      The stored keys and the two localStorage entries (`TrailarrExpandedFields`,
+      `TrailarrTableColumns`) do not change, and the defaults in `media.service.ts` do
+      not change: nothing new shows until a user turns it on (README: new options off).
+    - **Fields and keys.** Keys reuse the Phase 6 virtual-filter names where one
+      exists, so a filter and a column share one vocabulary: `download_resolution`
+      (`1080p`), `download_video_codec`, `download_audio_codec`,
+      `download_audio_language`, `download_subtitles` (`srt (eng)`, or a dash),
+      `download_container` (`mp4`), `download_duration` (`durationSecondsConvert`
+      pipe), `download_size` (`fileSize` pipe), `download_profile` (the profile NAME
+      from `ProfileService.allProfiles`; `Unknown` for `profile_id = 0` and
+      `Deleted [id]` for a missing one, as Phase 6 W2), and `download_count`. This
+      phase adds `download_video_type`; Phase 10 adds `download_season`. Labels carry
+      the `Trailer` prefix in the table header (`Trailer Resolution`) and drop it under
+      the dialog's Trailers heading. If this phase's sweep of user-facing "trailer"
+      strings (Pitfalls) renames them to "video", rename these labels in the same
+      sweep.
+    - **Source rows.** Active downloads only (`file_exists`), the same rows the Phase
+      6 filters read, so a filter and a cell never disagree. Ordered newest first (the
+      `downloaded_at` order). The order is computed once per media item and shared by
+      every cell, so the lines align across columns.
+    - **One block per trailer, not one value per field (maintainer decision).** A
+      media item can own one download per profile today, per type after this phase
+      and per season after Phase 10, so the fields of one trailer stay together.
+      Expanded view: below the media tags, one row of tags per trailer that holds
+      every selected trailer field (`1080p · h264 · aac (eng) · srt (eng) · mp4 ·
+      2:15 · 45 MB · Movies 1080p`). Table view: the row stays one per media item;
+      each trailer column stacks one line per trailer, in the shared order, so the
+      stacked lines read as a sub-table across the trailer columns. Decide at
+      execution, with a screenshot, whether one combined `Trailers` column reads
+      better on narrow tables; the stacked columns are the default. A dash when there
+      is no active download.
+    - **Cap.** At most `MAX_TRAILERS_PER_CARD = 3` trailers per card or cell, then a
+      `+N more` line that opens the details page. One constant in the registry. Phase
+      10 reuses it when seasons bring twenty trailers to one show, and may make it a
+      setting then. The count field ignores the cap.
+    - **Not in scope:** sorting by a trailer field (`sortOptions` stays
+      `keyof Media`), the poster view, and URL persistence of the field choice (the
+      existing fields use localStorage only; keep that).
+    - **Tests:** vitest on the registry (`media-fields.spec.ts`): every value
+      function with zero, one and three active downloads plus a deleted one; the cap;
+      the profile-name fallbacks. One assertion that the registry and
+      `applyDownloadFilter` (`media/utils/apply-filters.ts`) select the same rows.
+
 ## What Phase 8 left for this phase
 
 - **The `media.youtube_trailer_id` column (hygiene H9)** — now decision 9. It is still
@@ -340,7 +406,8 @@ TMDB candidates — no YouTube search fallback exists for them, by construction.
   the assignment — decide at execution. The assignment is user-owned state (README
   invariant 6).
 - Frontend filter family (Phase 6): add `download_video_type` to the virtual fields —
-  small, do it here. It is the first STRING virtual field: today there are only bool,
+  small, do it here. Add it to the field registry of decision 11 too, as a
+  `Trailer Type` column. It is the first STRING virtual field: today there are only bool,
   int and date lists (`VIRTUAL_*_COLS` in `database/models/filter.py`,
   `virtual*FilterKeys` in `frontend/src/app/models/customfilter.ts`). Evaluation lives
   in `services/filters.py` and `frontend/src/app/media/utils/apply-filters.ts`; the
@@ -385,6 +452,13 @@ API (`POST`/`PUT` of a profile), not only the model; a gauntlet run from the fix
 row with `max_duration = 5000` ends at 1200 and the profile list still loads; the
 profile editor slider reaches 1200 in the real app.
 
+Trailer fields (decision 11): in the real app, turn on every Trailers field in both
+views and check an item with two profiles (two lines, aligned across the trailer
+columns), an item with no download (dashes), an unknown-profile item (`Unknown`), and
+an item with four downloads (three shown plus `+1 more`). The table scrolls sideways at
+phone width with no page scroll. Field keys saved by v0.13.x still load, and a saved key
+the registry no longer knows is ignored, not thrown.
+
 Release-fixture gauntlet (`backend/tests/test_upgrade_gauntlet.py`, README rule 4):
 v0.13.0 changed the schema (the `mediavideo` table, `trailerprofile.language`,
 `media.last_videos_refresh`, `downloadattempt.last_video_id`) but added no fixture —
@@ -424,6 +498,12 @@ reads the code (README: "A green suite does not mean the code runs").
   to the anchor.
 - `docs/user-guide/settings/profiles/filters.md` — `download_video_type` added to the
   Phase 6 virtual-field table.
+- `docs/user-guide/library/index.md` — the page never describes the **Poster**,
+  **Expanded** and **Table** views or the Configure Fields dialog (shipped in v0.9.4,
+  #306). Add a **Views** section before **Sorting**: the three views, the dialog, the
+  **Media** and **Trailers** groups with the field list, one block per trailer and the
+  cap (decision 11). Badge the Trailers group `add` 0.14.0. One screenshot per view
+  with trailer fields on.
 - `docs/troubleshooting/faq.md` — add/refresh "Can Trailarr download extras
   (featurettes, clips, teasers)?" — now yes, per profile video type, TMDB-only.
 - Pages that Phase 8 added or changed (added at refresh):
@@ -441,6 +521,7 @@ reads the code (README: "A green suite does not mean the code runs").
   - `docs/user-guide/settings/profiles/settings/plex.md` — **Skip if Plex Trailer**
     applies to trailer profiles only.
 - Release notes: extras-profile migration guidance leads (exit criteria); the
+  trailer fields in the Expanded and Table views (decision 11); the
   `youtube_trailer_id` removal for API users and for saved filters (decision 9); the
   1200-second cap with credit to the #686 reporter; roadmap tick.
 
@@ -450,4 +531,5 @@ Type-aware satisfaction proven; zero-unexpected-downloads on hacky fixture; Docs
 section executed; release notes with the extras-profile migration guidance;
 `youtube_trailer_id` dropped with the backfill and filter migration (decision 9);
 the `max_duration` check fixed, the cap at 1200, and stored values above 1200 clamped
-(decision 10, H24) — close #686 with the release.
+(decision 10, H24) — close #686 with the release. Trailer fields show in both views from one field
+registry, with the cap and the per-trailer block (decision 11).
