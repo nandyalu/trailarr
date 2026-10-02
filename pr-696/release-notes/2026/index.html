@@ -3594,10 +3594,24 @@
 <h2 id="v0131-tbd"><strong>v0.13.1</strong> - <em>TBD</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
-<li><strong>Replace your existing trailers with TMDB trailers</strong> — turn on the new <code>Upgrade To TMDB Trailer</code> in a profile, and Trailarr replaces only the trailers that TMDB does not list, keeping the old file or deleting it as you choose — see <a href="../../user-guide/settings/tmdb/#upgrade-an-existing-library">Upgrade an existing library</a>.</li>
+<li>
+<p><strong>Replace your existing trailers with TMDB trailers</strong> — turn on the new <code>Upgrade To TMDB Trailer</code> in a profile, and Trailarr replaces only the trailers that TMDB does not list, keeping the old file or deleting it as you choose — see <a href="../../user-guide/settings/tmdb/#upgrade-an-existing-library">Upgrade an existing library</a>.</p>
+</li>
+<li>
+<p><strong>A trailer whose video Trailarr does not know stays, unless you say otherwise</strong> — a file that Trailarr found on disk has no video id, so the upgrade cannot tell whether it is a TMDB trailer; most are, because Radarr takes its trailer id from TMDB, so the upgrade keeps them unless the new <code>Replace Unknown Videos</code> is on — see <a href="../../user-guide/settings/profiles/settings/general/#replace-unknown-videos">Replace Unknown Videos</a>.</p>
+</li>
+<li>
+<p><strong>The media details page says what the TMDB upgrade does with each trailer</strong> — for a profile with <code>Upgrade To TMDB Trailer</code> on, the <code>Download Profiles</code> section says whether a trailer is a TMDB trailer, why it stays (TMDB was not asked yet, TMDB lists nothing in your language, or the video is unknown), and why it is replaced — see <a href="../../user-guide/library/media-details/#download-profiles-section">Download Profiles</a>.</p>
+</li>
+<li>
+<p><strong>Find the downloads that keep failing</strong> — when a download fails on two task runs, the library pages show a banner with a <code>Review</code> button and a new <code>Failing Downloads</code> quick filter, and the <code>Download Profiles</code> section of the media details page shows the reason of the last failure, with the fix when Trailarr knows it — see <a href="../../user-guide/library/#filtering">Filtering</a>.</p>
+</li>
 </ul>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
+<li>
+<p><strong>A stop of Trailarr no longer waits for a running download without limit</strong> — Docker stops a container 10 seconds after it asks, and a stop during a download waited for yt-dlp or ffmpeg, so Docker killed Trailarr before it wrote its databases to disk; Trailarr now gives a running task 4 seconds, then stops, and the next run downloads that trailer again.</p>
+</li>
 <li>
 <p><strong>The log database no longer keeps a large leftover file</strong> — the <code>logs.db-wal</code> file in the <code>logs</code> folder stayed as large as the biggest daily log cleanup, often hundreds of MB, and a restart did not shrink it; Trailarr now empties it after each cleanup and at each start and stop, so the first start after the update gives the space back. Thanks <a href="https://github.com/Jorman">@Jorman</a> for the report and the file sizes that showed it! (<a href="https://github.com/nandyalu/trailarr/issues/687">#687</a>)</p>
 </li>

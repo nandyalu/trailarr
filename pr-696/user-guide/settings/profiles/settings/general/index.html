@@ -2039,6 +2039,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#replace-unknown-videos" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Replace Unknown Videos
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#stop-monitoring" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2956,6 +2967,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#replace-unknown-videos" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Replace Unknown Videos
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#stop-monitoring" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3323,8 +3345,10 @@
 <li><strong>The trailer is a TMDB trailer.</strong> Trailarr keeps it. Any TMDB trailer in the <a href="#trailer-language">Trailer Language</a> of the profile is a match, not only the first one.</li>
 <li><strong>The trailer is a video that you chose</strong> on the media details page. Trailarr keeps it.</li>
 <li><strong>TMDB lists no trailer for the item</strong> in the language of the profile. Trailarr keeps the current trailer, and asks TMDB again later.</li>
-<li><strong>The trailer is not a TMDB trailer.</strong> Trailarr downloads a TMDB trailer to replace it. A trailer with no known video id, such as a file that Trailarr found on disk, is replaced too, because Trailarr cannot tell that it is a TMDB trailer.</li>
+<li><strong>The trailer is not a TMDB trailer.</strong> Trailarr downloads a TMDB trailer to replace it.</li>
+<li><strong>Trailarr does not know which video the trailer is</strong>, such as a file that it found on disk. Trailarr keeps it, unless <a href="#replace-unknown-videos">Replace Unknown Videos</a> is on. <span class="twemoji orange" title="Updated in v0.13.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0131-tbd">v0.13.1</a></li>
 </ul>
+<p>The <a href="../../../../library/media-details/#download-profiles-section">Download Profiles</a> section of the media details page says what the upgrade does for each profile: which trailer it replaces and why, and which it keeps and why. To keep one trailer that the upgrade would replace, paste its YouTube link on the media details page: a video that you chose is never replaced.</p>
 <p>A replacement only takes a TMDB trailer (or a video that you chose). It never takes a YouTube search result. When every TMDB trailer fails, Trailarr keeps the current trailer and tries again later, as for any failed download. A replacement does not look at <a href="../plex/">Skip If Plex Has A Trailer</a>, because the trailer in Plex is the one that Trailarr replaces.</p>
 <div class="admonition tip">
 <p class="admonition-title">A changed language replaces trailers</p>
@@ -3356,6 +3380,29 @@
 </table>
 <p>Shows only when <code>Upgrade To TMDB Trailer</code> is on. When it is <code>true</code>, Trailarr deletes the old trailer after the TMDB trailer replaces it. The new trailer then takes the file name of the old one, when that is the name that the profile gives it. When it is <code>false</code>, Trailarr keeps both files, and does not replace the trailer again.</p>
 <p>Trailarr deletes the old trailer only after the new one is in the media folder. A failed download never leaves a media item without a trailer.</p>
+<h2 id="replace-unknown-videos">Replace Unknown Videos</h2>
+<p><span class="twemoji golden" title="Added in v0.13.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0131-tbd">v0.13.1</a></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Required</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Valid Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Boolean</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">false</td>
+<td style="text-align: center;">true, false</td>
+</tr>
+</tbody>
+</table>
+<p>Shows only when <code>Upgrade To TMDB Trailer</code> is on. Trailarr does not know which video some trailers are: a file that it found on disk, or one that an old version saved before Trailarr recorded video ids. Nothing shows whether such a trailer is a TMDB trailer, so the upgrade cannot compare it with the TMDB list.</p>
+<p>When this is <code>false</code>, Trailarr keeps these trailers, and the media details page says so for each one. Most of them came from the trailer id that Radarr reports, and Radarr takes that id from TMDB, so they are TMDB trailers already. Replacing them all would download a large part of a library again for nothing: in one real library, almost a third of the trailers had no known video id.</p>
+<p>When this is <code>true</code>, Trailarr replaces these trailers too, with a TMDB trailer in the <a href="#trailer-language">Trailer Language</a> of the profile. Turn it on for a profile whose trailers came from a YouTube search, such as a series profile: Sonarr reports no trailer id, so a series trailer from before the TMDB key is a search result.</p>
 <h2 id="stop-monitoring">Stop Monitoring</h2>
 <p><span class="twemoji orange" title="Updated in v0.10.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0102-july-30-2026">v0.10.2</a></p>
 <p>This option has been <strong>removed in v0.10.2</strong>. Downloads have been tracked per profile since <code>v0.10.0</code>, so it was no longer needed to prevent re-downloads — a profile that already owns a downloaded video never downloads again, and downloading never changes the media item's monitor state.</p>
