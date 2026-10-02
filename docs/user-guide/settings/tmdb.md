@@ -64,6 +64,14 @@ Trailarr then replaces only the trailers that are not TMDB trailers. It keeps a 
 
 [Delete Replaced Trailer](profiles/settings/general.md#delete-replaced-trailer) decides whether the old file stays next to the new one.
 
+A trailer whose video Trailarr does not know stays, unless [Replace Unknown Videos](profiles/settings/general.md#replace-unknown-videos) is on. Most of these are TMDB trailers already, because Radarr takes its trailer id from TMDB, so replacing them would download a large part of the library again for nothing.
+
+The [Download Profiles](../library/media-details/index.md#download-profiles-section) section of the media details page says what the upgrade does for each profile: a trailer that it replaces and why, a trailer that it keeps because it is a TMDB trailer or a video you chose, a trailer that it keeps because TMDB lists nothing in the language of the profile, and a trailer that it keeps because its video is unknown. Trailarr asks TMDB again every seven days about an item that TMDB listed nothing for.
+
+To keep one trailer that the upgrade would replace, paste its YouTube link on the media details page under [YouTube Trailer ID](../library/media-details/index.md#youtube-trailer-id). A video that you chose is never replaced, in any language.
+
+When every TMDB trailer of an item fails to download, Trailarr keeps the current trailer and tries again later, with a longer wait after each failure. After two failed runs, the library pages show the item in a banner, so you can see the reason and fix it. See [Filtering](../library/index.md#filtering).
+
 !!! info "A large library upgrades over a few days"
     Trailarr must know the TMDB list of an item before it can compare. The [Refresh Video Lists](../tasks/index.md#refresh-video-lists) task asks TMDB about 200 items in one run, every 12 hours. To go faster, run the task by hand from the Tasks page. The media details page shows which profiles will replace a trailer on the next run.
 

@@ -314,6 +314,16 @@
           colorTypeOption="true"
           (optionChange)="profileService.updateSetting('delete_replaced_trailer', $event)"
         />
+        <app-options-setting
+          name="Replace Unknown Videos"
+          description="Also replace a trailer when Trailarr does not know which video it is, such as a file that it found on disk."
+          descriptionExtra="Most of these came from the id that Radarr reports, which is a TMDB trailer, so they stay while this is off. The media details page says which trailers this keeps."
+          [options]="trueFalseOptions"
+          [selectedOption]="profile()?.replace_unknown_videos"
+          colorType="warning"
+          colorTypeOption="true"
+          (optionChange)="profileService.updateSetting('replace_unknown_videos', $event)"
+        />
       }
       <app-options-setting
         name="Subtitles Enabled"

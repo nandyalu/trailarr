@@ -36,7 +36,13 @@ separate action to run.
    target. It outranks TMDB in the resolver already, and a video the user chose is
    never something to replace.
 4. **A download with no known video id is not a match.** Nothing proves it is a TMDB
-   trailer, so it is replaced when TMDB lists a trailer for the profile.
+   trailer. **Amended Oct 1, 2026:** it is replaced only when the new profile setting
+   `Replace Unknown Videos` (`replace_unknown_videos`, default False) is on. 810 of
+   2,789 trailers in the measured library have no known id, and most came from the
+   Radarr id, which is TMDB's, so replacing them all re-downloaded a third of a library
+   for nothing. With the setting off, the trailer stays and the pending view says why
+   (`upgrade_state="unknown_kept"`); `_downloads_to_replace` also leaves such a file
+   out when the profile replaces a known non-TMDB trailer next to it.
 5. **Satisfaction owns the rule.** `evaluate_satisfaction` takes the media item's
    USER/TMDB trailer rows. An upgrade profile whose own downloads include no match, and
    for which targets exist, is **unsatisfied** (`upgrade=True` in its detail). One rule
@@ -111,6 +117,35 @@ Verified on a migrated scratch copy of the library with a real TMDB key:
   trailer". A second run attempted nothing.
 - Profile page in the real app (headless Chromium): both fields persist, the upgrade is
   disabled with Always Search on and says why, no console errors.
+
+## Review follow-ups (Oct 1, 2026)
+
+Copilot's review of #696 and a pitfalls pass changed the following, all on dev before
+the release:
+
+- A video the user chose is kept in any language (`upgrade_keeps`), and the old file is
+  deleted only after the new download is recorded (`record_new_trailer_download` returns
+  a bool).
+- An upgrade leaves out only its own replaced trailers, not every video on disk for the
+  item. With the old rule, a profile whose only TMDB target another profile owned had
+  no target, and an upgrade never searches, so it backed off on every run (W9).
+- An upgrade that is on but inert (Always Search on, or no key) does not set
+  `awaiting_tmdb`: `resolver.upgrade_enabled()` is the one place that says when the
+  upgrade can act. The refresh task was asking TMDB about the whole library weekly.
+- `ProfileSatisfaction.upgrade_state` (`replace_not_tmdb`, `replace_unknown`,
+  `matched`, `awaiting_tmdb`, `unknown_kept`) feeds the pending view and the preview
+  list, and `MediaPendingView` carries `has_tmdb_id` and `tmdb_asked`, so the media
+  details page says why a trailer is replaced or kept. `awaiting_tmdb` was invisible
+  before: a user saw "satisfied" for a search trailer and no reason.
+- Decision 4 amended: `Replace Unknown Videos`, off by default (migration
+  `65e07a32e5d9`).
+- The error of an upgrade with no target left reads "No TMDB trailer of 'X' could be
+  downloaded, so the current trailer stays", not "No trailer found".
+- The escape hatch is documented: paste the YouTube link of the trailer to keep.
+- Items that fail on two runs or more show in a library banner with a `Failing
+  Downloads` quick filter (`GET /media/failing`, `compute_failing_downloads`), and the
+  Download Profiles row shows the last error instead of hiding it in a hover title.
+  This is a first slice of the Phase 11 Issues section.
 
 **Phase 9 note:** `upgrade_targets` and `_check_upgrade` compare trailers only. When
 profiles gain `video_type`, the match must use the profile's type, or a featurette

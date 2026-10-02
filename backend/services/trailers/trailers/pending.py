@@ -25,8 +25,13 @@ from database.models.downloadattempt import (
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
+from exceptions import ItemNotFoundError
 from services.profiles import find_matching_profiles
-from services.satisfaction import SatisfactionResult, evaluate_satisfaction
+from services.satisfaction import (
+    SatisfactionResult,
+    UpgradeState,
+    evaluate_satisfaction,
+)
 
 
 class MediaPendingProfile(BaseModel):
@@ -42,6 +47,9 @@ class MediaPendingProfile(BaseModel):
     pending: bool
     # Pending only because `Upgrade To TMDB Trailer` replaces the trailer.
     upgrade: bool = False
+    # Why the upgrade replaces the trailer, or why it keeps it. None when
+    # the upgrade is off or inert.
+    upgrade_state: UpgradeState | None = None
     backing_off: bool
     attempt_count: int
     last_error: str | None
@@ -51,6 +59,11 @@ class MediaPendingProfile(BaseModel):
 class MediaPendingView(BaseModel):
     media_id: int
     monitor: bool
+    # Whether the item has a TMDB id, and whether Trailarr has asked TMDB
+    # about it. An upgrade that waits for TMDB reads differently in each
+    # case, and the page says which.
+    has_tmdb_id: bool = True
+    tmdb_asked: bool = True
     profiles: list[MediaPendingProfile]
 
 
@@ -65,6 +78,8 @@ class PendingSummaryItem(BaseModel):
     reason: str  # "pending" | "backoff"
     # The trailer is on disk, and the download replaces it with a TMDB one.
     upgrade: bool = False
+    # Why the download replaces the trailer, when it does.
+    upgrade_state: UpgradeState | None = None
     next_eligible_at: datetime | None
 
 
@@ -135,11 +150,13 @@ def compute_media_pending(
     for profile in sorted(all_profiles, key=lambda p: p.priority):
         detail = details_by_id.get(profile.id)
         upgrade = False
+        upgrade_state = None
         if detail is not None:
             satisfied = detail.satisfied
             satisfied_by = detail.satisfied_by
             satisfied_via = detail.via
             upgrade = detail.upgrade
+            upgrade_state = detail.upgrade_state
         else:
             satisfied_by = own_download_ids.get(profile.id)
             satisfied = satisfied_by is not None
@@ -160,6 +177,7 @@ def compute_media_pending(
                 satisfied_via=satisfied_via,
                 pending=pending,
                 upgrade=upgrade,
+                upgrade_state=upgrade_state,
                 backing_off=backing_off,
                 attempt_count=attempt.attempt_count if attempt else 0,
                 last_error=attempt.last_error if attempt else None,
@@ -169,7 +187,11 @@ def compute_media_pending(
             )
         )
     return MediaPendingView(
-        media_id=media.id, monitor=media.monitor, profiles=rows
+        media_id=media.id,
+        monitor=media.monitor,
+        has_tmdb_id=bool(media.tmdb_id),
+        tmdb_asked=media.last_videos_refresh is not None,
+        profiles=rows,
     )
 
 
@@ -200,6 +222,7 @@ def compute_library_pending(
                 continue
             pending_media_ids.add(media.id)
             upgrades = {d.profile_id for d in result.details if d.upgrade}
+            states = {d.profile_id: d.upgrade_state for d in result.details}
             for profile in result.unsatisfied:
                 attempt = attempts_by_key.get((media.id, profile.id))
                 eligible = is_eligible(attempt)
@@ -216,6 +239,7 @@ def compute_library_pending(
                         profile_name=_profile_name(profile),
                         reason="pending" if eligible else "backoff",
                         upgrade=profile.id in upgrades,
+                        upgrade_state=states.get(profile.id),
                         next_eligible_at=(
                             next_eligible_at(attempt) if attempt else None
                         ),
@@ -253,6 +277,94 @@ def media_awaiting_tmdb() -> list[int]:
         for media, result in _evaluate_library(enabled_profiles)
         if any(d.awaiting_tmdb for d in result.details)
     ]
+
+
+# A (media, profile) pair reaches the library banner after this many failed
+# runs. One failure can be a bad day at YouTube. Two runs are at least a day
+# apart, so a second failure says the cause did not go away on its own.
+FAILING_MIN_ATTEMPTS = 2
+
+
+class FailingDownload(BaseModel):
+    """One (media, profile) pair whose downloads keep failing."""
+
+    media_id: int
+    title: str
+    is_movie: bool
+    profile_id: int
+    profile_name: str
+    attempt_count: int
+    # The reason of the last failure, with the fix when Trailarr knows it.
+    last_error: str | None
+    next_eligible_at: datetime
+    # The trailer is on disk, and the failing download replaces it.
+    upgrade: bool = False
+
+
+def compute_failing_downloads() -> list[FailingDownload]:
+    """The downloads that failed on `FAILING_MIN_ATTEMPTS` runs or more.
+
+    The library page shows these in a banner, with a quick filter, so a
+    user finds the items to fix without reading the log. Only a pair that
+    the download task would still act on counts: an item that was fixed by
+    hand, an unmonitored item, or a profile that no longer matches drops
+    off. Reads the attempt rows, which exist only while a download keeps
+    failing, so this costs one query plus one read per failing item.
+
+    Returns:
+        list[FailingDownload]: One row per pair, by title.
+    """
+    attempts = [
+        attempt
+        for attempt in attempt_manager.read_all()
+        if attempt.attempt_count >= FAILING_MIN_ATTEMPTS
+    ]
+    if not attempts:
+        return []
+    enabled_profiles = [
+        p for p in trailerprofile.get_trailerprofiles() if p.enabled
+    ]
+    by_media: dict[int, list[DownloadAttemptRead]] = {}
+    for attempt in attempts:
+        by_media.setdefault(attempt.media_id, []).append(attempt)
+
+    failing: list[FailingDownload] = []
+    for media_id, media_attempts in by_media.items():
+        try:
+            media = media_manager.read(media_id)
+        except ItemNotFoundError:
+            # The item is gone. Its attempt rows go with it.
+            continue
+        if not media.monitor:
+            continue
+        matching = find_matching_profiles(media, enabled_profiles)
+        if not matching:
+            continue
+        videos = None
+        if any(p.upgrade_to_tmdb for p in matching):
+            videos = video_manager.read_candidates(media.id)
+        result = evaluate_satisfaction(media, matching, videos)
+        unsatisfied = {p.id: p for p in result.unsatisfied}
+        upgrades = {d.profile_id for d in result.details if d.upgrade}
+        for attempt in media_attempts:
+            profile = unsatisfied.get(attempt.profile_id)
+            if profile is None:
+                continue
+            failing.append(
+                FailingDownload(
+                    media_id=media.id,
+                    title=media.title,
+                    is_movie=media.is_movie,
+                    profile_id=attempt.profile_id,
+                    profile_name=_profile_name(profile),
+                    attempt_count=attempt.attempt_count,
+                    last_error=attempt.last_error,
+                    next_eligible_at=next_eligible_at(attempt),
+                    upgrade=attempt.profile_id in upgrades,
+                )
+            )
+    failing.sort(key=lambda f: (f.title.lower(), f.profile_name.lower()))
+    return failing
 
 
 def _evaluate_library(

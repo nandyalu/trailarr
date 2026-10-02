@@ -23,7 +23,7 @@ import database.manager.downloadattempt as attempt_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
 import database.manager.mediavideo as video_manager
-from database.models.download import DownloadRead
+from database.models.download import DownloadRead, is_unknown_video
 from database.models.downloadattempt import (
     DownloadAttemptRead,
     is_eligible,
@@ -336,6 +336,16 @@ async def _run_preview_pass() -> None:
     summary = compute_library_pending(limit=1000)
     would_download = [i for i in summary.items if i.reason == "pending"]
     for item in would_download[:_PREVIEW_LOG_LIMIT]:
+        if item.upgrade:
+            # The item has a trailer. "Would download" read as if it had
+            # none, and the page says "would replace" for the same item.
+            logger.info(
+                f"Preview: Trailarr would replace the trailer of"
+                f" '{item.title}' with a TMDB trailer, with the profile"
+                f" '{item.profile_name}'.",
+                **logger.media(item.media_id),
+            )
+            continue
         logger.info(
             f"Preview: Trailarr would download '{item.title}' with the"
             f" profile '{item.profile_name}'.",
@@ -346,9 +356,14 @@ async def _run_preview_pass() -> None:
             f"Preview: and {len(would_download) - _PREVIEW_LOG_LIMIT} more."
             " The pending downloads view lists them all."
         )
+    replacements = sum(1 for item in would_download if item.upgrade)
     msg = (
         f"Preview mode: {summary.pending_pairs} trailer(s) across"
         f" {summary.total_media} media item(s) would be downloaded"
+    )
+    if replacements:
+        msg += f", {replacements} of them to replace a trailer"
+    msg += (
         f" ({summary.backoff_pairs} backing off). Enable downloads in"
         " settings to perform them."
     )
@@ -671,13 +686,23 @@ def _downloads_to_replace(
     unsatisfied because `Upgrade To TMDB Trailer` wants a better one. The
     downloads are read again here, because a claim made in this pass is
     in the database but not in `media.downloads`.
+
+    A trailer whose video is unknown is left alone unless `Replace Unknown
+    Videos` is on. The satisfaction rule keeps such a profile satisfied,
+    so this matters when the profile also owns a known trailer that is not
+    a TMDB trailer: that one goes, the unknown one stays.
     """
     if not profile.upgrade_to_tmdb:
         return []
     return [
         download
         for download in download_manager.read_by_media_id(media.id)
-        if download.file_exists and download.profile_id == profile.id
+        if download.file_exists
+        and download.profile_id == profile.id
+        and (
+            profile.replace_unknown_videos
+            or not is_unknown_video(download.youtube_id)
+        )
     ]
 
 

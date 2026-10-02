@@ -243,6 +243,32 @@ TMDB candidates — no YouTube search fallback exists for them, by construction.
   row. Add a test for a type change at TMDB. Phase 10 hits the same trap with seasons.
 - **Existing TMDB lists hold trailers only** — see W6.
 - **Duration cap and issue #686** — now decision 10; facts under Related issues.
+- **Which videos on disk a download skips, and more than one video per item** (open
+  question, recorded Oct 1, 2026 from the v0.13.1 review). `download_trailer` skips
+  every video the item already has on disk, from any profile. Since v0.13.1 an upgrade
+  skips only its own replaced trailers: with the old rule, a profile whose only TMDB
+  target another profile owned had no target, and an upgrade never searches, so it
+  backed off on every run. A plain download still skips all, so a second profile on the
+  same item gets TMDB's second choice, exactly what `track-tmdb-upgrade.md` criticised
+  in Batch Download. What the maintainer wants to settle before this phase:
+  1. Two profiles that differ in output (1080p and 4K, or one folder per player) want
+     the *same* video. The skip should be per profile everywhere, as the upgrade does
+     now: a profile skips the videos *it* owns for the item, and a video that failed in
+     this retry chain.
+  2. "Two trailers per item" works today only by accident, through two overlapping
+     profiles with the same settings. It is better modelled as a count on the profile
+     (`video_count`, default 1): the profile owns N downloads of N distinct accepted
+     videos, satisfaction counts them, and the resolver skips what the profile already
+     owns. The attempt table's `unit` key was shaped for exactly this kind of
+     per-profile sub-unit, as were seasons in Phase 10.
+  3. Video types do not change the answer: a Teaser profile and a Trailer profile draw
+     from different TMDB lists, and a skip by video id across types is harmless, since
+     TMDB gives each video one type.
+
+  Recommendation: make the skip per profile in this phase (one branch in
+  `download_trailer`, the upgrade branch already shows the shape), and leave the count
+  to Phase 10 or later. Until then, document that two overlapping profiles with the
+  same settings get two different trailers.
 
 ## Wargame
 
