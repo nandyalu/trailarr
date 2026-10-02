@@ -19,6 +19,19 @@ function makeMedia(
   } as unknown as Media;
 }
 
+describe('applySelectedFilter — failing_downloads', () => {
+  const failing = makeMedia(1, []);
+  const fine = makeMedia(2, []);
+
+  it('matches only the media ids the backend reports as failing', () => {
+    expect(applySelectedFilter([failing, fine], 'failing_downloads', [], new Set([1]))).toEqual([failing]);
+  });
+
+  it('matches nothing without a set', () => {
+    expect(applySelectedFilter([failing, fine], 'failing_downloads', [])).toEqual([]);
+  });
+});
+
 describe('applySelectedFilter — unknown_profile', () => {
   const withUnknown = makeMedia(1, [{file_exists: true, profile_id: 0}]);
   const withAssigned = makeMedia(2, [{file_exists: true, profile_id: 5}]);
@@ -58,7 +71,7 @@ describe('MOVIES_ONLY_FILTERS agrees with applySelectedFilter', () => {
   });
 
   it('leaves untyped filters out of the map, so they divide by the whole library', () => {
-    for (const filterName of ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored', 'unknown_profile']) {
+    for (const filterName of ['all', 'downloaded', 'downloading', 'missing', 'monitored', 'unmonitored', 'unknown_profile', 'failing_downloads']) {
       expect(MOVIES_ONLY_FILTERS[filterName]).toBeUndefined();
     }
   });

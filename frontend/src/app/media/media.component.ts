@@ -3,7 +3,7 @@ import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink, RouterState} from '@angular/router';
 import {environment} from '../../environment';
-import {mapPendingSummary, PendingSummary} from '../models/pending';
+import {mapPendingSummary, PendingSummary, PendingSummaryItem} from '../models/pending';
 import {CustomfilterService} from '../services/customfilter.service';
 import {MediaService} from '../services/media.service';
 import {SettingsService} from '../services/settings.service';
@@ -33,6 +33,7 @@ export class MediaComponent implements OnInit {
   protected readonly inEditMode = this.mediaService.inEditMode;
   protected readonly selectedView = this.mediaService.selectedView;
   protected readonly unknownProfileCount = this.mediaService.unknownProfileCount;
+  protected readonly failingCount = this.mediaService.failingCount;
   protected readonly selectedFilter = this.mediaService.selectedFilter;
 
   // Signals in this component
@@ -62,6 +63,19 @@ export class MediaComponent implements OnInit {
   /** Applies the 'Unknown Profile' quick filter from the review banner */
   protected reviewUnknownProfiles() {
     this.mediaService.selectedFilter.set('unknown_profile');
+  }
+
+  /** Applies the 'Failing Downloads' quick filter from its review banner */
+  protected reviewFailingDownloads() {
+    this.mediaService.selectedFilter.set('failing_downloads');
+  }
+
+  /** What the preview list says a pending pair would do. An upgrade item
+   * has a trailer, so it says "replace", and why. */
+  protected previewReason(item: PendingSummaryItem): string {
+    if (item.reason === 'backoff') return 'backing off';
+    if (!item.upgrade) return 'would download';
+    return item.upgrade_state === 'replace_unknown' ? 'would replace, video unknown' : 'would replace, not a TMDB trailer';
   }
 
   ngOnInit() {

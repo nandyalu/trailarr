@@ -49,6 +49,10 @@ export class NormalHeaderComponent {
     if (this.mediaService.unknownProfileCount() > 0) {
       options = options.concat('unknown_profile');
     }
+    // Same for 'Failing Downloads': shown while a download keeps failing.
+    if (this.mediaService.failingCount() > 0) {
+      options = options.concat('failing_downloads');
+    }
     return options.concat(this.customFilters().map((f) => f.filter_name));
   });
   protected readonly showFiltersDialogOpen = signal(false);

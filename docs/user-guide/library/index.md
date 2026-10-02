@@ -49,6 +49,7 @@ Media items in the view can be filtered using the following options:
 - Monitored: Monitored for trailer download
 - Unmonitored: No downloaded video and not monitored
 - Unknown Profile: Media with downloads that have no profile assigned. {{ version_badge("add", "0.9.9") }}
+- Failing Downloads: Media with a trailer download that failed on two task runs or more. {{ version_badge("add", "0.13.1") }}
 
 !!! info "Status is computed live"
     {{ version_badge("upd", "0.10.2") }} Status is always derived from your actual downloads and the monitor flag: any active download → **Downloaded**, else monitored → **Monitored**, else **Missing**. It can never get stuck or drift out of sync with reality. **Downloading** is a live indicator of in-progress downloads (updated in real time) — it is not stored, so a crash or restart can never leave items showing *Downloading* forever.
@@ -56,6 +57,10 @@ Media items in the view can be filtered using the following options:
 !!! note "Downloads with no profile assigned"
     {{ version_badge("add", "0.9.9") }}
     When any downloads are not linked to a profile, the media pages show a banner ("N media items have downloads with no profile assigned") with a **Review** button, and the **Unknown Profile** quick filter appears in the filter dropdown. Open each media item and assign a profile from the Downloads section (see [Media Details](media-details/index.md#downloads-section)) — the banner and filter disappear automatically once every download has a profile.
+
+!!! note "Downloads that keep failing"
+    {{ version_badge("add", "0.13.1") }}
+    When a download fails on two task runs or more, the media pages show a banner ("N media items have a trailer download that keeps failing") with a **Review** button, and the **Failing Downloads** quick filter appears in the filter dropdown. Open an item: the [Download Profiles](media-details/index.md#download-profiles-section) section shows the reason of the last failure and, when Trailarr knows it, the fix. After you fix the cause, download the item again from its page, or select the items and use the batch **Download**: a manual download does not wait for the next retry. An item leaves the banner when a download succeeds, when you unmonitor it, or when no profile matches it any more.
 
 !!! tip
     There is also an option to add a custom filter to fit your needs. These use the same mechanism as the `Filters` in `Profiles`, and view filters additionally get the [Download Filters](../settings/profiles/filters.md#download-filters-view-filters-only) family {{ version_badge("add", "0.11.3") }} — filter by download count, resolution, owning profile, download dates, or deleted files. The filter editor groups the fields into **Media**, **Downloads**, and **Files**. For more information see [Filters](../settings/profiles/filters.md).
