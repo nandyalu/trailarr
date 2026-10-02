@@ -95,8 +95,10 @@ async def lifespan(app: FastAPI):
     logging.debug("Shutting down the scheduler and flushing logs to DB")
     await notification_dispatcher.stop()
     scheduler.shutdown(timeout=SCHEDULER_STOP_TIMEOUT)
+    # The last log line of the lifespan goes before the flush. A line
+    # after it would write a new WAL frame into logs.db.
+    logging.debug("Trailarr stops. The WAL files are written last.")
     _flush_wal_files()
-    logging.debug("Trailarr shutdown complete")
 
 
 # Get APP_NAME and APP_VERSION from environment variables

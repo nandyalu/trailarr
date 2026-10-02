@@ -162,9 +162,15 @@ export class MediaService {
         break;
       }
       case null: {
-        moviesOnlyMediaList = this.combinedMedia().filter((media) => {
-          return media.downloads.some((download) => download.file_exists === true);
-        });
+        // The Home page lists the media that has a trailer. The failing
+        // filter is the exception: a failed download has no trailer, and
+        // that is the point of showing it (Copilot review on #696).
+        moviesOnlyMediaList =
+          this.selectedFilter() === 'failing_downloads'
+            ? this.combinedMedia()
+            : this.combinedMedia().filter((media) => {
+                return media.downloads.some((download) => download.file_exists === true);
+              });
         break;
       }
     }
