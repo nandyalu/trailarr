@@ -1,5 +1,14 @@
 import {FileFolderInfo} from './filefolderinfo';
 
+/** The video id of a download when nothing shows which video it is: a file
+ * Trailarr found on disk, or one saved before it recorded ids. Mirrors
+ * UNKNOWN_YOUTUBE_ID in the backend. */
+export const UNKNOWN_YOUTUBE_ID = 'unknown0000';
+
+export function isUnknownVideo(youtubeId: string | null | undefined): boolean {
+  return !youtubeId || youtubeId === UNKNOWN_YOUTUBE_ID;
+}
+
 export interface Download {
   id: number;
   path: string;

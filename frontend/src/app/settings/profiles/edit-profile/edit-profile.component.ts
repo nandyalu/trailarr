@@ -16,6 +16,7 @@ import {CustomFilter} from 'src/app/models/customfilter';
 import {ArrType} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
 import {SettingsService} from 'src/app/services/settings.service';
+import {MediaService} from 'src/app/services/media.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
@@ -23,6 +24,7 @@ import {OptionsSettingComponent} from '../settings/options-setting/options-setti
 import {RangeSettingComponent} from '../settings/range-setting/range-setting.component';
 import {TextSettingComponent} from '../settings/text-setting/text-setting.component';
 import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component';
+import {countUnknownVideos, unknownVideosNote} from './unknown-videos';
 
 @Component({
   selector: 'app-edit-profile',
@@ -43,6 +45,7 @@ export class EditProfileComponent {
   protected profileService = inject(ProfileService);
   private readonly connectionService = inject(ConnectionService);
   private readonly settingsService = inject(SettingsService);
+  private readonly mediaService = inject(MediaService);
   private readonly router = inject(Router);
 
   profileId = input(0, {
@@ -97,6 +100,13 @@ export class EditProfileComponent {
     if (this.profile()?.always_search) return 'Turn off Always Search to use this. Always Search never takes a TMDB trailer.';
     return '';
   });
+
+  /** How many trailers of this profile have an unknown video, next to
+   * Replace Unknown Videos, so the impact is known before the setting is
+   * turned on. Reads the downloads the library already loads. */
+  readonly unknownVideosNote = computed(() =>
+    unknownVideosNote(countUnknownVideos(this.mediaService.mediaDownloadsResource.value().values(), this.profile()?.id)),
+  );
 
   helpLinks = {
     general: 'https://nandyalu.github.io/trailarr/user-guide/settings/profiles/settings/general/',
