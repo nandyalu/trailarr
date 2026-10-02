@@ -41,6 +41,15 @@ from frontend import setup_frontend
 
 logging = ModuleLogger("Main")
 
+# How long a stop waits for the running jobs of the scheduler, in seconds.
+# Docker stops a container 10 seconds after it asks. A download inside
+# yt-dlp or ffmpeg cannot be interrupted, so without a limit a stop during
+# a download waited for it, Docker killed the process, and the WAL flush
+# below never ran. A job still running after this is abandoned, and the
+# next run downloads it again. The two flushes after it take 2 seconds
+# each at most, so the whole stop finishes inside the grace period.
+SCHEDULER_STOP_TIMEOUT = 4.0
+
 
 def _flush_wal_files() -> None:
     """Empty the WAL files of both databases, and say when one was busy.
@@ -85,7 +94,7 @@ async def lifespan(app: FastAPI):
     # Before shutdown
     logging.debug("Shutting down the scheduler and flushing logs to DB")
     await notification_dispatcher.stop()
-    scheduler.shutdown()
+    scheduler.shutdown(timeout=SCHEDULER_STOP_TIMEOUT)
     _flush_wal_files()
     logging.debug("Trailarr shutdown complete")
 
