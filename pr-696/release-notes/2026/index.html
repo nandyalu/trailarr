@@ -3625,6 +3625,9 @@
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
 <li>
+<p><strong>The <code>Allowed Uploader IDs</code> field takes a longer list</strong> — the field stopped at 500 characters, which is about 19 channel IDs; it now takes 2000 — see <a href="../../user-guide/settings/profiles/settings/search/#allowed-uploader-ids">Allowed Uploader IDs</a>.</p>
+</li>
+<li>
 <p><strong>The daily log cleanup no longer rewrites the whole log database</strong> — Trailarr compacts <code>logs.db</code> only when at least a quarter of the file is free space, so a NAS or SSD sees far fewer disk writes.</p>
 </li>
 <li>
