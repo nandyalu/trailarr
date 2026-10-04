@@ -41,8 +41,8 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
     """Apply the pragmas to each new connection to the log database.
 
     The engine sets its own pragmas. The listener in `database/engine.py`
-    also applies to this engine, but this module can create its first
-    connection before that listener exists.
+    is on the application engine only, so it does not reach this one. The
+    log database has one table and needs no `foreign_keys`.
 
     Without `journal_size_limit`, the WAL file never gets smaller. It stays
     at the largest size it ever had. VACUUM writes the full database into
