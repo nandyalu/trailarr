@@ -3610,6 +3610,9 @@
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
 <li>
+<p><strong>Manual downloads no longer stop the scheduler</strong> — each <code>Download</code> click used up one of the task scheduler's ten worker slots and never gave it back, so after about ten manual downloads no task ran until a restart, with nothing in the logs; the cause was a SQLite setting meant for the main database that Trailarr also applied to the scheduler's own database, and it affected every version since v0.12.0 (<a href="https://github.com/nandyalu/quiv/issues/86">quiv#86</a>).</p>
+</li>
+<li>
 <p><strong>A stop of Trailarr no longer waits for a running download without limit</strong> — Docker stops a container 10 seconds after it asks, and a stop during a download waited for yt-dlp or ffmpeg, so Docker killed Trailarr before it wrote its databases to disk; Trailarr now gives a running task 4 seconds, then stops, and the next run downloads that trailer again.</p>
 </li>
 <li>
