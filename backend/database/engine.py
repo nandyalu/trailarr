@@ -12,7 +12,7 @@ import threading
 from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import Engine, event, QueuePool, StaticPool
+from sqlalchemy import event, QueuePool, StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
@@ -49,11 +49,16 @@ else:
 # SQLModel.metadata.create_all(engine)
 
 
-@event.listens_for(Engine, "connect")
+@event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
-    """
-    Apply PRAGMA statements when a new connection is established.
-    This will work for existing databases and new ones.
+    """Apply the pragmas to each new connection to the application database.
+
+    The listener is on this engine only. A listener on the `Engine` class
+    reaches every engine in the process, and that put `foreign_keys=ON` on
+    the database of the task scheduler. quiv deletes a run-once task row
+    while its job row still points at it, so each manual download raised a
+    foreign key error inside quiv and lost one worker slot for good. After
+    ten of them no task ran until a restart.
     """
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
