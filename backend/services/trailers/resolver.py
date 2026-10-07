@@ -1,8 +1,8 @@
 """Choosing which video to download for a media item.
 
-Before Phase 8 there was one id per media item, in
-`media.youtube_trailer_id`, and a YouTube search when it was empty. Now
-there is a list of candidates, and this module picks from it.
+Before Phase 8 there was one id per media item, in a column that Phase 9
+dropped (`media.youtube_trailer_id`, H9), and a YouTube search when it was
+empty. Now there is a list of candidates, and this module picks from it.
 
 The order comes from the source: what the user chose, then the curated
 list of TMDB, then the id that Radarr or Sonarr gave, then a result that a
@@ -57,8 +57,8 @@ def choose_candidates(
         # `Always Search` means what it says: do not take an id from any
         # source, search YouTube with the search query of the profile.
         # That is what it did before the candidates table existed — it
-        # cleared `media.youtube_trailer_id`, the only source there was —
-        # and the documentation has always said it ignores an id you set
+        # cleared the single stored id, the only source there was — and
+        # the documentation has always said it ignores an id you set
         # by hand. A profile that wants one video keeps this off and adds
         # that video; a profile that wants Trailarr to look every time
         # turns it on.

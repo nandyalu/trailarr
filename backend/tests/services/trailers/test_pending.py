@@ -25,6 +25,7 @@ def make_download(
         profile_id=profile_id,
         file_exists=file_exists,
         added_at=NOW - timedelta(hours=age_hours),
+        video_type="trailer",
     )
 
 
@@ -41,6 +42,7 @@ def make_profile(
         enabled=enabled,
         upgrade_to_tmdb=False,
         replace_unknown_videos=False,
+        video_type="trailer",
         customfilter=SimpleNamespace(
             filter_name=name or f"Profile {profile_id}",
             filters=filters or [],

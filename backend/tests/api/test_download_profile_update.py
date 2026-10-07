@@ -23,6 +23,7 @@ def make_download(media_id: int = MEDIA_ID) -> SimpleNamespace:
 def make_profile() -> SimpleNamespace:
     return SimpleNamespace(
         id=PROFILE_ID,
+        video_type="trailer",
         customfilter=SimpleNamespace(filter_name="Movie Trailers"),
     )
 
@@ -55,7 +56,9 @@ class TestUpdateDownloadProfile:
                 MEDIA_ID, DOWNLOAD_ID, PROFILE_ID
             )
 
-        mock_update.assert_called_once_with(DOWNLOAD_ID, PROFILE_ID)
+        mock_update.assert_called_once_with(
+            DOWNLOAD_ID, PROFILE_ID, video_type="trailer"
+        )
         mock_track.assert_called_once()
         mock_broadcast.assert_awaited_once()
         assert "movie-trailer.mkv" in msg

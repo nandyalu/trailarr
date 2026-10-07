@@ -32,14 +32,19 @@ SEED_IDS = {
 }
 
 
-def _upgrade(data_dir: Path):
+# The Phase 8 revision. The first test stops here, because the Phase 9
+# migration that follows drops the column it inspects (H9).
+PHASE8_REVISION = "1c9c26339940"
+
+
+def _upgrade(data_dir: Path, target: str = "head"):
     env = {
         **os.environ,
         "APP_DATA_DIR": str(data_dir),
         "PYTHONPATH": str(BACKEND_DIR),
     }
     return subprocess.run(
-        ["uv", "run", "alembic", "upgrade", "head"],
+        ["uv", "run", "alembic", "upgrade", target],
         cwd=BACKEND_DIR,
         env=env,
         capture_output=True,
@@ -81,7 +86,7 @@ def test_arr_ids_move_into_the_candidates_table(tmp_path: Path):
     db.commit()
     db.close()
 
-    result = _upgrade(data_dir)
+    result = _upgrade(data_dir, PHASE8_REVISION)
     assert result.returncode == 0, result.stderr[-2000:]
 
     db = sqlite3.connect(db_path)
@@ -115,7 +120,8 @@ def test_arr_ids_move_into_the_candidates_table(tmp_path: Path):
     assert season is None
     assert sequence == 0
 
-    # The column keeps its value; Phase 9 removes it (H9).
+    # The column keeps its value at this revision; the Phase 9 migration
+    # (c3d8e5f9a2b1) removes it (H9) — see test_phase9_drop_youtube_id.py.
     kept = db.execute(
         "SELECT youtube_trailer_id FROM media WHERE id = 1"
     ).fetchone()[0]

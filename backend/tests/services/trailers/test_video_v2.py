@@ -161,7 +161,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x" * 100)
 
         with patch(
-            "services.trailers.video_v2.subprocess.run",
+            "services.trailers.video_v2.quiv.run_subprocess",
             side_effect=subprocess.TimeoutExpired(cmd="yt-dlp", timeout=900),
         ):
             with pytest.raises(DownloadFailedError, match="timed out"):
@@ -185,7 +185,8 @@ class TestDownloadFailureCleanup:
         out_file = tmp_path / "temp_311-trailer.mkv"
 
         with patch(
-            "services.trailers.video_v2.subprocess.run", return_value=result
+            "services.trailers.video_v2.quiv.run_subprocess",
+            return_value=result,
         ):
             with pytest.raises(
                 DownloadFailedError, match="livestream/premiere"
@@ -206,7 +207,8 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "services.trailers.video_v2.subprocess.run", return_value=result
+            "services.trailers.video_v2.quiv.run_subprocess",
+            return_value=result,
         ):
             with pytest.raises(DownloadFailedError, match="exit code 1"):
                 _download_with_ytdlp(
@@ -226,7 +228,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "services.trailers.video_v2.subprocess.run",
+            "services.trailers.video_v2.quiv.run_subprocess",
             side_effect=FileNotFoundError(2, "No such file or directory"),
         ):
             with pytest.raises(DownloadFailedError, match="YTDLP_PATH"):
@@ -272,3 +274,104 @@ class TestCleanupStaleTempDownloads:
         )
         (tmp_path / "trailarr").write_bytes(b"not a directory")
         cleanup_stale_temp_downloads()
+
+
+class TestJobCancellation:
+    """A job stop must stop the child process and reach the scheduler."""
+
+    def test_set_stop_event_stops_the_child_and_raises(self):
+        import threading
+        import time
+
+        import quiv
+
+        stop_event = threading.Event()
+        threading.Timer(0.2, stop_event.set).start()
+        started = time.monotonic()
+
+        with pytest.raises(quiv.JobCancelledError):
+            quiv.run_subprocess(
+                ["sleep", "30"], stop_event=stop_event, capture_output=True
+            )
+
+        # The child was stopped when the event was set, not after 30s.
+        assert time.monotonic() - started < 10
+
+    def test_download_lets_the_cancel_propagate_and_removes_partial(
+        self, tmp_path, trailer_profile
+    ):
+        import quiv
+
+        out_file = tmp_path / "temp_311-trailer.mkv"
+        part = tmp_path / "temp_311-trailer.mkv.part"
+        part.write_bytes(b"x" * 100)
+
+        with patch(
+            "services.trailers.video_v2.quiv.run_subprocess",
+            side_effect=quiv.JobCancelledError("yt-dlp was stopped"),
+        ):
+            # Not DownloadFailedError: a cancel is not a failed download.
+            with pytest.raises(quiv.JobCancelledError):
+                _download_with_ytdlp(
+                    "https://youtu.be/abc", str(out_file), trailer_profile
+                )
+
+        assert not part.exists()
+
+    def test_convert_lets_the_cancel_propagate_and_removes_output(
+        self, tmp_path, trailer_profile
+    ):
+        import quiv
+
+        from services.trailers.video_v2 import _convert_video
+
+        input_file = tmp_path / "temp_311-trailer.webm"
+        input_file.write_bytes(b"x")
+        output_file = tmp_path / "311-trailer.mkv"
+        output_file.write_bytes(b"partial")
+
+        with (
+            patch(
+                "services.trailers.video_v2.get_ffmpeg_cmd",
+                return_value=["ffmpeg"],
+            ),
+            patch(
+                "services.trailers.video_v2.quiv.run_subprocess",
+                side_effect=quiv.JobCancelledError("ffmpeg was stopped"),
+            ),
+        ):
+            with pytest.raises(quiv.JobCancelledError):
+                _convert_video(
+                    trailer_profile, str(input_file), str(output_file)
+                )
+
+        assert not output_file.exists()
+
+    def test_download_video_removes_the_download_when_convert_is_cancelled(
+        self, tmp_path, trailer_profile
+    ):
+        import quiv
+
+        from services.trailers.video_v2 import download_video
+
+        downloaded = tmp_path / "temp_311-trailer.webm"
+        downloaded.write_bytes(b"x")
+
+        with (
+            patch(
+                "services.trailers.video_v2._download_with_ytdlp",
+                return_value=str(downloaded),
+            ),
+            patch(
+                "services.trailers.video_v2._convert_video",
+                side_effect=quiv.JobCancelledError("ffmpeg was stopped"),
+            ),
+        ):
+            with pytest.raises(quiv.JobCancelledError):
+                download_video(
+                    "https://youtu.be/abc",
+                    tmp_path / "311-trailer.%(ext)s",
+                    trailer_profile,
+                )
+
+        assert not downloaded.exists()

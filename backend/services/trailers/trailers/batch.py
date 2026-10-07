@@ -2,6 +2,8 @@
 
 import threading
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
@@ -43,6 +45,9 @@ async def batch_download_task(
             await download_trailer(
                 media, profile, profile.retry_count, stop_event=stop_event
             )
+        except JobCancelledError:
+            # The job was cancelled. Let it reach the scheduler.
+            raise
         except DownloadFailedError as e:
             logger.exception(e)
         except Exception as e:

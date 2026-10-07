@@ -243,11 +243,10 @@ class BaseConnectionManager(ABC):
             list[MediaReadDC]: A list of MediaRead objects."""
         media_read_list = media_manager.create_or_update_bulk(media_data)
         # The id each Arr reports for a media item, so the candidates table
-        # can be kept in step below. Phase 8: the resolver reads only that
-        # table, so an id that stays in the column is an id Trailarr would
-        # never use.
+        # can be kept in step below. The resolver reads only that table;
+        # Phase 9 dropped the `media.youtube_trailer_id` column (H9).
         arr_video_ids = {
-            (mc.connection_id, mc.arr_id): mc.youtube_trailer_id
+            (mc.connection_id, mc.arr_id): mc.arr_video_id
             for mc in media_data
         }
         media_read_dc_list = []
@@ -261,7 +260,7 @@ class BaseConnectionManager(ABC):
             )
             if created:
                 self.created_count += 1
-                # Track events for new media (added, youtube_id)
+                # Track events for new media (added)
                 event_manager.track_media_added(
                     media=media_read,
                     connection_name=self.connection_name,

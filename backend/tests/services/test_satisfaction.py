@@ -15,18 +15,25 @@ def make_download(
     profile_id: int = 0,
     file_exists: bool = True,
     age_hours: int = 0,
+    video_type: str = "trailer",
 ) -> SimpleNamespace:
     return SimpleNamespace(
         id=download_id,
         profile_id=profile_id,
         file_exists=file_exists,
         added_at=NOW - timedelta(hours=age_hours),
+        video_type=video_type,
     )
 
 
-def make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
+def make_profile(
+    profile_id: int, priority: int = 100, video_type: str = "trailer"
+) -> SimpleNamespace:
     return SimpleNamespace(
-        id=profile_id, priority=priority, upgrade_to_tmdb=False
+        id=profile_id,
+        priority=priority,
+        upgrade_to_tmdb=False,
+        video_type=video_type,
     )
 
 

@@ -16,6 +16,7 @@ import aiofiles.os
 
 from app_logger import ModuleLogger
 from database.manager import trailerprofile
+from database.models import video_type as video_types
 from database.models.filefolderinfo import (
     FileFolderInfoCreate,
     FileFolderType,
@@ -50,17 +51,17 @@ class MediaScanner:
 
     @staticmethod
     def get_trailer_folders() -> set[str]:
-        """Get a list of trailer folder names.\n
+        """Get a list of the folder names that hold extras.\n
+        The folders of the profiles, plus every folder name that Plex or
+        Jellyfin reads: `Trailers`, `Featurettes`, `Scenes`, ...\n
         Returns:
-            set[str]: Set with trailer folder names."""
+            set[str]: Set with folder names, in lowercase."""
         # Get the trailer folders from the trailerprofile module
         trailer_folders = trailerprofile.get_trailer_folders()
-        # Add 'trailer' and 'trailers' to the list
-        trailer_folders.add("trailer")
-        trailer_folders.add("trailers")
         trailer_folders = {
             folder.lower().strip() for folder in trailer_folders
         }
+        trailer_folders.update(video_types.EXTRA_FOLDER_NAMES)
         return trailer_folders
 
     async def _check_large_name_trailer(self, file_path: str) -> bool:
@@ -95,9 +96,11 @@ class MediaScanner:
     async def is_trailer_file(
         self, file_path: str, file_size_bytes: int | None = None
     ) -> bool:
-        """Check if a file is a trailer based on its path and size. \n
-        If the file is large but has `trailer` in its name,
-        does a quick check with `ffprobe` to confirm.
+        """Check if a file is a trailer or another extra, by its path and size. \n
+        A file in an extras folder, or with a suffix that Plex or Jellyfin
+        reads, is one. If the file is large but has `trailer` in its name,
+        does a quick check with `ffprobe` to confirm. The type of the file
+        is read later from its name, with `classify_extra_name`.
         Args:
             file_path (str): The path of the file to check.
             file_size_bytes (int, Optional=None): The size of the file in bytes, if known.
@@ -115,6 +118,12 @@ class MediaScanner:
         # Exclude files that look like TV episodes (e.g. "S01E01") to avoid false positives.
         if re.search(r"s\d{1,2}e\d{1,2}", file_name, re.IGNORECASE):
             return False
+        # A suffix that a player reads says what the file is: a file
+        # named `-featurette` or `-scene` is an extra, in any folder. The
+        # size heuristics below are for trailers only (decision 4).
+        by_suffix = video_types.classify_by_suffix(file_path)
+        if by_suffix is not None and by_suffix != video_types.VideoType.TRAILER:
+            return True
         # Folder placement is authoritative — no size limit applies.
         folder_name = Path(file_path).parent.name.lower().strip()
         if folder_name and folder_name in self.trailer_folders:

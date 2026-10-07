@@ -18,12 +18,14 @@ from typing import Awaitable, Callable
 from app_logger import ModuleLogger
 import database.manager.startuppass as startuppass_manager
 from tasks.download_attribution import run_attribution_pass
+from tasks.profile_nudge import nudge_extras_profiles
 
 logger = ModuleLogger("StartupPasses")
 
 PASS_ATTRIBUTE_DOWNLOADS = "attribute-downloads-v0.9.9"
 PASS_FULL_SCAN_GUARD = "full-scan-before-downloads-v0.10"
 PASS_SETUP_STATE = "setup_state_v0.13.0"
+PASS_VIDEO_TYPE_NUDGE = "video-type-nudge-v0.14.0"
 
 # Passes the download engine depends on — it skips its run until these are
 # recorded complete (upgrade guard against mass re-downloads on databases
@@ -83,11 +85,19 @@ async def _pass_setup_state() -> None:
     setup_service.mark_existing_installation()
 
 
+async def _pass_video_type_nudge() -> None:
+    """Name the trailer profiles that look like extras profiles, once,
+    at the first start of v0.14.0 (Phase 9, decision 7). Log only: the
+    person decides whether to set a Video Type."""
+    nudge_extras_profiles()
+
+
 # Ordered registry — order is the dependency order.
 REGISTRY: list[tuple[str, Callable[[], Awaitable[None]], str]] = [
     (PASS_ATTRIBUTE_DOWNLOADS, _pass_attribute_downloads, "always"),
     (PASS_FULL_SCAN_GUARD, _pass_full_scan_guard, "once"),
     (PASS_SETUP_STATE, _pass_setup_state, "once"),
+    (PASS_VIDEO_TYPE_NUDGE, _pass_video_type_nudge, "once"),
 ]
 
 

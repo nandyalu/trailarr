@@ -8,7 +8,12 @@ from .read import (
     read_by_profile_id,
     read_unattributed,
 )
-from .update import update, mark_as_deleted, update_profile_id
+from .update import (
+    update,
+    mark_as_deleted,
+    update_profile_id,
+    relabel_video_type_for_profile,
+)
 
 __all__ = [
     "create",
@@ -23,4 +28,5 @@ __all__ = [
     "update",
     "mark_as_deleted",
     "update_profile_id",
+    "relabel_video_type_for_profile",
 ]

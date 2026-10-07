@@ -26,7 +26,6 @@ from .update import (
     update_plex_fields,
     update_plex_trailer,
     update_plex_trailer_bulk,
-    update_ytid,
 )
 
 __all__ = [
@@ -57,5 +56,4 @@ __all__ = [
     "update_plex_fields",
     "update_plex_trailer",
     "update_plex_trailer_bulk",
-    "update_ytid",
 ]

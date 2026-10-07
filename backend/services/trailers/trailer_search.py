@@ -17,6 +17,7 @@ from config.settings import app_settings
 import database.manager.downloadattempt as attempt_manager
 import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
+from database.models.video_type import is_trailer_type, video_type_label
 from database.models.mediavideo import MediaVideoCreate, VideoSource
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
@@ -314,11 +315,23 @@ def get_video_id(
         media, profile, exclude, upgrade_only=upgrade_only
     )
     if video_id:
-        media.youtube_trailer_id = video_id
         return video_id
     if upgrade_only:
         # An upgrade replaces a trailer with a TMDB trailer. A search result
         # is not one, so the next run would replace it again, and again.
+        return None
+    if not is_trailer_type(profile.video_type):
+        # Decision 5 of Phase 9: every type but the trailer comes from
+        # TMDB only. A search finds trailers, and nothing says that a
+        # result is a featurette, so a profile of another type does not
+        # search. It waits for TMDB to list a video of its type.
+        logger.info(
+            f"TMDB lists no {video_type_label(profile.video_type).lower()}"
+            f" for '{media.title}' that the profile"
+            f" '{profile.customfilter.filter_name}' can use. Trailarr does"
+            " not search YouTube for this video type.",
+            **logger.media(media.id),
+        )
         return None
     # Search for trailer on youtube, until a max of 30 search results
     video_id = search_yt_for_trailer(
@@ -345,9 +358,6 @@ def get_video_id(
         video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
         )
-
-    if video_id:
-        media.youtube_trailer_id = video_id
     return video_id
 
 
@@ -365,7 +375,9 @@ def _video_id_from_candidates(
         # and reading the unfiltered list is what lets the log below say
         # "I know four videos, none of them Italian" instead of "I know
         # nothing".
-        candidates = video_manager.read_candidates(media.id)
+        candidates = video_manager.read_candidates(
+            media.id, video_type=profile.video_type
+        )
     except Exception as e:
         # The table is an optimisation over searching. If reading it fails,
         # a search still finds a trailer.

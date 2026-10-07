@@ -7,6 +7,7 @@ profile.
 
 from datetime import datetime
 from database.manager import filefolderinfo as files_manager
+import database.manager.mediavideo as video_manager
 from database.models.filefolderinfo import (
     FileFolderInfoRead,
     FileFolderType,
@@ -15,14 +16,23 @@ from database.models.filter import (
     VIRTUAL_BOOL_COLS,
     VIRTUAL_DATE_COLS,
     VIRTUAL_INT_COLS,
+    VIRTUAL_STR_COLS,
     FilterCondition,
     FilterRead,
 )
 from database.models.media import MediaRead
 
+# Virtual fields evaluated from the media's known video rows (Phase 9, H9)
+VIDEO_COLS = frozenset({"has_videos"})
 # Virtual fields evaluated from the media's download rows
-DOWNLOAD_COLS = frozenset(
-    VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS
+DOWNLOAD_COLS = (
+    frozenset(
+        VIRTUAL_BOOL_COLS
+        + VIRTUAL_INT_COLS
+        + VIRTUAL_DATE_COLS
+        + VIRTUAL_STR_COLS
+    )
+    - VIDEO_COLS
 )
 
 
@@ -185,6 +195,8 @@ def _matches_download_filter(media: MediaRead, filter: FilterRead) -> bool:
         return any(_matches_number(d.resolution, filter) for d in active)
     if field == "download_added_at":
         return any(_matches_datetime(d.added_at, filter) for d in active)
+    if field == "download_video_type":
+        return any(_matches_string(d.video_type, filter) for d in active)
     return False
 
 
@@ -198,11 +210,20 @@ def matches_filters(media: MediaRead, filters: list[FilterRead]) -> bool:
     """
     # Cache media files if fetched
     _files: list[FileFolderInfoRead] | None = None
+    # Cache the known videos if fetched
+    _has_videos: bool | None = None
 
     for filter in filters:
         # Virtual download fields, ANY semantics over the download rows
         if filter.filter_by in DOWNLOAD_COLS:
             if not _matches_download_filter(media, filter):
+                return False
+            continue
+        # Virtual video field: the media has at least one known video
+        if filter.filter_by in VIDEO_COLS:
+            if _has_videos is None:
+                _has_videos = bool(video_manager.read_for_media(media.id))
+            if not _matches_boolean(_has_videos, filter):
                 return False
             continue
         # Handle special cases for 'has_file' and 'has_folder'

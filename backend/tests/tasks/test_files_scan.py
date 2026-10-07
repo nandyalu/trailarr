@@ -768,6 +768,7 @@ class TestNewTrailerAttribution:
     def _make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
         return SimpleNamespace(
             id=profile_id,
+            video_type="trailer",
             priority=priority,
             customfilter=SimpleNamespace(
                 filter_name=f"Profile {profile_id}", filters=[]
@@ -798,7 +799,9 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 5, trailer_path)
+        mock_record.assert_called_once_with(
+            media, 5, trailer_path, video_type="trailer"
+        )
 
     @pytest.mark.asyncio
     async def test_profile_owning_active_download_not_claimed_again(self):
@@ -839,7 +842,9 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 0, new_path)
+        mock_record.assert_called_once_with(
+            media, 0, new_path, video_type="trailer"
+        )
 
     @pytest.mark.asyncio
     async def test_replaced_trailer_frees_profile_for_new_file(self):
@@ -884,4 +889,6 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 5, new_path)
+        mock_record.assert_called_once_with(
+            media, 5, new_path, video_type="trailer"
+        )

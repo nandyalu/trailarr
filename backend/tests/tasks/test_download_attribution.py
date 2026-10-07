@@ -30,6 +30,7 @@ def make_profile(
     return SimpleNamespace(
         id=profile_id,
         priority=priority,
+        video_type="trailer",
         customfilter=SimpleNamespace(
             filter_name=f"Profile {profile_id}",
             filters=filters if filters is not None else [],
@@ -49,6 +50,7 @@ def make_download(
         profile_id=profile_id,
         file_exists=file_exists,
         file_name=f"trailer-{download_id}.mkv",
+        video_type="trailer",
     )
 
 

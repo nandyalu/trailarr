@@ -16,7 +16,7 @@ from services.trailers.trailers.missing import (
     _process_single_media_item,
     download_missing_trailers,
 )
-from exceptions import ItemNotFoundError
+from exceptions import DownloadFailedError, ItemNotFoundError
 
 
 def _media(
@@ -483,7 +483,11 @@ async def test_download_failure_records_backoff_attempt():
             "services.trailers.trailers.missing.trailer_downloader"
             ".download_trailer",
             new_callable=AsyncMock,
-            side_effect=RuntimeError("download failed"),
+            # Phase 9 (H9): the video the attempt used travels on the
+            # error, not on a media column.
+            side_effect=DownloadFailedError(
+                "download failed", video_id="tried00000a"
+            ),
         ),
         patch(
             "services.trailers.trailers.missing.attempt_manager.record_failure",
@@ -500,7 +504,7 @@ async def test_download_failure_records_backoff_attempt():
     # advances the delay ladder.
     assert result == (0, 1, 1)
     record_failure.assert_called_once_with(
-        1, 1, "download failed", video_id=media.youtube_trailer_id
+        1, 1, "download failed", video_id="tried00000a"
     )
 
 
@@ -614,3 +618,39 @@ async def test_validation_skip_is_not_reproposed_by_the_next_sweep(
     assert sweep_harness.process.await_count == 1
     sweep_harness.attempts.record_failure.assert_not_called()
     assert sweep_harness.media_generator.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_job_cancel_is_not_a_failed_attempt_and_propagates():
+    """A stop inside yt-dlp or ffmpeg raises JobCancelledError. It must not
+    be recorded as a failure for backoff, and it must reach the scheduler
+    past the broad `except Exception`."""
+    from quiv import JobCancelledError
+
+    media = _media(1)
+    profile = _profile(1)
+
+    with (
+        patch(
+            "services.trailers.trailers.missing._is_valid_media",
+            return_value=True,
+        ),
+        patch(
+            "services.trailers.trailers.missing.trailer_downloader"
+            ".download_trailer",
+            new_callable=AsyncMock,
+            side_effect=JobCancelledError("yt-dlp was stopped"),
+        ),
+        patch(
+            "services.trailers.trailers.missing.attempt_manager.record_failure"
+        ) as record_failure,
+        patch(
+            "services.trailers.trailers.missing.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep,
+    ):
+        with pytest.raises(JobCancelledError):
+            await _process_single_media_item(media, [profile])
+
+    record_failure.assert_not_called()
+    sleep.assert_not_awaited()

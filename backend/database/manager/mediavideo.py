@@ -83,7 +83,8 @@ def read_candidates(
         language (str | None): The language the profile asks for. Only
             videos recorded in that language come back. None or empty
             means any language, and everything comes back.
-        video_type (str): Only 'trailer' exists until Phase 9.
+        video_type (str): The type of video the caller wants, 'trailer'
+            by default. A profile passes its own type.
         season (int | None): NULL is the movie, or the series as a whole.
 
     Returns:
@@ -145,7 +146,7 @@ def replace_source_rows(
     source: VideoSource,
     videos: list[MediaVideoCreate],
     *,
-    video_type: str = VIDEO_TYPE_TRAILER,
+    video_type: str | None = VIDEO_TYPE_TRAILER,
     season: int | None = None,
     _session: Session = None,  # type: ignore
 ) -> tuple[int, int, int]:
@@ -155,12 +156,19 @@ def replace_source_rows(
     source that is not in `videos` is removed, because the source no
     longer offers it.
 
+    With `video_type=None` the list covers every type at once, and each
+    row takes the type of its incoming video. The TMDB refresh uses this:
+    one TMDB call returns every type, and a video that TMDB moves from
+    `Teaser` to `Trailer` must change its row instead of raising on the
+    unique key `(media_id, video_id)`.
+
     Args:
         media_id (int): The media item.
         source (VideoSource): The source that owns the rows. USER is not
             allowed: the user owns those rows, not a task.
         videos (list[MediaVideoCreate]): What the source offers now.
-        video_type (str): The type the list covers.
+        video_type (str | None): The type the list covers, or None for
+            every type, with the type taken from each video.
         season (int | None): The season the list covers.
 
     Returns:
@@ -179,8 +187,9 @@ def replace_source_rows(
         select(MediaVideo)
         .where(MediaVideo.media_id == media_id)
         .where(MediaVideo.source == source)
-        .where(MediaVideo.video_type == video_type)
     )
+    if video_type is not None:
+        statement = statement.where(MediaVideo.video_type == video_type)
     if season is None:
         statement = statement.where(col(MediaVideo.season).is_(None))
     else:
@@ -233,13 +242,14 @@ def replace_source_rows(
         row = existing.get(incoming.video_id) or claimable.get(
             incoming.video_id
         )
+        row_type = video_type or incoming.video_type or VIDEO_TYPE_TRAILER
         if row is not None and row.source != source:
             # Take the row over, with the better information this source
             # has: an Arr gives an id, and TMDB gives the title, the
             # language and whether the studio published it.
             row.source = source
             row.season = season
-            row.video_type = video_type
+            row.video_type = row_type
             row.updated_at = now
             # Added explicitly rather than left to the dirty tracking of
             # the session: when the rest of the row happens to match, the
@@ -254,7 +264,7 @@ def replace_source_rows(
                     video_id=incoming.video_id,
                     source=source,
                     season=season,
-                    video_type=video_type,
+                    video_type=row_type,
                     sequence=incoming.sequence,
                     language=incoming.language,
                     name=incoming.name,
@@ -272,8 +282,10 @@ def replace_source_rows(
             or row.name != incoming.name
             or row.official != incoming.official
             or row.published_at != incoming.published_at
+            or row.video_type != row_type
         )
         if changed:
+            row.video_type = row_type
             row.sequence = incoming.sequence
             row.language = incoming.language
             row.name = incoming.name

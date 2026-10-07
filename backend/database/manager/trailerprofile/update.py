@@ -1,6 +1,6 @@
 """Change a trailer profile that is already stored."""
 
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from app_logger import ModuleLogger
 from database.manager.customfilter.update import __update_filters
@@ -13,6 +13,7 @@ from database.models.trailerprofile import (
     TrailerProfileRead,
 )
 from database.engine import write_session
+from database.models.download import Download
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
@@ -45,6 +46,7 @@ def update_trailerprofile(
         )
 
     # Update the fields of the existing trailer profile
+    old_video_type = trailerprofile_db.video_type
     _update_data = trailerprofile_create.model_dump(exclude_unset=True)
     trailerprofile_db.sqlmodel_update(_update_data)
     # Update the filters
@@ -65,7 +67,41 @@ def update_trailerprofile(
         "Trailarr updated the trailer profile"
         f" '{trailerprofile_db.customfilter.filter_name}'."
     )
+    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     return convert_to_read_item(trailerprofile_db)
+
+
+def _relabel_downloads(
+    trailerprofile_db: TrailerProfile,
+    old_video_type: str,
+    *,
+    _session: Session,
+) -> None:
+    """Give the downloads of a profile its new video type.
+
+    A profile that changes its type keeps its downloads: they are what
+    it asked for. Without this, the satisfaction rule would see no
+    download of the new type and download every item again (wargame W1).
+    """
+    new_video_type = trailerprofile_db.video_type
+    if new_video_type == old_video_type:
+        return
+    statement = (
+        select(Download)
+        .where(Download.profile_id == trailerprofile_db.id)
+        .where(col(Download.video_type) != new_video_type)
+    )
+    rows = _session.exec(statement).all()
+    for row in rows:
+        row.video_type = new_video_type
+        _session.add(row)
+    _session.commit()
+    if rows:
+        logger.info(
+            f"Trailarr changed the video type of {len(rows)} downloads of"
+            f" the profile '{trailerprofile_db.customfilter.filter_name}'"
+            f" from '{old_video_type}' to '{new_video_type}'."
+        )
 
 
 @write_session
@@ -97,6 +133,7 @@ def update_trailerprofile_setting(
     # Update the specified setting
     if not hasattr(trailerprofile_db, setting):
         raise ValueError(f"Invalid setting '{setting}' for trailer profile.")
+    old_video_type = trailerprofile_db.video_type
     if TrailerProfile.is_bool_field(setting):
         # Convert the value to a boolean if the setting is a boolean field
         value = trailerprofile_db.validate_bool(value)
@@ -117,4 +154,5 @@ def update_trailerprofile_setting(
         f" '{trailerprofile_db.customfilter.filter_name}'. It set"
         f" {setting} to {value}."
     )
+    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     return convert_to_read_item(trailerprofile_db)

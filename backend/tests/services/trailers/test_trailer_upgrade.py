@@ -56,6 +56,7 @@ def profile():
     profile.language = ""
     profile.notify_plex = False
     profile.skip_if_plex_trailer = True
+    profile.video_type = "trailer"
     return profile
 
 

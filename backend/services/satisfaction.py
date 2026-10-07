@@ -93,8 +93,8 @@ def evaluate_satisfaction(
 ) -> SatisfactionResult:
     """THE Phase-2 rule: a profile is satisfied iff an active
     (file_exists=True) download exists with its profile_id, or an
-    unattributed active download can be claimed for it. Downloads — not any
-    stored flag — decide what still needs downloading.
+    unattributed active download of its video type can be claimed for it.
+    Downloads — not any stored flag — decide what still needs downloading.
 
     Phase 4 removed the legacy stop-monitoring carve-out: satisfaction is
     purely per-profile ownership now. Users with multiple profiles matching
@@ -111,6 +111,10 @@ def evaluate_satisfaction(
     """
     active = [d for d in media.downloads if d.file_exists]
 
+    # Phase 9: a profile owns its downloads by id, whatever their type: a
+    # download takes the type of its profile, and changes with it. A
+    # claim is different: an unattributed file can only satisfy a profile
+    # of its own type. A featurette on disk never counts as the trailer.
     used_profile_ids = {d.profile_id for d in active if d.profile_id}
     own_download_ids = {}
     for download in active:
@@ -135,11 +139,16 @@ def evaluate_satisfaction(
             _check_upgrade(detail, profile, owned, videos)
             _add(result, profile, detail)
             continue
-        if unattributed:
+        claimable = next(
+            (d for d in unattributed if d.video_type == profile.video_type),
+            None,
+        )
+        if claimable is not None:
             # satisfied by claiming an existing file. The claim stands
             # even when the file is then upgraded: it is the file of
             # this profile either way.
-            claimed = unattributed.pop(0)
+            claimed = claimable
+            unattributed.remove(claimed)
             result.claims.append((claimed.id, profile.id))
             used_profile_ids.add(profile.id)
             detail = ProfileSatisfaction(

@@ -1,8 +1,12 @@
 """Run yt-dlp and ffmpeg, and report what they did.
 
-Both tools run as a subprocess with a timeout. Their output is logged
-behind a marker that the log handler moves into the traceback column, so a
-wall of tool output does not fill the Logs page.
+Both tools run as a subprocess with a timeout, through
+``quiv.run_subprocess``. Inside a scheduler job that helper watches the
+job's stop event: a stop terminates the child at once and raises
+``JobCancelledError``, which this module lets propagate after it removes
+the partial file. Their output is logged behind a marker that the log
+handler moves into the traceback column, so a wall of tool output does not
+fill the Logs page.
 """
 
 import shlex
@@ -12,6 +16,7 @@ import threading
 import time
 from pathlib import Path
 
+import quiv
 from app_logger import ModuleLogger
 
 from config.settings import app_settings
@@ -311,7 +316,7 @@ def _download_with_ytdlp(
     logger.debug(f"Downloading video with options: {ytdlp_cmd}")
 
     try:
-        result = subprocess.run(
+        result = quiv.run_subprocess(
             ytdlp_cmd,
             capture_output=True,
             text=True,
@@ -362,6 +367,13 @@ def _download_with_ytdlp(
         if combined_output:
             logger.debug(f"YT-DLP Output::\n{combined_output}")
 
+    except quiv.JobCancelledError:
+        # quiv stopped yt-dlp because the job was cancelled. Remove what
+        # it left behind and let the error reach the scheduler, which
+        # finalizes the job as cancelled.
+        _cleanup_partial_downloads(file_path)
+        logger.info("Trailarr stopped yt-dlp. A stop was requested.")
+        raise
     except subprocess.TimeoutExpired:
         _cleanup_partial_downloads(file_path)
         msg = "yt-dlp download timed out after 15 minutes"
@@ -410,7 +422,7 @@ def _convert_video(
     logger.debug(f"Converting video with options: {ffmpeg_cmd}")
 
     try:
-        result = subprocess.run(
+        result = quiv.run_subprocess(
             ffmpeg_cmd,
             capture_output=True,
             text=True,
@@ -450,6 +462,12 @@ def _convert_video(
         if combined_output:
             logger.debug(f"FFMPEG Output::\n{combined_output}")
 
+    except quiv.JobCancelledError:
+        # quiv stopped ffmpeg because the job was cancelled. The output
+        # file is incomplete, so remove it and let the error propagate.
+        Path(output_file).unlink(missing_ok=True)
+        logger.info("Trailarr stopped ffmpeg. A stop was requested.")
+        raise
     except subprocess.TimeoutExpired:
         msg = "FFmpeg conversion timed out after 15 minutes"
         raise ConversionFailedError(msg)
@@ -487,6 +505,9 @@ def download_video(
         DownloadFailedError: Error while downloading video
         ConversionFailedError: Error while converting video
         StopEventSetError: If the stop event is set during the download.
+        quiv.JobCancelledError: If the job is cancelled while yt-dlp or
+            ffmpeg runs. The child process is stopped and the partial
+            file is removed before this is raised.
     """
     file_path = Path(file_path)
     file_name = file_path.name
@@ -511,7 +532,13 @@ def download_video(
     )
 
     # Convert the video to the desired format
-    _convert_video(profile, download_file_path, converted_file_path)
+    try:
+        _convert_video(profile, download_file_path, converted_file_path)
+    except quiv.JobCancelledError:
+        # The job was cancelled during the conversion. The downloaded
+        # file has no use without its conversion, so remove it too.
+        Path(download_file_path).unlink(missing_ok=True)
+        raise
     logger.debug(f"Trailer converted in {time.perf_counter() - end_time:.2f}s")
     Path(download_file_path).unlink()
     logger.info("Trailarr downloaded and converted the video.")

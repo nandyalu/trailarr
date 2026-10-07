@@ -17,6 +17,11 @@ import database.manager.media as media_manager
 import database.manager.mediavideo as video_manager
 from database.models.mediavideo import MediaVideoRead
 from database.models.event import EventSource
+from database.models.video_type import (
+    DEFAULT_VIDEO_TYPE,
+    is_trailer_type,
+    normalize_video_type,
+)
 from services.files.files_handler import FilesHandler
 
 logger = ModuleLogger("MediaService")
@@ -56,9 +61,15 @@ async def delete_trailers(media_id: int) -> ActionResult:
             f"'{media.title}' has no folder path.",
             ok=False,
         )
-    # Use download records as the authoritative source for trailer files
+    # Use download records as the authoritative source for trailer files.
+    # Only the trailers: a featurette or a clip is deleted from its own
+    # row on the media details page (Phase 9). The action keeps its name.
     downloads = download_manager.read_by_media_id(media_id)
-    live = [d for d in downloads if d.file_exists]
+    live = [
+        d
+        for d in downloads
+        if d.file_exists and is_trailer_type(d.video_type)
+    ]
     if not live:
         return ActionResult(
             f"Trailarr found no trailer files for '{media.title}'.",
@@ -81,47 +92,6 @@ async def delete_trailers(media_id: int) -> ActionResult:
     return ActionResult(msg, ok=True, reload="media")
 
 
-def set_youtube_id(media_id: int, yt_id: str) -> str:
-    """Store the YouTube id a user picked for a media item.
-
-    The caller checks the id first. An event is tracked only when the value
-    really changes.
-
-    Args:
-        media_id (int): The media item to change.
-        yt_id (str): The YouTube id to store. An empty string clears it.
-
-    Returns:
-        str: A line that says what changed.
-    """
-    # Get old YouTube ID for event tracking
-    media = media_manager.read(media_id)
-    old_yt_id = media.youtube_trailer_id
-
-    media_manager.update_ytid(media_id, yt_id)
-
-    # Track youtube_id_changed event if ID actually changed
-    if old_yt_id != yt_id:
-        event_manager.track_youtube_id_changed(
-            media_id=media_id,
-            old_yt_id=old_yt_id,
-            new_yt_id=yt_id,
-            source=EventSource.USER,
-            source_detail="UserInput",
-        )
-
-    # Phase 8: an id a person typed is a video that person chose. It goes
-    # into the candidates table as a USER row, which the resolver puts
-    # before every other source and no automation ever removes. The column
-    # above stays until the Phase 9 cleanup.
-    if yt_id:
-        video_manager.add_user_video(media_id, yt_id)
-
-    msg = "Trailarr updated the YouTube ID of this media item."
-    logger.info(msg)
-    return msg
-
-
 def list_videos(media_id: int) -> list[MediaVideoRead]:
     """Every video Trailarr knows for a media item, in resolution order.
 
@@ -135,15 +105,45 @@ def list_videos(media_id: int) -> list[MediaVideoRead]:
     return video_manager.read_for_media(media_id)
 
 
+def first_video_id(
+    media_id: int, video_type: str = DEFAULT_VIDEO_TYPE
+) -> str | None:
+    """The video that a download of the type would take now, if any.
+
+    Args:
+        media_id (int): The media item.
+        video_type (str): The type of video to look at.
+
+    Returns:
+        str | None: The YouTube id of the first known video of that type,
+            or None when there is none.
+    """
+    try:
+        candidates = video_manager.read_candidates(
+            media_id, video_type=video_type
+        )
+    except Exception as e:
+        logger.warning(
+            f"Trailarr could not read the known videos: {e}",
+            **logger.media(media_id),
+        )
+        return None
+    return candidates[0].video_id if candidates else None
+
+
 def add_video(
-    media_id: int, video_id: str, language: str | None = None
+    media_id: int,
+    video_id: str,
+    language: str | None = None,
+    video_type: str = DEFAULT_VIDEO_TYPE,
 ) -> MediaVideoRead:
     """Add a video that the user chose.
 
-    The same thing happens as when a user types an id into the YouTube ID
-    field, because it is the same act: the row is created, the legacy
-    column follows it, and the change is recorded as an event. The two
-    paths must agree while the column lives — Phase 9 removes it (H9).
+    The row goes into the known videos as a USER row, which the resolver
+    puts before every other source and no task ever removes. The change is
+    recorded as a YOUTUBE_ID_CHANGED event when the video that a download
+    of this type would take changes. Phase 9 dropped the legacy
+    `media.youtube_trailer_id` column (H9), so this is the only path.
 
     Args:
         media_id (int): The media item.
@@ -151,24 +151,28 @@ def add_video(
         language (str | None): The language the video is in, so that a
             profile asking for that language can use it. None means the
             video suits a profile that takes any language.
+        video_type (str): What the video is: a trailer by default, or
+            another type, so that a profile of that type can use it.
 
     Returns:
         MediaVideoRead: The row that was created, or the row that another
             source made for the same video and that now belongs to the user.
     """
-    media = media_manager.read(media_id)
-    old_yt_id = media.youtube_trailer_id
+    video_type = normalize_video_type(video_type)
+    # The video that a download of this type took before the change, so
+    # the event says what the user's choice replaced.
+    old_yt_id = first_video_id(media_id, video_type)
 
-    row = video_manager.add_user_video(media_id, video_id, language=language)
-    media_manager.update_ytid(media_id, video_id)
-    if old_yt_id != video_id:
-        event_manager.track_youtube_id_changed(
-            media_id=media_id,
-            old_yt_id=old_yt_id,
-            new_yt_id=video_id,
-            source=EventSource.USER,
-            source_detail="UserInput",
-        )
+    row = video_manager.add_user_video(
+        media_id, video_id, language=language, video_type=video_type
+    )
+    event_manager.track_youtube_id_changed(
+        media_id=media_id,
+        old_yt_id=old_yt_id,
+        new_yt_id=video_id,
+        source=EventSource.USER,
+        source_detail="UserInput",
+    )
 
     logger.info(
         f"Trailarr added the video '{video_id}' that you chose.",

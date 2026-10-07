@@ -22,6 +22,10 @@ import database.manager.media as media_manager
 from database.manager import trailerprofile
 from database.models.event import EventSource
 from database.models.media import MediaRead
+from database.models.video_type import (
+    DEFAULT_VIDEO_TYPE,
+    classify_extra_name,
+)
 from services.profiles import pick_profile_for_download
 from services.trailers.trailers.service import (
     compute_file_hash,
@@ -178,17 +182,25 @@ async def _process_trailer_changes(
         }
     for t_path in still_new_paths:
         new_count += 1
+        # The classifier runs only for a file with no row: a file that
+        # Trailarr made keeps the type its profile gave it (decision 6).
+        _video_type = classify_extra_name(t_path)
+        _type_value = (
+            _video_type.value if _video_type else DEFAULT_VIDEO_TYPE
+        )
         _profile_id = pick_profile_for_download(
-            media, _profiles, _used_profile_ids
+            media, _profiles, _used_profile_ids, video_type=_type_value
         )
         if _profile_id:
             _used_profile_ids.add(_profile_id)
         logger.info(
-            f"Trailarr found a new trailer file for '{media.title}'."
-            f" Path: '{t_path}'.",
+            f"Trailarr found a new {_type_value.replace('_', ' ')} file"
+            f" for '{media.title}'. Path: '{t_path}'.",
             **logger.media(media.id),
         )
-        await record_new_trailer_download(media, _profile_id, t_path)
+        await record_new_trailer_download(
+            media, _profile_id, t_path, video_type=_type_value
+        )
         event_manager.track_trailer_detected(
             media_id=media.id,
             source=source,

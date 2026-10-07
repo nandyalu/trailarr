@@ -86,8 +86,6 @@ class DatabaseLoggingHandler(logging.Handler):
             _loggername = record.name
             if "alembic" in _loggername:
                 _loggername = "AlembicMigrations"
-            elif "apscheduler" in _loggername:
-                _loggername = "Tasks"
             if "asyncio" in _loggername and record.levelno <= logging.INFO:
                 return  # Skip asyncio logs
 

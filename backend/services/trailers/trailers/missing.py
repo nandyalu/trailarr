@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 from contextlib import closing
 from dataclasses import dataclass
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from database.manager import trailerprofile
@@ -557,6 +559,9 @@ async def download_missing_trailers(
                 successful_downloads += downloads
                 skipped_items += skips
                 attempted_downloads += attempts
+            except JobCancelledError:
+                # The job was cancelled. Let it reach the scheduler.
+                raise
             except Exception:
                 logger.exception(
                     f"Trailarr could not process media '{media.title}'.",
@@ -638,6 +643,10 @@ async def _process_single_media_item(
                 # (attempt record cleared inside download_trailer on success)
                 # Phase 4: profiles no longer stop monitoring on success —
                 # every unsatisfied matching profile gets its download.
+        except JobCancelledError:
+            # The job was cancelled, not the download failed: no attempt
+            # record, no backoff. Let it reach the scheduler.
+            raise
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(
@@ -645,10 +654,10 @@ async def _process_single_media_item(
                 profile.id,
                 str(e) or type(e).__name__,
                 # The candidate that this attempt used. `download_trailer`
-                # writes it onto the media object as it resolves, and the
-                # resolver puts it last on the next run so a video that
-                # YouTube no longer has does not block the others.
-                video_id=media.youtube_trailer_id,
+                # puts it on the error it raises, and the resolver puts it
+                # last on the next run so a video that YouTube no longer
+                # has does not block the others.
+                video_id=getattr(e, "video_id", None),
             )
             logger.warning(
                 f"Trailarr could not download a trailer for '{media.title}' with"

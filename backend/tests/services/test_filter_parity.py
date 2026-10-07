@@ -48,6 +48,7 @@ def _build_download(spec: dict, index: int) -> DownloadRead:
         youtube_channel="chan",
         file_exists=spec.get("file_exists", True),
         profile_id=spec.get("profile_id", 1),
+        video_type=spec.get("video_type", "trailer"),
         added_at=added_at,
         updated_at=added_at,
     )
@@ -91,9 +92,17 @@ def _build_filter(case: dict) -> FilterRead:
 
 
 @pytest.mark.parametrize("case", FIXTURE["cases"], ids=lambda c: c["name"])
-def test_filter_parity_case(case: dict):
+def test_filter_parity_case(case: dict, monkeypatch):
     """Each shared case evaluates to its expected result."""
-    media = _build_media(FIXTURE["media"][case["media"]])
+    spec = FIXTURE["media"][case["media"]]
+    media = _build_media(spec)
+    # `has_videos` reads the mediavideo table (Phase 9, H9). The fixture
+    # gives the count; the frontend half reads the same number from
+    # `media.video_count`, which the raw list endpoint sends.
+    monkeypatch.setattr(
+        "services.filters.video_manager.read_for_media",
+        lambda media_id: [object()] * int(spec.get("video_count", 0)),
+    )
     result = matches_filters(media, [_build_filter(case)])
     assert result is case["expected"]
 
@@ -107,8 +116,14 @@ def test_fixture_covers_every_download_field():
         VIRTUAL_BOOL_COLS,
         VIRTUAL_DATE_COLS,
         VIRTUAL_INT_COLS,
+        VIRTUAL_STR_COLS,
     )
 
     covered = {c["filter_by"] for c in FIXTURE["cases"]}
-    expected = set(VIRTUAL_BOOL_COLS + VIRTUAL_INT_COLS + VIRTUAL_DATE_COLS)
+    expected = set(
+        VIRTUAL_BOOL_COLS
+        + VIRTUAL_INT_COLS
+        + VIRTUAL_DATE_COLS
+        + VIRTUAL_STR_COLS
+    )
     assert expected <= covered, expected - covered

@@ -22,6 +22,7 @@ from database.models.event import EventSource
 from database.models.filefolderinfo import FileFolderInfoRead
 from database.models.download import DownloadRead
 from database.models.media import MediaRead
+from database.models.video_type import is_trailer_type, video_type_label
 from services.trailers import trailer_search
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils as trailer_utils
@@ -384,7 +385,11 @@ async def update_download_profile(
                 ),
             )
         profile = trailerprofile.get_trailerprofile(profile_id)
-        download_manager.update_profile_id(download_id, profile_id)
+        # The person says what the file is: the download takes the type
+        # of the profile (Phase 9). The assignment is user-owned state.
+        download_manager.update_profile_id(
+            download_id, profile_id, video_type=profile.video_type
+        )
         event_manager.track_download_attributed(
             media_id=media_id,
             download_name=download.file_name,
@@ -588,9 +593,15 @@ async def monitor_media(media_id: int, monitor: bool = True) -> str:
             "description": "Invalid YouTube URL/ID",
         },
     },
+    deprecated=True,
 )
 async def update_yt_id(media_id: int, yt_id: str) -> str:
-    """Set the YouTube ID of the trailer for one media item. \n
+    """Add the trailer that you chose for one media item. \n
+    🚨Deprecated, use `POST /media/{media_id}/videos` instead.🚨 \n
+    Phase 9 removed the `youtube_trailer_id` field (H9). This endpoint
+    now adds the id as a known video of type `trailer`, which is what
+    `POST /media/{media_id}/videos` does. An empty id is rejected: use
+    `DELETE /media/{media_id}/videos/{video_id}` to remove a video. \n
     Args:
         media_id (int): ID of the media item.
         yt_id (str): The YouTube ID, or a YouTube URL to read it from. \n
@@ -598,30 +609,12 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
         str: A line that says what changed.
     """
     logger.info(
-        f"Trailarr updates the YouTube ID of this media item.",
+        "Trailarr adds the trailer that you chose for this media item.",
         **logger.media(media_id),
     )
-    # Check if yt_id is a URL and extract the ID
-    if yt_id and yt_id.startswith("http"):
-        _yt_id = trailer_utils.extract_youtube_id(yt_id)
-        if not _yt_id:
-            msg = "Invalid YouTube URL/ID!"
-            await websockets.ws_manager.broadcast(msg, "Error")
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail="Invalid YouTube URL/ID!",
-            )
-        yt_id = _yt_id
-    # If id is not empty, check if it is valid (length > 11)
-    if yt_id and len(yt_id) < 11:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Invalid YouTube ID!",
-        )
+    video_id = _read_youtube_id(yt_id)
     try:
-        msg = media_service.set_youtube_id(media_id, yt_id)
-        await websockets.ws_manager.broadcast(msg, "Success", reload="media")
-        return msg
+        media_service.add_video(media_id, video_id, video_type="trailer")
     except Exception as e:
         raise errors.as_http_error(
             e,
@@ -629,6 +622,9 @@ async def update_yt_id(media_id: int, yt_id: str) -> str:
             action="Update the YouTube ID",
             safe_status=status.HTTP_404_NOT_FOUND,
         )
+    msg = "Trailarr added the trailer that you chose."
+    await websockets.ws_manager.broadcast(msg, "Success", reload="media")
+    return msg
 
 
 @media_router.get(
@@ -685,7 +681,7 @@ async def get_media_videos(media_id: int) -> list[MediaVideoRead]:
     },
 )
 async def add_media_video(
-    media_id: int, yt_id: str, language: str = ""
+    media_id: int, yt_id: str, language: str = "", video_type: str = "trailer"
 ) -> MediaVideoRead:
     """Add a video that you chose for one media item. \n
     Trailarr tries your video before every other source, and no task ever
@@ -695,13 +691,18 @@ async def add_media_video(
         yt_id (str): The YouTube ID, or a YouTube URL to read it from.
         language (str, Optional=""): The language the video is in, as a
             2-letter code. A profile that asks for that language can then
-            use it. Empty suits a profile that takes any language. \n
+            use it. Empty suits a profile that takes any language.
+        video_type (str, Optional="trailer"): What the video is: `trailer`,
+            `teaser`, `clip`, `featurette`, `behind_the_scenes`, `bloopers`
+            or `other`. A profile of that type can then use it. \n
     Returns:
         MediaVideoRead: The video that was added.
     """
     video_id = _read_youtube_id(yt_id)
     try:
-        row = media_service.add_video(media_id, video_id, language or None)
+        row = media_service.add_video(
+            media_id, video_id, language or None, video_type=video_type
+        )
     except Exception as e:
         raise errors.as_http_error(
             e,
@@ -804,12 +805,27 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     )
     media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
+    if not is_trailer_type(profile.video_type):
+        # Decision 5 of Phase 9: only a trailer profile searches YouTube.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"The profile '{profile.customfilter.filter_name}' downloads"
+                f" a {video_type_label(profile.video_type).lower()}, and"
+                " Trailarr does not search YouTube for that video type."
+                " It takes these videos from TMDB only."
+            ),
+        )
 
     if yt_id := trailer_search.search_yt_for_trailer(media, profile):
-        media_manager.update_ytid(media_id, yt_id)
+        # The result is remembered as a SEARCH video, so the next run does
+        # not search again and the Known videos list shows it (Phase 9
+        # dropped the `media.youtube_trailer_id` column, H9).
+        old_yt_id = media_service.first_video_id(media_id)
+        trailer_search._remember_search_result(media, yt_id)
         event_manager.track_youtube_id_changed(
             media_id=media_id,
-            old_yt_id=media.youtube_trailer_id,
+            old_yt_id=old_yt_id,
             new_yt_id=yt_id,
             source=EventSource.USER,
             source_detail="UserSearch",

@@ -14,6 +14,7 @@ from app_logger import ModuleLogger
 from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models import video_type as video_types
 from services.trailers import video_analysis
 from services.trailers.video_analysis import VideoInfo
 from exceptions import (
@@ -103,6 +104,8 @@ def get_trailer_filename(
     ext: str,
     increment_index: int,
     video_info: VideoInfo | None = None,
+    *,
+    video_id: str = "",
 ) -> str:
     """Get the trailer filename based on app settings. \n
     Args:
@@ -111,7 +114,9 @@ def get_trailer_filename(
         ext (str): Extension of the trailer file.
         increment_index (int): Index to increment the trailer number.
         video_info (VideoInfo | None): Actual downloaded video info for
-            accurate naming. Falls back to profile settings if None. \n
+            accurate naming. Falls back to profile settings if None.
+        video_id (str): The YouTube id of the video being downloaded, for
+            the `{youtube_id}` token. Empty when it is not known. \n
     Returns:
         str: Trailer filename."""
     if increment_index == 1:
@@ -129,7 +134,10 @@ def get_trailer_filename(
     # Replace the media filename with the filename without extension
     title_opts["media_filename"] = Path(media.media_filename).stem
     title_opts["is_movie"] = "movie" if media.is_movie else "series"
-    title_opts["youtube_id"] = media.youtube_trailer_id
+    title_opts["youtube_id"] = video_id or ""
+    # The suffix that Plex and Jellyfin read for the type of the profile:
+    # 'trailer', 'featurette', 'scene', ... (decision 6 of Phase 9).
+    title_opts["video_type"] = video_types.file_suffix(profile.video_type)
     # Use actual downloaded resolution/codecs if available, else fallback to profile
     if video_info:
         resolution, vcodec, acodec = _extract_video_details(video_info)
@@ -149,12 +157,15 @@ def get_trailer_filename(
     else:
         # If increment index > 0 and not in title format, add it
         if "{ii}" not in title_format:
-            # If title format ends with "-trailer.{ext}", add increment index before it
-            if title_format.endswith("-trailer.{ext}"):
+            # A player reads the type from the end of the name, so the
+            # index goes before a type suffix: `-trailer.{ext}`,
+            # `-featurette.{ext}` or the `{video_type}` token.
+            suffix = _type_suffix_at_end(title_format)
+            if suffix:
                 title_format = title_format.replace(
-                    "-trailer.{ext}", "{ii}-trailer.{ext}"
+                    suffix, "{ii}" + suffix
                 )
-            # If title format does not end with "-trailer.{ext}",
+            # If title format does not end with a type suffix,
             # add increment index before extension
             else:
                 title_format = title_format.replace(".{ext}", "{ii}.{ext}")
@@ -169,6 +180,21 @@ def get_trailer_filename(
     return filename
 
 
+def _type_suffix_at_end(title_format: str) -> str | None:
+    """The type suffix a file name template ends with, or None.
+
+    Example: `-trailer.{ext}` for the default template, and
+    `-{video_type}.{ext}` for a template that uses the token.
+    """
+    if title_format.endswith("-{video_type}.{ext}"):
+        return "-{video_type}.{ext}"
+    for suffix in set(video_types.FILE_SUFFIXES.values()):
+        candidate = f"-{suffix}.{{ext}}"
+        if title_format.endswith(candidate):
+            return candidate
+    return None
+
+
 def get_trailer_path(
     src_path: str | Path,
     dst_folder_path: str | Path,
@@ -176,6 +202,8 @@ def get_trailer_path(
     profile: TrailerProfileRead,
     increment_index: int = 1,
     video_info: VideoInfo | None = None,
+    *,
+    video_id: str = "",
 ) -> str:
     """Get the destination path for the trailer file. \n
     Checks if <new_title> - Trailer-trailer<ext> exists in the destination folder. \n
@@ -191,7 +219,9 @@ def get_trailer_path(
         media (MediaRead): MediaRead object.
         profile (TrailerProfileRead): Trailer Profile used to download.
         increment_index (int): Index to increment the trailer number.
-        video_info (VideoInfo | None): Actual downloaded video info. \n
+        video_info (VideoInfo | None): Actual downloaded video info.
+        video_id (str): The YouTube id of the video, for the
+            `{youtube_id}` token. Empty when it is not known. \n
     Returns:
         str: Destination path for the trailer file."""
     if increment_index == 1:
@@ -205,7 +235,7 @@ def get_trailer_path(
 
     # Format the title to get the new filename
     filename = get_trailer_filename(
-        media, profile, _ext, increment_index, video_info
+        media, profile, _ext, increment_index, video_info, video_id=video_id
     )
 
     # Get the destination path
@@ -222,6 +252,7 @@ def get_trailer_path(
             profile,
             increment_index + 1,
             video_info,
+            video_id=video_id,
         )
     logger.debug(f"Trailer path: {dst_file_path}")
     return str(dst_file_path)
@@ -232,6 +263,8 @@ def move_trailer_to_folder(
     media: MediaRead,
     profile: TrailerProfileRead,
     video_info: VideoInfo | None = None,
+    *,
+    video_id: str = "",
 ) -> str:
     """Move the trailer file to the specified folder.
     Args:
@@ -239,6 +272,8 @@ def move_trailer_to_folder(
         media (MediaRead): MediaRead object.
         profile (TrailerProfileRead): Trailer Profile used to download.
         video_info (VideoInfo | None): Actual downloaded video info.
+        video_id (str): The YouTube id of the video, for the
+            `{youtube_id}` token. Empty when it is not known.
     Raises:
         FileNotFoundError: If the trailer file is not found at the source path.
         FolderPathEmptyError: If the media folder path is empty.
@@ -271,11 +306,17 @@ def move_trailer_to_folder(
         if profile.folder_enabled:
             folder_name = profile.folder_name.strip()
             if not folder_name:
+                # The folder that both players read for the type of the
+                # profile: 'Trailers', 'Featurettes', 'Scenes', ...
+                folder_name = video_types.folder_name(profile.video_type)
                 logger.debug(
                     "Folder name is empty, using default folder name:"
-                    " 'Trailers'"
+                    f" '{folder_name}'"
                 )
-                folder_name = "Trailers"
+            # The template token for the per-type folder name.
+            folder_name = folder_name.replace(
+                "{video_type}", video_types.folder_name(profile.video_type)
+            )
             # Create a separate folder for trailers if enabled
             dst_folder_path = media_folder / folder_name
         else:
@@ -288,7 +329,10 @@ def move_trailer_to_folder(
         # Replace the media filename with the filename without extension
         title_opts["media_filename"] = Path(media.media_filename).stem
         title_opts["is_movie"] = "movie" if media.is_movie else "series"
-        title_opts["youtube_id"] = media.youtube_trailer_id
+        title_opts["youtube_id"] = video_id or ""
+        title_opts["video_type"] = video_types.folder_name(
+            profile.video_type
+        )
         # Use actual downloaded info if available, else fallback to profile
         if video_info:
             resolution, vcodec, acodec = _extract_video_details(video_info)
@@ -325,7 +369,12 @@ def move_trailer_to_folder(
     # Construct the new filename
     dst_file_path = Path(
         get_trailer_path(
-            src_path, dst_folder_path, media, profile, video_info=video_info
+            src_path,
+            dst_folder_path,
+            media,
+            profile,
+            video_info=video_info,
+            video_id=video_id,
         )
     )
     logger.debug(f"Moving trailer from '{src_path}' to '{dst_file_path}'")
