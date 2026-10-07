@@ -27,6 +27,9 @@ export interface Download {
   youtube_channel: string;
   file_exists: boolean;
   profile_id: number; // ID of the TrailerProfile used
+  /** The kind of video: 'trailer', 'teaser', ... (Phase 9). 'trailer' when
+   * the backend does not send it yet. */
+  video_type: string;
   media_id: number;
   added_at: Date; // When trailer was downloaded
   updated_at: Date; // When file was last modified
@@ -46,6 +49,7 @@ export function mapDownload(download: any): Download {
   return {
     ...download,
     file_exists: Boolean(download.file_exists),
+    video_type: download.video_type || 'trailer',
     added_at: parseDate(download.added_at),
     updated_at: parseDate(download.updated_at),
   };
@@ -96,7 +100,6 @@ export interface Media {
   season_count: number;
   overview: string;
   runtime: number;
-  youtube_trailer_id: string;
   folder_path: string;
   imdb_id: string;
   txdb_id: string;
@@ -116,6 +119,10 @@ export interface Media {
   downloaded_at: Date;
   downloads: Download[];
   files: FileFolderInfo | null;
+  /** How many videos Trailarr knows for this item (the `mediavideo` rows).
+   * Not a column: the raw list endpoint computes it, and the `has_videos`
+   * filter reads it. Phase 9 dropped `youtube_trailer_id` (H9). */
+  video_count: number;
 
   plex_rating_key: string | null;
   plex_connection_id: number | null;
@@ -139,6 +146,7 @@ export function mapMedia(media: any): Media {
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),
+    video_count: Number(media.video_count ?? 0),
     isImageLoaded: false,
   };
 }
@@ -147,7 +155,6 @@ export interface SearchMedia {
   id: number;
   title: string;
   year: number;
-  youtube_trailer_id: string;
   imdb_id: string;
   txdb_id: string;
   tmdb_id: number | null;

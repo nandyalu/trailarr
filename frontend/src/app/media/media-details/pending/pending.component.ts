@@ -2,7 +2,9 @@ import {DatePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {MediaPendingProfile} from 'src/app/models/pending';
+import {videoTypeLabel} from 'src/app/models/trailerprofile';
 import {MediaService} from 'src/app/services/media.service';
+import {ProfileService} from 'src/app/services/profile.service';
 
 /** Per-profile download matrix (Phase 3): renders GET /media/{id}/pending —
  * which profiles match this item, which are satisfied by which download,
@@ -17,6 +19,21 @@ import {MediaService} from 'src/app/services/media.service';
 })
 export class PendingComponent {
   private readonly mediaService = inject(MediaService);
+  private readonly profileService = inject(ProfileService);
+
+  /** The type of video a row is about (Phase 9): the type of the download
+   * that satisfies the profile, or else the type the profile downloads. A
+   * download or profile with no stored type is a trailer. */
+  protected typeLabel(profile: MediaPendingProfile): string {
+    const download = profile.satisfied_by
+      ? (this.mediaService.selectedMedia()?.downloads ?? []).find((d) => d.id === profile.satisfied_by)
+      : undefined;
+    if (download) {
+      return videoTypeLabel(download.video_type || 'trailer');
+    }
+    const stored = this.profileService.allProfiles.value().find((p) => p.id === profile.profile_id);
+    return videoTypeLabel(stored?.video_type || 'trailer');
+  }
 
   protected readonly pendingView = computed(() => this.mediaService.mediaPendingResource.value());
   protected readonly profiles = computed(() => this.pendingView()?.profiles ?? []);

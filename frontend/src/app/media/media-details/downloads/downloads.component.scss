@@ -246,3 +246,15 @@
   font-size: 0.875rem;
   color: var(--color-on-surface-variant);
 }
+
+/* The type of the download (Phase 9): a small MD3 tonal chip. */
+.type-badge {
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.35rem;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

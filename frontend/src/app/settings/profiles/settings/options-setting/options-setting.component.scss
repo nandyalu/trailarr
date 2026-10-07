@@ -44,6 +44,7 @@
 
 .options-bar {
   display: flex;
+  flex-wrap: wrap; // a bar with many options (Video Type) wraps on a phone
   padding: 0.2rem;
   background-color: var(--color-surface-container-high);
   border-radius: 0.625rem;

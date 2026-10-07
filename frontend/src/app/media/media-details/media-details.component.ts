@@ -8,6 +8,8 @@ import {RemoveStartingSlashPipe} from 'src/app/shared/pipes/remove-starting-slas
 import {ConnectionService} from 'src/app/services/connection.service';
 import {LoadIndicatorComponent} from 'src/app/shared/load-indicator';
 import {MediaVideo} from 'src/app/models/media';
+import {DEFAULT_VIDEO_TYPE, TrailerProfileRead, VIDEO_TYPE_OPTIONS, VIDEO_TYPES, videoTypeLabel} from 'src/app/models/trailerprofile';
+import {ProfileService} from 'src/app/services/profile.service';
 import {RouteMedia} from 'src/routing';
 import {DurationConvertPipe} from '../../shared/pipes/duration-pipe';
 import {MediaService} from '../../services/media.service';
@@ -17,6 +19,40 @@ import {DownloadsComponent} from './downloads/downloads.component';
 import {FilesComponent} from './files/files.component';
 import {MediaEventsComponent} from './media-events/media-events.component';
 import {PendingComponent} from './pending/pending.component';
+
+/** The known videos of one type, in the order the server sent them. */
+export interface VideoGroup {
+  type: string;
+  label: string;
+  videos: MediaVideo[];
+}
+
+/** The stored type of a video, read defensively: an empty or unknown value
+ * is a trailer, as the backend's `normalize_video_type` reads it. */
+export function normalizeVideoType(value: string | null | undefined): string {
+  const normalized = (value ?? '').trim().toLowerCase();
+  return VIDEO_TYPES.includes(normalized) ? normalized : DEFAULT_VIDEO_TYPE;
+}
+
+/** Groups videos by type: Trailer first, then the other types in the order
+ * of the enum. Inside a group the server order stays — it is the order the
+ * resolver tries them. TMDB lists featurettes before trailers for some
+ * titles, so an ungrouped list hid the trailer. */
+export function groupVideosByType(videos: MediaVideo[]): VideoGroup[] {
+  const groups = new Map<string, MediaVideo[]>();
+  for (const video of videos) {
+    const type = normalizeVideoType(video.video_type);
+    if (!groups.has(type)) {
+      groups.set(type, []);
+    }
+    groups.get(type)!.push(video);
+  }
+  return VIDEO_TYPES.filter((type) => groups.has(type)).map((type) => ({
+    type,
+    label: videoTypeLabel(type),
+    videos: groups.get(type)!,
+  }));
+}
 
 @Component({
   selector: 'app-media-details',
@@ -43,6 +79,7 @@ import {PendingComponent} from './pending/pending.component';
 export class MediaDetailsComponent {
   private readonly mediaService = inject(MediaService);
   private readonly connectionService = inject(ConnectionService);
+  private readonly profileService = inject(ProfileService);
   private readonly webSocketService = inject(WebsocketService);
   private readonly viewContainerRef = inject(ViewContainerRef);
   private readonly router = inject(Router);
@@ -56,7 +93,6 @@ export class MediaDetailsComponent {
   isLoading = computed(() => this.mediaService.mediaResource.isLoading());
   isLoadingMonitor = signal<boolean>(false);
   isLoadingDownload = signal<boolean>(false);
-  trailer_url: string = '';
   arr_url = computed(() => {
     let media = this.selectedMedia();
     if (!media) return '';
@@ -97,28 +133,45 @@ export class MediaDetailsComponent {
   });
 
   /** Every video Trailarr knows for this item, in the order it would use
-   * them. The first one is what a download takes right now. */
+   * them. The first one is what a trailer download takes right now. */
   readonly knownVideos = signal<MediaVideo[]>([]);
+
+  /** The known videos by type, Trailer first. */
+  readonly videoGroups = computed(() => groupVideosByType(this.knownVideos()));
+
+  /** The video the Watch button opens: the first one in resolver order,
+   * which is what a download takes. Phase 9 dropped the stored YouTube id,
+   * so the list is the only record. */
+  readonly firstVideo = computed<MediaVideo | null>(() => this.knownVideos()[0] ?? null);
+
+  /** The 7 types a video can be, for the add form. */
+  readonly videoTypeOptions = VIDEO_TYPE_OPTIONS;
+
+  /** What the user typed into the add form: a YouTube id or URL. */
+  newVideoUrl = '';
 
   /** The language of the video being added, as a 2-letter code. Empty
    * means the video suits a profile that takes any language. */
   videoLanguage = '';
 
+  /** The type of the video being added. */
+  newVideoType: string = DEFAULT_VIDEO_TYPE;
+
   mediaDataChangeEffect = effect(() => {
     const media = this.selectedMedia();
     if (media) {
-      this.trailer_url = media.youtube_trailer_id || '';
       this.isLoadingDownload.set(media.status === 'downloading');
-      // if (media.status !== 'downloading') {
-      //   this.isLoadingDownload.set(false);
-      // }
     }
   });
 
   handleKeyboardEvent(event: KeyboardEvent) {
     // Check if the active element is an input, textarea, or contenteditable element
     const activeElement = document.activeElement as HTMLElement;
-    const isInputField = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
+    const isInputField =
+      activeElement.tagName === 'INPUT' ||
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.tagName === 'SELECT' ||
+      activeElement.isContentEditable;
     // Skip if Ctrl, Alt, or Meta key is pressed
     if (event.ctrlKey || event.altKey || event.metaKey) {
       return;
@@ -169,21 +222,45 @@ export class MediaDetailsComponent {
   }
 
   /**
-   * Downloads the trailer for the current media.
+   * Downloads a video for the current media with a profile.
    *
-   * This method sets the loading state to true and initiates the download process via the media service.
-   * Once the download is complete, the loading state is set to false.
+   * Without a video id the backend picks the video: the first known video
+   * of the profile's type, or a YouTube search for a trailer profile. With
+   * one, it downloads that video.
    *
-   * @param {number} profileId - The ID of the profile to use for downloading the trailer.
-   *
-   * @returns {void}
+   * @param {number} profileId - The ID of the profile to use.
+   * @param {string} videoId - The YouTube id to download, or empty.
    */
-  downloadTrailer(profileId: number): void {
+  downloadTrailer(profileId: number, videoId: string = ''): void {
     this.isLoadingDownload.set(true);
-    // console.log('Downloading trailer');
-    this.mediaService.downloadMediaTrailer(this.mediaId(), profileId, this.trailer_url).subscribe((res: string) => {
-      console.log(res);
-    });
+    this.mediaService
+      .downloadMediaTrailer(this.mediaId(), profileId, videoId)
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not start the download.', 'Error');
+          this.isLoadingDownload.set(false);
+          return of('');
+        }),
+      )
+      .subscribe((res: string) => {
+        if (res) {
+          console.log(res);
+        }
+      });
+  }
+
+  /** The profiles that download the given type of video. A profile with no
+   * stored type is a trailer profile. */
+  profilesForType(videoType: string | null | undefined): TrailerProfileRead[] {
+    const wanted = normalizeVideoType(videoType);
+    return this.profileService.allProfiles.value().filter((profile) => normalizeVideoType(profile.video_type) === wanted);
+  }
+
+  /** Downloads one known video with the chosen profile. */
+  downloadKnownVideo(video: MediaVideo, profileId: number, popover: HTMLElement) {
+    popover.hidePopover();
+    this.webSocketService.showToast(`Downloading ${video.name || video.video_id}...`);
+    this.downloadTrailer(profileId, video.video_id);
   }
 
   /**
@@ -225,12 +302,17 @@ export class MediaDetailsComponent {
       });
   }
 
-  /** Adds the video in the box as one the user chose. */
+  /** Adds the video in the add form as one the user chose, with its
+   * language and type. */
   addChosenVideo() {
+    const url = this.newVideoUrl.trim();
+    if (!url) {
+      return;
+    }
     this.webSocketService.showToast('Saving your video...');
     this.isLoadingDownload.set(true);
     this.mediaService
-      .addMediaVideo(this.mediaId(), this.trailer_url.trim(), this.videoLanguage.trim())
+      .addMediaVideo(this.mediaId(), url, this.videoLanguage.trim(), this.newVideoType)
       .pipe(
         catchError((error) => {
           this.webSocketService.showToast(error.error?.detail || 'Could not add the video.', 'Error');
@@ -241,7 +323,9 @@ export class MediaDetailsComponent {
       .subscribe((row) => {
         this.isLoadingDownload.set(false);
         if (row) {
+          this.newVideoUrl = '';
           this.videoLanguage = '';
+          this.newVideoType = DEFAULT_VIDEO_TYPE;
           this.loadKnownVideos();
         }
       });
@@ -300,45 +384,26 @@ export class MediaDetailsComponent {
     }
   }
 
+  /** How a type reads on the page. */
+  typeLabel(videoType: string | null | undefined): string {
+    return videoTypeLabel(normalizeVideoType(videoType));
+  }
+
   youtubeLink(videoId: string): string {
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
 
-  saveYtId() {
-    // An id that a person types is a video that person chose, so it goes
-    // in as one, with the language they say it is in. An empty box still
-    // goes through the old call, which clears the stored id.
-    if (this.trailer_url?.trim()) {
-      this.addChosenVideo();
-      return;
-    }
-    this.webSocketService.showToast('Saving youtube id...');
-    this.isLoadingDownload.set(true);
-    this.mediaService
-      .saveMediaTrailer(this.mediaId(), this.trailer_url)
-      .pipe(
-        catchError((error) => {
-          console.error('Error searching trailer:', error.error.detail);
-          this.webSocketService.showToast(error.error.detail, 'Error');
-          this.isLoadingDownload.set(false);
-          return of('');
-        }),
-      )
-      .subscribe(() => {
-        this.isLoadingDownload.set(false);
-      });
-  }
-
   /**
-   * Opens a new browser tab to play the YouTube trailer of the current media.
-   * If the media does not have a YouTube trailer ID, the function returns without doing anything.
+   * Opens a new browser tab to play the first known video: the one a
+   * download would take. Does nothing when Trailarr knows no video.
    *
    * @returns {void}
    */
   openTrailer(): void {
-    if (!this.selectedMedia()?.youtube_trailer_id) {
+    const video = this.firstVideo();
+    if (!video) {
       return;
     }
-    window.open(`https://www.youtube.com/watch?v=${this.selectedMedia()?.youtube_trailer_id}`, '_blank');
+    window.open(this.youtubeLink(video.video_id), '_blank');
   }
 }

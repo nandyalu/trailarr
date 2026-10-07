@@ -376,7 +376,7 @@ export class MediaService {
             // Exactly 4 digits → year (exact)
             if (m.year !== parseInt(f, 10)) return false;
           } else {
-            // Everything else → language, imdb_id, tmdb_id, tvdb_id, txdb_id, studio, youtube_trailer_id
+            // Everything else → language, imdb_id, tmdb_id, tvdb_id, txdb_id, studio
             const fl = f.toLowerCase();
             if (
               !m.language.toLowerCase().includes(fl) &&
@@ -384,8 +384,7 @@ export class MediaService {
               !String(m.tmdb_id ?? '').includes(fl) &&
               !String(m.tvdb_id ?? '').includes(fl) &&
               !(m.txdb_id ?? '').toLowerCase().includes(fl) &&
-              !(m.studio ?? '').toLowerCase().includes(fl) &&
-              !(m.youtube_trailer_id ?? '').toLowerCase().includes(fl)
+              !(m.studio ?? '').toLowerCase().includes(fl)
             )
               return false;
           }
@@ -502,19 +501,6 @@ export class MediaService {
   }
 
   /**
-   * Saves the media trailer by sending a POST request to update the media with the given YouTube ID.
-   *
-   * @param {number} mediaID - The ID of the media to update.
-   * @param {string} ytID - The YouTube ID of the trailer to be saved.
-   * @returns {Observable<any>} An observable that emits the response from the server.
-   */
-  saveMediaTrailer(mediaID: number, ytID: string): Observable<any> {
-    const url = `${this.mediaUrl}${mediaID}/update`;
-    const params = new HttpParams().set('yt_id', ytID);
-    return this.httpClient.post(url, {}, {params: params});
-  }
-
-  /**
    * Gets every video Trailarr knows for a media item, best first.
    *
    * @param {number} mediaID - The ID of the media item.
@@ -534,12 +520,17 @@ export class MediaService {
    * @param {string} language - The language the video is in, as a 2-letter
    * code. A profile asking for that language can then use it. Empty suits a
    * profile that takes any language.
+   * @param {string} videoType - What the video is: 'trailer', 'teaser',
+   * 'featurette', ... (Phase 9). A profile of that type can then use it.
    * @returns {Observable<MediaVideo>} The video that was added.
    */
-  addMediaVideo(mediaID: number, ytID: string, language: string = ''): Observable<MediaVideo> {
+  addMediaVideo(mediaID: number, ytID: string, language: string = '', videoType: string = 'trailer'): Observable<MediaVideo> {
     let params = new HttpParams().set('yt_id', ytID);
     if (language) {
       params = params.set('language', language);
+    }
+    if (videoType && videoType !== 'trailer') {
+      params = params.set('video_type', videoType);
     }
     return this.httpClient.post<MediaVideo>(`${this.mediaUrl}${mediaID}/videos`, {}, {params: params});
   }

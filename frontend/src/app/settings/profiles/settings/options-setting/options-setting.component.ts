@@ -17,6 +17,9 @@ export class OptionsSettingComponent {
   descriptionExtra = input<string>('');
   options = input.required<string[]>();
   disabledOptions = input<string[]>([]);
+  /** What a person reads for an option, by its value. An option without a
+   * label shows its value. */
+  optionLabels = input<Record<string, string>>({});
   // Nullish-safe: bound values can be undefined while a settings/profile
   // resource is loading — plain String() would render "undefined"/"null"
   selectedOption = input('', {
@@ -48,6 +51,10 @@ export class OptionsSettingComponent {
     }
 
     return classes;
+  }
+
+  optionLabel(option: string): string {
+    return this.optionLabels()[option] ?? option;
   }
 
   onOptionClick(option: string): void {

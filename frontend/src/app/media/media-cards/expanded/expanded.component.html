@@ -20,59 +20,40 @@
           @if (hasField('overview') && media.overview) {
             <p class="expanded-overview">{{ media.overview }}</p>
           }
+          @let block = getTrailerBlock(media);
           <div class="expanded-tags">
-            @if (hasField('runtime') && media.runtime) {
-              <span class="expanded-tag">{{ media.runtime | durationConvert }}</span>
+            @for (field of mediaTagFields(); track field.key) {
+              @if (field.date) {
+                @let dateValue = getDateValue(field, media);
+                @if (dateValue) {
+                  <span class="expanded-tag">{{ field.tagPrefix }}: {{ dateValue | date: 'mediumDate' }}</span>
+                }
+              } @else {
+                @let tag = getTagValue(field, media);
+                @if (tag !== null) {
+                  <span class="expanded-tag" [class.expanded-tag-path]="field.path" [attr.title]="field.path ? tag : null">{{ tag }}</span>
+                }
+              }
             }
-            @if (hasField('language') && media.language) {
-              <span class="expanded-tag">{{ media.language }}</span>
-            }
-            @if (hasField('studio') && media.studio) {
-              <span class="expanded-tag">{{ media.studio }}</span>
-            }
-            @if (hasField('season_count') && !media.is_movie && media.season_count) {
-              <span class="expanded-tag">{{ media.season_count }} Season{{ media.season_count !== 1 ? 's' : '' }}</span>
-            }
-            @if (hasField('status')) {
-              <span class="expanded-tag">{{ media.status }}</span>
-            }
-            @if (hasField('monitor')) {
-              <span class="expanded-tag">{{ media.monitor ? 'Monitored' : 'Unmonitored' }}</span>
-            }
-            @if (hasField('arr_monitored')) {
-              <span class="expanded-tag">Arr: {{ media.arr_monitored ? 'Monitored' : 'Unmonitored' }}</span>
-            }
-            @if (hasField('media_exists')) {
-              <span class="expanded-tag">Media: {{ media.media_exists ? 'Yes' : 'No' }}</span>
-            }
-            @if (hasField('imdb_id') && media.imdb_id) {
-              <span class="expanded-tag">IMDB: {{ media.imdb_id }}</span>
-            }
-            @if (hasField('txdb_id') && media.txdb_id) {
-              <span class="expanded-tag">TVDB/TMDB: {{ media.txdb_id }}</span>
-            }
-            @if (hasField('folder_path') && media.folder_path) {
-              <span class="expanded-tag expanded-tag-path" [title]="media.folder_path">{{ media.folder_path }}</span>
-            }
-            @if (hasField('media_filename') && media.media_filename) {
-              <span class="expanded-tag expanded-tag-path" [title]="media.media_filename">{{ media.media_filename }}</span>
-            }
-            @if (hasField('added_at') && media.added_at) {
-              <span class="expanded-tag">Added: {{ media.added_at | date: 'mediumDate' }}</span>
-            }
-            @if (hasField('updated_at') && media.updated_at) {
-              <span class="expanded-tag">Updated: {{ media.updated_at | date: 'mediumDate' }}</span>
-            }
-            @if (hasField('downloaded_at') && media.downloaded_at) {
-              <span class="expanded-tag">Downloaded: {{ media.downloaded_at | date: 'mediumDate' }}</span>
-            }
-            @if (hasField('plex_rating_key') && media.plex_rating_key) {
-              <span class="expanded-tag">Plex Key: {{ media.plex_rating_key }}</span>
-            }
-            @if (hasField('plex_trailer')) {
-              <span class="expanded-tag">Plex Trailer: {{ media.plex_trailer ? 'Yes' : 'No' }}</span>
+            @if (showTrailerCount()) {
+              <span class="expanded-tag">Trailers: {{ block.count }}</span>
             }
           </div>
+          @if (trailerTagFields().length > 0) {
+            <!-- One row of tags per active trailer, newest first. The whole card opens the details page. -->
+            @for (trailer of block.shown; track trailer.id) {
+              <div class="expanded-tags expanded-trailer-tags">
+                @for (field of trailerTagFields(); track field.key) {
+                  <span class="expanded-tag expanded-trailer-tag">{{ getTrailerValue(field, trailer) }}</span>
+                }
+              </div>
+            }
+            @if (block.more > 0) {
+              <div class="expanded-tags expanded-trailer-tags">
+                <span class="expanded-tag expanded-trailer-more">+{{ block.more }} more</span>
+              </div>
+            }
+          }
         </div>
       </div>
     </app-media-card-shell>

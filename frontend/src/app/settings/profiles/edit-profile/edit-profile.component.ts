@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Router} from '@angular/router';
-import {TrailerProfileCreate} from 'src/app/models/trailerprofile';
+import {isTrailerType, TrailerProfileCreate, VIDEO_TYPE_LABELS, VIDEO_TYPES} from 'src/app/models/trailerprofile';
 import {CustomFilter} from 'src/app/models/customfilter';
 import {ArrType} from 'src/app/models/connection';
 import {ConnectionService} from 'src/app/services/connection.service';
@@ -25,6 +25,7 @@ import {RangeSettingComponent} from '../settings/range-setting/range-setting.com
 import {TextSettingComponent} from '../settings/text-setting/text-setting.component';
 import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component';
 import {countUnknownVideos, unknownVideosNote} from './unknown-videos';
+import {nonTrailerPlexNote, nonTrailerSearchNote} from './video-type';
 
 @Component({
   selector: 'app-edit-profile',
@@ -72,8 +73,20 @@ export class EditProfileComponent {
     if (_profile && _profile.min_duration) {
       return _profile.min_duration + 60;
     }
-    return 90; // Default to 30 + 60 seconds (11 minutes)
+    return 90; // Default to 30 + 60 seconds (1.5 minutes)
   });
+
+  videoTypeOptions = VIDEO_TYPES;
+  videoTypeLabels = VIDEO_TYPE_LABELS;
+
+  /** True when the profile downloads a trailer, the only type that can
+   * search YouTube. A profile without a type is a trailer profile. The
+   * search-only settings and Skip If Plex Has Trailer show for it alone. */
+  readonly isTrailerProfile = computed(() => isTrailerType(this.profile()?.video_type));
+  /** The banner at the top of the Search section of a non-trailer profile. */
+  readonly nonTrailerSearchNote = computed(() => nonTrailerSearchNote(this.profile()?.video_type));
+  /** The note in place of Skip If Plex Has Trailer on a non-trailer profile. */
+  readonly nonTrailerPlexNote = computed(() => nonTrailerPlexNote(this.profile()?.video_type));
 
   trueFalseOptions = ['true', 'false'];
   fileFormatOptions = ['mkv', 'mp4', 'webm'];

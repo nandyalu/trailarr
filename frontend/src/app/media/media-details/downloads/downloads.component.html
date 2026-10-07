@@ -38,6 +38,8 @@
                 <h4 class="download-title">{{ download.file_name }} (Deleted)</h4>
               }
               <div class="download-meta">
+                <span class="meta-item type-badge" [title]="'This download is a ' + typeLabel(download).toLowerCase()">{{ typeLabel(download) }}</span>
+                <span class="meta-separator">•</span>
                 <span class="meta-item">{{ download.resolution }}p</span>
                 <span class="meta-separator">•</span>
                 <span class="meta-item">{{ download.video_format }}</span>

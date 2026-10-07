@@ -15,10 +15,19 @@ import {FieldTree, form, FormField, submit} from '@angular/forms/signals';
 import {firstValueFrom} from 'rxjs';
 import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
 import {CustomFilter, CustomFilterCreate, FilterCreate, FilterType} from 'src/app/models/customfilter';
+import {VIDEO_TYPE_OPTIONS} from 'src/app/models/trailerprofile';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {HelpLinkIconComponent} from 'src/app/shared/help-link-icon/help-link-icon.component';
-import {customFilterSchema, getFilterConditions, getFilterFieldGroups, getFilterValueType, newCustomFilter, newFilter} from './form-schema';
+import {
+  customFilterSchema,
+  getFilterConditions,
+  getFilterFieldGroups,
+  getFilterFieldLabel,
+  getFilterValueType,
+  newCustomFilter,
+  newFilter,
+} from './form-schema';
 
 @Component({
   selector: 'edit-filter-dialog',
@@ -98,6 +107,12 @@ export class EditFilterDialogComponent implements AfterViewInit {
 
   // Get the filter value type for a given filter key.
   protected getFilterValueType = getFilterValueType;
+
+  // Get the label of a field, or '' to format the key with displayTitle.
+  protected getFilterFieldLabel = getFilterFieldLabel;
+
+  // The video types, for the download_video_type value dropdown.
+  protected readonly videoTypeOptions = VIDEO_TYPE_OPTIONS;
 
   // Adds a new filter to the filters array.
   protected addFilter(): void {

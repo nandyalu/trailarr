@@ -169,13 +169,82 @@
           </div>
         </div>
         <div class="media-details-row">
-          <div class="labeled-text">
-            <span class="label">Trailer</span>
-            <div class="input-row">
+          <div class="labeled-text known-videos-block">
+            <span class="label">Known videos</span>
+            <p class="text-sm known-videos-hint">
+              Trailarr takes the first video of the profile's type that works. A video you add comes before the rest.
+            </p>
+            @if (videoGroups().length > 0) {
+              @for (group of videoGroups(); track group.type) {
+                <div class="known-video-group">
+                  <span class="known-video-group-title">
+                    {{ group.label }}
+                    <span class="known-video-group-count">{{ group.videos.length }}</span>
+                  </span>
+                  <ul class="known-videos">
+                    @for (video of group.videos; track video.id) {
+                      <li class="known-video">
+                        <span class="known-video-source" [class.known-video-source__user]="video.source === 'user'">
+                          {{ sourceLabel(video.source) }}
+                        </span>
+                        <a class="known-video-name" [href]="youtubeLink(video.video_id)" target="_blank" rel="noopener">
+                          {{ video.name || video.video_id }}
+                        </a>
+                        @if (video.language) {
+                          <span class="known-video-meta">{{ video.language }}</span>
+                        }
+                        @let typeProfiles = profilesForType(video.video_type);
+                        <button
+                          class="known-video-download"
+                          type="button"
+                          #videoDownloadButton
+                          [attr.popovertarget]="'videoProfiles' + video.id"
+                          [disabled]="typeProfiles.length === 0 || isLoadingDownload()"
+                          [attr.aria-label]="'Download ' + (video.name || video.video_id)"
+                          [title]="typeProfiles.length === 0 ? 'No profile downloads a ' + group.label.toLowerCase() : 'Download this video with a profile'"
+                        >
+                          <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+                          </svg>
+                        </button>
+                        <div [attr.id]="'videoProfiles' + video.id" popover="auto" class="popover" #videoProfilesPopover>
+                          <div class="dropdown-list" role="listbox" [attr.aria-label]="'Profiles that download a ' + group.label.toLowerCase()">
+                            @for (profile of typeProfiles; track profile.id) {
+                              <button
+                                class="dropdown-option"
+                                role="option"
+                                type="button"
+                                (click)="downloadKnownVideo(video, profile.id, videoProfilesPopover)"
+                              >
+                                {{ profile.customfilter.filter_name }}
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <button
+                          class="known-video-remove"
+                          type="button"
+                          [attr.aria-label]="'Remove ' + (video.name || video.video_id)"
+                          title="Remove this video"
+                          (click)="removeKnownVideo(video.video_id)"
+                        >
+                          <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                          </svg>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            } @else {
+              <p class="text-sm known-videos-empty">Trailarr knows no videos for this item yet. Add one below, or search YouTube.</p>
+            }
+            <div class="input-row add-video-row">
               <div class="labeled-input">
                 <span class="text-md sm-none">https://www.youtube.com/watch?v=</span>
                 <span class="text-md sm-show">YouTube ID/URL:</span>
-                <input id="youtube_trailer_id" type="text" [(ngModel)]="trailer_url" placeholder="YouTube Video ID / URL" />
+                <input id="new_video_url" type="text" [(ngModel)]="newVideoUrl" placeholder="YouTube Video ID / URL" (keydown.enter)="addChosenVideo()" />
               </div>
               <div class="labeled-input video-language-input">
                 <span class="text-md">Language</span>
@@ -188,8 +257,16 @@
                   title="The language this video is in, such as it. Leave empty for any language."
                 />
               </div>
-              @if (selectedMedia_.youtube_trailer_id == '' && trailer_url == '' && !isLoadingDownload()) {
-                <span class="search-button icon-link" title="Search Trailer" (click)="openProfileSelectDialog(true)">
+              <div class="labeled-input video-type-input">
+                <span class="text-md">Type</span>
+                <select id="video_type" [(ngModel)]="newVideoType" title="What this video is. A profile of that type can then download it.">
+                  @for (option of videoTypeOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+              @if (!isLoadingDownload()) {
+                <span class="search-button icon-link" title="Search YouTube for a trailer" (click)="openProfileSelectDialog(true)">
                   <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                     <path
                       d="M801-108 537-372q-31 26-72.96 40-41.96 14-86.6 14-114.6 0-192.52-78Q107-474 107-586t78-190q78-78 190-78t190 78q78 78 78 190.15 0 43.85-13.5 84.35Q616-461 588-425l266 264-53 53ZM375.5-391q81.75 0 138.13-56.79Q570-504.58 570-586q0-81.42-56.29-138.21Q457.43-781 375.59-781q-82.67 0-139.13 56.79Q180-667.42 180-586q0 81.42 56.46 138.21Q292.92-391 375.5-391Z"
@@ -238,63 +315,32 @@
                 </span>
                 <!-- #endregion -->
               }
-              @if (trailer_url != selectedMedia_.youtube_trailer_id && !isLoadingDownload()) {
+              @if (newVideoUrl.trim() && !isLoadingDownload()) {
                 <button
                   class="primary icononly-button save-button success"
-                  id="update_trailer_search_query"
-                  aria-label="Save YouTube ID"
+                  id="add_video_button"
+                  aria-label="Add this video"
+                  title="Add this video"
                   tabindex="24"
-                  (click)="saveYtId()"
+                  (click)="addChosenVideo()"
                 >
                   <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z" />
+                    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
                   </svg>
                 </button>
               }
             </div>
-            @if (trailer_url != selectedMedia_.youtube_trailer_id) {
-              <p class="text-sm info-text">Click Download to download trailer from updated link!</p>
-            }
           </div>
         </div>
-        @if (knownVideos().length > 0) {
-          <div class="media-details-row">
-            <div class="labeled-text">
-              <span class="label">Known videos</span>
-              <p class="text-sm known-videos-hint">Trailarr takes the first one that works. A video you add comes before the rest.</p>
-              <ul class="known-videos">
-                @for (video of knownVideos(); track video.id) {
-                  <li class="known-video">
-                    <span class="known-video-source" [class.known-video-source__user]="video.source === 'user'">
-                      {{ sourceLabel(video.source) }}
-                    </span>
-                    <a class="known-video-name" [href]="youtubeLink(video.video_id)" target="_blank" rel="noopener">
-                      {{ video.name || video.video_id }}
-                    </a>
-                    @if (video.language) {
-                      <span class="known-video-meta">{{ video.language }}</span>
-                    }
-                    <button
-                      class="known-video-remove"
-                      type="button"
-                      [attr.aria-label]="'Remove ' + (video.name || video.video_id)"
-                      title="Remove this video"
-                      (click)="removeKnownVideo(video.video_id)"
-                    >
-                      <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
-                      </svg>
-                    </button>
-                  </li>
-                }
-              </ul>
-            </div>
-          </div>
-        }
         <div class="media-details-row">
-          @if (selectedMedia_.youtube_trailer_id) {
-            <button (click)="openTrailer()" class="primary" title="Watch Trailer on YouTube">Watch</button>
-          }
+          <button
+            (click)="openTrailer()"
+            class="primary"
+            [disabled]="!firstVideo()"
+            [title]="firstVideo() ? 'Watch the video a download takes, on YouTube' : 'Trailarr knows no video for this item'"
+          >
+            Watch
+          </button>
           <button
             (click)="openProfileSelectDialog(false)"
             class="primary"

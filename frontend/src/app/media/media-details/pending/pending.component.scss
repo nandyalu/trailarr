@@ -93,6 +93,19 @@
     }
   }
 
+  /* The type of video the row is about (Phase 9). */
+  .type-badge {
+    padding: 0.05rem 0.45rem;
+    border-radius: 0.35rem;
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
   .state-chip {
     padding: 0.125rem 0.625rem;
     border-radius: 0.5rem;
