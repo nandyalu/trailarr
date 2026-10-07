@@ -92,4 +92,5 @@ The next sections will explain the settings and filters available in profiles. Y
     Things that are planned for the future:
 
     - Improve Profiles to make downloading Season specific trailers easier.
-    - Maybe (maybe, no promises!) let the user download Featurettes, Clips, etc. as well.
+
+    Since `v0.14.0` a profile has a [Video Type](settings/general.md#video-type), so it can download Featurettes, Clips, Teasers and other extras from TMDB. See [Example 5](examples.md#example-5-featurettes-profile).

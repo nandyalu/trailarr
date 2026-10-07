@@ -65,6 +65,21 @@ You can use the following placeholders in the file name:
 | resolution           | Resolution of the media. Eg: '1080p'                                                                          |
 | vcodec               | Video codec of the media. Eg: 'h264'                                                                          |
 | youtube_id           | YouTube ID of the trailer. Eg: 'KbWtUJjMj3Y'                                                                  |
+| video_type           | {{ version_badge("add", "0.14.0") }} The suffix that Plex and Jellyfin read for the [Video Type](general.md#video-type) of the profile. Eg: 'trailer', 'featurette'. See the table below. |
+
+{{ version_badge("add", "0.14.0") }} A player reads the kind of an extra from the end of its file name, so the `{video_type}` placeholder writes a name that both Plex and Jellyfin read. Neither player knows a teaser or bloopers, and Plex does not know a clip, so Trailarr writes the nearest name that both read. The download still records its real type.
+
+| Video Type        | `{video_type}` in the file name | Default folder     |
+|:-----------------:|:-------------------------------:|:------------------:|
+| Trailer           | `trailer`                       | `Trailers`         |
+| Teaser            | `trailer`                       | `Trailers`         |
+| Clip              | `scene`                         | `Scenes`           |
+| Featurette        | `featurette`                    | `Featurettes`      |
+| Behind the Scenes | `behindthescenes`               | `Behind The Scenes`|
+| Bloopers          | `other`                         | `Other`            |
+| Other             | `other`                         | `Other`            |
+
+A profile that was created before `v0.14.0` keeps its file name, which ends in `-trailer.{ext}`. A `Featurette` profile with that file name writes `-trailer`, and Plex shows the video as a trailer. Change the file name of such a profile to end in `-{video_type}.{ext}` to get the right name.
 
 !!! info
     Filename will be cleaned to remove restricted characters `<>:"/\\|?*\x00-\x1F` to ensure compatibility with filesystems.
@@ -91,6 +106,8 @@ This setting allows you to enable or disable the folder creation for the trailer
 | String | No       | Trailers     | Any string (Max length: 50 characters) |
 
 This setting allows you to specify the name of the folder where the trailer files will be saved. If `Folder Enabled` is set to `false`, this setting will be ignored.
+
+{{ version_badge("add", "0.14.0") }} The folder name takes the `{video_type}` placeholder, which Trailarr replaces with the folder that both Plex and Jellyfin read for the [Video Type](general.md#video-type) of the profile: `Trailers`, `Scenes`, `Featurettes`, `Behind The Scenes` or `Other` (see the table under [File Name](#file-name)). An empty folder name takes that folder too. A profile that was created before `v0.14.0` keeps the folder name `Trailers`.
 
 
 ## Custom Save Folder Path

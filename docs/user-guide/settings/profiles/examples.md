@@ -99,3 +99,32 @@ Two more quick recipes with the same fields:
 
 - **Deleted trailer files**: `Download File Missing` `Equals` `true` — download records whose file was deleted from disk.
 - **Owned by one profile**: `Download Profile` `Equals` + pick a profile — media whose downloads came from that profile.
+
+## Example 5: Featurettes Profile
+
+{{ version_badge("add", "0.14.0") }}
+
+A profile that downloads the featurettes of your movies next to their trailers. It needs a [TMDB API key](../tmdb.md).
+
+- Create a profile by clicking on the `Add New` button in the `Profiles` page.
+- Name the profile `Movie Featurettes`.
+- Set the below `Filter`s:
+
+    | ID    | Filter By        | Condition         | Filter Value        |
+    |:-----:|:----------------:|:-----------------:|:-------------------:|
+    | 1     | Is Movie         | Equals            | true                |
+
+- Click `Create` to create the profile.
+- Change the following `Settings`:
+
+    - Set `Video Type` to `Featurette`. The search settings disappear: a featurette comes from TMDB only.
+    - Set `Maximum Duration` to `1200`, because a featurette often runs longer than a trailer.
+    - Set `Folder Enabled` to `true` and `Folder Name` to `{video_type}`, so the file lands in a `Featurettes` folder that Plex and Jellyfin read.
+    - Set `File Name` to `{title} ({year})-{video_type}.{ext}`, so the file name ends in `-featurette`.
+
+### Result
+
+For every movie, this profile downloads the first featurette that TMDB lists, next to the trailer that the [Movie Trailers](#example-1-movie-trailers-profile) profile downloads. A movie that TMDB lists no featurette for waits, and its media details page says so. One profile downloads one featurette per movie.
+
+!!! tip "Had a profile with `featurette` in its search query?"
+    See [Switch an extras profile](settings/general.md#switch-an-extras-profile). Set its `Video Type` instead of making a new profile, and its existing files stay with it.

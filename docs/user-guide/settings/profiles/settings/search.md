@@ -1,4 +1,7 @@
 
+!!! info "Trailer profiles only"
+    {{ version_badge("add", "0.14.0") }} `Search Query`, `Always Search`, `Include Words in Title`, `Exclude Words in Title` and `Allowed Uploader IDs` apply to a profile with the [Video Type](general.md#video-type) `Trailer`. A profile of another type takes its videos from TMDB and never searches YouTube, so the profile editor hides these settings for it. `Minimum Duration`, `Maximum Duration` and `Yt-dlp Extra Options` apply to every type.
+
 ## Search Query
 
 | Type   | Required | Default                               | Valid Values                            |
@@ -31,7 +34,7 @@ You can use the following placeholders in the file name:
 
 | Type    | Required | Default | Valid Values |
 |:-------:|:--------:|:-------:|:------------:|
-| Integer | Yes      | 30      | 30 - 540     |
+| Integer | Yes      | 60      | 30 - 1140    |
 
 Select the minimum duration of the trailers to download. Trailers with a duration less than this value will be skipped.
 
@@ -39,9 +42,11 @@ Select the minimum duration of the trailers to download. Trailers with a duratio
 
 | Type    | Required | Default | Valid Values |
 |:-------:|:--------:|:-------:|:------------:|
-| Integer | Yes      | 600     | 90 - 600     |
+| Integer | Yes      | 600     | 90 - 1200    |
 
 Select the maximum duration of the trailers to download. Trailers with a duration greater than this value will be skipped.
+
+{{ version_badge("upd", "0.14.0") }} The largest value is `1200` seconds (20 minutes). It was `600` before `v0.14.0`. Bonus features such as featurettes and behind-the-scenes videos often run longer than 10 minutes, so a profile for them can raise this. The default stays `600`, and no existing profile changes. The limit also applies to a video that TMDB lists: Trailarr checks the duration after the download and removes a video that is too long, then tries the next one in the list.
 
 !!! info
     If you want to download trailers with a duration of 2 minutes to 5 minutes, set `Trailer Minimum Duration` to `120` seconds and `Trailer Maximum Duration` to `300` seconds.
@@ -165,7 +170,7 @@ Most people turn this on to get a trailer that Radarr does not report — a trai
     Open the YouTube channel page and copy the `@handle` from the URL or page header. For the channel ID, check the channel's **About** page or use a tool like [YouTube Channel ID Finder](https://commentpicker.com/youtube-channel-id.php).
 
 !!! note
-    This filter only applies to YouTube search results. If a `YouTube Trailer ID` is set directly on a media item, it bypasses all search filters including this one.
+    This filter only applies to YouTube search results. A video that you add to the [Known videos](../../../library/media-details/index.md#known-videos) of a media item bypasses all search filters including this one.
 
 ## Automatic Exclusions
 
@@ -178,7 +183,7 @@ In addition to the filters you configure above, some videos are always excluded 
 - **YouTube Shorts** — vertical videos are skipped.
 - **Reviews** — videos with "review" in the title are skipped.
 
-As a second layer of protection, the download command itself also refuses live and upcoming content — this covers trailer URLs provided directly by Radarr or set manually as `YouTube Trailer ID`, which bypass search filters.
+As a second layer of protection, the download command itself also refuses live and upcoming content — this covers the ids that Radarr reports and the videos that you add by hand, which bypass search filters.
 
 If a download fails or times out for any reason, its partially downloaded files are deleted immediately, and any leftover temporary files from previous runs are cleaned up automatically at every app startup.
 

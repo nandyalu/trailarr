@@ -1,6 +1,7 @@
 # Phase 9 — Video Types
 
-**Status:** not started · **Release:** v0.14.0, target ~Oct 22, 2026 · **Depends on:** Phases 5 (clean flags),
+**Status:** IN PROGRESS — started Oct 7, 2026 on branch `feat/phase9-video-types` (see
+"Execution notes" at the end) · **Release:** v0.14.0, target ~Oct 22, 2026 · **Depends on:** Phases 5 (clean flags),
 7 (paths), 8 (TMDB — non-trailer types are TMDB-only by construction).
 Refreshed against the v0.13.0 code on Sep 24, 2026. Paths, names and claims below match
 the `dev` branch at commit `e31cf7d2`. Items marked **Refresh note** record a conflict
@@ -533,3 +534,20 @@ section executed; release notes with the extras-profile migration guidance;
 the `max_duration` check fixed, the cap at 1200, and stored values above 1200 clamped
 (decision 10, H24) — close #686 with the release. Trailer fields show in both views from one field
 registry, with the cap and the per-trailer block (decision 11).
+
+## Execution notes (Oct 7, 2026)
+
+Decisions the maintainer answered at the start of execution:
+
+- Decision 5: agreed. Non-trailer profiles stay TMDB-only, no search. The profile editor hides the search settings for them and shows a small banner that says the profile does not fall back to a search. The model rejects `always_search=True` on a non-trailer profile.
+- Decision 6: agreed. Trailarr writes only the names that both Plex and Jellyfin read (teaser → `-trailer`/`Trailers`, clip → `-scene`/`Scenes`, bloopers and other → `-other`/`Other`). The scan never relabels a row that exists; the classifier runs only for files with no row.
+- Manual assign: the assignment records the type of the profile on the download row (user-owned state wins; a person who assigns a file says what it is). `update_profile_id(..., video_type=)`.
+- quiv: `quiv.run_subprocess()` replaces `subprocess.run` for yt-dlp, ffmpeg and ffprobe in this phase, so a cancel stops the child.
+
+Deviations from the plan as written, with the reason:
+
+1. **W1 inference (decision 2).** The migration relabels only downloads with `profile_id = 0` from their names. A download that a profile owns keeps `trailer`, because its profile is a trailer profile and the two must agree or the profile downloads again. Instead, **a profile that changes its `video_type` relabels its own downloads** (`_relabel_downloads` in `database/manager/trailerprofile/update.py`). This gives zero unexpected downloads at upgrade AND when the user switches a hacky profile, which the plan's "relabel rows whose owning profile looks hacky" did not: it left the profile unsatisfied until the user acted.
+2. **W4 gate.** The "skip media with unresolved unattributed downloads" gate is NOT implemented. With type-aware claiming, the common case is a Plex library with a `Featurettes/` folder and no featurette profile: every such movie has an unattributed featurette, and the gate would stop every trailer download in the library. A same-type unclaimable file cannot coexist with a pending profile (the claim would take it), so the narrow gate is a no-op. The unattributed file is surfaced on the media details page and stays for Phase 11's `unattributed-download` issue. Maintainer to confirm before Phase 11 re-expresses gating.
+3. **Delete Trailers.** `services/media.delete_trailers` deletes the downloads of type `trailer` only; a featurette or a clip is deleted from its own row on the media details page. The action keeps its name.
+4. **Per-profile skip** ("Which videos on disk a download skips"): done as recommended, one branch in `download_trailer`. `video_count` is left to Phase 10 or later.
+5. **Nudge (decision 7)** is a `once` startup pass `video-type-nudge-v0.14.0` (`tasks/profile_nudge.py`), log only.

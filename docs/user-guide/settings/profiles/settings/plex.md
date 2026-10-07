@@ -41,6 +41,9 @@ A trailer qualifies if:
 !!! note ""
     This setting has no effect if no Plex connection is configured or if the media item has not been linked to Plex.
 
+!!! note "Trailer profiles only"
+    {{ version_badge("add", "0.14.0") }} This setting applies to a profile with the [Video Type](general.md#video-type) `Trailer`. A trailer that Plex has is not a reason to skip a featurette or a clip, so a profile of another type ignores it, and the profile editor hides it.
+
 ---
 
 ## Skip if Plex Trailer Resolution

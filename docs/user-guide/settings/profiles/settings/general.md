@@ -19,6 +19,48 @@ This setting allows you to enable or disable the profile. Only enabled profiles 
 !!! note
     Disabled profiles can still be used for manual trailer downloads from the UI, but they will not be applied automatically during the `Download Missing Trailers` task.
 
+## Video Type
+
+{{ version_badge("add", "0.14.0") }}
+
+| Type   | Required | Default | Valid Values                                                               |
+|:------:|:--------:|:-------:|:--------------------------------------------------------------------------:|
+| String | Yes      | Trailer | Trailer, Teaser, Clip, Featurette, Behind the Scenes, Bloopers, Other      |
+
+The kind of video this profile downloads. Every profile that existed before `v0.14.0` is a `Trailer` profile, and a new profile is one too.
+
+A profile of another type takes its videos from the list that TMDB keeps for the media item. Trailarr never searches YouTube for a teaser, a clip or a featurette: a search finds trailers, and nothing in a search result says that a video is a featurette. The profile editor hides the search settings for these types and shows a note that says so.
+
+This has three consequences for a profile that is not a `Trailer` profile:
+
+- It needs a [TMDB API key](../../tmdb.md). Without one, no profile of another type can download anything.
+- A media item needs a TMDB id. A Plex-only item without one is skipped.
+- When TMDB lists no video of that type for the item, the profile waits. Trailarr asks TMDB again every seven days with the `Refresh Video Lists` task, and the [media details page](../../../library/media-details/index.md#download-profiles-section) says that the profile waits for TMDB.
+
+Each download records its type, and a profile is satisfied only by a download of its own type. A featurette on disk never counts as the trailer of a media item, and a trailer never counts as its featurette.
+
+The file name and the folder of a download follow its type, so Plex and Jellyfin show the video as what it is. See [File Name](file.md#file-name) and [Folder Name](file.md#folder-name) for the names that Trailarr writes.
+
+!!! info "The type applies to the whole profile"
+    One profile downloads one type. To download the trailer and the featurettes of your movies, make two profiles with the same filters: a `Trailer` profile and a `Featurette` profile. See [Example 5](../examples.md#example-5-featurettes-profile).
+
+!!! note "Changing the type of a profile"
+    When you change the type of a profile, its downloads change with it: Trailarr relabels every file that the profile downloaded to the new type. The profile stays satisfied, and nothing downloads again. The file names on disk do not change.
+
+### Switch an extras profile {: #switch-an-extras-profile }
+
+{{ version_badge("add", "0.14.0") }}
+
+Before `v0.14.0`, the only way to download a featurette or a teaser was a `Trailer` profile with the word in its [Search Query](search.md#search-query), its [Include Words](search.md#include-words-in-title) or its [Folder Name](file.md#folder-name). Such a profile still works exactly as before, and the update does not change it. At the first start of `v0.14.0`, Trailarr names each such profile once in the log and suggests this setting.
+
+To move such a profile to the new setting:
+
+1. Open the profile and set `Video Type` to the type you want, for example `Featurette`.
+2. Trailarr relabels the files that the profile downloaded, so the profile stays satisfied. Check the `Download Profiles` section of one media item to see that its file now shows the new type.
+3. The search settings no longer apply. The profile now takes its videos from TMDB, in the language the profile asks for, and skips media that TMDB has no featurette for.
+
+Keep the old setup when you want the search: a profile that searches YouTube for interviews, for example, has no type to move to, because TMDB has no interview type (TMDB lists most interviews as featurettes). A profile with `Always Search` on cannot change its type until you turn `Always Search` off.
+
 ## Priority
 
 | Type    | Required | Default | Valid Values |
@@ -58,6 +100,8 @@ Setting this value to a higher number will allow Trailarr to make multiple attem
 | String  | No       | empty   | empty, or an ISO 639-1 code      |
 
 Which language of trailer this profile downloads. Leave it empty for any language, which is what every profile did before this setting existed.
+
+{{ version_badge("upd", "0.14.0") }} The language applies to every [Video Type](#video-type) in the same way. Most featurettes and clips that TMDB lists are English or have no language, so a `Featurette` profile that asks for another language usually finds nothing and waits. Leave the language empty on a profile of another type unless you know that TMDB has videos of that type in your language.
 
 A language here is a **filter, not a preference**. A profile that asks for `it` downloads an Italian trailer or nothing: Trailarr never downloads a German trailer instead, because a trailer in the wrong language is not what you asked for. When Trailarr knows no trailer in that language, it searches YouTube with the [Search Query](search.md#search-query) of the profile, which you write and can aim at your language.
 
